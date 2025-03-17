@@ -40,13 +40,14 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.workflow.api.ProcessDefinitions;
 import org.alfresco.rest.workflow.api.model.ProcessDefinition;
 
-@EntityResource(name="process-definitions", title = "Process definitions")
-public class ProcessDefinitionsRestEntityResource implements EntityResourceAction.Read<ProcessDefinition>, 
-                                                             EntityResourceAction.ReadById<ProcessDefinition>,
-                                                             BinaryResourceAction.Read {
+@EntityResource(name = "process-definitions", title = "Process definitions")
+public class ProcessDefinitionsRestEntityResource implements EntityResourceAction.Read<ProcessDefinition>,
+        EntityResourceAction.ReadById<ProcessDefinition>,
+        BinaryResourceAction.Read
+{
 
     ProcessDefinitions processDefinitions;
-    
+
     public void setProcessDefinitions(ProcessDefinitions processDefinitions)
     {
         this.processDefinitions = processDefinitions;
@@ -54,12 +55,12 @@ public class ProcessDefinitionsRestEntityResource implements EntityResourceActio
 
     @Override
     @WebApiDescription(title = "Get Process Definitions", description = "Get information for the process definitions")
-    @WebApiParameters(value = { 
-            @WebApiParam(name = "key", title = "Only return process definitions with the given key", kind=ResourceParameter.KIND.QUERY_STRING),
-            @WebApiParam(name = "category", title = "Only return process definitions with the given category", kind=ResourceParameter.KIND.QUERY_STRING),
-            @WebApiParam(name = "name", title = "Only return process definitions with the given name", kind=ResourceParameter.KIND.QUERY_STRING),
-            @WebApiParam(name = "deploymentId", title = "Only return process definitions with the given definitionId", kind=ResourceParameter.KIND.QUERY_STRING),
-            @WebApiParam(name = "version", title = "Only return process definitions with the given version", kind=ResourceParameter.KIND.QUERY_STRING)})
+    @WebApiParameters(value = {
+            @WebApiParam(name = "key", title = "Only return process definitions with the given key", kind = ResourceParameter.KIND.QUERY_STRING),
+            @WebApiParam(name = "category", title = "Only return process definitions with the given category", kind = ResourceParameter.KIND.QUERY_STRING),
+            @WebApiParam(name = "name", title = "Only return process definitions with the given name", kind = ResourceParameter.KIND.QUERY_STRING),
+            @WebApiParam(name = "deploymentId", title = "Only return process definitions with the given definitionId", kind = ResourceParameter.KIND.QUERY_STRING),
+            @WebApiParam(name = "version", title = "Only return process definitions with the given version", kind = ResourceParameter.KIND.QUERY_STRING)})
     public CollectionWithPagingInfo<ProcessDefinition> readAll(Parameters params)
     {
         return processDefinitions.getProcessDefinitions(params);
@@ -70,7 +71,7 @@ public class ProcessDefinitionsRestEntityResource implements EntityResourceActio
     {
         return processDefinitions.getProcessDefinition(id);
     }
-    
+
     @Override
     @WebApiDescription(title = "Get a process definition image", description = "Get a process definition image")
     @BinaryProperties({"image"})

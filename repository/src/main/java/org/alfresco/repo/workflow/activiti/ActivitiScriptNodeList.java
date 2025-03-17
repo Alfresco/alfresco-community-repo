@@ -41,7 +41,7 @@ public class ActivitiScriptNodeList extends ArrayList<ActivitiScriptNode>
 {
     private static final long serialVersionUID = 5177463364573735290L;
 
-    public List<NodeRef> getNodeReferences() 
+    public List<NodeRef> getNodeReferences()
     {
         // Extract all node references
         List<NodeRef> nodeRefs = new ArrayList<NodeRef>();
@@ -51,9 +51,9 @@ public class ActivitiScriptNodeList extends ArrayList<ActivitiScriptNode>
         }
         return nodeRefs;
     }
-    
+
     @Override
-    public int size() 
+    public int size()
     {
         return super.size();
     }

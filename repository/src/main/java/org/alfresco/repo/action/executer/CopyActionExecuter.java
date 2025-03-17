@@ -57,36 +57,35 @@ import org.alfresco.service.namespace.QName;
 public class CopyActionExecuter extends ActionExecuterAbstractBase
 {
     public static final String ERR_OVERWRITE = "Unable to overwrite copy because more than one have been found.";
-    
+
     public static final String NAME = "copy";
     public static final String PARAM_DESTINATION_FOLDER = "destination-folder";
     public static final String PARAM_DEEP_COPY = "deep-copy";
     public static final String PARAM_OVERWRITE_COPY = "overwrite-copy";
-    
+
     private CopyService copyService;
-    
+
     /**
      * The node service
      */
     private NodeService nodeService;
     private CheckOutCheckInService checkOutCheckInService;
-    
+
     /**
      * Sets the node service
      */
-    public void setNodeService(NodeService nodeService) 
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Sets the copy service
      */
-    public void setCopyService(CopyService copyService) 
+    public void setCopyService(CopyService copyService)
     {
         this.copyService = copyService;
     }
-    
 
     /**
      * Service to determine check-in or check-out status
@@ -97,10 +96,10 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
     }
 
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_DEEP_COPY, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_DEEP_COPY)));        
+        paramList.add(new ParameterDefinitionImpl(PARAM_DEEP_COPY, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_DEEP_COPY)));
         paramList.add(new ParameterDefinitionImpl(PARAM_OVERWRITE_COPY, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_OVERWRITE_COPY)));
     }
 
@@ -123,20 +122,20 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
 
         // Get the deep copy value
         boolean deepCopy = false;
-        Boolean deepCopyValue = (Boolean)ruleAction.getParameterValue(PARAM_DEEP_COPY);
+        Boolean deepCopyValue = (Boolean) ruleAction.getParameterValue(PARAM_DEEP_COPY);
         if (deepCopyValue != null)
         {
             deepCopy = deepCopyValue.booleanValue();
         }
-            
+
         // Get the overwirte value
         boolean overwrite = true;
-        Boolean overwriteValue = (Boolean)ruleAction.getParameterValue(PARAM_OVERWRITE_COPY);
+        Boolean overwriteValue = (Boolean) ruleAction.getParameterValue(PARAM_OVERWRITE_COPY);
         if (overwriteValue != null)
         {
             overwrite = overwriteValue.booleanValue();
         }
-        
+
         // Since we are overwriting we need to figure out whether the destination node exists
         NodeRef copyNodeRef = null;
         if (overwrite == true)
@@ -166,7 +165,7 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
                 }
             }
         }
-        
+
         if (copyNodeRef != null)
         {
             // Overwrite the state of the destination node ref with the actioned upon node state
@@ -177,7 +176,7 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
             ChildAssociationRef originalAssoc = nodeService.getPrimaryParent(actionedUponNodeRef);
             // Create a new copy of the node
             this.copyService.copyAndRename(
-                    actionedUponNodeRef, 
+                    actionedUponNodeRef,
                     destinationParent,
                     originalAssoc.getTypeQName(),
                     originalAssoc.getQName(),

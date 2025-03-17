@@ -25,11 +25,11 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.RestModels;
+import static org.alfresco.utility.report.log.Step.STEP;
 
 import java.util.List;
 
-import static org.alfresco.utility.report.log.Step.STEP;
+import org.alfresco.rest.core.RestModels;
 
 public class RestSiteGroupModelsCollection extends RestModels<RestSiteGroupModel, RestSiteGroupModelsCollection>
 {
@@ -54,4 +54,4 @@ public class RestSiteGroupModelsCollection extends RestModels<RestSiteGroupModel
         return siteGroupEntry;
     }
 
-}    
+}

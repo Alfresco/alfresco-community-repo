@@ -32,6 +32,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -40,12 +43,9 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Registered Encryption Keys are stored in the AttributeService directly under a top level key defined by
- * TOP_LEVEL_KEY (which means that all key aliases must be unique across however many keystores are being used).
+ * Registered Encryption Keys are stored in the AttributeService directly under a top level key defined by TOP_LEVEL_KEY (which means that all key aliases must be unique across however many keystores are being used).
  * 
  * @since 4.0
  *
@@ -89,8 +89,7 @@ public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
         DefaultEncryptor encryptor = new DefaultEncryptor();
         encryptor.setCipherAlgorithm(cipherAlgorithm);
         encryptor.setCipherProvider(cipherProvider);
-        encryptor.setKeyProvider(new KeyProvider()
-        {
+        encryptor.setKeyProvider(new KeyProvider() {
             @Override
             public Key getKey(String keyAlias)
             {
@@ -101,12 +100,11 @@ public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
     }
 
     public void init()
-    {
-    }
+    {}
 
     public void registerKey(String keyAlias, Key key)
     {
-        if(isKeyRegistered(keyAlias))
+        if (isKeyRegistered(keyAlias))
         {
             throw new IllegalArgumentException("Key " + keyAlias + " is already registered");
         }
@@ -120,11 +118,10 @@ public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
         Serializable encrypted = encryptor.sealObject(keyAlias, null, guid);
         Pair<String, Serializable> keyCheck = new Pair<String, Serializable>(guid, encrypted);
         RetryingTransactionHelper retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
-        final RetryingTransactionCallback<Void> createAttributeCallback = new RetryingTransactionCallback<Void>()
-        {
+        final RetryingTransactionCallback<Void> createAttributeCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
-            	attributeService.createAttribute(keyCheck, TOP_LEVEL_KEY, keyAlias);
+                attributeService.createAttribute(keyCheck, TOP_LEVEL_KEY, keyAlias);
                 return null;
             }
         };
@@ -132,38 +129,37 @@ public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
 
         logger.info("Registered key " + keyAlias);
     }
-    
+
     public void unregisterKey(String keyAlias)
     {
         attributeService.removeAttribute(TOP_LEVEL_KEY, keyAlias);
     }
-    
+
     public boolean isKeyRegistered(String keyAlias)
     {
         try
         {
             return (attributeService.getAttribute(TOP_LEVEL_KEY, keyAlias) != null);
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             // there is an issue getting the attribute. Remove it.
             attributeService.removeAttribute(TOP_LEVEL_KEY, keyAlias);
             return (attributeService.getAttribute(TOP_LEVEL_KEY, keyAlias) != null);
         }
     }
-    
+
     public List<String> getRegisteredKeys(final Set<String> keyStoreKeys)
     {
         final List<String> registeredKeys = new ArrayList<String>();
 
-        attributeService.getAttributes(new AttributeQueryCallback()
-        {
+        attributeService.getAttributes(new AttributeQueryCallback() {
             public boolean handleAttribute(Long id, Serializable value,
                     Serializable[] keys)
             {
                 // Add as a registered key if the keystore contains the key
-                String keyAlias = (String)keys[1];
-                if(keyStoreKeys.contains(keyAlias))
+                String keyAlias = (String) keys[1];
+                if (keyStoreKeys.contains(keyAlias))
                 {
                     registeredKeys.add(keyAlias);
                 }
@@ -171,7 +167,7 @@ public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
             }
 
         },
-        TOP_LEVEL_KEY);
+                TOP_LEVEL_KEY);
 
         return registeredKeys;
     }
@@ -181,7 +177,7 @@ public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
     {
         Pair<String, Serializable> keyCheck = null;
 
-        if(attributeService.exists(TOP_LEVEL_KEY, keyAlias))
+        if (attributeService.exists(TOP_LEVEL_KEY, keyAlias))
         {
             try
             {
@@ -189,16 +185,16 @@ public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
                 // comparing against the guid
                 try
                 {
-                    keyCheck = (Pair<String, Serializable>)attributeService.getAttribute(TOP_LEVEL_KEY, keyAlias);
+                    keyCheck = (Pair<String, Serializable>) attributeService.getAttribute(TOP_LEVEL_KEY, keyAlias);
                 }
-                catch(Throwable e)
+                catch (Throwable e)
                 {
                     // there is an issue getting the attribute. Remove it.
                     attributeService.removeAttribute(TOP_LEVEL_KEY, keyAlias);
                     return KEY_STATUS.MISSING;
                 }
-                
-                if(keyCheck == null)
+
+                if (keyCheck == null)
                 {
                     return KEY_STATUS.MISSING;
                 }
@@ -209,7 +205,7 @@ public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
                 Serializable storedGUID = encryptor.unsealObject(keyAlias, keyCheck.getSecond());
                 return EqualsHelper.nullSafeEquals(storedGUID, keyCheck.getFirst()) ? KEY_STATUS.OK : KEY_STATUS.CHANGED;
             }
-            catch(InvalidKeyException e)
+            catch (InvalidKeyException e)
             {
                 // key exception indicates that the key has changed - it can't decrypt the
                 // previously-encrypted data
@@ -219,18 +215,17 @@ public class EncryptionKeysRegistryImpl implements EncryptionKeysRegistry
         else
         {
             return KEY_STATUS.MISSING;
-        }        
+        }
     }
-    
+
     // note that this removes _all_ keys in the keystore. Use with care.
     public void removeRegisteredKeys(final Set<String> keys)
     {
         RetryingTransactionHelper retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
-        final RetryingTransactionCallback<Void> removeKeysCallback = new RetryingTransactionCallback<Void>()
-        {
+        final RetryingTransactionCallback<Void> removeKeysCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
-                for(String keyAlias : keys)
+                for (String keyAlias : keys)
                 {
                     attributeService.removeAttribute(TOP_LEVEL_KEY, keyAlias);
                 }

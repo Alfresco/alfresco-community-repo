@@ -2,8 +2,14 @@ package org.alfresco.tas.integration;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
-import io.restassured.RestAssured;
 import java.util.HashMap;
+
+import io.restassured.RestAssured;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
@@ -21,12 +27,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 
 public class IntegrationWithCmisTests extends IntegrationTest
 {
@@ -40,9 +40,9 @@ public class IntegrationWithCmisTests extends IntegrationTest
         site = dataSite.usingUser(user).createPublicRandomSite();
     }
 
-//    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CMIS, TestGroup.FULL })
-    @TestRail(section = { TestGroup.INTEGRATION,
-            TestGroup.CMIS }, executionType = ExecutionType.REGRESSION, description = "Verify getChildren action for a large number of files from CMIS returns only unique values with few retries")
+    // @Test(groups = { TestGroup.INTEGRATION, TestGroup.CMIS, TestGroup.FULL })
+    @TestRail(section = {TestGroup.INTEGRATION,
+            TestGroup.CMIS}, executionType = ExecutionType.REGRESSION, description = "Verify getChildren action for a large number of files from CMIS returns only unique values with few retries")
     public void verifyGetChildrenReturnsUniqueValues() throws Exception
     {
         STEP("1. Create user, site, folder.");
@@ -72,9 +72,9 @@ public class IntegrationWithCmisTests extends IntegrationTest
         }
     }
 
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CMIS, TestGroup.CORE })
-    @TestRail(section = { TestGroup.INTEGRATION,
-            TestGroup.CMIS }, executionType = ExecutionType.REGRESSION, description = "Verify content and thumbnail of TIF files are retrieved by CMIS ")
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CMIS, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION,
+            TestGroup.CMIS}, executionType = ExecutionType.REGRESSION, description = "Verify content and thumbnail of TIF files are retrieved by CMIS ")
     @Bug(id = "REPO-2042", description = "Should fail only on MAC OS System and Linux")
     public void verifyContentAndThumbnailForTifFile() throws Exception
     {
@@ -107,9 +107,9 @@ public class IntegrationWithCmisTests extends IntegrationTest
         renditionInfo.assertThat().field("status").is("CREATED");
     }
 
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CMIS, TestGroup.FULL })
-    @TestRail(section = { TestGroup.INTEGRATION,
-            TestGroup.CMIS }, executionType = ExecutionType.REGRESSION, description = "Verify getChildren action for a large number of files from CMIS returns only unique values with few retries")
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CMIS, TestGroup.FULL})
+    @TestRail(section = {TestGroup.INTEGRATION,
+            TestGroup.CMIS}, executionType = ExecutionType.REGRESSION, description = "Verify getChildren action for a large number of files from CMIS returns only unique values with few retries")
     public void verifyContentDispositionForContentThatAreWhiteListed() throws Exception
     {
 
@@ -149,9 +149,9 @@ public class IntegrationWithCmisTests extends IntegrationTest
         response.assertThat().header("Content-Disposition", String.format("attachment; filename=%s", htmlFile.getName()));
     }
 
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CMIS, TestGroup.FULL })
-    @TestRail(section = { TestGroup.INTEGRATION,
-            TestGroup.CMIS }, executionType = ExecutionType.SANITY, description = "Verify that alfresco returns the correct encoding for files created via CMIS.")
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CMIS, TestGroup.FULL})
+    @TestRail(section = {TestGroup.INTEGRATION,
+            TestGroup.CMIS}, executionType = ExecutionType.SANITY, description = "Verify that alfresco returns the correct encoding for files created via CMIS.")
     public void verifyFileEncodingUsingCMIS() throws Exception
     {
         STEP("1. Create a folder, two text file with specific encoding content and define the expected encoding.");

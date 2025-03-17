@@ -25,8 +25,6 @@
  */
 package org.alfresco.repo.security.permissions.impl.acegi;
 
-import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.getNodeRef;
-import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.shouldAbstainOrDeny;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,10 +32,19 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.when;
 
+import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.getNodeRef;
+import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.shouldAbstainOrDeny;
+
 import java.util.Collections;
 import java.util.Set;
 
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -46,12 +53,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class ACLEntryVoterUtilsTest
@@ -89,7 +90,7 @@ public class ACLEntryVoterUtilsTest
     public void returnsAccessDeniedFromPermissionService()
     {
         assertThat(shouldAbstainOrDeny(simplePermissionReference, testNodeRef, qNamesToAbstain, nodeServiceMock, permissionServiceMock),
-                   is(AccessDecisionVoter.ACCESS_DENIED));
+                is(AccessDecisionVoter.ACCESS_DENIED));
     }
 
     @Test
@@ -134,7 +135,7 @@ public class ACLEntryVoterUtilsTest
     public void returnsNullOnNullTestNodeRef()
     {
         assertThat(shouldAbstainOrDeny(simplePermissionReference, null, qNamesToAbstain, nodeServiceMock, permissionServiceMock),
-                   is(nullValue()));
+                is(nullValue()));
     }
 
     @Test
@@ -142,7 +143,7 @@ public class ACLEntryVoterUtilsTest
     {
         when(permissionServiceMock.hasPermission(eq(testNodeRef), nullable(String.class))).thenReturn(AccessStatus.ALLOWED);
         assertThat(shouldAbstainOrDeny(simplePermissionReference, testNodeRef, Collections.emptySet(), nodeServiceMock, permissionServiceMock),
-                   is(nullValue()));
+                is(nullValue()));
     }
 
     @Test
@@ -151,7 +152,7 @@ public class ACLEntryVoterUtilsTest
         when(nodeServiceMock.exists(testNodeRef)).thenReturn(Boolean.FALSE);
         when(permissionServiceMock.hasPermission(eq(testNodeRef), nullable(String.class))).thenReturn(AccessStatus.ALLOWED);
         assertThat(shouldAbstainOrDeny(simplePermissionReference, testNodeRef, qNamesToAbstain, nodeServiceMock, permissionServiceMock),
-                   is(nullValue()));
+                is(nullValue()));
     }
 
     @Test
@@ -159,7 +160,7 @@ public class ACLEntryVoterUtilsTest
     {
         when(permissionServiceMock.hasPermission(eq(testNodeRef), nullable(String.class))).thenReturn(AccessStatus.ALLOWED);
         assertThat(shouldAbstainOrDeny(simplePermissionReference, testNodeRef, qNamesToAbstain, nodeServiceMock, permissionServiceMock),
-                   is(nullValue()));
+                is(nullValue()));
     }
 
     @Test
@@ -167,7 +168,7 @@ public class ACLEntryVoterUtilsTest
     {
         when(nodeServiceMock.getType(testNodeRef)).thenReturn(qNameToAbstain2);
         assertThat(shouldAbstainOrDeny(simplePermissionReference, testNodeRef, qNamesToAbstain, nodeServiceMock, permissionServiceMock),
-                   is(AccessDecisionVoter.ACCESS_ABSTAIN));
+                is(AccessDecisionVoter.ACCESS_ABSTAIN));
     }
 
     @Test
@@ -175,7 +176,7 @@ public class ACLEntryVoterUtilsTest
     {
         when(nodeServiceMock.getAspects(testNodeRef)).thenReturn(Set.of(qNameNotFromTheAbstainSet, qNameToAbstain3));
         assertThat(shouldAbstainOrDeny(simplePermissionReference, testNodeRef, qNamesToAbstain, nodeServiceMock, permissionServiceMock),
-                   is(AccessDecisionVoter.ACCESS_ABSTAIN));
+                is(AccessDecisionVoter.ACCESS_ABSTAIN));
     }
 
 }

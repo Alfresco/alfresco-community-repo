@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
@@ -56,7 +58,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.springframework.context.ApplicationContext;
 
 public class DeletionMetricsRunner
 {
@@ -72,9 +73,7 @@ public class DeletionMetricsRunner
     private int deletedUrls;
 
     private final int numOrphans = 1000;
-    
-    
-    
+
     public DeletionMetricsRunner()
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
@@ -85,22 +84,21 @@ public class DeletionMetricsRunner
         TransactionService transactionService = serviceRegistry.getTransactionService();
         DictionaryService dictionaryService = serviceRegistry.getDictionaryService();
         ContentDataDAO contentDataDAO = (ContentDataDAO) ctx.getBean("contentDataDAO");
-        
+
         // we need a store
         store = (FileContentStore) ctx.getBean("fileContentStore");
-        
-        
+
         // and a listener
         List<ContentStoreCleanerListener> listeners = new ArrayList<ContentStoreCleanerListener>(2);
         listener = new CleanerListener();
         listeners.add(listener);
-        
+
         // Construct the test cleaners
         eagerCleaner = (EagerContentStoreCleaner) ctx.getBean("eagerContentStoreCleaner");
         eagerCleaner.setEagerOrphanCleanup(false);
         eagerCleaner.setStores(Collections.singletonList((ContentStore) store));
         eagerCleaner.setListeners(listeners);
-        
+
         cleaner = new ContentStoreCleaner();
         cleaner.setEagerContentStoreCleaner(eagerCleaner);
         cleaner.setJobLockService(jobLockService);
@@ -110,112 +108,100 @@ public class DeletionMetricsRunner
         cleaner.setContentService(contentService);
     }
 
-
     public static void main(String[] args)
     {
         DeletionMetricsRunner metrics = new DeletionMetricsRunner();
         metrics.run();
     }
-    
-    
+
     public void run()
     {
         setUp(true);
         time("Deleting empty parent dirs");
         tearDown();
-        
+
         setUp(false);
         time("Ignoring empty parent dirs");
         tearDown();
     }
-    
-    
-    
+
     private void setUp(boolean deleteEmptyDirs)
     {
         AuthenticationUtil.setRunAsUserSystem();
         store.setDeleteEmptyDirs(deleteEmptyDirs);
         deletedUrls = 0;
     }
-    
-    
+
     private void tearDown()
     {
-        AuthenticationUtil.clearCurrentSecurityContext();    
+        AuthenticationUtil.clearCurrentSecurityContext();
         System.out.println("Deleted " + deletedUrls + " URLs.");
     }
- 
-    
-    
+
     private void time(String description)
     {
         long beforeClean = System.currentTimeMillis();
-        
+
         createContent();
         cleanContent();
-        
+
         long afterClean = System.currentTimeMillis();
         double timeTaken = afterClean - beforeClean;
         System.out.println();
         System.out.println(String.format("%s took %6.0fms", description, timeTaken));
     }
 
-    
     private void createContent()
     {
         final StoreRef storeRef = nodeService.createStore("test", "timings-" + GUID.generate());
-        RetryingTransactionCallback<ContentData> testCallback = new RetryingTransactionCallback<ContentData>()
-        {
+        RetryingTransactionCallback<ContentData> testCallback = new RetryingTransactionCallback<ContentData>() {
             public ContentData execute() throws Throwable
             {
                 ContentData contentData = null;
-                
+
                 for (int i = 0; i < numOrphans; i++)
                 {
                     // Create some content
                     NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
                     Map<QName, Serializable> properties = new HashMap<QName, Serializable>(13);
-                    properties.put(ContentModel.PROP_NAME, (Serializable)"test.txt");                    
-                    
+                    properties.put(ContentModel.PROP_NAME, (Serializable) "test.txt");
+
                     NodeRef contentNodeRef = nodeService.createNode(
                             rootNodeRef,
                             ContentModel.ASSOC_CHILDREN,
                             ContentModel.ASSOC_CHILDREN,
                             ContentModel.TYPE_CONTENT,
                             properties).getChildRef();
-                    
+
                     ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
-                    
-                    
+
                     writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                     writer.putContent("INITIAL CONTENT");
-                    
+
                     contentData = writer.getContentData();
-                   
+
                     // Delete the first node, bypassing archive
                     nodeService.addAspect(contentNodeRef, ContentModel.ASPECT_TEMPORARY, null);
                     nodeService.deleteNode(contentNodeRef);
                 }
-                
+
                 // Done
                 return contentData;
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(testCallback);
     }
-    
-    
+
     private void cleanContent()
     {
         // fire the cleaner
         cleaner.setProtectDays(0);
         cleaner.execute();
-        
+
         if (deletedUrls < numOrphans)
             throw new IllegalStateException("Not all the orphans were cleaned.");
     }
-    
-    
+
     private class CleanerListener implements ContentStoreCleanerListener
     {
         public void beforeDelete(ContentStore store, String contentUrl) throws ContentIOException
@@ -223,5 +209,5 @@ public class DeletionMetricsRunner
             deletedUrls++;
         }
     }
-    
+
 }

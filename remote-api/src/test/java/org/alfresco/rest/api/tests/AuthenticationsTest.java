@@ -25,6 +25,20 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.apache.commons.codec.binary.Base64;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapper;
@@ -49,19 +63,6 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.apache.commons.codec.binary.Base64;
-import org.junit.Before;
-import org.junit.Test;
-
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * V1 REST API tests for authentication Tickets
@@ -115,13 +116,19 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
     /**
      * Tests login (create ticket), logout (delete ticket), and validate (get ticket).
      *
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/authentication/versions/1/tickets}
      *
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/authentication/versions/1/tickets/-me-}
      *
-     * <p>DELETE:</p>
+     * <p>
+     * DELETE:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/authentication/versions/1/tickets/-me-}
      */
     @Test
@@ -134,9 +141,7 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
         // Unauthorized call
         getAll(SiteEntityResource.class, paging, null, 401);
 
-        /*
-         *  user1 login - via alf_ticket parameter
-         */
+        /* user1 login - via alf_ticket parameter */
 
         // User1 login request
         LoginTicket loginRequest = new LoginTicket();
@@ -180,7 +185,7 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
         // Validate ticket - Invalid parameter. Only '-me-' is supported
         getSingle(TICKETS_URL, loginResponse.getId(), ticket, null, TICKETS_API_NAME, 400);
 
-        // Delete the ticket  - Logout
+        // Delete the ticket - Logout
         delete(TICKETS_URL, People.DEFAULT_USER, ticket, null, TICKETS_API_NAME, 204);
 
         // Validate ticket - 401 as ticket has been invalidated so the API call is unauthorized
@@ -206,21 +211,25 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
     /**
      * Tests login (create ticket), logout (delete ticket), and validate (get ticket).
      *
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/authentication/versions/1/tickets}
      *
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/authentication/versions/1/tickets/-me-}
      *
-     * <p>DELETE:</p>
+     * <p>
+     * DELETE:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/authentication/versions/1/tickets/-me-}
      */
     @Test
     public void testCreateValidateDeleteTicketViaBasicAuthHeader() throws Exception
     {
-        /*
-         *  user2 login - Via Authorization header
-         */
+        /* user2 login - Via Authorization header */
         Paging paging = getPaging(0, 100);
 
         setRequestContext(null);
@@ -285,11 +294,11 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
         LoginTicketResponse validatedTicket = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), LoginTicketResponse.class);
         assertEquals(loginResponse.getId(), validatedTicket.getId());
 
-        // now use the "bearer" keyword with the alf-ticket  - should not succeed
+        // now use the "bearer" keyword with the alf-ticket - should not succeed
         header = Collections.singletonMap("Authorization", "bearer " + encodedTicket);
         response = getSingle(TICKETS_URL, People.DEFAULT_USER, null, header, TICKETS_API_NAME, 401);
 
-        // now send some junk  - should not succeed
+        // now send some junk - should not succeed
         header = Collections.singletonMap("Authorization", "junk " + encodedTicket);
         response = getSingle(TICKETS_URL, People.DEFAULT_USER, null, header, TICKETS_API_NAME, 401);
 
@@ -303,7 +312,7 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(1, nodes.size());
 
-        // now use the "bearer" keyword with the alf-ticket  - should not succeed
+        // now use the "bearer" keyword with the alf-ticket - should not succeed
         encodedUserIdAndTicket = encodeB64("ROLE_TICKET:" + loginResponse.getId());
         // Set the authorization (encoded userId:ticket) header rather than appending the ticket to the URL
         header = Collections.singletonMap("Authorization", "bearer " + encodedUserIdAndTicket);
@@ -323,11 +332,11 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
 
         setRequestContext(null);
 
-        // Delete the ticket  - Invalid parameter. Only '-me-' is supported
+        // Delete the ticket - Invalid parameter. Only '-me-' is supported
         header = Collections.singletonMap("Authorization", "Basic " + encodedUserIdAndTicket);
         delete(TICKETS_URL, loginResponse.getId(), null, header, TICKETS_API_NAME, 400);
 
-        // Delete the ticket  - Logout
+        // Delete the ticket - Logout
         delete(TICKETS_URL, People.DEFAULT_USER, null, header, TICKETS_API_NAME, 204);
 
         // Get children of user2 home folder - invalidated ticket
@@ -344,7 +353,7 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
         }
         finally
         {
-            //reset authentication chain
+            // reset authentication chain
             resetAuthentication(originalRemoteUserMapper);
         }
     }
@@ -359,7 +368,7 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
         }
         finally
         {
-            //reset authentication chain
+            // reset authentication chain
             resetAuthentication(originalRemoteUserMapper);
         }
     }
@@ -398,15 +407,15 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
     private void resetAuthentication(RemoteUserMapper originalRemoteUserMapper)
     {
         DefaultChildApplicationContextManager childApplicationContextManager = (DefaultChildApplicationContextManager) applicationContext
-            .getBean("Authentication");
+                .getBean("Authentication");
         PublicApiAuthenticatorFactory publicApiAuthenticatorFactory = (PublicApiAuthenticatorFactory) applicationContext
-            .getBean("publicapi.authenticator");
+                .getBean("publicapi.authenticator");
         String chain = "alfrescoNtlm1:alfrescoNtlm";
 
         childApplicationContextManager.stop();
         childApplicationContextManager.setProperty("chain", chain);
         ChildApplicationContextFactory childApplicationContextFactory = childApplicationContextManager
-            .getChildApplicationContextFactory("alfrescoNtlm1");
+                .getChildApplicationContextFactory("alfrescoNtlm1");
         childApplicationContextFactory.stop();
         childApplicationContextFactory.start();
 
@@ -418,8 +427,8 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
     }
 
     /**
-     * @param useIdentityService if not true we use "external" authentication in the chain,
-     *                           if it is true we use "identity-service"
+     * @param useIdentityService
+     *            if not true we use "external" authentication in the chain, if it is true we use "identity-service"
      */
     private void checkGetTicketViaBearerAuthHeader(boolean useIdentityService) throws Exception
     {
@@ -498,19 +507,17 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
     private void setupAuthChainForTest(boolean useIdentityService, RemoteUserMapper remoteUserMapper)
     {
         PublicApiAuthenticatorFactory publicApiAuthenticatorFactory = (PublicApiAuthenticatorFactory) applicationContext
-            .getBean("publicapi.authenticator");
+                .getBean("publicapi.authenticator");
         publicApiAuthenticatorFactory.setRemoteUserMapper(remoteUserMapper);
 
         AuthenticationsImpl authentications = (AuthenticationsImpl) applicationContext.getBean("authentications");
         authentications.setRemoteUserMapper(remoteUserMapper);
 
-        String chain = useIdentityService ?
-            "identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm" :
-            "external1:external,alfrescoNtlm1:alfrescoNtlm";
+        String chain = useIdentityService ? "identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm" : "external1:external,alfrescoNtlm1:alfrescoNtlm";
         String chainId = useIdentityService ? "identity-service1" : "external1";
 
         DefaultChildApplicationContextManager childApplicationContextManager = (DefaultChildApplicationContextManager) applicationContext
-            .getBean("Authentication");
+                .getBean("Authentication");
 
         childApplicationContextManager.stop();
         childApplicationContextManager.setProperty("chain", chain);

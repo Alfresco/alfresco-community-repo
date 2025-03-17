@@ -31,8 +31,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.TreeSet;
+
 import junit.framework.TestCase;
-import org.alfresco.util.resource.HierarchicalResourceLoader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.mapping.MappedStatement;
@@ -40,6 +40,7 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import org.alfresco.util.resource.HierarchicalResourceLoader;
 
 /**
  * @see HierarchicalSqlSessionFactoryBean
@@ -52,15 +53,15 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
 {
     private static final String QUERY_OBJECT = Object.class.getName();
-    private static final String QUERY_ABSTRACTCOLLECTION = "org.alfresco.ibatis.abstractcollection."+AbstractCollection.class.getName().replace(".", "_");
-    private static final String QUERY_ABSTRACTLIST = "org.alfresco.ibatis.abstractlist."+AbstractList.class.getName().replace(".", "_");
-    private static final String QUERY_TREESET = "org.alfresco.ibatis.treeset."+TreeSet.class.getName().replace(".", "_");
-    
+    private static final String QUERY_ABSTRACTCOLLECTION = "org.alfresco.ibatis.abstractcollection." + AbstractCollection.class.getName().replace(".", "_");
+    private static final String QUERY_ABSTRACTLIST = "org.alfresco.ibatis.abstractlist." + AbstractList.class.getName().replace(".", "_");
+    private static final String QUERY_TREESET = "org.alfresco.ibatis.treeset." + TreeSet.class.getName().replace(".", "_");
+
     private static Log logger = LogFactory.getLog(HierarchicalSqlSessionFactoryBeanTest.class);
-    
+
     private ClassPathXmlApplicationContext ctx;
     private TestDAO testDao;
-    
+
     @Override
     public void setUp() throws Exception
     {
@@ -69,7 +70,7 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
         testDao.setPropOne("prop-one");
         testDao.setPropTwo("prop-two");
     }
-    
+
     @Override
     public void tearDown() throws Exception
     {
@@ -85,10 +86,9 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
             logger.error("Failed to neatly close application context", e);
         }
     }
-    
+
     /**
-     * Pushes the dialect class into the system properties, closes an current context and
-     * recreates it; the MyBatis Configuration is then returned.
+     * Pushes the dialect class into the system properties, closes an current context and recreates it; the MyBatis Configuration is then returned.
      */
     @SuppressWarnings("unchecked")
     private Configuration getConfiguration(Class dialectClass) throws Exception
@@ -107,9 +107,9 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
             }
         }
         ctx = new ClassPathXmlApplicationContext("ibatis/hierarchy-test/hierarchy-test-context.xml");
-        return ((SqlSessionFactory)ctx.getBean("mybatisConfig")).getConfiguration();
+        return ((SqlSessionFactory) ctx.getBean("mybatisConfig")).getConfiguration();
     }
-    
+
     /**
      * Check context startup and shutdown
      */
@@ -129,7 +129,7 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
             // Expected
         }
     }
-    
+
     public void testHierarchyTreeSet() throws Exception
     {
         Configuration mybatisConfig = getConfiguration(TreeSet.class);
@@ -196,6 +196,7 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
 
     /**
      * Helper class that iBatis will use in the test mappings
+     * 
      * @author Derek Hulley
      */
     public static class TestDAO
@@ -203,27 +204,32 @@ public class HierarchicalSqlSessionFactoryBeanTest extends TestCase
         private Long id;
         private String propOne;
         private String propTwo;
-        
+
         public Long getId()
         {
             return id;
         }
+
         public void setId(Long id)
         {
             this.id = id;
         }
+
         public String getPropOne()
         {
             return propOne;
         }
+
         public void setPropOne(String propOne)
         {
             this.propOne = propOne;
         }
+
         public String getPropTwo()
         {
             return propTwo;
         }
+
         public void setPropTwo(String propTwo)
         {
             this.propTwo = propTwo;

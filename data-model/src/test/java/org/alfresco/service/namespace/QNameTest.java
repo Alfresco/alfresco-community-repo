@@ -30,8 +30,6 @@ import java.util.HashSet;
 
 import junit.framework.TestCase;
 
-
-
 /**
  * @see org.alfresco.service.namespace.QName
  * 
@@ -45,7 +43,6 @@ public class QNameTest extends TestCase
         super(name);
     }
 
-
     public void testInvalidQName() throws Exception
     {
         try
@@ -54,8 +51,7 @@ public class QNameTest extends TestCase
             fail("Missing local name was not caught");
         }
         catch (InvalidQNameException e)
-        {
-        }
+        {}
 
         try
         {
@@ -63,8 +59,7 @@ public class QNameTest extends TestCase
             fail("Namespace not at start was not caught");
         }
         catch (InvalidQNameException e)
-        {
-        }
+        {}
 
         try
         {
@@ -72,8 +67,7 @@ public class QNameTest extends TestCase
             fail("Missing closing namespace token was not caught");
         }
         catch (InvalidQNameException e)
-        {
-        }
+        {}
 
         try
         {
@@ -81,8 +75,7 @@ public class QNameTest extends TestCase
             fail("Missing local name after namespace was not caught");
         }
         catch (InvalidQNameException e)
-        {
-        }
+        {}
 
         try
         {
@@ -110,8 +103,7 @@ public class QNameTest extends TestCase
             fail("Null name was not caught");
         }
         catch (InvalidQNameException e)
-        {
-        }
+        {}
 
         try
         {
@@ -119,11 +111,9 @@ public class QNameTest extends TestCase
             fail("Empty name was not caught");
         }
         catch (InvalidQNameException e)
-        {
-        }
-        
-    }
+        {}
 
+    }
 
     public void testConstruction()
     {
@@ -147,7 +137,6 @@ public class QNameTest extends TestCase
         QName qname6 = QName.createQName("name6");
         assertEquals("", qname6.getNamespaceURI());
     }
-
 
     public void testStringRepresentation()
     {
@@ -208,7 +197,6 @@ public class QNameTest extends TestCase
         assertFalse(qname9.hashCode() == qname10.hashCode());
     }
 
-
     public void testPrefix()
     {
         try
@@ -217,8 +205,7 @@ public class QNameTest extends TestCase
             fail("Null resolver was not caught");
         }
         catch (IllegalArgumentException e)
-        {
-        }
+        {}
 
         NamespacePrefixResolver mockResolver = new MockNamespacePrefixResolver();
         QName qname1 = QName.createQName(NamespaceService.ALFRESCO_PREFIX, "alfresco prefix", mockResolver);
@@ -234,13 +221,11 @@ public class QNameTest extends TestCase
             fail("Invalid Prefix was not caught");
         }
         catch (NamespaceException e)
-        {
-        }
+        {}
     }
 
-    
     public static class MockNamespacePrefixResolver
-        implements NamespacePrefixResolver
+            implements NamespacePrefixResolver
     {
 
         public String getNamespaceURI(String prefix)
@@ -268,7 +253,7 @@ public class QNameTest extends TestCase
             prefixes.add(NamespaceService.ALFRESCO_PREFIX);
             return prefixes;
         }
-        
+
         public Collection<String> getURIs()
         {
             HashSet<String> uris = new HashSet<String>();
@@ -276,7 +261,7 @@ public class QNameTest extends TestCase
             uris.add(NamespaceService.ALFRESCO_URI);
             return uris;
         }
-        
+
     }
-    
+
 }

@@ -30,8 +30,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * This wraps a resource object with its metadata.
  * 
- * A single source for both the information about the resource
- * and the resource itself
+ * A single source for both the information about the resource and the resource itself
  *
  * @author Gethin James
  */
@@ -49,6 +48,7 @@ public class ResourceWithMetadata
 
     /**
      * Returns the REST resource object
+     * 
      * @return Object
      */
     @JsonIgnore
@@ -59,6 +59,7 @@ public class ResourceWithMetadata
 
     /**
      * Returns the meta data for this resource
+     * 
      * @return ResourceMetadata
      */
     public ResourceMetadata getMetaData()
@@ -66,9 +67,7 @@ public class ResourceWithMetadata
         return this.metaData;
     }
 
-    /*
-     * @see java.lang.Object#toString()
-     */
+    /* @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
@@ -81,9 +80,7 @@ public class ResourceWithMetadata
         return builder.toString();
     }
 
-    /*
-     * @see java.lang.Object#hashCode()
-     */
+    /* @see java.lang.Object#hashCode() */
     @Override
     public int hashCode()
     {
@@ -94,26 +91,31 @@ public class ResourceWithMetadata
         return result;
     }
 
-    /*
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+    /* @see java.lang.Object#equals(java.lang.Object) */
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
         ResourceWithMetadata other = (ResourceWithMetadata) obj;
         if (this.metaData == null)
         {
-            if (other.metaData != null) return false;
+            if (other.metaData != null)
+                return false;
         }
-        else if (!this.metaData.equals(other.metaData)) return false;
+        else if (!this.metaData.equals(other.metaData))
+            return false;
         if (this.resource == null)
         {
-            if (other.resource != null) return false;
+            if (other.resource != null)
+                return false;
         }
-        else if (!this.resource.equals(other.resource)) return false;
+        else if (!this.resource.equals(other.resource))
+            return false;
         return true;
     }
 }

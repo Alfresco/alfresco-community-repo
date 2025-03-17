@@ -39,19 +39,25 @@ public class GetArchivedNodesCannedQueryParams extends ArchivedNodeEntity
 
     /**
      *
-     * @param parentNodeId Long
-     * @param assocTypeQNameId Long
-     * @param filter String
-     * @param filterIgnoreCase Boolean
-     * @param nameQNameId Long
-     * @param sortOrderAscending Boolean
+     * @param parentNodeId
+     *            Long
+     * @param assocTypeQNameId
+     *            Long
+     * @param filter
+     *            String
+     * @param filterIgnoreCase
+     *            Boolean
+     * @param nameQNameId
+     *            Long
+     * @param sortOrderAscending
+     *            Boolean
      */
     public GetArchivedNodesCannedQueryParams(Long parentNodeId, Long assocTypeQNameId,
-                String filter, Boolean filterIgnoreCase, Long nameQNameId,
-                Boolean sortOrderAscending)
+            String filter, Boolean filterIgnoreCase, Long nameQNameId,
+            Boolean sortOrderAscending)
     {
         super(parentNodeId, nameQNameId, filter, assocTypeQNameId, sortOrderAscending,
-                    filterIgnoreCase);
+                filterIgnoreCase);
     }
 
     /**

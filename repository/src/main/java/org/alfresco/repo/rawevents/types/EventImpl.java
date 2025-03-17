@@ -38,8 +38,7 @@ public class EventImpl implements Event
     private int schema;
 
     public EventImpl()
-    {
-    }
+    {}
 
     public EventImpl(String type, long timestamp)
     {

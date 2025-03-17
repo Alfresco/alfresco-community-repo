@@ -27,13 +27,13 @@
 package org.alfresco.repo.security.authentication;
 
 import org.activiti.engine.delegate.DelegateExecution;
+
 import org.alfresco.repo.client.config.ClientAppConfig.ClientApp;
 import org.alfresco.repo.client.config.ClientAppNotFoundException;
 import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordDetails;
 
 /**
- * @deprecated from 7.1.0
- * Reset password service.
+ * @deprecated from 7.1.0 Reset password service.
  *
  * @author Jamal Kaabi-Mofrad
  * @since 5.2.1
@@ -44,50 +44,61 @@ public interface ResetPasswordService
     /**
      * Request password reset (starts the workflow).
      *
-     * @param userId     the user id
-     * @param clientName the client app name (used to lookup the client that is registered to send emails so that
-     *                   client's specific configuration could be used.)
+     * @param userId
+     *            the user id
+     * @param clientName
+     *            the client app name (used to lookup the client that is registered to send emails so that client's specific configuration could be used.)
      */
     void requestReset(String userId, String clientName);
 
     /**
      * Validates the request reset password workflow and updates the workflow.
      *
-     * @param resetDetails the {@code ResetPasswordDetails} object
+     * @param resetDetails
+     *            the {@code ResetPasswordDetails} object
      */
     void initiateResetPassword(ResetPasswordDetails resetDetails);
 
     /**
      * Sends reset password email.
      *
-     * @param execution                 the {@code DelegateExecution} object (is provided when a user requests password reset)
-     * @param fallbackEmailTemplatePath the class path of the fallback email template (request reset password email)
-     * @param emailSubject              the email subject key
+     * @param execution
+     *            the {@code DelegateExecution} object (is provided when a user requests password reset)
+     * @param fallbackEmailTemplatePath
+     *            the class path of the fallback email template (request reset password email)
+     * @param emailSubject
+     *            the email subject key
      */
     void sendResetPasswordEmail(DelegateExecution execution, String fallbackEmailTemplatePath, String emailSubject);
 
     /**
      * Updates the user's new password.
      *
-     * @param execution the {@code DelegateExecution} object
+     * @param execution
+     *            the {@code DelegateExecution} object
      */
     void performResetPassword(DelegateExecution execution);
 
     /**
      * Updates the user's new password.
      *
-     * @param execution                 the {@code DelegateExecution} object
-     * @param fallbackEmailTemplatePath the class path of the fallback email template (confirmation email)
-     * @param emailSubject              the email subject key
+     * @param execution
+     *            the {@code DelegateExecution} object
+     * @param fallbackEmailTemplatePath
+     *            the class path of the fallback email template (confirmation email)
+     * @param emailSubject
+     *            the email subject key
      */
     void sendResetPasswordConfirmationEmail(DelegateExecution execution, String fallbackEmailTemplatePath, String emailSubject);
 
     /**
      * Gets the registered client.
      *
-     * @param clientName the client name
+     * @param clientName
+     *            the client name
      * @return {@code ClientApp} object
-     * @throws ClientAppNotFoundException if no {@code ClientApp} is found with the given name
+     * @throws ClientAppNotFoundException
+     *             if no {@code ClientApp} is found with the given name
      */
     ClientApp getClientAppConfig(String clientName);
 }

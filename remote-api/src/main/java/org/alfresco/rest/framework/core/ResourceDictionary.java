@@ -31,8 +31,9 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.alfresco.rest.framework.Api;
 import org.apache.commons.lang3.StringUtils;
+
+import org.alfresco.rest.framework.Api;
 
 /**
  * A container for all information about resources and apis.
@@ -41,26 +42,24 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class ResourceDictionary
 {
-    private final Map<Api,Map<String, ResourceWithMetadata>> allResources = new HashMap<Api,Map<String, ResourceWithMetadata>>();
+    private final Map<Api, Map<String, ResourceWithMetadata>> allResources = new HashMap<Api, Map<String, ResourceWithMetadata>>();
     private final SortedSet<Api> publicApis = new TreeSet<Api>();
-    private final SortedSet<Api> privateApis  = new TreeSet<Api>();
+    private final SortedSet<Api> privateApis = new TreeSet<Api>();
     private static final String NEW_LINE = "\n";
-    
+
     protected ResourceDictionary()
     {
         super();
     }
 
-    /*
-     * Return a key by combining the entity and relationship ids
-     */
+    /* Return a key by combining the entity and relationship ids */
     public static String resourceKey(final String entity, final String relationship)
     {
-        String rootEntity = entity.startsWith("/")?entity:"/"+entity;
+        String rootEntity = entity.startsWith("/") ? entity : "/" + entity;
         if (StringUtils.isNotBlank(relationship))
         {
-            String relationKey = (relationship.startsWith("/")?relationship:"/"+relationship);
-            return rootEntity+"/{entityId}"+relationKey;
+            String relationKey = (relationship.startsWith("/") ? relationship : "/" + relationship);
+            return rootEntity + "/{entityId}" + relationKey;
         }
         else
         {
@@ -68,15 +67,13 @@ public class ResourceDictionary
         }
     }
 
-    /*
-     * Return a key by combining the rootEntity and property ids
-     */
+    /* Return a key by combining the rootEntity and property ids */
     public static String propertyResourceKey(String entity, String property)
     {
-      String rootEntity = entity.startsWith("/")?entity:"/"+entity;
-      return rootEntity+"/{id}/"+property;
+        String rootEntity = entity.startsWith("/") ? entity : "/" + entity;
+        return rootEntity + "/{id}/" + property;
     }
-    
+
     /**
      * @return the allResources
      */
@@ -101,9 +98,7 @@ public class ResourceDictionary
         return this.privateApis;
     }
 
-    /*
-     * Prints a String representation of the Resource Dictionary
-     */
+    /* Prints a String representation of the Resource Dictionary */
     public String prettyPrint()
     {
 
@@ -112,35 +107,33 @@ public class ResourceDictionary
         builder.append("**Public Apis **").append(NEW_LINE);
         for (Api api : this.publicApis)
         {
-            printApi(builder,api);
+            printApi(builder, api);
         }
         builder.append(NEW_LINE);
         builder.append("**Private Apis **").append(NEW_LINE);
         for (Api api : this.privateApis)
         {
-            printApi(builder,api);
+            printApi(builder, api);
         }
         builder.append("*******End of Resources ********:");
         return builder.toString();
     }
-    
+
     private void printApi(StringBuilder builder, Api api)
     {
         builder.append(api).append(NEW_LINE);
-        Map<String, ResourceWithMetadata> apiResources = allResources.get(api);     
-        builder.append(apiResources.size()+ " resources.").append(NEW_LINE);
-        
+        Map<String, ResourceWithMetadata> apiResources = allResources.get(api);
+        builder.append(apiResources.size() + " resources.").append(NEW_LINE);
+
         Set<String> keys = apiResources.keySet();
         for (String key : keys)
         {
-            builder.append("***"+key+"***").append(NEW_LINE);
-            builder.append(apiResources.get(key).getMetaData()).append(NEW_LINE); 
+            builder.append("***" + key + "***").append(NEW_LINE);
+            builder.append(apiResources.get(key).getMetaData()).append(NEW_LINE);
         }
     }
-    
-    /*
-     * @see java.lang.Object#toString()
-     */
+
+    /* @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
@@ -154,6 +147,5 @@ public class ResourceDictionary
         builder.append("]");
         return builder.toString();
     }
-    
-    
+
 }

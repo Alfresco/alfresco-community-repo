@@ -26,7 +26,16 @@
 
 package org.alfresco.util;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
 import freemarker.cache.TemplateLoader;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.template.ClassPathRepoTemplateLoader;
@@ -38,14 +47,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * A helper class to provide email template related utility functions.
@@ -112,19 +113,19 @@ public class EmailHelper
     /**
      * Gets the email template path or the given fallback template path.
      *
-     * @param clientName           optional client app name (used only for logging)
-     * @param emailTemplatePath    the email template xpath or class path
-     * @param fallbackTemplatePath the fallback template
-     * @return <ul>
-     * <li>If {@code emailTemplatePath} is empty the fallback template is returned.</li>
-     * <li>if the given {@code emailTemplatePath} is an xpath (i.e. starts with app:company_home),
-     * then an xpath search will be performed to find the {@code NodeRef}. If no nodeRef
-     * is found, the fallback template is returned. </li>
-     * <li>If {@code emailTemplatePath} is a nodeRef and the node does not exist, the fallback
-     * template is returned, otherwise a string representation of the NodeRef is returned.</li>
-     * <li>if {@code emailTemplatePath} is a class path which results in a template being found,
-     * then the {@code emailTemplatePath} is returned; otherwise, the fallback template is returned.</li>
-     * </ul>
+     * @param clientName
+     *            optional client app name (used only for logging)
+     * @param emailTemplatePath
+     *            the email template xpath or class path
+     * @param fallbackTemplatePath
+     *            the fallback template
+     * @return
+     *         <ul>
+     *         <li>If {@code emailTemplatePath} is empty the fallback template is returned.</li>
+     *         <li>if the given {@code emailTemplatePath} is an xpath (i.e. starts with app:company_home), then an xpath search will be performed to find the {@code NodeRef}. If no nodeRef is found, the fallback template is returned.</li>
+     *         <li>If {@code emailTemplatePath} is a nodeRef and the node does not exist, the fallback template is returned, otherwise a string representation of the NodeRef is returned.</li>
+     *         <li>if {@code emailTemplatePath} is a class path which results in a template being found, then the {@code emailTemplatePath} is returned; otherwise, the fallback template is returned.</li>
+     *         </ul>
      */
     public String getEmailTemplate(String clientName, String emailTemplatePath, String fallbackTemplatePath)
     {
@@ -133,7 +134,7 @@ public class EmailHelper
             if (LOGGER.isDebugEnabled())
             {
                 LOGGER.debug("No email template path is set for client [" + clientName + "]. The fallback template will be used: "
-                            + fallbackTemplatePath);
+                        + fallbackTemplatePath);
             }
             return fallbackTemplatePath;
         }
@@ -150,7 +151,7 @@ public class EmailHelper
             if (nodeRef == null)
             {
                 LOGGER.warn("Couldn't find email template with the XPath [" + emailTemplatePath + "] for client [" + clientName
-                            + "]. The fallback template will be used: " + fallbackTemplatePath);
+                        + "]. The fallback template will be used: " + fallbackTemplatePath);
 
                 return fallbackTemplatePath;
             }
@@ -163,7 +164,7 @@ public class EmailHelper
             if (!nodeService.exists(ref))
             {
                 LOGGER.warn("Couldn't find email template with the NodeRef [" + ref + "] for client [" + clientName
-                            + "]. The fallback template will be used: " + fallbackTemplatePath);
+                        + "]. The fallback template will be used: " + fallbackTemplatePath);
 
                 return fallbackTemplatePath;
             }
@@ -189,13 +190,13 @@ public class EmailHelper
                 else
                 {
                     LOGGER.warn("Couldn't find email template with class path [" + emailTemplatePath + "] for client [" + clientName
-                                + "]. The fallback template will be used: " + fallbackTemplatePath);
+                            + "]. The fallback template will be used: " + fallbackTemplatePath);
                 }
             }
             catch (IOException ex)
             {
                 LOGGER.error("Error occurred while finding the email template with the class path [" + emailTemplatePath + "] for client ["
-                            + clientName + "]. The fallback template will be used: " + fallbackTemplatePath, ex);
+                        + clientName + "]. The fallback template will be used: " + fallbackTemplatePath, ex);
 
             }
             return fallbackTemplatePath;
@@ -205,7 +206,8 @@ public class EmailHelper
     /**
      * Gets the localized email template nodeRef.
      *
-     * @param emailTemplateXPath the xpath of the template
+     * @param emailTemplateXPath
+     *            the xpath of the template
      * @return {@code NodeRef} of the localized template or null if no node is found
      */
     public NodeRef getLocalizedEmailTemplateNodeRef(String emailTemplateXPath)
@@ -234,7 +236,8 @@ public class EmailHelper
     /**
      * Gets the user's locale.
      *
-     * @param userId the user id
+     * @param userId
+     *            the user id
      * @return the default locale or the user's preferred locale, if available
      */
     public Locale getUserLocaleOrDefault(String userId)

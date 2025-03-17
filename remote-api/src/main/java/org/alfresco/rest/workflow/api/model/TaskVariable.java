@@ -26,6 +26,7 @@
 package org.alfresco.rest.workflow.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 
 /**
@@ -36,35 +37,35 @@ import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 public class TaskVariable extends Variable
 {
     protected String scope;
-    
-    public void setScope(String scope) 
+
+    public void setScope(String scope)
     {
-       this.scope = scope;
+        this.scope = scope;
     }
-    
+
     public String getScope()
     {
-       return scope;
+        return scope;
     }
-    
+
     @JsonIgnore
     public VariableScope getVariableScope()
     {
         VariableScope result = null;
-        if(scope != null)
+        if (scope != null)
         {
             result = VariableScope.getScopeForValue(scope);
-            if(result == null)
+            if (result == null)
             {
                 throw new InvalidArgumentException("Illegal value for variable scope: '" + scope + "'.");
             }
         }
         return result;
     }
-    
+
     public void setVariableScope(VariableScope variableScope)
     {
-        if(variableScope != null)
+        if (variableScope != null)
         {
             this.scope = variableScope.getValue();
         }

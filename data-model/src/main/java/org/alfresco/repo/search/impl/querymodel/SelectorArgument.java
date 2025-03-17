@@ -32,5 +32,5 @@ package org.alfresco.repo.search.impl.querymodel;
 public interface SelectorArgument extends StaticArgument
 {
     public String getSelector();
-    
+
 }

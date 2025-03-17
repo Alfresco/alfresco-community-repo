@@ -33,18 +33,16 @@ import java.util.Map;
 
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNodeList;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * An assignment handler for the request info workflow.
- * An RM manager/admin can select one or more user(s) and/or
- * one or more group(s) when starting the request info workflow.
- * This assignment handler assigns for everyone a task (it is a pooled task).
+ * An assignment handler for the request info workflow. An RM manager/admin can select one or more user(s) and/or one or more group(s) when starting the request info workflow. This assignment handler assigns for everyone a task (it is a pooled task).
  *
  * @author Tuna Aksoy
  * @since 2.1
@@ -124,7 +122,8 @@ public class RequestInfoAssignmentHandler implements TaskListener
     /**
      * Helper method for building the workflow description
      *
-     * @param recordName The name of the record
+     * @param recordName
+     *            The name of the record
      * @return Returns the workflow description
      */
     private String getWorkflowDescription(String recordName)
@@ -134,7 +133,7 @@ public class RequestInfoAssignmentHandler implements TaskListener
         sb.append(" '");
         sb.append(recordName);
         sb.append("'");
-        return  sb.toString();
+        return sb.toString();
     }
 
 }

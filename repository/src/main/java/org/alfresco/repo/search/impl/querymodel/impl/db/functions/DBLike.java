@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.chemistry.opencmis.commons.PropertyIds;
+
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.search.impl.querymodel.Argument;
@@ -47,7 +49,6 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * @author Andy
@@ -58,8 +59,8 @@ public class DBLike extends Like implements DBQueryBuilderComponent
     DBQueryBuilderComponent builderSupport;
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported() */
     @Override
     public boolean isSupported()
     {
@@ -67,12 +68,12 @@ public class DBLike extends Like implements DBQueryBuilderComponent
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext) */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
-    {   
+    {
         PropertyArgument propertyArgument = (PropertyArgument) functionArgs.get(ARG_PROPERTY);
         Argument inverseArgument = functionArgs.get(ARG_NOT);
         Boolean not = DefaultTypeConverter.INSTANCE.convert(Boolean.class, inverseArgument.getValue(functionContext));
@@ -90,7 +91,7 @@ public class DBLike extends Like implements DBQueryBuilderComponent
             propertySupport.setPair(qnameDAO.getQName(basePropertyQName));
             propertySupport.setJoinCommandType(DBQueryBuilderJoinCommandType.CONTENT_MIMETYPE);
             propertySupport.setFieldName("mimetype_str");
-            if((not != null) && (not.equals(Boolean.TRUE)))
+            if ((not != null) && (not.equals(Boolean.TRUE)))
             {
                 propertySupport.setCommandType(DBQueryBuilderPredicatePartCommandType.NOTLIKE);
             }
@@ -111,7 +112,7 @@ public class DBLike extends Like implements DBQueryBuilderComponent
             propertySupport.setPair(qnameDAO.getQName(propertyQName));
             propertySupport.setJoinCommandType(DBQuery.getJoinCommandType(propertyQName));
             propertySupport.setFieldName(DBQuery.getFieldName(dictionaryService, propertyQName, supportBooleanFloatAndDouble));
-            if((not != null) && (not.equals(Boolean.TRUE)))
+            if ((not != null) && (not.equals(Boolean.TRUE)))
             {
                 propertySupport.setCommandType(DBQueryBuilderPredicatePartCommandType.NOTLIKE);
             }
@@ -124,8 +125,8 @@ public class DBLike extends Like implements DBQueryBuilderComponent
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map, java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map, java.util.List) */
     @Override
     public void buildJoins(Map<QName, DBQueryBuilderJoinCommand> singleJoins, List<DBQueryBuilderJoinCommand> multiJoins)
     {
@@ -133,8 +134,8 @@ public class DBLike extends Like implements DBQueryBuilderComponent
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util.List) */
     @Override
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {

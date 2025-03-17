@@ -32,8 +32,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Enum to specify how multi-lingual properties should be treate for indexing and search. Note that locale new Locale
- * ("", "", "") is used to indicate all locales.
+ * Enum to specify how multi-lingual properties should be treate for indexing and search. Note that locale new Locale ("", "", "") is used to indicate all locales.
  * 
  * @author andyh
  */
@@ -133,8 +132,7 @@ public enum MLAnalysisMode
     },
 
     /**
-     * Expand the locale to include all the locales that contain it. So "en_GB" would be "en_GB", "en", but not all
-     * languages "".
+     * Expand the locale to include all the locales that contain it. So "en_GB" would be "en_GB", "en", but not all languages "".
      */
     LOCALE_AND_ALL_CONTAINING_LOCALES
     {
@@ -869,7 +867,7 @@ public enum MLAnalysisMode
             if (withWildcards)
             {
                 locales.add(new Locale(locale.getLanguage(), locale.getCountry(), ""));
-                if(locale.getCountry().equals(""))
+                if (locale.getCountry().equals(""))
                 {
                     locales.add(new Locale(locale.getLanguage(), "*", ""));
                 }
@@ -896,7 +894,7 @@ public enum MLAnalysisMode
         {
             if (withWildcards)
             {
-                if(locale.getCountry().equals(""))
+                if (locale.getCountry().equals(""))
                 {
                     locales.add(new Locale(locale.getLanguage(), "", ""));
                     locales.add(new Locale(locale.getLanguage(), "*", ""));
@@ -905,7 +903,7 @@ public enum MLAnalysisMode
                 {
                     locales.add(new Locale(locale.getLanguage(), locale.getCountry(), ""));
                 }
-               
+
             }
             else
             {

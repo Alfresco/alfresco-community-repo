@@ -43,17 +43,17 @@ import org.alfresco.util.Pair;
 public class DoNothingCopyBehaviourCallback extends AbstractCopyBehaviourCallback
 {
     private static CopyBehaviourCallback instance = new DoNothingCopyBehaviourCallback();
-    
+
     /**
-     * @return          Returns a stateless singleton
+     * @return Returns a stateless singleton
      */
     public static CopyBehaviourCallback getInstance()
     {
         return instance;
     }
-    
+
     /**
-     * @return          Returns <tt>false</tt> always
+     * @return Returns <tt>false</tt> always
      */
     public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
     {
@@ -61,7 +61,7 @@ public class DoNothingCopyBehaviourCallback extends AbstractCopyBehaviourCallbac
     }
 
     /**
-     * @return          Returns <tt>false</tt> always
+     * @return Returns <tt>false</tt> always
      */
     public ChildAssocCopyAction getChildAssociationCopyAction(
             QName classQName,
@@ -72,7 +72,7 @@ public class DoNothingCopyBehaviourCallback extends AbstractCopyBehaviourCallbac
     }
 
     /**
-     * @return          Returns an empty map always
+     * @return Returns an empty map always
      */
     public Map<QName, Serializable> getCopyProperties(
             QName classQName,
@@ -86,9 +86,8 @@ public class DoNothingCopyBehaviourCallback extends AbstractCopyBehaviourCallbac
     public Pair<AssocCopySourceAction, AssocCopyTargetAction> getAssociationCopyAction(QName classQName,
             CopyDetails copyDetails, CopyAssociationDetails assocCopyDetails)
     {
-        return new Pair<AssocCopySourceAction, AssocCopyTargetAction>(AssocCopySourceAction.IGNORE, 
+        return new Pair<AssocCopySourceAction, AssocCopyTargetAction>(AssocCopySourceAction.IGNORE,
                 AssocCopyTargetAction.USE_COPIED_OTHERWISE_ORIGINAL_TARGET);
     }
-    
-    
+
 }

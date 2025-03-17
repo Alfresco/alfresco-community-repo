@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.domain.permissions;
 
-
 /**
  * Entity for <b>alf_acl_change_set</b> persistence.
  * 
@@ -35,5 +34,6 @@ package org.alfresco.repo.domain.permissions;
 public interface AclChangeSet
 {
     Long getId();
+
     Long getCommitTimeMs();
 }

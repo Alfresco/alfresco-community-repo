@@ -30,7 +30,6 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.util.function.Supplier;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.StringBuilderWriter;
@@ -39,6 +38,8 @@ import org.springframework.extensions.webscripts.Runtime;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WrappingWebScriptResponse;
 import org.springframework.util.FileCopyUtils;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * Transactional Buffered Response
@@ -57,8 +58,10 @@ public class BufferedResponse implements WrappingWebScriptResponse, AutoCloseabl
     /**
      * Construct
      *
-     * @param res        WebScriptResponse
-     * @param bufferSize int
+     * @param res
+     *            WebScriptResponse
+     * @param bufferSize
+     *            int
      */
     public BufferedResponse(WebScriptResponse res, int bufferSize, Supplier<TempOutputStream> streamFactory)
     {
@@ -67,63 +70,58 @@ public class BufferedResponse implements WrappingWebScriptResponse, AutoCloseabl
         this.streamFactory = streamFactory;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.scripts.WrappingWebScriptResponse#getNext()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.web.scripts.WrappingWebScriptResponse#getNext() */
     @Override
     public WebScriptResponse getNext()
     {
         return res;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptResponse#addHeader(java.lang.String, java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.web.scripts.WebScriptResponse#addHeader(java.lang.String, java.lang.String) */
     public void addHeader(String name, String value)
     {
         res.addHeader(name, value);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptResponse#encodeScriptUrl(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.web.scripts.WebScriptResponse#encodeScriptUrl(java.lang.String) */
     public String encodeScriptUrl(String url)
     {
         return res.encodeScriptUrl(url);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptResponse#getEncodeScriptUrlFunction(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.web.scripts.WebScriptResponse#getEncodeScriptUrlFunction(java.lang.String) */
     public String getEncodeScriptUrlFunction(String name)
     {
         return res.getEncodeScriptUrlFunction(name);
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptResponse#encodeResourceUrl(java.lang.String)
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptResponse#encodeResourceUrl(java.lang.String) */
     public String encodeResourceUrl(String url)
     {
         return res.encodeResourceUrl(url);
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.WebScriptResponse#getEncodeResourceUrlFunction(java.lang.String)
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.WebScriptResponse#getEncodeResourceUrlFunction(java.lang.String) */
     public String getEncodeResourceUrlFunction(String name)
     {
         return res.getEncodeResourceUrlFunction(name);
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptResponse#getOutputStream()
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.web.scripts.WebScriptResponse#getOutputStream() */
     @Override
     public OutputStream getOutputStream() throws IOException
     {
@@ -139,19 +137,17 @@ public class BufferedResponse implements WrappingWebScriptResponse, AutoCloseabl
         return outputStream;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptResponse#getRuntime()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.web.scripts.WebScriptResponse#getRuntime() */
     public Runtime getRuntime()
     {
         return res.getRuntime();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptResponse#getWriter()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.web.scripts.WebScriptResponse#getWriter() */
     public Writer getWriter() throws IOException
     {
         if (outputWriter != null)
@@ -166,10 +162,9 @@ public class BufferedResponse implements WrappingWebScriptResponse, AutoCloseabl
         return outputWriter;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptResponse#reset()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.web.scripts.WebScriptResponse#reset() */
     public void reset()
     {
         if (outputStream != null)
@@ -184,8 +179,8 @@ public class BufferedResponse implements WrappingWebScriptResponse, AutoCloseabl
     }
 
     /* (non-Javadoc)
-     * @see org./alfresco.web.scripts.WebScriptResponse#resetjava.lang.String)
-     */
+     * 
+     * @see org./alfresco.web.scripts.WebScriptResponse#resetjava.lang.String) */
     public void reset(String preserveHeadersPattern)
     {
         if (outputStream != null)
@@ -199,46 +194,41 @@ public class BufferedResponse implements WrappingWebScriptResponse, AutoCloseabl
         res.reset(preserveHeadersPattern);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptResponse#setCache(org.alfresco.web.scripts.Cache)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.web.scripts.WebScriptResponse#setCache(org.alfresco.web.scripts.Cache) */
     public void setCache(Cache cache)
     {
         res.setCache(cache);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptResponse#setContentType(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.web.scripts.WebScriptResponse#setContentType(java.lang.String) */
     public void setContentType(String contentType)
     {
         res.setContentType(contentType);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptResponse#setContentEncoding(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.web.scripts.WebScriptResponse#setContentEncoding(java.lang.String) */
     public void setContentEncoding(String contentEncoding)
     {
         res.setContentEncoding(contentEncoding);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptResponse#setHeader(java.lang.String, java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.web.scripts.WebScriptResponse#setHeader(java.lang.String, java.lang.String) */
     public void setHeader(String name, String value)
     {
         res.setHeader(name, value);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptResponse#setStatus(int)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.web.scripts.WebScriptResponse#setStatus(int) */
     public void setStatus(int status)
     {
         res.setStatus(status);
@@ -255,7 +245,7 @@ public class BufferedResponse implements WrappingWebScriptResponse, AutoCloseabl
             {
                 logger.debug("Writing Transactional response: size=" + outputStream.getLength());
             }
-            
+
             if (outputWriter != null)
             {
                 outputWriter.flush();
@@ -285,8 +275,7 @@ public class BufferedResponse implements WrappingWebScriptResponse, AutoCloseabl
                 outputStream.destroy();
             }
             catch (Exception ignore)
-            {
-            }
+            {}
             outputStream = null;
         }
     }

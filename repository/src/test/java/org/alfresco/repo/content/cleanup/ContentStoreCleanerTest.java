@@ -36,6 +36,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentStore;
@@ -64,8 +66,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @see org.alfresco.repo.content.cleanup.ContentStoreCleaner
@@ -76,7 +76,7 @@ import org.springframework.context.ApplicationContext;
 public class ContentStoreCleanerTest extends TestCase
 {
     private ApplicationContext ctx;
-    
+
     private ContentService contentService;
     private NodeService nodeService;
     private TransactionService transactionService;
@@ -87,13 +87,13 @@ public class ContentStoreCleanerTest extends TestCase
     private ContentStoreCleanerListener listener;
     private List<String> deletedUrls;
     private ContentDataDAO contentDataDAO;
-    
+
     @Override
     public void setUp() throws Exception
     {
         ctx = ApplicationContextHelper.getApplicationContext();
         AuthenticationUtil.setRunAsUserSystem();
-        
+
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         contentService = serviceRegistry.getContentService();
         nodeService = serviceRegistry.getNodeService();
@@ -102,7 +102,7 @@ public class ContentStoreCleanerTest extends TestCase
         TransactionService transactionService = serviceRegistry.getTransactionService();
         DictionaryService dictionaryService = serviceRegistry.getDictionaryService();
         contentDataDAO = (ContentDataDAO) ctx.getBean("contentDataDAO");
-        
+
         // we need a store
         store = (ContentStore) ctx.getBean("fileContentStore");
         // and a listener
@@ -112,13 +112,13 @@ public class ContentStoreCleanerTest extends TestCase
         listeners.add(new DummyUnsupportiveCleanerListener());
         // initialise record of deleted URLs
         deletedUrls = new ArrayList<String>(5);
-        
+
         // Construct the test cleaners
         eagerCleaner = (EagerContentStoreCleaner) ctx.getBean("eagerContentStoreCleaner");
         eagerCleaner.setEagerOrphanCleanup(false);
         eagerCleaner.setStores(Collections.singletonList(store));
         eagerCleaner.setListeners(listeners);
-        
+
         cleaner = new ContentStoreCleaner();
         cleaner.setEagerContentStoreCleaner(eagerCleaner);
         cleaner.setJobLockService(jobLockService);
@@ -127,12 +127,12 @@ public class ContentStoreCleanerTest extends TestCase
         cleaner.setDictionaryService(dictionaryService);
         cleaner.setContentService(contentService);
     }
-    
+
     public void tearDown() throws Exception
     {
         AuthenticationUtil.clearCurrentSecurityContext();
     }
-    
+
     private void checkForExistence(Set<String> urls, boolean mustExist)
     {
         for (String url : urls)
@@ -148,22 +148,21 @@ public class ContentStoreCleanerTest extends TestCase
             }
         }
     }
-    
+
     public void testEagerCleanupOnCommit() throws Exception
     {
         eagerCleaner.setEagerOrphanCleanup(true);
         final Set<String> urlsToExist = new HashSet<String>();
         final Set<String> urlsToMiss = new HashSet<String>();
-        
+
         // Create a new file
-        RetryingTransactionCallback<NodeRef> makeContentCallback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> makeContentCallback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 // Create some content
                 StoreRef storeRef = nodeService.createStore("test", "testEagerCleanupOnCommit-" + GUID.generate());
                 NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
-                Map<QName, Serializable> properties = Collections.singletonMap(ContentModel.PROP_NAME, (Serializable)"test.txt");
+                Map<QName, Serializable> properties = Collections.singletonMap(ContentModel.PROP_NAME, (Serializable) "test.txt");
                 NodeRef contentNodeRef = nodeService.createNode(
                         rootNodeRef,
                         ContentModel.ASSOC_CHILDREN,
@@ -182,10 +181,9 @@ public class ContentStoreCleanerTest extends TestCase
         final NodeRef contentNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(makeContentCallback);
         checkForExistence(urlsToExist, true);
         checkForExistence(urlsToMiss, false);
-        
+
         // Now update the node, but force a failure i.e. txn rollback
-        RetryingTransactionCallback<String> failUpdateCallback = new RetryingTransactionCallback<String>()
-        {
+        RetryingTransactionCallback<String> failUpdateCallback = new RetryingTransactionCallback<String>() {
             public String execute() throws Throwable
             {
                 ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
@@ -218,10 +216,9 @@ public class ContentStoreCleanerTest extends TestCase
         // The original content must still be there
         checkForExistence(urlsToExist, true);
         checkForExistence(urlsToMiss, false);
-        
+
         // Now update the node successfully
-        RetryingTransactionCallback<String> successUpdateCallback = new RetryingTransactionCallback<String>()
-        {
+        RetryingTransactionCallback<String> successUpdateCallback = new RetryingTransactionCallback<String>() {
             public String execute() throws Throwable
             {
                 ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
@@ -240,10 +237,9 @@ public class ContentStoreCleanerTest extends TestCase
         // The original content was disposed of
         checkForExistence(urlsToExist, true);
         checkForExistence(urlsToMiss, false);
-        
+
         // Now get/set ContentData without a change
-        RetryingTransactionCallback<ContentData> pointlessUpdateCallback = new RetryingTransactionCallback<ContentData>()
-        {
+        RetryingTransactionCallback<ContentData> pointlessUpdateCallback = new RetryingTransactionCallback<ContentData>() {
             public ContentData execute() throws Throwable
             {
                 ContentData contentData = (ContentData) nodeService.getProperty(contentNodeRef, ContentModel.PROP_CONTENT);
@@ -256,10 +252,9 @@ public class ContentStoreCleanerTest extends TestCase
         // Expect no change from before
         checkForExistence(urlsToExist, true);
         checkForExistence(urlsToMiss, false);
-        
+
         // Now delete the node
-        RetryingTransactionCallback<Object> deleteNodeCallback = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> deleteNodeCallback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 nodeService.deleteNode(contentNodeRef);
@@ -275,23 +270,20 @@ public class ContentStoreCleanerTest extends TestCase
         checkForExistence(urlsToExist, true);
         checkForExistence(urlsToMiss, false);
     }
-    
+
     /**
-     * Create ContentData set it on a Node, delete the Node, then set the ContentData on a new node
-     * and check that the content is preserved during eager cleanup.
+     * Create ContentData set it on a Node, delete the Node, then set the ContentData on a new node and check that the content is preserved during eager cleanup.
      */
     public void testEagerCleanupDereferencing() throws Exception
     {
-        ContentPropertyRestrictionInterceptor contentPropertyRestrictionInterceptor =
-                (ContentPropertyRestrictionInterceptor) ctx.getBean("contentPropertyRestrictionInterceptor");
+        ContentPropertyRestrictionInterceptor contentPropertyRestrictionInterceptor = (ContentPropertyRestrictionInterceptor) ctx.getBean("contentPropertyRestrictionInterceptor");
         try
         {
             contentPropertyRestrictionInterceptor.setGlobalContentPropertyRestrictionWhiteList(this.getClass().getCanonicalName());
             eagerCleaner.setEagerOrphanCleanup(true);
 
             final StoreRef storeRef = nodeService.createStore("test", getName() + "-" + GUID.generate());
-            RetryingTransactionCallback<ContentData> testCallback = new RetryingTransactionCallback<ContentData>()
-            {
+            RetryingTransactionCallback<ContentData> testCallback = new RetryingTransactionCallback<ContentData>() {
                 public ContentData execute() throws Throwable
                 {
                     // Create some content
@@ -349,16 +341,15 @@ public class ContentStoreCleanerTest extends TestCase
     public void testImmediateRemoval() throws Exception
     {
         eagerCleaner.setEagerOrphanCleanup(false);
-        
+
         final StoreRef storeRef = nodeService.createStore("test", getName() + "-" + GUID.generate());
-        RetryingTransactionCallback<ContentData> testCallback = new RetryingTransactionCallback<ContentData>()
-        {
+        RetryingTransactionCallback<ContentData> testCallback = new RetryingTransactionCallback<ContentData>() {
             public ContentData execute() throws Throwable
             {
                 // Create some content
                 NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
                 Map<QName, Serializable> properties = new HashMap<QName, Serializable>(13);
-                properties.put(ContentModel.PROP_NAME, (Serializable)"test.txt");
+                properties.put(ContentModel.PROP_NAME, (Serializable) "test.txt");
                 NodeRef contentNodeRef = nodeService.createNode(
                         rootNodeRef,
                         ContentModel.ASSOC_CHILDREN,
@@ -369,7 +360,7 @@ public class ContentStoreCleanerTest extends TestCase
                 writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                 writer.putContent("INITIAL CONTENT");
                 ContentData contentData = writer.getContentData();
-               
+
                 // Delete the first node, bypassing archive
                 nodeService.addAspect(contentNodeRef, ContentModel.ASPECT_TEMPORARY, null);
                 nodeService.deleteNode(contentNodeRef);
@@ -383,22 +374,21 @@ public class ContentStoreCleanerTest extends TestCase
         ContentReader reader = contentService.getRawReader(contentData.getContentUrl());
         assertNotNull(reader);
         assertTrue("Content should not have been eagerly deleted.", reader.exists());
-        
+
         // fire the cleaner
         cleaner.setProtectDays(0);
         cleaner.execute();
-        
+
         reader = contentService.getRawReader(contentData.getContentUrl());
         // the content should have disappeared as it is not in the database
         assertFalse("Unprotected content was not deleted", reader.exists());
         assertTrue("Content listener was not called", deletedUrls.contains(reader.getContentUrl()));
     }
-    
+
     /**
      * Test forced and immediate shredding of content
      * <p/>
-     * There is no validation that the file is affected.  It's an example of how to wire
-     * different listeners together to do neat things to the files before deletion.
+     * There is no validation that the file is affected. It's an example of how to wire different listeners together to do neat things to the files before deletion.
      */
     public void testForcedImmediateShredding() throws Exception
     {
@@ -406,9 +396,9 @@ public class ContentStoreCleanerTest extends TestCase
         // This is very much like a listener, but listeners are only called by the standard,
         // scheduled cleaner.
         final Set<String> wipedUrls = new HashSet<String>(3);
-        final EagerContentStoreCleaner wipingEagerCleaner = new EagerContentStoreCleaner()
-        {
+        final EagerContentStoreCleaner wipingEagerCleaner = new EagerContentStoreCleaner() {
             final FileWipingContentCleanerListener fileWiper = new FileWipingContentCleanerListener();
+
             @Override
             protected boolean deleteFromStore(String contentUrl, ContentStore store)
             {
@@ -418,22 +408,17 @@ public class ContentStoreCleanerTest extends TestCase
             }
         };
         wipingEagerCleaner.setStores(Collections.singletonList(store));
-        /*
-         * Note that we don't need to wire the 'wipingEagerCleaner' into anything.
-         * You can if you want it to wipe for all use cases.  In this case, we're just
-         * going to manually force it to clean.
-         */
-        
+        /* Note that we don't need to wire the 'wipingEagerCleaner' into anything. You can if you want it to wipe for all use cases. In this case, we're just going to manually force it to clean. */
+
         // Create a node with content
         final StoreRef storeRef = nodeService.createStore("test", getName() + "-" + GUID.generate());
-        RetryingTransactionCallback<NodeRef> testCallback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> testCallback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 // Create some content
                 NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
                 Map<QName, Serializable> properties = new HashMap<QName, Serializable>(13);
-                properties.put(ContentModel.PROP_NAME, (Serializable)"test.txt");
+                properties.put(ContentModel.PROP_NAME, (Serializable) "test.txt");
                 NodeRef contentNodeRef = nodeService.createNode(
                         rootNodeRef,
                         ContentModel.ASSOC_CHILDREN,
@@ -443,37 +428,36 @@ public class ContentStoreCleanerTest extends TestCase
                 ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
                 writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                 writer.putContent("INITIAL CONTENT");
-               
+
                 // Done
                 return contentNodeRef;
             }
         };
         final NodeRef contentNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(testCallback);
-        
+
         // Now, force the node to be deleted and make sure it gets cleaned up directly
         // This can be used where some sensitive data has been identified and, before deletion,
         // the URL can be marked for immediate cleanup (in the post-commit phase, of course!)
-        RetryingTransactionCallback<String> deleteCallback = new RetryingTransactionCallback<String>()
-        {
+        RetryingTransactionCallback<String> deleteCallback = new RetryingTransactionCallback<String>() {
             public String execute() throws Throwable
             {
                 // Let's pretend we're in 'beforeDeleteNode'
                 ContentReader reader = contentService.getReader(contentNodeRef, ContentModel.PROP_CONTENT);
                 String contentUrl = reader.getContentUrl();
                 wipingEagerCleaner.registerOrphanedContentUrl(contentUrl, true);
-                
+
                 nodeService.deleteNode(contentNodeRef);
                 // Done
                 return contentUrl;
             }
         };
         String contentUrl = transactionService.getRetryingTransactionHelper().doInTransaction(deleteCallback);
-        
+
         // So, we don't fire the cleaner, but notice that the eager cleaner has 'wiped' the content
         assertTrue("Expected our URL to have been wiped.", wipedUrls.contains(contentUrl));
         cleaner.execute();
     }
-    
+
     /**
      * Test basic wiping of file contents on normal orphan cleanup
      */
@@ -481,23 +465,22 @@ public class ContentStoreCleanerTest extends TestCase
     {
         eagerCleaner.setEagerOrphanCleanup(false);
         cleaner.setProtectDays(0);
-        
+
         // Add in a the Wiping cleaner listener
         FileWipingContentCleanerListener fileWiper = new FileWipingContentCleanerListener();
         List<ContentStoreCleanerListener> listeners = new ArrayList<ContentStoreCleanerListener>(1);
         listeners.add(fileWiper);
         eagerCleaner.setListeners(listeners);
-        
+
         // Create a node with content
         final StoreRef storeRef = nodeService.createStore("test", getName() + "-" + GUID.generate());
-        RetryingTransactionCallback<NodeRef> testCallback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> testCallback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 // Create some content
                 NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
                 Map<QName, Serializable> properties = new HashMap<QName, Serializable>(13);
-                properties.put(ContentModel.PROP_NAME, (Serializable)"test.txt");
+                properties.put(ContentModel.PROP_NAME, (Serializable) "test.txt");
                 NodeRef contentNodeRef = nodeService.createNode(
                         rootNodeRef,
                         ContentModel.ASSOC_CHILDREN,
@@ -507,16 +490,15 @@ public class ContentStoreCleanerTest extends TestCase
                 ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
                 writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                 writer.putContent("INITIAL CONTENT");
-               
+
                 // Done
                 return contentNodeRef;
             }
         };
         final NodeRef contentNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(testCallback);
-        
+
         // Simple delete
-        RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 nodeService.deleteNode(contentNodeRef);
@@ -525,25 +507,24 @@ public class ContentStoreCleanerTest extends TestCase
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(deleteCallback);
-        
-        // It's orphaned now.  Fire the cleaner.
+
+        // It's orphaned now. Fire the cleaner.
         cleaner.execute();
     }
 
     public void testMNT_12150()
     {
         eagerCleaner.setEagerOrphanCleanup(false);
-        
+
         // create content with binary data and delete it in the same transaction
         final StoreRef storeRef = nodeService.createStore("test", getName() + "-" + GUID.generate());
-        RetryingTransactionCallback<ContentData> prepareCallback = new RetryingTransactionCallback<ContentData>()
-        {
+        RetryingTransactionCallback<ContentData> prepareCallback = new RetryingTransactionCallback<ContentData>() {
             public ContentData execute() throws Throwable
             {
                 // Create some content
                 NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
                 Map<QName, Serializable> properties = new HashMap<QName, Serializable>(13);
-                properties.put(ContentModel.PROP_NAME, (Serializable)"test.txt");
+                properties.put(ContentModel.PROP_NAME, (Serializable) "test.txt");
                 NodeRef contentNodeRef = nodeService.createNode(
                         rootNodeRef,
                         ContentModel.ASSOC_CHILDREN,
@@ -554,7 +535,7 @@ public class ContentStoreCleanerTest extends TestCase
                 writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                 writer.putContent("INITIAL CONTENT");
                 ContentData contentData = writer.getContentData();
-               
+
                 // Delete the first node, bypassing archive
                 nodeService.addAspect(contentNodeRef, ContentModel.ASPECT_TEMPORARY, null);
                 nodeService.deleteNode(contentNodeRef);
@@ -564,13 +545,12 @@ public class ContentStoreCleanerTest extends TestCase
             }
         };
         ContentData contentData = transactionService.getRetryingTransactionHelper().doInTransaction(prepareCallback);
-        
+
         List<ContentStore> stores = new ArrayList<ContentStore>(2);
         stores.add(store);
-        
-        // add another store which doesn't support any content url format 
-        stores.add(new FileContentStore(ctx, store.getRootLocation())
-        {
+
+        // add another store which doesn't support any content url format
+        stores.add(new FileContentStore(ctx, store.getRootLocation()) {
             @Override
             public boolean isContentUrlSupported(String contentUrl)
             {
@@ -580,36 +560,34 @@ public class ContentStoreCleanerTest extends TestCase
 
         // configure cleaner to keep failed orphaned content urls
         eagerCleaner.setStores(stores);
-        eagerCleaner.setListeners(Collections.<ContentStoreCleanerListener>emptyList());
+        eagerCleaner.setListeners(Collections.<ContentStoreCleanerListener> emptyList());
         cleaner.setProtectDays(0);
         cleaner.setDeletionFailureAction(DeleteFailureAction.KEEP_URL);
-        
+
         // fire the cleaner
         cleaner.execute();
-        
+
         // Go through the orphaned urls again
         final TreeMap<Long, String> keptUrlsById = new TreeMap<Long, String>();
-        final ContentUrlHandler contentUrlHandler = new ContentUrlHandler()
-        {
+        final ContentUrlHandler contentUrlHandler = new ContentUrlHandler() {
             @Override
             public void handle(Long id, String contentUrl, Long orphanTime)
             {
                 keptUrlsById.put(id, contentUrl);
             }
         };
-        
+
         // look for any kept urls in database
-        RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 contentDataDAO.getContentUrlsKeepOrphaned(contentUrlHandler, 1000);
                 return null;
             }
         };
-        
+
         transactionService.getRetryingTransactionHelper().doInTransaction(testCallback);
-        
+
         // check that orphaned url was deleted
         for (String url : keptUrlsById.values())
         {
@@ -627,6 +605,7 @@ public class ContentStoreCleanerTest extends TestCase
             deletedUrls.add(contentUrl);
         }
     }
+
     /**
      * Cleaner listener that doesn't support the URLs passed in
      */

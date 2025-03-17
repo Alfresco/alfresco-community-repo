@@ -25,13 +25,13 @@
  */
 package org.alfresco.service.cmr.calendar;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
+import org.junit.Test;
 
 /**
  * Tests for the {@link CalendarRecurrenceHelper} class.
@@ -45,13 +45,13 @@ public class CalendarRecurrenceHelperTest
     {
         Map<String, String> in = Params.fromKVPs("BYMONTHDAY=24", "FREQ=MONTHLY", "INTERVAL=1");
         Map<String, String> out = CalendarRecurrenceHelper.fixOutlookRecurrenceQuirks(Params.fromMap(in));
-        
+
         // A monthly recurring event specified correctly, will remain untouched.
         assertEquals(in, out);
         // Double check we're not just comparing in with itself.
         assertNotSame(in, out);
     }
-    
+
     /**
      * ALF-18928: Yearly recurring event specified incorrectly (as monthly) by outlook.
      */
@@ -60,18 +60,18 @@ public class CalendarRecurrenceHelperTest
     {
         Map<String, String> in = Params.fromKVPs("BYMONTHDAY=25", "FREQ=MONTHLY", "INTERVAL=24", "BYMONTH=7");
         Map<String, String> out = CalendarRecurrenceHelper.fixOutlookRecurrenceQuirks(Params.fromMap(in));
-        
+
         // A yearly recurring event that has been incorrectly specified as monthly, is fixed up.
         // Note FREQ and INTERVAL have been corrected.
         assertEquals(Params.fromKVPs("BYMONTHDAY=25", "FREQ=YEARLY", "INTERVAL=2", "BYMONTH=7"), out);
     }
-    
+
     @Test
     public void fixOutlookRecurrenceQuirks_YearlyRecurrenceParamsLeftAsIs()
     {
         Map<String, String> in = Params.fromKVPs("BYMONTHDAY=25", "FREQ=YEARLY", "INTERVAL=2", "BYMONTH=7");
         Map<String, String> out = CalendarRecurrenceHelper.fixOutlookRecurrenceQuirks(Params.fromMap(in));
-        
+
         // A yearly recurring event specified correctly, will remain untouched.
         assertEquals(in, out);
         // Double check we're not just comparing in with itself.
@@ -123,19 +123,18 @@ public class CalendarRecurrenceHelperTest
         private static final long serialVersionUID = 1648766671461600951L;
 
         private Params()
-        {
-        }
-        
+        {}
+
         private Params(Map<String, String> params)
         {
             super(params);
         }
-        
+
         private static Params fromMap(Map<String, String> params)
         {
             return new Params(params);
         }
-        
+
         private static Params fromKVPs(String... keyValuePairs)
         {
             Params params = new Params();

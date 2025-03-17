@@ -115,7 +115,8 @@ public class TransformRequest implements Serializable
         this.replyQueue = replyQueue;
     }
 
-    @Override public boolean equals(Object o)
+    @Override
+    public boolean equals(Object o)
     {
         if (this == o)
             return true;
@@ -125,25 +126,28 @@ public class TransformRequest implements Serializable
         return requestId.equals(that.requestId) && nodeRef.equals(that.nodeRef);
     }
 
-    @Override public int hashCode()
+    @Override
+    public int hashCode()
     {
         return Objects.hash(requestId, nodeRef);
     }
 
-    @Override public String toString()
+    @Override
+    public String toString()
     {
         return '{' +
-            "\"requestId\":\"" + requestId + '\"' +
-            ", \"transformName\":\"" + transformName + '\"' +
-            ", \"nodeRef\":\"" + nodeRef + '\"' +
-            ", \"targetMediaType\":\"" + targetMediaType + '\"' +
-            ", \"transformOptions\":" + transformOptions +
-            ", \"clientData\":\"" + clientData + '\"' +
-            ", \"replyQueue\":\"" + replyQueue + '\"' +
-            '}';
+                "\"requestId\":\"" + requestId + '\"' +
+                ", \"transformName\":\"" + transformName + '\"' +
+                ", \"nodeRef\":\"" + nodeRef + '\"' +
+                ", \"targetMediaType\":\"" + targetMediaType + '\"' +
+                ", \"transformOptions\":" + transformOptions +
+                ", \"clientData\":\"" + clientData + '\"' +
+                ", \"replyQueue\":\"" + replyQueue + '\"' +
+                '}';
     }
 
-    public static class Builder {
+    public static class Builder
+    {
         private final TransformRequest request;
 
         private Builder()

@@ -26,7 +26,6 @@
 package org.alfresco.service.cmr.repository;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.api.AlfrescoPublicApi;
@@ -34,13 +33,9 @@ import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.util.EqualsHelper;
 
 /**
- * Represents maximum source values (that result in exceptions if exceeded) or
- * limits on source values (that result in EOF (End Of File) being returned
- * early). Options exist for elapse time, KBytes read or number of pages read.
+ * Represents maximum source values (that result in exceptions if exceeded) or limits on source values (that result in EOF (End Of File) being returned early). Options exist for elapse time, KBytes read or number of pages read.
  *
- * @deprecated with the introduction of RenditionService2 the OPT_... public static final values
- * have been deprecated as they will no longer form part of the rendition definition and will be
- * removed when local transformations are removed.
+ * @deprecated with the introduction of RenditionService2 the OPT_... public static final values have been deprecated as they will no longer form part of the rendition definition and will be removed when local transformations are removed.
  *
  * @author Alan Davis
  */
@@ -50,19 +45,25 @@ public class TransformationOptionLimits implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
-    @Deprecated public static final String OPT_TIMEOUT_MS = "timeoutMs";
-    @Deprecated public static final String OPT_READ_LIMIT_TIME_MS = "readLimitTimeMs";
+    @Deprecated
+    public static final String OPT_TIMEOUT_MS = "timeoutMs";
+    @Deprecated
+    public static final String OPT_READ_LIMIT_TIME_MS = "readLimitTimeMs";
 
-    @Deprecated public static final String OPT_MAX_SOURCE_SIZE_K_BYTES = RenditionDefinition2.MAX_SOURCE_SIZE_K_BYTES;
-    @Deprecated public static final String OPT_READ_LIMIT_K_BYTES = "readLimitKBytes";
+    @Deprecated
+    public static final String OPT_MAX_SOURCE_SIZE_K_BYTES = RenditionDefinition2.MAX_SOURCE_SIZE_K_BYTES;
+    @Deprecated
+    public static final String OPT_READ_LIMIT_K_BYTES = "readLimitKBytes";
 
-    @Deprecated public static final String OPT_MAX_PAGES = "maxPages";
-    @Deprecated public static final String OPT_PAGE_LIMIT = "pageLimit";
-    
+    @Deprecated
+    public static final String OPT_MAX_PAGES = "maxPages";
+    @Deprecated
+    public static final String OPT_PAGE_LIMIT = "pageLimit";
+
     public static final String TIME_MESSAGE = "Both timeoutMs and readLimitTimeMs should not be set.";
     public static final String KBYTES_MESSAGE = "Both maxSourceSizeKBytes and readLimitKBytes should not be set.";
     public static final String PAGES_MESSAGE = "Both maxPages and pageLimit should not be set.";
-    
+
     private TransformationOptionPair time = new TransformationOptionPair();
     private TransformationOptionPair kbytes = new TransformationOptionPair();
     private TransformationOptionPair pages = new TransformationOptionPair();
@@ -73,7 +74,7 @@ public class TransformationOptionLimits implements Serializable
         kbytes = new TransformationOptionPair();
         pages = new TransformationOptionPair();
     }
-    
+
     private TransformationOptionLimits(TransformationOptionLimits a, TransformationOptionLimits b, boolean lower)
     {
         if (lower)
@@ -89,19 +90,14 @@ public class TransformationOptionLimits implements Serializable
             pages = a.pages.combineUpper(b.pages);
         }
     }
-    
+
     /**
-     * <b>This method overrides rather than defaults values into the supplied limits</b> (as the
-     * name might suggest), but because of the order in which it is called, this results in the
-     * correct defaults being set.
+     * <b>This method overrides rather than defaults values into the supplied limits</b> (as the name might suggest), but because of the order in which it is called, this results in the correct defaults being set.
      * <p>
-     * A call to this method overrides any values in the supplied limits parameter with those
-     * in this Object. The supplied limits parameter is being gradually built up by initially
-     * setting the most general limits and then more specific values for each level. As a result  
-     * 'default' values from the more general levels will still exist at the end if more specific
-     * ones have not been supplied.
+     * A call to this method overrides any values in the supplied limits parameter with those in this Object. The supplied limits parameter is being gradually built up by initially setting the most general limits and then more specific values for each level. As a result 'default' values from the more general levels will still exist at the end if more specific ones have not been supplied.
      * 
-     * @param limits to be set
+     * @param limits
+     *            to be set
      */
     public void defaultTo(TransformationOptionLimits limits)
     {
@@ -135,7 +131,7 @@ public class TransformationOptionLimits implements Serializable
     {
         time.setLimit(readLimitTimeMs, TIME_MESSAGE);
     }
-    
+
     // --------------- KBytes ---------------
     public TransformationOptionPair getKBytesPair()
     {
@@ -161,7 +157,7 @@ public class TransformationOptionLimits implements Serializable
     {
         kbytes.setLimit(readLimitKBytes, KBYTES_MESSAGE);
     }
-    
+
     // --------------- Pages ---------------
     public TransformationOptionPair getPagesPair()
     {
@@ -170,7 +166,7 @@ public class TransformationOptionLimits implements Serializable
 
     public int getMaxPages()
     {
-        return (int)pages.getMax();
+        return (int) pages.getMax();
     }
 
     public void setMaxPages(int maxPages)
@@ -180,26 +176,26 @@ public class TransformationOptionLimits implements Serializable
 
     public int getPageLimit()
     {
-        return (int)pages.getLimit();
+        return (int) pages.getLimit();
     }
 
     public void setPageLimit(int pageLimit)
     {
         pages.setLimit(pageLimit, PAGES_MESSAGE);
     }
-    
+
     // --------------- Enabled ---------------
-    
+
     /**
-     * Indicates if the limits allow a transformation to take place at all.
-     * If any of the limits are 0, it would not be possible.
+     * Indicates if the limits allow a transformation to take place at all. If any of the limits are 0, it would not be possible.
+     * 
      * @return true if a transformation is possible.
      */
     public boolean supported()
     {
         return time.supported() && kbytes.supported() && pages.supported();
     }
-    
+
     // --------------- Map ---------------
     public Map<String, Object> toMap(Map<String, Object> optionsMap)
     {
@@ -208,7 +204,7 @@ public class TransformationOptionLimits implements Serializable
         pages.toMap(optionsMap, OPT_MAX_PAGES, OPT_PAGE_LIMIT);
         return optionsMap;
     }
-    
+
     public static Map<String, Object> removeFromMap(Map<String, Object> optionsMap)
     {
         optionsMap.remove(OPT_TIMEOUT_MS);
@@ -226,7 +222,7 @@ public class TransformationOptionLimits implements Serializable
         kbytes.set(optionsMap, OPT_MAX_SOURCE_SIZE_K_BYTES, OPT_READ_LIMIT_K_BYTES, KBYTES_MESSAGE);
         pages.set(optionsMap, OPT_MAX_PAGES, OPT_PAGE_LIMIT, PAGES_MESSAGE);
     }
-    
+
     public String toString()
     {
         StringBuilder sb = new StringBuilder("{");
@@ -238,18 +234,15 @@ public class TransformationOptionLimits implements Serializable
     }
 
     /**
-     * Returns a TransformationOptionLimits that has getter methods that combine the
-     * the values from the getter methods of this and the supplied TransformationOptionLimits.
+     * Returns a TransformationOptionLimits that has getter methods that combine the the values from the getter methods of this and the supplied TransformationOptionLimits.
      */
     public TransformationOptionLimits combine(final TransformationOptionLimits that)
     {
         return combine(that, true);
     }
-    
+
     /**
-     * Returns a TransformationOptionLimits that has getter methods that combine the
-     * the values from the getter methods of this and the supplied TransformationOptionLimits
-     * so that they return the lowest common denominator of the limits .
+     * Returns a TransformationOptionLimits that has getter methods that combine the the values from the getter methods of this and the supplied TransformationOptionLimits so that they return the lowest common denominator of the limits .
      */
     public TransformationOptionLimits combineUpper(final TransformationOptionLimits that)
     {
@@ -258,8 +251,7 @@ public class TransformationOptionLimits implements Serializable
 
     private TransformationOptionLimits combine(final TransformationOptionLimits that, boolean lower)
     {
-        return new TransformationOptionLimits(this, that, lower)
-        {
+        return new TransformationOptionLimits(this, that, lower) {
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -285,7 +277,7 @@ public class TransformationOptionLimits implements Serializable
             {
                 throw new UnsupportedOperationException();
             }
-            
+
             @Override
             public void setMaxPages(int maxPages)
             {
@@ -297,7 +289,7 @@ public class TransformationOptionLimits implements Serializable
             {
                 throw new UnsupportedOperationException();
             }
-            
+
             @Override
             public void set(Map<String, Object> optionsMap)
             {
@@ -325,10 +317,9 @@ public class TransformationOptionLimits implements Serializable
         else if (obj instanceof TransformationOptionLimits)
         {
             TransformationOptionLimits that = (TransformationOptionLimits) obj;
-            return
-                EqualsHelper.nullSafeEquals(time, that.time) &&
-                EqualsHelper.nullSafeEquals(kbytes, that.kbytes) &&
-                EqualsHelper.nullSafeEquals(pages, that.pages);
+            return EqualsHelper.nullSafeEquals(time, that.time) &&
+                    EqualsHelper.nullSafeEquals(kbytes, that.kbytes) &&
+                    EqualsHelper.nullSafeEquals(pages, that.pages);
         }
         else
         {

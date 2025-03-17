@@ -47,50 +47,48 @@ import org.alfresco.util.GUID;
  */
 public class DeleteRelationshipTest extends BaseRMTestCase
 {
-	public void testDeleteRelationship() throws Exception
+    public void testDeleteRelationship() throws Exception
     {
-    	doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             /** test data */
-        	NodeRef sourceNode;
-        	NodeRef targetNode;
-        	String associationName = CUSTOM_REF_OBSOLETES.getLocalName();
+            NodeRef sourceNode;
+            NodeRef targetNode;
+            String associationName = CUSTOM_REF_OBSOLETES.getLocalName();
 
             public void given()
             {
 
-            	// create the source record
-            	sourceNode = utils.createRecord(rmFolder, GUID.generate());
+                // create the source record
+                sourceNode = utils.createRecord(rmFolder, GUID.generate());
 
-                //create the target record
-            	targetNode = utils.createRecord(rmFolder, GUID.generate());
+                // create the target record
+                targetNode = utils.createRecord(rmFolder, GUID.generate());
 
-                //create relationship
+                // create relationship
                 relationshipService.addRelationship(associationName, sourceNode, targetNode);
             }
 
             public void when()
             {
-                //delete relationship
-            	relationshipService.removeRelationship(associationName, sourceNode, targetNode);
+                // delete relationship
+                relationshipService.removeRelationship(associationName, sourceNode, targetNode);
             }
 
             public void then()
             {
-               //check if relationship is deleted
-            	Set<Relationship> relationships = relationshipService.getRelationshipsFrom(sourceNode);
-            	for(Relationship r : relationships)
-            	{
-            		assertFalse(r.getTarget().equals(targetNode) && r.getUniqueName().equals(associationName));
-            	}
+                // check if relationship is deleted
+                Set<Relationship> relationships = relationshipService.getRelationshipsFrom(sourceNode);
+                for (Relationship r : relationships)
+                {
+                    assertFalse(r.getTarget().equals(targetNode) && r.getUniqueName().equals(associationName));
+                }
             }
         });
     }
-	
-	public void testReadOnlyPermissionOnSource() throws Exception
+
+    public void testReadOnlyPermissionOnSource() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class) {
             /** test data */
             private String roleName = GUID.generate();
             private String user = GUID.generate();
@@ -100,7 +98,7 @@ public class DeleteRelationshipTest extends BaseRMTestCase
             private NodeRef targetRecordFolder;
             private NodeRef sourceRecord;
             private NodeRef targetRecord;
-            
+
             public void given() throws Exception
             {
                 // test entities
@@ -110,7 +108,7 @@ public class DeleteRelationshipTest extends BaseRMTestCase
                 targetRecordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 targetRecordFolder = recordFolderService.createRecordFolder(targetRecordCategory, GUID.generate());
                 targetRecord = utils.createRecord(targetRecordFolder, GUID.generate());
-                
+
                 // create role
                 Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
@@ -120,7 +118,7 @@ public class DeleteRelationshipTest extends BaseRMTestCase
                 // create user and assign to role
                 createPerson(user, true);
                 filePlanRoleService.assignRoleToAuthority(filePlan, roleName, user);
-                
+
                 // add relationship
                 relationshipService.addRelationship("crossreference", sourceRecord, targetRecord);
             }
@@ -130,9 +128,8 @@ public class DeleteRelationshipTest extends BaseRMTestCase
                 // assign permissions
                 filePlanPermissionService.setPermission(sourceRecord, user, RMPermissionModel.READ_RECORDS);
                 filePlanPermissionService.setPermission(targetRecord, user, RMPermissionModel.FILING);
-                
-                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-                {
+
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         relationshipService.removeRelationship("crossreference", sourceRecord, targetRecord);
@@ -142,11 +139,10 @@ public class DeleteRelationshipTest extends BaseRMTestCase
             }
         });
     }
-    
+
     public void testReadOnlyPermissionOnTarget() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class) {
             /** test data */
             private String roleName = GUID.generate();
             private String user = GUID.generate();
@@ -156,7 +152,7 @@ public class DeleteRelationshipTest extends BaseRMTestCase
             private NodeRef targetRecordFolder;
             private NodeRef sourceRecord;
             private NodeRef targetRecord;
-            
+
             public void given() throws Exception
             {
                 // test entities
@@ -166,7 +162,7 @@ public class DeleteRelationshipTest extends BaseRMTestCase
                 targetRecordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 targetRecordFolder = recordFolderService.createRecordFolder(targetRecordCategory, GUID.generate());
                 targetRecord = utils.createRecord(targetRecordFolder, GUID.generate());
-                
+
                 // create role
                 Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
@@ -176,7 +172,7 @@ public class DeleteRelationshipTest extends BaseRMTestCase
                 // create user and assign to role
                 createPerson(user, true);
                 filePlanRoleService.assignRoleToAuthority(filePlan, roleName, user);
-                
+
                 // create relationship
                 relationshipService.addRelationship("crossreference", sourceRecord, targetRecord);
             }
@@ -186,9 +182,8 @@ public class DeleteRelationshipTest extends BaseRMTestCase
                 // assign permissions
                 filePlanPermissionService.setPermission(sourceRecord, user, RMPermissionModel.FILING);
                 filePlanPermissionService.setPermission(targetRecord, user, RMPermissionModel.READ_RECORDS);
-                
-                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-                {
+
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         relationshipService.removeRelationship("crossreference", sourceRecord, targetRecord);
@@ -198,11 +193,10 @@ public class DeleteRelationshipTest extends BaseRMTestCase
             }
         });
     }
-    
+
     public void testFillingPermissionOnSourceAndTarget() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             /** test data */
             private String roleName = GUID.generate();
             private String user = GUID.generate();
@@ -212,7 +206,7 @@ public class DeleteRelationshipTest extends BaseRMTestCase
             private NodeRef targetRecordFolder;
             private NodeRef sourceRecord;
             private NodeRef targetRecord;
-            
+
             public void given() throws Exception
             {
                 // test entities
@@ -222,29 +216,28 @@ public class DeleteRelationshipTest extends BaseRMTestCase
                 targetRecordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 targetRecordFolder = recordFolderService.createRecordFolder(targetRecordCategory, GUID.generate());
                 targetRecord = utils.createRecord(targetRecordFolder, GUID.generate());
-                
+
                 // create role
                 Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
                 capabilities.add(capabilityService.getCapability("ChangeOrDeleteReferences"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
-    
+
                 // create user and assign to role
                 createPerson(user, true);
-                filePlanRoleService.assignRoleToAuthority(filePlan, roleName, user);    
-                
+                filePlanRoleService.assignRoleToAuthority(filePlan, roleName, user);
+
                 // create relationship
                 relationshipService.addRelationship("crossreference", sourceRecord, targetRecord);
             }
-    
+
             public void when()
             {
                 // assign permissions
                 filePlanPermissionService.setPermission(sourceRecordCategory, user, RMPermissionModel.FILING);
                 filePlanPermissionService.setPermission(targetRecordCategory, user, RMPermissionModel.FILING);
-                
-                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-                {
+
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         relationshipService.removeRelationship("crossreference", sourceRecord, targetRecord);
@@ -252,7 +245,7 @@ public class DeleteRelationshipTest extends BaseRMTestCase
                     }
                 }, user);
             }
-            
+
             @Override
             public void then() throws Exception
             {

@@ -38,6 +38,7 @@ import org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext;
 
 /**
  * Fuzzy matching
+ * 
  * @author andyh
  *
  */
@@ -52,13 +53,9 @@ public class LuceneFTSFuzzyTerm<Q, S, E extends Throwable> extends FTSFuzzyTerm 
         super();
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery,
-     *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
-     *      java.lang.String)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService, java.lang.String) */
     public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
             throws E
     {
@@ -78,10 +75,9 @@ public class LuceneFTSFuzzyTerm<Q, S, E extends Throwable> extends FTSFuzzyTerm 
         else
         {
             query = lqpa.getFuzzyQuery(lqpa.getField(), term, minSimilarity);
-            
+
         }
         return query;
     }
-
 
 }

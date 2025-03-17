@@ -48,21 +48,27 @@ public class GetArchivedNodesCannedQueryFactory extends AbstractQNameAwareCanned
     public CannedQuery<ArchivedNodeEntity> getCannedQuery(CannedQueryParameters parameters)
     {
         return (CannedQuery<ArchivedNodeEntity>) new GetArchivedNodesCannedQuery(cannedQueryDAO,
-                    nodeDAO, methodSecurity, parameters);
+                nodeDAO, methodSecurity, parameters);
     }
 
     /**
-     * @param archiveStoreRootNodeRef NodeRef
-     * @param assocTypeQName QName
-     * @param filter String
-     * @param filterIgnoreCase boolean
-     * @param pagingRequest PagingRequest
-     * @param sortOrderAscending boolean
+     * @param archiveStoreRootNodeRef
+     *            NodeRef
+     * @param assocTypeQName
+     *            QName
+     * @param filter
+     *            String
+     * @param filterIgnoreCase
+     *            boolean
+     * @param pagingRequest
+     *            PagingRequest
+     * @param sortOrderAscending
+     *            boolean
      * @return an implementation that will execute the query
      */
     public CannedQuery<ArchivedNodeEntity> getCannedQuery(NodeRef archiveStoreRootNodeRef, QName assocTypeQName,
-                String filter, boolean filterIgnoreCase, PagingRequest pagingRequest,
-                boolean sortOrderAscending)
+            String filter, boolean filterIgnoreCase, PagingRequest pagingRequest,
+            boolean sortOrderAscending)
     {
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
         Long nodeId = (archiveStoreRootNodeRef == null) ? -1 : getNodeId(archiveStoreRootNodeRef);
@@ -71,17 +77,17 @@ public class GetArchivedNodesCannedQueryFactory extends AbstractQNameAwareCanned
         int requestTotalCountMax = pagingRequest.getRequestTotalCountMax();
 
         GetArchivedNodesCannedQueryParams paramBean = new GetArchivedNodesCannedQueryParams(nodeId,
-                    qnameId, filter, filterIgnoreCase, getQNameId(ContentModel.PROP_NAME),
-                    sortOrderAscending);
+                qnameId, filter, filterIgnoreCase, getQNameId(ContentModel.PROP_NAME),
+                sortOrderAscending);
 
         // page details
         CannedQueryPageDetails cqpd = new CannedQueryPageDetails(pagingRequest.getSkipCount(),
-                    pagingRequest.getMaxItems(), CannedQueryPageDetails.DEFAULT_PAGE_NUMBER,
-                    CannedQueryPageDetails.DEFAULT_PAGE_COUNT);
+                pagingRequest.getMaxItems(), CannedQueryPageDetails.DEFAULT_PAGE_NUMBER,
+                CannedQueryPageDetails.DEFAULT_PAGE_COUNT);
 
         // create query params holder
         CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, null,
-                    requestTotalCountMax, pagingRequest.getQueryExecutionId());
+                requestTotalCountMax, pagingRequest.getQueryExecutionId());
 
         // return canned query instance
         return getCannedQuery(params);

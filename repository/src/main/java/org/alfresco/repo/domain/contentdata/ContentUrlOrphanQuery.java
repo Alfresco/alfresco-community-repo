@@ -35,15 +35,15 @@ public class ContentUrlOrphanQuery
 {
     private Long maxOrphanTimeExclusive;
     private Long maxRecords;
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("ContentUrlOrphanQuery")
-          .append("[ maxOrphanTimeExclusive=").append(maxOrphanTimeExclusive)
-          .append(", maxRecords=").append(maxRecords)
-          .append("]");
+                .append("[ maxOrphanTimeExclusive=").append(maxOrphanTimeExclusive)
+                .append(", maxRecords=").append(maxRecords)
+                .append("]");
         return sb.toString();
     }
 
@@ -66,6 +66,5 @@ public class ContentUrlOrphanQuery
     {
         this.maxRecords = maxRecords;
     }
-    
-    
+
 }

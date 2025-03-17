@@ -36,12 +36,13 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Helper contxt class used when checking variable types based on {@link TypeDefinition}. 
+ * Helper contxt class used when checking variable types based on {@link TypeDefinition}.
  *
  * @author Frederik Heremans
  */
-public class TypeDefinitionContext {
-    
+public class TypeDefinitionContext
+{
+
     private Map<String, PropertyDefinition> propertyDefinitions;
     private Map<String, AssociationDefinition> associationDefinitions;
 
@@ -49,23 +50,23 @@ public class TypeDefinitionContext {
     {
         propertyDefinitions = new HashMap<String, PropertyDefinition>();
         associationDefinitions = new HashMap<String, AssociationDefinition>();
-        
+
         for (Entry<QName, PropertyDefinition> entry : typeDefinition.getProperties().entrySet())
         {
             propertyDefinitions.put(qNameConverter.mapQNameToName(entry.getKey()), entry.getValue());
         }
-        
+
         for (Entry<QName, AssociationDefinition> entry : typeDefinition.getAssociations().entrySet())
         {
             associationDefinitions.put(qNameConverter.mapQNameToName(entry.getKey()), entry.getValue());
         }
     }
-    
-    public PropertyDefinition getPropertyDefinition(String rawVariableName) 
+
+    public PropertyDefinition getPropertyDefinition(String rawVariableName)
     {
         return propertyDefinitions.get(rawVariableName);
     }
-    
+
     public AssociationDefinition getAssociationDefinition(String rawVariableName)
     {
         return associationDefinitions.get(rawVariableName);

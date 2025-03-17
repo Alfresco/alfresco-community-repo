@@ -43,21 +43,20 @@ public class Table extends AbstractDbObject
     private PrimaryKey primaryKey;
     private final List<ForeignKey> foreignKeys = new ArrayList<ForeignKey>();
     private final List<Index> indexes = new ArrayList<Index>();
-    
-    
+
     public Table(String name)
     {
         super(null, name);
     }
-    
-    public Table(String name, Collection<Column> columns, PrimaryKey primaryKey, 
-                Collection<ForeignKey> foreignKeys, Collection<Index> indexes)
+
+    public Table(String name, Collection<Column> columns, PrimaryKey primaryKey,
+            Collection<ForeignKey> foreignKeys, Collection<Index> indexes)
     {
         this(null, name, columns, primaryKey, foreignKeys, indexes);
     }
-    
-    public Table(Schema parentSchema, String name, Collection<Column> columns, PrimaryKey primaryKey, 
-                Collection<ForeignKey> foreignKeys, Collection<Index> indexes)
+
+    public Table(Schema parentSchema, String name, Collection<Column> columns, PrimaryKey primaryKey,
+            Collection<ForeignKey> foreignKeys, Collection<Index> indexes)
     {
         super(parentSchema, name);
         if (columns != null)
@@ -76,7 +75,6 @@ public class Table extends AbstractDbObject
         }
     }
 
-
     /**
      * @return the columns
      */
@@ -85,9 +83,9 @@ public class Table extends AbstractDbObject
         return this.columns;
     }
 
-
     /**
-     * @param columns the columns to set
+     * @param columns
+     *            the columns to set
      */
     public void setColumns(Collection<Column> columns)
     {
@@ -99,7 +97,6 @@ public class Table extends AbstractDbObject
             column.setParent(this);
         }
     }
-
 
     /**
      * @return the primaryKey
@@ -118,14 +115,14 @@ public class Table extends AbstractDbObject
     }
 
     /**
-     * @param primaryKey the primaryKey to set
+     * @param primaryKey
+     *            the primaryKey to set
      */
     public void setPrimaryKey(PrimaryKey primaryKey)
     {
         primaryKey.setParent(this);
         this.primaryKey = primaryKey;
     }
-
 
     /**
      * @return the foreignKeys
@@ -135,21 +132,20 @@ public class Table extends AbstractDbObject
         return this.foreignKeys;
     }
 
-
     /**
-     * @param foreignKeys the foreignKeys to set
+     * @param foreignKeys
+     *            the foreignKeys to set
      */
     public void setForeignKeys(Collection<ForeignKey> foreignKeys)
     {
         this.foreignKeys.clear();
         this.foreignKeys.addAll(foreignKeys);
-        
+
         for (ForeignKey fk : foreignKeys)
         {
             fk.setParent(this);
         }
     }
-
 
     /**
      * @return the indexes
@@ -159,21 +155,20 @@ public class Table extends AbstractDbObject
         return this.indexes;
     }
 
-
     /**
-     * @param indexes the indexes to set
+     * @param indexes
+     *            the indexes to set
      */
     public void setIndexes(Collection<Index> indexes)
     {
         this.indexes.clear();
         this.indexes.addAll(indexes);
-        
+
         for (Index index : indexes)
         {
             index.setParent(this);
         }
     }
-
 
     @Override
     public int hashCode()
@@ -187,48 +182,56 @@ public class Table extends AbstractDbObject
         return result;
     }
 
-
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj) return true;
-        if (!super.equals(obj)) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
         Table other = (Table) obj;
         if (this.columns == null)
         {
-            if (other.columns != null) return false;
+            if (other.columns != null)
+                return false;
         }
-        else if (!this.columns.equals(other.columns)) return false;
+        else if (!this.columns.equals(other.columns))
+            return false;
         if (this.foreignKeys == null)
         {
-            if (other.foreignKeys != null) return false;
+            if (other.foreignKeys != null)
+                return false;
         }
-        else if (!this.foreignKeys.equals(other.foreignKeys)) return false;
+        else if (!this.foreignKeys.equals(other.foreignKeys))
+            return false;
         if (this.indexes == null)
         {
-            if (other.indexes != null) return false;
+            if (other.indexes != null)
+                return false;
         }
-        else if (!this.indexes.equals(other.indexes)) return false;
+        else if (!this.indexes.equals(other.indexes))
+            return false;
         if (this.primaryKey == null)
         {
-            if (other.primaryKey != null) return false;
+            if (other.primaryKey != null)
+                return false;
         }
-        else if (!this.primaryKey.equals(other.primaryKey)) return false;
+        else if (!this.primaryKey.equals(other.primaryKey))
+            return false;
         return true;
     }
-
 
     @Override
     protected void doDiff(DbObject other, DiffContext ctx)
     {
-        Table rightTable = (Table) other; 
+        Table rightTable = (Table) other;
         comparisonUtils.compareCollections(columns, rightTable.columns, ctx);
         primaryKey.diff(rightTable.primaryKey, ctx);
         comparisonUtils.compareCollections(foreignKeys, rightTable.foreignKeys, ctx);
         comparisonUtils.compareCollections(indexes, rightTable.indexes, ctx);
     }
-    
 
     private List<DbObject> getChildren()
     {
@@ -242,7 +245,6 @@ public class Table extends AbstractDbObject
         children.addAll(indexes);
         return children;
     }
-
 
     @Override
     public void accept(DbObjectVisitor visitor)

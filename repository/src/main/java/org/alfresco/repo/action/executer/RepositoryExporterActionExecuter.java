@@ -44,41 +44,42 @@ public class RepositoryExporterActionExecuter extends ActionExecuterAbstractBase
     public static final String NAME = "repository-export";
     public static final String PARAM_PACKAGE_NAME = "package-name";
     public static final String PARAM_DESTINATION_FOLDER = "destination";
-    
+
     /**
      * The exporter service
      */
     private RepositoryExporterService exporterService;
-    
+
     /**
      * Sets the ExporterService to use
      * 
-     * @param exporterService The ExporterService
+     * @param exporterService
+     *            The ExporterService
      */
-    public void setRepositoryExporterService(RepositoryExporterService exporterService) 
+    public void setRepositoryExporterService(RepositoryExporterService exporterService)
     {
         this.exporterService = exporterService;
     }
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(Action, NodeRef)
      */
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
-        String packageName = (String)ruleAction.getParameterValue(PARAM_PACKAGE_NAME);
-        NodeRef repoDestination = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
+        String packageName = (String) ruleAction.getParameterValue(PARAM_PACKAGE_NAME);
+        NodeRef repoDestination = (NodeRef) ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
         exporterService.export(repoDestination, packageName);
     }
 
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
-        paramList.add(new ParameterDefinitionImpl(PARAM_PACKAGE_NAME, DataTypeDefinition.TEXT, true, 
-              getParamDisplayLabel(PARAM_PACKAGE_NAME)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true, 
-              getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_PACKAGE_NAME, DataTypeDefinition.TEXT, true,
+                getParamDisplayLabel(PARAM_PACKAGE_NAME)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true,
+                getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
     }
 
 }

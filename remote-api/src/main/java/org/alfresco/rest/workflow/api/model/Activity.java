@@ -43,8 +43,9 @@ public class Activity
     Date startedAt;
     Date endedAt;
     Long durationInMs;
-    
-    public Activity(HistoricActivityInstance activity) {
+
+    public Activity(HistoricActivityInstance activity)
+    {
         this.id = activity.getId();
         this.activityDefinitionId = activity.getActivityId();
         this.activityDefinitionName = activity.getActivityName();

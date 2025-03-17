@@ -34,7 +34,6 @@ import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Constraint;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
-import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseDisjunction;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -54,25 +53,25 @@ public class DBDisjunction extends BaseDisjunction implements DBQueryBuilderComp
     {
         super(constraints);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported() */
     @Override
     public boolean isSupported()
     {
-       return true;
+        return true;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace.NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext) */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
-        //throw new QueryModelException("Disjunctions are not suported");
-        
+        // throw new QueryModelException("Disjunctions are not suported");
+
         for (Constraint constraint : getConstraints())
         {
             if (constraint instanceof DBQueryBuilderComponent)
@@ -88,8 +87,8 @@ public class DBDisjunction extends BaseDisjunction implements DBQueryBuilderComp
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map, java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map, java.util.List) */
     @Override
     public void buildJoins(Map<QName, DBQueryBuilderJoinCommand> singleJoins, List<DBQueryBuilderJoinCommand> multiJoins)
     {
@@ -105,26 +104,26 @@ public class DBDisjunction extends BaseDisjunction implements DBQueryBuilderComp
                 throw new UnsupportedOperationException();
             }
         }
-        
+
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util.List) */
     @Override
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {
         DBQueryBuilderPredicatePartCommand open = new DBQueryBuilderPredicatePartCommand();
         open.setType(DBQueryBuilderPredicatePartCommandType.OPEN);
         predicatePartCommands.add(open);
-        
+
         boolean requiresOr = false;
-        
+
         for (Constraint constraint : getConstraints())
         {
             if (constraint instanceof DBQueryBuilderComponent)
             {
-                if(requiresOr)
+                if (requiresOr)
                 {
                     DBQueryBuilderPredicatePartCommand and = new DBQueryBuilderPredicatePartCommand();
                     and.setType(DBQueryBuilderPredicatePartCommandType.OR);
@@ -142,12 +141,11 @@ public class DBDisjunction extends BaseDisjunction implements DBQueryBuilderComp
                 throw new UnsupportedOperationException();
             }
         }
-        
+
         DBQueryBuilderPredicatePartCommand close = new DBQueryBuilderPredicatePartCommand();
         close.setType(DBQueryBuilderPredicatePartCommandType.CLOSE);
         predicatePartCommands.add(close);
-        
-    }
 
+    }
 
 }

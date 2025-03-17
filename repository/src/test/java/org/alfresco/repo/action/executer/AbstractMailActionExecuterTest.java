@@ -25,12 +25,6 @@
  */
 package org.alfresco.repo.action.executer;
 
-import jakarta.mail.Address;
-import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.internet.MimeMessage.RecipientType;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -41,6 +35,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import jakarta.mail.Address;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMessage.RecipientType;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
@@ -64,19 +68,9 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.context.ApplicationContext;
 
 /**
- * Provides tests for the MailActionExecuter class.  Most of this logic was in MailActionExecuterTest.
- * Cloud code now includes extra tests and different rule config.
- * Unfortunately this is messy due to the extensive use of static variables and Junit rules annotations.
- * This class contains most of the test code, child classes actually set up the ClassRules and test fixtures, of
- * particular importance is the static setupRuleChain() method in the child classes.  The name is just a convention because
- * it can't actually be enforced.  The setupRuleChain() actually creates the users, as well as ordering the rules.
- * You will see the AlfrescoPerson variables below are initialized as null, the assumption is that the child classes will
- * create these users before they are needed (in the setupRuleChain() method), again this can't be enforced :(.
+ * Provides tests for the MailActionExecuter class. Most of this logic was in MailActionExecuterTest. Cloud code now includes extra tests and different rule config. Unfortunately this is messy due to the extensive use of static variables and Junit rules annotations. This class contains most of the test code, child classes actually set up the ClassRules and test fixtures, of particular importance is the static setupRuleChain() method in the child classes. The name is just a convention because it can't actually be enforced. The setupRuleChain() actually creates the users, as well as ordering the rules. You will see the AlfrescoPerson variables below are initialized as null, the assumption is that the child classes will create these users before they are needed (in the setupRuleChain() method), again this can't be enforced :(.
  *
  */
 public abstract class AbstractMailActionExecuterTest
@@ -256,8 +250,8 @@ public abstract class AbstractMailActionExecuterTest
 
         Assert.assertNotNull(message);
         Assert.assertEquals(text, message.getContent());
-        Assert.assertEquals("text/plain", // Ignore charset 
-                            message.getDataHandler().getContentType().substring(0, 10));
+        Assert.assertEquals("text/plain", // Ignore charset
+                message.getDataHandler().getContentType().substring(0, 10));
 
         // HTML opening tag
         text = "<html><body>HTML emails are great</body></html>";
@@ -265,8 +259,8 @@ public abstract class AbstractMailActionExecuterTest
 
         Assert.assertNotNull(message);
         Assert.assertEquals(text, message.getContent());
-        Assert.assertEquals("text/html", // Ignore charset 
-                            message.getDataHandler().getContentType().substring(0, 9));
+        Assert.assertEquals("text/html", // Ignore charset
+                message.getDataHandler().getContentType().substring(0, 9));
 
         // HTML Doctype
         text = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<body>More complex HTML</body></html>";
@@ -274,8 +268,8 @@ public abstract class AbstractMailActionExecuterTest
 
         Assert.assertNotNull(message);
         Assert.assertEquals(text, message.getContent());
-        Assert.assertEquals("text/html", // Ignore charset 
-                            message.getDataHandler().getContentType().substring(0, 9));
+        Assert.assertEquals("text/html", // Ignore charset
+                message.getDataHandler().getContentType().substring(0, 9));
     }
 
     protected MimeMessage sendMessage(String from, Serializable recipients, String subject, String template)
@@ -290,6 +284,7 @@ public abstract class AbstractMailActionExecuterTest
     {
         return sendMessage(from, subject, template, null, mailAction);
     }
+
     protected MimeMessage sendMessage(String from, String subject, String template, String bodyText, final Action mailAction)
     {
         if (from != null)
@@ -367,10 +362,10 @@ public abstract class AbstractMailActionExecuterTest
             mailAction.setParameterValue(MailActionExecuter.PARAM_TEXT, "This is a test message.");
 
             TRANSACTION_SERVICE.getRetryingTransactionHelper().doInTransaction(
-                (RetryingTransactionCallback<Void>) () -> {
-                    ACTION_EXECUTER.executeImpl(mailAction, null);
-                    return null;
-                });
+                    (RetryingTransactionCallback<Void>) () -> {
+                        ACTION_EXECUTER.executeImpl(mailAction, null);
+                        return null;
+                    });
         }
         finally
         {
@@ -403,7 +398,7 @@ public abstract class AbstractMailActionExecuterTest
             RetryingTransactionHelper txHelper = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
 
             MimeMessage mm = txHelper.doInTransaction(
-                () -> ACTION_EXECUTER.prepareEmail(mailAction, null, null, null).getMimeMessage(), true);
+                    () -> ACTION_EXECUTER.prepareEmail(mailAction, null, null, null).getMimeMessage(), true);
 
             Address[] addresses = mm.getRecipients(Message.RecipientType.TO);
             Assert.assertEquals(1, addresses.length);
@@ -429,22 +424,22 @@ public abstract class AbstractMailActionExecuterTest
         mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Test Subject Params");
         mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, getModel());
         Pair<String, Locale> recipient = new Pair<>("test", Locale.ENGLISH);
-        
-        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[] {"Test", "Subject", "Params", "Object", "Array"});
+
+        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[]{"Test", "Subject", "Params", "Object", "Array"});
         Assert.assertNotNull("We should support Object[] value for PARAM_SUBJECT_PARAMS", ACTION_EXECUTER.prepareEmail(mailAction, null, recipient, null));
-        
+
         ArrayList<Object> params = new ArrayList<>();
         params.add("Test");
         params.add("Subject");
         params.add("Params");
         params.add("ArrayList");
-        
+
         mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, params);
         Assert.assertNotNull("We should support List<Object> value for PARAM_SUBJECT_PARAMS", ACTION_EXECUTER.prepareEmail(mailAction, null, recipient, null));
-        
+
         mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, "Test Subject Params Single String");
         Assert.assertNotNull("We should support String value for PARAM_SUBJECT_PARAMS", ACTION_EXECUTER.prepareEmail(mailAction, null, recipient, null));
-        
+
         mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, null);
         Assert.assertNotNull("We should support null value for PARAM_SUBJECT_PARAMS", ACTION_EXECUTER.prepareEmail(mailAction, null, recipient, null));
     }
@@ -452,8 +447,10 @@ public abstract class AbstractMailActionExecuterTest
     /**
      * Creates a test user with the specified username and optionally custom email.
      * 
-     * @param userName String
-     * @param email Optional, if not specified assigned to <code>userName + "@email.com"</code>
+     * @param userName
+     *            String
+     * @param email
+     *            Optional, if not specified assigned to <code>userName + "@email.com"</code>
      * @return NodeRef
      */
     private NodeRef createUser(String userName, String email)
@@ -474,11 +471,11 @@ public abstract class AbstractMailActionExecuterTest
     public void testUserWithNonExistingTenant()
     {
         final String USER_WITH_NON_EXISTING_TENANT = "test_user_non_tenant@non_existing_tenant.com";
-        
+
         try
         {
             createUser(USER_WITH_NON_EXISTING_TENANT, USER_WITH_NON_EXISTING_TENANT);
-        
+
             final Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
             mailAction.setParameterValue(MailActionExecuter.PARAM_TO, USER_WITH_NON_EXISTING_TENANT);
             mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
@@ -487,10 +484,10 @@ public abstract class AbstractMailActionExecuterTest
             // run as non admin and non system
             AuthenticationUtil.setFullyAuthenticatedUser(BRITISH_USER.getUsername());
             TRANSACTION_SERVICE.getRetryingTransactionHelper().doInTransaction(
-                (RetryingTransactionCallback<Void>) () -> {
-                    ACTION_EXECUTER.executeImpl(mailAction, null);
-                    return null;
-                });
+                    (RetryingTransactionCallback<Void>) () -> {
+                        ACTION_EXECUTER.executeImpl(mailAction, null);
+                        return null;
+                    });
         }
         finally
         {
@@ -501,9 +498,10 @@ public abstract class AbstractMailActionExecuterTest
             AuthenticationUtil.clearCurrentSecurityContext();
         }
     }
-    
+
     /**
      * Test for MNT-11488
+     * 
      * @throws MessagingException
      */
     @Test
@@ -511,8 +509,8 @@ public abstract class AbstractMailActionExecuterTest
     {
         final String USER_1 = "recipient1";
         final String USER_2 = "recipient2";
-        final String[] recipientsArray = { USER_1 + "@email.com", USER_2 + "@email.com" };
-        final List<String> recipientsResult = new ArrayList<>(Arrays.asList(recipientsArray)) ;
+        final String[] recipientsArray = {USER_1 + "@email.com", USER_2 + "@email.com"};
+        final List<String> recipientsResult = new ArrayList<>(Arrays.asList(recipientsArray));
 
         try
         {
@@ -536,7 +534,7 @@ public abstract class AbstractMailActionExecuterTest
             Assert.assertNotNull(message);
             Assert.assertEquals("One email should be sent", 1, ACTION_EXECUTER.getTestSentCount());
             Assert.assertEquals("All recipients should receive single message", 2, message.getAllRecipients().length);
-            
+
             Assert.assertTrue("Both users should receive message", recipientsResult.contains(((InternetAddress) message.getAllRecipients()[0]).getAddress()));
             Assert.assertTrue("Both users should receive message", recipientsResult.contains(((InternetAddress) message.getAllRecipients()[1]).getAddress()));
         }
@@ -549,7 +547,8 @@ public abstract class AbstractMailActionExecuterTest
     }
 
     /**
-     * Test for CC / BCC 
+     * Test for CC / BCC
+     * 
      * @throws MessagingException
      */
     @Test
@@ -633,7 +632,7 @@ public abstract class AbstractMailActionExecuterTest
         final String USER_4_USERNAME = "user12464_4@mnt12464mail.com";
         final String USER_5_USERNAME = "user12464_5@mnt12464mail.com";
 
-        String[] users = new String[] { USER_1, USER_2, USER_3, USER_4_USERNAME, USER_5_USERNAME };
+        String[] users = new String[]{USER_1, USER_2, USER_3, USER_4_USERNAME, USER_5_USERNAME};
 
         final String GROUP_1_SHORT_NAME = "mnt12464group1";
         final String GROUP_1 = "GROUP_" + GROUP_1_SHORT_NAME;
@@ -689,7 +688,7 @@ public abstract class AbstractMailActionExecuterTest
             Assert.assertEquals("Must be received one letter on each recipient", users.length, ACTION_EXECUTER.getTestSentCount());
 
             // testing for GROUP_EVERYONE
-            
+
             ACTION_EXECUTER.resetTestSentCount();
             everyoneSending();
             int before = ACTION_EXECUTER.getTestSentCount();
@@ -768,6 +767,7 @@ public abstract class AbstractMailActionExecuterTest
 
     /**
      * Test for MNT-17970
+     * 
      * @throws IOException
      * @throws MessagingException
      */
@@ -825,8 +825,8 @@ public abstract class AbstractMailActionExecuterTest
     public void testSendingToArrayOfCarbonCopyAndBlindCarbonCopyUsers() throws MessagingException
     {
         Map<String, Serializable> params = new HashMap<>();
-        String[] ccArray = { "cc_user1@example.com", "cc_user2@example.com" };
-        String[] bccArray = { "bcc_user3@example.com", "bcc_user4@example.com", "bcc_user5@example.com" };
+        String[] ccArray = {"cc_user1@example.com", "cc_user2@example.com"};
+        String[] bccArray = {"bcc_user3@example.com", "bcc_user4@example.com", "bcc_user5@example.com"};
         params.put(MailActionExecuter.PARAM_FROM, "sender@email.com");
         params.put(MailActionExecuter.PARAM_TO, "test@email.com");
         params.put(MailActionExecuter.PARAM_CC, ccArray);
@@ -850,7 +850,7 @@ public abstract class AbstractMailActionExecuterTest
         Assert.assertEquals(3, bccs.length);
         Assert.assertTrue(ccs[0].toString().contains("cc_user1") && ccs[1].toString().contains("cc_user2"));
         Assert.assertTrue(bccs[0].toString().contains("bcc_user3") && bccs[1].toString().contains("bcc_user4")
-                          && bccs[2].toString().contains("bcc_user5"));
+                && bccs[2].toString().contains("bcc_user5"));
     }
 
     /**
@@ -890,7 +890,7 @@ public abstract class AbstractMailActionExecuterTest
         Assert.assertEquals(3, bccs.length);
         Assert.assertTrue(ccs[0].toString().contains("cc_user1") && ccs[1].toString().contains("cc_user2"));
         Assert.assertTrue(bccs[0].toString().contains("bcc_user3") && bccs[1].toString().contains("bcc_user4")
-                          && bccs[2].toString().contains("bcc_user5"));
+                && bccs[2].toString().contains("bcc_user5"));
     }
 
 }

@@ -41,35 +41,35 @@ import org.alfresco.service.cmr.repository.NodeService;
  */
 public class SiteContainersCannedQueryFactory extends AbstractCannedQueryFactory<FileInfo>
 {
-	private FileFolderService fileFolderService;
-	private NodeService nodeService;
+    private FileFolderService fileFolderService;
+    private NodeService nodeService;
     private MethodSecurityBean<FileInfo> methodSecurity;
 
-	public void setMethodSecurity(MethodSecurityBean<FileInfo> methodSecurity)
-	{
-		this.methodSecurity = methodSecurity;
-	}
+    public void setMethodSecurity(MethodSecurityBean<FileInfo> methodSecurity)
+    {
+        this.methodSecurity = methodSecurity;
+    }
 
-	public void setFileFolderService(FileFolderService fileFolderService)
-	{
-		this.fileFolderService = fileFolderService;
-	}
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
 
-	public void setNodeService(NodeService nodeService)
-	{
-		this.nodeService = nodeService;
-	}
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
 
-	@Override
+    @Override
     public CannedQuery<FileInfo> getCannedQuery(CannedQueryParameters parameters)
     {
-    	Object parameterBean = parameters.getParameterBean();
-    	CannedQuery<FileInfo> cq = null;
-    	if(parameterBean instanceof SiteContainersCannedQueryParams)
-    	{
-    		cq = new SiteContainersCannedQuery(fileFolderService, nodeService, parameters, methodSecurity);
-    	}
-        return (CannedQuery<FileInfo>)cq;
+        Object parameterBean = parameters.getParameterBean();
+        CannedQuery<FileInfo> cq = null;
+        if (parameterBean instanceof SiteContainersCannedQueryParams)
+        {
+            cq = new SiteContainersCannedQuery(fileFolderService, nodeService, parameters, methodSecurity);
+        }
+        return (CannedQuery<FileInfo>) cq;
     }
 
 }

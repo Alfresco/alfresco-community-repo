@@ -25,8 +25,9 @@
  */
 package org.alfresco.repo.model.filefolder;
 
-import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
+
+import org.alfresco.util.PropertyCheck;
 
 /**
  * Spring bean defining a hidden node filter.
@@ -44,19 +45,18 @@ public class HiddenFileFilter implements InitializingBean
     private boolean cmisDisableHideConfig;
 
     public HiddenFileFilter()
-    {
-    }
+    {}
 
     public void setFilter(String filter)
     {
         this.filter = filter;
     }
-    
+
     public void setVisibility(String visibility)
     {
         this.visibility = visibility;
     }
-    
+
     public String getFilter()
     {
         return filter;
@@ -66,7 +66,7 @@ public class HiddenFileFilter implements InitializingBean
     {
         return visibility;
     }
-    
+
     public String getHiddenAttribute()
     {
         return hiddenAttribute;
@@ -76,27 +76,27 @@ public class HiddenFileFilter implements InitializingBean
     {
         this.hiddenAttribute = hiddenAttribute;
     }
-    
+
     public void setCascadeHiddenAspect(boolean cascadeHiddenAspect)
     {
-		this.cascadeHiddenAspect = cascadeHiddenAspect;
-	}
+        this.cascadeHiddenAspect = cascadeHiddenAspect;
+    }
 
-	public boolean cascadeHiddenAspect()
+    public boolean cascadeHiddenAspect()
     {
-		return cascadeHiddenAspect;
-	}
+        return cascadeHiddenAspect;
+    }
 
     public void setCascadeIndexControlAspect(boolean cascadeIndexControlAspect)
     {
-		this.cascadeIndexControlAspect = cascadeIndexControlAspect;
-	}
+        this.cascadeIndexControlAspect = cascadeIndexControlAspect;
+    }
 
-	public boolean cascadeIndexControlAspect()
+    public boolean cascadeIndexControlAspect()
     {
-		return cascadeIndexControlAspect;
-	}
-	
+        return cascadeIndexControlAspect;
+    }
+
     public void setCmisDisableHideConfig(boolean cmisDisableHideConfig)
     {
         this.cmisDisableHideConfig = cmisDisableHideConfig;
@@ -106,18 +106,18 @@ public class HiddenFileFilter implements InitializingBean
     {
         return cmisDisableHideConfig;
     }
-	/*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet() */
     public void afterPropertiesSet() throws Exception
     {
         PropertyCheck.mandatory(this, "filter", filter);
-        if(visibility == null)
+        if (visibility == null)
         {
             visibility = "";
         }
-        if(hiddenAttribute == null)
+        if (hiddenAttribute == null)
         {
             hiddenAttribute = "";
         }

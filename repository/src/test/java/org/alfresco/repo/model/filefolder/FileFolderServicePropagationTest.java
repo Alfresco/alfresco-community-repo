@@ -28,6 +28,11 @@ package org.alfresco.repo.model.filefolder;
 import java.util.List;
 
 import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
@@ -47,11 +52,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @see FileFolderService
@@ -66,11 +66,9 @@ public class FileFolderServicePropagationTest extends TestCase
 
     private static final String ADMIN_USER_NAME = "admin";
 
-
     private ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
 
     private Boolean defaultPreservationValue;
-
 
     private MutableAuthenticationService authenticationService;
 
@@ -92,7 +90,6 @@ public class FileFolderServicePropagationTest extends TestCase
 
     private FileInfo testEmptyFolder;
 
-
     @Before
     public void setUp() throws Exception
     {
@@ -111,13 +108,11 @@ public class FileFolderServicePropagationTest extends TestCase
         nodeService = serviceRegistry.getNodeService();
         repositoryHelper = (Repository) applicationContext.getBean("repositoryHelper");
 
-        testFile = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
-        {
+        testFile = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>() {
             @Override
             public FileInfo execute() throws Throwable
             {
-                FileInfo result = AuthenticationUtil.runAs(new RunAsWork<FileInfo>()
-                {
+                FileInfo result = AuthenticationUtil.runAs(new RunAsWork<FileInfo>() {
                     @Override
                     public FileInfo doWork() throws Exception
                     {
@@ -143,8 +138,7 @@ public class FileFolderServicePropagationTest extends TestCase
                     }
                 }, ADMIN_USER_NAME);
 
-                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
                     @Override
                     public Void doWork() throws Exception
                     {
@@ -165,13 +159,11 @@ public class FileFolderServicePropagationTest extends TestCase
         // Resetting to default value...
         fileFolderService.setPreserveAuditableData(defaultPreservationValue);
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
-                return AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-                {
+                return AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
                     @Override
                     public Void doWork() throws Exception
                     {
@@ -183,7 +175,6 @@ public class FileFolderServicePropagationTest extends TestCase
             }
         });
     }
-
 
     @Test
     public void testPreservingPropertiesOfDocumentMnt8109() throws Exception
@@ -199,8 +190,7 @@ public class FileFolderServicePropagationTest extends TestCase
 
         // Enabling preservation of modification properties data...
         fileFolderService.setPreserveAuditableData(true);
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -225,8 +215,7 @@ public class FileFolderServicePropagationTest extends TestCase
 
         // Enabling preservation of modification properties data...
         fileFolderService.setPreserveAuditableData(true);
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -251,8 +240,7 @@ public class FileFolderServicePropagationTest extends TestCase
 
         // Enabling preservation of modification properties data...
         fileFolderService.setPreserveAuditableData(true);
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -262,8 +250,7 @@ public class FileFolderServicePropagationTest extends TestCase
             }
         });
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -275,7 +262,6 @@ public class FileFolderServicePropagationTest extends TestCase
         });
     }
 
-
     private void moveObjectAndAssert(FileInfo object) throws FileNotFoundException
     {
         FileInfo moved = fileFolderService.move(object.getNodeRef(), testEmptyFolder.getNodeRef(), object.getName());
@@ -283,7 +269,6 @@ public class FileFolderServicePropagationTest extends TestCase
         assertEquals(object.getModifiedDate(), moved.getModifiedDate());
         assertEquals(object.getProperties().get(ContentModel.PROP_MODIFIER), moved.getProperties().get(ContentModel.PROP_MODIFIER));
     }
-
 
     @Test
     public void testNotPreservingPropertiesOfDocumentMnt8109() throws Exception
@@ -297,10 +282,9 @@ public class FileFolderServicePropagationTest extends TestCase
             // Just stop to wait for the end of...
         }
 
-        // Disabling preservation of modification properties data... 
+        // Disabling preservation of modification properties data...
         fileFolderService.setPreserveAuditableData(false);
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -327,8 +311,7 @@ public class FileFolderServicePropagationTest extends TestCase
 
         // Disabling preservation of modification properties data...
         fileFolderService.setPreserveAuditableData(false);
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -355,8 +338,7 @@ public class FileFolderServicePropagationTest extends TestCase
 
         // Disabling preservation of modification properties data...
         fileFolderService.setPreserveAuditableData(false);
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -366,8 +348,7 @@ public class FileFolderServicePropagationTest extends TestCase
             }
         });
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -379,7 +360,6 @@ public class FileFolderServicePropagationTest extends TestCase
             }
         });
     }
-
 
     private void moveObjectAndAssertAbsenceOfPropertiesPreserving(FileInfo object) throws FileNotFoundException
     {

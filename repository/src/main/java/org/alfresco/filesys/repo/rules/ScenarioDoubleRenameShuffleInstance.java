@@ -32,6 +32,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.filesys.repo.rules.commands.CompoundCommand;
 import org.alfresco.filesys.repo.rules.commands.CopyContentCommand;
 import org.alfresco.filesys.repo.rules.commands.DeleteFileCommand;
@@ -40,167 +43,154 @@ import org.alfresco.filesys.repo.rules.commands.RenameFileCommand;
 import org.alfresco.filesys.repo.rules.operations.MoveFileOperation;
 import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.alfresco.jlan.server.filesys.FileName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * This is an instance of a "double rename shuffle" triggered by rename of a file to a special pattern
- * file matching a specified pattern.  (*.backup.fm)
+ * This is an instance of a "double rename shuffle" triggered by rename of a file to a special pattern file matching a specified pattern. (*.backup.fm)
  * 
- * a) Existing file moved out of the way. X.fm to X.backup.fm
- * b) New file moved into place. X.fm.C29 X.fm
+ * a) Existing file moved out of the way. X.fm to X.backup.fm b) New file moved into place. X.fm.C29 X.fm
  * <p>
- * If this filter is active then this is what happens.
- * a) Existing file moved out of the way (Y to Z).   Raname tracked.
- * b) New file moved into place (X to Y).   
+ * If this filter is active then this is what happens. a) Existing file moved out of the way (Y to Z). Raname tracked. b) New file moved into place (X to Y).
  * 
  * Scenario kicks in to change commands.
  */
 public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
 {
     private static Log logger = LogFactory.getLog(ScenarioDoubleRenameShuffleInstance.class);
-    
-    enum InternalState 
+
+    enum InternalState
     {
-        NONE,
-        RENAME1,
-        RENAME2
+        NONE, RENAME1, RENAME2
     }
-       
+
     InternalState internalState = InternalState.NONE;
-    
+
     private Date startTime = new Date();
-    
+
     private String fileMiddle;
     private String fileFrom;
     private String fileEnd;
-    
+
     private Ranking ranking;
     private boolean deleteBackup;
     private boolean moveAsSystem;
     private Pattern interimPattern;
-    
+
     /**
-     * Timeout in ms.  Default 30 seconds.
+     * Timeout in ms. Default 30 seconds.
      */
     private long timeout = 30000;
-    
+
     private boolean isComplete;
     private String folderMiddle;
     private String folderEnd;
-    
+
     /**
      * Keep track of re-names
      */
     private Map<String, String> renames = new HashMap<String, String>();
-    
+
     /**
      * Evaluate the next operation
+     * 
      * @param operation
      */
     public Command evaluate(Operation operation)
     {
-            
+
         /**
          * Anti-pattern : timeout
          */
         Date now = new Date();
-        if(now.getTime() > startTime.getTime() + getTimeout())
+        if (now.getTime() > startTime.getTime() + getTimeout())
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Instance timed out");
-                
+
             }
             isComplete = true;
             return null;
         }
-        
+
         switch (internalState)
         {
-        
+
         case NONE:
-            
+
             /**
              * Looking for first rename Y(middle) to Z(end)
-             */              
-            if(operation instanceof RenameFileOperation)
+             */
+            if (operation instanceof RenameFileOperation)
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Got first rename - tracking rename: " + operation);
                 }
-                RenameFileOperation r = (RenameFileOperation)operation;
+                RenameFileOperation r = (RenameFileOperation) operation;
                 fileMiddle = r.getFrom();
                 fileEnd = r.getTo();
-                
+
                 String[] paths = FileName.splitPath(r.getFromPath());
                 folderMiddle = paths[0];
-                
+
                 String[] paths2 = FileName.splitPath(r.getToPath());
                 folderEnd = paths2[0];
-                
+
                 internalState = InternalState.RENAME1;
-                
-                return  new RenameFileCommand(r.getFrom(), r.getTo(), r.getRootNodeRef(), r.getFromPath(), r.getToPath());   
+
+                return new RenameFileCommand(r.getFrom(), r.getTo(), r.getRootNodeRef(), r.getFromPath(), r.getToPath());
             }
             else
             {
                 // anything else bomb out
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("State error, expected a RENAME");
                 }
                 isComplete = true;
             }
-            
-              
+
         case RENAME1:
-            
+
             /**
              * Looking for the second of two renames X(createName) to Y(middle) to Z(end)
-             */              
-            if(operation instanceof RenameFileOperation)
+             */
+            if (operation instanceof RenameFileOperation)
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Tracking rename: " + operation);
                 }
-                RenameFileOperation r = (RenameFileOperation)operation;
-            
+                RenameFileOperation r = (RenameFileOperation) operation;
+
                 // Now see if this rename makes a pair
-                if(fileMiddle.equalsIgnoreCase(r.getTo()))
+                if (fileMiddle.equalsIgnoreCase(r.getTo()))
                 {
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
-                        logger.debug("Got second rename" );
+                        logger.debug("Got second rename");
                     }
-                    
+
                     fileFrom = r.getFrom();
-                    
+
                     /**
-                     * This shuffle reverses the rename out of the way and then copies the 
-                     * content only.   Finally it moves the temp file into place for the subsequent 
-                     * delete.
-                     * a) Rename Z to Y (Reverse previous move)
-                     * b) Copy Content from X to Y
-                     * c) Rename X to Z (move temp file out to old location)
+                     * This shuffle reverses the rename out of the way and then copies the content only. Finally it moves the temp file into place for the subsequent delete. a) Rename Z to Y (Reverse previous move) b) Copy Content from X to Y c) Rename X to Z (move temp file out to old location)
                      */
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("Go and shuffle! fromName:" + fileFrom + " middle: " + fileMiddle + " end: " + fileEnd);
                     }
-                        
+
                     String[] paths = FileName.splitPath(r.getFromPath());
                     String oldFolder = paths[0];
-           
+
                     ArrayList<Command> commands = new ArrayList<Command>();
-                    
+
                     RenameFileCommand r1 = new RenameFileCommand(fileEnd, fileMiddle, r.getRootNodeRef(), oldFolder + "\\" + fileEnd, oldFolder + "\\" + fileMiddle);
                     commands.add(r1);
                     CopyContentCommand copyContent = new CopyContentCommand(fileFrom, fileMiddle, r.getRootNodeRef(), oldFolder + "\\" + fileFrom, oldFolder + "\\" + fileMiddle);
                     commands.add(copyContent);
-                    if(deleteBackup)
+                    if (deleteBackup)
                     {
                         logger.debug("deleteBackup option turned on");
                         DeleteFileCommand d1 = new DeleteFileCommand(oldFolder, r.getRootNodeRef(), oldFolder + "\\" + fileFrom);
@@ -210,59 +200,53 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
                     {
                         RenameFileCommand r2 = new RenameFileCommand(fileFrom, fileEnd, r.getRootNodeRef(), oldFolder + "\\" + fileFrom, oldFolder + "\\" + fileEnd);
                         commands.add(r2);
-                    }   
-                    
+                    }
+
                     /**
-                     * TODO - we may need to copy a new node for the backup and delete the temp node.
-                     * It depends if we care about the contents of the Backup file.
+                     * TODO - we may need to copy a new node for the backup and delete the temp node. It depends if we care about the contents of the Backup file.
                      */
-                    
+
                     isComplete = true;
-                    return new CompoundCommand(commands);                                        
+                    return new CompoundCommand(commands);
                 }
             }
 
-            if(operation instanceof MoveFileOperation)
+            if (operation instanceof MoveFileOperation)
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.info("Tracking rename: " + operation);
                 }
-                MoveFileOperation r = (MoveFileOperation)operation;
-            
+                MoveFileOperation r = (MoveFileOperation) operation;
+
                 // Now see if this rename makes a pair
-                if(fileMiddle.equalsIgnoreCase(r.getTo()))
+                if (fileMiddle.equalsIgnoreCase(r.getTo()))
                 {
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
-                        logger.debug("Got second rename" );
+                        logger.debug("Got second rename");
                     }
-                    
+
                     fileFrom = r.getFrom();
-                    
+
                     /**
-                     * This shuffle reverses the rename out of the way and then copies the 
-                     * content only.   Finally it moves the temp file into place for the subsequent 
-                     * delete.
-                     * a) Rename Z to Y (Reverse previous move)
-                     * b) Copy Content from X to Y
-                     * c) Rename X to Z (move temp file out to old location)
+                     * This shuffle reverses the rename out of the way and then copies the content only. Finally it moves the temp file into place for the subsequent delete. a) Rename Z to Y (Reverse previous move) b) Copy Content from X to Y c) Rename X to Z (move temp file out to old location)
                      */
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("Go and shuffle! fromName:" + fileFrom + " middle: " + fileMiddle + " end: " + fileEnd);
                     }
-                        
+
                     String[] paths = FileName.splitPath(r.getFromPath());
                     String oldFolder = paths[0];
-           
+
                     ArrayList<Command> commands = new ArrayList<Command>();
-                    
+
                     RenameFileCommand r1 = new RenameFileCommand(fileEnd, fileMiddle, r.getRootNodeRef(), folderEnd + "\\" + fileEnd, folderMiddle + "\\" + fileMiddle);
                     commands.add(r1);
                     CopyContentCommand copyContent = new CopyContentCommand(fileFrom, fileMiddle, r.getRootNodeRef(), oldFolder + "\\" + fileFrom, folderMiddle + "\\" + fileMiddle);
                     commands.add(copyContent);
-                    if(deleteBackup)
+                    if (deleteBackup)
                     {
                         logger.debug("deleteBackup option turned on");
                         DeleteFileCommand d1 = new DeleteFileCommand(oldFolder, r.getRootNodeRef(), oldFolder + "\\" + fileFrom);
@@ -270,14 +254,13 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
                     }
                     else
                     {
-                       MoveFileCommand m1 = new MoveFileCommand(fileFrom, fileEnd, r.getRootNodeRef(), oldFolder + "\\" + fileFrom, folderEnd + "\\" + fileEnd, isMoveAsSystem());
-                       commands.add(m1);
+                        MoveFileCommand m1 = new MoveFileCommand(fileFrom, fileEnd, r.getRootNodeRef(), oldFolder + "\\" + fileFrom, folderEnd + "\\" + fileEnd, isMoveAsSystem());
+                        commands.add(m1);
                     }
                     /**
-                     * TODO - we may need to copy a new node for the backup and delete the temp node.
-                     * It depends if we care about the contents of the Backup file.
+                     * TODO - we may need to copy a new node for the backup and delete the temp node. It depends if we care about the contents of the Backup file.
                      */
-                    
+
                     isComplete = true;
                     return new CompoundCommand(commands);
                 }
@@ -287,24 +270,24 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
                     {
                         // ALF-16257: temporary Word file moved from .TemporaryItems
                         Matcher m = interimPattern.matcher(r.getFromPath());
-                        if(m.matches() && r.getFrom().equals(r.getTo()))
+                        if (m.matches() && r.getFrom().equals(r.getTo()))
                         {
-                            if(logger.isDebugEnabled())
+                            if (logger.isDebugEnabled())
                             {
                                 logger.debug("Got system move from temporary folder: " + r.getFrom() + " to " + r.getToPath());
                             }
-                            return  new MoveFileCommand(r.getFrom(), r.getTo(), r.getRootNodeRef(), r.getFromPath(), r.getToPath(), true);
+                            return new MoveFileCommand(r.getFrom(), r.getTo(), r.getRootNodeRef(), r.getFromPath(), r.getToPath(), true);
                         }
                     }
                 }
             }
-                
+
             break;
         }
-        
+
         return null;
     }
-    
+
     public boolean isMoveAsSystem()
     {
         return moveAsSystem;
@@ -326,12 +309,12 @@ public class ScenarioDoubleRenameShuffleInstance implements ScenarioInstance
     {
         return ranking;
     }
-    
+
     public void setRanking(Ranking ranking)
     {
         this.ranking = ranking;
     }
-    
+
     public String toString()
     {
         return "ScenarioDoubleRename:" + fileMiddle;

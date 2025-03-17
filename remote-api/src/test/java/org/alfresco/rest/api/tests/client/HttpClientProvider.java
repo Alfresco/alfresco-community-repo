@@ -38,9 +38,10 @@ public interface HttpClientProvider
      * @return the {@link HttpClient} instance to use for the next HTTP-call.
      */
     HttpClient getHttpClient();
-    
+
     /**
-     * @param path relative path of the URL from alfresco host.
+     * @param path
+     *            relative path of the URL from alfresco host.
      * @return full URL including hostname and port for the given path.
      */
     String getFullAlfrescoUrlForPath(String path);

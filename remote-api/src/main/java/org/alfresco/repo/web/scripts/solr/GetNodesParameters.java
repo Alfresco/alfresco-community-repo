@@ -40,21 +40,21 @@ public class GetNodesParameters
     private List<Long> transactionIds;
     private Long fromNodeId;
     private Long toNodeId;
-    
+
     private String storeProtocol;
     private String storeIdentifier;
-    
+
     private Set<QName> includeNodeTypes;
     private Set<QName> excludeNodeTypes;
-    
+
     private Set<QName> includeAspects;
     private Set<QName> excludeAspects;
-    
+
     public boolean getStoreFilter()
     {
         return (storeProtocol != null || storeIdentifier != null);
     }
-    
+
     public void setStoreProtocol(String storeProtocol)
     {
         this.storeProtocol = storeProtocol;
@@ -74,7 +74,7 @@ public class GetNodesParameters
     {
         return storeIdentifier;
     }
-    
+
     public void setTransactionIds(List<Long> txnIds)
     {
         this.transactionIds = txnIds;

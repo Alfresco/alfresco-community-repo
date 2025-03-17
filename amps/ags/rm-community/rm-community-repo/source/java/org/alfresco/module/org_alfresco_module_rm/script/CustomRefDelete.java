@@ -32,14 +32,15 @@ import static org.alfresco.util.WebScriptUtils.getRequestParameterValue;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.rule.RuleService;
-import org.alfresco.service.cmr.rule.RuleType;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.rule.RuleType;
 
 /**
  * Implementation for Java backed webscript to remove RM custom relationship from a node.
@@ -73,7 +74,8 @@ public class CustomRefDelete extends AbstractRmWebScript
     /**
      * Sets the relationship service instance
      *
-     * @param relationshipService The relationship service instance
+     * @param relationshipService
+     *            The relationship service instance
      */
     public void setRelationshipService(RelationshipService relationshipService)
     {
@@ -93,7 +95,8 @@ public class CustomRefDelete extends AbstractRmWebScript
     /**
      * Sets the rule service instance
      *
-     * @param ruleService The rule service instance
+     * @param ruleService
+     *            The rule service instance
      */
     public void setRuleService(RuleService ruleService)
     {
@@ -101,9 +104,7 @@ public class CustomRefDelete extends AbstractRmWebScript
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -125,7 +126,8 @@ public class CustomRefDelete extends AbstractRmWebScript
     /**
      * Removes a custom relationship
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      */
     private void removeCustomRelationship(WebScriptRequest req)
     {
@@ -140,7 +142,8 @@ public class CustomRefDelete extends AbstractRmWebScript
     /**
      * Gets the target node
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      * @return The target node
      */
     private NodeRef getTargetNode(WebScriptRequest req)

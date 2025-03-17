@@ -25,11 +25,13 @@
  */
 package org.alfresco.repo.security.person;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -42,9 +44,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ArgumentHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
 
 /**
  * A simple program to load users into the system.
@@ -143,8 +142,7 @@ public class PersonServiceLoader
             }
 
             RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
-            helper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            helper.doInTransaction(new RetryingTransactionCallback<Void>() {
                 public Void execute() throws Throwable
                 {
                     NodeRef person = personService.getPerson(username);
@@ -157,7 +155,6 @@ public class PersonServiceLoader
                 }
             }, true, true);
 
-            
             NodeRef autoPerson = personService.getPerson(GUID.generate());
             NodeRef autoHomeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(autoPerson, ContentModel.PROP_HOMEFOLDER));
             if (autoHomeFolder == null)
@@ -220,8 +217,7 @@ public class PersonServiceLoader
             }
             try
             {
-                RetryingTransactionCallback<Integer> makeUsersCallback = new RetryingTransactionCallback<Integer>()
-                {
+                RetryingTransactionCallback<Integer> makeUsersCallback = new RetryingTransactionCallback<Integer>() {
                     public Integer execute() throws Throwable
                     {
                         for (int i = 0; i < batchSize; i++)
@@ -269,8 +265,7 @@ public class PersonServiceLoader
                     waiter.join();
                 }
                 catch (InterruptedException e)
-                {
-                }
+                {}
             }
         }
     }

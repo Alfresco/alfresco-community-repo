@@ -48,13 +48,16 @@ public interface People
     String PARAM_ID = "id";
 
     String validatePerson(String personId);
+
     String validatePerson(String personId, boolean validateIsCurrentUser);
+
     NodeRef getAvatar(String personId);
 
     /**
      * Get a person. This included a full representation of the person.
      * 
-     * @throws NoSuchPersonException if personId does not exist
+     * @throws NoSuchPersonException
+     *             if personId does not exist
      */
     Person getPerson(final String personId);
 
@@ -66,7 +69,7 @@ public interface People
      * @return
      */
     Person getPerson(String personId, List<String> include);
-    
+
     /**
      * Create a person.
      *
@@ -78,8 +81,10 @@ public interface People
     /**
      * Update the given person's details.
      * 
-     * @param personId The identifier of a person.
-     * @param person The person details.
+     * @param personId
+     *            The identifier of a person.
+     * @param person
+     *            The person details.
      * @return The updated person details.
      */
     Person update(String personId, Person person);
@@ -94,20 +99,22 @@ public interface People
     /**
      * @deprecated from 7.1.0
      * 
-     * Request password reset (an email will be sent to the registered email of the given {@code userId}).
-     * The API returns a 202 response for a valid, as well as the invalid (does not exist or disabled) userId
+     *             Request password reset (an email will be sent to the registered email of the given {@code userId}). The API returns a 202 response for a valid, as well as the invalid (does not exist or disabled) userId
      *
-     * @param userId     the user id of the person requesting the password reset
-     * @param client the client name which is registered to send emails
+     * @param userId
+     *            the user id of the person requesting the password reset
+     * @param client
+     *            the client name which is registered to send emails
      */
     void requestPasswordReset(String userId, String client);
 
     /**
      * @deprecated from 7.1.0
      * 
-     * Performs password reset
+     *             Performs password reset
      *
-     * @param passwordReset the password reset details
+     * @param passwordReset
+     *            the password reset details
      */
     void resetPassword(String personId, PasswordReset passwordReset);
 

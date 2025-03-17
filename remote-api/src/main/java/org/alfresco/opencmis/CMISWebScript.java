@@ -39,23 +39,23 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
  */
 public class CMISWebScript extends AbstractWebScript
 {
-	private CMISDispatcherRegistry registry;
-	
+    private CMISDispatcherRegistry registry;
+
     public void setRegistry(CMISDispatcherRegistry registry)
     {
-		this.registry = registry;
-	}
+        this.registry = registry;
+    }
 
-	public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
+    public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
         CMISDispatcher dispatcher = registry.getDispatcher(req);
-        if(dispatcher == null)
+        if (dispatcher == null)
         {
-        	res.setStatus(404);	
+            res.setStatus(404);
         }
         else
         {
-        	dispatcher.execute(req, res);
+            dispatcher.execute(req, res);
         }
     }
 }

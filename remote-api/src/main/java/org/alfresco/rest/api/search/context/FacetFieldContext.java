@@ -28,8 +28,6 @@ package org.alfresco.rest.api.search.context;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 
 /**
  * The results of a Field Faceting
@@ -127,11 +125,11 @@ public class FacetFieldContext
         public String toString()
         {
             return "Bucket{" +
-                        "label='" + label + '\'' +
-                        ", filterQuery='" + filterQuery + '\'' +
-                        ", count=" + count +
-                        ", display=" + display +
-                        '}';
+                    "label='" + label + '\'' +
+                    ", filterQuery='" + filterQuery + '\'' +
+                    ", count=" + count +
+                    ", display=" + display +
+                    '}';
         }
     }
 }

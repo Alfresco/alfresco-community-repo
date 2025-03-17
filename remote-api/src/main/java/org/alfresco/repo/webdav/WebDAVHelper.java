@@ -35,20 +35,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.sync.events.types.ContentEvent;
-import org.alfresco.sync.events.types.ContentEventImpl;
-import org.alfresco.sync.events.types.Event;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.URLDecoder;
+import org.springframework.extensions.surf.util.URLEncoder;
+import org.springframework.util.StringUtils;
+import org.xml.sax.helpers.AttributesImpl;
+
 import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.model.ContentModel;
-import org.alfresco.sync.repo.Client;
-import org.alfresco.sync.repo.Client.ClientType;
-import org.alfresco.sync.repo.events.EventPreparator;
-import org.alfresco.sync.repo.events.EventPublisher;
-import org.alfresco.repo.lock.LockUtils;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.tenant.TenantService;
@@ -70,18 +68,20 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.sync.events.types.ContentEvent;
+import org.alfresco.sync.events.types.ContentEventImpl;
+import org.alfresco.sync.events.types.Event;
+import org.alfresco.sync.repo.Client;
+import org.alfresco.sync.repo.Client.ClientType;
+import org.alfresco.sync.repo.events.EventPreparator;
+import org.alfresco.sync.repo.events.EventPublisher;
 import org.alfresco.util.EqualsHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.URLDecoder;
-import org.springframework.extensions.surf.util.URLEncoder;
-import org.springframework.util.StringUtils;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * WebDAV Protocol Helper Class
  * 
- * <p>Provides helper methods for repository access using the WebDAV protocol.
+ * <p>
+ * Provides helper methods for repository access using the WebDAV protocol.
  * 
  * @author GKSpencer
  */
@@ -92,13 +92,12 @@ public class WebDAVHelper
 
     private static final String HTTPS_SCHEME = "https://";
     private static final String HTTP_SCHEME = "http://";
-    
 
     // Path seperator
-    public static final String PathSeperator   = "/";
+    public static final String PathSeperator = "/";
     public static final char PathSeperatorChar = '/';
     public static final String EMPTY_SITE_ID = "";
-    
+
     // Logging
     protected static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");
 
@@ -120,25 +119,25 @@ public class WebDAVHelper
     private HiddenAspect m_hiddenAspect;
     private EventPublisher eventPublisher;
     private ActivityPoster poster;
-    
+
     // pattern is tested against full path after it has been lower cased.
     private Pattern m_renameShufflePattern = Pattern.compile("(.*/\\..*)|(.*[a-f0-9]{8}+$)|(.*\\.tmp$)|(.*atmp[0-9]+$)|(.*\\.wbk$)|(.*\\.bak$)|(.*\\~$)|(.*backup.*\\.do[ct]{1}[x]?[m]?$)|(.*\\.sb\\-\\w{8}\\-\\w{6}$)");
-    
-    //  Empty XML attribute list
-    
+
+    // Empty XML attribute list
+
     private final AttributesImpl m_nullAttribs = new AttributesImpl();
-        
+
     private BehaviourFilter m_policyBehaviourFilter;
 
     private String m_urlPathPrefix;
-        
+
     private long sizeLimit = -1L;
-    
+
     /**
-     * This method sets a value for the limit. If the string does not {@link Long#parseLong(String) parse} to a
-     * java long.
+     * This method sets a value for the limit. If the string does not {@link Long#parseLong(String) parse} to a java long.
      * 
-     * @param limit a String representing a valid Java long.
+     * @param limit
+     *            a String representing a valid Java long.
      */
     public void setSizeLimitString(String limit)
     {
@@ -148,21 +147,21 @@ public class WebDAVHelper
         try
         {
             longLimit = Long.parseLong(limit);
-        } catch (NumberFormatException ignored)
+        }
+        catch (NumberFormatException ignored)
         {
             // Intentionally empty
         }
         this.sizeLimit = longLimit;
     }
-    
+
     /**
-     * Set the regular expression that will be applied to filenames during renames
-     * to detect whether clients are performing a renaming shuffle - common during
-     * file saving on various clients.
+     * Set the regular expression that will be applied to filenames during renames to detect whether clients are performing a renaming shuffle - common during file saving on various clients.
      * <p/>
      * <b>ALF-3856, ALF-7079, MNT-181</b>
      * 
-     * @param renameShufflePattern      a regular expression filename match
+     * @param renameShufflePattern
+     *            a regular expression filename match
      */
     public void setRenameShufflePattern(Pattern renameShufflePattern)
     {
@@ -170,61 +169,61 @@ public class WebDAVHelper
     }
 
     /**
-     * @return          Return the limit size
+     * @return Return the limit size
      */
     public long getSizeLimit()
     {
         return sizeLimit;
     }
-    
+
     /**
-     * @return          Return the authentication service
+     * @return Return the authentication service
      */
     public final AuthenticationService getAuthenticationService()
     {
         return m_authService;
     }
-    
+
     /**
-     * @return          Return the service registry
+     * @return Return the service registry
      */
     public ServiceRegistry getServiceRegistry()
     {
         // TODO: eliminate this - not dependency injection!
         return m_serviceRegistry;
     }
-    
+
     /**
-     * @return          Return the node service
+     * @return Return the node service
      */
     public final NodeService getNodeService()
     {
         return m_nodeService;
     }
-    
+
     public FileFolderService getFileFolderService()
     {
         return m_fileFolderService;
     }
 
     /**
-     * @return          Return the search service
+     * @return Return the search service
      */
     public final SearchService getSearchService()
     {
         return m_searchService;
     }
-    
+
     /**
-     * @return          Return the namespace service
+     * @return Return the namespace service
      */
     public final NamespaceService getNamespaceService()
     {
         return m_namespaceService;
     }
-    
+
     /**
-     * @return          Return the dictionary service
+     * @return Return the dictionary service
      */
     public final DictionaryService getDictionaryService()
     {
@@ -232,38 +231,38 @@ public class WebDAVHelper
     }
 
     /**
-     * @return          Return the mimetype service
+     * @return Return the mimetype service
      */
     public final MimetypeService getMimetypeService()
     {
         return m_mimetypeService;
     }
-    
+
     /**
-     * @return          Return the lock service
+     * @return Return the lock service
      */
     public WebDAVLockService getLockService()
     {
         return m_lockService;
     }
-    
+
     /**
-     * @return          Return the action service
+     * @return Return the action service
      */
     public final ActionService getActionService()
     {
         return m_actionService;
     }
-    
+
     /**
      * 
-     * @return          Return the permission service
+     * @return Return the permission service
      */
     public final PermissionService getPermissionService()
     {
         return m_permissionService;
     }
-        
+
     /**
      * @return the hidden aspect bean
      */
@@ -281,22 +280,23 @@ public class WebDAVHelper
     {
         return m_tenantService;
     }
-    
+
     /**
-     * @return          Return the copy service
+     * @return Return the copy service
      */
     public final CopyService getCopyService()
     {
         return getServiceRegistry().getCopyService();
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.m_tenantService = tenantService;
     }
-    
+
     /**
-     * @param serviceRegistry the service registry
+     * @param serviceRegistry
+     *            the service registry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
@@ -304,7 +304,8 @@ public class WebDAVHelper
     }
 
     /**
-     * @param nodeService the node service
+     * @param nodeService
+     *            the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -312,7 +313,8 @@ public class WebDAVHelper
     }
 
     /**
-     * @param fileFolderService the fileFolder service
+     * @param fileFolderService
+     *            the fileFolder service
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
@@ -320,7 +322,8 @@ public class WebDAVHelper
     }
 
     /**
-     * @param searchService the search service
+     * @param searchService
+     *            the search service
      */
     public void setSearchService(SearchService searchService)
     {
@@ -328,7 +331,8 @@ public class WebDAVHelper
     }
 
     /**
-     * @param namespaceService the namespace service
+     * @param namespaceService
+     *            the namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -336,24 +340,26 @@ public class WebDAVHelper
     }
 
     /**
-     * @param eventPublisher the eventPublisher service
+     * @param eventPublisher
+     *            the eventPublisher service
      */
     public void setEventPublisher(EventPublisher eventPublisher)
     {
         this.eventPublisher = eventPublisher;
     }
-    
 
     /**
-     * @param poster ActivityPoster
+     * @param poster
+     *            ActivityPoster
      */
     public void setPoster(ActivityPoster poster)
     {
         this.poster = poster;
     }
-    
+
     /**
-     * @param dictionaryService the dictionary service
+     * @param dictionaryService
+     *            the dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -361,7 +367,8 @@ public class WebDAVHelper
     }
 
     /**
-     * @param mimetypeService the mimetype service
+     * @param mimetypeService
+     *            the mimetype service
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {
@@ -369,7 +376,8 @@ public class WebDAVHelper
     }
 
     /**
-     * @param lockService the lock service
+     * @param lockService
+     *            the lock service
      */
     public void setLockService(WebDAVLockService lockService)
     {
@@ -377,7 +385,8 @@ public class WebDAVHelper
     }
 
     /**
-     * @param actionService the action service
+     * @param actionService
+     *            the action service
      */
     public void setActionService(ActionService actionService)
     {
@@ -385,7 +394,8 @@ public class WebDAVHelper
     }
 
     /**
-     * @param authService the authentication service
+     * @param authService
+     *            the authentication service
      */
     public void setAuthenticationService(AuthenticationService authService)
     {
@@ -393,7 +403,8 @@ public class WebDAVHelper
     }
 
     /**
-     * @param permissionService the permission service
+     * @param permissionService
+     *            the permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -401,14 +412,14 @@ public class WebDAVHelper
     }
 
     /**
-     * @param hiddenAspect the hiddenAspect to set
+     * @param hiddenAspect
+     *            the hiddenAspect to set
      */
     public void setHiddenAspect(HiddenAspect hiddenAspect)
     {
         this.m_hiddenAspect = hiddenAspect;
     }
 
-    
     public BehaviourFilter getPolicyBehaviourFilter()
     {
         return m_policyBehaviourFilter;
@@ -420,8 +431,7 @@ public class WebDAVHelper
     }
 
     /**
-     * Checks a new path in a move operation to detect whether clients are starting a renaming shuffle - common during
-     * file saving on various clients.
+     * Checks a new path in a move operation to detect whether clients are starting a renaming shuffle - common during file saving on various clients.
      * <p/>
      * <b>ALF-3856, ALF-7079, MNT-181</b>
      */
@@ -431,19 +441,19 @@ public class WebDAVHelper
     }
 
     /**
-     * Split the path into seperate directory path and file name strings.
-     * If the path is not empty, then there will always be an entry for the filename
+     * Split the path into seperate directory path and file name strings. If the path is not empty, then there will always be an entry for the filename
      * 
-     * @param path Full path string.
+     * @param path
+     *            Full path string.
      * @return Returns a String[2] with the folder path and file path.
      */
     public final String[] splitPath(String path)
     {
         if (path == null)
             throw new IllegalArgumentException("path may not be null");
-        
+
         // Create an array of strings to hold the path and file name strings
-        String[] pathStr = new String[] {"", ""};
+        String[] pathStr = new String[]{"", ""};
 
         // Check if the path has a trailing seperator, if so then there is no file name.
 
@@ -461,12 +471,13 @@ public class WebDAVHelper
         // Return the path strings
         return pathStr;
     }
-    
+
     /**
      * Split the path into all the component directories and filename
      * 
-     * @param path          the string to split
-     * @return              an array of all the path components
+     * @param path
+     *            the string to split
+     * @return an array of all the path components
      */
     public List<String> splitAllPaths(String path)
     {
@@ -489,45 +500,47 @@ public class WebDAVHelper
     {
         return getURLForPath(request, path, isCollection, null);
     }
-    
+
     public String getURLForPath(HttpServletRequest request, String path, boolean isCollection, String userAgent)
     {
         String urlPathPrefix = getUrlPathPrefix(request);
         StringBuilder urlStr = new StringBuilder(urlPathPrefix);
-        
+
         if (path.equals(WebDAV.RootPath) == false)
         {
             // split the path and URL encode each path element
             for (StringTokenizer t = new StringTokenizer(path, PathSeperator); t.hasMoreTokens(); /**/)
             {
-                urlStr.append( WebDAVHelper.encodeURL(t.nextToken(), userAgent) );
+                urlStr.append(WebDAVHelper.encodeURL(t.nextToken(), userAgent));
                 if (t.hasMoreTokens())
                 {
                     urlStr.append(PathSeperator);
                 }
             }
         }
-        
+
         // If the URL is to a collection add a trailing slash
-        if (isCollection && urlStr.charAt( urlStr.length() - 1) != PathSeperatorChar)
+        if (isCollection && urlStr.charAt(urlStr.length() - 1) != PathSeperatorChar)
         {
-            urlStr.append( PathSeperator);
+            urlStr.append(PathSeperator);
         }
-        
+
         logger.debug("getURLForPath() path:" + path + " => url:" + urlStr);
-        
+
         // Return the URL string
         return urlStr.toString();
-    }    
+    }
 
     /**
      * Get the file info for the given paths
      * 
-     * @param rootNodeRef       the acting webdav root
-     * @param path              the path to search for
-     * @return                  Return the file info for the path
+     * @param rootNodeRef
+     *            the acting webdav root
+     * @param path
+     *            the path to search for
+     * @return Return the file info for the path
      * @throws FileNotFoundException
-     *                          if the path doesn't refer to a valid node
+     *             if the path doesn't refer to a valid node
      */
     public FileInfo getNodeForPath(NodeRef rootNodeRef, String path) throws FileNotFoundException
     {
@@ -539,27 +552,27 @@ public class WebDAVHelper
         {
             throw new IllegalArgumentException("Path may not be null");
         }
-        
+
         FileFolderService fileFolderService = getFileFolderService();
         // Check for the root path
-        if ( path.length() == 0 || path.equals(PathSeperator))
+        if (path.length() == 0 || path.equals(PathSeperator))
         {
             return fileFolderService.getFileInfo(rootNodeRef);
         }
-        
+
         // split the paths up
         List<String> splitPath = splitAllPaths(path);
-        
+
         // find it
         FileInfo fileInfo = m_fileFolderService.resolveNamePath(rootNodeRef, splitPath);
-        
+
         String fileName = splitPath.get(splitPath.size() - 1);
         if (!fileInfo.getName().equals(fileName))
         {
             throw new FileNotFoundException("Requested filename " + fileName +
-                        " does not match case of " + fileInfo.getName());
+                    " does not match case of " + fileInfo.getName());
         }
-        
+
         // done
         if (logger.isDebugEnabled())
         {
@@ -570,13 +583,13 @@ public class WebDAVHelper
         }
         return fileInfo;
     }
-    
+
     public boolean isRootPath(String path, String servletPath)
     {
         // Check for the root path
-        return( path.length() == 0 || path.equals(PathSeperator) || EqualsHelper.nullSafeEquals(path, servletPath));
+        return (path.length() == 0 || path.equals(PathSeperator) || EqualsHelper.nullSafeEquals(path, servletPath));
     }
-    
+
     public final FileInfo getParentNodeForPath(NodeRef rootNodeRef, String path) throws FileNotFoundException
     {
         if (rootNodeRef == null)
@@ -591,29 +604,31 @@ public class WebDAVHelper
         String[] paths = splitPath(path);
         return getNodeForPath(rootNodeRef, paths[0]);
     }
-    
+
     /**
      * Return the relative path for the node walking back to the specified root node
      * 
-     * @param rootNodeRef the root below which the path will be valid
-     * @param nodeRef the node's path to get
-     * @return Returns string of form <b>/A/B/C</b> where C represents the from node and 
+     * @param rootNodeRef
+     *            the root below which the path will be valid
+     * @param nodeRef
+     *            the node's path to get
+     * @return Returns string of form <b>/A/B/C</b> where C represents the from node and
      */
     public final String getPathFromNode(NodeRef rootNodeRef, NodeRef nodeRef) throws FileNotFoundException
     {
         // Check if the nodes are valid, or equal
         if (rootNodeRef == null || nodeRef == null)
             throw new IllegalArgumentException("Invalid node(s) in getPathFromNode call");
-        
+
         // short cut if the path node is the root node
         if (rootNodeRef.equals(nodeRef))
             return "";
-        
+
         FileFolderService fileFolderService = getFileFolderService();
-        
+
         // get the path elements
         List<String> pathInfos = fileFolderService.getNameOnlyPath(rootNodeRef, nodeRef);
-        
+
         // build the path string
         StringBuilder sb = new StringBuilder(pathInfos.size() * 20);
         for (String fileInfo : pathInfos)
@@ -631,7 +646,7 @@ public class WebDAVHelper
         }
         return sb.toString();
     }
-        
+
     public FileInfo createFile(FileInfo parentNodeInfo, String path) throws WebDAVServerException
     {
         return m_fileFolderService.create(parentNodeInfo.getNodeRef(), path, ContentModel.TYPE_CONTENT);
@@ -648,75 +663,77 @@ public class WebDAVHelper
     public final String makeETag(FileInfo nodeInfo)
     {
         // Get the modify date/time property for the node
-        
+
         StringBuilder etag = new StringBuilder();
         makeETagString(nodeInfo, etag);
         return etag.toString();
     }
-    
+
     /**
      * Make an ETag value for a node using the GUID and modify date/time
      */
     public final String makeQuotedETag(FileInfo nodeInfo)
     {
         StringBuilder etag = new StringBuilder();
-        
+
         etag.append("\"");
         makeETagString(nodeInfo, etag);
         etag.append("\"");
         return etag.toString();
     }
-    
+
     /**
      * Make an ETag value for a node using the GUID and modify date/time
      */
     protected final void makeETagString(FileInfo nodeInfo, StringBuilder etag)
     {
         // Get the modify date/time property for the node
-        
+
         Object modVal = nodeInfo.getProperties().get(ContentModel.PROP_MODIFIED);
-        
+
         etag.append(nodeInfo.getNodeRef().getId());
-        
-        if ( modVal != null)
+
+        if (modVal != null)
         {
             etag.append("_");
             etag.append(DefaultTypeConverter.INSTANCE.longValue(modVal));
         }
     }
-    
+
     /**
-     * @return              Return the null XML attribute list
+     * @return Return the null XML attribute list
      */
     public final AttributesImpl getNullAttributes()
     {
         return m_nullAttribs;
     }
-    
+
     /**
      * Encodes the given string to valid URL format
      * 
-     * @param s             the String to convert
+     * @param s
+     *            the String to convert
      */
     public final static String encodeURL(String s)
     {
         return encodeURL(s, null);
     }
-    
+
     public final static String encodeURL(String s, String userAgent)
     {
-          return URLEncoder.encode(s);
+        return URLEncoder.encode(s);
     }
-    
+
     public final static String decodeURL(String s)
     {
         return URLDecoder.decode(s);
     }
-    
+
     /**
      * Encodes the given string to valid HTML format
      * 
-     * @param string        the String to convert
+     * @param string
+     *            the String to convert
      */
     public final static String encodeHTML(String string)
     {
@@ -724,8 +741,8 @@ public class WebDAVHelper
         {
             return "";
         }
-        
-        StringBuilder sb = null;      //create on demand
+
+        StringBuilder sb = null; // create on demand
         String enc;
         char c;
         for (int i = 0; i < string.length(); i++)
@@ -734,26 +751,42 @@ public class WebDAVHelper
             c = string.charAt(i);
             switch (c)
             {
-                case '"': enc = "&quot;"; break;    //"
-                case '&': enc = "&amp;"; break;     //&
-                case '<': enc = "&lt;"; break;      //<
-                case '>': enc = "&gt;"; break;      //>
-                
-                //misc
-                case '\u20AC': enc = "&euro;";  break;
-                case '\u00AB': enc = "&laquo;"; break;
-                case '\u00BB': enc = "&raquo;"; break;
-                case '\u00A0': enc = "&nbsp;"; break;
-                
-                default:
-                    if (((int)c) >= 0x80)
-                    {
-                        //encode all non basic latin characters
-                        enc = "&#" + ((int)c) + ";";
-                    }
+            case '"':
+                enc = "&quot;";
+                break; // "
+            case '&':
+                enc = "&amp;";
+                break; // &
+            case '<':
+                enc = "&lt;";
+                break; // <
+            case '>':
+                enc = "&gt;";
+                break; // >
+
+            // misc
+            case '\u20AC':
+                enc = "&euro;";
+                break;
+            case '\u00AB':
+                enc = "&laquo;";
+                break;
+            case '\u00BB':
+                enc = "&raquo;";
+                break;
+            case '\u00A0':
+                enc = "&nbsp;";
+                break;
+
+            default:
+                if (((int) c) >= 0x80)
+                {
+                    // encode all non basic latin characters
+                    enc = "&#" + ((int) c) + ";";
+                }
                 break;
             }
-            
+
             if (enc != null)
             {
                 if (sb == null)
@@ -772,7 +805,7 @@ public class WebDAVHelper
                 }
             }
         }
-        
+
         if (sb == null)
         {
             return string;
@@ -782,12 +815,12 @@ public class WebDAVHelper
             return sb.toString();
         }
     }
-    
+
     /**
-     * ALF-5333: Microsoft clients use ISO-8859-1 to decode WebDAV responses
-     * so this method should only be used for Microsoft user agents.
+     * ALF-5333: Microsoft clients use ISO-8859-1 to decode WebDAV responses so this method should only be used for Microsoft user agents.
      * 
-     * @param string String
+     * @param string
+     *            String
      * @return The encoded string for Microsoft clients
      * @throws UnsupportedEncodingException
      */
@@ -797,8 +830,8 @@ public class WebDAVHelper
         {
             return "";
         }
-        
-        StringBuilder sb = null;      // create on demand
+
+        StringBuilder sb = null; // create on demand
         String enc;
         char c;
         for (int i = 0; i < string.length(); i++)
@@ -807,25 +840,52 @@ public class WebDAVHelper
             c = string.charAt(i);
             switch (c)
             {
-                // reserved
-                case ';': enc = URLEncoder.encode(String.valueOf(c)); break;
-                case '/': enc = URLEncoder.encode(String.valueOf(c)); break;
-                case '?': enc = URLEncoder.encode(String.valueOf(c)); break;
-                case ':': enc = URLEncoder.encode(String.valueOf(c)); break;
-                case '@': enc = URLEncoder.encode(String.valueOf(c)); break;
-                case '&': enc = URLEncoder.encode(String.valueOf(c)); break;
-                case '=': enc = URLEncoder.encode(String.valueOf(c)); break;
-                case '+': enc = URLEncoder.encode(String.valueOf(c)); break;
-                
-                // unsafe
-                case '\"': enc = URLEncoder.encode(String.valueOf(c)); break;
-                case '#': enc = URLEncoder.encode(String.valueOf(c)); break;
-                case '%': enc = URLEncoder.encode(String.valueOf(c)); break;
-                case '>': enc = URLEncoder.encode(String.valueOf(c)); break;
-                case '<': enc = URLEncoder.encode(String.valueOf(c)); break;
-                default: break;
+            // reserved
+            case ';':
+                enc = URLEncoder.encode(String.valueOf(c));
+                break;
+            case '/':
+                enc = URLEncoder.encode(String.valueOf(c));
+                break;
+            case '?':
+                enc = URLEncoder.encode(String.valueOf(c));
+                break;
+            case ':':
+                enc = URLEncoder.encode(String.valueOf(c));
+                break;
+            case '@':
+                enc = URLEncoder.encode(String.valueOf(c));
+                break;
+            case '&':
+                enc = URLEncoder.encode(String.valueOf(c));
+                break;
+            case '=':
+                enc = URLEncoder.encode(String.valueOf(c));
+                break;
+            case '+':
+                enc = URLEncoder.encode(String.valueOf(c));
+                break;
+
+            // unsafe
+            case '\"':
+                enc = URLEncoder.encode(String.valueOf(c));
+                break;
+            case '#':
+                enc = URLEncoder.encode(String.valueOf(c));
+                break;
+            case '%':
+                enc = URLEncoder.encode(String.valueOf(c));
+                break;
+            case '>':
+                enc = URLEncoder.encode(String.valueOf(c));
+                break;
+            case '<':
+                enc = URLEncoder.encode(String.valueOf(c));
+                break;
+            default:
+                break;
             }
-            
+
             if (enc != null)
             {
                 if (sb == null)
@@ -844,7 +904,7 @@ public class WebDAVHelper
                 }
             }
         }
-        
+
         if (sb == null)
         {
             return string;
@@ -854,12 +914,12 @@ public class WebDAVHelper
             return sb.toString();
         }
     }
-    
+
     public String determineSiteId(WebDAVMethod method)
     {
         return determineSiteId(method.getRootNodeRef(), method.getPath());
     }
-    
+
     public String determineSiteId(NodeRef rootNodeRef, String path)
     {
         SiteService siteService = getServiceRegistry().getSiteService();
@@ -879,13 +939,13 @@ public class WebDAVHelper
         }
         return siteId;
     }
-    
+
     @Deprecated
     public String determineTenantDomain(WebDAVMethod method)
     {
         return determineTenantDomain();
     }
-    
+
     public String determineTenantDomain()
     {
         TenantService tenantService = getTenantService();
@@ -896,13 +956,14 @@ public class WebDAVHelper
         }
         return tenantDomain;
     }
-    
+
     /**
-     * Extract the destination path for MOVE or COPY commands from the
-     * supplied destination URL header.
+     * Extract the destination path for MOVE or COPY commands from the supplied destination URL header.
      * 
-     * @param servletPath Path prefix of the WebDAV servlet.
-     * @param destURL The Destination header.
+     * @param servletPath
+     *            Path prefix of the WebDAV servlet.
+     * @param destURL
+     *            The Destination header.
      * @return The path to move/copy the file to.
      */
     public String getDestinationPath(String contextPath, String servletPath, String destURL)
@@ -931,7 +992,7 @@ public class WebDAVHelper
                 {
                     // Strip the host from the beginning
                     String strPath = destURL.substring(offset);
-                    
+
                     // If it starts with /contextPath/servletPath/ (e.g. /alfresco/webdav/path/to/file) - then
                     // strip the servlet path from the start of the path.
                     String pathPrefix = contextPath + servletPath + WebDAV.PathSeperator;
@@ -942,19 +1003,20 @@ public class WebDAVHelper
 
                     return WebDAV.decodeURL(strPath);
                 }
-            }            
+            }
         }
-        
+
         // Unable to get the path.
         return null;
     }
-    
+
     /**
-     * Check that the destination path is on this server and is a valid WebDAV
-     * path for this server
+     * Check that the destination path is on this server and is a valid WebDAV path for this server
      * 
-     * @param request The request made against the WebDAV server.
-     * @param urlStr String
+     * @param request
+     *            The request made against the WebDAV server.
+     * @param urlStr
+     *            String
      * @exception WebDAVServerException
      */
     public void checkDestinationURL(HttpServletRequest request, String urlStr) throws WebDAVServerException
@@ -982,24 +1044,24 @@ public class WebDAVHelper
                     && url.getHost().equals(request.getLocalAddr()) == false)
             {
                 // The target host may contain a domain or be specified as a numeric IP address
-                
+
                 String targetHost = url.getHost();
-                
-                if ( IPAddress.isNumericAddress( targetHost) == false)
+
+                if (IPAddress.isNumericAddress(targetHost) == false)
                 {
-                    String localHost  = request.getServerName();
-                    
-                    int pos = targetHost.indexOf( ".");
-                    if ( pos != -1)
-                        targetHost = targetHost.substring( 0, pos);
-                    
-                    pos = localHost.indexOf( ".");
-                    if ( pos != -1)
-                        localHost = localHost.substring( 0, pos);
-                    
+                    String localHost = request.getServerName();
+
+                    int pos = targetHost.indexOf(".");
+                    if (pos != -1)
+                        targetHost = targetHost.substring(0, pos);
+
+                    pos = localHost.indexOf(".");
+                    if (pos != -1)
+                        localHost = localHost.substring(0, pos);
+
                     // compare the host names
-                    
-                    if ( targetHost.equalsIgnoreCase( localHost) == false)
+
+                    if (targetHost.equalsIgnoreCase(localHost) == false)
                         localPath = false;
                 }
                 else
@@ -1007,22 +1069,22 @@ public class WebDAVHelper
                     try
                     {
                         // Check if the target IP address is a local address
-                        
-                        InetAddress targetAddr = InetAddress.getByName( targetHost);
-                        if ( NetworkInterface.getByInetAddress( targetAddr) == null)
+
+                        InetAddress targetAddr = InetAddress.getByName(targetHost);
+                        if (NetworkInterface.getByInetAddress(targetAddr) == null)
                             localPath = false;
                     }
                     catch (Exception ex)
                     {
                         // DEBUG
-                        
-                        if ( logger.isDebugEnabled())
+
+                        if (logger.isDebugEnabled())
                             logger.debug("Failed to check target IP address, " + targetHost);
-                        
+
                         localPath = false;
                     }
                 }
-                
+
                 // Debug
 
                 if (localPath == false && logger.isDebugEnabled())
@@ -1057,13 +1119,12 @@ public class WebDAVHelper
             throw new WebDAVServerException(HttpServletResponse.SC_BAD_GATEWAY);
         }
     }
-    
 
     public void setUrlPathPrefix(String urlPathPrefix)
     {
         m_urlPathPrefix = urlPathPrefix;
     }
-    
+
     public String getUrlPathPrefix(HttpServletRequest request)
     {
         StringBuilder urlStr = null;
@@ -1080,73 +1141,79 @@ public class WebDAVHelper
             // would result in a path prefix of "/preamble/servlet-mapping" being discovered.
             urlStr = new StringBuilder(request.getRequestURI());
             String servletPath = request.getServletPath();
-            
+
             int rootPos = urlStr.indexOf(servletPath);
             if (rootPos != -1)
             {
                 urlStr.setLength(rootPos + servletPath.length());
             }
         }
-        
+
         // Ensure the prefix ends in the path separator.
         if (urlStr.length() == 0 || urlStr.charAt(urlStr.length() - 1) != PathSeperatorChar)
         {
             urlStr.append(PathSeperator);
         }
-        
+
         return urlStr.toString();
     }
-    
+
     /**
      * Notifies listeners that a read has taken place
-     * @param realNodeInfo FileInfo
-     * @param mimetype String
-     * @param size Long
-     * @param contentEncoding String
-     * @param range String
+     * 
+     * @param realNodeInfo
+     *            FileInfo
+     * @param mimetype
+     *            String
+     * @param size
+     *            Long
+     * @param contentEncoding
+     *            String
+     * @param range
+     *            String
      */
     protected void publishReadEvent(final FileInfo realNodeInfo, final String mimetype, final Long size, final String contentEncoding, final String range)
     {
-     
+
         if (!StringUtils.hasText(range))
         {
             // Its not a range request
-            eventPublisher.publishEvent(new EventPreparator()
-            {
+            eventPublisher.publishEvent(new EventPreparator() {
                 @Override
                 public Event prepareEvent(String user, String networkId, String transactionId)
                 {
                     return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId, realNodeInfo.getNodeRef().getId(), null,
-                                realNodeInfo.getType().toString(), Client.asType(ClientType.webdav), realNodeInfo.getName(), mimetype,
-                                size, contentEncoding);
+                            realNodeInfo.getType().toString(), Client.asType(ClientType.webdav), realNodeInfo.getName(), mimetype,
+                            size, contentEncoding);
                 }
             });
 
         }
     }
-    
+
     public String getRepositoryPath(HttpServletRequest request)
     {
         // Try and get the path
 
         String strPath = null;
-        
-        try 
+
+        try
         {
             strPath = WebDAVHelper.decodeURL(request.getRequestURI());
         }
-        catch (Exception ex) {}
+        catch (Exception ex)
+        {}
 
         // Find the servlet path and trim from the request path
-        
+
         String servletPath = request.getServletPath();
-        
+
         int rootPos = strPath.indexOf(servletPath);
-        if ( rootPos != -1)
+        if (rootPos != -1)
         {
-            strPath = strPath.substring( rootPos);
+            strPath = strPath.substring(rootPos);
         }
-        
+
         // If we failed to get the path from the request try and get the path from the servlet path
 
         if (strPath == null)
@@ -1163,7 +1230,7 @@ public class WebDAVHelper
         {
             // Check if the path starts with the base servlet path
             int len = request.getServletPath().length();
-            
+
             if (strPath.length() > len)
             {
                 strPath = strPath.substring(len);
@@ -1175,23 +1242,25 @@ public class WebDAVHelper
         }
 
         // Make sure there are no trailing slashes
-        
+
         if (strPath.length() > 1 && strPath.endsWith(WebDAV.PathSeperator))
         {
             strPath = strPath.substring(0, strPath.length() - 1);
         }
 
         // Return the path
-        
+
         return strPath;
     }
 
     /**
-     * Indicates if the node is unlocked or the current user has a WRITE_LOCK<p>
+     * Indicates if the node is unlocked or the current user has a WRITE_LOCK
+     * <p>
      * 
      * @see LockService#isLockedAndReadOnly(org.alfresco.service.cmr.repository.NodeRef)
      * 
-     * @param nodeRef    the node reference
+     * @param nodeRef
+     *            the node reference
      */
     public boolean isLockedAndReadOnly(final NodeRef nodeRef)
     {

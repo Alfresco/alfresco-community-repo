@@ -47,9 +47,9 @@ import org.apache.commons.logging.LogFactory;
 public class ParentAssocsInfo implements Serializable
 {
     private static final long serialVersionUID = -2167221525380802365L;
-    
+
     private static final Log logger = LogFactory.getLog(ParentAssocsInfo.class);
-    
+
     private static Set<Long> warnedDuplicateParents = new HashSet<Long>(3);
 
     private final boolean isRoot;
@@ -64,6 +64,7 @@ public class ParentAssocsInfo implements Serializable
     {
         this(isRoot, isStoreRoot, Collections.singletonList(parent));
     }
+
     /**
      * Constructor to provide clean initial version of a Node's parent associations
      */
@@ -97,8 +98,8 @@ public class ParentAssocsInfo implements Serializable
                         {
                             logger.warn(
                                     "Multiple primary associations: \n" +
-                                    "   Node:         " + childNodeId + "\n" +
-                                    "   Associations: " + parents);
+                                            "   Node:         " + childNodeId + "\n" +
+                                            "   Associations: " + parents);
                         }
                     }
                 }
@@ -129,11 +130,11 @@ public class ParentAssocsInfo implements Serializable
     {
         StringBuilder builder = new StringBuilder();
         builder.append("ParentAssocsInfo ")
-               .append("[isRoot=").append(isRoot)
-               .append(", isStoreRoot=").append(isStoreRoot)
-               .append(", parentAssocsById=").append(parentAssocsById)
-               .append(", primaryAssocId=").append(primaryAssocId)
-               .append("]");
+                .append("[isRoot=").append(isRoot)
+                .append(", isStoreRoot=").append(isStoreRoot)
+                .append(", parentAssocsById=").append(parentAssocsById)
+                .append(", primaryAssocId=").append(primaryAssocId)
+                .append("]");
         return builder.toString();
     }
 
@@ -151,12 +152,12 @@ public class ParentAssocsInfo implements Serializable
     {
         return parentAssocsById;
     }
-    
+
     public ChildAssocEntity getPrimaryParentAssoc()
     {
         return (primaryAssocId != null) ? parentAssocsById.get(primaryAssocId) : null;
     }
-    
+
     public ParentAssocsInfo changeIsRoot(boolean isRoot)
     {
         return new ParentAssocsInfo(isRoot, this.isRoot, parentAssocsById, primaryAssocId);

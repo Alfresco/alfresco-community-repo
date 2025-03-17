@@ -29,8 +29,7 @@ import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Thrown when an operation cannot be performed because a type is not recognised
- * by the data dictionary
+ * Thrown when an operation cannot be performed because a type is not recognised by the data dictionary
  * 
  * @author Derek Hulley
  */

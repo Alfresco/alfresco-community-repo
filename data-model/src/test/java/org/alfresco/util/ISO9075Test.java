@@ -80,10 +80,10 @@ public class ISO9075Test extends TestCase
         assertEquals("\u0123\u4567\u8900\uabcd\uefff_xT65A_", ISO9075
                 .decode("\u0123_x4567_\u8900_xabcd__xefff__xT65A_"));
     }
-    
+
     public void testDeEncodingUpperCase()
     {
-        
+
         assertEquals("My_x0020_Documents", ISO9075.decode("My_x005F_x0020_Documents"));
         assertEquals("_x0020_Documents", ISO9075.decode("_x005F_x0020_Documents"));
         assertEquals("@_x0020_Documents", ISO9075.decode("_x0040__x005F_x0020_Documents"));
@@ -96,7 +96,7 @@ public class ISO9075Test extends TestCase
         assertEquals("\u0123\u4567\u8900\uabcd\uefff_xT65A_", ISO9075
                 .decode("\u0123_x4567_\u8900_xABCD__xEFFF__xT65A_"));
     }
-    
+
     public void testRoundTrip1()
     {
         assertEquals("MyDocuments", ISO9075.decode(ISO9075.encode("MyDocuments")));
@@ -113,7 +113,7 @@ public class ISO9075Test extends TestCase
                 ISO9075.decode(ISO9075.encode(" `\u00ac\u00a6!\"\u00a3$%^&*()-_=+\t\n\\\u0000[]{};'#:@~,./<>?\\|")));
         assertEquals("\u0123\u4567\u8900\uabcd\uefff_xT65A_", ISO9075.decode(ISO9075.encode("\u0123\u4567\u8900\uabcd\uefff_xT65A_")));
     }
-    
+
     public void testRoundTrip2()
     {
         assertEquals("MyDocuments", ISO9075.encode(ISO9075.decode("MyDocuments")));
@@ -139,7 +139,7 @@ public class ISO9075Test extends TestCase
     {
         assertEquals("a_x0020", ISO9075.decode("a_x0020"));
     }
-    
+
     public void testEncodeSQL()
     {
         assertEquals("vns10:individual_entity", ISO9075.encodeSQL("vns10:individual_entity"));

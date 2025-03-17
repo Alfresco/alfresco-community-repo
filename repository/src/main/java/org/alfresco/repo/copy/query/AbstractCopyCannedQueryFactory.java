@@ -51,10 +51,12 @@ public abstract class AbstractCopyCannedQueryFactory<R> extends AbstractCannedQu
     {
         this.nodeDAO = nodeDAO;
     }
+
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
     }
+
     public void setCannedQueryDAO(CannedQueryDAO cannedQueryDAO)
     {
         this.cannedQueryDAO = cannedQueryDAO;
@@ -73,18 +75,23 @@ public abstract class AbstractCopyCannedQueryFactory<R> extends AbstractCannedQu
      */
     public static class CopyCannedQueryDetail
     {
-        /*package*/ final NodeRef originalNodeRef;
-        /*package*/ final NodeRef copyParentNodeRef;
+        /* package */ final NodeRef originalNodeRef;
+        /* package */ final NodeRef copyParentNodeRef;
+
         /**
-         * @param originalNodeRef               the original node
+         * @param originalNodeRef
+         *            the original node
          */
         public CopyCannedQueryDetail(NodeRef originalNodeRef)
         {
             this(originalNodeRef, null);
         }
+
         /**
-         * @param originalNodeRef               the original node
-         * @param copyParentNodeRef             the copied node's primary parent (optional)
+         * @param originalNodeRef
+         *            the original node
+         * @param copyParentNodeRef
+         *            the copied node's primary parent (optional)
          */
         public CopyCannedQueryDetail(NodeRef originalNodeRef, NodeRef copyParentNodeRef)
         {

@@ -28,6 +28,10 @@ package org.alfresco.repo.action.scheduled;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
@@ -36,46 +40,29 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * This class defines the template used to build a single action.
  * 
- * Because SPEL will eat ${foo} or #{foo} in the template when specified in the XML,
- *  this will also accept \$\{foo\} or \#\{foo\} as well.
- *  
+ * Because SPEL will eat ${foo} or #{foo} in the template when specified in the XML, this will also accept \$\{foo\} or \#\{foo\} as well.
+ * 
  * @author Andy Hind
  */
 public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefinition implements ApplicationContextAware
 {
-    /*
-     * The name of the action
-     */
+    /* The name of the action */
     private String actionName;
 
-    /*
-     * The parameters used by the action
-     */
+    /* The parameters used by the action */
     private Map<String, String> parameterTemplates;
 
-    /*
-     * The model factory to build models appropriate to the template language used to define
-     * templated parameters.
-     */
+    /* The model factory to build models appropriate to the template language used to define templated parameters. */
     private TemplateActionModelFactory templateActionModelFactory;
 
-    /*
-     * The dictionary service.
-     */
+    /* The dictionary service. */
     private DictionaryService dictionaryService;
 
-    /*
-     * The application context
-     * (Some actions are not publicly exposed via the action service.
-     * They can always be obtained via the appropriate action excecutor.) 
-     */
+    /* The application context (Some actions are not publicly exposed via the action service. They can always be obtained via the appropriate action excecutor.) */
     private ApplicationContext applicationContext;
 
     /**
@@ -97,10 +84,11 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
         return templateActionModelFactory;
     }
 
-    /** 
+    /**
      * Set the template model factory IOC.
      * 
-     * @param templateActionModelFactory TemplateActionModelFactory
+     * @param templateActionModelFactory
+     *            TemplateActionModelFactory
      */
     public void setTemplateActionModelFactory(TemplateActionModelFactory templateActionModelFactory)
     {
@@ -120,7 +108,8 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
     /**
      * Set the dictionary service - IOC.
      * 
-     * @param dictionaryService DictionaryService
+     * @param dictionaryService
+     *            DictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -130,7 +119,8 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
     /**
      * Set the name of the action.
      * 
-     * @param actionName String
+     * @param actionName
+     *            String
      */
     public void setActionName(String actionName)
     {
@@ -148,15 +138,13 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
     }
 
     /**
-     * Set the map of parameters used by the template.
-     * These are processed via the template service to produce the actual poarameters.
+     * Set the map of parameters used by the template. These are processed via the template service to produce the actual poarameters.
      * 
      */
     public void setParameterTemplates(Map<String, String> parameterTemplates)
     {
         this.parameterTemplates = parameterTemplates;
     }
-
 
     /**
      * Get the templates that define the parameters for the action.
@@ -175,10 +163,9 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
     {
         // Get the action definition. We can not go to the service are some are not exposed.
         // So we find them from the application context.
-        ActionExecuter actionExecutor = (ActionExecuter)applicationContext.getBean(getActionName());
-        ActionDefinition actionDefinition =  actionExecutor.getActionDefinition();
-        
-     
+        ActionExecuter actionExecutor = (ActionExecuter) applicationContext.getBean(getActionName());
+        ActionDefinition actionDefinition = actionExecutor.getActionDefinition();
+
         // Build the base action
         Action action = actionService.createAction(getActionName());
 
@@ -186,29 +173,29 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
         for (String paramName : parameterTemplates.keySet())
         {
             // Fetch the template. Need to de-escape things put in to work
-            //  around it not being possible to disable SPEL for one bean 
+            // around it not being possible to disable SPEL for one bean
             String template = parameterTemplates.get(paramName);
-            if(template.contains("\\$\\{") || template.contains("\\#\\{"))
+            if (template.contains("\\$\\{") || template.contains("\\#\\{"))
             {
-               template = template.replace("\\$\\{", "${");
-               template = template.replace("\\#\\{", "#{");
-               if(template.contains("\\}"))
-               {
-                  template = template.replace("\\}", "}");
-               }
+                template = template.replace("\\$\\{", "${");
+                template = template.replace("\\#\\{", "#{");
+                if (template.contains("\\}"))
+                {
+                    template = template.replace("\\}", "}");
+                }
             }
-            
+
             // Transform the template
             String stringValue = templateService.processTemplateString(
-                  getTemplateActionModelFactory().getTemplateEngine(), 
-                  template, getTemplateActionModelFactory().getModel(nodeRef));
+                    getTemplateActionModelFactory().getTemplateEngine(),
+                    template, getTemplateActionModelFactory().getModel(nodeRef));
 
             // Find the data type from the action defintion
             DataTypeDefinition dataTypeDef;
             if (actionDefinition.getParameterDefintion(paramName) != null)
             {
                 dataTypeDef = dictionaryService.getDataType(
-                      actionDefinition.getParameterDefintion(paramName).getType());
+                        actionDefinition.getParameterDefintion(paramName).getType());
             }
             // Fall back to the DD using the property name of it is not defined
             // This is sometimes used for setting a property to a value.
@@ -217,7 +204,7 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
             {
                 dataTypeDef = dictionaryService.getProperty(QName.createQName(paramName)).getDataType();
             }
-            
+
             // Convert the template result into the correct type and set the parameter
             Object value = DefaultTypeConverter.INSTANCE.convert(dataTypeDef, stringValue);
             if (value instanceof Serializable)
@@ -242,6 +229,6 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.applicationContext = applicationContext;
-        
+
     }
 }

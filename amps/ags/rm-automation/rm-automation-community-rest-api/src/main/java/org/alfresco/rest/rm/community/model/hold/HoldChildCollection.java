@@ -34,5 +34,4 @@ import org.alfresco.rest.core.RestModels;
  * @author Damian Ujma
  */
 public class HoldChildCollection extends RestModels<HoldChildEntry, HoldChildCollection>
-{
-}
+{}

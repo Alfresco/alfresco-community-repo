@@ -51,7 +51,8 @@ public interface DispositionService
     /**
      * Register a disposition property.
      *
-     * @param dispositionProperty   disposition property
+     * @param dispositionProperty
+     *            disposition property
      */
     void registerDispositionProperty(DispositionProperty dispositionProperty);
 
@@ -61,17 +62,17 @@ public interface DispositionService
      * @return filtered list of disposition period properties
      */
     Collection<DispositionProperty> getDispositionProperties(boolean isRecordLevel, String dispositionAction);
-    Collection<DispositionProperty> getDispositionProperties();
 
+    Collection<DispositionProperty> getDispositionProperties();
 
     /** ========= Disposition Schedule Methods ========= */
 
     /**
-     * Get the disposition schedule for a given record management node.  Traverses the hierarchy to
-     * find the first disposition schedule in the primary hierarchy.
+     * Get the disposition schedule for a given record management node. Traverses the hierarchy to find the first disposition schedule in the primary hierarchy.
      *
-     * @param nodeRef   node reference to record category, record folder or record
-     * @return {@link DispositionSchedule}  disposition schedule
+     * @param nodeRef
+     *            node reference to record category, record folder or record
+     * @return {@link DispositionSchedule} disposition schedule
      */
     DispositionSchedule getDispositionSchedule(NodeRef nodeRef);
 
@@ -79,44 +80,47 @@ public interface DispositionService
     // TODO List<DispositionSchedule> getAllDispositionSchedules(NodeRef nodeRef);
 
     /**
-     * Get the disposition schedule directly associated with the node specified.  Returns
-     * null if none.
+     * Get the disposition schedule directly associated with the node specified. Returns null if none.
      *
-     * @param nodeRef   node reference
-     * @return {@link DispositionSchedule}  disposition schedule directly associated with the node reference, null if none
+     * @param nodeRef
+     *            node reference
+     * @return {@link DispositionSchedule} disposition schedule directly associated with the node reference, null if none
      */
     DispositionSchedule getAssociatedDispositionSchedule(NodeRef nodeRef);
 
     /**
      * Gets the records management container that is directly associated with the disposition schedule.
      *
-     * @param dispositionSchedule   disposition schedule
-     * @return {@link NodeRef}  node reference of the associated container
+     * @param dispositionSchedule
+     *            disposition schedule
+     * @return {@link NodeRef} node reference of the associated container
      */
     NodeRef getAssociatedRecordsManagementContainer(DispositionSchedule dispositionSchedule);
 
     /**
      * Indicates whether a disposition schedule has any disposable items under its management
      *
-     * @param dispositionSchdule	disposition schedule
-     * @return boolean	true if there are disposable items being managed by, false otherwise
+     * @param dispositionSchdule
+     *            disposition schedule
+     * @return boolean true if there are disposable items being managed by, false otherwise
      */
     boolean hasDisposableItems(DispositionSchedule dispositionSchdule);
 
     /**
-     * Gets a list of all the disposable items (records, record folders) that are under the control of
-     * the disposition schedule.
+     * Gets a list of all the disposable items (records, record folders) that are under the control of the disposition schedule.
      *
-     * @param dispositionSchedule   disposition schedule
-     * @return {@link List} &lt;{@link NodeRef}&gt;    list of disposable items
+     * @param dispositionSchedule
+     *            disposition schedule
+     * @return {@link List} &lt;{@link NodeRef}&gt; list of disposable items
      */
     List<NodeRef> getDisposableItems(DispositionSchedule dispositionSchedule);
 
     /**
      * Indicates whether the node is a disposable item or not (ie is under the control of a disposition schedule)
      *
-     * @param nodeRef   node reference
-     * @return boolean  true if node is a disposable item, false otherwise
+     * @param nodeRef
+     *            node reference
+     * @return boolean true if node is a disposable item, false otherwise
      */
     boolean isDisposableItem(NodeRef nodeRef);
 
@@ -138,52 +142,57 @@ public interface DispositionService
     /**
      * Adds a new disposition action definition to the given disposition schedule.
      *
-     * @param schedule The DispositionSchedule to add to
-     * @param actionDefinitionParams Map of parameters to use to create the action definition
+     * @param schedule
+     *            The DispositionSchedule to add to
+     * @param actionDefinitionParams
+     *            Map of parameters to use to create the action definition
      */
     DispositionActionDefinition addDispositionActionDefinition(
-                DispositionSchedule schedule,
-                Map<QName, Serializable> actionDefinitionParams);
+            DispositionSchedule schedule,
+            Map<QName, Serializable> actionDefinitionParams);
 
     /**
-     * Removes the given disposition action definition from the given disposition
-     * schedule.
+     * Removes the given disposition action definition from the given disposition schedule.
      *
-     * @param schedule The DispositionSchedule to remove from
-     * @param actionDefinition The DispositionActionDefinition to remove
+     * @param schedule
+     *            The DispositionSchedule to remove from
+     * @param actionDefinition
+     *            The DispositionActionDefinition to remove
      */
     void removeDispositionActionDefinition(
-                DispositionSchedule schedule,
-                DispositionActionDefinition actionDefinition);
+            DispositionSchedule schedule,
+            DispositionActionDefinition actionDefinition);
 
     /**
-     * Updates the given disposition action definition belonging to the given disposition
-     * schedule.
+     * Updates the given disposition action definition belonging to the given disposition schedule.
      *
-     * @param actionDefinition The DispositionActionDefinition to update
-     * @param actionDefinitionParams Map of parameters to use to update the action definition
+     * @param actionDefinition
+     *            The DispositionActionDefinition to update
+     * @param actionDefinitionParams
+     *            Map of parameters to use to update the action definition
      * @return The updated DispositionActionDefinition
      */
     DispositionActionDefinition updateDispositionActionDefinition(
-                DispositionActionDefinition actionDefinition,
-                Map<QName, Serializable> actionDefinitionParams);
-
+            DispositionActionDefinition actionDefinition,
+            Map<QName, Serializable> actionDefinitionParams);
 
     /** ========= Disposition Action Methods ========= */
 
     /**
      * Indicates whether the next disposition action is eligible or not.
      *
-     * @param nodeRef   node reference to disposable item
-     * @return boolean  true if next disposition action is eligible, false otherwise
+     * @param nodeRef
+     *            node reference to disposable item
+     * @return boolean true if next disposition action is eligible, false otherwise
      */
     boolean isNextDispositionActionEligible(NodeRef nodeRef);
 
     /**
      * Gets the next disposition action for a given node
      *
-     * @param nodeRef               node reference to disposable item
-     * @return DispositionAction    next disposition action, null if none
+     * @param nodeRef
+     *            node reference to disposable item
+     * @return DispositionAction next disposition action, null if none
      */
     DispositionAction getNextDispositionAction(NodeRef nodeRef);
 
@@ -191,31 +200,32 @@ public interface DispositionService
 
     // TODO void completeNextDispositionAction(NodeRef nodeRef);
 
-
     /** ========= Disposition Action History Methods ========= */
 
     /**
      * Gets a list of all the completed disposition action in the order they occured.
      *
-     * @param nodeRef                       record/record folder
-     * @return List<DispositionAction>      list of completed disposition actions
+     * @param nodeRef
+     *            record/record folder
+     * @return List<DispositionAction> list of completed disposition actions
      */
     List<DispositionAction> getCompletedDispositionActions(NodeRef nodeRef);
 
     /**
-     * Helper method to get the last completed disposition action.  Returns null
-     * if there is none.
+     * Helper method to get the last completed disposition action. Returns null if there is none.
      *
-     * @param nodeRef               record/record folder
-     * @return DispositionAction    last completed disposition action, null if none
+     * @param nodeRef
+     *            record/record folder
+     * @return DispositionAction last completed disposition action, null if none
      */
     DispositionAction getLastCompletedDispostionAction(NodeRef nodeRef);
 
     /**
      * Indicates whether the disposable item (records, record folders) is cutoff or not.
      *
-     * @param nodeRef   node reference
-     * @return boolean  true if the disposable item is cutoff, false otherwise
+     * @param nodeRef
+     *            node reference
+     * @return boolean true if the disposable item is cutoff, false otherwise
      *
      * @since 2.0
      */
@@ -224,7 +234,8 @@ public interface DispositionService
     /**
      * Marks the disposable item (record or record folder) as cut off, calculating the cut off date
      *
-     * @param nodeRef   node reference
+     * @param nodeRef
+     *            node reference
      *
      * @since 2.2
      */
@@ -233,31 +244,35 @@ public interface DispositionService
     /**
      * Updates the next disposition action
      *
-     * @param nodeRef   node reference
+     * @param nodeRef
+     *            node reference
      */
     void updateNextDispositionAction(NodeRef nodeRef);
 
     /**
      * Updates the next disposition action
      *
-     * @param nodeRef             node reference
-     * @param dispositionSchedule the schedule to be applied
+     * @param nodeRef
+     *            node reference
+     * @param dispositionSchedule
+     *            the schedule to be applied
      */
     void updateNextDispositionAction(NodeRef nodeRef, DispositionSchedule dispositionSchedule);
 
     /**
      * Refreshes the disposition action details of the given node.
      *
-     * @param nodeRef   node reference
+     * @param nodeRef
+     *            node reference
      */
     void refreshDispositionAction(NodeRef nodeRef);
-    
+
     /**
-     * Gets date of the disposition action for the given 
-     * disposition schedule with the given action name
+     * Gets date of the disposition action for the given disposition schedule with the given action name
      * 
      * @param record
-     * @param dispositionSchedule nodeRef
+     * @param dispositionSchedule
+     *            nodeRef
      * @param dispositionActionName
      * @return date
      */
@@ -266,24 +281,25 @@ public interface DispositionService
     /**
      * Compute the "disposition as of" date (if necessary) for a disposition action and a node.
      *
-     * @param nodeRef The node which the schedule applies to.
-     * @param dispositionActionDefinition The definition of the disposition action.
+     * @param nodeRef
+     *            The node which the schedule applies to.
+     * @param dispositionActionDefinition
+     *            The definition of the disposition action.
      * @return The new "disposition as of" date.
      */
     Date calculateAsOfDate(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition);
-    
+
     /**
-     * Gets the origin disposition schedule for the record, not the calculated one
-     * in case of multiple dispositions applied to record
+     * Gets the origin disposition schedule for the record, not the calculated one in case of multiple dispositions applied to record
      * 
-     * @param nodeRef record 
+     * @param nodeRef
+     *            record
      * @return the initial disposition
      */
     DispositionSchedule getOriginDispositionSchedule(NodeRef nodeRef);
-    
+
     /**
-     * Updates disposition action step when linking or unlinking 
-     * the given record to/from a record folder
+     * Updates disposition action step when linking or unlinking the given record to/from a record folder
      * 
      * @param record
      */

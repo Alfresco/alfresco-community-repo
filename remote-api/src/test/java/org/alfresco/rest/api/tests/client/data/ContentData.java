@@ -33,56 +33,54 @@ import org.springframework.util.FileCopyUtils;
 
 public class ContentData implements Serializable
 {
-	private static final long serialVersionUID = 5757465330657144283L;
+    private static final long serialVersionUID = 5757465330657144283L;
 
-	private long length;
-	private String mimeType;
+    private long length;
+    private String mimeType;
     private String fileName;
     private byte[] bytes;
 
     public ContentData(ContentStream cs) throws IOException
     {
-    	length = cs.getLength();
-    	mimeType = cs.getMimeType();
-    	fileName = cs.getFileName();
-    	bytes = FileCopyUtils.copyToByteArray(cs.getStream());
+        length = cs.getLength();
+        mimeType = cs.getMimeType();
+        fileName = cs.getFileName();
+        bytes = FileCopyUtils.copyToByteArray(cs.getStream());
     }
 
-//	public ContentData(long length, String mimeType, String fileName,
-//			InputStream inputStream)
-//	{
-//		super();
-//		this.length = length;
-//		this.mimeType = mimeType;
-//		this.fileName = fileName;
-//		this.inputStream = inputStream;
-//	}
+    // public ContentData(long length, String mimeType, String fileName,
+    // InputStream inputStream)
+    // {
+    // super();
+    // this.length = length;
+    // this.mimeType = mimeType;
+    // this.fileName = fileName;
+    // this.inputStream = inputStream;
+    // }
 
-	public long getLength()
-	{
-		return length;
-	}
+    public long getLength()
+    {
+        return length;
+    }
 
     /**
      * Returns the MIME type of the stream.
      * 
-     * @return the MIME type of the stream or <code>null</code> if the MIME type
-     *         is unknown
+     * @return the MIME type of the stream or <code>null</code> if the MIME type is unknown
      */
     public String getMimeType()
     {
-    	return mimeType;
+        return mimeType;
     }
 
     /**
      * Returns the file name of the stream.
      * 
-     * @return the file name of the stream or <code>null</code> if the file name
-     *         is unknown
+     * @return the file name of the stream or <code>null</code> if the file name is unknown
      */
     public String getFileName()
     {
-    	return fileName;
+        return fileName;
     }
 
     /**
@@ -92,12 +90,12 @@ public class ContentData implements Serializable
      */
     public byte[] getBytes()
     {
-    	return bytes;
+        return bytes;
     }
-    
-//    public static ContentData getContentData(ContentStream contentStream) throws IOException
-//    {
-//    	ContentData contentData = new ContentData(contentStream);
-//    	return contentData;
-//    }
+
+    // public static ContentData getContentData(ContentStream contentStream) throws IOException
+    // {
+    // ContentData contentData = new ContentData(contentStream);
+    // return contentData;
+    // }
 }

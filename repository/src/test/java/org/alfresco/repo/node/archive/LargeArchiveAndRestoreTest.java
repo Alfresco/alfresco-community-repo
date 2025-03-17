@@ -30,6 +30,10 @@ import java.util.Collections;
 import java.util.List;
 
 import junit.framework.TestCase;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -47,10 +51,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Test large datasets' archival and restore
@@ -61,15 +61,15 @@ import org.springframework.context.ApplicationContext;
 public class LargeArchiveAndRestoreTest extends TestCase
 {
     private ApplicationContext ctx;
-    
+
     private static Log logger = LogFactory.getLog(LargeArchiveAndRestoreTest.class);
-    
+
     private NodeService nodeService;
     private NodeArchiveService nodeArchiveService;
     private FileFolderService fileFolderService;
     private AuthenticationComponent authenticationComponent;
     private TransactionService transactionService;
-    
+
     private NodeRef rootNodeRef;
 
     @Override
@@ -82,11 +82,11 @@ public class LargeArchiveAndRestoreTest extends TestCase
         nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         transactionService = serviceRegistry.getTransactionService();
-        
+
         try
         {
             authenticationComponent.setSystemUserAsCurrentUser();
-            
+
             // create a test store
             StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
             rootNodeRef = nodeService.getRootNode(storeRef);
@@ -96,30 +96,29 @@ public class LargeArchiveAndRestoreTest extends TestCase
             authenticationComponent.clearCurrentSecurityContext();
         }
     }
-    
+
     @Override
     public void tearDown() throws Exception
-    {
-    }
-    
+    {}
+
     public void testSetUp() throws Exception
-    {
-    }
+    {}
 
     private static final int NUM_FOLDERS = 5;
     private static final int MAX_DEPTH = 3;
     private static final int NUM_FILES = 10;
+
     private class CreateDataCallback implements RetryingTransactionCallback<NodeRef>
     {
         private NodeRef parentNodeRef;
         private List<String> rollbackMessages;
-        
+
         public CreateDataCallback(NodeRef parentNodeRef)
         {
             this.parentNodeRef = parentNodeRef;
             this.rollbackMessages = new ArrayList<String>(20);
         }
-        
+
         public NodeRef execute() throws Throwable
         {
             // Make the root of the tree
@@ -135,7 +134,7 @@ public class LargeArchiveAndRestoreTest extends TestCase
                     props).getChildRef();
             // Now add children
             makeFolders(folderNodeRef, 1);
-            
+
             // Rollback if necessary
             if (rollbackMessages.size() > 0)
             {
@@ -147,10 +146,10 @@ public class LargeArchiveAndRestoreTest extends TestCase
                 }
                 throw new RuntimeException(sb.toString());
             }
-            
+
             return folderNodeRef;
         }
-        
+
         private void makeFolders(NodeRef parentNodeRef, int depth)
         {
             if (depth == MAX_DEPTH)
@@ -176,7 +175,7 @@ public class LargeArchiveAndRestoreTest extends TestCase
                 }
             }
         }
-        
+
         private NodeRef addFolder(NodeRef parentNodeRef, String foldername, int depth)
         {
             System.out.println(makeTabs(depth) + "Creating folder " + foldername + " in parent " + parentNodeRef);
@@ -190,7 +189,7 @@ public class LargeArchiveAndRestoreTest extends TestCase
             }
             return info.getNodeRef();
         }
-        
+
         private NodeRef addFile(NodeRef parentNodeRef, String filename, int depth)
         {
             System.out.println(makeTabs(depth) + "Creating file " + filename + " in parent " + parentNodeRef);
@@ -204,7 +203,7 @@ public class LargeArchiveAndRestoreTest extends TestCase
             }
             return info.getNodeRef();
         }
-        
+
         private String makeTabs(int count)
         {
             StringBuilder sb = new StringBuilder();
@@ -215,11 +214,10 @@ public class LargeArchiveAndRestoreTest extends TestCase
             return sb.toString();
         }
     }
-    
+
     public void testCreateAndRestore() throws Exception
     {
-        RunAsWork<NodeRef> createHierarchyWork = new RunAsWork<NodeRef>()
-        {
+        RunAsWork<NodeRef> createHierarchyWork = new RunAsWork<NodeRef>() {
             public NodeRef doWork() throws Exception
             {
                 CreateDataCallback callback = new CreateDataCallback(rootNodeRef);
@@ -229,8 +227,7 @@ public class LargeArchiveAndRestoreTest extends TestCase
         // Create the hierarchy
         final NodeRef parentNodeRef = AuthenticationUtil.runAs(createHierarchyWork, AuthenticationUtil.SYSTEM_USER_NAME);
         // Delete it
-        final RetryingTransactionCallback<NodeRef> deleteHierarchyCallback = new RetryingTransactionCallback<NodeRef>()
-        {
+        final RetryingTransactionCallback<NodeRef> deleteHierarchyCallback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 // Delete it
@@ -249,8 +246,7 @@ public class LargeArchiveAndRestoreTest extends TestCase
                 return archivedParentNodeRef;
             }
         };
-        RunAsWork<NodeRef> deleteHierarchyWork = new RunAsWork<NodeRef>()
-        {
+        RunAsWork<NodeRef> deleteHierarchyWork = new RunAsWork<NodeRef>() {
             public NodeRef doWork() throws Exception
             {
                 return transactionService.getRetryingTransactionHelper().doInTransaction(deleteHierarchyCallback);
@@ -258,8 +254,7 @@ public class LargeArchiveAndRestoreTest extends TestCase
         };
         final NodeRef archivedParentNodeRef = AuthenticationUtil.runAs(deleteHierarchyWork, AuthenticationUtil.SYSTEM_USER_NAME);
         // Restore it
-        final RetryingTransactionCallback<NodeRef> restoreHierarchyCallback = new RetryingTransactionCallback<NodeRef>()
-        {
+        final RetryingTransactionCallback<NodeRef> restoreHierarchyCallback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 // Delete it
@@ -278,8 +273,7 @@ public class LargeArchiveAndRestoreTest extends TestCase
                 return parentNodeRef;
             }
         };
-        RunAsWork<NodeRef> restoreHierarchyWork = new RunAsWork<NodeRef>()
-        {
+        RunAsWork<NodeRef> restoreHierarchyWork = new RunAsWork<NodeRef>() {
             public NodeRef doWork() throws Exception
             {
                 return transactionService.getRetryingTransactionHelper().doInTransaction(restoreHierarchyCallback);
@@ -287,10 +281,9 @@ public class LargeArchiveAndRestoreTest extends TestCase
         };
         final NodeRef checkParentNodeRef = AuthenticationUtil.runAs(restoreHierarchyWork, AuthenticationUtil.SYSTEM_USER_NAME);
         assertEquals("Restored node reference doesn't match original", parentNodeRef, checkParentNodeRef);
-        
+
         // Purge it
-        final RetryingTransactionCallback<Object> purgeHierarchyCallback = new RetryingTransactionCallback<Object>()
-        {
+        final RetryingTransactionCallback<Object> purgeHierarchyCallback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 // Delete it
@@ -310,8 +303,7 @@ public class LargeArchiveAndRestoreTest extends TestCase
                 return null;
             }
         };
-        RunAsWork<Object> purgeHierarchyWork = new RunAsWork<Object>()
-        {
+        RunAsWork<Object> purgeHierarchyWork = new RunAsWork<Object>() {
             public Object doWork() throws Exception
             {
                 transactionService.getRetryingTransactionHelper().doInTransaction(purgeHierarchyCallback);

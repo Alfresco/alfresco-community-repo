@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.beanutils.ConversionException;
+import org.apache.commons.beanutils.ConvertUtils;
+
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -43,15 +46,9 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
-import org.apache.commons.beanutils.ConversionException;
-import org.apache.commons.beanutils.ConvertUtils;
 
 /**
- * Query walker that adds all properties for "equals" comparison to a map. If an
- * unsupported property or comparison operation is encountered, an
- * {@link InvalidArgumentException} is thrown unless the method
- * {@link #handleUnmatchedComparison(int, String, String)} returns true (default
- * implementation returns false).
+ * Query walker that adds all properties for "equals" comparison to a map. If an unsupported property or comparison operation is encountered, an {@link InvalidArgumentException} is thrown unless the method {@link #handleUnmatchedComparison(int, String, String)} returns true (default implementation returns false).
  *
  * @author Frederik Heremans
  * @author Tijs Rademakers
@@ -150,14 +147,15 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         variableProperties = new ArrayList<QueryVariableHolder>();
     }
 
-    public List<QueryVariableHolder> getVariableProperties() {
+    public List<QueryVariableHolder> getVariableProperties()
+    {
         return variableProperties;
     }
 
     @Override
     public void matches(String property, String value, boolean negated)
     {
-        if(negated)
+        if (negated)
         {
             throw new InvalidArgumentException("Cannot use negated matching for property: " + property);
         }
@@ -258,7 +256,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
 
         if (throwError)
         {
-            throw new InvalidArgumentException("framework.exception.InvalidProperty", new Object[] {propertyName, propertyValue, WhereClauseParser.tokenNames[type]});
+            throw new InvalidArgumentException("framework.exception.InvalidProperty", new Object[]{propertyName, propertyValue, WhereClauseParser.tokenNames[type]});
         }
         else if (negated)
         {
@@ -311,20 +309,25 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
     /**
      * Get the property value, converted to the requested type.
      *
-     * @param propertyName name of the parameter
-     * @param type int
-     * @param returnType type of object to return
-     * @return the converted parameter value. Null, if the property has no
-     *         value.
-     * @throws IllegalArgumentException when no conversion for the given
-     *             returnType is available or if returnType is null.
-     * @throws InvalidArgumentException when conversion to the given type was
-     *             not possible due to an error while converting
+     * @param propertyName
+     *            name of the parameter
+     * @param type
+     *            int
+     * @param returnType
+     *            type of object to return
+     * @return the converted parameter value. Null, if the property has no value.
+     * @throws IllegalArgumentException
+     *             when no conversion for the given returnType is available or if returnType is null.
+     * @throws InvalidArgumentException
+     *             when conversion to the given type was not possible due to an error while converting
      */
     @SuppressWarnings("unchecked")
     public <T extends Object> T getProperty(String propertyName, int type, Class<T> returnType)
     {
-        if (returnType == null) { throw new IllegalArgumentException("ReturnType cannot be null"); }
+        if (returnType == null)
+        {
+            throw new IllegalArgumentException("ReturnType cannot be null");
+        }
         try
         {
             Object result = null;
@@ -332,7 +335,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
             if (stringValue != null)
             {
                 result = ConvertUtils.convert(stringValue, returnType);
-                if ((result instanceof String) && (! returnType.equals(String.class)))
+                if ((result instanceof String) && (!returnType.equals(String.class)))
                 {
                     // If a string is returned, no converter has been found (for non-String return type)
                     throw new IllegalArgumentException("Unable to convert parameter to type: " + returnType.getName());
@@ -344,7 +347,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         {
             // Conversion failed, wrap in Illegal
             throw new InvalidArgumentException("Query property value for '" + propertyName + "' should be a valid "
-                + returnType.getSimpleName());
+                    + returnType.getSimpleName());
         }
     }
 
@@ -381,7 +384,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         {
             int indexOfSpace = propertyValue.indexOf(' ');
             if ((propertyValue.contains("_") && indexOfSpace > propertyValue.indexOf("_")) ||
-                (propertyValue.contains(":") && indexOfSpace > propertyValue.indexOf(":")))
+                    (propertyValue.contains(":") && indexOfSpace > propertyValue.indexOf(":")))
             {
                 String typeDef = propertyValue.substring(0, indexOfSpace);
                 try
@@ -415,12 +418,9 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
     }
 
     /**
-     * Called when unsupported property is encountered or comparison operator
-     * other than equals.
+     * Called when unsupported property is encountered or comparison operator other than equals.
      *
-     * @return true, if the comparison is handles successfully. False, if an
-     *         exception should be thrown because the comparison can't be
-     *         handled.
+     * @return true, if the comparison is handles successfully. False, if an exception should be thrown because the comparison can't be handled.
      */
     protected boolean handleUnmatchedComparison(int type, String propertyName, String propertyValue)
     {
@@ -436,9 +436,11 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         private Object propertyValue;
         private String scope;
 
-        public QueryVariableHolder() {}
+        public QueryVariableHolder()
+        {}
 
-        public QueryVariableHolder(String propertyName, int operator, Object propertyValue, String scope) {
+        public QueryVariableHolder(String propertyName, int operator, Object propertyValue, String scope)
+        {
             this.propertyName = propertyName;
             this.operator = operator;
             this.propertyValue = propertyValue;
@@ -449,35 +451,44 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         {
             return propertyName;
         }
+
         public void setPropertyName(String propertyName)
         {
             this.propertyName = propertyName;
         }
+
         public int getOperator()
         {
             return operator;
         }
+
         public void setOperator(int operator)
         {
             this.operator = operator;
         }
+
         public Object getPropertyValue()
         {
             return propertyValue;
         }
+
         public void setPropertyValue(Object propertyValue)
         {
             this.propertyValue = propertyValue;
         }
+
         public String getScope()
         {
             return scope;
         }
+
         public void setScope(String scope)
         {
             this.scope = scope;
         }
-        public boolean isGlobalScope() {
+
+        public boolean isGlobalScope()
+        {
             return "global".equals(scope);
         }
     }

@@ -25,6 +25,14 @@
  */
 package org.alfresco.rest.framework.webscripts;
 
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceMetadata;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
@@ -41,13 +49,6 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.resource.parameters.Params.RecognizedParams;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.http.HttpMethod;
-
-import java.util.Map;
 
 /**
  * Handles the HTTP Get for a Resource
@@ -57,7 +58,7 @@ import java.util.Map;
 public class ResourceWebScriptGet extends AbstractResourceWebScript implements ParamsExtractor, RecognizedParamsExtractor
 {
     private static Log logger = LogFactory.getLog(ResourceWebScriptGet.class);
-    
+
     public ResourceWebScriptGet()
     {
         super();
@@ -79,259 +80,261 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
         final String relationship2Id = resourceVars.get(ResourceLocator.RELATIONSHIP2_ID);
 
         final RecognizedParams params = getRecognizedParams(req);
-        
+
         switch (resourceMeta.getType())
         {
-            case ENTITY:
-                if (StringUtils.isNotBlank(entityId))
+        case ENTITY:
+            if (StringUtils.isNotBlank(entityId))
+            {
+                return Params.valueOf(params, entityId, null, req);
+            }
+            else
+            {
+                // collection resource (top-level of entities)
+                return Params.valueOf(params, null, null, req);
+            }
+        case RELATIONSHIP:
+
+            if (StringUtils.isNotBlank(propertyName))
+            {
+                if (StringUtils.isNotBlank(relationship2Id))
                 {
-                    return Params.valueOf(params, entityId, null, req);
-                } 
+                    return Params.valueOf(false, entityId, relationshipId, relationship2Id, null, null, null, params, null, req);
+                }
                 else
                 {
-                    // collection resource (top-level of entities)
-                    return Params.valueOf(params, null, null, req);
+                    // collection resource (second level of relationship)
+                    return Params.valueOf(true, entityId, relationshipId, null, null, null, null, params, null, req);
                 }
-            case RELATIONSHIP:
-
+            }
+            else if (StringUtils.isNotBlank(relationshipId))
+            {
+                return Params.valueOf(false, entityId, relationshipId, null, null, null, null, params, null, req);
+            }
+            else
+            {
+                // collection resource (first level of relationship)
+                return Params.valueOf(true, entityId, null, null, null, null, null, params, null, req);
+            }
+        case PROPERTY:
+            if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(resourceName))
+            {
                 if (StringUtils.isNotBlank(propertyName))
                 {
-                    if (StringUtils.isNotBlank(relationship2Id))
-                    {
-                        return Params.valueOf(false, entityId, relationshipId, relationship2Id, null, null, null, params, null, req);
-                    }
-                    else
-                    {
-                        // collection resource (second level of relationship)
-                        return Params.valueOf(true, entityId, relationshipId, null, null, null, null, params, null, req);
-                    }
-                }
-                else if (StringUtils.isNotBlank(relationshipId))
-                {
-                    return Params.valueOf(false, entityId, relationshipId, null, null, null, null, params, null, req);
+                    return Params.valueOf(false, entityId, relationshipId, relationship2Id, null, null, propertyName, params, null, req);
                 }
                 else
                 {
-                    // collection resource (first level of relationship)
-                    return Params.valueOf(true, entityId, null, null, null, null, null, params, null, req);
+                    return Params.valueOf(entityId, null, null, null, resourceName, params, null, req);
                 }
-            case PROPERTY:
-                if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(resourceName))
-                {
-                    if (StringUtils.isNotBlank(propertyName))
-                    {
-                        return Params.valueOf(false, entityId, relationshipId, relationship2Id, null, null, propertyName, params, null, req);
-                    }
-                    else
-                    {
-                        return Params.valueOf(entityId, null, null, null, resourceName, params, null, req);
-                    }
-                }
-                //Fall through to unsupported.
-            default:
-                throw new UnsupportedResourceOperationException("GET not supported for Actions");
+            }
+            // Fall through to unsupported.
+        default:
+            throw new UnsupportedResourceOperationException("GET not supported for Actions");
         }
     }
 
     /**
      * Executes the action on the resource
-     * @param resource ResourceWithMetadata
-     * @param params parameters to use
+     * 
+     * @param resource
+     *            ResourceWithMetadata
+     * @param params
+     *            parameters to use
      * @return anObject the result of the execute
      */
     @Override
     public Object executeAction(ResourceWithMetadata resource, Params params, WithResponse withResponse) throws Throwable
     {
-        
+
         switch (resource.getMetaData().getType())
         {
-            case ENTITY:
-                if (StringUtils.isBlank(params.getEntityId()) || params.isCollectionResource())
+        case ENTITY:
+            if (StringUtils.isBlank(params.getEntityId()) || params.isCollectionResource())
+            {
+                // Get the collection
+                if (EntityResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
                 {
-                    // Get the collection
-                    if (EntityResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
+                    if (resource.getMetaData().isDeleted(EntityResourceAction.Read.class))
                     {
-                        if (resource.getMetaData().isDeleted(EntityResourceAction.Read.class))
-                        {
-                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
-                        }
-                        EntityResourceAction.Read<?> getter = (Read<?>) resource.getResource();
-                        CollectionWithPagingInfo<?> resources = getter.readAll(params);
-                        return resources;              
+                        throw new DeletedResourceException("(GET) " + resource.getMetaData().getUniqueId());
                     }
-                    else if (EntityResourceAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
-                    {
-                        if (resource.getMetaData().isDeleted(EntityResourceAction.ReadWithResponse.class))
-                        {
-                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
-                        }
-                        EntityResourceAction.ReadWithResponse<?> getter = (EntityResourceAction.ReadWithResponse<?>) resource.getResource();
-                        CollectionWithPagingInfo<?> resources = getter.readAll(params, withResponse);
-                        return resources;
-                    }
-                    else if (EntityResourceAction.DeleteSetWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
-                    {
-                        if (resource.getMetaData().isDeleted(EntityResourceAction.DeleteSetWithResponse.class))
-                        {
-                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
-                        }
-                        EntityResourceAction.DeleteSetWithResponse relationDeleter = (EntityResourceAction.DeleteSetWithResponse) resource.getResource();
-                        relationDeleter.deleteSet(params, withResponse);
-                        //Don't pass anything to the callback - its just successful
-                        return null;
-                    }
-                    else if (EntityResourceAction.DeleteSet.class.isAssignableFrom(resource.getResource().getClass()))
-                    {
-                        if (resource.getMetaData().isDeleted(EntityResourceAction.Delete.class))
-                        {
-                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
-                        }
-                        EntityResourceAction.DeleteSet relationDeleter = (EntityResourceAction.DeleteSet) resource.getResource();
-                        relationDeleter.deleteSet(params);
-                        //Don't pass anything to the callback - its just successful
-                        return null;
-                    }
-                    else
-                    {
-                        throw new UnsupportedResourceOperationException();
-                    }
-
+                    EntityResourceAction.Read<?> getter = (Read<?>) resource.getResource();
+                    CollectionWithPagingInfo<?> resources = getter.readAll(params);
+                    return resources;
                 }
-                else
+                else if (EntityResourceAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                 {
-                    if (EntityResourceAction.ReadById.class.isAssignableFrom(resource.getResource().getClass()))
+                    if (resource.getMetaData().isDeleted(EntityResourceAction.ReadWithResponse.class))
                     {
-                        if (resource.getMetaData().isDeleted(EntityResourceAction.ReadById.class))
-                        {
-                            throw new DeletedResourceException("(GET by id) "+resource.getMetaData().getUniqueId());
-                        }
-                        EntityResourceAction.ReadById<?> entityGetter = (ReadById<?>) resource.getResource();
-                        Object result = entityGetter.readById(params.getEntityId(), params);
-                        return result;   
+                        throw new DeletedResourceException("(GET) " + resource.getMetaData().getUniqueId());
                     }
-                    else if (EntityResourceAction.ReadByIdWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
-                    {
-                        if (resource.getMetaData().isDeleted(EntityResourceAction.ReadByIdWithResponse.class))
-                        {
-                            throw new DeletedResourceException("(GET by id) "+resource.getMetaData().getUniqueId());
-                        }
-                        EntityResourceAction.ReadByIdWithResponse<?> entityGetter = (EntityResourceAction.ReadByIdWithResponse<?>) resource.getResource();
-                        Object result = entityGetter.readById(params.getEntityId(), params, withResponse);
-                        return result;
-                    }
-                    else
-                    {
-                        throw new UnsupportedResourceOperationException();
-                    }
+                    EntityResourceAction.ReadWithResponse<?> getter = (EntityResourceAction.ReadWithResponse<?>) resource.getResource();
+                    CollectionWithPagingInfo<?> resources = getter.readAll(params, withResponse);
+                    return resources;
                 }
-            case RELATIONSHIP:
-                if (StringUtils.isBlank(params.getRelationshipId()) || (params.isCollectionResource()))
+                else if (EntityResourceAction.DeleteSetWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                 {
-                    // Get the collection
-                    if (RelationshipResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
+                    if (resource.getMetaData().isDeleted(EntityResourceAction.DeleteSetWithResponse.class))
                     {
-                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.Read.class))
-                        {
-                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
-                        }
-                        RelationshipResourceAction.Read<?> relationGetter = (RelationshipResourceAction.Read<?>) resource.getResource();
-                        CollectionWithPagingInfo<?> relations = relationGetter.readAll(params.getEntityId(),params);
-                        return relations;
+                        throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
                     }
-                    else
-                    {
-                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.ReadWithResponse.class))
-                        {
-                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
-                        }
-                        if (!RelationshipResourceAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
-                        {
-                            throw new UnsupportedResourceOperationException();
-                        }
-                        RelationshipResourceAction.ReadWithResponse<?> relationGetter = (RelationshipResourceAction.ReadWithResponse<?>) resource.getResource();
-                        CollectionWithPagingInfo<?> relations = relationGetter.readAll(params.getEntityId(),params,withResponse);
-                        return relations;
-                    }
-                } 
-                else 
-                {
-                    if (RelationshipResourceAction.ReadById.class.isAssignableFrom(resource.getResource().getClass()))
-                    {
-                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.ReadById.class))
-                        {
-                            throw new DeletedResourceException("(GET by id) "+resource.getMetaData().getUniqueId());
-                        }
-                        RelationshipResourceAction.ReadById<?> relationGetter = (RelationshipResourceAction.ReadById<?>) resource.getResource();
-                        Object result = relationGetter.readById(params.getEntityId(), params.getRelationshipId(), params);
-                        return result;
-                    }
-                    else if (RelationshipResourceAction.ReadByIdWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
-                    {
-                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.ReadByIdWithResponse.class))
-                        {
-                            throw new DeletedResourceException("(GET by id) "+resource.getMetaData().getUniqueId());
-                        }
-                        RelationshipResourceAction.ReadByIdWithResponse<?> relationGetter = (RelationshipResourceAction.ReadByIdWithResponse<?>) resource.getResource();
-                        Object result = relationGetter.readById(params.getEntityId(), params.getRelationshipId(), params, withResponse);
-                        return result;
-                    }
-                    else
-                    {
-                        throw new UnsupportedResourceOperationException();
-                    }
+                    EntityResourceAction.DeleteSetWithResponse relationDeleter = (EntityResourceAction.DeleteSetWithResponse) resource.getResource();
+                    relationDeleter.deleteSet(params, withResponse);
+                    // Don't pass anything to the callback - its just successful
+                    return null;
                 }
-            case PROPERTY:
-                if (StringUtils.isNotBlank(params.getEntityId()))
+                else if (EntityResourceAction.DeleteSet.class.isAssignableFrom(resource.getResource().getClass()))
                 {
-                    if (BinaryResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
+                    if (resource.getMetaData().isDeleted(EntityResourceAction.Delete.class))
                     {
-                        if (resource.getMetaData().isDeleted(BinaryResourceAction.Read.class))
-                        {
-                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
-                        }
-                        BinaryResourceAction.Read getter = (BinaryResourceAction.Read) resource.getResource();
-                        BinaryResource prop = getter.readProperty(params.getEntityId(), params);
-                        return prop;
+                        throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
                     }
-                    if (BinaryResourceAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
-                    {
-                        if (resource.getMetaData().isDeleted(BinaryResourceAction.ReadWithResponse.class))
-                        {
-                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
-                        }
-                        BinaryResourceAction.ReadWithResponse getter = (BinaryResourceAction.ReadWithResponse) resource.getResource();
-                        BinaryResource prop = getter.readProperty(params.getEntityId(), params, withResponse);
-                        return prop;
-                    }
-                    if (RelationshipResourceBinaryAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
-                    {
-                        if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.Read.class))
-                        {
-                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
-                        }
-                        RelationshipResourceBinaryAction.Read getter = (RelationshipResourceBinaryAction.Read) resource.getResource();
-                        BinaryResource prop = getter.readProperty(params.getEntityId(), params.getRelationshipId(), params);
-                        return prop;
-                    }
-                    if (RelationshipResourceBinaryAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
-                    {
-                        if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.ReadWithResponse.class))
-                        {
-                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
-                        }
-                        RelationshipResourceBinaryAction.ReadWithResponse getter = (RelationshipResourceBinaryAction.ReadWithResponse) resource.getResource();
-                        BinaryResource prop = getter.readProperty(params.getEntityId(), params.getRelationshipId(), params, withResponse);
-                        return prop;
-                    }
+                    EntityResourceAction.DeleteSet relationDeleter = (EntityResourceAction.DeleteSet) resource.getResource();
+                    relationDeleter.deleteSet(params);
+                    // Don't pass anything to the callback - its just successful
+                    return null;
                 }
                 else
                 {
                     throw new UnsupportedResourceOperationException();
                 }
-            default:
-                throw new UnsupportedResourceOperationException("GET not supported for Actions");
+
+            }
+            else
+            {
+                if (EntityResourceAction.ReadById.class.isAssignableFrom(resource.getResource().getClass()))
+                {
+                    if (resource.getMetaData().isDeleted(EntityResourceAction.ReadById.class))
+                    {
+                        throw new DeletedResourceException("(GET by id) " + resource.getMetaData().getUniqueId());
+                    }
+                    EntityResourceAction.ReadById<?> entityGetter = (ReadById<?>) resource.getResource();
+                    Object result = entityGetter.readById(params.getEntityId(), params);
+                    return result;
+                }
+                else if (EntityResourceAction.ReadByIdWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                {
+                    if (resource.getMetaData().isDeleted(EntityResourceAction.ReadByIdWithResponse.class))
+                    {
+                        throw new DeletedResourceException("(GET by id) " + resource.getMetaData().getUniqueId());
+                    }
+                    EntityResourceAction.ReadByIdWithResponse<?> entityGetter = (EntityResourceAction.ReadByIdWithResponse<?>) resource.getResource();
+                    Object result = entityGetter.readById(params.getEntityId(), params, withResponse);
+                    return result;
+                }
+                else
+                {
+                    throw new UnsupportedResourceOperationException();
+                }
+            }
+        case RELATIONSHIP:
+            if (StringUtils.isBlank(params.getRelationshipId()) || (params.isCollectionResource()))
+            {
+                // Get the collection
+                if (RelationshipResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
+                {
+                    if (resource.getMetaData().isDeleted(RelationshipResourceAction.Read.class))
+                    {
+                        throw new DeletedResourceException("(GET) " + resource.getMetaData().getUniqueId());
+                    }
+                    RelationshipResourceAction.Read<?> relationGetter = (RelationshipResourceAction.Read<?>) resource.getResource();
+                    CollectionWithPagingInfo<?> relations = relationGetter.readAll(params.getEntityId(), params);
+                    return relations;
+                }
+                else
+                {
+                    if (resource.getMetaData().isDeleted(RelationshipResourceAction.ReadWithResponse.class))
+                    {
+                        throw new DeletedResourceException("(GET) " + resource.getMetaData().getUniqueId());
+                    }
+                    if (!RelationshipResourceAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        throw new UnsupportedResourceOperationException();
+                    }
+                    RelationshipResourceAction.ReadWithResponse<?> relationGetter = (RelationshipResourceAction.ReadWithResponse<?>) resource.getResource();
+                    CollectionWithPagingInfo<?> relations = relationGetter.readAll(params.getEntityId(), params, withResponse);
+                    return relations;
+                }
+            }
+            else
+            {
+                if (RelationshipResourceAction.ReadById.class.isAssignableFrom(resource.getResource().getClass()))
+                {
+                    if (resource.getMetaData().isDeleted(RelationshipResourceAction.ReadById.class))
+                    {
+                        throw new DeletedResourceException("(GET by id) " + resource.getMetaData().getUniqueId());
+                    }
+                    RelationshipResourceAction.ReadById<?> relationGetter = (RelationshipResourceAction.ReadById<?>) resource.getResource();
+                    Object result = relationGetter.readById(params.getEntityId(), params.getRelationshipId(), params);
+                    return result;
+                }
+                else if (RelationshipResourceAction.ReadByIdWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                {
+                    if (resource.getMetaData().isDeleted(RelationshipResourceAction.ReadByIdWithResponse.class))
+                    {
+                        throw new DeletedResourceException("(GET by id) " + resource.getMetaData().getUniqueId());
+                    }
+                    RelationshipResourceAction.ReadByIdWithResponse<?> relationGetter = (RelationshipResourceAction.ReadByIdWithResponse<?>) resource.getResource();
+                    Object result = relationGetter.readById(params.getEntityId(), params.getRelationshipId(), params, withResponse);
+                    return result;
+                }
+                else
+                {
+                    throw new UnsupportedResourceOperationException();
+                }
+            }
+        case PROPERTY:
+            if (StringUtils.isNotBlank(params.getEntityId()))
+            {
+                if (BinaryResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
+                {
+                    if (resource.getMetaData().isDeleted(BinaryResourceAction.Read.class))
+                    {
+                        throw new DeletedResourceException("(GET) " + resource.getMetaData().getUniqueId());
+                    }
+                    BinaryResourceAction.Read getter = (BinaryResourceAction.Read) resource.getResource();
+                    BinaryResource prop = getter.readProperty(params.getEntityId(), params);
+                    return prop;
+                }
+                if (BinaryResourceAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                {
+                    if (resource.getMetaData().isDeleted(BinaryResourceAction.ReadWithResponse.class))
+                    {
+                        throw new DeletedResourceException("(GET) " + resource.getMetaData().getUniqueId());
+                    }
+                    BinaryResourceAction.ReadWithResponse getter = (BinaryResourceAction.ReadWithResponse) resource.getResource();
+                    BinaryResource prop = getter.readProperty(params.getEntityId(), params, withResponse);
+                    return prop;
+                }
+                if (RelationshipResourceBinaryAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
+                {
+                    if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.Read.class))
+                    {
+                        throw new DeletedResourceException("(GET) " + resource.getMetaData().getUniqueId());
+                    }
+                    RelationshipResourceBinaryAction.Read getter = (RelationshipResourceBinaryAction.Read) resource.getResource();
+                    BinaryResource prop = getter.readProperty(params.getEntityId(), params.getRelationshipId(), params);
+                    return prop;
+                }
+                if (RelationshipResourceBinaryAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                {
+                    if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.ReadWithResponse.class))
+                    {
+                        throw new DeletedResourceException("(GET) " + resource.getMetaData().getUniqueId());
+                    }
+                    RelationshipResourceBinaryAction.ReadWithResponse getter = (RelationshipResourceBinaryAction.ReadWithResponse) resource.getResource();
+                    BinaryResource prop = getter.readProperty(params.getEntityId(), params.getRelationshipId(), params, withResponse);
+                    return prop;
+                }
+            }
+            else
+            {
+                throw new UnsupportedResourceOperationException();
+            }
+        default:
+            throw new UnsupportedResourceOperationException("GET not supported for Actions");
         }
     }
-
 
 }

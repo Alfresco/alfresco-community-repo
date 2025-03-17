@@ -25,14 +25,10 @@
  */
 package org.alfresco.repo.content.transform;
 
-import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Exception indicates that a transformer is unable to transform a requested
- * transformation. Normally the transformer is a component of a pipeline transformer
- * and has been asked to transform a file that is too large as the
- * size of the intermediate file is unknown at the start.
+ * Exception indicates that a transformer is unable to transform a requested transformation. Normally the transformer is a component of a pipeline transformer and has been asked to transform a file that is too large as the size of the intermediate file is unknown at the start.
  * 
  * @author Alan Davis
  */

@@ -20,6 +20,18 @@
  */
 package org.alfresco.slingshot.web.scripts;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.json.JSONObject;
+import org.junit.Assert;
+import org.springframework.extensions.webscripts.TestWebScriptServer;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
@@ -36,20 +48,10 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.json.JSONObject;
-import org.junit.Assert;
-import org.springframework.extensions.webscripts.TestWebScriptServer;
-import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Test for SlingshotContentGet web script
+ * 
  * @author alex.mukha
  * @since 5.0.0
  */
@@ -73,13 +75,13 @@ public class SlingshotContentGetTest extends BaseWebScriptTest
     {
         super.setUp();
 
-        this.authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
-        this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
-        this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
-        this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
-        this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
-        this.permissionService = (PermissionService)getServer().getApplicationContext().getBean("PermissionService");
-        this.contentService = (ContentService)getServer().getApplicationContext().getBean("ContentService");
+        this.authenticationService = (MutableAuthenticationService) getServer().getApplicationContext().getBean("AuthenticationService");
+        this.authenticationComponent = (AuthenticationComponent) getServer().getApplicationContext().getBean("authenticationComponent");
+        this.personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
+        this.siteService = (SiteService) getServer().getApplicationContext().getBean("SiteService");
+        this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
+        this.permissionService = (PermissionService) getServer().getApplicationContext().getBean("PermissionService");
+        this.contentService = (ContentService) getServer().getApplicationContext().getBean("ContentService");
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         createUser(USER_ONE);
     }
@@ -100,15 +102,15 @@ public class SlingshotContentGetTest extends BaseWebScriptTest
             this.personService.createPerson(ppOne);
         }
     }
+
     private void deleteUser(String username)
     {
         this.personService.deletePerson(username);
-        if(this.authenticationService.authenticationExists(username))
+        if (this.authenticationService.authenticationExists(username))
         {
             this.authenticationService.deleteAuthentication(username);
         }
     }
-
 
     private JSONObject createSite(String sitePreset, String shortName, String title, String description, SiteVisibility visibility, int expectedStatus)
             throws Exception
@@ -143,7 +145,7 @@ public class SlingshotContentGetTest extends BaseWebScriptTest
 
     public void testDownloadBySiteMemberFromPrivateSite() throws Exception
     {
-        String shortName  = GUID.generate();
+        String shortName = GUID.generate();
         // Create a new site
         createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PRIVATE, 200);
 
@@ -164,7 +166,7 @@ public class SlingshotContentGetTest extends BaseWebScriptTest
 
     public void testDownloadByNonSiteMemberFromPrivateSite() throws Exception
     {
-        String shortName  = GUID.generate();
+        String shortName = GUID.generate();
         // Create a new site
         createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PRIVATE, 200);
 

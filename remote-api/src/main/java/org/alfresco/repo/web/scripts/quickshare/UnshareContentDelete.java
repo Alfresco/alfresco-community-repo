@@ -27,8 +27,14 @@ package org.alfresco.repo.web.scripts.quickshare;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -37,13 +43,6 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-
 
 /**
  * QuickShare/PublicView
@@ -69,7 +68,7 @@ public class UnshareContentDelete extends AbstractQuickShareContent
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        if (! isEnabled())
+        if (!isEnabled())
         {
             throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "QuickShare is disabled system-wide");
         }
@@ -87,8 +86,7 @@ public class UnshareContentDelete extends AbstractQuickShareContent
             Pair<String, NodeRef> pair = quickShareService.getTenantNodeRefFromSharedId(sharedId);
             String networkTenantDomain = pair.getFirst();
 
-            TenantUtil.runAsSystemTenant(() ->
-            {
+            TenantUtil.runAsSystemTenant(() -> {
                 checkIfCanDeleteSharedLink(sharedId);
                 quickShareService.unshareContent(sharedId);
                 return null;
@@ -110,7 +108,8 @@ public class UnshareContentDelete extends AbstractQuickShareContent
         }
     }
 
-    private void checkIfCanDeleteSharedLink(String sharedId) {
+    private void checkIfCanDeleteSharedLink(String sharedId)
+    {
         NodeRef nodeRef = quickShareService.getTenantNodeRefFromSharedId(sharedId).getSecond();
 
         String sharedBy = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDBY);

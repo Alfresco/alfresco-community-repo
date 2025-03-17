@@ -47,7 +47,7 @@ import org.alfresco.service.namespace.QName;
  */
 @BehaviourBean(defaultType = "rma:unfiledRecordFolder")
 public class UnfiledRecordFolderType extends BaseBehaviourBean
-            implements NodeServicePolicies.OnCreateChildAssociationPolicy
+        implements NodeServicePolicies.OnCreateChildAssociationPolicy
 {
     private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_UNFILED_RECORD_FOLDER, ContentModel.TYPE_CONTENT, TYPE_NON_ELECTRONIC_DOCUMENT);
 

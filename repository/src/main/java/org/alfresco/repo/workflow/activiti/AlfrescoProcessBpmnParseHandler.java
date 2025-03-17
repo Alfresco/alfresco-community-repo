@@ -38,34 +38,34 @@
 package org.alfresco.repo.workflow.activiti;
 
 import org.activiti.bpmn.model.BaseElement;
+import org.activiti.bpmn.model.Process;
 import org.activiti.engine.delegate.ExecutionListener;
 import org.activiti.engine.impl.bpmn.parser.BpmnParse;
 import org.activiti.engine.impl.bpmn.parser.handler.AbstractBpmnParseHandler;
 import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.activiti.engine.parse.BpmnParseHandler;
-import org.activiti.bpmn.model.Process;
+
 import org.alfresco.repo.tenant.TenantService;
 
 /**
- * A {@link BpmnParseHandler} that adds a start listener to the process definition 
- * and makes the process definition tenant aware.
+ * A {@link BpmnParseHandler} that adds a start listener to the process definition and makes the process definition tenant aware.
  * 
  * @author Joram Barrez
  * @author Frederik Heremans
  * @author Nick Smith
  */
-public class AlfrescoProcessBpmnParseHandler extends AbstractBpmnParseHandler<Process> 
+public class AlfrescoProcessBpmnParseHandler extends AbstractBpmnParseHandler<Process>
 {
 
     private ExecutionListener processCreateListener;
-    private TenantService     tenantService;
-    private boolean           multiTenancyEnabled = true;
-    
+    private TenantService tenantService;
+    private boolean multiTenancyEnabled = true;
+
     protected Class<? extends BaseElement> getHandledType()
     {
         return Process.class;
     }
-    
+
     protected void executeParse(BpmnParse bpmnParse, Process process)
     {
         ProcessDefinitionEntity processDefinition = bpmnParse.getCurrentProcessDefinition();
@@ -76,7 +76,7 @@ public class AlfrescoProcessBpmnParseHandler extends AbstractBpmnParseHandler<Pr
             processDefinition.setKey(key);
         }
     }
-    
+
     public void setProcessCreateListener(ExecutionListener processCreateListener)
     {
         this.processCreateListener = processCreateListener;
@@ -90,7 +90,7 @@ public class AlfrescoProcessBpmnParseHandler extends AbstractBpmnParseHandler<Pr
     {
         this.tenantService = tenantService;
     }
-    
+
     public void setMultiTenancyEnabled(boolean multiTenancyEnabled)
     {
         this.multiTenancyEnabled = multiTenancyEnabled;

@@ -48,17 +48,18 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
 public final class JSONtoFmModel
 {
     public static String ROOT_ARRAY = "root";
-    
+
     // note: current format is dependent on ISO8601DateFormat.parser, eg. YYYY-MM-DDThh:mm:ss.sssTZD
     private static String REGEXP_ISO8061 = "^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})(.([0-9]){3})?(Z|[\\+\\-]([0-9]{2}):([0-9]{2}))$";
     private static Pattern matcherISO8601 = Pattern.compile(REGEXP_ISO8061);
-    
+
     public static boolean autoConvertISO8601 = true;
-    
+
     /**
      * Convert JSON Object string to Freemarker-compatible data model
      * 
-     * @param jsonString String
+     * @param jsonString
+     *            String
      * @return model
      * @throws JSONException
      */
@@ -67,7 +68,7 @@ public final class JSONtoFmModel
         JSONObject jo = new JSONObject(new JSONTokener(jsonString));
         return convertJSONObjectToMap(jo);
     }
-    
+
     /**
      * JSONObject is an unordered collection of name/value pairs -> convert to Map (equivalent to Freemarker "hash")
      */
@@ -75,20 +76,20 @@ public final class JSONtoFmModel
     public static Map<String, Object> convertJSONObjectToMap(JSONObject jo) throws JSONException
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
-        Iterator<String> itr = (Iterator<String>)jo.keys();
+
+        Iterator<String> itr = (Iterator<String>) jo.keys();
         while (itr.hasNext())
         {
-            String key = (String)itr.next();
-            
+            String key = (String) itr.next();
+
             Object o = jo.get(key);
             if (o instanceof JSONObject)
             {
-                model.put(key, convertJSONObjectToMap((JSONObject)o));
+                model.put(key, convertJSONObjectToMap((JSONObject) o));
             }
             else if (o instanceof JSONArray)
             {
-                model.put(key, convertJSONArrayToList((JSONArray)o));
+                model.put(key, convertJSONArrayToList((JSONArray) o));
             }
             else if (o == JSONObject.NULL)
             {
@@ -96,22 +97,23 @@ public final class JSONtoFmModel
             }
             else
             {
-                if ((o instanceof String) && autoConvertISO8601 && (matcherISO8601.matcher((String)o).matches()))
+                if ((o instanceof String) && autoConvertISO8601 && (matcherISO8601.matcher((String) o).matches()))
                 {
-                    o = ISO8601DateFormat.parse((String)o);
+                    o = ISO8601DateFormat.parse((String) o);
                 }
-                
+
                 model.put(key, o);
             }
         }
-       
+
         return model;
     }
-   
+
     /**
      * Convert JSON Array string to Freemarker-compatible data model
      * 
-     * @param jsonString String
+     * @param jsonString
+     *            String
      * @return model
      * @throws JSONException
      */
@@ -122,25 +124,25 @@ public final class JSONtoFmModel
         model.put(ROOT_ARRAY, convertJSONArrayToList(ja));
         return model;
     }
-    
+
     /**
      * JSONArray is an ordered sequence of values -> convert to List (equivalent to Freemarker "sequence")
      */
     public static List<Object> convertJSONArrayToList(JSONArray ja) throws JSONException
     {
         List<Object> model = new ArrayList<Object>();
-       
+
         for (int i = 0; i < ja.length(); i++)
         {
             Object o = ja.get(i);
-            
+
             if (o instanceof JSONArray)
             {
-                model.add(convertJSONArrayToList((JSONArray)o));
+                model.add(convertJSONArrayToList((JSONArray) o));
             }
             else if (o instanceof JSONObject)
             {
-                model.add(convertJSONObjectToMap((JSONObject)o));
+                model.add(convertJSONObjectToMap((JSONObject) o));
             }
             else if (o == JSONObject.NULL)
             {
@@ -148,49 +150,49 @@ public final class JSONtoFmModel
             }
             else
             {
-                if ((o instanceof String) && autoConvertISO8601 && (matcherISO8601.matcher((String)o).matches()))
+                if ((o instanceof String) && autoConvertISO8601 && (matcherISO8601.matcher((String) o).matches()))
                 {
-                    o = ISO8601DateFormat.parse((String)o);
+                    o = ISO8601DateFormat.parse((String) o);
                 }
-                
+
                 model.add(o);
             }
         }
-       
+
         return model;
     }
-   
+
     // for debugging only
     public static String toString(Map<String, Object> map)
     {
         return JSONtoFmModel.toStringBuffer(map, 0).toString();
     }
-    
+
     @SuppressWarnings("unchecked")
     private static StringBuffer toStringBuffer(Map<String, Object> unsortedMap, int indent)
-    {      
+    {
         StringBuffer tabs = new StringBuffer();
         for (int i = 0; i < indent; i++)
         {
             tabs.append("\t");
         }
-        
+
         StringBuffer sb = new StringBuffer();
-        
+
         SortedMap<String, Object> map = new TreeMap<String, Object>();
         map.putAll(unsortedMap);
-        
+
         for (Map.Entry<String, Object> entry : map.entrySet())
         {
             if (entry.getValue() instanceof Map)
             {
                 sb.append(tabs).append(entry.getKey()).append(":").append(entry.getValue().getClass()).append("\n");
-                sb.append(JSONtoFmModel.toStringBuffer((Map<String, Object>)entry.getValue(), indent+1));
+                sb.append(JSONtoFmModel.toStringBuffer((Map<String, Object>) entry.getValue(), indent + 1));
             }
             else if (entry.getValue() instanceof List)
             {
                 sb.append(tabs).append("[\n");
-                List l = (List)entry.getValue();
+                List l = (List) entry.getValue();
                 for (int i = 0; i < l.size(); i++)
                 {
                     sb.append(tabs).append(l.get(i)).append(":").append((l.get(i) != null) ? l.get(i).getClass() : "null").append("\n");
@@ -199,10 +201,10 @@ public final class JSONtoFmModel
             }
             else
             {
-                sb.append(tabs).append(entry.getKey()).append(":").append(entry.getValue()).append(":").append((entry.getValue() != null ? entry.getValue().getClass() : "null")).append("\n");         
+                sb.append(tabs).append(entry.getKey()).append(":").append(entry.getValue()).append(":").append((entry.getValue() != null ? entry.getValue().getClass() : "null")).append("\n");
             }
         }
-        
+
         return sb;
     }
 }

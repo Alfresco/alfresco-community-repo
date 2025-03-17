@@ -81,6 +81,17 @@ import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.activiti.image.ProcessDiagramGenerator;
 import org.activiti.image.impl.DefaultProcessDiagramGenerator;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.xerces.parsers.DOMParser;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.model.Repository;
@@ -123,16 +134,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.collections.Function;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.xerces.parsers.DOMParser;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 /**
  * @author Nick Smith
@@ -141,8 +142,8 @@ import org.xml.sax.InputSource;
  */
 public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 {
-	private static Log logger = LogFactory.getLog(ActivitiWorkflowEngine.class);
-	
+    private static Log logger = LogFactory.getLog(ActivitiWorkflowEngine.class);
+
     // Workflow Component Messages
     private static final String ERR_DEPLOY_WORKFLOW = "activiti.engine.deploy.workflow.error";
     private static final String ERR_IS_WORKFLOW_DEPLOYED = "activiti.engine.is.workflow.deployed.error";
@@ -169,7 +170,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     protected static final String ERR_FIND_COMPLETED_TASK_INSTS = "activiti.engine.find.completed.task.instances.error";
     private static final String ERR_GET_WORKFLOW_TOKEN_INVALID = "activiti.engine.get.workflow.token.invalid";
     private static final String ERR_GET_WORKFLOW_TOKEN_NULL = "activiti.engine.get.workflow.token.is.null";
-    
+
     // Task Component Messages
     private static final String ERR_GET_ASSIGNED_TASKS = "activiti.engine.get.assigned.tasks.error";
     private static final String ERR_GET_POOLED_TASKS = "activiti.engine.get.pooled.tasks.error";
@@ -179,9 +180,9 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private static final String ERR_END_UNEXISTING_TASK = "activiti.engine.end.task.unexisting.error";
     private static final String ERR_GET_TASK_BY_ID = "activiti.engine.get.task.by.id.error";
     private static final String ERR_END_TASK_INVALID_TRANSITION = "activiti.engine.end.task.invalid.transition";
-    
+
     public static final QName QNAME_INITIATOR = QName.createQName(NamespaceService.DEFAULT_URI, WorkflowConstants.PROP_INITIATOR);
-    
+
     private RepositoryService repoService;
     private RuntimeService runtimeService;
     private TaskService taskService;
@@ -189,7 +190,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private ManagementService managementService;
     private FormService formService;
     protected ActivitiUtil activitiUtil;
-    
+
     private DictionaryService dictionaryService;
     private NodeService nodeService;
     private PersonService personService;
@@ -198,12 +199,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private WorkflowAuthorityManager authorityManager;
     private WorkflowNodeConverter nodeConverter;
     private WorkflowObjectFactory factory;
-    
+
     private MessageService messageService;
     private TenantService tenantService;
     private NamespaceService namespaceService;
     private Repository repositoryHelper;
-    
+
     public ActivitiWorkflowEngine()
     {
         super();
@@ -212,22 +213,21 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
      * {@inheritDoc}
      */
-     @Override
-     public void afterPropertiesSet() throws Exception
-     {
-         super.afterPropertiesSet();
-         this.repoService = activitiUtil.getRepositoryService();
-         this.runtimeService = activitiUtil.getRuntimeService();
-         this.taskService = activitiUtil.getTaskService();
-         this.formService = activitiUtil.getFormService();
-         this.historyService = activitiUtil.getHistoryService();
-         this.managementService = activitiUtil.getManagementService();
-     }
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        super.afterPropertiesSet();
+        this.repoService = activitiUtil.getRepositoryService();
+        this.runtimeService = activitiUtil.getRuntimeService();
+        this.taskService = activitiUtil.getTaskService();
+        this.formService = activitiUtil.getFormService();
+        this.historyService = activitiUtil.getHistoryService();
+        this.managementService = activitiUtil.getManagementService();
+    }
 
-     
     /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.WorkflowComponent#cancelWorkflows(java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.workflow.WorkflowComponent#cancelWorkflows(java.util.List) */
     @Override
     public List<WorkflowInstance> cancelWorkflows(List<String> workflowIds)
     {
@@ -240,8 +240,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public WorkflowInstance cancelWorkflow(String workflowId)
     {
         String localId = createLocalId(workflowId);
@@ -283,8 +283,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public WorkflowInstance deleteWorkflow(String workflowId)
     {
         String localId = createLocalId(workflowId);
@@ -292,138 +292,139 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         {
             // Delete the runtime process instance if still running, this calls the end-listeners if any
             ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(localId).singleResult();
-            if(processInstance != null) 
+            if (processInstance != null)
             {
                 runtimeService.deleteProcessInstance(processInstance.getId(), ActivitiConstants.DELETE_REASON_DELETED);
             }
-            
+
             // Convert historic process instance
             HistoricProcessInstance deletedInstance = historyService.createHistoricProcessInstanceQuery()
-                .processInstanceId(localId)
-                .singleResult();
-            
-            if(deletedInstance == null) {
+                    .processInstanceId(localId)
+                    .singleResult();
+
+            if (deletedInstance == null)
+            {
                 throw new WorkflowException(messageService.getMessage(ERR_DELETE_UNEXISTING_WORKFLOW, localId));
             }
-            
-            WorkflowInstance result =  typeConverter.convert(deletedInstance);
-            
+
+            WorkflowInstance result = typeConverter.convert(deletedInstance);
+
             // Delete the historic process instance
             historyService.deleteHistoricProcessInstance(deletedInstance.getId());
-            
+
             return result;
-        } 
-        catch(ActivitiException ae) 
+        }
+        catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_DELETE_WORKFLOW);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype)
     {
         return deployDefinition(workflowDefinition, mimetype, null);
     }
-    
-    /**
-     * {@inheritDoc}
-     */
-     public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype, String name)
-     {
-         return deployDefinition(workflowDefinition, mimetype, name, false);
-     }
 
     /**
      * {@inheritDoc}
      */
-     public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype, String name, boolean fullAccess)
-     {
-         try 
-         {
-             String resourceName = GUID.generate() + BpmnDeployer.BPMN_RESOURCE_SUFFIXES[0];
-             
-             Deployment deployment = repoService.createDeployment()
-                 .addInputStream(resourceName, workflowDefinition)
-                 .name(name)
-                 .deploy();
-             
-             List<ProcessDefinition> definitionList = repoService.createProcessDefinitionQuery().deploymentId(deployment.getId()).list();
-             if (definitionList != null && definitionList.size() > 0)
-             {
-                 boolean internalCategory = true;
-                 for (ProcessDefinition processDefinition : definitionList)
-                 {
+    public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype, String name)
+    {
+        return deployDefinition(workflowDefinition, mimetype, name, false);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype, String name, boolean fullAccess)
+    {
+        try
+        {
+            String resourceName = GUID.generate() + BpmnDeployer.BPMN_RESOURCE_SUFFIXES[0];
+
+            Deployment deployment = repoService.createDeployment()
+                    .addInputStream(resourceName, workflowDefinition)
+                    .name(name)
+                    .deploy();
+
+            List<ProcessDefinition> definitionList = repoService.createProcessDefinitionQuery().deploymentId(deployment.getId()).list();
+            if (definitionList != null && definitionList.size() > 0)
+            {
+                boolean internalCategory = true;
+                for (ProcessDefinition processDefinition : definitionList)
+                {
                     if (WorkflowDeployer.CATEGORY_ALFRESCO_INTERNAL.equals(processDefinition.getCategory()) == false)
                     {
                         internalCategory = false;
                         break;
                     }
-                 }
-                 
-                 if (internalCategory)
-                 {
-                     repoService.setDeploymentCategory(deployment.getId(), WorkflowDeployer.CATEGORY_ALFRESCO_INTERNAL);
-                 }
-                 else if (fullAccess)
-                 {
-                     repoService.setDeploymentCategory(deployment.getId(), WorkflowDeployer.CATEGORY_FULL_ACCESS);
-                 }
-             }
-             
-             // No problems can be added to the WorkflowDeployment, warnings are
-             // not exposed
-             return typeConverter.convert(deployment);
-         } 
-         catch(Exception ae) 
-         {
-             String msg = messageService.getMessage(ERR_DEPLOY_WORKFLOW);
-             if(logger.isDebugEnabled())
-             {
-             	logger.debug(msg, ae);
-             }
-             throw new WorkflowException(msg, ae);
-         }
-     }
+                }
 
-    /**
-    * {@inheritDoc}
-    */
-    public WorkflowPath fireEvent(String pathId, String event)
-    {
-       String message = messageService.getMessage(ERR_FIRE_EVENT_NOT_SUPPORTED);
-       throw new WorkflowException(message);
+                if (internalCategory)
+                {
+                    repoService.setDeploymentCategory(deployment.getId(), WorkflowDeployer.CATEGORY_ALFRESCO_INTERNAL);
+                }
+                else if (fullAccess)
+                {
+                    repoService.setDeploymentCategory(deployment.getId(), WorkflowDeployer.CATEGORY_FULL_ACCESS);
+                }
+            }
+
+            // No problems can be added to the WorkflowDeployment, warnings are
+            // not exposed
+            return typeConverter.convert(deployment);
+        }
+        catch (Exception ae)
+        {
+            String msg = messageService.getMessage(ERR_DEPLOY_WORKFLOW);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(msg, ae);
+            }
+            throw new WorkflowException(msg, ae);
+        }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
+    public WorkflowPath fireEvent(String pathId, String event)
+    {
+        String message = messageService.getMessage(ERR_FIRE_EVENT_NOT_SUPPORTED);
+        throw new WorkflowException(message);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public List<WorkflowInstance> getActiveWorkflows()
     {
         try
         {
             return getWorkflows(new WorkflowInstanceQuery(true));
         }
-        catch(ActivitiException ae) 
+        catch (ActivitiException ae)
         {
             String message = messageService.getMessage(ERR_GET_ACTIVE_WORKFLOW_INSTS, "");
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(message, ae);
+                logger.debug(message, ae);
             }
             throw new WorkflowException(message, ae);
         }
     }
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public List<WorkflowInstance> getCompletedWorkflows()
     {
@@ -431,20 +432,20 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         {
             return getWorkflows(new WorkflowInstanceQuery(false));
         }
-        catch(ActivitiException ae) 
+        catch (ActivitiException ae)
         {
             String message = messageService.getMessage(ERR_GET_COMPLETED_WORKFLOW_INSTS, "");
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(message, ae);
+                logger.debug(message, ae);
             }
             throw new WorkflowException(message, ae);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public List<WorkflowInstance> getWorkflows()
     {
@@ -452,145 +453,145 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         {
             return getWorkflows(new WorkflowInstanceQuery());
         }
-        catch(ActivitiException ae) 
+        catch (ActivitiException ae)
         {
             String message = messageService.getMessage(ERR_GET_WORKFLOW_INSTS, "");
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(message, ae);
+                logger.debug(message, ae);
             }
             throw new WorkflowException(message, ae);
         }
     }
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public List<WorkflowInstance> getActiveWorkflows(String workflowDefinitionId)
     {
         try
         {
             return getWorkflows(new WorkflowInstanceQuery(workflowDefinitionId, true));
         }
-        catch(ActivitiException ae) 
+        catch (ActivitiException ae)
         {
             String message = messageService.getMessage(ERR_GET_ACTIVE_WORKFLOW_INSTS, workflowDefinitionId);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(message, ae);
+                logger.debug(message, ae);
             }
             throw new WorkflowException(message, ae);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public List<WorkflowDefinition> getAllDefinitions()
     {
-        try 
+        try
         {
             ProcessDefinitionQuery query = repoService.createProcessDefinitionQuery();
-            if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && !TenantUtil.isCurrentDomainDefault()) 
+            if (activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && !TenantUtil.isCurrentDomainDefault())
             {
                 query.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "%");
             }
             return getValidWorkflowDefinitions(query.list());
-        } 
+        }
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public List<WorkflowDefinition> getAllDefinitionsByName(String workflowName)
     {
-        try 
+        try
         {
             String key = factory.getProcessKey(workflowName);
             List<ProcessDefinition> definitions = repoService.createProcessDefinitionQuery()
-                .processDefinitionKey(key)
-                .list();
-            return getValidWorkflowDefinitions(definitions);          
+                    .processDefinitionKey(key)
+                    .list();
+            return getValidWorkflowDefinitions(definitions);
         }
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_ALL_DEFS_BY_NAME, workflowName);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public List<WorkflowInstance> getCompletedWorkflows(String workflowDefinitionId)
     {
         try
         {
             return getWorkflows(new WorkflowInstanceQuery(workflowDefinitionId, false));
         }
-        catch(ActivitiException ae) 
+        catch (ActivitiException ae)
         {
             String message = messageService.getMessage(ERR_GET_COMPLETED_WORKFLOW_INSTS, workflowDefinitionId);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(message, ae);
+                logger.debug(message, ae);
             }
             throw new WorkflowException(message, ae);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public WorkflowDefinition getDefinitionById(String workflowDefinitionId)
     {
         try
         {
             String localId = createLocalId(workflowDefinitionId);
             ProcessDefinition procDef = repoService.createProcessDefinitionQuery()
-                .processDefinitionId(localId )
-                .singleResult();
-            
-            if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && procDef != null)
+                    .processDefinitionId(localId)
+                    .singleResult();
+
+            if (activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && procDef != null)
             {
                 factory.checkDomain(procDef.getKey());
             }
-            
+
             return typeConverter.convert(procDef);
         }
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF_BY_ID, workflowDefinitionId);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public WorkflowDefinition getDefinitionByName(String workflowName)
     {
-        try 
+        try
         {
             String key = factory.getLocalEngineId(workflowName);
-            if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+            if (activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
             {
                 key = factory.getDomainProcessKey(workflowName);
             }
@@ -600,72 +601,72 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF_BY_NAME, workflowName);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public byte[] getDefinitionImage(String workflowDefinitionId)
     {
-       try
-       {
-           String processDefinitionId = createLocalId(workflowDefinitionId);
-           ProcessDefinition processDefinition = repoService.createProcessDefinitionQuery()
-               .processDefinitionId(processDefinitionId)
-               .singleResult();
-           
-           if(processDefinition == null)
-           {
-               throw new WorkflowException(messageService.getMessage(ERR_GET_DEF_UNEXISTING_IMAGE, workflowDefinitionId));
-           }
-           
-           String diagramResourceName = ((ReadOnlyProcessDefinition)processDefinition).getDiagramResourceName();
-           if(diagramResourceName != null)
-           {
-               ByteArrayOutputStream out = new ByteArrayOutputStream();
-               InputStream resourceInputStream = repoService.getResourceAsStream(processDefinitionId, diagramResourceName);
-               // Write the resource to a ByteArrayOutpurStream
-               IOUtils.copy(resourceInputStream, out);
-               return out.toByteArray();
-           }
-           // No image was found for the process definition
-           return null;
-       }
-       catch(IOException ioe)
-       {
-           String msg = messageService.getMessage(ERR_GET_DEF_IMAGE, workflowDefinitionId);
-           if(logger.isDebugEnabled())
-           {
-               logger.debug(msg, ioe);
-           }
-           throw new WorkflowException(msg, ioe);
-       }
-       catch(ActivitiException ae)
-       {
-           String msg = messageService.getMessage(ERR_GET_DEF_IMAGE, workflowDefinitionId);
-           if(logger.isDebugEnabled())
-           {
-               logger.debug(msg, ae);
-           }
-           throw new WorkflowException(msg, ae);
-       }
+        try
+        {
+            String processDefinitionId = createLocalId(workflowDefinitionId);
+            ProcessDefinition processDefinition = repoService.createProcessDefinitionQuery()
+                    .processDefinitionId(processDefinitionId)
+                    .singleResult();
+
+            if (processDefinition == null)
+            {
+                throw new WorkflowException(messageService.getMessage(ERR_GET_DEF_UNEXISTING_IMAGE, workflowDefinitionId));
+            }
+
+            String diagramResourceName = ((ReadOnlyProcessDefinition) processDefinition).getDiagramResourceName();
+            if (diagramResourceName != null)
+            {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                InputStream resourceInputStream = repoService.getResourceAsStream(processDefinitionId, diagramResourceName);
+                // Write the resource to a ByteArrayOutpurStream
+                IOUtils.copy(resourceInputStream, out);
+                return out.toByteArray();
+            }
+            // No image was found for the process definition
+            return null;
+        }
+        catch (IOException ioe)
+        {
+            String msg = messageService.getMessage(ERR_GET_DEF_IMAGE, workflowDefinitionId);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(msg, ioe);
+            }
+            throw new WorkflowException(msg, ioe);
+        }
+        catch (ActivitiException ae)
+        {
+            String msg = messageService.getMessage(ERR_GET_DEF_IMAGE, workflowDefinitionId);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(msg, ae);
+            }
+            throw new WorkflowException(msg, ae);
+        }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public List<WorkflowDefinition> getDefinitions()
     {
-        try 
+        try
         {
             ProcessDefinitionQuery query = repoService.createProcessDefinitionQuery().latestVersion();
-            if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && !TenantUtil.isCurrentDomainDefault()) 
+            if (activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && !TenantUtil.isCurrentDomainDefault())
             {
                 query.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "%");
             }
@@ -674,17 +675,17 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public Map<QName, Serializable> getPathProperties(String pathId)
     {
         String executionId = createLocalId(pathId);
@@ -692,58 +693,58 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public List<WorkflowTaskDefinition> getTaskDefinitions(String workflowDefinitionId)
     {
         List<WorkflowTaskDefinition> defs = new ArrayList<WorkflowTaskDefinition>();
         String processDefinitionId = createLocalId(workflowDefinitionId);
-        
-        // This should return all task definitions, including the start-task
-        ReadOnlyProcessDefinition processDefinition =((RepositoryServiceImpl)repoService).getDeployedProcessDefinition(processDefinitionId);
 
-        String processName = ((ProcessDefinition)processDefinition).getKey();
+        // This should return all task definitions, including the start-task
+        ReadOnlyProcessDefinition processDefinition = ((RepositoryServiceImpl) repoService).getDeployedProcessDefinition(processDefinitionId);
+
+        String processName = ((ProcessDefinition) processDefinition).getKey();
         factory.checkDomain(processName);
-        
+
         // Process start task definition
         PvmActivity startEvent = processDefinition.getInitial();
-        
+
         String startTaskName = null;
         StartFormData startFormData = formService.getStartFormData(processDefinition.getId());
-        if(startFormData != null) 
+        if (startFormData != null)
         {
             startTaskName = startFormData.getFormKey();
         }
-        
+
         // Add start task definition
         defs.add(typeConverter.getTaskDefinition(startEvent, startTaskName, processDefinition.getId(), true));
-        
+
         // Now, continue through process, finding all user-tasks
         Collection<PvmActivity> taskActivities = typeConverter.findUserTasks(startEvent);
-        for(PvmActivity act : taskActivities)
+        for (PvmActivity act : taskActivities)
         {
             String formKey = typeConverter.getFormKey(act, processDefinition);
             defs.add(typeConverter.getTaskDefinition(act, formKey, processDefinition.getId(), false));
         }
-        
-       return defs;
+
+        return defs;
     }
-    
+
     private String getFormKey(PvmActivity act)
     {
-        if(act instanceof ActivityImpl) 
+        if (act instanceof ActivityImpl)
         {
             ActivityImpl actImpl = (ActivityImpl) act;
-            if (actImpl.getActivityBehavior() instanceof UserTaskActivityBehavior)        
+            if (actImpl.getActivityBehavior() instanceof UserTaskActivityBehavior)
             {
                 UserTaskActivityBehavior uta = (UserTaskActivityBehavior) actImpl.getActivityBehavior();
                 TaskFormHandler handler = uta.getTaskDefinition().getTaskFormHandler();
-                if(handler != null && handler instanceof DefaultTaskFormHandler)
+                if (handler != null && handler instanceof DefaultTaskFormHandler)
                 {
                     // We cast to DefaultTaskFormHandler since we do not configure our own
-                    return ((DefaultTaskFormHandler)handler).getFormKey().getExpressionText();
+                    return ((DefaultTaskFormHandler) handler).getFormKey().getExpressionText();
                 }
-                
+
             }
         }
         return null;
@@ -751,19 +752,19 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
     private boolean isReceiveTask(PvmActivity act)
     {
-        if(act instanceof ActivityImpl) 
+        if (act instanceof ActivityImpl)
         {
             ActivityImpl actImpl = (ActivityImpl) act;
-            return (actImpl.getActivityBehavior() instanceof ReceiveTaskActivityBehavior);        
+            return (actImpl.getActivityBehavior() instanceof ReceiveTaskActivityBehavior);
         }
         return false;
     }
 
     private boolean isFirstActivity(PvmActivity activity, ReadOnlyProcessDefinition procDef)
     {
-        if(procDef.getInitial().getOutgoingTransitions().size() == 1) 
+        if (procDef.getInitial().getOutgoingTransitions().size() == 1)
         {
-            if (procDef.getInitial().getOutgoingTransitions().get(0).getDestination().equals(activity)) 
+            if (procDef.getInitial().getOutgoingTransitions().get(0).getDestination().equals(activity))
             {
                 return true;
             }
@@ -772,8 +773,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public List<WorkflowTask> getTasksForWorkflowPath(String pathId)
     {
         try
@@ -794,9 +795,9 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
             String processInstanceId = execution.getProcessInstanceId();
             ArrayList<WorkflowTask> resultList = new ArrayList<WorkflowTask>();
-            if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && false == typeConverter.isCorrectTenantRuntime(processInstanceId))
+            if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && false == typeConverter.isCorrectTenantRuntime(processInstanceId))
             {
-                return resultList; //Wrong tenant
+                return resultList; // Wrong tenant
             }
             // Check if workflow's start task has been completed. If not, return
             // the virtual task
@@ -817,84 +818,83 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         }
         catch (ActivitiException ae)
         {
-        	
+
             String msg = messageService.getMessage(ERR_GET_TASKS_FOR_PATH, pathId);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }
     }
 
-
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public List<WorkflowTimer> getTimers(String workflowId)
     {
-         try 
-         {
-             List<WorkflowTimer> timers = new ArrayList<WorkflowTimer>();
-             
-             String processInstanceId = createLocalId(workflowId);
-             List<Job> timerJobs = managementService.createJobQuery()
-                 .processInstanceId(processInstanceId)
-                 .timers()
-                 .list();
-             
-             // Only fetch process-instance when timers are available, to prevent extra unneeded query
-             ProcessInstance jobsProcessInstance = null;
-             if(timerJobs.size() > 0)
-             {
-                 // Reuse the process-instance, is used from WorkflowPath creation
-                 jobsProcessInstance = runtimeService.createProcessInstanceQuery()
-                      .processInstanceId(processInstanceId).singleResult();
-             }
-             
-             // Convert the timerJobs to WorkflowTimers
-             for(Job job : timerJobs)
-             {
-                 Execution jobExecution = runtimeService.createExecutionQuery()
-                     .executionId(job.getExecutionId()).singleResult();
-                 
-                 WorkflowPath path = typeConverter.convert(jobExecution, jobsProcessInstance);
-                 WorkflowTask workflowTask = getTaskForTimer(job, jobsProcessInstance, jobExecution);
-                 
-                 WorkflowTimer workflowTimer = factory.createWorkflowTimer(job.getId(), job.getId(),
-                         job.getExceptionMessage(), job.getDuedate(), path, workflowTask);
-                 timers.add(workflowTimer);
-             }
-             
-             return timers;
-             
-         }
-         catch (ActivitiException ae)
-         {
-             String msg = messageService.getMessage(ERR_GET_TIMERS, workflowId);
-             if(logger.isDebugEnabled())
-             {
-             	logger.debug(msg, ae);
-             }
-             throw new WorkflowException(msg, ae);
-         }
+        try
+        {
+            List<WorkflowTimer> timers = new ArrayList<WorkflowTimer>();
+
+            String processInstanceId = createLocalId(workflowId);
+            List<Job> timerJobs = managementService.createJobQuery()
+                    .processInstanceId(processInstanceId)
+                    .timers()
+                    .list();
+
+            // Only fetch process-instance when timers are available, to prevent extra unneeded query
+            ProcessInstance jobsProcessInstance = null;
+            if (timerJobs.size() > 0)
+            {
+                // Reuse the process-instance, is used from WorkflowPath creation
+                jobsProcessInstance = runtimeService.createProcessInstanceQuery()
+                        .processInstanceId(processInstanceId).singleResult();
+            }
+
+            // Convert the timerJobs to WorkflowTimers
+            for (Job job : timerJobs)
+            {
+                Execution jobExecution = runtimeService.createExecutionQuery()
+                        .executionId(job.getExecutionId()).singleResult();
+
+                WorkflowPath path = typeConverter.convert(jobExecution, jobsProcessInstance);
+                WorkflowTask workflowTask = getTaskForTimer(job, jobsProcessInstance, jobExecution);
+
+                WorkflowTimer workflowTimer = factory.createWorkflowTimer(job.getId(), job.getId(),
+                        job.getExceptionMessage(), job.getDuedate(), path, workflowTask);
+                timers.add(workflowTimer);
+            }
+
+            return timers;
+
+        }
+        catch (ActivitiException ae)
+        {
+            String msg = messageService.getMessage(ERR_GET_TIMERS, workflowId);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(msg, ae);
+            }
+            throw new WorkflowException(msg, ae);
+        }
     }
 
-    private WorkflowTask getTaskForTimer(Job job, ProcessInstance processInstance, Execution jobExecution) 
+    private WorkflowTask getTaskForTimer(Job job, ProcessInstance processInstance, Execution jobExecution)
     {
-        if (job instanceof TimerEntity) 
+        if (job instanceof TimerEntity)
         {
             ReadOnlyProcessDefinition def = activitiUtil.getDeployedProcessDefinition(processInstance.getProcessDefinitionId());
             List<String> activeActivityIds = runtimeService.getActiveActivityIds(jobExecution.getId());
-            
-            if(activeActivityIds.size() == 1)
+
+            if (activeActivityIds.size() == 1)
             {
                 PvmActivity targetActivity = def.findActivity(activeActivityIds.get(0));
-                if(targetActivity != null)
+                if (targetActivity != null)
                 {
-                    // Only get tasks of active activity is a user-task 
+                    // Only get tasks of active activity is a user-task
                     String activityType = (String) targetActivity.getProperty(ActivitiConstants.NODE_TYPE);
-                    if(ActivitiConstants.USER_TASK_NODE_TYPE.equals(activityType))
+                    if (ActivitiConstants.USER_TASK_NODE_TYPE.equals(activityType))
                     {
                         Task task = taskService.createTaskQuery().executionId(job.getExecutionId()).singleResult();
                         return typeConverter.convert(task);
@@ -906,32 +906,32 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public WorkflowInstance getWorkflowById(String workflowId)
     {
-        try 
+        try
         {
             WorkflowInstance instance = null;
-            
+
             String processInstanceId = createLocalId(workflowId);
             ProcessInstance processIntance = runtimeService.createProcessInstanceQuery()
-                .processInstanceId(processInstanceId)
-                .singleResult();
-            
-            if(processIntance != null) 
+                    .processInstanceId(processInstanceId)
+                    .singleResult();
+
+            if (processIntance != null)
             {
                 instance = typeConverter.convert(processIntance);
-            } 
-            else 
+            }
+            else
             {
                 // The process instance can be finished
                 HistoricProcessInstance historicInstance = historyService
-                    .createHistoricProcessInstanceQuery()
-                    .processInstanceId(processInstanceId)
-                    .singleResult();
-                
-                if(historicInstance != null) 
+                        .createHistoricProcessInstanceQuery()
+                        .processInstanceId(processInstanceId)
+                        .singleResult();
+
+                if (historicInstance != null)
                 {
                     instance = typeConverter.convert(historicInstance);
                 }
@@ -941,64 +941,64 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public List<WorkflowPath> getWorkflowPaths(String workflowId)
     {
-        try 
-        {           
+        try
+        {
             String processInstanceId = createLocalId(workflowId);
-            
+
             List<Execution> executions = runtimeService
-                .createExecutionQuery()
-                .processInstanceId(processInstanceId)
-                .list();
-            
+                    .createExecutionQuery()
+                    .processInstanceId(processInstanceId)
+                    .list();
+
             return typeConverter.convertExecution(executions);
         }
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_WORKFLOW_PATHS);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public List<WorkflowInstance> getWorkflows(String workflowDefinitionId)
     {
         try
         {
             return getWorkflows(new WorkflowInstanceQuery(workflowDefinitionId));
         }
-        catch(ActivitiException ae) 
+        catch (ActivitiException ae)
         {
             String message = messageService.getMessage(ERR_GET_WORKFLOW_INSTS, workflowDefinitionId);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(message, ae);
+                logger.debug(message, ae);
             }
             throw new WorkflowException(message, ae);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public boolean isDefinitionDeployed(InputStream workflowDefinition, String mimetype)
     {
         try
@@ -1009,17 +1009,17 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (Exception ae)
         {
             String msg = messageService.getMessage(ERR_IS_WORKFLOW_DEPLOYED);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public void checkDeploymentCategory(InputStream workflowDefinition)
     {
         try
@@ -1059,7 +1059,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
     private String getProcessKey(InputStream workflowDefinition) throws Exception
     {
-        try 
+        try
         {
             InputSource inputSource = new InputSource(workflowDefinition);
             DOMParser parser = new DOMParser();
@@ -1076,8 +1076,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             {
                 throw new IllegalAccessError("The process definition does not have an id!");
             }
-            
-            if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+
+            if (activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
             {
                 // Workflow-definition is deployed tenant-aware, key should be altered
                 return factory.getDomainProcessKey(idAttrib.getNodeValue());
@@ -1094,15 +1094,15 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public WorkflowPath signal(String pathId, String transitionId)
     {
         String execId = createLocalId(pathId);
         Execution oldExecution = activitiUtil.getExecution(execId);
         runtimeService.signal(execId);
         Execution execution = activitiUtil.getExecution(execId);
-        if(execution !=null)
+        if (execution != null)
         {
             return typeConverter.convert(execution);
         }
@@ -1110,25 +1110,25 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public WorkflowPath startWorkflow(String workflowDefinitionId, Map<QName, Serializable> parameters)
     {
         try
         {
             String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
             Authentication.setAuthenticatedUserId(currentUserName);
-            
+
             String processDefId = createLocalId(workflowDefinitionId);
-            
+
             // Set start task properties. This should be done before instance is started, since it's id will be used
             Map<String, Object> variables = propertyConverter.getStartVariables(processDefId, parameters);
             variables.put(WorkflowConstants.PROP_CANCELLED, Boolean.FALSE);
-            
+
             // Add company home
             Object companyHome = nodeConverter.convertNode(getCompanyHome());
             variables.put(WorkflowConstants.PROP_COMPANY_HOME, companyHome);
-             
+
             // Add the initiator
             NodeRef initiator = getPersonNodeRef(currentUserName);
             if (initiator != null)
@@ -1141,7 +1141,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                     variables.put(WorkflowConstants.PROP_INITIATOR_HOME, nodeConverter.convertNode(initiatorHome));
                 }
             }
-            
+
             // Start the process-instance
             CommandContext context = Context.getCommandContext();
             boolean isContextSuspended = false;
@@ -1177,17 +1177,19 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_START_WORKFLOW, workflowDefinitionId);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }
     }
 
     /**
-     * @param path WorkflowPath
-     * @param instance ProcessInstance
+     * @param path
+     *            WorkflowPath
+     * @param instance
+     *            ProcessInstance
      */
     private void endStartTaskAutomatically(WorkflowPath path, ProcessInstance instance)
     {
@@ -1195,25 +1197,25 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         WorkflowDefinition definition = path.getInstance().getDefinition();
         TypeDefinition metadata = definition.getStartTaskDefinition().getMetadata();
         Set<QName> aspects = metadata.getDefaultAspectNames();
-        if(aspects.contains(WorkflowModel.ASPECT_END_AUTOMATICALLY))
+        if (aspects.contains(WorkflowModel.ASPECT_END_AUTOMATICALLY))
         {
             String taskId = ActivitiConstants.START_TASK_PREFIX + instance.getId();
             endStartTask(taskId);
         }
     }
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public void undeployDefinition(String workflowDefinitionId)
     {
-        try 
+        try
         {
             String procDefId = createLocalId(workflowDefinitionId);
             ProcessDefinition procDef = repoService.createProcessDefinitionQuery()
-                .processDefinitionId(procDefId)
-                .singleResult();
-            if (procDef == null)     
+                    .processDefinitionId(procDefId)
+                    .singleResult();
+            if (procDef == null)
             {
                 String msg = messageService.getMessage(ERR_UNDEPLOY_WORKFLOW_UNEXISTING, workflowDefinitionId);
                 throw new WorkflowException(msg);
@@ -1224,9 +1226,9 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_UNDEPLOY_WORKFLOW, workflowDefinitionId);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }
@@ -1238,10 +1240,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     public boolean hasWorkflowImage(String workflowInstanceId)
     {
         boolean hasImage = false;
-        
+
         String processInstanceId = createLocalId(workflowInstanceId);
         ExecutionEntity pi = (ExecutionEntity) runtimeService.createProcessInstanceQuery()
-                    .processInstanceId(processInstanceId).singleResult();
+                .processInstanceId(processInstanceId).singleResult();
 
         // If the process is finished, there is no diagram available
         if (pi != null)
@@ -1249,14 +1251,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             // Fetch the process-definition. Not using query API, since the returned
             // processdefinition isn't initialized with all activities
             ProcessDefinitionEntity processDefinition = (ProcessDefinitionEntity) ((RepositoryServiceImpl) repoService)
-                        .getDeployedProcessDefinition(pi.getProcessDefinitionId());
+                    .getDeployedProcessDefinition(pi.getProcessDefinitionId());
 
-            hasImage = (processDefinition != null && processDefinition.isGraphicalNotationDefined()); 
+            hasImage = (processDefinition != null && processDefinition.isGraphicalNotationDefined());
         }
-        
+
         return hasImage;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -1264,7 +1266,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         String processInstanceId = createLocalId(workflowInstanceId);
         ExecutionEntity pi = (ExecutionEntity) runtimeService.createProcessInstanceQuery()
-                    .processInstanceId(processInstanceId).singleResult();
+                .processInstanceId(processInstanceId).singleResult();
 
         // If the process is finished, there is no diagram available
         if (pi != null)
@@ -1272,52 +1274,47 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             // Fetch the bpmn model
             BpmnModel model = repoService.getBpmnModel(pi.getProcessDefinitionId());
 
-            if (model != null && model.getLocationMap().size() > 0) 
-            {              
+            if (model != null && model.getLocationMap().size() > 0)
+            {
                 ProcessDiagramGenerator generator = new DefaultProcessDiagramGenerator();
                 return generator.generateDiagram(model,
-                      ActivitiConstants.PROCESS_INSTANCE_IMAGE_FORMAT,
-                      runtimeService.getActiveActivityIds(processInstanceId)); 
+                        ActivitiConstants.PROCESS_INSTANCE_IMAGE_FORMAT,
+                        runtimeService.getActiveActivityIds(processInstanceId));
             }
         }
         return null;
     }
 
     /**
-     * Converts the given list of {@link ProcessDefinition}s to a list of {@link WorkflowDefinition}s
-     * that have a valid domain.
-     * @param definitions List<ProcessDefinition>
+     * Converts the given list of {@link ProcessDefinition}s to a list of {@link WorkflowDefinition}s that have a valid domain.
+     * 
+     * @param definitions
+     *            List<ProcessDefinition>
      */
     private List<WorkflowDefinition> getValidWorkflowDefinitions(List<ProcessDefinition> definitions)
     {
-        return typeConverter.filterByDomainAndConvert(definitions, new Function<ProcessDefinition, String>()
-        {
+        return typeConverter.filterByDomainAndConvert(definitions, new Function<ProcessDefinition, String>() {
             public String apply(ProcessDefinition value)
             {
                 return value.getKey();
             }
         });
     }
-    
+
     /**
-     * Converts the given list of {@link Task}s to a list of
-     * {@link WorkflowTask}s that have a valid domain.
+     * Converts the given list of {@link Task}s to a list of {@link WorkflowTask}s that have a valid domain.
      * 
-     * Note that this method is not very performant. It will do many DB queries
-     * for each of the Task item in the list of tasks as parameter. Make sure
-     * that you limit the size of the tasks list depending on your needs. Hint:
-     * use the WorkflowTaskQuery query parameter setLimit() method to limit the
-     * number of Tasks to process
+     * Note that this method is not very performant. It will do many DB queries for each of the Task item in the list of tasks as parameter. Make sure that you limit the size of the tasks list depending on your needs. Hint: use the WorkflowTaskQuery query parameter setLimit() method to limit the number of Tasks to process
      * 
-     * @param tasks List<Task>
+     * @param tasks
+     *            List<Task>
      */
     private List<WorkflowTask> getValidWorkflowTasks(List<Task> tasks)
     {
-        return typeConverter.filterByDomainAndConvert(tasks, new Function<Task, String>()
-        {
+        return typeConverter.filterByDomainAndConvert(tasks, new Function<Task, String>() {
             public String apply(Task task)
             {
-                //TODO This probably isn't very performant!
+                // TODO This probably isn't very performant!
                 String defId = task.getProcessDefinitionId();
                 ProcessDefinition definition = repoService.createProcessDefinitionQuery().processDefinitionId(defId)
                         .singleResult();
@@ -1327,14 +1324,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
 
     /**
-     * Converts the given list of {@link Task}s to a list of {@link WorkflowTask}s
-     * that have a valid domain.
-     * @param tasks List<HistoricTaskInstance>
+     * Converts the given list of {@link Task}s to a list of {@link WorkflowTask}s that have a valid domain.
+     * 
+     * @param tasks
+     *            List<HistoricTaskInstance>
      */
     private List<WorkflowTask> getValidHistoricTasks(List<HistoricTaskInstance> tasks)
     {
-        return typeConverter.filterByDomainAndConvert(tasks, new Function<HistoricTaskInstance, String>()
-        {
+        return typeConverter.filterByDomainAndConvert(tasks, new Function<HistoricTaskInstance, String>() {
             public String apply(HistoricTaskInstance task)
             {
                 String defId = task.getProcessDefinitionId();
@@ -1353,13 +1350,13 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         return repositoryHelper.getCompanyHome();
     }
-    
+
     /**
      * Gets an Alfresco Person reference for the given name.
      * 
-     * @param name the person name
-     * @return the Alfresco person. Returns null, if no person is found with the
-     *         given name.
+     * @param name
+     *            the person name
+     * @return the Alfresco person. Returns null, if no person is found with the given name.
      */
     private NodeRef getPersonNodeRef(String name)
     {
@@ -1373,18 +1370,21 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         }
         return authority;
     }
- 
+
     /**
-     * @param propertyConverter the propertyConverter to set
+     * @param propertyConverter
+     *            the propertyConverter to set
      */
     public void setPropertyConverter(ActivitiPropertyConverter propertyConverter)
     {
         this.propertyConverter = propertyConverter;
     }
-    
+
     /**
      * Sets the Dictionary Service
-     * @param dictionaryService DictionaryService
+     * 
+     * @param dictionaryService
+     *            DictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -1394,7 +1394,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
      * Sets the Node Service
      * 
-     * @param nodeService NodeService
+     * @param nodeService
+     *            NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -1402,27 +1403,30 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
 
     /**
-     * @param repositoryHelper the repositoryHelper to set
+     * @param repositoryHelper
+     *            the repositoryHelper to set
      */
     public void setRepositoryHelper(Repository repositoryHelper)
     {
         this.repositoryHelper = repositoryHelper;
     }
-    
+
     /**
      * Sets the Person Service
      * 
-     * @param personService PersonService
+     * @param personService
+     *            PersonService
      */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-    
+
     /**
-     * Sets the Authority DAO
-    /**
-     * @param authorityManager the authorityManager to set
+     * Sets the Authority DAO /**
+     * 
+     * @param authorityManager
+     *            the authorityManager to set
      */
     public void setAuthorityManager(WorkflowAuthorityManager authorityManager)
     {
@@ -1430,19 +1434,19 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
 
     ///////////// Task Component //////////
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public WorkflowTask endTask(String taskId, String transition)
     {
         String localTaskId = createLocalId(taskId);
         // Check if the task is a virtual start task
-        if(localTaskId.startsWith(ActivitiConstants.START_TASK_PREFIX))
+        if (localTaskId.startsWith(ActivitiConstants.START_TASK_PREFIX))
         {
             return endStartTask(localTaskId);
         }
-        
+
         return endNormalTask(taskId, localTaskId, transition);
     }
 
@@ -1450,24 +1454,25 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     {
         // Retrieve task
         Task task = taskService.createTaskQuery().taskId(localTaskId).singleResult();
-        
-        if(task == null)
+
+        if (task == null)
         {
             String msg = messageService.getMessage(ERR_END_UNEXISTING_TASK, taskId);
             throw new WorkflowException(msg);
         }
-        
+
         // Check if the assignee is equal to the current logged-in user. If not, assign task before ending
         String currentUserName = AuthenticationUtil.getFullyAuthenticatedUser();
-        if(task.getAssignee() == null || !task.getAssignee().equals(currentUserName)) {
+        if (task.getAssignee() == null || !task.getAssignee().equals(currentUserName))
+        {
             taskService.setAssignee(localTaskId, currentUserName);
             // Also update pojo used to set the outcome, this will read assignee as wel
             task.setAssignee(currentUserName);
-            
+
             // Re-fetch the task-entity since it's revision has been updated by the setAssignee() call
             task = taskService.createTaskQuery().taskId(localTaskId).singleResult();
         }
-        
+
         setOutcome(task, transition);
         taskService.complete(localTaskId);
         // The task should have a historicTaskInstance
@@ -1484,9 +1489,9 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
         Map<QName, Serializable> properties = propertyConverter.getTaskProperties(task);
         QName outcomePropName = (QName) properties.get(WorkflowModel.PROP_OUTCOME_PROPERTY_NAME);
-        if(outcomePropName !=null)
+        if (outcomePropName != null)
         {
-            if(isDefaultTransition == false)
+            if (isDefaultTransition == false)
             {
                 outcomeValue = transition;
                 Serializable transitionValue = propertyConverter.convertValueToPropertyType(task, transition, outcomePropName);
@@ -1495,13 +1500,13 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             else
             {
                 Serializable rawOutcome = properties.get(outcomePropName);
-                if(rawOutcome != null)
+                if (rawOutcome != null)
                 {
                     outcomeValue = DefaultTypeConverter.INSTANCE.convert(String.class, rawOutcome);
                 }
             }
         }
-        else if (isDefaultTransition==false)
+        else if (isDefaultTransition == false)
         {
             // Only 'Next' is supported as transition.
             String taskId = createGlobalId(task.getId());
@@ -1514,30 +1519,30 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
     private WorkflowTask endStartTask(String localTaskId)
     {
-        // We don't end a task, we set a variable on the process-instance 
+        // We don't end a task, we set a variable on the process-instance
         // to indicate that it's started
         String processInstanceId = localTaskId.replace(ActivitiConstants.START_TASK_PREFIX, "");
-        if(false == typeConverter.isStartTaskActive(processInstanceId))
+        if (false == typeConverter.isStartTaskActive(processInstanceId))
         {
             return typeConverter.getVirtualStartTask(processInstanceId, false);
         }
-        
+
         // Set start task end date on the process
         runtimeService.setVariable(processInstanceId, ActivitiConstants.PROP_START_TASK_END_DATE, new Date());
-        
+
         // Check if the current activity is a signalTask and the first activity in the process,
         // this is a workaround for processes without any task/waitstates that should otherwise end
         // when they are started.
         ProcessInstance processInstance = activitiUtil.getProcessInstance(processInstanceId);
-        String currentActivity = ((ExecutionEntity)processInstance).getActivityId();
-        
+        String currentActivity = ((ExecutionEntity) processInstance).getActivityId();
+
         ReadOnlyProcessDefinition procDef = activitiUtil.getDeployedProcessDefinition(processInstance.getProcessDefinitionId());
         PvmActivity activity = procDef.findActivity(currentActivity);
-        if(isReceiveTask(activity) && isFirstActivity(activity, procDef)) 
+        if (isReceiveTask(activity) && isFirstActivity(activity, procDef))
         {
             // Signal the process to start flowing, beginning from the recieve task
             runtimeService.signal(processInstanceId);
-            
+
             // It's possible the process has ended after signalling the receive task
         }
         // Return virtual start task for the execution, it's safe to use the
@@ -1546,29 +1551,30 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public List<WorkflowTask> getAssignedTasks(String authority, WorkflowTaskState state, boolean lazyInitialization)
     {
         try
         {
-            if(state == WorkflowTaskState.IN_PROGRESS)
+            if (state == WorkflowTaskState.IN_PROGRESS)
             {
                 TaskQuery taskQuery = taskService.createTaskQuery()
-                    .taskAssignee(authority);
-                
-                if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+                        .taskAssignee(authority);
+
+                if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
                 {
                     taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
                 }
                 List<Task> tasks = taskQuery.list();
-                
+
                 List<WorkflowTask> resultingTasks = new ArrayList<WorkflowTask>();
-                for(Task task : tasks) {
-                    
-                    if(lazyInitialization)
+                for (Task task : tasks)
+                {
+
+                    if (lazyInitialization)
                     {
-                        resultingTasks.add(new LazyActivitiWorkflowTask(task, typeConverter, tenantService, 
+                        resultingTasks.add(new LazyActivitiWorkflowTask(task, typeConverter, tenantService,
                                 typeConverter.getWorkflowDefinitionName(task.getProcessDefinitionId())));
                     }
                     else
@@ -1581,19 +1587,20 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             else
             {
                 HistoricTaskInstanceQuery taskQuery = historyService.createHistoricTaskInstanceQuery()
-                    .taskAssignee(authority)
-                    .finished();
-                
-                if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+                        .taskAssignee(authority)
+                        .finished();
+
+                if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
                 {
                     taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
                 }
-                List<HistoricTaskInstance> historicTasks =taskQuery.list();
-                
+                List<HistoricTaskInstance> historicTasks = taskQuery.list();
+
                 List<WorkflowTask> resultingTasks = new ArrayList<WorkflowTask>();
-                for(HistoricTaskInstance historicTask : historicTasks) {
-                    
-                    if(lazyInitialization)
+                for (HistoricTaskInstance historicTask : historicTasks)
+                {
+
+                    if (lazyInitialization)
                     {
                         resultingTasks.add(new LazyActivitiWorkflowTask(historicTask, typeConverter, tenantService));
                     }
@@ -1608,27 +1615,27 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_ASSIGNED_TASKS);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public List<WorkflowTask> getPooledTasks(List<String> authorities, boolean lazyInitialization)
     {
-        try 
+        try
         {
-            if (authorities != null && authorities.size() > 0) 
+            if (authorities != null && authorities.size() > 0)
             {
-                // As an optimisation, we assume the first authority CAN be a user. All the 
+                // As an optimisation, we assume the first authority CAN be a user. All the
                 // others are groups to which the user (or group) belongs. This way, we don't have to
                 // check for the type of the authority.
-                
+
                 String firstAuthority = authorities.get(0);
                 // Use a map, can be that a task has multiple candidate-groups, which are inside the list
                 // of authorities
@@ -1637,11 +1644,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 {
                     // Candidate user
                     addTasksForCandidateUser(firstAuthority, resultingTasks);
-                    if(authorities.size() > 1) {
+                    if (authorities.size() > 1)
+                    {
                         List<String> remainingAuthorities = authorities.subList(1, authorities.size());
                         addTasksForCandidateGroups(remainingAuthorities, resultingTasks);
                     }
-                } 
+                }
                 else
                 {
                     // Candidate group
@@ -1650,13 +1658,13 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 List<WorkflowTask> tasks = new ArrayList<WorkflowTask>();
                 WorkflowTask currentTask = null;
                 // Only tasks that have NO assignee, should be returned
-                for(Task task : resultingTasks.values()) 
+                for (Task task : resultingTasks.values())
                 {
-                    if(task.getAssignee() == null) 
+                    if (task.getAssignee() == null)
                     {
                         // ALF-12264: filter out tasks from other domain, can occur when tenants
                         // have a group with the same name
-                        if(lazyInitialization)
+                        if (lazyInitialization)
                         {
                             String workflowDefinitionName = typeConverter.getWorkflowDefinitionName(task.getProcessDefinitionId());
                             try
@@ -1664,7 +1672,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                                 workflowDefinitionName = tenantService.getBaseName(workflowDefinitionName);
                                 currentTask = new LazyActivitiWorkflowTask(task, typeConverter, tenantService, workflowDefinitionName);
                             }
-                            catch(RuntimeException re)
+                            catch (RuntimeException re)
                             {
                                 // Domain mismatch, don't use this task
                                 currentTask = null;
@@ -1674,7 +1682,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                         {
                             currentTask = typeConverter.convert(task, true);
                         }
-                        if(currentTask != null)
+                        if (currentTask != null)
                         {
                             tasks.add(currentTask);
                         }
@@ -1682,20 +1690,20 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 }
                 return tasks;
             }
-            
+
             return Collections.emptyList();
         }
-        catch(ActivitiException ae)
+        catch (ActivitiException ae)
         {
             String authorityString = null;
-            if(authorities != null)
+            if (authorities != null)
             {
                 authorityString = StringUtils.join(authorities.iterator(), ", ");
             }
             String msg = messageService.getMessage(ERR_GET_POOLED_TASKS, authorityString);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }
@@ -1703,17 +1711,19 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
     private void addTasksForCandidateGroups(List<String> groupNames, Map<String, Task> resultingTasks)
     {
-        if(groupNames != null && groupNames.size() > 0) {
-            
+        if (groupNames != null && groupNames.size() > 0)
+        {
+
             TaskQuery query = taskService.createTaskQuery().taskCandidateGroupIn(groupNames);
-            
+
             // Additional filtering on the tenant-property in case workflow-definitions are shared across tenants
-            if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && tenantService.isEnabled()) {
+            if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && tenantService.isEnabled())
+            {
                 query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
             }
-            
-            List<Task> tasks =query.list();
-            for(Task task : tasks)
+
+            List<Task> tasks = query.list();
+            for (Task task : tasks)
             {
                 resultingTasks.put(task.getId(), task);
             }
@@ -1723,36 +1733,37 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     private void addTasksForCandidateUser(String userName, Map<String, Task> resultingTasks)
     {
         TaskQuery query = taskService.createTaskQuery().taskCandidateUser(userName);
-        
+
         // Additional filtering on the tenant-property in case workflow-definitions are shared across tenants
-        if(!activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && tenantService.isEnabled()) {
+        if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && tenantService.isEnabled())
+        {
             query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
         }
-        
+
         List<Task> tasks = query.list();
-        for(Task task : tasks)
+        for (Task task : tasks)
         {
             resultingTasks.put(task.getId(), task);
         }
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public WorkflowTask getTaskById(String taskId)
     {
         try
         {
             String localId = createLocalId(taskId);
-            if(localId.startsWith(ActivitiConstants.START_TASK_PREFIX)) 
+            if (localId.startsWith(ActivitiConstants.START_TASK_PREFIX))
             {
-                String processInstanceId = localId.replace(ActivitiConstants.START_TASK_PREFIX ,"");
+                String processInstanceId = localId.replace(ActivitiConstants.START_TASK_PREFIX, "");
                 return typeConverter.getVirtualStartTask(processInstanceId, null);
-            } 
+            }
             else
             {
                 Task task = activitiUtil.getTaskInstance(localId);
-                if(task != null) 
+                if (task != null)
                 {
                     return typeConverter.convert(task);
                 }
@@ -1763,36 +1774,36 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_TASK_BY_ID);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
-            	logger.debug(msg, ae);
+                logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
         }
     }
 
-    
     /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.TaskComponent#queryTasks(org.alfresco.service.cmr.workflow.WorkflowTaskQuery, boolean)
-     */
+     * 
+     * @see org.alfresco.repo.workflow.TaskComponent#queryTasks(org.alfresco.service.cmr.workflow.WorkflowTaskQuery, boolean) */
     @Override
     public List<WorkflowTask> queryTasks(WorkflowTaskQuery query, boolean sameSession)
     {
         return queryTasks(query);
     }
-    
+
     @Override
-    public long countTasks(WorkflowTaskQuery query) {
+    public long countTasks(WorkflowTaskQuery query)
+    {
         long totalCount = 0;
-        
+
         WorkflowTaskState taskState = query.getTaskState();
-        if(WorkflowTaskState.COMPLETED.equals(taskState) == false)
+        if (WorkflowTaskState.COMPLETED.equals(taskState) == false)
         {
-           totalCount += createRuntimeTaskQuery(query).count();    
-        }   
-        
-         // Depending on the state, history should be included/excluded as well
-        if(WorkflowTaskState.IN_PROGRESS.equals(taskState) == false)
+            totalCount += createRuntimeTaskQuery(query).count();
+        }
+
+        // Depending on the state, history should be included/excluded as well
+        if (WorkflowTaskState.IN_PROGRESS.equals(taskState) == false)
         {
             totalCount += createHistoricTaskQuery(query).count();
         }
@@ -1802,26 +1813,26 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
      * {@inheritDoc}
      */
-     public List<WorkflowTask> queryTasks(WorkflowTaskQuery query)
-     {
-         ArrayList<WorkflowTask> result = new ArrayList<WorkflowTask>();
-         WorkflowTaskState taskState = query.getTaskState();
-         if(WorkflowTaskState.COMPLETED.equals(taskState) == false)
-         {
-             result.addAll(queryRuntimeTasks(query));           
-         }       
-         
-         // Depending on the state, history should be included/excluded as wel
-         if(WorkflowTaskState.IN_PROGRESS.equals(taskState) == false)
-         {
-             result.addAll(queryHistoricTasks(query));
-             result.addAll(queryStartTasks(query));
-         }
-         return result;
-     }
-     
-     private List<WorkflowTask> queryRuntimeTasks(WorkflowTaskQuery query)
-     {
+    public List<WorkflowTask> queryTasks(WorkflowTaskQuery query)
+    {
+        ArrayList<WorkflowTask> result = new ArrayList<WorkflowTask>();
+        WorkflowTaskState taskState = query.getTaskState();
+        if (WorkflowTaskState.COMPLETED.equals(taskState) == false)
+        {
+            result.addAll(queryRuntimeTasks(query));
+        }
+
+        // Depending on the state, history should be included/excluded as wel
+        if (WorkflowTaskState.IN_PROGRESS.equals(taskState) == false)
+        {
+            result.addAll(queryHistoricTasks(query));
+            result.addAll(queryStartTasks(query));
+        }
+        return result;
+    }
+
+    private List<WorkflowTask> queryRuntimeTasks(WorkflowTaskQuery query)
+    {
         // Runtime-tasks only exist on process-instances that are active
         // so no use in querying runtime tasks if not active
         if (!Boolean.FALSE.equals(query.isActive()))
@@ -1841,220 +1852,222 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             return getValidWorkflowTasks(results);
         }
         return new ArrayList<WorkflowTask>();
-     }
-     
-     private void addProcessPropertiesToQuery(
-             Map<QName, Object> processCustomProps, TaskQuery taskQuery) 
-     {
-         for(Entry<QName, Object> customProperty : processCustomProps.entrySet()) 
-         {
-             String name =factory.mapQNameToName(customProperty.getKey());
+    }
 
-             // Exclude the special "VAR_TENANT_DOMAIN" variable, this cannot be queried by users
-             if(name != ActivitiConstants.VAR_TENANT_DOMAIN)
-             {
-                 // Perform minimal property conversions
-                 Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
-                 taskQuery.processVariableValueEquals(name, converted);
-             }
-         }
-     }
-     
-     private String getProcessNameMTSafe(QName processNameQName)
-     {
-         String key = processNameQName.toPrefixString(namespaceService);
-         return factory.getProcessKey(key);
-     }
-     
-     private void orderQuery(TaskQuery taskQuery, OrderBy[] orderBy) 
-     {
-         for (WorkflowTaskQuery.OrderBy orderByPart : orderBy)
-         {
-             if (orderByPart == WorkflowTaskQuery.OrderBy.TaskActor_Asc)
-             {
-                 taskQuery.orderByTaskAssignee().asc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskActor_Desc)
-             {
-                 taskQuery.orderByTaskAssignee().desc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskCreated_Asc)
-             {
-                 taskQuery.orderByTaskCreateTime().asc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskCreated_Desc)
-             {
-                 taskQuery.orderByTaskCreateTime().desc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskDue_Asc)
-             {
-                 // TODO: order by dueDate? It's a task-variable
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskDue_Desc)
-             {
-                 // TODO: order by duedate? It's a task-variable
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskId_Asc)
-             {
-                 taskQuery.orderByTaskId().asc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskId_Desc)
-             {
-                 taskQuery.orderByTaskId().desc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskName_Asc)
-             {
-                 taskQuery.orderByTaskName().asc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskName_Desc)
-             {
-                 taskQuery.orderByTaskName().desc();
-             }
-             // All workflows are active, no need to order on WorkflowTaskQuery.OrderBy.TaskState_Asc
-         }
-     }
-     
-     private void orderQuery(HistoricTaskInstanceQuery taskQuery, OrderBy[] orderBy) 
-     {
-         for (WorkflowTaskQuery.OrderBy orderByPart : orderBy)
-         {
-             if (orderByPart == WorkflowTaskQuery.OrderBy.TaskActor_Asc)
-             {
-                 taskQuery.orderByTaskAssignee().asc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskActor_Desc)
-             {
-                 taskQuery.orderByTaskAssignee().desc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskCreated_Asc)
-             {
-                 taskQuery.orderByHistoricActivityInstanceStartTime().asc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskCreated_Desc)
-             {
-                 taskQuery.orderByHistoricActivityInstanceStartTime().desc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskDue_Asc)
-             {
-                 // TODO: order by dueDate? It's a task-variable
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskDue_Desc)
-             {
-                 // TODO: order by duedate? It's a task-variable
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskId_Asc)
-             {
-                 taskQuery.orderByTaskId().asc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskId_Desc)
-             {
-                 taskQuery.orderByTaskId().desc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskName_Asc)
-             {
-                 taskQuery.orderByTaskName().asc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskName_Desc)
-             {
-                 taskQuery.orderByTaskName().desc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskState_Asc)
-             {
-                 taskQuery.orderByHistoricTaskInstanceEndTime().asc();
-             }
-             else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskState_Desc)
-             {
-                 taskQuery.orderByHistoricTaskInstanceEndTime().asc();
-             }
-         }
-     }
+    private void addProcessPropertiesToQuery(
+            Map<QName, Object> processCustomProps, TaskQuery taskQuery)
+    {
+        for (Entry<QName, Object> customProperty : processCustomProps.entrySet())
+        {
+            String name = factory.mapQNameToName(customProperty.getKey());
 
-     private void addTaskPropertiesToQuery(Map<QName, Object> taskCustomProps, TaskQuery taskQuery)
-     {
-         for(Entry<QName, Object> customProperty : taskCustomProps.entrySet()) 
-         {
-             String name = factory.mapQNameToName(customProperty.getKey());
-             
-             // Perform minimal property conversions
-             Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
-             taskQuery.taskVariableValueEquals(name, converted);
-         }
-     }
-     
-     private TaskQuery createRuntimeTaskQuery(WorkflowTaskQuery query) 
-     {
-         // Add task name
-         TaskQuery taskQuery = taskService.createTaskQuery();
-         
-         if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
-         {
-             // Filter by tenant domain.
-             taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
-         } else if(tenantService.isEnabled() && !TenantUtil.isCurrentDomainDefault() && !StringUtils.isEmpty(TenantUtil.getCurrentDomain())) {
-             // Process definition keys are prefixed with the tenant ID, in case MT is enabled and
-             // deployments are done in tenant-context
-             taskQuery.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "@%");
-         }
-         
-         if (query.getTaskName() != null)
-         {
-             // Task 'key' is stored as variable on task
-             String formKey = query.getTaskName().toPrefixString(namespaceService);
-             taskQuery.taskVariableValueEquals(ActivitiConstants.PROP_TASK_FORM_KEY, formKey);
-         }
+            // Exclude the special "VAR_TENANT_DOMAIN" variable, this cannot be queried by users
+            if (name != ActivitiConstants.VAR_TENANT_DOMAIN)
+            {
+                // Perform minimal property conversions
+                Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
+                taskQuery.processVariableValueEquals(name, converted);
+            }
+        }
+    }
 
-         if (query.getProcessId() != null)
-         {
-             String processInstanceId = createLocalId(query.getProcessId());
-             taskQuery.processInstanceId(processInstanceId);
-         }
+    private String getProcessNameMTSafe(QName processNameQName)
+    {
+        String key = processNameQName.toPrefixString(namespaceService);
+        return factory.getProcessKey(key);
+    }
 
-         if (query.getProcessName() != null)
-         {
-             String processName = getProcessNameMTSafe(query.getProcessName());
-             taskQuery.processDefinitionKey(processName);
-         }
-         
-         if (query.getWorkflowDefinitionName() != null)
-         {
-             String processName = factory.getProcessKey(query.getWorkflowDefinitionName());
-             taskQuery.processDefinitionKey(processName);
-         }
+    private void orderQuery(TaskQuery taskQuery, OrderBy[] orderBy)
+    {
+        for (WorkflowTaskQuery.OrderBy orderByPart : orderBy)
+        {
+            if (orderByPart == WorkflowTaskQuery.OrderBy.TaskActor_Asc)
+            {
+                taskQuery.orderByTaskAssignee().asc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskActor_Desc)
+            {
+                taskQuery.orderByTaskAssignee().desc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskCreated_Asc)
+            {
+                taskQuery.orderByTaskCreateTime().asc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskCreated_Desc)
+            {
+                taskQuery.orderByTaskCreateTime().desc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskDue_Asc)
+            {
+                // TODO: order by dueDate? It's a task-variable
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskDue_Desc)
+            {
+                // TODO: order by duedate? It's a task-variable
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskId_Asc)
+            {
+                taskQuery.orderByTaskId().asc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskId_Desc)
+            {
+                taskQuery.orderByTaskId().desc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskName_Asc)
+            {
+                taskQuery.orderByTaskName().asc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskName_Desc)
+            {
+                taskQuery.orderByTaskName().desc();
+            }
+            // All workflows are active, no need to order on WorkflowTaskQuery.OrderBy.TaskState_Asc
+        }
+    }
 
-         if (query.getActorId() != null)
-         {
-             taskQuery.taskAssignee(query.getActorId());
-         }
+    private void orderQuery(HistoricTaskInstanceQuery taskQuery, OrderBy[] orderBy)
+    {
+        for (WorkflowTaskQuery.OrderBy orderByPart : orderBy)
+        {
+            if (orderByPart == WorkflowTaskQuery.OrderBy.TaskActor_Asc)
+            {
+                taskQuery.orderByTaskAssignee().asc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskActor_Desc)
+            {
+                taskQuery.orderByTaskAssignee().desc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskCreated_Asc)
+            {
+                taskQuery.orderByHistoricActivityInstanceStartTime().asc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskCreated_Desc)
+            {
+                taskQuery.orderByHistoricActivityInstanceStartTime().desc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskDue_Asc)
+            {
+                // TODO: order by dueDate? It's a task-variable
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskDue_Desc)
+            {
+                // TODO: order by duedate? It's a task-variable
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskId_Asc)
+            {
+                taskQuery.orderByTaskId().asc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskId_Desc)
+            {
+                taskQuery.orderByTaskId().desc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskName_Asc)
+            {
+                taskQuery.orderByTaskName().asc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskName_Desc)
+            {
+                taskQuery.orderByTaskName().desc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskState_Asc)
+            {
+                taskQuery.orderByHistoricTaskInstanceEndTime().asc();
+            }
+            else if (orderByPart == WorkflowTaskQuery.OrderBy.TaskState_Desc)
+            {
+                taskQuery.orderByHistoricTaskInstanceEndTime().asc();
+            }
+        }
+    }
 
-         if (query.getTaskId() != null)
-         {
-             String taskId = createLocalId(query.getTaskId());
-             taskQuery.taskId(taskId);
-         }
+    private void addTaskPropertiesToQuery(Map<QName, Object> taskCustomProps, TaskQuery taskQuery)
+    {
+        for (Entry<QName, Object> customProperty : taskCustomProps.entrySet())
+        {
+            String name = factory.mapQNameToName(customProperty.getKey());
 
-         // Custom task properties
-         if (query.getTaskCustomProps() != null)
-         {
-             addTaskPropertiesToQuery(query.getTaskCustomProps(), taskQuery);
-         }
+            // Perform minimal property conversions
+            Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
+            taskQuery.taskVariableValueEquals(name, converted);
+        }
+    }
 
-         if (query.getProcessCustomProps() != null)
-         {
-             addProcessPropertiesToQuery(query.getProcessCustomProps(), taskQuery);
-         }
-         // Add ordering
-         if (query.getOrderBy() != null)
-         {
-             WorkflowTaskQuery.OrderBy[] orderBy = query.getOrderBy();
-             orderQuery(taskQuery, orderBy);
-         }
-         
-         return taskQuery;
-     }
+    private TaskQuery createRuntimeTaskQuery(WorkflowTaskQuery query)
+    {
+        // Add task name
+        TaskQuery taskQuery = taskService.createTaskQuery();
 
-     private List<WorkflowTask> queryHistoricTasks(WorkflowTaskQuery query)
-     {
-         HistoricTaskInstanceQuery historicQuery = createHistoricTaskQuery(query);
+        if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+        {
+            // Filter by tenant domain.
+            taskQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+        }
+        else if (tenantService.isEnabled() && !TenantUtil.isCurrentDomainDefault() && !StringUtils.isEmpty(TenantUtil.getCurrentDomain()))
+        {
+            // Process definition keys are prefixed with the tenant ID, in case MT is enabled and
+            // deployments are done in tenant-context
+            taskQuery.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "@%");
+        }
+
+        if (query.getTaskName() != null)
+        {
+            // Task 'key' is stored as variable on task
+            String formKey = query.getTaskName().toPrefixString(namespaceService);
+            taskQuery.taskVariableValueEquals(ActivitiConstants.PROP_TASK_FORM_KEY, formKey);
+        }
+
+        if (query.getProcessId() != null)
+        {
+            String processInstanceId = createLocalId(query.getProcessId());
+            taskQuery.processInstanceId(processInstanceId);
+        }
+
+        if (query.getProcessName() != null)
+        {
+            String processName = getProcessNameMTSafe(query.getProcessName());
+            taskQuery.processDefinitionKey(processName);
+        }
+
+        if (query.getWorkflowDefinitionName() != null)
+        {
+            String processName = factory.getProcessKey(query.getWorkflowDefinitionName());
+            taskQuery.processDefinitionKey(processName);
+        }
+
+        if (query.getActorId() != null)
+        {
+            taskQuery.taskAssignee(query.getActorId());
+        }
+
+        if (query.getTaskId() != null)
+        {
+            String taskId = createLocalId(query.getTaskId());
+            taskQuery.taskId(taskId);
+        }
+
+        // Custom task properties
+        if (query.getTaskCustomProps() != null)
+        {
+            addTaskPropertiesToQuery(query.getTaskCustomProps(), taskQuery);
+        }
+
+        if (query.getProcessCustomProps() != null)
+        {
+            addProcessPropertiesToQuery(query.getProcessCustomProps(), taskQuery);
+        }
+        // Add ordering
+        if (query.getOrderBy() != null)
+        {
+            WorkflowTaskQuery.OrderBy[] orderBy = query.getOrderBy();
+            orderQuery(taskQuery, orderBy);
+        }
+
+        return taskQuery;
+    }
+
+    private List<WorkflowTask> queryHistoricTasks(WorkflowTaskQuery query)
+    {
+        HistoricTaskInstanceQuery historicQuery = createHistoricTaskQuery(query);
 
         List<HistoricTaskInstance> results;
         int limit = query.getLimit();
@@ -2067,262 +2080,263 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             results = historicQuery.list();
         }
         return getValidHistoricTasks(results);
-     }
-     
-     private HistoricTaskInstanceQuery createHistoricTaskQuery(WorkflowTaskQuery query) 
-     {
-         HistoricTaskInstanceQuery historicQuery = historyService.createHistoricTaskInstanceQuery().finished();
-         
-         if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
-         {
-             // Filter by tenant domain
-             historicQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
-         } else if(tenantService.isEnabled() && !TenantUtil.isCurrentDomainDefault() && !StringUtils.isEmpty(TenantUtil.getCurrentDomain())) {
-             // Process definition keys are prefixed with the tenant ID, in case MT is enabled and
-             // deployments are done in tenant-context
-             historicQuery.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "@%");
-         }
+    }
 
-         if (query.getTaskId() != null)
-         {
-             String taskId = createLocalId(query.getTaskId());
-             historicQuery.taskId(taskId);
-         }
+    private HistoricTaskInstanceQuery createHistoricTaskQuery(WorkflowTaskQuery query)
+    {
+        HistoricTaskInstanceQuery historicQuery = historyService.createHistoricTaskInstanceQuery().finished();
 
-         if (query.getProcessId() != null)
-         {
-             String processInstanceId = createLocalId(query.getProcessId());
-             historicQuery.processInstanceId(processInstanceId);
-         }
+        if (!activitiUtil.isMultiTenantWorkflowDeploymentEnabled())
+        {
+            // Filter by tenant domain
+            historicQuery.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
+        }
+        else if (tenantService.isEnabled() && !TenantUtil.isCurrentDomainDefault() && !StringUtils.isEmpty(TenantUtil.getCurrentDomain()))
+        {
+            // Process definition keys are prefixed with the tenant ID, in case MT is enabled and
+            // deployments are done in tenant-context
+            historicQuery.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "@%");
+        }
 
-         if (query.getTaskName() != null)
-         {
-             historicQuery.taskDefinitionKey(query.getTaskName().toPrefixString());
-         }
+        if (query.getTaskId() != null)
+        {
+            String taskId = createLocalId(query.getTaskId());
+            historicQuery.taskId(taskId);
+        }
 
-         if (query.getActorId() != null)
-         {
-             historicQuery.taskAssignee(query.getActorId());
-         }
+        if (query.getProcessId() != null)
+        {
+            String processInstanceId = createLocalId(query.getProcessId());
+            historicQuery.processInstanceId(processInstanceId);
+        }
 
-         if (query.getProcessName() != null)
-         {
-             String processName = getProcessNameMTSafe(query.getProcessName());
-             historicQuery.processDefinitionKey(processName);
-         }
-         
-         if (query.getWorkflowDefinitionName() != null)
-         {
-             String processName = factory.getProcessKey(query.getWorkflowDefinitionName());
-             historicQuery.processDefinitionKey(processName);
-         }
+        if (query.getTaskName() != null)
+        {
+            historicQuery.taskDefinitionKey(query.getTaskName().toPrefixString());
+        }
 
-         if (query.getTaskCustomProps() != null)
-         {
-             addTaskPropertiesToQuery(query.getTaskCustomProps(), historicQuery);
-         }
+        if (query.getActorId() != null)
+        {
+            historicQuery.taskAssignee(query.getActorId());
+        }
 
-         if (query.getProcessCustomProps() != null)
-         {
-             addProcessPropertiesToQuery(query.getProcessCustomProps(), historicQuery);
-         }
+        if (query.getProcessName() != null)
+        {
+            String processName = getProcessNameMTSafe(query.getProcessName());
+            historicQuery.processDefinitionKey(processName);
+        }
 
-         if (query.isActive() != null)
-         {
-             if (query.isActive())
-             {
-                 historicQuery.processUnfinished();
-             }
-             else
-             {
-                 historicQuery.processFinished();
-             }
-         }
+        if (query.getWorkflowDefinitionName() != null)
+        {
+            String processName = factory.getProcessKey(query.getWorkflowDefinitionName());
+            historicQuery.processDefinitionKey(processName);
+        }
 
-         // Order query
-         if (query.getOrderBy() != null)
-         {
-             orderQuery(historicQuery, query.getOrderBy());
-         }
-         
-         return historicQuery;
-     }
-     
-     private void addTaskPropertiesToQuery(Map<QName, Object> taskCustomProps, 
-                 HistoricTaskInstanceQuery taskQuery) 
-     {
-         for(Entry<QName, Object> customProperty : taskCustomProps.entrySet()) 
-         {
-             String name =factory.mapQNameToName(customProperty.getKey());
-             
-             // Perform minimal property conversions
-             Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
-             taskQuery.taskVariableValueEquals(name, converted);
-         }
-     }
-     
-     private void addProcessPropertiesToQuery(Map<QName, Object> processCustomProps, 
-                 HistoricTaskInstanceQuery taskQuery) 
-     {
-         for(Entry<QName, Object> customProperty : processCustomProps.entrySet()) 
-         {
-             String name =factory.mapQNameToName(customProperty.getKey());
-             
-             // Exclude the special "VAR_TENANT_DOMAIN" variable, this cannot be queried by users
-             if(name != ActivitiConstants.VAR_TENANT_DOMAIN)
-             {
-                 // Perform minimal property conversions
-                 Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
-                 taskQuery.processVariableValueEquals(name, converted);
-             }
-         }
-     }
-     
-     private List<WorkflowTask> queryStartTasks(WorkflowTaskQuery query)
-     {
-         List<WorkflowTask> startTasks =  new ArrayList<WorkflowTask>();
+        if (query.getTaskCustomProps() != null)
+        {
+            addTaskPropertiesToQuery(query.getTaskCustomProps(), historicQuery);
+        }
 
-         String processInstanceId = null;
-         String taskId = query.getTaskId();
-         if(taskId != null )
-         {
-             String localTaskId = createLocalId(taskId);
-             if(localTaskId.startsWith(ActivitiConstants.START_TASK_PREFIX))
-             processInstanceId = localTaskId.substring(ActivitiConstants.START_TASK_PREFIX.length());
-         }
-         else
-         {
-             String processId = query.getProcessId();
-             if(processId != null)
-             {
-                 // Start task for a specific process
-                 processInstanceId = createLocalId(processId);
-             }
-         }
-         
-         // Only return start-task when a process or task id is set
-         if(processInstanceId != null)
-         {
-             WorkflowTask workflowTask = typeConverter.getVirtualStartTask(processInstanceId, null);
-             if(workflowTask != null)
-             {
+        if (query.getProcessCustomProps() != null)
+        {
+            addProcessPropertiesToQuery(query.getProcessCustomProps(), historicQuery);
+        }
+
+        if (query.isActive() != null)
+        {
+            if (query.isActive())
+            {
+                historicQuery.processUnfinished();
+            }
+            else
+            {
+                historicQuery.processFinished();
+            }
+        }
+
+        // Order query
+        if (query.getOrderBy() != null)
+        {
+            orderQuery(historicQuery, query.getOrderBy());
+        }
+
+        return historicQuery;
+    }
+
+    private void addTaskPropertiesToQuery(Map<QName, Object> taskCustomProps,
+            HistoricTaskInstanceQuery taskQuery)
+    {
+        for (Entry<QName, Object> customProperty : taskCustomProps.entrySet())
+        {
+            String name = factory.mapQNameToName(customProperty.getKey());
+
+            // Perform minimal property conversions
+            Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
+            taskQuery.taskVariableValueEquals(name, converted);
+        }
+    }
+
+    private void addProcessPropertiesToQuery(Map<QName, Object> processCustomProps,
+            HistoricTaskInstanceQuery taskQuery)
+    {
+        for (Entry<QName, Object> customProperty : processCustomProps.entrySet())
+        {
+            String name = factory.mapQNameToName(customProperty.getKey());
+
+            // Exclude the special "VAR_TENANT_DOMAIN" variable, this cannot be queried by users
+            if (name != ActivitiConstants.VAR_TENANT_DOMAIN)
+            {
+                // Perform minimal property conversions
+                Object converted = propertyConverter.convertPropertyToValue(customProperty.getValue());
+                taskQuery.processVariableValueEquals(name, converted);
+            }
+        }
+    }
+
+    private List<WorkflowTask> queryStartTasks(WorkflowTaskQuery query)
+    {
+        List<WorkflowTask> startTasks = new ArrayList<WorkflowTask>();
+
+        String processInstanceId = null;
+        String taskId = query.getTaskId();
+        if (taskId != null)
+        {
+            String localTaskId = createLocalId(taskId);
+            if (localTaskId.startsWith(ActivitiConstants.START_TASK_PREFIX))
+                processInstanceId = localTaskId.substring(ActivitiConstants.START_TASK_PREFIX.length());
+        }
+        else
+        {
+            String processId = query.getProcessId();
+            if (processId != null)
+            {
+                // Start task for a specific process
+                processInstanceId = createLocalId(processId);
+            }
+        }
+
+        // Only return start-task when a process or task id is set
+        if (processInstanceId != null)
+        {
+            WorkflowTask workflowTask = typeConverter.getVirtualStartTask(processInstanceId, null);
+            if (workflowTask != null)
+            {
                 boolean startTaskMatches = isStartTaskMatching(workflowTask, query);
-                if(startTaskMatches)
+                if (startTaskMatches)
                 {
                     startTasks.add(workflowTask);
                 }
-             }
-         }
-         return startTasks;
-     }
-         
-     
-    private boolean isStartTaskMatching(WorkflowTask workflowTask, WorkflowTaskQuery query) 
+            }
+        }
+        return startTasks;
+    }
+
+    private boolean isStartTaskMatching(WorkflowTask workflowTask, WorkflowTaskQuery query)
     {
-        if(query.isActive() != null)
+        if (query.isActive() != null)
         {
-            if(query.isActive() && !workflowTask.getPath().isActive()) 
+            if (query.isActive() && !workflowTask.getPath().isActive())
             {
                 return false;
             }
-            if(!query.isActive() && workflowTask.getPath().isActive()) 
+            if (!query.isActive() && workflowTask.getPath().isActive())
             {
                 return false;
             }
         }
-        
-        if(query.getActorId() != null && !query.getActorId().equals(workflowTask.getProperties().get(ContentModel.PROP_OWNER)))
+
+        if (query.getActorId() != null && !query.getActorId().equals(workflowTask.getProperties().get(ContentModel.PROP_OWNER)))
         {
             return false;
         }
-    	
+
         // Do NOT include start-task when the process for the given processId is already ended
         // See MNT-10931
-        if(query.getProcessCustomProps() != null &&
+        if (query.getProcessCustomProps() != null &&
                 !WorkflowTaskState.COMPLETED.equals(workflowTask.getState()))
         {
             // Get properties for process instance, based on path of start task, which is process-instance
             Map<QName, Serializable> props = getPathProperties(workflowTask.getPath().getId());
-            if(!checkPropertiesPresent(query.getProcessCustomProps(), props))
+            if (!checkPropertiesPresent(query.getProcessCustomProps(), props))
             {
                 return false;
             }
         }
-            
-        if(query.getProcessId() != null)
+
+        if (query.getProcessId() != null)
         {
-            if(!query.getProcessId().equals(workflowTask.getPath().getInstance().getId()))
+            if (!query.getProcessId().equals(workflowTask.getPath().getInstance().getId()))
             {
                 return false;
             }
         }
-        
+
         // Query by process name deprecated, but still implemented.
-        if(query.getProcessName() != null)
+        if (query.getProcessName() != null)
         {
             String processName = factory.mapQNameToName(query.getProcessName());
-            if(!processName.equals(workflowTask.getPath().getInstance().getDefinition().getName()))
+            if (!processName.equals(workflowTask.getPath().getInstance().getDefinition().getName()))
             {
                 return false;
             }
         }
-        
-        if(query.getWorkflowDefinitionName() != null)
+
+        if (query.getWorkflowDefinitionName() != null)
         {
-            if(!query.getWorkflowDefinitionName().equals(workflowTask.getPath().getInstance().getDefinition().getName()))
+            if (!query.getWorkflowDefinitionName().equals(workflowTask.getPath().getInstance().getDefinition().getName()))
             {
                 return false;
             }
         }
-        
-        if(query.getTaskCustomProps() != null)
+
+        if (query.getTaskCustomProps() != null)
         {
-            if(!checkPropertiesPresent(query.getTaskCustomProps(), workflowTask.getProperties()))
+            if (!checkPropertiesPresent(query.getTaskCustomProps(), workflowTask.getProperties()))
             {
                 return false;
             }
         }
-        
-        if(query.getTaskId() != null)
+
+        if (query.getTaskId() != null)
         {
-            if(!query.getTaskId().equals(workflowTask.getId()))
+            if (!query.getTaskId().equals(workflowTask.getId()))
             {
                 return false;
             }
         }
-        
-        if(query.getTaskName() != null)
+
+        if (query.getTaskName() != null)
         {
-            if(!query.getTaskName().equals(workflowTask.getDefinition().getMetadata().getName()))
+            if (!query.getTaskName().equals(workflowTask.getDefinition().getMetadata().getName()))
             {
                 return false;
             }
         }
-        
-        if(query.getTaskState() != null)
+
+        if (query.getTaskState() != null)
         {
-            if(!query.getTaskState().equals(workflowTask.getState()))
+            if (!query.getTaskState().equals(workflowTask.getState()))
             {
                 return false;
             }
         }
-        
+
         // If we fall through, start task matches the query
         return true;
     }
-    
+
     private boolean checkPropertiesPresent(Map<QName, Object> expectedProperties, Map<QName, Serializable> props)
     {
-        for(Map.Entry<QName, Object> entry : expectedProperties.entrySet())
+        for (Map.Entry<QName, Object> entry : expectedProperties.entrySet())
         {
-            if(props.containsKey(entry.getKey())) 
+            if (props.containsKey(entry.getKey()))
             {
                 Object requiredValue = entry.getValue();
                 Object actualValue = props.get(entry.getKey());
-                
-                if(requiredValue != null)
+
+                if (requiredValue != null)
                 {
-                    if(!requiredValue.equals(actualValue))
+                    if (!requiredValue.equals(actualValue))
                     {
                         return false;
                     }
@@ -2330,28 +2344,26 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 }
                 else
                 {
-                    if(actualValue != null)
+                    if (actualValue != null)
                     {
                         return false;
                     }
                     break;
                 }
             }
-            if(entry.getValue() != null)
+            if (entry.getValue() != null)
             {
                 // If variable is not found and required value is non null, start-task doesn't match
-                return false;                    
+                return false;
             }
         }
-        
+
         return true;
     }
-    
-    
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.workflow.TaskComponent#getStartTasks(java.util.List, boolean)
-     */
+     * 
+     * @see org.alfresco.repo.workflow.TaskComponent#getStartTasks(java.util.List, boolean) */
     @Override
     public List<WorkflowTask> getStartTasks(List<String> workflowInstanceIds, boolean sameSession)
     {
@@ -2368,8 +2380,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public WorkflowTask getStartTask(String workflowInstanceId)
     {
         String instanceId = createLocalId(workflowInstanceId);
@@ -2377,39 +2389,39 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public WorkflowTask startTask(String taskId)
     {
         throw new UnsupportedOperationException();
     }
 
     /**
-    * {@inheritDoc}
-    */
-    
+     * {@inheritDoc}
+     */
+
     public WorkflowTask suspendTask(String taskId)
     {
         throw new UnsupportedOperationException();
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public WorkflowTask updateTask(String taskId, Map<QName, Serializable> properties, Map<QName, List<NodeRef>> add,
-                Map<QName, List<NodeRef>> remove)
+            Map<QName, List<NodeRef>> remove)
     {
         try
         {
-            if(taskId.startsWith(ActivitiConstants.START_TASK_PREFIX))
+            if (taskId.startsWith(ActivitiConstants.START_TASK_PREFIX))
             {
                 // Known limitation, start-tasks cannot be updated
                 String msg = messageService.getMessage(ERR_UPDATE_START_TASK, taskId);
                 throw new WorkflowException(msg);
             }
-            
+
             Task task = taskService.createTaskQuery().taskId(createLocalId(taskId)).singleResult();
-            if(task != null)
+            if (task != null)
             {
                 Task updatedTask = propertyConverter.updateTask(task, properties, add, remove);
                 return typeConverter.convert(updatedTask);
@@ -2418,39 +2430,39 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             {
                 String msg = messageService.getMessage(ERR_UPDATE_TASK_UNEXISTING, taskId);
                 throw new WorkflowException(msg);
-            }            
+            }
         }
-        catch(ActivitiException ae)
+        catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_UPDATE_TASK, taskId);
             throw new WorkflowException(msg, ae);
         }
     }
-    
+
     @Override
     public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery)
     {
         return getWorkflows(workflowInstanceQuery, 0, 0);
     }
-    
+
     @Override
     public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery, int maxItems, int skipCount)
     {
         LinkedList<WorkflowInstance> results = new LinkedList<WorkflowInstance>();
         if (Boolean.FALSE.equals(workflowInstanceQuery.getActive()) == false)
         {
-            //Add active. 
+            // Add active.
             results.addAll(getWorkflowsInternal(workflowInstanceQuery, true, maxItems, skipCount));
         }
         if (Boolean.TRUE.equals(workflowInstanceQuery.getActive()) == false)
         {
-            //Add complete
+            // Add complete
             results.addAll(getWorkflowsInternal(workflowInstanceQuery, false, maxItems, skipCount));
         }
-        
+
         return results;
     }
-    
+
     @SuppressWarnings("unchecked")
     private List<WorkflowInstance> getWorkflowsInternal(WorkflowInstanceQuery workflowInstanceQuery, boolean isActive, int maxItems, int skipCount)
     {
@@ -2469,8 +2481,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             completedInstances = query.list();
         }
 
-        List<WorkflowInstance> completedResults = typeConverter.doSpecialTenantFilterAndSafeConvert(completedInstances, new Function<HistoricProcessInstance, String>()
-        {
+        List<WorkflowInstance> completedResults = typeConverter.doSpecialTenantFilterAndSafeConvert(completedInstances, new Function<HistoricProcessInstance, String>() {
             public String apply(HistoricProcessInstance historicProcessInstance)
             {
                 ProcessDefinition procDef = activitiUtil.getProcessDefinition(historicProcessInstance.getProcessDefinitionId());
@@ -2481,7 +2492,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         results.addAll(completedResults);
         return results;
     }
-    
+
     @Override
     public long countWorkflows(WorkflowInstanceQuery workflowInstanceQuery)
     {
@@ -2500,7 +2511,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 
         return total;
     }
-     
+
     @SuppressWarnings("unchecked")
     private HistoricProcessInstanceQuery createQuery(WorkflowInstanceQuery workflowInstanceQuery, boolean isActive)
     {
@@ -2517,19 +2528,20 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         {
             query = historyService.createHistoricProcessInstanceQuery().finished();
         }
-        
-        if(activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && tenantService.isEnabled() && !TenantUtil.isCurrentDomainDefault() && !StringUtils.isEmpty(TenantUtil.getCurrentDomain())) {
+
+        if (activitiUtil.isMultiTenantWorkflowDeploymentEnabled() && tenantService.isEnabled() && !TenantUtil.isCurrentDomainDefault() && !StringUtils.isEmpty(TenantUtil.getCurrentDomain()))
+        {
             // Process definition keys are prefixed with the tenant ID, in case MT is enabled and
             // deployments are done in tenant-context
             query.processDefinitionKey("@" + TenantUtil.getCurrentDomain() + "@%");
         }
-        
-        if(processDefId!=null)
+
+        if (processDefId != null)
         {
             query = query.processDefinitionId(processDefId);
         }
 
-        if(workflowInstanceQuery.getExcludedDefinitions() != null)
+        if (workflowInstanceQuery.getExcludedDefinitions() != null)
         {
             List<String> exDefIds = new ArrayList<String>();
             for (String excludedDef : workflowInstanceQuery.getExcludedDefinitions())
@@ -2538,8 +2550,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 exDef = exDef.replaceAll("\\*", "%");
                 exDefIds.add(exDef);
             }
-    
-            if(exDefIds.size() > 0)
+
+            if (exDefIds.size() > 0)
             {
                 query.processDefinitionKeyNotIn(exDefIds);
             }
@@ -2569,25 +2581,25 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         if (workflowInstanceQuery.getCustomProps() != null)
         {
             Map<QName, Object> customProps = workflowInstanceQuery.getCustomProps();
-            
+
             // CLOUD-667: Extract initiator-property and use 'startedBy' instead
             Object initiatorObject = customProps.get(QNAME_INITIATOR);
-            if(initiatorObject != null && initiatorObject instanceof NodeRef)
+            if (initiatorObject != null && initiatorObject instanceof NodeRef)
             {
                 // Extract username from person-node
                 NodeRef initiator = (NodeRef) initiatorObject;
-                if(this.nodeService.exists(initiator))
+                if (this.nodeService.exists(initiator))
                 {
                     String initiatorUserName = (String) nodeService.getProperty(initiator, ContentModel.PROP_USERNAME);
                     query.startedBy(initiatorUserName);
-                    
+
                     // Clone properties map and remove initiator
                     customProps = new HashMap<QName, Object>();
                     customProps.putAll(workflowInstanceQuery.getCustomProps());
                     customProps.remove(QNAME_INITIATOR);
                 }
             }
-            
+
             for (Map.Entry<QName, Object> prop : customProps.entrySet())
             {
                 String propertyName = factory.mapQNameToName(prop.getKey());
@@ -2640,62 +2652,68 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     public void dispatchPackageUpdatedEvent(Object variableValue, String taskId, String executionId, String processInstanceId, String processDefinitionId)
     {
         runtimeService.dispatchEvent(
-           ActivitiEventBuilder.createVariableEvent(ActivitiEventType.VARIABLE_UPDATED, WorkflowNotificationUtils.PROP_PACKAGE,
-                            variableValue, new ScriptNodeVariableType(), 
-                            taskId, executionId, processInstanceId, processDefinitionId));
+                ActivitiEventBuilder.createVariableEvent(ActivitiEventType.VARIABLE_UPDATED, WorkflowNotificationUtils.PROP_PACKAGE,
+                        variableValue, new ScriptNodeVariableType(),
+                        taskId, executionId, processInstanceId, processDefinitionId));
     }
-    
+
     /**
-     * @param nodeConverter the nodeConverter to set
+     * @param nodeConverter
+     *            the nodeConverter to set
      */
     public void setNodeConverter(WorkflowNodeConverter nodeConverter)
     {
         this.nodeConverter = nodeConverter;
     }
-    
-    
+
     /**
-     * @param factory the factory to set
+     * @param factory
+     *            the factory to set
      */
     public void setFactory(WorkflowObjectFactory factory)
     {
         this.factory = factory;
     }
-    
+
     /**
-     * @param messageService the messageService to set
+     * @param messageService
+     *            the messageService to set
      */
     public void setMessageService(MessageService messageService)
     {
         this.messageService = messageService;
     }
-    
+
     /**
-     * @param tenantService the tenantService to set
+     * @param tenantService
+     *            the tenantService to set
      */
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     /**
-     * @param typeConverter the typeConverter to set
+     * @param typeConverter
+     *            the typeConverter to set
      */
     public void setTypeConverter(ActivitiTypeConverter typeConverter)
     {
         this.typeConverter = typeConverter;
     }
-    
+
     /**
-     * @param activitiUtil the activitiUtil to set
+     * @param activitiUtil
+     *            the activitiUtil to set
      */
     public void setActivitiUtil(ActivitiUtil activitiUtil)
     {
         this.activitiUtil = activitiUtil;
     }
-    
+
     /**
-     * @param namespaceService the namespaceService to set
+     * @param namespaceService
+     *            the namespaceService to set
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {

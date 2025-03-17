@@ -42,6 +42,10 @@ import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.ConfigAttribute;
 import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -55,11 +59,6 @@ import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
-import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-
 
 /**
  * @author andyh
@@ -80,7 +79,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     private static final String ACL_ALLOW = "ACL_ALLOW";
 
     private static final String ACL_METHOD = "ACL_METHOD";
-    
+
     private static final String ACL_DENY = "ACL_DENY";
 
     private PermissionService permissionService;
@@ -92,9 +91,9 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     private OwnableService ownableService;
 
     private AuthorityService authorityService;
-    
+
     private Set<QName> abstainForClassQNames = new HashSet<QName>();
-    
+
     private Set<String> abstainFor = null;
 
     /**
@@ -111,7 +110,9 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Set the permission service
-     * @param permissionService PermissionService
+     * 
+     * @param permissionService
+     *            PermissionService
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -120,6 +121,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Get the permission service
+     * 
      * @return the permission service
      */
     public PermissionService getPermissionService()
@@ -129,6 +131,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Get the name space prefix resolver
+     * 
      * @return the name space prefix resolver
      */
     public NamespacePrefixResolver getNamespacePrefixResolver()
@@ -138,7 +141,9 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Set the name space prefix resolver
-     * @param nspr NamespacePrefixResolver
+     * 
+     * @param nspr
+     *            NamespacePrefixResolver
      */
     public void setNamespacePrefixResolver(NamespacePrefixResolver nspr)
     {
@@ -147,6 +152,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Get the node service
+     * 
      * @return the node service
      */
     public NodeService getNodeService()
@@ -156,6 +162,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Get the ownable service
+     * 
      * @return the ownable service
      */
     public OwnableService getOwnableService()
@@ -165,7 +172,9 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Set the node service
-     * @param nodeService NodeService
+     * 
+     * @param nodeService
+     *            NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -174,7 +183,9 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Set the ownable service
-     * @param ownableService OwnableService
+     * 
+     * @param ownableService
+     *            OwnableService
      */
     public void setOwnableService(OwnableService ownableService)
     {
@@ -183,7 +194,9 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Set the authentication service
-     * @param authenticationService AuthenticationService
+     * 
+     * @param authenticationService
+     *            AuthenticationService
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
@@ -192,14 +205,15 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Set the authority service
-     * @param authorityService AuthorityService
+     * 
+     * @param authorityService
+     *            AuthorityService
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
     }
 
-    
     /**
      * Types and aspects for which we will abstain on voting if they are present.
      */
@@ -226,9 +240,9 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
         {
             throw new IllegalArgumentException("There must be an authority service");
         }
-        if(abstainFor != null)
+        if (abstainFor != null)
         {
-            for(String qnameString : abstainFor)
+            for (String qnameString : abstainFor)
             {
                 QName qname = QName.resolveToQName(nspr, qnameString);
                 abstainForClassQNames.add(qname);
@@ -297,7 +311,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
         Class<?>[] params = method.getParameterTypes();
 
         Boolean hasMethodEntry = null;
-        
+
         for (ConfigAttributeDefintion cad : supportedDefinitions)
         {
             NodeRef testNodeRef = null;
@@ -312,16 +326,16 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
             }
             else if (cad.typeString.equals(ACL_METHOD))
             {
-                if(hasMethodEntry == null)
+                if (hasMethodEntry == null)
                 {
                     hasMethodEntry = Boolean.FALSE;
                 }
-                
+
                 if (cad.authority.equals(AuthenticationUtil.getRunAsUser()))
                 {
                     hasMethodEntry = Boolean.TRUE;
                 }
-                else if(authorityService.getAuthorities().contains(cad.authority)) 
+                else if (authorityService.getAuthorities().contains(cad.authority))
                 {
                     hasMethodEntry = Boolean.TRUE;
                 }
@@ -341,7 +355,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                                 log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
                             }
                             ChildAssociationRef primaryParent = nodeService.getPrimaryParent(testNodeRef);
-                            NodeRef testParentNodeRef = getArgument(invocation, cad.parameter[0]); 
+                            NodeRef testParentNodeRef = getArgument(invocation, cad.parameter[0]);
                             if (primaryParent == null || testParentNodeRef == null
                                     || !testParentNodeRef.equals(primaryParent.getParentRef()))
                             {
@@ -428,7 +442,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                         {
                             return accessAbstainOrDeny;
                         }
-                        if((hasMethodEntry == null) || (hasMethodEntry.booleanValue()))
+                        if ((hasMethodEntry == null) || (hasMethodEntry.booleanValue()))
                         {
                             return AccessDecisionVoter.ACCESS_GRANTED;
                         }
@@ -442,7 +456,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                 else
                 {
                     Object testObject = getArgument(invocation, cad.parameter[0]);
-                    //If the execution reaches here, then testNodeRef is always null
+                    // If the execution reaches here, then testNodeRef is always null
                     testNodeRef = getNodeRef(testObject, nodeService);
                 }
             }
@@ -475,7 +489,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                                     else
                                     {
                                         log.debug("\tPermission test on non-existing node " + testNodeRef);
-                                    } 
+                                    }
                                 }
                             }
                         }
@@ -485,7 +499,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                         testNodeRef = getArgument(invocation, cad.parameter[0]);
                         QName arg1 = getArgument(invocation, 1);
                         boolean isOwnerProperty = ContentModel.PROP_OWNER.equals(arg1);
-                        if(isOwnerProperty)
+                        if (isOwnerProperty)
                         {
                             Object arg2 = getArgument(invocation, 2);
                             boolean isChanged = (arg2 != null && !arg2.toString().equals(ownableService.getOwner(testNodeRef)));
@@ -493,7 +507,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                             if (!isChanged)
                             {
                                 testNodeRef = null;
-                            }  
+                            }
                         }
                         else
                         {
@@ -511,7 +525,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                                 else
                                 {
                                     log.debug("\tPermission test on non-existing node " + testNodeRef);
-                                } 
+                                }
                             }
                         }
                     }
@@ -567,7 +581,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                                 log.debug("\tPermission test for parent on child assoc ref for non existing node "
                                         + testNodeRef);
                             }
-                           
+
                         }
                     }
 
@@ -585,9 +599,9 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
             }
         }
 
-        if((hasMethodEntry == null) || (hasMethodEntry.booleanValue()))
+        if ((hasMethodEntry == null) || (hasMethodEntry.booleanValue()))
         {
-             return AccessDecisionVoter.ACCESS_GRANTED;
+            return AccessDecisionVoter.ACCESS_GRANTED;
         }
         else
         {
@@ -599,7 +613,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     private <T> T getArgument(MethodInvocation invocation, int index)
     {
         Object[] args = invocation.getArguments();
-        return index > args.length ? null : (T)args[index];        
+        return index > args.length ? null : (T) args[index];
     }
 
     private List<ConfigAttributeDefintion> extractSupportedDefinitions(ConfigAttributeDefinition config)
@@ -641,7 +655,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
             if (!(typeString.equals(ACL_NODE) || typeString.equals(ACL_ITEM) || typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD)
                     || typeString.equals(ACL_PARENT) || typeString.equals(ACL_ALLOW) || typeString.equals(ACL_METHOD) || typeString
-                    .equals(ACL_DENY)))
+                            .equals(ACL_DENY)))
             {
                 throw new ACLEntryVoterException("Invalid type: must be ACL_NODE, ACL_ITEM, ACL_PARENT or ACL_ALLOW");
             }
@@ -654,7 +668,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                 {
                     if (count != 3 && count != 4)
                     {
-                        throw new ACLEntryVoterException("There must be three or four . separated tokens in each config attribute");                        
+                        throw new ACLEntryVoterException("There must be three or four . separated tokens in each config attribute");
                     }
                 }
                 else if (count != 3)
@@ -663,9 +677,9 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                 }
                 // Handle a variable number of parameters
                 parameter = new int[count - 2];
-                for (int i=0; i<parameter.length; i++)
+                for (int i = 0; i < parameter.length; i++)
                 {
-                    parameter[i] = Integer.parseInt(st.nextToken());                    
+                    parameter[i] = Integer.parseInt(st.nextToken());
                 }
                 String qNameString = st.nextToken();
                 String permissionString = st.nextToken();

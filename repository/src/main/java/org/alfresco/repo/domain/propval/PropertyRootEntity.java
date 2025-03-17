@@ -35,19 +35,18 @@ public class PropertyRootEntity
 {
     private Long id;
     private short version;
-    
+
     public PropertyRootEntity()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("PropertyRootEntity")
-          .append("[ ID=").append(id)
-          .append(", version=").append(version)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", version=").append(version)
+                .append("]");
         return sb.toString();
     }
 
@@ -62,7 +61,7 @@ public class PropertyRootEntity
             this.version++;
         }
     }
-    
+
     public Long getId()
     {
         return id;

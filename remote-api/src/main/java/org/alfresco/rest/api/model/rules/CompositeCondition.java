@@ -95,7 +95,7 @@ public class CompositeCondition
     public String toString()
     {
         return "CompositeCondition{" + "inverted=" + inverted + ", booleanMode=" + booleanMode + ", compositeConditions=" + compositeConditions + ", simpleConditions="
-            + simpleConditions + '}';
+                + simpleConditions + '}';
     }
 
     @Override
@@ -107,7 +107,7 @@ public class CompositeCondition
             return false;
         CompositeCondition that = (CompositeCondition) o;
         return inverted == that.inverted && booleanMode == that.booleanMode && Objects.equals(compositeConditions, that.compositeConditions) && Objects.equals(
-            simpleConditions, that.simpleConditions);
+                simpleConditions, that.simpleConditions);
     }
 
     @Override

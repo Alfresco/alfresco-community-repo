@@ -36,6 +36,8 @@ import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.GrantedAuthorityImpl;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.dao.User;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
@@ -51,12 +53,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * This class abstract the support required to set up and query the Acegi context for security enforcement. There are
- * some simple default method implementations to support simple authentication.
+ * This class abstract the support required to set up and query the Acegi context for security enforcement. There are some simple default method implementations to support simple authentication.
  * 
  * @author Andy Hind
  */
@@ -72,15 +71,15 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     private Set<String> defaultGuestUserNames = Collections.emptySet();
 
     private AuthenticationContext authenticationContext;
-    
+
     private PersonService personService;
 
     private NodeService nodeService;
 
     private TransactionService transactionService;
-    
+
     private UserRegistrySynchronizer userRegistrySynchronizer;
-    
+
     protected final Log logger = LogFactory.getLog(getClass());
 
     public AbstractAuthenticationComponent()
@@ -91,7 +90,8 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     /**
      * Set if guest login is supported.
      * 
-     * @param allowGuestLogin Boolean
+     * @param allowGuestLogin
+     *            Boolean
      */
     public void setAllowGuestLogin(Boolean allowGuestLogin)
     {
@@ -117,7 +117,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     {
         this.transactionService = transactionService;
     }
-    
+
     public void setUserRegistrySynchronizer(UserRegistrySynchronizer userRegistrySynchronizer)
     {
         this.userRegistrySynchronizer = userRegistrySynchronizer;
@@ -187,12 +187,12 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     }
 
     /**
-     * Default unsupported authentication implementation - as of 2.1 this is the best way to implement your own
-     * authentication component as it will support guest login - prior to this direct over ride for authenticate(String ,
-     * char[]) was used. This will still work.
+     * Default unsupported authentication implementation - as of 2.1 this is the best way to implement your own authentication component as it will support guest login - prior to this direct over ride for authenticate(String , char[]) was used. This will still work.
      * 
-     * @param userName String
-     * @param password char[]
+     * @param userName
+     *            String
+     * @param password
+     *            char[]
      */
     protected void authenticateImpl(String userName, char[] password)
     {
@@ -233,9 +233,9 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
             // requiresNew flag to true
             else
             {
-                boolean readOnly = (validationMode ==  UserNameValidationMode.CHECK);
+                boolean readOnly = (validationMode == UserNameValidationMode.CHECK);
                 boolean requiresNew = ((!readOnly) && (AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY));
-                        
+
                 authentication = transactionService.getRetryingTransactionHelper().doInTransaction(callback, readOnly, requiresNew);
             }
             if ((authentication == null) || (callback.ae != null))
@@ -245,7 +245,6 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
             return authentication;
         }
     }
-    
 
     /**
      * Explicitly set the current user to be authenticated.
@@ -260,12 +259,12 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         {
             throw new AuthenticationException("Null user name");
         }
-        
+
         if (isSystemUserName(userName))
         {
             return setSystemUserAsCurrentUser(getUserDomain(userName));
         }
-        
+
         try
         {
             UserDetails ud = null;
@@ -286,12 +285,12 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                     logger.trace("Setting the current user to \"" + AuthenticationUtil.maskUsername(userName) + '"');
                 }
                 ud = getUserDetails(userName);
-                if(!userName.equals(ud.getUsername()))
+                if (!userName.equals(ud.getUsername()))
                 {
                     ud = new User(userName, ud.getPassword(), ud.isEnabled(), ud.isAccountNonExpired(),
                             ud.isCredentialsNonExpired(), ud.isAccountNonLocked(), ud.getAuthorities());
                 }
-                
+
             }
             return setUserDetails(ud);
         }
@@ -304,7 +303,8 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     /**
      * Default implementation that makes an ACEGI object on the fly
      * 
-     * @param userName String
+     * @param userName
+     *            String
      * @return UserDetails
      */
     protected UserDetails getUserDetails(String userName)
@@ -433,16 +433,14 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
             }
         }
     }
-    
+
     public boolean isGuestUserName(String userName)
     {
         return authenticationContext.isGuestUserName(userName);
     }
-    
-    
+
     protected abstract boolean implementationAllowsGuestLogin();
 
-    
     /**
      * @return true if Guest user authentication is allowed, false otherwise
      */
@@ -498,27 +496,26 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 Pair<String, String> userTenant = AuthenticationUtil.getUserTenant(userNameIn);
                 final String userName = userTenant.getFirst();
                 final String tenantDomain = userTenant.getSecond();
-                
+
                 Authentication authentication = setCurrentUserImpl(userName);
-                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-                {
+                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>() {
                     public Object doWork() throws Exception
                     {
                         String identifier;
                         if ((identifier = personService.getUserIdentifier(userName)) == null
-                             || !identifier.equals(userName)) 
+                                || !identifier.equals(userName))
                         {
                             if (logger.isDebugEnabled())
                             {
                                 logger.debug("User \"" + AuthenticationUtil.maskUsername(userName)
                                         + "\" does not exist in Alfresco. Failing validation.");
                             }
-                            throw new AuthenticationException("User \"" +  AuthenticationUtil.maskUsername(userName) + "\" does not exist in Alfresco");
+                            throw new AuthenticationException("User \"" + AuthenticationUtil.maskUsername(userName) + "\" does not exist in Alfresco");
                         }
                         return null;
                     }
                 }, tenantDomain);
-                
+
                 TenantContextHolder.setTenantDomain(tenantDomain);
                 return authentication;
             }
@@ -529,7 +526,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
             }
         }
     }
-    
+
     class FixCurrentUserCallback extends CurrentUserCallback
     {
         FixCurrentUserCallback(String userNameIn)
@@ -548,9 +545,8 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                 Pair<String, String> userTenant = AuthenticationUtil.getUserTenant(userNameIn);
                 final String userName = userTenant.getFirst();
                 final String tenantDomain = userTenant.getSecond();
-                
-                Authentication authentication = setCurrentUserImpl(TenantUtil.runAsSystemTenant(new TenantRunAsWork<String>()
-                {
+
+                Authentication authentication = setCurrentUserImpl(TenantUtil.runAsSystemTenant(new TenantRunAsWork<String>() {
                     public String doWork() throws Exception
                     {
                         if (!personService.personExists(userName))
@@ -567,7 +563,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                                     logger.debug("Failed to import / create user \"" + AuthenticationUtil.maskUsername(userName) + '"');
                                 }
                                 throw new AuthenticationException(
-                                    "User \"" + AuthenticationUtil.maskUsername(userName) + "\" does not exist in Alfresco");
+                                        "User \"" + AuthenticationUtil.maskUsername(userName) + "\" does not exist in Alfresco");
                             }
                         }
                         NodeRef userNode = personService.getPerson(userName);
@@ -575,7 +571,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
                         return (String) nodeService.getProperty(userNode, ContentModel.PROP_USERNAME);
                     }
                 }, tenantDomain));
-                
+
                 TenantContextHolder.setTenantDomain(tenantDomain);
                 return authentication;
             }
@@ -605,11 +601,12 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     {
         this.defaultAdministratorUserNames = defaultAdministratorUserNames;
     }
-    
+
     /**
      * Convenience method to allow the administrator user names to be specified as a comma separated list
      * 
-     * @param defaultAdministratorUserNames String
+     * @param defaultAdministratorUserNames
+     *            String
      */
     public void setDefaultAdministratorUserNameList(String defaultAdministratorUserNames)
     {
@@ -636,11 +633,12 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     {
         this.defaultGuestUserNames = defaultGuestUserNames;
     }
-    
+
     /**
      * Convenience method to allow the administrator user names to be specified as a comma separated list
      * 
-     * @param defaultGuestUserNames String
+     * @param defaultGuestUserNames
+     *            String
      */
     public void setDefaultGuestUserNameList(String defaultGuestUserNames)
     {
@@ -656,7 +654,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     {
         return authenticationContext.getSystemUserName(tenantDomain);
     }
-    
+
     public String getUserDomain(String userName)
     {
         return authenticationContext.getUserDomain(userName);
@@ -675,26 +673,27 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     {
         return authenticationContext.setUserDetails(ud);
     }
-    
+
     AtomicInteger numberSuccessfulAuthentications = new AtomicInteger(0);
     AtomicInteger numberFailedAuthentications = new AtomicInteger(0);
+
     protected void onAuthenticate()
     {
         numberSuccessfulAuthentications.getAndIncrement();
     }
-    
+
     protected void onFail()
     {
         numberFailedAuthentications.getAndIncrement();
     }
-    
+
     public int getNumberSuccessfulAuthentications()
     {
         return numberSuccessfulAuthentications.get();
     }
-        
+
     public int getNumberFailedAuthentications()
-    {   
+    {
         return numberFailedAuthentications.get();
     }
 }

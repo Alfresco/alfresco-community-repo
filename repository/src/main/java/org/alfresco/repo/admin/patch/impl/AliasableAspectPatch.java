@@ -29,6 +29,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.email.server.AliasableAspect;
 import org.alfresco.email.server.EmailServerModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
@@ -44,9 +48,6 @@ import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Patch to duplicate the AliasableAspect into the attributes service.
@@ -59,34 +60,32 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class AliasableAspectPatch extends AbstractPatch
 {
     private static final String MSG_SUCCESS = "patch.emailAliasableAspect.result";
-    
+
     private AttributeService attributeService;
     private NodeDAO nodeDAO;
     private PatchDAO patchDAO;
     private QNameDAO qnameDAO;
     private BehaviourFilter behaviourFilter;
-    
+
     private final int batchThreads = 3;
     private final int batchSize = 40;
     private final long count = batchThreads * batchSize;
-    
+
     private static Log logger = LogFactory.getLog(AliasableAspectPatch.class);
-    
 
     @Override
     protected String applyInternal() throws Exception
-    {                      
-        BatchProcessWorkProvider<NodeRef> workProvider = new BatchProcessWorkProvider<NodeRef>()
-        {
+    {
+        BatchProcessWorkProvider<NodeRef> workProvider = new BatchProcessWorkProvider<NodeRef>() {
             final List<NodeRef> result = new ArrayList<NodeRef>();
-            
+
             Long aspectQNameId = 0L;
             long maxNodeId = getPatchDAO().getMaxAdmNodeID();
-            
+
             long minSearchNodeId = 1;
             long maxSearchNodeId = count;
-            
-            Pair<Long, QName> val = getQnameDAO().getQName(EmailServerModel.ASPECT_ALIASABLE );
+
+            Pair<Long, QName> val = getQnameDAO().getQName(EmailServerModel.ASPECT_ALIASABLE);
 
             public int getTotalEstimatedWorkSize()
             {
@@ -100,20 +99,20 @@ public class AliasableAspectPatch extends AbstractPatch
 
             public Collection<NodeRef> getNextWork()
             {
-                if(val != null)
+                if (val != null)
                 {
                     Long aspectQNameId = val.getFirst();
-                
+
                     result.clear();
-                
+
                     while (result.isEmpty() && minSearchNodeId < maxNodeId)
-                    {                    
+                    {
                         List<Long> nodeids = getPatchDAO().getNodesByAspectQNameId(aspectQNameId, minSearchNodeId, maxSearchNodeId);
-                
-                        for(Long nodeid : nodeids)
+
+                        for (Long nodeid : nodeids)
                         {
                             NodeRef.Status status = getNodeDAO().getNodeIdStatus(nodeid);
-                            if(!status.isDeleted())
+                            if (!status.isDeleted())
                             {
                                 result.add(status.getNodeRef());
                             }
@@ -131,27 +130,24 @@ public class AliasableAspectPatch extends AbstractPatch
         // Configure the helper to run in read-only mode
         // MNT-10764
         txnHelper.setForceWritable(true);
-        
+
         BatchProcessor<NodeRef> batchProcessor = new BatchProcessor<NodeRef>(
-                "AliasableAspectPatch", 
+                "AliasableAspectPatch",
                 txnHelper,
                 workProvider,
-                batchThreads, 
-                batchSize, 
-                applicationEventPublisher, 
-                logger, 
+                batchThreads,
+                batchSize,
+                applicationEventPublisher,
+                logger,
                 1000);
 
-        BatchProcessWorker<NodeRef> worker = new BatchProcessWorker<NodeRef>()
-        {
+        BatchProcessWorker<NodeRef> worker = new BatchProcessWorker<NodeRef>() {
 
             public void afterProcess() throws Throwable
-            {
-            }
+            {}
 
             public void beforeProcess() throws Throwable
-            {
-            }
+            {}
 
             public String getIdentifier(NodeRef entry)
             {
@@ -160,40 +156,40 @@ public class AliasableAspectPatch extends AbstractPatch
 
             public void process(NodeRef entry) throws Throwable
             {
-                String alias = (String)nodeService.getProperty(entry, EmailServerModel.PROP_ALIAS);
-                if(alias != null)
+                String alias = (String) nodeService.getProperty(entry, EmailServerModel.PROP_ALIAS);
+                if (alias != null)
                 {
                     NodeRef existing = (NodeRef) getAttributeService().getAttribute(AliasableAspect.ALIASABLE_ATTRIBUTE_KEY_1,
                             AliasableAspect.ALIASABLE_ATTRIBUTE_KEY_2,
                             AliasableAspect.normaliseAlias(alias));
-                    
-                    if(existing != null)
+
+                    if (existing != null)
                     {
-                        if(!existing.equals(entry))
+                        if (!existing.equals(entry))
                         {
                             // alias is used by more than one node - warning of some sort?
-                            if(logger.isWarnEnabled())
+                            if (logger.isWarnEnabled())
                             {
                                 logger.warn("Email alias is not unique, alias:" + alias + " nodeRef:" + entry);
                             }
-                            
+
                             try
                             {
                                 behaviourFilter.disableBehaviour(EmailServerModel.ASPECT_ALIASABLE);
-                                nodeService.removeAspect(entry,  EmailServerModel.ASPECT_ALIASABLE);
-                        
+                                nodeService.removeAspect(entry, EmailServerModel.ASPECT_ALIASABLE);
+
                             }
                             finally
                             {
                                 behaviourFilter.enableBehaviour(EmailServerModel.ASPECT_ALIASABLE);
                             }
                         }
-                        
+
                         // else do nothing - attribute already exists.
                     }
                     else
                     {
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("creating email alias attribute for " + alias);
                         }
@@ -205,71 +201,60 @@ public class AliasableAspectPatch extends AbstractPatch
         };
 
         // Now set the batch processor to work
-        
+
         batchProcessor.process(worker, true);
-       
+
         return I18NUtil.getMessage(MSG_SUCCESS);
     }
-
 
     public void setAttributeService(AttributeService attributeService)
     {
         this.attributeService = attributeService;
     }
 
-
     public AttributeService getAttributeService()
     {
         return attributeService;
     }
-
 
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
     }
 
-
     public NodeDAO getNodeDAO()
     {
         return nodeDAO;
     }
-
 
     public void setPatchDAO(PatchDAO patchDAO)
     {
         this.patchDAO = patchDAO;
     }
 
-
     public PatchDAO getPatchDAO()
     {
         return patchDAO;
     }
-
 
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
     }
 
-
     public QNameDAO getQnameDAO()
     {
         return qnameDAO;
     }
-
 
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
     }
 
-
     public BehaviourFilter getBehaviourFilter()
     {
         return behaviourFilter;
     }
-    
 
 }

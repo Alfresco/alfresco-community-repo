@@ -38,6 +38,13 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
+import freemarker.cache.TemplateLoader;
+import org.springframework.extensions.webscripts.AbstractStore;
+import org.springframework.extensions.webscripts.ScriptContent;
+import org.springframework.extensions.webscripts.ScriptLoader;
+import org.springframework.extensions.webscripts.WebScript;
+import org.springframework.extensions.webscripts.WebScriptException;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
@@ -61,14 +68,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.SearchLanguageConversion;
-import org.springframework.extensions.webscripts.AbstractStore;
-import org.springframework.extensions.webscripts.ScriptContent;
-import org.springframework.extensions.webscripts.ScriptLoader;
-import org.springframework.extensions.webscripts.WebScript;
-import org.springframework.extensions.webscripts.WebScriptException;
-
-import freemarker.cache.TemplateLoader;
-
 
 /**
  * Repository based Web Script Store
@@ -92,7 +91,6 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     protected PermissionService permissionService;
     protected TenantAdminService tenantAdminService;
 
-    
     /**
      * Sets helper that provides transaction callbacks
      */
@@ -100,7 +98,7 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     {
         this.retryingTransactionHelper = retryingTransactionHelper;
     }
-    
+
     /**
      * Sets the search service
      */
@@ -108,7 +106,7 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     {
         this.searchService = searchService;
     }
-    
+
     /**
      * Sets the node service
      */
@@ -140,7 +138,7 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * Sets the permission service
      */
@@ -148,7 +146,7 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     {
         this.permissionService = permissionService;
     }
-    
+
     /**
      * Sets the tenant admin service
      */
@@ -160,13 +158,14 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     /**
      * Sets whether the repo store must exist
      * 
-     * @param mustExist boolean
+     * @param mustExist
+     *            boolean
      */
     public void setMustExist(boolean mustExist)
     {
         this.mustExist = mustExist;
     }
-    
+
     /**
      * Sets the repo store
      */
@@ -174,11 +173,12 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     {
         this.repoStore = new StoreRef(repoStore);
     }
-    
+
     /**
      * Sets the repo path
      * 
-     * @param repoPath  repoPath
+     * @param repoPath
+     *            repoPath
      */
     public void setPath(String repoPath)
     {
@@ -186,44 +186,43 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     }
 
     /* (non-Javadoc)
+     * 
      * @see org.alfresco.web.scripts.Store#init()
-     * @see org.alfresco.repo.tenant.TenantDeployer#init()
-     */
+     * 
+     * @see org.alfresco.repo.tenant.TenantDeployer#init() */
     public void init()
     {
         if (baseNodeRefs == null)
         {
-    		baseNodeRefs = new HashMap<String, NodeRef>(1);
-    	}
+            baseNodeRefs = new HashMap<String, NodeRef>(1);
+        }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#destroy()
-     */
+     * 
+     * @see org.alfresco.repo.tenant.TenantDeployer#destroy() */
     public void destroy()
     {
         baseNodeRefs.remove(tenantAdminService.getCurrentUserDomain());
     }
-    
+
     private NodeRef getBaseNodeRef()
     {
         String tenantDomain = tenantAdminService.getCurrentUserDomain();
         NodeRef baseNodeRef = baseNodeRefs.get(tenantDomain);
         if (baseNodeRef == null)
         {
-            baseNodeRef = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
-            {
-            	public NodeRef doWork() throws Exception
+            baseNodeRef = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>() {
+                public NodeRef doWork() throws Exception
                 {
-    	            return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-    	            {
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
                         public NodeRef execute() throws Exception
                         {
                             NodeRef repoStoreRootNodeRef = nodeService.getRootNode(repoStore);
                             List<NodeRef> nodeRefs = searchService.selectNodes(
                                     repoStoreRootNodeRef,
                                     repoPath,
-                                    new QueryParameterDefinition[] {},
+                                    new QueryParameterDefinition[]{},
                                     namespaceService,
                                     false,
                                     SearchService.LANGUAGE_XPATH);
@@ -244,54 +243,53 @@ public class RepoStore extends AbstractStore implements TenantDeployer
                         }
                     }, true, false);
                 }
-    	    }, AuthenticationUtil.getSystemUserName());
-    		
-    		// TODO clear on deleteTenant
-    		baseNodeRefs.put(tenantDomain, baseNodeRef);
-    	}
-    	return baseNodeRef;
+            }, AuthenticationUtil.getSystemUserName());
+
+            // TODO clear on deleteTenant
+            baseNodeRefs.put(tenantDomain, baseNodeRef);
+        }
+        return baseNodeRef;
     }
-    
+
     private boolean isContentPresent(NodeRef nodeRef)
     {
-        ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT); 
+        ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
         if ((reader != null && reader.exists()))
         {
             return true;
         }
         return false;
     }
-    
+
     private String getBaseDir()
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String>() {
             public String doWork() throws Exception
             {
                 return getPath(getBaseNodeRef());
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-        
+
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#isSecure()
-     */
+     * 
+     * @see org.alfresco.web.scripts.Store#isSecure() */
     public boolean isSecure()
     {
         return false;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#exists()
-     */
+     * 
+     * @see org.alfresco.web.scripts.Store#exists() */
     public boolean exists()
     {
         return (getBaseNodeRef() != null);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#getBasePath()
-     */
+     * 
+     * @see org.alfresco.web.scripts.Store#getBasePath() */
     public String getBasePath()
     {
         return repoStore.toString() + repoPath;
@@ -300,20 +298,22 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     /**
      * Gets the display path for the specified node
      * 
-     * @param nodeRef NodeRef
-     * @return  display path
+     * @param nodeRef
+     *            NodeRef
+     * @return display path
      */
     protected String getPath(NodeRef nodeRef)
     {
         return nodeService.getPath(nodeRef).toDisplayPath(nodeService, permissionService) +
-               "/" + nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                "/" + nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
     }
-    
+
     /**
      * Gets the node ref for the specified path within this repo store
      * 
-     * @param documentPath String
-     * @return  node ref
+     * @param documentPath
+     *            String
+     * @return node ref
      */
     protected NodeRef findNodeRef(String documentPath)
     {
@@ -333,19 +333,17 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#getScriptDocumentPaths(org.alfresco.web.scripts.WebScript)
-     */
+     * 
+     * @see org.alfresco.web.scripts.Store#getScriptDocumentPaths(org.alfresco.web.scripts.WebScript) */
     public String[] getScriptDocumentPaths(final WebScript script)
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String[]>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String[]>() {
             public String[] doWork() throws Exception
             {
-                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<String[]>()
-                {
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<String[]>() {
                     public String[] execute() throws Exception
                     {
-                        int baseDirLength = getBaseDir().length() +1;
+                        int baseDirLength = getBaseDir().length() + 1;
                         List<String> documentPaths = null;
                         String scriptPath = script.getDescription().getScriptPath();
                         NodeRef scriptNodeRef = (scriptPath.length() == 0) ? getBaseNodeRef() : findNodeRef(scriptPath);
@@ -356,151 +354,147 @@ public class RepoStore extends AbstractStore implements TenantDeployer
                             NodeRef repoStoreRootNodeRef = nodeService.getRootNode(repoStore);
                             List<NodeRef> nodeRefs = searchService.selectNodes(
                                     repoStoreRootNodeRef,
-                                    repoScriptPath.toPrefixString(namespaceService)+"//*[like(@cm:name, '"+SearchLanguageConversion.convert(SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_XPATH_LIKE, id+"*")+"', false)]",
-                                    new QueryParameterDefinition[] {},
+                                    repoScriptPath.toPrefixString(namespaceService) + "//*[like(@cm:name, '" + SearchLanguageConversion.convert(SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_XPATH_LIKE, id + "*") + "', false)]",
+                                    new QueryParameterDefinition[]{},
                                     namespaceService,
                                     false,
                                     SearchService.LANGUAGE_XPATH);
                             documentPaths = new ArrayList<String>(nodeRefs.size());
                             for (NodeRef nodeRef : nodeRefs)
                             {
-                            	if (isContentPresent(nodeRef))
-                            	{
-                            		String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                            		if (name.startsWith(id))
-                            		{
-                            			String nodeDir = getPath(nodeRef);
-                            			String documentPath = nodeDir.substring(baseDirLength);
-                            			documentPaths.add(documentPath);
-                            		}
-                            	}
+                                if (isContentPresent(nodeRef))
+                                {
+                                    String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                                    if (name.startsWith(id))
+                                    {
+                                        String nodeDir = getPath(nodeRef);
+                                        String documentPath = nodeDir.substring(baseDirLength);
+                                        documentPaths.add(documentPath);
+                                    }
+                                }
                             }
-                            
-                            
-//                            String query = "+PATH:\"" + repoScriptPath.toPrefixString(namespaceService) +
-//                                           "//*\" +QNAME:" + lucenifyNamePattern(id) + "*";
-//                            ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
-//                            try
-//                            {
-//                                documentPaths = new ArrayList<String>(resultSet.length());
-//                                List<NodeRef> nodes = resultSet.getNodeRefs();
-//                                for (NodeRef nodeRef : nodes)
-//                                {
-//                                    String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-//                                    if (name.startsWith(id))
-//                                    {
-//                                        String nodeDir = getPath(nodeRef);
-//                                        String documentPath = nodeDir.substring(baseDirLength);
-//                                        documentPaths.add(documentPath);
-//                                    }
-//                                }
-//                            }
-//                            finally
-//                            {
-//                                resultSet.close();
-//                            }
+
+                            // String query = "+PATH:\"" + repoScriptPath.toPrefixString(namespaceService) +
+                            // "//*\" +QNAME:" + lucenifyNamePattern(id) + "*";
+                            // ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
+                            // try
+                            // {
+                            // documentPaths = new ArrayList<String>(resultSet.length());
+                            // List<NodeRef> nodes = resultSet.getNodeRefs();
+                            // for (NodeRef nodeRef : nodes)
+                            // {
+                            // String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                            // if (name.startsWith(id))
+                            // {
+                            // String nodeDir = getPath(nodeRef);
+                            // String documentPath = nodeDir.substring(baseDirLength);
+                            // documentPaths.add(documentPath);
+                            // }
+                            // }
+                            // }
+                            // finally
+                            // {
+                            // resultSet.close();
+                            // }
                         }
-                        
+
                         return documentPaths != null ? documentPaths.toArray(new String[documentPaths.size()]) : new String[0];
                     }
                 }, true, false);
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#getDocumentPaths(java.lang.String, boolean, java.lang.String)
-     */
+     * 
+     * @see org.alfresco.web.scripts.Store#getDocumentPaths(java.lang.String, boolean, java.lang.String) */
     public String[] getDocumentPaths(String path, boolean includeSubPaths, String documentPattern)
     {
         if ((documentPattern == null) || (documentPattern.length() == 0))
         {
             documentPattern = "*";
         }
-        
-        String matcher = documentPattern.replace(".","\\.").replace("*",".*");
+
+        String matcher = documentPattern.replace(".", "\\.").replace("*", ".*");
         final Pattern pattern = Pattern.compile(matcher);
-        
+
         String encPath = encodePathISO9075(path);
-//        final StringBuilder query = new StringBuilder(128);
-//        query.append("+PATH:\"").append(repoPath)
-//             .append(encPath.length() != 0 ? ('/' + encPath) : "")
-//             .append((includeSubPaths ? '/' : ""))
-//             .append("/*\" +QNAME:")
-//             .append(lucenifyNamePattern(documentPattern));
+        // final StringBuilder query = new StringBuilder(128);
+        // query.append("+PATH:\"").append(repoPath)
+        // .append(encPath.length() != 0 ? ('/' + encPath) : "")
+        // .append((includeSubPaths ? '/' : ""))
+        // .append("/*\" +QNAME:")
+        // .append(lucenifyNamePattern(documentPattern));
         final StringBuilder xpath = new StringBuilder(128);
         xpath.append(repoPath);
         xpath.append(encPath.length() != 0 ? ('/' + encPath) : "");
         xpath.append((includeSubPaths ? '/' : ""));
-        xpath.append("/*[like(@cm:name, '"+SearchLanguageConversion.convert(SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_XPATH_LIKE, documentPattern+"*")+"', false)]");
-        
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String[]>()
-        {
+        xpath.append("/*[like(@cm:name, '" + SearchLanguageConversion.convert(SearchLanguageConversion.DEF_LUCENE, SearchLanguageConversion.DEF_XPATH_LIKE, documentPattern + "*") + "', false)]");
+
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String[]>() {
             public String[] doWork() throws Exception
             {
-                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<String[]>()
-                {
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<String[]>() {
                     public String[] execute() throws Exception
                     {
-                        int baseDirLength = getBaseDir().length() +1;
-                        
+                        int baseDirLength = getBaseDir().length() + 1;
+
                         List<String> documentPaths;
-                        
+
                         NodeRef repoStoreRootNodeRef = nodeService.getRootNode(repoStore);
                         List<NodeRef> nodeRefs = searchService.selectNodes(
                                 repoStoreRootNodeRef,
                                 xpath.toString(),
-                                new QueryParameterDefinition[] {},
+                                new QueryParameterDefinition[]{},
                                 namespaceService,
                                 false,
                                 SearchService.LANGUAGE_XPATH);
                         documentPaths = new ArrayList<String>(nodeRefs.size());
-                      for (NodeRef nodeRef : nodeRefs)
-                      {
-                          if (isContentPresent(nodeRef))
-                          {
-                                String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                        for (NodeRef nodeRef : nodeRefs)
+                        {
+                            if (isContentPresent(nodeRef))
+                            {
+                                String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                                 if (pattern.matcher(name).matches())
                                 {
                                     String nodeDir = getPath(nodeRef);
                                     String documentPath = nodeDir.substring(baseDirLength);
                                     documentPaths.add(documentPath);
                                 }
-                          }
-                      }
-//                        ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query.toString());
-//                        try
-//                        {
-//                            documentPaths = new ArrayList<String>(resultSet.length());
-//                            List<NodeRef> nodes = resultSet.getNodeRefs();
-//                            for (NodeRef nodeRef : nodes)
-//                            {
-//                                String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-//                                if (pattern.matcher(name).matches())
-//                                {
-//                                    String nodeDir = getPath(nodeRef);
-//                                    String documentPath = nodeDir.substring(baseDirLength);
-//                                    documentPaths.add(documentPath);
-//                                }
-//                            }
-//                        }
-//                        finally
-//                        {
-//                            resultSet.close();
-//                        }
+                            }
+                        }
+                        // ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query.toString());
+                        // try
+                        // {
+                        // documentPaths = new ArrayList<String>(resultSet.length());
+                        // List<NodeRef> nodes = resultSet.getNodeRefs();
+                        // for (NodeRef nodeRef : nodes)
+                        // {
+                        // String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                        // if (pattern.matcher(name).matches())
+                        // {
+                        // String nodeDir = getPath(nodeRef);
+                        // String documentPath = nodeDir.substring(baseDirLength);
+                        // documentPaths.add(documentPath);
+                        // }
+                        // }
+                        // }
+                        // finally
+                        // {
+                        // resultSet.close();
+                        // }
                         return documentPaths.toArray(new String[documentPaths.size()]);
                     }
                 }, true, false);
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /**
-     * Helper to encode the elements of a path to be used as a Lucene PATH statement
-     * using the ISO9075 encoding. Note that leading and trailing '/' elements will NOT
-     * be preserved.
+     * Helper to encode the elements of a path to be used as a Lucene PATH statement using the ISO9075 encoding. Note that leading and trailing '/' elements will NOT be preserved.
      * 
-     * @param path  Path to encode, elements separated by '/'
+     * @param path
+     *            Path to encode, elements separated by '/'
      * 
      * @return the encoded path, a minimum of the empty string will be returned
      */
@@ -521,13 +515,12 @@ public class RepoStore extends AbstractStore implements TenantDeployer
         }
         return result.toString();
     }
-    
+
     /**
-     * ALF-7059: Because we can't quote QNAME patterns, and because characters like minus have special meaning, we have
-     * to pass the document 'pattern' though the Lucene escaper, preserving the wildcard parts. Also, because you can't
-     * search for whitespace in a QNAME, we have to replace whitespace with the ? wildcard
+     * ALF-7059: Because we can't quote QNAME patterns, and because characters like minus have special meaning, we have to pass the document 'pattern' though the Lucene escaper, preserving the wildcard parts. Also, because you can't search for whitespace in a QNAME, we have to replace whitespace with the ? wildcard
      * 
-     * @param pattern String
+     * @param pattern
+     *            String
      * @return String
      */
     private static String lucenifyNamePattern(String pattern)
@@ -567,69 +560,67 @@ public class RepoStore extends AbstractStore implements TenantDeployer
         }
         return result.toString();
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#getDescriptionDocumentPaths()
-     */
+     * 
+     * @see org.alfresco.web.scripts.Store#getDescriptionDocumentPaths() */
     public String[] getDescriptionDocumentPaths()
     {
         return getDocumentPaths("/", true, DESC_PATH_PATTERN);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#getAllDocumentPaths()
-     */
+     * 
+     * @see org.alfresco.web.scripts.Store#getAllDocumentPaths() */
     public String[] getAllDocumentPaths()
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String[]>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String[]>() {
             public String[] doWork() throws Exception
             {
-                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<String[]>()
-                {
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<String[]>() {
                     public String[] execute() throws Exception
                     {
-                        int baseDirLength = getBaseDir().length() +1;
-                        
+                        int baseDirLength = getBaseDir().length() + 1;
+
                         List<String> documentPaths;
-                        
+
                         NodeRef repoStoreRootNodeRef = nodeService.getRootNode(repoStore);
                         List<NodeRef> nodeRefs = searchService.selectNodes(
                                 repoStoreRootNodeRef,
                                 repoPath +
-                                "//*[subtypeOf('{http://www.alfresco.org/model/content/1.0}content')]\"",
-                                new QueryParameterDefinition[] {},
+                                        "//*[subtypeOf('{http://www.alfresco.org/model/content/1.0}content')]\"",
+                                new QueryParameterDefinition[]{},
                                 namespaceService,
                                 false,
                                 SearchService.LANGUAGE_XPATH);
                         documentPaths = new ArrayList<String>(nodeRefs.size());
-                      for (NodeRef nodeRef : nodeRefs)
-                      {
-                          if (isContentPresent(nodeRef))
-                          {
+                        for (NodeRef nodeRef : nodeRefs)
+                        {
+                            if (isContentPresent(nodeRef))
+                            {
                                 String nodeDir = getPath(nodeRef);
                                 documentPaths.add(nodeDir.substring(baseDirLength));
-                          }
-                      }
-                        
-//                        String query = "+PATH:\"" + repoPath +
-//                                       "//*\" +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\"";
-//                        ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
-//                        try
-//                        {
-//                            documentPaths = new ArrayList<String>(resultSet.length());
-//                            List<NodeRef> nodes = resultSet.getNodeRefs();
-//                            for (NodeRef nodeRef : nodes)
-//                            {
-//                                String nodeDir = getPath(nodeRef);
-//                                documentPaths.add(nodeDir.substring(baseDirLength));
-//                            }
-//                        }
-//                        finally
-//                        {
-//                            resultSet.close();
-//                        }
-                        
+                            }
+                        }
+
+                        // String query = "+PATH:\"" + repoPath +
+                        // "//*\" +TYPE:\"{http://www.alfresco.org/model/content/1.0}content\"";
+                        // ResultSet resultSet = searchService.query(repoStore, SearchService.LANGUAGE_LUCENE, query);
+                        // try
+                        // {
+                        // documentPaths = new ArrayList<String>(resultSet.length());
+                        // List<NodeRef> nodes = resultSet.getNodeRefs();
+                        // for (NodeRef nodeRef : nodes)
+                        // {
+                        // String nodeDir = getPath(nodeRef);
+                        // documentPaths.add(nodeDir.substring(baseDirLength));
+                        // }
+                        // }
+                        // finally
+                        // {
+                        // resultSet.close();
+                        // }
+
                         return documentPaths.toArray(new String[documentPaths.size()]);
                     }
                 }, true, false);
@@ -638,16 +629,14 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#lastModified(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.web.scripts.Store#lastModified(java.lang.String) */
     public long lastModified(final String documentPath) throws IOException
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Long>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Long>() {
             public Long doWork() throws Exception
             {
-                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Long>()
-                {
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Long>() {
                     public Long execute() throws Exception
                     {
                         ContentReader reader = contentService.getReader(
@@ -656,20 +645,18 @@ public class RepoStore extends AbstractStore implements TenantDeployer
                     }
                 }, true, false);
             }
-        }, AuthenticationUtil.getSystemUserName());            
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#hasDocument(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.web.scripts.Store#hasDocument(java.lang.String) */
     public boolean hasDocument(final String documentPath)
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>() {
             public Boolean doWork() throws Exception
             {
-                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Boolean>()
-                {
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Boolean>() {
                     public Boolean execute() throws Exception
                     {
                         NodeRef nodeRef = findNodeRef(documentPath);
@@ -681,17 +668,15 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#getDescriptionDocument(java.lang.String)
-     */
-    public InputStream getDocument(final String documentPath)      
-        throws IOException
+     * 
+     * @see org.alfresco.web.scripts.Store#getDescriptionDocument(java.lang.String) */
+    public InputStream getDocument(final String documentPath)
+            throws IOException
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<InputStream>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<InputStream>() {
             public InputStream doWork() throws Exception
             {
-                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<InputStream>()
-                {
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<InputStream>() {
                     public InputStream execute() throws Exception
                     {
                         NodeRef nodeRef = findNodeRef(documentPath);
@@ -712,15 +697,15 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#createDocument(java.lang.String, java.lang.String)
-     */
+     * 
+     * @see org.alfresco.web.scripts.Store#createDocument(java.lang.String, java.lang.String) */
     public void createDocument(String documentPath, String content) throws IOException
     {
         String[] pathElements = documentPath.split("/");
-        String[] folderElements = new String[pathElements.length -1];
-        System.arraycopy(pathElements, 0, folderElements, 0, pathElements.length -1);
+        String[] folderElements = new String[pathElements.length - 1];
+        System.arraycopy(pathElements, 0, folderElements, 0, pathElements.length - 1);
         List<String> folderElementsList = Arrays.asList(folderElements);
-        
+
         // create folder
         FileInfo pathInfo;
         if (folderElementsList.size() == 0)
@@ -733,7 +718,7 @@ public class RepoStore extends AbstractStore implements TenantDeployer
         }
 
         // create file
-        String fileName = pathElements[pathElements.length -1];
+        String fileName = pathElements[pathElements.length - 1];
         if (fileService.searchSimple(pathInfo.getNodeRef(), fileName) != null)
         {
             throw new IOException("Document " + documentPath + " already exists");
@@ -742,14 +727,14 @@ public class RepoStore extends AbstractStore implements TenantDeployer
         ContentWriter writer = fileService.getWriter(fileInfo.getNodeRef());
         writer.putContent(content);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#updateDocument(java.lang.String, java.lang.String)
-     */
+     * 
+     * @see org.alfresco.web.scripts.Store#updateDocument(java.lang.String, java.lang.String) */
     public void updateDocument(String documentPath, String content) throws IOException
     {
         String[] pathElements = documentPath.split("/");
-        
+
         // get parent folder
         NodeRef parentRef;
         if (pathElements.length == 1)
@@ -762,7 +747,7 @@ public class RepoStore extends AbstractStore implements TenantDeployer
         }
 
         // update file
-        String fileName = pathElements[pathElements.length -1];
+        String fileName = pathElements[pathElements.length - 1];
         if (fileService.searchSimple(parentRef, fileName) == null)
         {
             throw new IOException("Document " + documentPath + " does not exists");
@@ -771,60 +756,58 @@ public class RepoStore extends AbstractStore implements TenantDeployer
         ContentWriter writer = fileService.getWriter(fileInfo.getNodeRef());
         writer.putContent(content);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#removeDocument(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.web.scripts.Store#removeDocument(java.lang.String) */
     public boolean removeDocument(String documentPath)
-        throws IOException
+            throws IOException
     {
         // TODO: Implement remove for Repository Store
         return false;
-    }    
-    
+    }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#getTemplateLoader()
-     */
+     * 
+     * @see org.alfresco.web.scripts.Store#getTemplateLoader() */
     public TemplateLoader getTemplateLoader()
     {
         return new RepoTemplateLoader();
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.Store#getScriptLoader()
-     */
+     * 
+     * @see org.alfresco.web.scripts.Store#getScriptLoader() */
     public ScriptLoader getScriptLoader()
     {
         return new RepoScriptLoader();
-    }        
-    
-    
+    }
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#onEnableTenant()
-     */
+     * 
+     * @see org.alfresco.repo.tenant.TenantDeployer#onEnableTenant() */
     public void onEnableTenant()
     {
         init();
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.tenant.TenantDeployer#onDisableTenant()
-     */
+     * 
+     * @see org.alfresco.repo.tenant.TenantDeployer#onDisableTenant() */
     public void onDisableTenant()
     {
         destroy();
     }
-    
+
     /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+     * 
+     * @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
         return repoPath;
     }
-    
+
     /**
      * Repository path based template loader
      * 
@@ -833,17 +816,15 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     private class RepoTemplateLoader implements TemplateLoader
     {
         /* (non-Javadoc)
-         * @see freemarker.cache.TemplateLoader#findTemplateSource(java.lang.String)
-         */
+         * 
+         * @see freemarker.cache.TemplateLoader#findTemplateSource(java.lang.String) */
         public Object findTemplateSource(final String name)
-            throws IOException
+                throws IOException
         {
-            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-            {
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
                 public Object doWork() throws Exception
                 {
-                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-                    {
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
                         public Object execute() throws Exception
                         {
                             RepoTemplateSource source = null;
@@ -860,27 +841,26 @@ public class RepoStore extends AbstractStore implements TenantDeployer
         }
 
         /* (non-Javadoc)
-         * @see freemarker.cache.TemplateLoader#getLastModified(java.lang.Object)
-         */
+         * 
+         * @see freemarker.cache.TemplateLoader#getLastModified(java.lang.Object) */
         public long getLastModified(Object templateSource)
         {
-            return ((RepoTemplateSource)templateSource).lastModified();
-        }
-        
-        /* (non-Javadoc)
-         * @see freemarker.cache.TemplateLoader#getReader(java.lang.Object, java.lang.String)
-         */
-        public Reader getReader(Object templateSource, String encoding) throws IOException
-        {
-            return ((RepoTemplateSource)templateSource).getReader();
+            return ((RepoTemplateSource) templateSource).lastModified();
         }
 
         /* (non-Javadoc)
-         * @see freemarker.cache.TemplateLoader#closeTemplateSource(java.lang.Object)
-         */
-        public void closeTemplateSource(Object arg0) throws IOException
+         * 
+         * @see freemarker.cache.TemplateLoader#getReader(java.lang.Object, java.lang.String) */
+        public Reader getReader(Object templateSource, String encoding) throws IOException
         {
+            return ((RepoTemplateSource) templateSource).getReader();
         }
+
+        /* (non-Javadoc)
+         * 
+         * @see freemarker.cache.TemplateLoader#closeTemplateSource(java.lang.Object) */
+        public void closeTemplateSource(Object arg0) throws IOException
+        {}
     }
 
     /**
@@ -895,57 +875,56 @@ public class RepoStore extends AbstractStore implements TenantDeployer
         /**
          * Construct
          * 
-         * @param ref NodeRef
+         * @param ref
+         *            NodeRef
          */
         private RepoTemplateSource(NodeRef ref)
         {
             this.nodeRef = ref;
         }
-        
+
         /* (non-Javadoc)
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
+         * 
+         * @see java.lang.Object#equals(java.lang.Object) */
         public boolean equals(Object o)
         {
             if (o instanceof RepoTemplateSource)
             {
-                return nodeRef.equals(((RepoTemplateSource)o).nodeRef);
+                return nodeRef.equals(((RepoTemplateSource) o).nodeRef);
             }
             else
             {
                 return false;
             }
         }
-        
+
         /* (non-Javadoc)
-         * @see java.lang.Object#hashCode()
-         */
+         * 
+         * @see java.lang.Object#hashCode() */
         public int hashCode()
         {
             return nodeRef.hashCode();
         }
-        
+
         /* (non-Javadoc)
-         * @see java.lang.Object#toString()
-         */
+         * 
+         * @see java.lang.Object#toString() */
         public String toString()
         {
             return nodeRef.toString();
         }
-        
+
         /**
          * Gets the last modified time of the content
          * 
-         * @return  last modified time
+         * @return last modified time
          */
         public long lastModified()
         {
-            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Long>()
-            {
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Long>() {
                 public Long doWork() throws Exception
                 {
-                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Long>()
-                    {
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Long>() {
                         public Long execute() throws Exception
                         {
                             ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
@@ -953,23 +932,21 @@ public class RepoStore extends AbstractStore implements TenantDeployer
                         }
                     });
                 }
-            }, AuthenticationUtil.getSystemUserName());            
+            }, AuthenticationUtil.getSystemUserName());
         }
-        
+
         /**
          * Gets the content reader
          * 
-         * @return  content reader
+         * @return content reader
          * @throws IOException
          */
         public Reader getReader() throws IOException
         {
-            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Reader>()
-            {
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Reader>() {
                 public Reader doWork() throws Exception
                 {
-                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Reader>()
-                    {
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Reader>() {
                         public Reader execute() throws Exception
                         {
                             ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
@@ -977,10 +954,10 @@ public class RepoStore extends AbstractStore implements TenantDeployer
                         }
                     });
                 }
-            }, AuthenticationUtil.getSystemUserName());            
+            }, AuthenticationUtil.getSystemUserName());
         }
     }
-        
+
     /**
      * Repository path based script loader
      * 
@@ -989,16 +966,14 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     private class RepoScriptLoader implements ScriptLoader
     {
         /* (non-Javadoc)
-         * @see org.alfresco.web.scripts.ScriptLoader#getScriptLocation(java.lang.String)
-         */
+         * 
+         * @see org.alfresco.web.scripts.ScriptLoader#getScriptLocation(java.lang.String) */
         public ScriptContent getScript(final String path)
         {
-            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<ScriptContent>()
-            {
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<ScriptContent>() {
                 public ScriptContent doWork() throws Exception
                 {
-                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<ScriptContent>()
-                    {
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<ScriptContent>() {
                         public ScriptContent execute() throws Exception
                         {
                             ScriptContent location = null;
@@ -1014,7 +989,7 @@ public class RepoStore extends AbstractStore implements TenantDeployer
             }, AuthenticationUtil.getSystemUserName());
         }
     }
-    
+
     /**
      * Repo path script location
      * 
@@ -1028,26 +1003,26 @@ public class RepoStore extends AbstractStore implements TenantDeployer
         /**
          * Construct
          * 
-         * @param path String
-         * @param nodeRef NodeRef
+         * @param path
+         *            String
+         * @param nodeRef
+         *            NodeRef
          */
         public RepoScriptContent(String path, NodeRef nodeRef)
         {
             this.path = path;
             this.nodeRef = nodeRef;
         }
-        
+
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.repository.ScriptLocation#getInputStream()
-         */
+         * 
+         * @see org.alfresco.service.cmr.repository.ScriptLocation#getInputStream() */
         public InputStream getInputStream()
         {
-            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<InputStream>()
-            {
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<InputStream>() {
                 public InputStream doWork() throws Exception
                 {
-                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<InputStream>()
-                    {
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<InputStream>() {
                         public InputStream execute() throws Exception
                         {
                             ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
@@ -1055,12 +1030,12 @@ public class RepoStore extends AbstractStore implements TenantDeployer
                         }
                     });
                 }
-            }, AuthenticationUtil.getSystemUserName());            
+            }, AuthenticationUtil.getSystemUserName());
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.repository.ScriptLocation#getReader()
-         */
+         * 
+         * @see org.alfresco.service.cmr.repository.ScriptLocation#getReader() */
         public Reader getReader()
         {
             ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
@@ -1075,32 +1050,32 @@ public class RepoStore extends AbstractStore implements TenantDeployer
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.web.scripts.ScriptContent#getPath()
-         */
-		public String getPath()
-		{
+         * 
+         * @see org.alfresco.web.scripts.ScriptContent#getPath() */
+        public String getPath()
+        {
             return repoStore + getBaseDir() + "/" + path;
-		}
-		
-		/* (non-Javadoc)
-		 * @see org.alfresco.web.scripts.ScriptContent#getPathDescription()
-		 */
-		public String getPathDescription()
-		{
-		    return "/" + path + " (in repository store " + repoStore.toString() + getBaseDir() + ")";
-		}
-		
+        }
+
         /* (non-Javadoc)
-         * @see org.alfresco.web.scripts.ScriptContent#isCachable()
-         */
+         * 
+         * @see org.alfresco.web.scripts.ScriptContent#getPathDescription() */
+        public String getPathDescription()
+        {
+            return "/" + path + " (in repository store " + repoStore.toString() + getBaseDir() + ")";
+        }
+
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.web.scripts.ScriptContent#isCachable() */
         public boolean isCachable()
         {
             return false;
         }
-        
+
         /* (non-Javadoc)
-         * @see org.alfresco.web.scripts.ScriptContent#isSecure()
-         */
+         * 
+         * @see org.alfresco.web.scripts.ScriptContent#isSecure() */
         public boolean isSecure()
         {
             return false;

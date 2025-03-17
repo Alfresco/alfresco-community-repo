@@ -31,19 +31,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.dao.ConcurrencyFailureException;
+
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * Class that walks down a hierarchy gathering view details for later processing.
  * <p/>
- * This class is not threadsafe and should be used sequentially on a single
- * thread and then discarded.
+ * This class is not threadsafe and should be used sequentially on a single thread and then discarded.
  * 
  * @author Derek Hulley
  * @since 4.1.1
@@ -61,34 +61,36 @@ public class NodeHierarchyWalker
     private final List<VisitedNode> nodesParentToLeaf = new ArrayList<VisitedNode>(67);
 
     /**
-     * @param nodeDAO           the low-leve query service
+     * @param nodeDAO
+     *            the low-leve query service
      */
     public NodeHierarchyWalker(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
     }
-    
+
     /**
-     * @return                  the node data for the node ID or <tt>null</tt> if not visited
+     * @return the node data for the node ID or <tt>null</tt> if not visited
      */
     public VisitedNode getNode(Long id)
     {
         return nodesVisitedById.get(id);
     }
-    
+
     /**
-     * @return                  the node data for the node reference or <tt>null</tt> if not visited
+     * @return the node data for the node reference or <tt>null</tt> if not visited
      */
     public VisitedNode getNode(NodeRef nodeRef)
     {
         return nodesVisitedByNodeRef.get(nodeRef);
     }
-    
+
     /**
      * Return the IDs of the nodes visited in desired order
      * 
-     * @param leafFirst         <tt>true</tt> to list the leaf nodes first
-     * @return                  the IDs of the nodes visited
+     * @param leafFirst
+     *            <tt>true</tt> to list the leaf nodes first
+     * @return the IDs of the nodes visited
      */
     public List<VisitedNode> getNodes(boolean leafFirst)
     {
@@ -101,7 +103,7 @@ public class NodeHierarchyWalker
             return nodesParentToLeaf;
         }
     }
-    
+
     /**
      * Walk a hierachy
      */
@@ -118,7 +120,7 @@ public class NodeHierarchyWalker
         // Now walk
         walkNode(nodeId);
     }
-    
+
     /**
      * Recursive method to gather data about nodes from the leafs upwards
      */
@@ -130,11 +132,10 @@ public class NodeHierarchyWalker
             throw new IllegalStateException("Parent node has not been visited: " + nodeId);
         }
         nodesParentToLeaf.add(nodeVisited);
-        
+
         final List<Long> nodesVisitedWorking = new ArrayList<Long>(59);
         // We have to get to the bottom of the hierarchy
-        NodeDAO.ChildAssocRefQueryCallback walkChildAssocs = new NodeDAO.ChildAssocRefQueryCallback()
-        {
+        NodeDAO.ChildAssocRefQueryCallback walkChildAssocs = new NodeDAO.ChildAssocRefQueryCallback() {
             public final boolean preLoadNodes()
             {
                 return false;
@@ -149,8 +150,7 @@ public class NodeHierarchyWalker
             public final boolean handle(
                     Pair<Long, ChildAssociationRef> childAssocPair,
                     Pair<Long, NodeRef> parentNodePair,
-                    Pair<Long, NodeRef> childNodePair
-                    )
+                    Pair<Long, NodeRef> childNodePair)
             {
                 if (childAssocPair.getSecond().isPrimary())
                 {
@@ -176,8 +176,8 @@ public class NodeHierarchyWalker
                         // We came here how?
                         throw new IllegalStateException(
                                 "Came to secondary association without having found primary parent before: \n" +
-                                "   parent: " + parentNodePair + "\n" +
-                                "   child:  " + childNodePair);
+                                        "   parent: " + parentNodePair + "\n" +
+                                        "   child:  " + childNodePair);
                     }
                     // Record the secondary association
                     nodeVisitedWorking.secondaryChildAssocs.add(childAssocPair);
@@ -188,35 +188,35 @@ public class NodeHierarchyWalker
             }
 
             public final void done()
-            {
-            }                               
+            {}
         };
 
         // Gather all child associations
         nodeDAO.getChildAssocs(nodeId, null, null, null, null, null, walkChildAssocs);
-        
+
         // Dig down to primary children
         for (Long visitedNodeId : nodesVisitedWorking)
         {
             walkNode(visitedNodeId);
         }
-        
+
         // The bottom has been reached.
         nodesLeafToParent.add(nodeVisited);
 
         // Record parent associations
-        NodeDAO.ChildAssocRefQueryCallback getParentAssocs = new NodeDAO.ChildAssocRefQueryCallback()
-        {
+        NodeDAO.ChildAssocRefQueryCallback getParentAssocs = new NodeDAO.ChildAssocRefQueryCallback() {
             @Override
             public final boolean preLoadNodes()
             {
                 return false;
             }
+
             @Override
             public boolean orderResults()
             {
                 return false;
             }
+
             @Override
             public boolean handle(
                     Pair<Long, ChildAssociationRef> childAssocPair,
@@ -244,25 +244,25 @@ public class NodeHierarchyWalker
                 // More results
                 return true;
             }
+
             @Override
             public void done()
-            {
-            }
+            {}
         };
         nodeDAO.getParentAssocs(nodeId, null, null, null, getParentAssocs);
-        
+
         VisitedNode visitedNode = nodesVisitedById.get(nodeId);
         if (visitedNode == null)
         {
             throw new IllegalStateException("Querying upwards found nodes not visited: " + nodeId);
         }
-        
+
         Collection<Pair<Long, AssociationRef>> targetAssocs = nodeDAO.getTargetNodeAssocs(nodeId, null);
         visitedNode.targetAssocs.addAll(targetAssocs);
         Collection<Pair<Long, AssociationRef>> sourceAssocs = nodeDAO.getSourceNodeAssocs(nodeId, null);
         visitedNode.sourceAssocs.addAll(sourceAssocs);
     }
-    
+
     /**
      * Carries data about a node in the hierarchy
      * 
@@ -280,7 +280,7 @@ public class NodeHierarchyWalker
         public final List<Pair<Long, ChildAssociationRef>> secondaryChildAssocs;
         public final List<Pair<Long, AssociationRef>> targetAssocs;
         public final List<Pair<Long, AssociationRef>> sourceAssocs;
-        
+
         private VisitedNode(
                 Long id,
                 NodeRef nodeRef,
@@ -293,10 +293,10 @@ public class NodeHierarchyWalker
             this.nodeType = type;
             this.aclId = aclId;
             this.primaryParentAssocPair = primaryParentAssocPair;
-            this.secondaryParentAssocs = new ArrayList<Pair<Long,ChildAssociationRef>>(17);
-            this.secondaryChildAssocs = new ArrayList<Pair<Long,ChildAssociationRef>>(17);
-            this.targetAssocs = new ArrayList<Pair<Long,AssociationRef>>();
-            this.sourceAssocs = new ArrayList<Pair<Long,AssociationRef>>();
+            this.secondaryParentAssocs = new ArrayList<Pair<Long, ChildAssociationRef>>(17);
+            this.secondaryChildAssocs = new ArrayList<Pair<Long, ChildAssociationRef>>(17);
+            this.targetAssocs = new ArrayList<Pair<Long, AssociationRef>>();
+            this.sourceAssocs = new ArrayList<Pair<Long, AssociationRef>>();
         }
     }
 }

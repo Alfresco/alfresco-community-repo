@@ -42,8 +42,8 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  */
 @EntityResource(name = "categories", title = "Categories")
 public class CategoriesEntityResource implements EntityResourceAction.ReadById<Category>,
-                                                 EntityResourceAction.Update<Category>,
-                                                 EntityResourceAction.Delete
+        EntityResourceAction.Update<Category>,
+        EntityResourceAction.Delete
 {
 
     private final Categories categories;
@@ -57,10 +57,9 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
      * GET /categories/{categoryId}
      */
     @WebApiDescription(
-        title = "Get category by its ID",
-        description = "Retrieves a category given category node id",
-        successStatus = HttpServletResponse.SC_OK
-    )
+            title = "Get category by its ID",
+            description = "Retrieves a category given category node id",
+            successStatus = HttpServletResponse.SC_OK)
     @Override
     public Category readById(String id, Parameters parameters) throws EntityNotFoundException
     {
@@ -71,10 +70,9 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
      * PUT /categories/{categoryId}
      */
     @WebApiDescription(
-        title = "Update category",
-        description = "Update a single category by its ID",
-        successStatus = HttpServletResponse.SC_OK
-    )
+            title = "Update category",
+            description = "Update a single category by its ID",
+            successStatus = HttpServletResponse.SC_OK)
     @Override
     public Category update(String id, Category categoryModel, Parameters parameters)
     {
@@ -85,10 +83,9 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
      * DELETE /categories/{categoryId}
      */
     @WebApiDescription(
-        title = "Delete category",
-        description = "Delete a category given its node ID",
-        successStatus = HttpServletResponse.SC_NO_CONTENT
-    )
+            title = "Delete category",
+            description = "Delete a category given its node ID",
+            successStatus = HttpServletResponse.SC_NO_CONTENT)
     @Override
     public void delete(String id, Parameters parameters)
     {

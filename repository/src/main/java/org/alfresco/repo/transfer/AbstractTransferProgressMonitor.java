@@ -30,6 +30,9 @@ import java.io.Writer;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transfer.reportd.XMLTransferDestinationReportWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -37,8 +40,6 @@ import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferProgress.Status;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author brian
@@ -53,20 +54,17 @@ public abstract class AbstractTransferProgressMonitor implements TransferProgres
 
     private Map<String, TransferDestinationReportWriter> transferLogWriters = new TreeMap<String, TransferDestinationReportWriter>();
     private TransactionService transactionService;
-    
+
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
     }
 
-    
-    
     @Override
     public TransferProgress getProgress(final String transferId) throws TransferException
     {
         return transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionHelper.RetryingTransactionCallback<TransferProgress>()
-                {
+                new RetryingTransactionHelper.RetryingTransactionCallback<TransferProgress>() {
                     public TransferProgress execute() throws Throwable
                     {
                         return getProgressInternal(transferId);
@@ -80,8 +78,7 @@ public abstract class AbstractTransferProgressMonitor implements TransferProgres
     public void updateProgress(final String transferId, final int currPos, final int endPos) throws TransferException
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-                {
+                new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                     public Void execute() throws Throwable
                     {
                         updateProgressInternal(transferId, currPos, endPos);
@@ -90,16 +87,13 @@ public abstract class AbstractTransferProgressMonitor implements TransferProgres
                 }, false, true);
     }
 
-
     protected abstract void updateProgressInternal(String transferId, int currPos, int endPos);
-
 
     @Override
     public void updateProgress(final String transferId, final int currPos) throws TransferException
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-                {
+                new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                     public Void execute() throws Throwable
                     {
                         updateProgressInternal(transferId, currPos);
@@ -114,20 +108,19 @@ public abstract class AbstractTransferProgressMonitor implements TransferProgres
     public final void updateStatus(final String transferId, final Status status) throws TransferException
     {
         Status currentStatus = getProgress(transferId).getStatus();
-        
-        //If the transfer has already reached a terminal state then we don't allow any further change
+
+        // If the transfer has already reached a terminal state then we don't allow any further change
         if (!TransferProgress.getTerminalStatuses().contains(currentStatus))
         {
             transactionService.getRetryingTransactionHelper().doInTransaction(
-                    new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-                    {
+                    new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                         public Void execute() throws Throwable
                         {
                             TransferDestinationReportWriter writer = getLogWriter(transferId);
                             writer.writeChangeState(status.toString());
                             updateStatusInternal(transferId, status);
-                            //If the transfer has now reached a terminal state then the make sure that the log channel is
-                            //closed for it (if one was open).
+                            // If the transfer has now reached a terminal state then the make sure that the log channel is
+                            // closed for it (if one was open).
                             if (TransferProgress.getTerminalStatuses().contains(status))
                             {
                                 log.debug("closing destination transfer report");
@@ -141,12 +134,10 @@ public abstract class AbstractTransferProgressMonitor implements TransferProgres
     }
 
     protected abstract void updateStatusInternal(String transferId, Status status);
-    
-    /*
-     * (non-Javadoc)
+
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.transfer.TransferProgressMonitor#log(java.lang.String, java.lang.Object)
-     */
+     * @see org.alfresco.repo.transfer.TransferProgressMonitor#log(java.lang.String, java.lang.Object) */
     public void logComment(final String transferId, final Object obj)
     {
         TransferDestinationReportWriter writer = getLogWriter(transferId);
@@ -160,8 +151,7 @@ public abstract class AbstractTransferProgressMonitor implements TransferProgres
         if (ex != null)
         {
             transactionService.getRetryingTransactionHelper().doInTransaction(
-                    new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-                    {
+                    new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                         public Void execute() throws Throwable
                         {
                             storeError(transferId, ex);
@@ -171,41 +161,41 @@ public abstract class AbstractTransferProgressMonitor implements TransferProgres
             writer.writeException(ex);
         }
     }
-    
+
     protected abstract void storeError(String transferId, Throwable error);
-    
+
     @Override
-    public void logCreated(String transferId, 
+    public void logCreated(String transferId,
             NodeRef sourceNode,
             NodeRef destNode,
             NodeRef parentNodeRef,
-            String parentPath, 
+            String parentPath,
             boolean orphan)
     {
         TransferDestinationReportWriter writer = getLogWriter(transferId);
         writer.writeCreated(sourceNode, destNode, parentNodeRef, parentPath);
     }
-    
+
     @Override
     public void logUpdated(String transferId, NodeRef sourceNodeRef,
             NodeRef destNodeRef, String path)
     {
         TransferDestinationReportWriter writer = getLogWriter(transferId);
-        writer.writeUpdated(sourceNodeRef, destNodeRef, path);       
+        writer.writeUpdated(sourceNodeRef, destNodeRef, path);
     }
-    
+
     @Override
     public void logMoved(String transferId, NodeRef sourceNodeRef,
             NodeRef destNodeRef, String oldPath, NodeRef newParentNodeRef, String newPath)
     {
         TransferDestinationReportWriter writer = getLogWriter(transferId);
-        writer.writeMoved(sourceNodeRef, destNodeRef, oldPath, newParentNodeRef, newPath);       
+        writer.writeMoved(sourceNodeRef, destNodeRef, oldPath, newParentNodeRef, newPath);
     }
-    
+
     @Override
-    public void logDeleted(String transferId, 
+    public void logDeleted(String transferId,
             NodeRef sourceNodeRef,
-            NodeRef destNodeRef, 
+            NodeRef destNodeRef,
             String oldPath)
     {
         TransferDestinationReportWriter writer = getLogWriter(transferId);
@@ -217,12 +207,12 @@ public abstract class AbstractTransferProgressMonitor implements TransferProgres
         TransferDestinationReportWriter writer = this.transferLogWriters.get(transferId);
         if (writer == null)
         {
-            writer = new  XMLTransferDestinationReportWriter();
+            writer = new XMLTransferDestinationReportWriter();
             writer.startTransferReport("UTF-8", createUnderlyingLogWriter(transferId));
             transferLogWriters.put(transferId, writer);
         }
         return writer;
     }
-    
+
     protected abstract Writer createUnderlyingLogWriter(String transferId);
 }

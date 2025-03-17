@@ -33,10 +33,10 @@ public class TestIdentifier implements Serializable
     {
         ONE, TWO
     }
-    
+
     private static final long serialVersionUID = 1L;
     private String id;
-    
+
     public TestIdentifier(String id)
     {
         this.id = id;
@@ -45,10 +45,13 @@ public class TestIdentifier implements Serializable
     @Override
     public boolean equals(Object o)
     {
-        if (o == null) return false;
-        if (!(o instanceof TestIdentifier)) return false;
+        if (o == null)
+            return false;
+        if (!(o instanceof TestIdentifier))
+            return false;
         TestIdentifier other = (TestIdentifier) o;
-        if (!this.id.equals(other.id)) return false;
+        if (!this.id.equals(other.id))
+            return false;
         return true;
     }
 

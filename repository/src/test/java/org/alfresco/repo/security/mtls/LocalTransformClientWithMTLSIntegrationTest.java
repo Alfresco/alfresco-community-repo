@@ -26,10 +26,10 @@
 
 package org.alfresco.repo.security.mtls;
 
+import org.junit.BeforeClass;
 
 import org.alfresco.repo.rendition2.LocalTransformClientIntegrationTest;
 import org.alfresco.repo.rendition2.RenditionService2;
-import org.junit.BeforeClass;
 
 /**
  * Integration tests for {@link RenditionService2} with mtls enabled

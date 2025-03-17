@@ -42,39 +42,40 @@ public class TagScopeImpl implements TagScope
 {
     /** Node reference of node that has the tag scope aspect applied */
     private NodeRef nodeRef;
-    
+
     /** Ordered list of tag details */
     private List<TagDetails> tagDetails;
-    
+
     /**
      * Constructor
      * 
-     * @param nodeRef   node reference
+     * @param nodeRef
+     *            node reference
      */
-    /*package*/ TagScopeImpl(NodeRef nodeRef, List<TagDetails> tagDetails)
+    /* package */ TagScopeImpl(NodeRef nodeRef, List<TagDetails> tagDetails)
     {
         this.nodeRef = nodeRef;
         this.tagDetails = tagDetails;
     }
-    
+
     /**
      * Get the node reference of the tag scope
      * 
-     * @return  node reference of the tag scope
+     * @return node reference of the tag scope
      */
     public NodeRef getNodeRef()
     {
         return this.nodeRef;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.tagging.TagScope#getTags()
      */
     public List<TagDetails> getTags()
-    {      
+    {
         return this.tagDetails;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.tagging.TagScope#getTags(int)
      */
@@ -86,7 +87,7 @@ public class TagScopeImpl implements TagScope
         }
         return this.tagDetails.subList(0, topN);
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.tagging.TagScope#getTag(java.lang.String)
      */
@@ -103,7 +104,7 @@ public class TagScopeImpl implements TagScope
         }
         return result;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.tagging.TagScope#isTagInScope(java.lang.String)
      */
@@ -111,21 +112,21 @@ public class TagScopeImpl implements TagScope
     {
         return (getTag(tag) != null);
     }
-    
+
     /**
      * @see java.lang.Object#hashCode()
      */
     @Override
-    public int hashCode() 
+    public int hashCode()
     {
         return this.nodeRef.hashCode();
     }
-    
+
     /**
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
-    public boolean equals(Object obj) 
+    public boolean equals(Object obj)
     {
         if (this == obj)
         {

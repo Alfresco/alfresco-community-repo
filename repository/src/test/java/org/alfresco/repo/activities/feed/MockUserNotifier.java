@@ -44,74 +44,74 @@ public class MockUserNotifier extends AbstractUserNotifier
     /**
      * Default alfresco installation url
      */
-	private BitSet notifiedPersonsTracker = new BitSet();
+    private BitSet notifiedPersonsTracker = new BitSet();
     private AtomicInteger count = new AtomicInteger(0);
 
-	@Override
-	protected boolean skipUser(NodeRef personNodeRef)
-	{
-		return false;
-	}
+    @Override
+    protected boolean skipUser(NodeRef personNodeRef)
+    {
+        return false;
+    }
 
-	@Override
-	protected Long getFeedId(NodeRef personNodeRef)
-	{
-		Map<QName, Serializable> personProps = nodeService.getProperties(personNodeRef);
+    @Override
+    protected Long getFeedId(NodeRef personNodeRef)
+    {
+        Map<QName, Serializable> personProps = nodeService.getProperties(personNodeRef);
 
-		// where did we get up to ?
-		Long emailFeedDBID = (Long)personProps.get(ContentModel.PROP_EMAIL_FEED_ID);
-		if (emailFeedDBID != null)
-		{
-			// increment min feed id
-			emailFeedDBID++;
-		}
-		else
-		{
-			emailFeedDBID = -1L;
-		}
-		
-		return emailFeedDBID;
-	}
+        // where did we get up to ?
+        Long emailFeedDBID = (Long) personProps.get(ContentModel.PROP_EMAIL_FEED_ID);
+        if (emailFeedDBID != null)
+        {
+            // increment min feed id
+            emailFeedDBID++;
+        }
+        else
+        {
+            emailFeedDBID = -1L;
+        }
 
-	@Override
-	protected void notifyUser(NodeRef personNodeRef, String subjectText, Object[] subjectParams, Map<String, Object> model, String templateNodeRef)
-	{
-		String username = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
-		if(username.startsWith("user"))
-		{
-			int id = Integer.parseInt(username.substring(4));
+        return emailFeedDBID;
+    }
 
-			boolean b = false;
-			synchronized(notifiedPersonsTracker)
-			{
-				b = notifiedPersonsTracker.get(id);
-			}
-			if(b)
-			{
-				System.out.println("Already set: " + id);
-			}
-			else
-			{
-				synchronized(notifiedPersonsTracker)
-				{
-					notifiedPersonsTracker.set(id);
-				}
-			}
-		}
+    @Override
+    protected void notifyUser(NodeRef personNodeRef, String subjectText, Object[] subjectParams, Map<String, Object> model, String templateNodeRef)
+    {
+        String username = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
+        if (username.startsWith("user"))
+        {
+            int id = Integer.parseInt(username.substring(4));
 
-		count.incrementAndGet();
-	}
-	
-	public int countNotifications()
-	{
-		return count.get();		
-	}
-	
-	public int nextUserId()
-	{
-		synchronized(notifiedPersonsTracker)
-		{
-			return notifiedPersonsTracker.nextClearBit(1);
-		}
-	}
+            boolean b = false;
+            synchronized (notifiedPersonsTracker)
+            {
+                b = notifiedPersonsTracker.get(id);
+            }
+            if (b)
+            {
+                System.out.println("Already set: " + id);
+            }
+            else
+            {
+                synchronized (notifiedPersonsTracker)
+                {
+                    notifiedPersonsTracker.set(id);
+                }
+            }
+        }
+
+        count.incrementAndGet();
+    }
+
+    public int countNotifications()
+    {
+        return count.get();
+    }
+
+    public int nextUserId()
+    {
+        synchronized (notifiedPersonsTracker)
+        {
+            return notifiedPersonsTracker.nextClearBit(1);
+        }
+    }
 }

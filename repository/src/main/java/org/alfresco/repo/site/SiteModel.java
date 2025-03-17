@@ -45,17 +45,17 @@ public interface SiteModel
     public static final String SITE_MODEL_PREFIX = "st";
     public static final String SITE_CUSTOM_PROPERTY_URL = "http://www.alfresco.org/model/sitecustomproperty/1.0";
     public static final String SITE_CUSTOM_PROPERTY_PREFIX = "stcp";
-    
+
     /** Site */
     public static final QName TYPE_SITES = QName.createQName(SITE_MODEL_URL, "sites");
     public static final QName TYPE_SITE = QName.createQName(SITE_MODEL_URL, "site");
     public static final QName PROP_SITE_PRESET = QName.createQName(SITE_MODEL_URL, "sitePreset");
     public static final QName PROP_SITE_VISIBILITY = QName.createQName(SITE_MODEL_URL, "siteVisibility");
-    
+
     /** Site Container */
     public static final QName ASPECT_SITE_CONTAINER = QName.createQName(SITE_MODEL_URL, "siteContainer");
     public static final QName PROP_COMPONENT_ID = QName.createQName(SITE_MODEL_URL, "componentId");
-    
+
     /** Site Permission */
     public static final String SITE_MANAGER = "SiteManager";
     public static final String SITE_COLLABORATOR = "SiteCollaborator";
@@ -64,10 +64,10 @@ public interface SiteModel
 
     /**
      * Convenience collection of default site permissions
+     * 
      * @since 3.5.0
      */
-    public static final List<String> STANDARD_PERMISSIONS =
-            Collections.unmodifiableList(
-                    Arrays.asList(
-                            new String[] {SITE_MANAGER, SITE_COLLABORATOR, SITE_CONTRIBUTOR, SITE_CONSUMER} ));
+    public static final List<String> STANDARD_PERMISSIONS = Collections.unmodifiableList(
+            Arrays.asList(
+                    new String[]{SITE_MANAGER, SITE_COLLABORATOR, SITE_CONTRIBUTOR, SITE_CONSUMER}));
 }

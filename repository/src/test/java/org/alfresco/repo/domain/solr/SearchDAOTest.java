@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Set;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.Node;
@@ -58,8 +60,6 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.DBTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ConfigurableApplicationContext;
 
 /**
  * Tests for the SOLR DAO
@@ -79,27 +79,26 @@ public class SearchDAOTest extends TestCase
     private AclDAO aclDaoComponent;
     private SearchDAO searchDAO;
     private NodeDAO nodeDAO;
-    
+
     @Override
     public void setUp() throws Exception
     {
-        searchDAO = (SearchDAO)ctx.getBean("searchDAO");
-        nodeDAO = (NodeDAO)ctx.getBean("nodeDAO");
-        authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
-        
-        authenticationService = (MutableAuthenticationService)ctx.getBean("authenticationService");
-        personService = (PersonService)ctx.getBean("PersonService");
-        transactionService = (TransactionService)ctx.getBean("transactionComponent");
+        searchDAO = (SearchDAO) ctx.getBean("searchDAO");
+        nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
+        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+
+        authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
+        personService = (PersonService) ctx.getBean("PersonService");
+        transactionService = (TransactionService) ctx.getBean("transactionComponent");
         nodeService = (NodeService) ctx.getBean("NodeService");
         aclDaoComponent = (AclDAO) ctx.getBean("aclDAO");
-        
+
         authenticationComponent.setSystemUserAsCurrentUser();
     }
-    
+
     private List<Node> getNodes(final NodeParameters nodeParameters)
     {
-        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Node>>()
-        {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Node>>() {
             @Override
             public List<Node> execute() throws Throwable
             {
@@ -107,11 +106,10 @@ public class SearchDAOTest extends TestCase
             }
         }, true);
     }
-    
+
     private List<Acl> getAcls(final List<Long> aclChangeSetIds, final Long minAclId, final int maxResults)
     {
-        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Acl>>()
-        {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Acl>>() {
             @Override
             public List<Acl> execute() throws Throwable
             {
@@ -119,14 +117,13 @@ public class SearchDAOTest extends TestCase
             }
         }, true);
     }
-    
+
     private List<Transaction> getTransactions(
             final Long minTxnId, final Long fromCommitTime,
             final Long maxTxnId, final Long toCommitTime,
             final int maxResults)
     {
-        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Transaction>>()
-        {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Transaction>>() {
             @Override
             public List<Transaction> execute() throws Throwable
             {
@@ -134,14 +131,13 @@ public class SearchDAOTest extends TestCase
             }
         }, true);
     }
-    
+
     private List<AclChangeSet> getAclChangeSets(
             final Long minAclChangeSetId, final Long fromCommitTime,
             final Long maxAclChangeSetId, final Long toCommitTime,
             final int maxResults)
     {
-        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<AclChangeSet>>()
-        {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<AclChangeSet>>() {
             @Override
             public List<AclChangeSet> execute() throws Throwable
             {
@@ -149,7 +145,7 @@ public class SearchDAOTest extends TestCase
             }
         }, true);
     }
-    
+
     public void testQueryChangeSets_NoLimit()
     {
         long startTime = System.currentTimeMillis() - (5 * 60000L);
@@ -164,20 +160,20 @@ public class SearchDAOTest extends TestCase
             // Expected
         }
     }
-    
+
     public void testQueryChangeSets_Time()
     {
-        long startTime = System.currentTimeMillis() + (5 * 60000L);             // The future
+        long startTime = System.currentTimeMillis() + (5 * 60000L); // The future
         List<AclChangeSet> results = getAclChangeSets(null, startTime, null, null, 50);
         assertTrue("ChangeSet count not limited", results.size() == 0);
     }
-    
+
     public void testQueryChangeSets_Limit()
     {
         List<AclChangeSet> results = getAclChangeSets(null, 0L, null, null, 50);
         assertTrue("Transaction count not limited", results.size() <= 50);
     }
-    
+
     /**
      * Argument checks.
      */
@@ -186,7 +182,7 @@ public class SearchDAOTest extends TestCase
         try
         {
             // No IDs
-            getAcls(Collections.<Long>emptyList(), null, 50);
+            getAcls(Collections.<Long> emptyList(), null, 50);
             fail("Expected IllegalArgumentException");
         }
         catch (IllegalArgumentException e)
@@ -194,12 +190,12 @@ public class SearchDAOTest extends TestCase
             // Expected
         }
     }
-    
+
     public void testQueryAcls_All()
     {
         // Do a query for some changesets
         List<AclChangeSet> aclChangeSets = getAclChangeSets(null, 0L, null, null, 50);
-        
+
         // Choose some changesets with changes
         int aclTotal = 0;
         Iterator<AclChangeSet> aclChangeSetsIterator = aclChangeSets.iterator();
@@ -220,7 +216,7 @@ public class SearchDAOTest extends TestCase
         {
             return;
         }
-        
+
         List<Long> aclChangeSetIds = toIds(aclChangeSets);
 
         // Now use those to query for details
@@ -234,7 +230,7 @@ public class SearchDAOTest extends TestCase
             assertTrue("ACL ChangeSet ID not in original list", aclChangeSetIdsSet.contains(aclChangeSetId));
         }
     }
-    
+
     public void testQueryAcls_Single()
     {
         List<AclChangeSet> aclChangeSets = getAclChangeSets(null, 0L, null, null, 1000);
@@ -253,7 +249,7 @@ public class SearchDAOTest extends TestCase
             // Nothing to test: Very unlikely
             return;
         }
-        
+
         // Loop a few times and check that the count is correct
         Long aclChangeSetId = aclChangeSet.getId();
         List<Long> aclChangeSetIds = Collections.singletonList(aclChangeSetId);
@@ -267,11 +263,11 @@ public class SearchDAOTest extends TestCase
             {
                 break;
             }
-            if(acls.size() == 1)
+            if (acls.size() == 1)
             {
                 // OK single acl
             }
-            else if(acls.size() == 2)
+            else if (acls.size() == 2)
             {
                 // definning has unlinkfd shared acl
                 assertEquals("Not a defining and shared pair", acls.get(0).getInheritedId(), acls.get(1).getId());
@@ -280,13 +276,14 @@ public class SearchDAOTest extends TestCase
             {
                 fail("More then two acls");
             }
-            totalAclCount++;;
+            totalAclCount++;
+            ;
             minAclId = acls.get(0).getId() + 1;
         }
         // This may not be true - it depands on lazy/eager shared acl creation.
-        //assertEquals("Expected to page to exact number of results", aclCount, totalAclCount);
+        // assertEquals("Expected to page to exact number of results", aclCount, totalAclCount);
     }
-    
+
     private List<Long> toIds(List<AclChangeSet> aclChangeSets)
     {
         List<Long> ids = new ArrayList<Long>(aclChangeSets.size());
@@ -296,7 +293,7 @@ public class SearchDAOTest extends TestCase
         }
         return ids;
     }
-    
+
     public void testQueryTransactions_NoLimit()
     {
         long startTime = System.currentTimeMillis() - (5 * 60000L);
@@ -311,20 +308,20 @@ public class SearchDAOTest extends TestCase
             // Expected
         }
     }
-    
+
     public void testQueryTransactions_Time()
     {
-        long startTime = System.currentTimeMillis() + (5 * 60000L);             // The future
+        long startTime = System.currentTimeMillis() + (5 * 60000L); // The future
         List<Transaction> results = getTransactions(null, startTime, null, null, 50);
         assertTrue("Transaction count not limited", results.size() == 0);
     }
-    
+
     public void testQueryTransactions_Limit()
     {
         List<Transaction> results = getTransactions(null, 0L, null, null, 50);
         assertTrue("Transaction count not limited", results.size() <= 50);
     }
-    
+
     public void testGetNodesSimple()
     {
         long startTime = 0L;
@@ -337,11 +334,11 @@ public class SearchDAOTest extends TestCase
         nodeParameters.setTransactionIds(txnIds);
         nodeParameters.setStoreProtocol(StoreRef.PROTOCOL_WORKSPACE);
         nodeParameters.setStoreIdentifier(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getIdentifier());
-        
+
         List<Node> nodes = getNodes(nodeParameters);
         assertTrue("Expect 'some' nodes associated with txns", nodes.size() > 0);
     }
-    
+
     public void testGetNodesForStore()
     {
         List<Transaction> txns = getTransactions(null, null, null, null, 500);
@@ -350,40 +347,40 @@ public class SearchDAOTest extends TestCase
 
         NodeParameters nodeParameters = new NodeParameters();
         nodeParameters.setTransactionIds(txnIds);
-        
+
         List<Node> nodes = getNodes(nodeParameters);
         assertTrue("Expect 'some' nodes associated with txns", nodes.size() > 0);
     }
-    
+
     public void testGetNodesForTxnRange()
     {
         List<Transaction> txns = getTransactions(null, null, null, null, 500);
 
         List<Long> txnIds = toTxnIds(txns);
-        
+
         // Only works if there are transactions
         if (txnIds.size() < 2)
         {
             // Nothing to test
             return;
         }
-        
+
         NodeParameters nodeParameters = new NodeParameters();
         nodeParameters.setFromTxnId(txnIds.get(0));
         nodeParameters.setToTxnId(txnIds.get(1));
-        
+
         List<Node> nodes = getNodes(nodeParameters);
         assertTrue("Expect 'some' nodes associated with txns", nodes.size() > 0);
     }
-    
+
     private List<Long> toTxnIds(List<Transaction> txns)
     {
         List<Long> txnIds = new ArrayList<Long>(txns.size());
-        for(Transaction txn : txns)
+        for (Transaction txn : txns)
         {
             txnIds.add(txn.getId());
         }
-        
+
         return txnIds;
     }
 
@@ -400,16 +397,13 @@ public class SearchDAOTest extends TestCase
     }
 
     /**
-     * MNT-11107: during User Home creation Shared Acl is created that is inherited from Acl
-     * which is assigned to User Home folder node. This Shared Acl is not assigned to any node.
-     * However, solrDAO should be able to find it so that it can be indexed.
+     * MNT-11107: during User Home creation Shared Acl is created that is inherited from Acl which is assigned to User Home folder node. This Shared Acl is not assigned to any node. However, solrDAO should be able to find it so that it can be indexed.
      */
     public void testInheritedAclIndexing() throws Exception
     {
         final String USER_MNT11107 = "TestUserMNT11107";
 
-        Long sharedAclId = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Long>()
-        {
+        Long sharedAclId = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Long>() {
             @Override
             public Long execute() throws Throwable
             {
@@ -454,8 +448,7 @@ public class SearchDAOTest extends TestCase
         }
         finally
         {
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -468,7 +461,7 @@ public class SearchDAOTest extends TestCase
             });
         }
     }
-    
+
     /**
      * MNT-12798
      */
@@ -478,8 +471,7 @@ public class SearchDAOTest extends TestCase
 
         try
         {
-            RetryingTransactionCallback<Long> createNodeWork1 = new RetryingTransactionCallback<Long>()
-            {
+            RetryingTransactionCallback<Long> createNodeWork1 = new RetryingTransactionCallback<Long>() {
                 @Override
                 public Long execute() throws Throwable
                 {
@@ -488,8 +480,7 @@ public class SearchDAOTest extends TestCase
                 }
             };
 
-            RetryingTransactionCallback<Long> createNodeWork2 = new RetryingTransactionCallback<Long>()
-            {
+            RetryingTransactionCallback<Long> createNodeWork2 = new RetryingTransactionCallback<Long>() {
                 @Override
                 public Long execute() throws Throwable
                 {
@@ -519,7 +510,7 @@ public class SearchDAOTest extends TestCase
             nodeService.deleteStore(storeRef);
         }
     }
-    
+
     private NodeRef createTestNode(NodeRef parent)
     {
         NodeRef nodeRef = nodeService.createNode(parent,

@@ -29,12 +29,6 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.alfresco.repo.node.integrity.IntegrityException;
-import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
-import org.alfresco.service.cmr.lock.NodeLockedException;
-import org.alfresco.service.cmr.model.FileExistsException;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisContentAlreadyExistsException;
@@ -43,6 +37,13 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictExcept
 import org.apache.chemistry.opencmis.commons.exceptions.CmisVersioningException;
 import org.junit.Assert;
 import org.junit.Test;
+
+import org.alfresco.repo.node.integrity.IntegrityException;
+import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.coci.CheckOutCheckInServiceException;
+import org.alfresco.service.cmr.lock.NodeLockedException;
+import org.alfresco.service.cmr.model.FileExistsException;
 
 /**
  * Ensure that CMIS handles specific types of Alfresco exceptions
@@ -53,10 +54,12 @@ import org.junit.Test;
 public class AlfrescoCmisExceptionInterceptorTest
 {
     private AlfrescoCmisExceptionInterceptor interceptor = new AlfrescoCmisExceptionInterceptor();
-    
+
     /**
      * Does the mock call ensuring that the exception is thrown
-     * @throws Throwable the exception provided
+     * 
+     * @throws Throwable
+     *             the exception provided
      */
     private void doMockCall(Exception toThrow, Class<?> toCatch) throws Throwable
     {
@@ -72,7 +75,7 @@ public class AlfrescoCmisExceptionInterceptorTest
             Assert.assertEquals("Incorrect exception thrown: ", toCatch, e.getClass());
         }
     }
-    
+
     @Test
     public void testNoException() throws Throwable
     {
@@ -80,63 +83,63 @@ public class AlfrescoCmisExceptionInterceptorTest
         when(mi.proceed()).thenReturn("BOB");
         interceptor.invoke(mi);
     }
-    
+
     @Test
     public void testAuthenticationException() throws Throwable
     {
         Exception e = new AuthenticationException("x");
         Class<?> toCatch = CmisPermissionDeniedException.class;
-        
+
         doMockCall(e, toCatch);
         doMockCall(new RuntimeException(new RuntimeException(e)), toCatch);
     }
-    
+
     @Test
     public void testCheckOutCheckInServiceException() throws Throwable
     {
         Exception e = new CheckOutCheckInServiceException("x");
         Class<?> toCatch = CmisVersioningException.class;
-        
+
         doMockCall(e, toCatch);
         doMockCall(new RuntimeException(new RuntimeException(e)), toCatch);
     }
-    
+
     @Test
     public void testFileExistsException() throws Throwable
     {
         Exception e = new FileExistsException(null, null);
         Class<?> toCatch = CmisContentAlreadyExistsException.class;
-        
+
         doMockCall(e, toCatch);
         doMockCall(new RuntimeException(new RuntimeException(e)), toCatch);
     }
-    
+
     @Test
     public void testIntegrityException() throws Throwable
     {
         Exception e = new IntegrityException(null);
         Class<?> toCatch = CmisConstraintException.class;
-        
+
         doMockCall(e, toCatch);
         doMockCall(new RuntimeException(new RuntimeException(e)), toCatch);
     }
-    
+
     @Test
     public void testAccessDeniedException() throws Throwable
     {
         Exception e = new AccessDeniedException("x");
         Class<?> toCatch = CmisPermissionDeniedException.class;
-        
+
         doMockCall(e, toCatch);
         doMockCall(new RuntimeException(new RuntimeException(e)), toCatch);
     }
-    
+
     @Test
     public void testNodeLockedException() throws Throwable
     {
         Exception e = new NodeLockedException();
         Class<?> toCatch = CmisUpdateConflictException.class;
-        
+
         doMockCall(e, toCatch);
         doMockCall(new RuntimeException(new RuntimeException(e)), toCatch);
     }

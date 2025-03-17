@@ -25,20 +25,23 @@
  */
 package org.alfresco.heartbeat;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.descriptor.Descriptor;
-import org.junit.Before;
-import org.junit.Test;
-import java.util.List;
-import java.util.Map;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author eknizat
@@ -71,7 +74,7 @@ public class AuthoritiesDataCollectorTest
     @Test
     public void testHBDataFields()
     {
-        for(HBData data : this.collectedData)
+        for (HBData data : this.collectedData)
         {
             assertNotNull(data.getCollectorId());
             assertNotNull(data.getCollectorVersion());
@@ -87,7 +90,7 @@ public class AuthoritiesDataCollectorTest
         HBData authorityInfo = grabDataByCollectorId(authorityDataCollector.getCollectorId());
         assertNotNull("Authority info data missing.", authorityInfo);
 
-        Map<String,Object> data = authorityInfo.getData();
+        Map<String, Object> data = authorityInfo.getData();
         assertTrue(data.containsKey("numUsers"));
         assertTrue(data.containsKey("numGroups"));
     }

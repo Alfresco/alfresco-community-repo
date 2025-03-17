@@ -29,21 +29,21 @@ package org.alfresco.repo.forms.processor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.repo.forms.Form;
-import org.alfresco.repo.forms.Item;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.repo.forms.Form;
+import org.alfresco.repo.forms.Item;
+
 /**
- * Abstract base class for all FormProcessor implementations provides a regex
- * pattern match to test for processor applicability
+ * Abstract base class for all FormProcessor implementations provides a regex pattern match to test for processor applicability
  * 
  * @author Gavin Cornwell
  */
 public abstract class AbstractFormProcessor implements FormProcessor
 {
     public static final String DESTINATION = "alf_destination";
-    
+
     private static final Log logger = LogFactory.getLog(AbstractFormProcessor.class);
 
     protected FormProcessorRegistry processorRegistry;
@@ -57,7 +57,8 @@ public abstract class AbstractFormProcessor implements FormProcessor
     /**
      * Sets the form process registry
      * 
-     * @param processorRegistry The FormProcessorRegistry instance
+     * @param processorRegistry
+     *            The FormProcessorRegistry instance
      */
     public void setProcessorRegistry(FormProcessorRegistry processorRegistry)
     {
@@ -67,8 +68,8 @@ public abstract class AbstractFormProcessor implements FormProcessor
     /**
      * Sets the match pattern
      * 
-     * @param pattern The regex pattern to use to determine if this processor is
-     *            applicable
+     * @param pattern
+     *            The regex pattern to use to determine if this processor is applicable
      */
     public void setMatchPattern(String pattern)
     {
@@ -78,7 +79,8 @@ public abstract class AbstractFormProcessor implements FormProcessor
     /**
      * Sets whether this processor is active
      * 
-     * @param active true if the processor should be active
+     * @param active
+     *            true if the processor should be active
      */
     public void setActive(boolean active)
     {
@@ -94,7 +96,7 @@ public abstract class AbstractFormProcessor implements FormProcessor
         {
             if (logger.isWarnEnabled())
                 logger.warn("Property 'processorRegistry' has not been set.  Ignoring auto-registration of processor: "
-                            + this);
+                        + this);
 
             return;
         }
@@ -103,7 +105,7 @@ public abstract class AbstractFormProcessor implements FormProcessor
         {
             if (logger.isWarnEnabled())
                 logger.warn("Property 'matchPattern' has not been set.  Ignoring auto-registration of processor: "
-                            + this);
+                        + this);
 
             return;
         }
@@ -117,19 +119,13 @@ public abstract class AbstractFormProcessor implements FormProcessor
         this.processorRegistry.addProcessor(this);
     }
 
-    /*
-     * @see org.alfresco.repo.forms.processor.FormProcessor#isActive()
-     */
+    /* @see org.alfresco.repo.forms.processor.FormProcessor#isActive() */
     public boolean isActive()
     {
         return this.active;
     }
 
-    /*
-     * @see
-     * org.alfresco.repo.forms.processor.FormProcessor#isApplicable(org.alfresco
-     * .repo.forms.Item)
-     */
+    /* @see org.alfresco.repo.forms.processor.FormProcessor#isApplicable(org.alfresco .repo.forms.Item) */
     public boolean isApplicable(Item item)
     {
         // this form processor matches if the match pattern provided matches
@@ -140,14 +136,12 @@ public abstract class AbstractFormProcessor implements FormProcessor
 
         if (logger.isDebugEnabled())
             logger.debug("Checking processor " + this + " for applicability for item '" + item + "', result = "
-                        + matches);
+                    + matches);
 
         return matches;
     }
 
-    /*
-     * @see java.lang.Object#toString()
-     */
+    /* @see java.lang.Object#toString() */
     public String toString()
     {
         StringBuilder buffer = new StringBuilder(super.toString());
@@ -159,11 +153,12 @@ public abstract class AbstractFormProcessor implements FormProcessor
     }
 
     /**
-     * Gets the Item from the <code>form</code> parameter and sets its type
-     * field to <code>type</code>.
+     * Gets the Item from the <code>form</code> parameter and sets its type field to <code>type</code>.
      * 
-     * @param form Form
-     * @param type String
+     * @param form
+     *            Form
+     * @param type
+     *            String
      */
     protected void setFormItemType(Form form, String type)
     {
@@ -171,11 +166,12 @@ public abstract class AbstractFormProcessor implements FormProcessor
     }
 
     /**
-     * Gets the Item from the <code>form</code> parameter and sets its URL field
-     * to <code>url</code>.
+     * Gets the Item from the <code>form</code> parameter and sets its URL field to <code>url</code>.
      * 
-     * @param form Form
-     * @param url String
+     * @param form
+     *            Form
+     * @param url
+     *            String
      */
     protected void setFormItemUrl(Form form, String url)
     {

@@ -30,14 +30,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.service.namespace.QName;
-import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.alfresco.util.Pair;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Abstract implementation of the QName and Namespace DAO interface.
@@ -49,7 +50,7 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
 {
     private static final String CACHE_REGION_NAMESPACE = "Namespace";
     private static final String CACHE_REGION_QNAME = "QName";
-    
+
     /**
      * Cache for the Namespace values:<br/>
      * KEY: ID<br/>
@@ -64,23 +65,23 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
      * VALUE KEY: QName<br/>
      */
     private EntityLookupCache<Long, QName, QName> qnameCache;
-    
+
     /**
      * Default constructor.
      * <p>
-     * This sets up the DAO accessors to bypass any caching to handle the case where the caches are not
-     * supplied in the setters.
+     * This sets up the DAO accessors to bypass any caching to handle the case where the caches are not supplied in the setters.
      */
     protected AbstractQNameDAOImpl()
     {
         this.namespaceCache = new EntityLookupCache<Long, String, String>(new NamespaceCallbackDAO());
         this.qnameCache = new EntityLookupCache<Long, QName, QName>(new QNameCallbackDAO());
     }
-    
+
     /**
      * Set the cache that maintains the ID-Namespace mappings and vice-versa.
      * 
-     * @param namespaceCache        the cache
+     * @param namespaceCache
+     *            the cache
      */
     public void setNamespaceCache(SimpleCache<Long, String> namespaceCache)
     {
@@ -93,7 +94,8 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
     /**
      * Set the cache that maintains the ID-Namespace mappings and vice-versa.
      * 
-     * @param qnameCache            the cache
+     * @param qnameCache
+     *            the cache
      */
     public void setQnameCache(SimpleCache<Long, QName> qnameCache)
     {
@@ -103,9 +105,9 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
                 new QNameCallbackDAO());
     }
 
-    //================================
+    // ================================
     // 'alf_namespace' accessors
-    //================================
+    // ================================
 
     public Pair<Long, String> getNamespace(Long id)
     {
@@ -120,7 +122,7 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
         }
         return entityPair;
     }
-    
+
     public Pair<Long, String> getNamespace(String namespaceUri)
     {
         if (namespaceUri == null)
@@ -145,7 +147,7 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
     {
         ParameterCheck.mandatory("newNamespaceUri", newNamespaceUri);
 
-        Pair<Long, String> oldEntityPair = getNamespace(oldNamespaceUri);   // incl. null check
+        Pair<Long, String> oldEntityPair = getNamespace(oldNamespaceUri); // incl. null check
         if (oldEntityPair == null)
         {
             throw new DataIntegrityViolationException(
@@ -157,8 +159,8 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
         {
             throw new ConcurrencyFailureException(
                     "Incorrect update count: \n" +
-                    "   Namespace:    " + oldNamespaceUri + "\n" +
-                    "   Rows Updated: " + updated);
+                            "   Namespace:    " + oldNamespaceUri + "\n" +
+                            "   Rows Updated: " + updated);
         }
         // All the QNames need to be dumped
         qnameCache.clear();
@@ -202,7 +204,7 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
                 return new Pair<Long, String>(entity.getId(), uri);
             }
         }
-        
+
         public Pair<Long, String> createValue(String uri)
         {
             NamespaceEntity entity = createNamespaceEntity(uri);
@@ -221,15 +223,18 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
             return updateNamespaceEntity(entity, uri);
         }
     }
-    
+
     protected abstract NamespaceEntity findNamespaceEntityById(Long id);
+
     protected abstract NamespaceEntity findNamespaceEntityByUri(String uri);
+
     protected abstract NamespaceEntity createNamespaceEntity(String uri);
+
     protected abstract int updateNamespaceEntity(NamespaceEntity entity, String uri);
-    
-    //================================
+
+    // ================================
     // 'alf_qname' accessors
-    //================================
+    // ================================
 
     public Pair<Long, QName> getQName(Long id)
     {
@@ -267,7 +272,7 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
 
     public Pair<Long, QName> updateQName(QName qnameOld, QName qnameNew)
     {
-        if (qnameOld == null|| qnameNew == null)
+        if (qnameOld == null || qnameNew == null)
         {
             throw new IllegalArgumentException("QName cannot be null");
         }
@@ -368,7 +373,7 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
                 return new Pair<Long, QName>(entity.getId(), qname);
             }
         }
-        
+
         public Pair<Long, QName> createValue(QName qname)
         {
             String uri = qname.getNamespaceURI();
@@ -383,7 +388,7 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
 
         @Override
         public int updateValue(Long id, QName qname)
-        { 
+        {
             String uri = qname.getNamespaceURI();
             String localName = qname.getLocalName();
 
@@ -409,48 +414,48 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
                 // No chance of updating
                 return 0;
             }
-        		return deleteQNameEntity(entity);
+            return deleteQNameEntity(entity);
         }
     }
-    
+
     protected abstract QNameEntity findQNameEntityById(Long id);
+
     protected abstract QNameEntity findQNameEntityByNamespaceAndLocalName(Long nsId, String localName);
+
     protected abstract QNameEntity createQNameEntity(Long nsId, String localName);
+
     protected abstract int updateQNameEntity(QNameEntity entity, Long nsId, String localName);
+
     protected abstract int deleteQNameEntity(QNameEntity entity);
 
-    
-    //================================
+    // ================================
     // Utility method implementations
-    //================================
+    // ================================
 
     public Set<QName> convertIdsToQNames(Set<Long> ids)
     {
         Set<QName> qnames = new HashSet<QName>(ids.size() * 2 + 1);
         for (Long id : ids)
         {
-            QName qname = getQName(id).getSecond();                     // getQName(id) is never null
+            QName qname = getQName(id).getSecond(); // getQName(id) is never null
             qnames.add(qname);
         }
         return qnames;
     }
-    
+
     public Map<QName, ? extends Object> convertIdMapToQNameMap(Map<Long, ? extends Object> idMap)
     {
         Map<QName, Object> qnameMap = new HashMap<QName, Object>(idMap.size() + 3);
         for (Map.Entry<Long, ? extends Object> entry : idMap.entrySet())
         {
-            QName qname = getQName(entry.getKey()).getSecond();         // getQName(id) is never null
+            QName qname = getQName(entry.getKey()).getSecond(); // getQName(id) is never null
             qnameMap.put(qname, entry.getValue());
         }
         return qnameMap;
     }
 
     /**
-     * @return      Returns a set of IDs mapping to the QNames provided.  If create is <tt>false</tt>
-     *              then there will not be corresponding entries for the QNames that don't exist.
-     *              So there is no guarantee that the returned set will be ordered the same or even
-     *              contain the same number of elements as the original unless create is <tt>true</tt>.
+     * @return Returns a set of IDs mapping to the QNames provided. If create is <tt>false</tt> then there will not be corresponding entries for the QNames that don't exist. So there is no guarantee that the returned set will be ordered the same or even contain the same number of elements as the original unless create is <tt>true</tt>.
      */
     public Set<Long> convertQNamesToIds(Set<QName> qnames, boolean create)
     {
@@ -460,7 +465,7 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
             Long qnameEntityId = null;
             if (create)
             {
-                qnameEntityId = getOrCreateQName(qname).getFirst();     // getOrCreateQName(qname) is never null
+                qnameEntityId = getOrCreateQName(qname).getFirst(); // getOrCreateQName(qname) is never null
             }
             else
             {

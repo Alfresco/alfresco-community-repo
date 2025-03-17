@@ -45,7 +45,7 @@ public class TransferChild extends RMNode
 
     public TransferChild()
     {
-        //Default constructor
+        // Default constructor
     }
 
     public Boolean getIsClosed()

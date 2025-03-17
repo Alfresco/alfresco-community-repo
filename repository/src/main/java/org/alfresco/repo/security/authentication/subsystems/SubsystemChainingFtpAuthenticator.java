@@ -26,14 +26,15 @@
 
 package org.alfresco.repo.security.authentication.subsystems;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AbstractChainingFtpAuthenticator;
-import org.springframework.context.ApplicationContext;
-
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * This class wires up all the active {@link org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase} beans in a chain.
@@ -48,7 +49,9 @@ public class SubsystemChainingFtpAuthenticator extends AbstractChainingFtpAuthen
 
     /**
      * IOC
-     * @param applicationContextManager the applicationContextManager to set
+     * 
+     * @param applicationContextManager
+     *            the applicationContextManager to set
      */
     public void setApplicationContextManager(ChildApplicationContextManager applicationContextManager)
     {
@@ -58,7 +61,8 @@ public class SubsystemChainingFtpAuthenticator extends AbstractChainingFtpAuthen
     /**
      * Sets the name of the bean to look up in the child application contexts.
      *
-     * @param sourceBeanName the bean name
+     * @param sourceBeanName
+     *            the bean name
      */
     public void setSourceBeanName(String sourceBeanName)
     {
@@ -75,8 +79,8 @@ public class SubsystemChainingFtpAuthenticator extends AbstractChainingFtpAuthen
             {
                 ApplicationContext context = this.applicationContextManager.getApplicationContext(instance);
                 FTPAuthenticatorBase authenticator = (FTPAuthenticatorBase) context.getBean(sourceBeanName);
-                
-                if(this.getClass().isInstance(authenticator))
+
+                if (this.getClass().isInstance(authenticator))
                 {
                     continue;
                 }

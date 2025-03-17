@@ -27,7 +27,6 @@ package org.alfresco.repo.web.scripts.audit;
 
 import java.util.Map;
 
-import org.alfresco.service.cmr.audit.AuditService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -35,6 +34,8 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.service.cmr.audit.AuditService;
 
 /**
  * Abstract implementation for scripts that access the {@link AuditService}.
@@ -45,7 +46,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public abstract class AbstractAuditWebScript extends DeclarativeWebScript
 {
     public static final String PARAM_APPLICATION = "application";
-    public static final String PARAM_PATH="path";
+    public static final String PARAM_PATH = "path";
     public static final String PARAM_ENABLE = "enable";
     public static final String PARAM_VALUE = "value";
     public static final String PARAM_VALUE_TYPE = "valueType";
@@ -67,14 +68,14 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     public static final int DEFAULT_LIMIT = 100;
     public static final boolean DEFAULT_VERBOSE = false;
     public static final boolean DEFAULT_ENABLE = false;
-    
+
     public static final String JSON_KEY_ENABLED = "enabled";
     public static final String JSON_KEY_APPLICATIONS = "applications";
     public static final String JSON_KEY_NAME = "name";
     public static final String JSON_KEY_PATH = "path";
     public static final String JSON_KEY_CLEARED = "cleared";
     public static final String JSON_KEY_DELETED = "deleted";
-    
+
     public static final String JSON_KEY_ENTRY_COUNT = "count";
     public static final String JSON_KEY_ENTRIES = "entries";
     public static final String JSON_KEY_ENTRY_ID = "id";
@@ -87,11 +88,12 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
      * Logger that can be used by subclasses.
      */
     protected final Log logger = LogFactory.getLog(this.getClass());
-    
+
     protected AuditService auditService;
-    
+
     /**
-     * @param auditService      the service that provides the actual data
+     * @param auditService
+     *            the service that provides the actual data
      */
     public void setAuditService(AuditService auditService)
     {
@@ -101,17 +103,18 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     /**
      * Return an I18N'd message for the given key or the key itself if not present
      * 
-     * @param args              arguments to replace the variables in the message
+     * @param args
+     *            arguments to replace the variables in the message
      */
-    protected String getI18NMessage(String key, Object ... args)
+    protected String getI18NMessage(String key, Object... args)
     {
         return I18NUtil.getMessage(key, args);
     }
-    
+
     /**
      * Get the application name from the request.
      * 
-     * @return                  Returns the application name or <tt>null</tt> if not present
+     * @return Returns the application name or <tt>null</tt> if not present
      */
     protected final String getParamAppName(WebScriptRequest req)
     {
@@ -126,7 +129,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
             return app;
         }
     }
-    
+
     /**
      * Get the entry id from the request.
      * 
@@ -152,11 +155,11 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
             }
         }
     }
-    
+
     /**
      * Get the path from the request.
      * 
-     * @return                  Returns the path or <tt>null</tt> if not present
+     * @return Returns the path or <tt>null</tt> if not present
      */
     protected String getParamPath(WebScriptRequest req)
     {
@@ -173,22 +176,22 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
         }
         return paramPath;
     }
-    
+
     protected boolean getParamEnableDisable(WebScriptRequest req)
     {
         return getBooleanParam(req.getParameter(PARAM_ENABLE), DEFAULT_ENABLE);
     }
-    
+
     protected String getParamValue(WebScriptRequest req)
     {
         return req.getParameter(PARAM_VALUE);
     }
-    
+
     protected String getParamValueType(WebScriptRequest req)
     {
         return req.getParameter(PARAM_VALUE_TYPE);
     }
-    
+
     /**
      * @see #DEFAULT_FROM_TIME
      */
@@ -196,7 +199,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     {
         return getLongParam(req.getParameter(PARAM_FROM_TIME), DEFAULT_FROM_TIME);
     }
-    
+
     /**
      * @see #DEFAULT_TO_TIME
      */
@@ -204,7 +207,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     {
         return getLongParam(req.getParameter(PARAM_TO_TIME), DEFAULT_TO_TIME);
     }
-    
+
     /**
      * @see #DEFAULT_FROM_ID
      */
@@ -212,7 +215,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     {
         return getLongParam(req.getParameter(PARAM_FROM_ID), DEFAULT_FROM_ID);
     }
-    
+
     /**
      * @see #DEFAULT_TO_ID
      */
@@ -220,7 +223,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     {
         return getLongParam(req.getParameter(PARAM_TO_ID), DEFAULT_TO_ID);
     }
-    
+
     /**
      * @see #DEFAULT_USER
      */
@@ -228,7 +231,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     {
         return req.getParameter(PARAM_USER);
     }
-    
+
     /**
      * @see #DEFAULT_FORWARD
      */
@@ -236,7 +239,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     {
         return getBooleanParam(req.getParameter(PARAM_FORWARD), DEFAULT_FORWARD);
     }
-    
+
     /**
      * @see #DEFAULT_LIMIT
      */
@@ -244,7 +247,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     {
         return getIntParam(req.getParameter(PARAM_LIMIT), DEFAULT_LIMIT);
     }
-    
+
     /**
      * @see #DEFAULT_VERBOSE
      */

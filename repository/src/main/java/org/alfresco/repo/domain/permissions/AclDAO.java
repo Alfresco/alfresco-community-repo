@@ -42,8 +42,7 @@ import org.alfresco.repo.security.permissions.impl.AclChange;
 public interface AclDAO
 {
     /**
-     * Transaction-scope setting to make the DAO guarantee the validity of all caches: some cache data will be reloaded;
-     * some cache data will be considered safe.
+     * Transaction-scope setting to make the DAO guarantee the validity of all caches: some cache data will be reloaded; some cache data will be considered safe.
      */
     public void setCheckAclConsistency();
 
@@ -51,72 +50,71 @@ public interface AclDAO
      * Get an ACL (including entries)
      */
     public AccessControlList getAccessControlList(Long id);
-    
+
     /**
      * Get an ACL
      */
     public Acl getAcl(Long id);
-    
+
     /**
      * Get the ACL properties
      * 
      * @return - the id of all ACLs affected
      */
     public AccessControlListProperties getAccessControlListProperties(Long id);
-    
+
     /**
      * Delete an ACL
      * 
      * @return - the id of all ACLs affected
      */
     public List<AclChange> deleteAccessControlList(Long id);
-    
+
     /**
      * Delete the ACEs in position 0 (those set directly on the ACL and not inherited) Cleans up existing acls
      * 
      * @return - the id of all ACLs affected
      */
     public List<AclChange> deleteLocalAccessControlEntries(Long id);
-    
+
     /**
      * Delete the ACEs in position > 0 (those not set directly on the ACL but inherited) No affect on any other acl
      * 
      * @return - the id of all ACLs affected
      */
     public List<AclChange> deleteInheritedAccessControlEntries(Long id);
-    
+
     /**
-     * Delete all ACEs that reference this authority as no longer valid. THIS DOES NOT CAUSE ANY ACL TO VERSION
-     * Used when deleting a user. No ACL is updated - the user has gone the aces and all related info is deleted.
+     * Delete all ACEs that reference this authority as no longer valid. THIS DOES NOT CAUSE ANY ACL TO VERSION Used when deleting a user. No ACL is updated - the user has gone the aces and all related info is deleted.
      * 
      * @return - the id of all ACLs affected
      */
     public List<AclChange> deleteAccessControlEntries(String authority);
-    
+
     /**
      * Delete some locally set ACLs according to the pattern
      * 
-     * @param pattern -
-     *            non null elements are used for the match
+     * @param pattern
+     *            - non null elements are used for the match
      * @return - the id of all ACLs affected
      */
     public List<AclChange> deleteAccessControlEntries(Long id, AccessControlEntry pattern);
-    
+
     /**
      * Add an access control entry
      */
     public List<AclChange> setAccessControlEntry(Long id, AccessControlEntry ace);
-    
+
     /**
      * Enable inheritance
      */
     public List<AclChange> enableInheritance(Long id, Long parent);
-    
+
     /**
      * Disable inheritance
      */
     public List<AclChange> disableInheritance(Long id, boolean setInheritedOnAcl);
-    
+
     /**
      * Create a new ACL with default properties
      * 
@@ -124,51 +122,52 @@ public interface AclDAO
      * @see #createAccessControlList(AccessControlListProperties)
      */
     public Long createAccessControlList();
-    
+
     /**
      * Get the default ACL properties
      * 
      * @return the default properties
      */
     public AccessControlListProperties getDefaultProperties();
-    
+
     /**
      * Create a new ACL with the given properties. Unset properties are assigned defaults.
      * 
      * @return Acl
      */
     public Acl createAccessControlList(AccessControlListProperties properties);
-    
+
     /**
      * @see #createAccessControlList(AccessControlListProperties)
      * @return Acl
      */
     public Acl createAccessControlList(AccessControlListProperties properties, List<AccessControlEntry> aces, Long inherited);
-    
+
     /**
-     * Get the id of the ACL inherited from the one given
-     * May return null if there is nothing to inherit -> OLD world where nodes have their own ACL and we walk the parent chain
+     * Get the id of the ACL inherited from the one given May return null if there is nothing to inherit -> OLD world where nodes have their own ACL and we walk the parent chain
      */
     public Long getInheritedAccessControlList(Long id);
-    
+
     /**
      * Merge inherited ACEs in to target - the merged ACEs will go in at their current position +1
      */
     public List<AclChange> mergeInheritedAccessControlList(Long inherited, Long target);
-    
+
     public Acl getAclCopy(Long toCopy, Long toInheritFrom, ACLCopyMode mode);
-    
+
     public List<Long> getADMNodesByAcl(long aclEntityId, int maxResults);
-    
+
     public Acl createLayeredAcl(Long indirectedAcl);
-    
+
     public void renameAuthority(String before, String after);
-    
+
     public void deleteAclForNode(long aclId);
 
     /**
-     * @param shared Long
-     * @param defining Long
+     * @param shared
+     *            Long
+     * @param defining
+     *            Long
      */
     public void fixSharedAcl(Long shared, Long defining);
 
@@ -178,15 +177,15 @@ public interface AclDAO
     public Long getMaxChangeSetCommitTime();
 
     /**
-     * @param maxCommitTime long
+     * @param maxCommitTime
+     *            long
      * @return Long
      */
     public Long getMaxChangeSetIdByCommitTime(long maxCommitTime);
 
     /**
-    * @return                 the commit time of the current ACL change set entry or <tt>null</tt> if
-    *                         there have not been any modifications.
-    */
+     * @return the commit time of the current ACL change set entry or <tt>null</tt> if there have not been any modifications.
+     */
     public Long getCurrentChangeSetCommitTime();
 
 }

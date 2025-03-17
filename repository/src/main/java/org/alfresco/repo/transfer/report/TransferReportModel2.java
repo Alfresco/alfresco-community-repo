@@ -30,7 +30,7 @@ package org.alfresco.repo.transfer.report;
  */
 public interface TransferReportModel2 extends TransferReportModel
 {
-  
+
     static final String TRANSFER_REPORT_MODEL_2_0_URI = "http://www.alfresco.org/model/transferReport/2.0";
 
     // New in 1.1

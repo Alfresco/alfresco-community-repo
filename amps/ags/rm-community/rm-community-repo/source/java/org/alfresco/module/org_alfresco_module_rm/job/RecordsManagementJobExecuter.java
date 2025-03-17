@@ -46,7 +46,8 @@ public abstract class RecordsManagementJobExecuter implements RecordsManagementM
     protected RepositoryState repositoryState;
 
     /**
-     * @param retryingTransactionHelper retrying transaction helper
+     * @param retryingTransactionHelper
+     *            retrying transaction helper
      */
     public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
@@ -54,7 +55,8 @@ public abstract class RecordsManagementJobExecuter implements RecordsManagementM
     }
 
     /**
-     * @param repositoryState   repository state helper component
+     * @param repositoryState
+     *            repository state helper component
      */
     public void setRepositoryState(RepositoryState repositoryState)
     {

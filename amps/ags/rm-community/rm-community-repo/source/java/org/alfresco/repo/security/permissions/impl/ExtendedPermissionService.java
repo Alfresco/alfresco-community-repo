@@ -41,24 +41,24 @@ import org.alfresco.util.Pair;
  */
 public interface ExtendedPermissionService extends PermissionService
 {
-	/**
-	 * Get a set of all the authorities that have write access.
-	 * 
-	 * @param  aclId							acl id
-	 * @return {@link Set}&lt;{@link String}&gt; 		set of authorities with write access
-	 */
+    /**
+     * Get a set of all the authorities that have write access.
+     * 
+     * @param aclId
+     *            acl id
+     * @return {@link Set}&lt;{@link String}&gt; set of authorities with write access
+     */
     Set<String> getWriters(Long aclId);
-    
+
     /**
      * Get the readers and writers for a given node.
      * <p>
      * The writers list includes the owner for the node.
      * 
-     * @param nodeRef                           node reference
-     * @return Pair&lt;Set&lt;String&gt;, Set&lt;String&gt;&gt;   first is a set containing all the authorities that have read permission on the
-     *                                          document and second is a set containing all the authorities that have write
-     *                                          permission on the document, including the owner.
-     *                                          
+     * @param nodeRef
+     *            node reference
+     * @return Pair&lt;Set&lt;String&gt;, Set&lt;String&gt;&gt; first is a set containing all the authorities that have read permission on the document and second is a set containing all the authorities that have write permission on the document, including the owner.
+     * 
      * @since 2.5
      */
     Pair<Set<String>, Set<String>> getReadersAndWriters(NodeRef nodeRef);

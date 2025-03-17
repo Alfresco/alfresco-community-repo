@@ -29,8 +29,10 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.transaction.UserTransaction;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -47,15 +49,13 @@ import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * This abstract class handles the progress monitoring functionality as well as providing
- * some utility methods for sub-classes.
+ * This abstract class handles the progress monitoring functionality as well as providing some utility methods for sub-classes.
+ * 
  * @author Brian
  */
-public abstract class AbstractManifestProcessorBase implements TransferManifestProcessor,TransferSummaryAware
+public abstract class AbstractManifestProcessorBase implements TransferManifestProcessor, TransferSummaryAware
 {
     private static final Log log = LogFactory.getLog(AbstractManifestProcessorBase.class);
     private static final String MSG_ERROR_WHILE_COMMITTING_TRANSFER = "transfer_service.receiver.error_committing_transfer";
@@ -65,21 +65,21 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
     private int targetEndProgress;
     private int currProgress;
     private TransferSummaryReport transferSummaryReport;
-    
+
     public AbstractManifestProcessorBase(TransferReceiver receiver, String transferId)
     {
         this.receiver = receiver;
         this.transferId = transferId;
     }
-    
+
     public final void endTransferManifest()
     {
         receiver.getProgressMonitor().updateProgress(transferId, this.targetEndProgress);
-        try 
+        try
         {
             endManifest();
         }
-        catch(Throwable ex)
+        catch (Throwable ex)
         {
             handleException(null, ex);
         }
@@ -125,7 +125,7 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
         progressMonitor.updateProgress(transferId, progress.getCurrentPosition(), newEndPos);
         targetEndProgress = newEndPos;
         currProgress = progress.getCurrentPosition();
-        try 
+        try
         {
             processHeader(header);
         }
@@ -134,7 +134,7 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
             handleException(null, ex);
         }
     }
-    
+
     protected abstract void processHeader(TransferManifestHeader header);
 
     public final void startTransferManifest()
@@ -159,12 +159,12 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
             receiver.getProgressMonitor().updateProgress(transferId, currProgress);
         }
     }
-    
+
     /**
-     * Given the node ref, this method constructs the appropriate ChildAssociationRef that would place this node in the
-     * transfer's temporary folder. Useful when handling orphans.
+     * Given the node ref, this method constructs the appropriate ChildAssociationRef that would place this node in the transfer's temporary folder. Useful when handling orphans.
      *
-     * @param nodeRef NodeRef
+     * @param nodeRef
+     *            NodeRef
      * @return ChildAssociationRef
      */
     protected ChildAssociationRef getTemporaryLocation(NodeRef nodeRef)
@@ -179,17 +179,17 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
     {
         return receiver.getStagingFolder(transferId);
     }
-    
+
     protected TransferReceiver getReceiver()
     {
         return receiver;
     }
-    
+
     protected String getTransferId()
     {
         return transferId;
     }
-    
+
     private void handleException(TransferManifestNode node, Throwable ex)
     {
         try
@@ -203,34 +203,33 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
         }
         catch (Throwable e)
         {
-            //Nothing really to be done here
+            // Nothing really to be done here
             log.warn("Failed to mark transaction as rollback-only in response to an error", e);
         }
-        
+
         try
         {
             TransferProgressMonitor monitor = receiver.getProgressMonitor();
-            String message = (node != null) ? "Error while processing incoming node " + node.getNodeRef() :
-                "Error processing commit";
-            
+            String message = (node != null) ? "Error while processing incoming node " + node.getNodeRef() : "Error processing commit";
+
             monitor.logException(transferId, message, ex);
         }
-        catch(Throwable t)
+        catch (Throwable t)
         {
-            //Nothing really to be done here
+            // Nothing really to be done here
             log.warn("Failed to record exception in transfer log due to an exception", t);
         }
-        
-        //Any non-fatal transfer exception is logged and then skipped - the transfer continues 
-        //(albeit with a guaranteed rollback at the end).
-        //A fatal transfer exception is rethrown and causes the transfer to end immediately.
-        //Any non-transfer exception is assumed to be fatal, so is wrapped in a fatal exception
-        //and thrown.
+
+        // Any non-fatal transfer exception is logged and then skipped - the transfer continues
+        // (albeit with a guaranteed rollback at the end).
+        // A fatal transfer exception is rethrown and causes the transfer to end immediately.
+        // Any non-transfer exception is assumed to be fatal, so is wrapped in a fatal exception
+        // and thrown.
         if (TransferFatalException.class.isAssignableFrom(ex.getClass()))
         {
             callLocalExceptionHandler(node, ex);
-            throw (TransferFatalException)ex;
-        } 
+            throw (TransferFatalException) ex;
+        }
         else if (!TransferException.class.isAssignableFrom(ex.getClass()))
         {
             callLocalExceptionHandler(node, ex);
@@ -244,54 +243,62 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
         {
             localHandleException(node, ex);
         }
-        catch(Throwable t)
+        catch (Throwable t)
         {
-            //Nothing really to be done here
+            // Nothing really to be done here
             log.warn("Caught and discarded exception thrown from custom exception handler", t);
         }
     }
-    
+
     /**
-     * This method is invoked if an exception or error occurs while processing the manifest.
-     * By default it does nothing, but classes that extend this class can override this to provide
-     * custom clean-up. 
-     * @param node TransferManifestNode
-     * @param ex Throwable
+     * This method is invoked if an exception or error occurs while processing the manifest. By default it does nothing, but classes that extend this class can override this to provide custom clean-up.
+     * 
+     * @param node
+     *            TransferManifestNode
+     * @param ex
+     *            Throwable
      */
     protected void localHandleException(TransferManifestNode node, Throwable ex)
     {
-        //NO-OP - override to add custom clean-up
+        // NO-OP - override to add custom clean-up
     }
 
     protected void logComment(String message)
     {
         receiver.getProgressMonitor().logComment(transferId, message);
     }
+
     protected void logCreated(NodeRef sourceNode, NodeRef destNode, NodeRef newParentNode, String parentPath, boolean orphan)
     {
         receiver.getProgressMonitor().logCreated(transferId, sourceNode, destNode, newParentNode, parentPath, orphan);
     }
+
     protected void logDeleted(NodeRef sourceNode, NodeRef destNode, String parentPath)
     {
         receiver.getProgressMonitor().logDeleted(transferId, sourceNode, destNode, parentPath);
     }
+
     protected void logUpdated(NodeRef sourceNode, NodeRef destNode, String newPath)
     {
         receiver.getProgressMonitor().logUpdated(transferId, sourceNode, destNode, newPath);
     }
+
     protected void logMoved(NodeRef sourceNode, NodeRef destNode, String oldPath, NodeRef newParent, String newPath)
     {
         receiver.getProgressMonitor().logMoved(transferId, sourceNode, destNode, oldPath, newParent, newPath);
     }
 
     /**
-     * Puts information about current <code>childRef</code> and its <code>parentRef</code> into log in TRACE level. Information includes 'name', 'fromRepositoryId', 'aliened' and
-     * 'invadedBy' properties. Additionally, collects the same information for children of <code>childRef</code>
+     * Puts information about current <code>childRef</code> and its <code>parentRef</code> into log in TRACE level. Information includes 'name', 'fromRepositoryId', 'aliened' and 'invadedBy' properties. Additionally, collects the same information for children of <code>childRef</code>
      * 
-     * @param parentRef - {@link NodeRef} instance of child node
-     * @param childRef - {@link NodeRef} instance of parent of the <code>childRef</code>
-     * @param nodeService - {@link NodeService} instance to get properties and checking other states
-     * @param log - {@link Log} instance to put log for appropriate class
+     * @param parentRef
+     *            - {@link NodeRef} instance of child node
+     * @param childRef
+     *            - {@link NodeRef} instance of parent of the <code>childRef</code>
+     * @param nodeService
+     *            - {@link NodeService} instance to get properties and checking other states
+     * @param log
+     *            - {@link Log} instance to put log for appropriate class
      */
     protected void logInvasionHierarchy(NodeRef parentRef, NodeRef childRef, NodeService nodeService, Log log)
     {
@@ -300,9 +307,11 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
         StringBuilder message = new StringBuilder("Information about '").append(properties.get(ContentModel.PROP_NAME)).append("' node:\n    fromRepositoryId: ").append(
                 properties.get(TransferModel.PROP_FROM_REPOSITORY_ID)).append("\n").append("    invadedBy: ").append(properties.get(TransferModel.PROP_INVADED_BY)).append("\n")
                 .append("    alien: ").append(nodeService.hasAspect(childRef, TransferModel.ASPECT_ALIEN)).append("\n").append("    repositoryId: ").append(
-                        properties.get(TransferModel.PROP_REPOSITORY_ID)).append("\n").append("    parent: ").append(parentProperties.get(ContentModel.PROP_NAME)).append("(")
+                        properties.get(TransferModel.PROP_REPOSITORY_ID))
+                .append("\n").append("    parent: ").append(parentProperties.get(ContentModel.PROP_NAME)).append("(")
                 .append(parentProperties.get(TransferModel.PROP_FROM_REPOSITORY_ID)).append(")").append(parentProperties.get(TransferModel.PROP_INVADED_BY)).append(": ").append(
-                        nodeService.hasAspect(parentRef, TransferModel.ASPECT_ALIEN)).append("\n").append("    children:\n");
+                        nodeService.hasAspect(parentRef, TransferModel.ASPECT_ALIEN))
+                .append("\n").append("    children:\n");
 
         List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(childRef);
 

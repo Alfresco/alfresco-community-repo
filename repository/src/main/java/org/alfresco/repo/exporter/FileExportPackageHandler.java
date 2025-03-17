@@ -39,14 +39,13 @@ import org.alfresco.service.cmr.view.ExportPackageHandler;
 import org.alfresco.service.cmr.view.ExporterException;
 import org.alfresco.util.TempFileProvider;
 
-
 /**
  * Handler for exporting Repository to file system files
  * 
  * @author David Caruana
  */
 public class FileExportPackageHandler
-    implements ExportPackageHandler
+        implements ExportPackageHandler
 {
     protected MimetypeService mimetypeService = null;
     protected File contentDir;
@@ -58,11 +57,16 @@ public class FileExportPackageHandler
     /**
      * Constuct Handler
      * 
-     * @param destDir  destination directory
-     * @param dataFile  filename of data file (relative to destDir)
-     * @param contentDir  directory for content (relative to destDir)
-     * @param overwrite  force overwrite of existing package directory
-     * @param mimetypeService (optional) mimetype service
+     * @param destDir
+     *            destination directory
+     * @param dataFile
+     *            filename of data file (relative to destDir)
+     * @param contentDir
+     *            directory for content (relative to destDir)
+     * @param overwrite
+     *            force overwrite of existing package directory
+     * @param mimetypeService
+     *            (optional) mimetype service
      */
     public FileExportPackageHandler(File destDir, File dataFile, File contentDir, boolean overwrite, MimetypeService mimetypeService)
     {
@@ -74,12 +78,12 @@ public class FileExportPackageHandler
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ExportPackageHandler#startExport()
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ExportPackageHandler#startExport() */
     public void startExport()
     {
         log("Exporting to package " + absDataFile.getAbsolutePath());
-        
+
         if (absContentDir.exists())
         {
             if (overwrite == false)
@@ -91,8 +95,8 @@ public class FileExportPackageHandler
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ExportPackageHandler#createDataStream()
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ExportPackageHandler#createDataStream() */
     public OutputStream createDataStream()
     {
         if (absDataFile.exists())
@@ -111,15 +115,15 @@ public class FileExportPackageHandler
             absDataStream = new FileOutputStream(absDataFile);
             return absDataStream;
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new ExporterException("Failed to create package file " + absDataFile.getAbsolutePath() + " due to " + e.getMessage());
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ExportStreamHandler#exportStream(java.io.InputStream)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ExportStreamHandler#exportStream(java.io.InputStream) */
     public ContentData exportContent(InputStream content, ContentData contentData)
     {
         // if the content stream to output is empty, then just return content descriptor as is
@@ -127,17 +131,17 @@ public class FileExportPackageHandler
         {
             return contentData;
         }
-        
+
         // Lazily create package directory
         try
         {
             absContentDir.mkdirs();
         }
-        catch(SecurityException e)
+        catch (SecurityException e)
         {
             throw new ExporterException("Failed to create package dir " + absContentDir.getAbsolutePath() + " due to " + e.getMessage());
         }
-        
+
         // Create file in package directory to hold exported content
         String extension = "bin";
         if (mimetypeService != null)
@@ -149,44 +153,44 @@ public class FileExportPackageHandler
                 {
                     extension = mimetypeService.getExtension(mimetype);
                 }
-                catch(AlfrescoRuntimeException e)
+                catch (AlfrescoRuntimeException e)
                 {
                     // use default extension
                 }
             }
         }
         File outputFile = TempFileProvider.createTempFile("export", "." + extension, absContentDir);
-        
+
         try
         {
             // Copy exported content from repository to exported file
             FileOutputStream outputStream = new FileOutputStream(outputFile);
             byte[] buffer = new byte[2048 * 10];
-            int read = content.read(buffer, 0, 2048 *10);
+            int read = content.read(buffer, 0, 2048 * 10);
             while (read != -1)
             {
                 outputStream.write(buffer, 0, read);
-                read = content.read(buffer, 0, 2048 *10);
+                read = content.read(buffer, 0, 2048 * 10);
             }
             outputStream.close();
         }
-        catch(FileNotFoundException e)
+        catch (FileNotFoundException e)
         {
             throw new ExporterException("Failed to create export package file due to " + e.getMessage());
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new ExporterException("Failed to export content due to " + e.getMessage());
         }
-        
+
         // return relative path to exported content file (relative to xml export file)
         File url = new File(contentDir, outputFile.getName());
         return new ContentData(url.getPath(), contentData.getMimetype(), contentData.getSize(), contentData.getEncoding());
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ExportPackageHandler#endExport()
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ExportPackageHandler#endExport() */
     public void endExport()
     {
         // close Export File
@@ -196,19 +200,19 @@ public class FileExportPackageHandler
             {
                 absDataStream.close();
             }
-            catch(IOException e)
+            catch (IOException e)
             {
                 throw new ExporterException("Failed to close package data file " + absDataFile + " due to" + e.getMessage());
             }
-        }            
+        }
     }
-    
+
     /**
      * Log Export Message
      * 
-     * @param message  message to log
+     * @param message
+     *            message to log
      */
     protected void log(String message)
-    {
-    }
+    {}
 }

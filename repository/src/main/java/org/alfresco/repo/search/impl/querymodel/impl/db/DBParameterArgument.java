@@ -35,8 +35,10 @@ public class DBParameterArgument extends BaseParameterArgument
 {
 
     /**
-     * @param name String
-     * @param parameterName String
+     * @param name
+     *            String
+     * @param parameterName
+     *            String
      */
     public DBParameterArgument(String name, String parameterName)
     {

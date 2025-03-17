@@ -33,13 +33,14 @@ import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
-import org.alfresco.api.AlfrescoPublicApi;     
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.content.AbstractContentWriter;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Provides direct access to a local file.
@@ -52,27 +53,28 @@ import org.apache.commons.logging.LogFactory;
 public class FileContentWriter extends AbstractContentWriter
 {
     private static final Log logger = LogFactory.getLog(FileContentWriter.class);
-    
+
     private File file;
     private boolean allowRandomAccess;
-    
+
     /**
      * Constructor that builds a URL based on the absolute path of the file.
      * 
-     * @param file the file for writing.  This will most likely be directly
-     *      related to the content URL.
+     * @param file
+     *            the file for writing. This will most likely be directly related to the content URL.
      */
     public FileContentWriter(File file)
     {
         this(file, null);
     }
-    
+
     /**
      * Constructor that builds a URL based on the absolute path of the file.
      * 
-     * @param file the file for writing.  This will most likely be directly
-     *      related to the content URL.
-     * @param existingContentReader a reader of a previous version of this content
+     * @param file
+     *            the file for writing. This will most likely be directly related to the content URL.
+     * @param existingContentReader
+     *            a reader of a previous version of this content
      */
     public FileContentWriter(File file, ContentReader existingContentReader)
     {
@@ -81,23 +83,25 @@ public class FileContentWriter extends AbstractContentWriter
                 FileContentStore.STORE_PROTOCOL + ContentStore.PROTOCOL_DELIMITER + file.getAbsolutePath(),
                 existingContentReader);
     }
-    
+
     /**
      * Constructor that explicitely sets the URL that the reader represents.
      * 
-     * @param file the file for writing.  This will most likely be directly
-     *      related to the content URL.
-     * @param url the relative url that the reader represents
-     * @param existingContentReader a reader of a previous version of this content
+     * @param file
+     *            the file for writing. This will most likely be directly related to the content URL.
+     * @param url
+     *            the relative url that the reader represents
+     * @param existingContentReader
+     *            a reader of a previous version of this content
      */
     public FileContentWriter(File file, String url, ContentReader existingContentReader)
     {
         super(url, existingContentReader);
-        
+
         this.file = file;
         allowRandomAccess = true;
     }
-    
+
     /* package */ void setAllowRandomAccess(boolean allow)
     {
         this.allowRandomAccess = allow;
@@ -112,7 +116,7 @@ public class FileContentWriter extends AbstractContentWriter
     }
 
     /**
-     * @return Returns the size of the underlying file or 
+     * @return Returns the size of the underlying file or
      */
     public long getSize()
     {
@@ -125,8 +129,7 @@ public class FileContentWriter extends AbstractContentWriter
     }
 
     /**
-     * The URL of the write is known from the start and this method contract states
-     * that no consideration needs to be taken w.r.t. the stream state.
+     * The URL of the write is known from the start and this method contract states that no consideration needs to be taken w.r.t. the stream state.
      */
     @Override
     protected ContentReader createReader() throws ContentIOException
@@ -135,7 +138,7 @@ public class FileContentWriter extends AbstractContentWriter
         reader.setAllowRandomAccess(this.allowRandomAccess);
         return reader;
     }
-    
+
     @Override
     protected WritableByteChannel getDirectWritableChannel() throws ContentIOException
     {
@@ -150,7 +153,7 @@ public class FileContentWriter extends AbstractContentWriter
             WritableByteChannel channel = null;
             if (allowRandomAccess)
             {
-                RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");  // will create it
+                RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw"); // will create it
                 channel = randomAccessFile.getChannel();
             }
             else
@@ -178,6 +181,6 @@ public class FileContentWriter extends AbstractContentWriter
      */
     public boolean canWrite()
     {
-        return true;    // this is a writer
+        return true; // this is a writer
     }
 }

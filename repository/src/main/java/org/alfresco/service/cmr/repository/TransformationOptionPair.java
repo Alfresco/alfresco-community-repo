@@ -29,21 +29,15 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.alfresco.api.AlfrescoPublicApi;     
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.content.transform.TransformerDebug;
 
 /**
- * A pair of transformation options that specify
- *   A) a max value over which the source is not read (throws an Exception) or
- *   B) a limit over which no more of the source is read (returns EOF) 
- *    
- * Each pair represents a values such as an elapse time, KBytes read or number of pages read.
- * It is only meaningful for a either the max or limit value to be set.
+ * A pair of transformation options that specify A) a max value over which the source is not read (throws an Exception) or B) a limit over which no more of the source is read (returns EOF)
  * 
- * There is one pair of values for each transformer and another pair passed in via the
- * options parameter for each individual transformation. The later is for specific types of
- * transformation, such as thumbnail generation. When this occurs values are combined, by
- * using the lowest of the four values.
+ * Each pair represents a values such as an elapse time, KBytes read or number of pages read. It is only meaningful for a either the max or limit value to be set.
+ * 
+ * There is one pair of values for each transformer and another pair passed in via the options parameter for each individual transformation. The later is for specific types of transformation, such as thumbnail generation. When this occurs values are combined, by using the lowest of the four values.
  * 
  * @author Alan Davis
  *
@@ -56,7 +50,7 @@ public class TransformationOptionPair implements Serializable
     private static final long serialVersionUID = 1L;
 
     /**
-     * Action to take place for a given pair of values. 
+     * Action to take place for a given pair of values.
      */
     @AlfrescoPublicApi
     public enum Action
@@ -84,12 +78,12 @@ public class TransformationOptionPair implements Serializable
 
     private long max = -1;
     private long limit = -1;
-    
+
     public long getMax()
     {
         return max;
     }
-    
+
     public void setMax(long max, String exceptionMessage)
     {
         if (max >= 0 && limit >= 0)
@@ -107,12 +101,12 @@ public class TransformationOptionPair implements Serializable
             this.limit = -1;
         }
     }
-    
+
     public long getLimit()
     {
         return limit;
     }
-    
+
     public void setLimit(long limit, String exceptionMessage)
     {
         if (max >= 0 && limit >= 0)
@@ -121,7 +115,7 @@ public class TransformationOptionPair implements Serializable
         }
         setLimit(limit);
     }
-    
+
     private void setLimit(long limit)
     {
         this.limit = limit;
@@ -130,42 +124,36 @@ public class TransformationOptionPair implements Serializable
             this.max = -1;
         }
     }
-    
+
     public long getValue()
     {
         return minSet(getMax(), getLimit());
     }
 
     /**
-     * Indicates if the limit allows a transformation to take place at all.
-     * If 0, it would not be possible.
+     * Indicates if the limit allows a transformation to take place at all. If 0, it would not be possible.
+     * 
      * @return true if a transformation is possible.
      */
     public boolean supported()
     {
         return getValue() != 0;
     }
-    
+
     public Action getAction()
     {
-        return
-            (getMax() >= 0) ? Action.THROW_EXCEPTION :
-            (getLimit() >= 0) ? Action.RETURN_EOF
+        return (getMax() >= 0) ? Action.THROW_EXCEPTION
+                : (getLimit() >= 0) ? Action.RETURN_EOF
                         : null;
     }
 
     /**
-     * <b>This method overrides rather than defaults values into the supplied pair</b> (as the
-     * name might suggest), but because of the order in which it is called, this results in the
-     * correct defaults being set.
+     * <b>This method overrides rather than defaults values into the supplied pair</b> (as the name might suggest), but because of the order in which it is called, this results in the correct defaults being set.
      * <p>
-     * A call to this method overrides any values in the supplied pair parameter with those
-     * in this Object. The supplied pair parameter is being gradually built up by initially
-     * setting the most general values and then more specific values for each level. As a result  
-     * 'default' values from the more general levels will still exist at the end if more specific
-     * ones have not been supplied.
+     * A call to this method overrides any values in the supplied pair parameter with those in this Object. The supplied pair parameter is being gradually built up by initially setting the most general values and then more specific values for each level. As a result 'default' values from the more general levels will still exist at the end if more specific ones have not been supplied.
      * 
-     * @param pair to be set
+     * @param pair
+     *            to be set
      */
     public void defaultTo(TransformationOptionPair pair)
     {
@@ -188,18 +176,17 @@ public class TransformationOptionPair implements Serializable
     {
         if (getMax() >= 0)
         {
-            return max+'='+getValue();
+            return max + '=' + getValue();
         }
         if (getLimit() >= 0)
         {
-            return limit+'='+getValue();
+            return limit + '=' + getValue();
         }
         return null;
     }
-    
+
     /**
-     * Returns the lower of the two value supplied, ignoring values less than 
-     * 0 unless both are less than zero.
+     * Returns the lower of the two value supplied, ignoring values less than 0 unless both are less than zero.
      */
     private long minSet(long value1, long value2)
     {
@@ -213,10 +200,9 @@ public class TransformationOptionPair implements Serializable
         }
         return Math.min(value1, value2);
     }
-    
+
     /**
-     * Returns the higher (common denominator) of the two value supplied.
-     * If either value is less than 0, -1 is returned.
+     * Returns the higher (common denominator) of the two value supplied. If either value is less than 0, -1 is returned.
      */
     private long maxSet(long value1, long value2)
     {
@@ -243,7 +229,7 @@ public class TransformationOptionPair implements Serializable
             {
                 sb.append(", ");
             }
-            
+
             sb.append(optMaxKey);
             sb.append('=');
             sb.append(max);
@@ -257,19 +243,19 @@ public class TransformationOptionPair implements Serializable
                 {
                     sb.append(", ");
                 }
-                
+
                 sb.append(optLimitKey);
                 sb.append('=');
                 sb.append(limit);
             }
         }
     }
-    
+
     public void set(Map<String, Object> optionsMap, String optMaxKey, String optLimitKey,
             String exceptionMessage)
     {
-        long max = nvl((Long)optionsMap.get(optMaxKey));
-        long limit = nvl((Long)optionsMap.get(optLimitKey));
+        long max = nvl((Long) optionsMap.get(optMaxKey));
+        long limit = nvl((Long) optionsMap.get(optLimitKey));
         if (max >= 0 && limit >= 0)
         {
             throw new IllegalArgumentException(exceptionMessage);
@@ -287,70 +273,58 @@ public class TransformationOptionPair implements Serializable
     }
 
     /**
-     * Returns a TransformationOptionPair that has getter methods that combine the
-     * the values from the getter methods of this and the supplied TransformationOptionPair.
+     * Returns a TransformationOptionPair that has getter methods that combine the the values from the getter methods of this and the supplied TransformationOptionPair.
      */
     public TransformationOptionPair combine(TransformationOptionPair that)
     {
         return combine(that, true);
     }
-    
+
     /**
-     * Returns a TransformationOptionPair that has getter methods that combine the
-     * the values from the getter methods of this and the supplied TransformationOptionPair
-     * so that they return the lowest common denominator of the two limits .
+     * Returns a TransformationOptionPair that has getter methods that combine the the values from the getter methods of this and the supplied TransformationOptionPair so that they return the lowest common denominator of the two limits .
      */
     public TransformationOptionPair combineUpper(final TransformationOptionPair that)
     {
         return combine(that, false);
     }
-    
+
     private TransformationOptionPair combine(final TransformationOptionPair that, final boolean lower)
     {
-        return new TransformationOptionPair()
-        {
+        return new TransformationOptionPair() {
             /**
-             * Combines max values of this TransformationOptionPair and the supplied
-             * one to return the max to be used in a transformation. When 'lower' the max
-             * value is discarded (-1 is returned) if the combined limit value is lower.
-             * When 'not lower' (lowest common denominator) the max is only returned if the
-             * limit value is -1.
+             * Combines max values of this TransformationOptionPair and the supplied one to return the max to be used in a transformation. When 'lower' the max value is discarded (-1 is returned) if the combined limit value is lower. When 'not lower' (lowest common denominator) the max is only returned if the limit value is -1.
              */
             @Override
             public long getMax()
             {
                 long max = getMaxValue();
                 long limit = getLimitValue();
-                
+
                 return lower
-                    ? (max >= 0 && (limit < 0 || limit >= max))
-                      ? max
-                      : -1
-                    : (limit < 0)
-                      ? max
-                      : -1;
+                        ? (max >= 0 && (limit < 0 || limit >= max))
+                                ? max
+                                : -1
+                        : (limit < 0)
+                                ? max
+                                : -1;
             }
-            
+
             /**
-             * Combines limit values of this TransformationOptionPair and the supplied
-             * one to return the limit to be used in a transformation. When 'lower' the limit
-             * value is discarded (-1 is returned) if the combined max value is lower.
-             * When 'not lower' (lowest common denominator) the limit is only returned if the
-             * max value is -1.
+             * Combines limit values of this TransformationOptionPair and the supplied one to return the limit to be used in a transformation. When 'lower' the limit value is discarded (-1 is returned) if the combined max value is lower. When 'not lower' (lowest common denominator) the limit is only returned if the max value is -1.
              */
             @Override
             public long getLimit()
             {
                 long max = getMaxValue();
                 long limit = getLimitValue();
-                
+
                 return lower
                         ? (limit >= 0 && (max < 0 || max > limit))
-                          ? limit
-                          : -1
+                                ? limit
+                                : -1
                         : (max < 0)
-                          ? limit
-                          : -1;
+                                ? limit
+                                : -1;
             }
 
             private long getLimitValue()
@@ -378,7 +352,7 @@ public class TransformationOptionPair implements Serializable
             {
                 throw new UnsupportedOperationException();
             }
-            
+
             @Override
             public void set(Map<String, Object> optionsMap, String optMaxKey, String optLimitKey,
                     String exceptionMessage)
@@ -387,7 +361,7 @@ public class TransformationOptionPair implements Serializable
             }
         };
     }
-    
+
     @Override
     public int hashCode()
     {

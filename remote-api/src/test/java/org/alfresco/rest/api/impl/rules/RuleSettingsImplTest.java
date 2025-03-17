@@ -27,21 +27,16 @@ package org.alfresco.rest.api.impl.rules;
 
 import static java.util.Collections.emptyMap;
 
-import static org.alfresco.repo.rule.RuleModel.ASPECT_IGNORE_INHERITED_RULES;
-import static org.alfresco.rest.api.model.rules.RuleSetting.IS_INHERITANCE_ENABLED_KEY;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
+import static org.alfresco.repo.rule.RuleModel.ASPECT_IGNORE_INHERITED_RULES;
+import static org.alfresco.rest.api.model.rules.RuleSetting.IS_INHERITANCE_ENABLED_KEY;
+
 import junit.framework.TestCase;
-import org.alfresco.rest.api.model.rules.RuleSetting;
-import org.alfresco.rest.framework.core.exceptions.NotFoundException;
-import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,9 +44,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.alfresco.rest.api.model.rules.RuleSetting;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
+import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+
 /** Unit tests for {@link RuleSettingsImpl}. */
 @Experimental
-@RunWith (MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class RuleSettingsImplTest extends TestCase
 {
     private static final String FOLDER_ID = "dummy-folder-id";

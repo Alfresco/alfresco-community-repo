@@ -34,34 +34,34 @@ public class Request
     private byte[] body;
     private String encoding = "UTF-8";
     private String contentType;
-    
+
     public Request(Request req)
     {
         this.method = req.method;
-        this.uri= req.uri;
+        this.uri = req.uri;
         this.args = req.args;
         this.headers = req.headers;
         this.body = req.body;
         this.encoding = req.encoding;
         this.contentType = req.contentType;
     }
-    
+
     public Request(String method, String uri)
     {
         this.method = method;
         this.uri = uri;
     }
-    
+
     public String getMethod()
     {
         return method;
     }
-    
+
     public String getUri()
     {
         return uri;
     }
-    
+
     public String getFullUri()
     {
         // calculate full uri
@@ -75,16 +75,16 @@ public class Request
                 prefix = '&';
             }
         }
-        
+
         return fullUri;
     }
-    
+
     public Request setArgs(Map<String, String> args)
     {
         this.args = args;
         return this;
     }
-    
+
     public Map<String, String> getArgs()
     {
         return args;
@@ -95,29 +95,29 @@ public class Request
         this.headers = headers;
         return this;
     }
-    
+
     public Map<String, String> getHeaders()
     {
         return headers;
     }
-    
+
     public Request setBody(byte[] body)
     {
         this.body = body;
         return this;
     }
-    
+
     public byte[] getBody()
     {
         return body;
     }
-    
+
     public Request setEncoding(String encoding)
     {
         this.encoding = encoding;
         return this;
     }
-    
+
     public String getEncoding()
     {
         return encoding;
@@ -128,7 +128,7 @@ public class Request
         this.contentType = contentType;
         return this;
     }
-    
+
     public String getType()
     {
         return contentType;

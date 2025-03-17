@@ -42,17 +42,20 @@ public interface LuceneQueryLanguageSPI
 
     /**
      * The unique name for the query language
+     * 
      * @return - the unique name
      */
     public String getName();
-    
+
     /**
      * Execute the query
-     * @param searchParameters SearchParameters
+     * 
+     * @param searchParameters
+     *            SearchParameters
      * @return - the query results
      */
     public ResultSet executeQuery(SearchParameters searchParameters);
-    
+
     /**
      * Register
      */

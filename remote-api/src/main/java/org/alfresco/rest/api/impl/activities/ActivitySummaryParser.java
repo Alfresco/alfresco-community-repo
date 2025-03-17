@@ -32,9 +32,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -42,6 +39,10 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.registry.NamedObjectRegistry;
 
 /*
  * Adapted from JSONtoFmModel
@@ -54,123 +55,123 @@ public class ActivitySummaryParser implements ActivitySummaryProcessorRegistry
     private static String REGEXP_ISO8061 = "^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})(.([0-9]){3})?(Z|[\\+\\-]([0-9]{2}):([0-9]{2}))$";
     private static Pattern matcherISO8601 = Pattern.compile(REGEXP_ISO8061);
     private static final Pattern nodeRefPattern = Pattern.compile("^[a-zA-Z]+://.+/.+");
-    
-	private NamedObjectRegistry<ActivitySummaryProcessor> processors;
-	
+
+    private NamedObjectRegistry<ActivitySummaryProcessor> processors;
+
     private boolean autoConvertISO8601 = true;
 
-	public ActivitySummaryParser()
-	{
-	}
+    public ActivitySummaryParser()
+    {}
 
-	public void setProcessors(NamedObjectRegistry<ActivitySummaryProcessor> processors)
-	{
-		this.processors = processors;
-	}
+    public void setProcessors(NamedObjectRegistry<ActivitySummaryProcessor> processors)
+    {
+        this.processors = processors;
+    }
 
-	public void register(String activityType, ActivitySummaryProcessor processor)
-	{
-		ActivitySummaryProcessor existingProcessor = processors.getNamedObject(activityType);
-		if(existingProcessor != null)
-		{
-			logger.warn("Activity summary processor " + existingProcessor + " is being overridden by " + processor + " for activity type " + activityType);
-		}
+    public void register(String activityType, ActivitySummaryProcessor processor)
+    {
+        ActivitySummaryProcessor existingProcessor = processors.getNamedObject(activityType);
+        if (existingProcessor != null)
+        {
+            logger.warn("Activity summary processor " + existingProcessor + " is being overridden by " + processor + " for activity type " + activityType);
+        }
 
-		processors.register(activityType, processor);
-	}
+        processors.register(activityType, processor);
+    }
 
-	private void processActivitySummary(String activityType, Map<String, Object> entries)
-	{
-		ActivitySummaryProcessor processor = processors.getNamedObject(activityType);
-		if(processor == null)
-		{
-			processor = new BaseActivitySummaryProcessor();
-		}
+    private void processActivitySummary(String activityType, Map<String, Object> entries)
+    {
+        ActivitySummaryProcessor processor = processors.getNamedObject(activityType);
+        if (processor == null)
+        {
+            processor = new BaseActivitySummaryProcessor();
+        }
 
-		processor.process(entries);
-	}
+        processor.process(entries);
+    }
 
-	public Map<String, Object> parse(String activityType, String activitySummary) throws JSONException
-	{
-		JSONObject json = (JSONObject)JSONValue.parse(activitySummary);
-		Map<String, Object> map = convertJSONObjectToMap(json);
-		processActivitySummary(activityType, map);
-		return map;
-	}
-	
+    public Map<String, Object> parse(String activityType, String activitySummary) throws JSONException
+    {
+        JSONObject json = (JSONObject) JSONValue.parse(activitySummary);
+        Map<String, Object> map = convertJSONObjectToMap(json);
+        processActivitySummary(activityType, map);
+        return map;
+    }
+
     /**
      * Determine if passed string conforms to the pattern of a node reference
      * 
-     * @param nodeRef  the node reference as a string
-     * @return  true => it matches the pattern of a node reference
+     * @param nodeRef
+     *            the node reference as a string
+     * @return true => it matches the pattern of a node reference
      */
     private boolean isNodeRef(String nodeRef)
     {
-    	Matcher matcher = nodeRefPattern.matcher(nodeRef);
-    	return matcher.matches();
+        Matcher matcher = nodeRefPattern.matcher(nodeRef);
+        return matcher.matches();
     }
-    
+
     Map<String, Object> convertJSONObjectToMap(JSONObject jo) throws JSONException
     {
         Map<String, Object> model = new HashMap<String, Object>();
 
-        for(Object key : jo.keySet())
+        for (Object key : jo.keySet())
         {
             Object value = jo.get(key);
             if (value instanceof JSONObject)
             {
-                model.put((String)key, convertJSONObjectToMap((JSONObject)value));
+                model.put((String) key, convertJSONObjectToMap((JSONObject) value));
             }
             else if (value instanceof JSONArray)
             {
-                model.put((String)key, convertJSONArrayToList((JSONArray)value));
+                model.put((String) key, convertJSONArrayToList((JSONArray) value));
             }
             else if (value == null)
             {
-                model.put((String)key, null);
+                model.put((String) key, null);
             }
             else
             {
-                if ((value instanceof String) && autoConvertISO8601 && (matcherISO8601.matcher((String)value).matches()))
+                if ((value instanceof String) && autoConvertISO8601 && (matcherISO8601.matcher((String) value).matches()))
                 {
-                	value = ISO8601DateFormat.parse((String)value);
+                    value = ISO8601DateFormat.parse((String) value);
                 }
-                
-                if ((value instanceof String) && isNodeRef((String)value))
+
+                if ((value instanceof String) && isNodeRef((String) value))
                 {
-                	try
-                	{
-                		value = new NodeRef((String)value);
-                	}
-                	catch(AlfrescoRuntimeException e)
-                	{
-                		// cannot convert to a nodeRef, just keep as a string
-                		logger.warn("Cannot convert activity summary NodeRef string " + value + " to a NodeRef");
-                	}
+                    try
+                    {
+                        value = new NodeRef((String) value);
+                    }
+                    catch (AlfrescoRuntimeException e)
+                    {
+                        // cannot convert to a nodeRef, just keep as a string
+                        logger.warn("Cannot convert activity summary NodeRef string " + value + " to a NodeRef");
+                    }
                 }
-                
-                model.put((String)key, value);
+
+                model.put((String) key, value);
             }
         }
-       
+
         return model;
     }
-   
+
     List<Object> convertJSONArrayToList(JSONArray ja) throws JSONException
     {
         List<Object> model = new ArrayList<Object>();
-       
+
         for (int i = 0; i < ja.size(); i++)
         {
             Object o = ja.get(i);
-            
+
             if (o instanceof JSONArray)
             {
-                model.add(convertJSONArrayToList((JSONArray)o));
+                model.add(convertJSONArrayToList((JSONArray) o));
             }
             else if (o instanceof JSONObject)
             {
-                model.add(convertJSONObjectToMap((JSONObject)o));
+                model.add(convertJSONObjectToMap((JSONObject) o));
             }
             else if (o == null)
             {
@@ -178,15 +179,15 @@ public class ActivitySummaryParser implements ActivitySummaryProcessorRegistry
             }
             else
             {
-                if ((o instanceof String) && autoConvertISO8601 && (matcherISO8601.matcher((String)o).matches()))
+                if ((o instanceof String) && autoConvertISO8601 && (matcherISO8601.matcher((String) o).matches()))
                 {
-                    o = ISO8601DateFormat.parse((String)o);
+                    o = ISO8601DateFormat.parse((String) o);
                 }
-                
+
                 model.add(o);
             }
         }
-       
+
         return model;
     }
 

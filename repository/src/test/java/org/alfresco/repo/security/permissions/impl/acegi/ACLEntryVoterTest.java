@@ -38,6 +38,13 @@ import java.util.Set;
 import net.sf.acegisecurity.ConfigAttribute;
 import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+import org.junit.experimental.categories.Category;
+import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.aop.framework.adapter.AdvisorAdapterRegistry;
+import org.springframework.aop.framework.adapter.GlobalAdvisorAdapterRegistry;
+import org.springframework.aop.target.SingletonTargetSource;
 
 import org.alfresco.repo.security.permissions.impl.AbstractPermissionTest;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionEntry;
@@ -47,13 +54,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
-import org.junit.experimental.categories.Category;
-import org.springframework.aop.framework.ProxyFactory;
-import org.springframework.aop.framework.adapter.AdvisorAdapterRegistry;
-import org.springframework.aop.framework.adapter.GlobalAdvisorAdapterRegistry;
-import org.springframework.aop.target.SingletonTargetSource;
 
 @Category(OwnJVMTestsCategory.class)
 public class ACLEntryVoterTest extends AbstractPermissionTest
@@ -76,13 +76,13 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         runAs(ANDY);
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneNodeRef", new Class[] { NodeRef.class });
+        Method method = o.getClass().getMethod("testOneNodeRef", new Class[]{NodeRef.class});
 
         Object proxy = getProxy(o, ACL_NODE_0_SYS_BASE_READ);
 
         try
         {
-            method.invoke(proxy, new Object[] { rootNodeRef });
+            method.invoke(proxy, new Object[]{rootNodeRef});
             fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
@@ -92,7 +92,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         try
         {
-            method.invoke(proxy, new Object[] { systemNodeRef });
+            method.invoke(proxy, new Object[]{systemNodeRef});
             fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
@@ -104,7 +104,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         nodeService.deleteNode(systemNodeRef);
 
-        assertNull(method.invoke(proxy, new Object[] { systemNodeRef }));
+        assertNull(method.invoke(proxy, new Object[]{systemNodeRef}));
 
     }
 
@@ -113,13 +113,13 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         runAs(ANDY);
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneStoreRef", new Class[] { StoreRef.class });
+        Method method = o.getClass().getMethod("testOneStoreRef", new Class[]{StoreRef.class});
 
         Object proxy = getProxy(o, ACL_NODE_0_SYS_BASE_READ);
 
         try
         {
-            method.invoke(proxy, new Object[] { rootNodeRef.getStoreRef() });
+            method.invoke(proxy, new Object[]{rootNodeRef.getStoreRef()});
             fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
@@ -134,11 +134,11 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         runAs(ANDY);
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneNodeRef", new Class[] { NodeRef.class });
+        Method method = o.getClass().getMethod("testOneNodeRef", new Class[]{NodeRef.class});
 
         Object proxy = getProxy(o, ACL_NODE_0_SYS_BASE_READ);
 
-        method.invoke(proxy, new Object[] { null });
+        method.invoke(proxy, new Object[]{null});
 
     }
 
@@ -147,11 +147,11 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         runAs(ANDY);
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneStoreRef", new Class[] { StoreRef.class });
+        Method method = o.getClass().getMethod("testOneStoreRef", new Class[]{StoreRef.class});
 
         Object proxy = getProxy(o, ACL_NODE_0_SYS_BASE_READ);
 
-        method.invoke(proxy, new Object[] { null });
+        method.invoke(proxy, new Object[]{null});
 
     }
 
@@ -160,11 +160,11 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         runAs(ANDY);
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[] { ChildAssociationRef.class });
+        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[]{ChildAssociationRef.class});
 
         Object proxy = getProxy(o, "ACL_PARENT.0.sys:base.Read");
 
-        method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(rootNodeRef) });
+        method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(rootNodeRef)});
 
     }
 
@@ -173,11 +173,11 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         runAs(ANDY);
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[] { ChildAssociationRef.class });
+        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[]{ChildAssociationRef.class});
 
         Object proxy = getProxy(o, "ACL_PARENT.0.sys:base.Read");
 
-        method.invoke(proxy, new Object[] { null });
+        method.invoke(proxy, new Object[]{null});
 
     }
 
@@ -186,11 +186,11 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         runAs(ANDY);
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[] { ChildAssociationRef.class });
+        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[]{ChildAssociationRef.class});
 
         Object proxy = getProxy(o, ACL_NODE_0_SYS_BASE_READ);
 
-        method.invoke(proxy, new Object[] { null });
+        method.invoke(proxy, new Object[]{null});
 
     }
 
@@ -199,13 +199,13 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         runAs(ANDY);
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[] { ChildAssociationRef.class });
+        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[]{ChildAssociationRef.class});
 
         Object proxy = getProxy(o, ACL_NODE_0_SYS_BASE_READ);
 
         try
         {
-            method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(rootNodeRef) });
+            method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(rootNodeRef)});
             fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
@@ -219,13 +219,13 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         runAs(ANDY);
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[] { ChildAssociationRef.class });
+        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[]{ChildAssociationRef.class});
 
         Object proxy = getProxy(o, "ACL_PARENT.0.sys:base.Read");
 
         try
         {
-            method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(systemNodeRef) });
+            method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(systemNodeRef)});
             fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
@@ -242,11 +242,11 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
                 ANDY, AccessStatus.ALLOWED));
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneNodeRef", new Class[] { NodeRef.class });
+        Method method = o.getClass().getMethod("testOneNodeRef", new Class[]{NodeRef.class});
 
         Object proxy = getProxy(o, ACL_NODE_0_SYS_BASE_READ);
 
-        method.invoke(proxy, new Object[] { rootNodeRef });
+        method.invoke(proxy, new Object[]{rootNodeRef});
     }
 
     public void testBasicAllow() throws Exception
@@ -257,11 +257,11 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
                 ANDY, AccessStatus.ALLOWED));
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneNodeRef", new Class[] { NodeRef.class });
+        Method method = o.getClass().getMethod("testOneNodeRef", new Class[]{NodeRef.class});
 
         Object proxy = getProxy(o, "ACL_ALLOW");
 
-        method.invoke(proxy, new Object[] { rootNodeRef });
+        method.invoke(proxy, new Object[]{rootNodeRef});
     }
 
     public void testBasicAllowStore() throws Exception
@@ -272,11 +272,11 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
                 ANDY, AccessStatus.ALLOWED));
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneStoreRef", new Class[] { StoreRef.class });
+        Method method = o.getClass().getMethod("testOneStoreRef", new Class[]{StoreRef.class});
 
         Object proxy = getProxy(o, ACL_NODE_0_SYS_BASE_READ);
 
-        method.invoke(proxy, new Object[] { rootNodeRef.getStoreRef() });
+        method.invoke(proxy, new Object[]{rootNodeRef.getStoreRef()});
     }
 
     public void testBasicAllowChildAssocNode() throws Exception
@@ -287,11 +287,11 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
                 ANDY, AccessStatus.ALLOWED));
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[] { ChildAssociationRef.class });
+        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[]{ChildAssociationRef.class});
 
         Object proxy = getProxy(o, ACL_NODE_0_SYS_BASE_READ);
 
-        method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(rootNodeRef) });
+        method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(rootNodeRef)});
     }
 
     public void testBasicAllowParentAssocNode() throws Exception
@@ -302,11 +302,11 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
                 ANDY, AccessStatus.ALLOWED));
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[] { ChildAssociationRef.class });
+        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[]{ChildAssociationRef.class});
 
         Object proxy = getProxy(o, "ACL_PARENT.0.sys:base.Read");
 
-        method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(systemNodeRef) });
+        method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(systemNodeRef)});
     }
 
     public void testDenyParentAssocNode() throws Exception
@@ -317,13 +317,13 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
                 ANDY, AccessStatus.ALLOWED));
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[] { ChildAssociationRef.class });
+        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[]{ChildAssociationRef.class});
 
         Object proxy = getProxy(o, "ACL_PARENT.0.sys:base.Read");
 
         try
         {
-            method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(systemNodeRef) });
+            method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(systemNodeRef)});
             fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
@@ -342,11 +342,11 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
                 getPermission(PermissionService.READ_CHILDREN), ANDY, AccessStatus.ALLOWED));
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[] { ChildAssociationRef.class });
+        Method method = o.getClass().getMethod("testOneChildAssociationRef", new Class[]{ChildAssociationRef.class});
 
         Object proxy = getProxy(o, ACL_NODE_0_SYS_BASE_READ);
 
-        method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(systemNodeRef) });
+        method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(systemNodeRef)});
 
     }
 
@@ -356,15 +356,15 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         Object o = new ClassWithMethods();
         Method method = o.getClass().getMethod("testManyNodeRef",
-                new Class[] { NodeRef.class, NodeRef.class, NodeRef.class, NodeRef.class });
+                new Class[]{NodeRef.class, NodeRef.class, NodeRef.class, NodeRef.class});
 
         Object proxy = getProxy(o, ACL_NODE_0_SYS_BASE_READ);
 
-        method.invoke(proxy, new Object[] { null, null, null, null });
+        method.invoke(proxy, new Object[]{null, null, null, null});
 
         try
         {
-            method.invoke(proxy, new Object[] { rootNodeRef, null, null, null });
+            method.invoke(proxy, new Object[]{rootNodeRef, null, null, null});
             fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
@@ -374,7 +374,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
                 ANDY, AccessStatus.ALLOWED));
-        method.invoke(proxy, new Object[] { rootNodeRef, null, null, null });
+        method.invoke(proxy, new Object[]{rootNodeRef, null, null, null});
     }
 
     public void testMultiNodeMethodsArg1() throws Exception
@@ -383,15 +383,15 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         Object o = new ClassWithMethods();
         Method method = o.getClass().getMethod("testManyNodeRef",
-                new Class[] { NodeRef.class, NodeRef.class, NodeRef.class, NodeRef.class });
+                new Class[]{NodeRef.class, NodeRef.class, NodeRef.class, NodeRef.class});
 
         Object proxy = getProxy(o, "ACL_NODE.1.sys:base.Read");
 
-        method.invoke(proxy, new Object[] { null, null, null, null });
+        method.invoke(proxy, new Object[]{null, null, null, null});
 
         try
         {
-            method.invoke(proxy, new Object[] { null, rootNodeRef, null, null });
+            method.invoke(proxy, new Object[]{null, rootNodeRef, null, null});
             fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
@@ -401,7 +401,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
                 ANDY, AccessStatus.ALLOWED));
-        method.invoke(proxy, new Object[] { null, rootNodeRef, null, null });
+        method.invoke(proxy, new Object[]{null, rootNodeRef, null, null});
     }
 
     public void testMultiNodeMethodsArg2() throws Exception
@@ -410,15 +410,15 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         Object o = new ClassWithMethods();
         Method method = o.getClass().getMethod("testManyNodeRef",
-                new Class[] { NodeRef.class, NodeRef.class, NodeRef.class, NodeRef.class });
+                new Class[]{NodeRef.class, NodeRef.class, NodeRef.class, NodeRef.class});
 
         Object proxy = getProxy(o, "ACL_NODE.2.sys:base.Read");
 
-        method.invoke(proxy, new Object[] { null, null, null, null });
+        method.invoke(proxy, new Object[]{null, null, null, null});
 
         try
         {
-            method.invoke(proxy, new Object[] { null, null, rootNodeRef, null });
+            method.invoke(proxy, new Object[]{null, null, rootNodeRef, null});
             fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
@@ -428,7 +428,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
                 ANDY, AccessStatus.ALLOWED));
-        method.invoke(proxy, new Object[] { null, null, rootNodeRef, null });
+        method.invoke(proxy, new Object[]{null, null, rootNodeRef, null});
     }
 
     public void testMultiNodeMethodsArg3() throws Exception
@@ -437,15 +437,15 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         Object o = new ClassWithMethods();
         Method method = o.getClass().getMethod("testManyNodeRef",
-                new Class[] { NodeRef.class, NodeRef.class, NodeRef.class, NodeRef.class });
+                new Class[]{NodeRef.class, NodeRef.class, NodeRef.class, NodeRef.class});
 
         Object proxy = getProxy(o, "ACL_NODE.3.sys:base.Read");
 
-        method.invoke(proxy, new Object[] { null, null, null, null });
+        method.invoke(proxy, new Object[]{null, null, null, null});
 
         try
         {
-            method.invoke(proxy, new Object[] { null, null, null, rootNodeRef });
+            method.invoke(proxy, new Object[]{null, null, null, rootNodeRef});
             fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
@@ -455,7 +455,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
                 ANDY, AccessStatus.ALLOWED));
-        method.invoke(proxy, new Object[] { null, null, null, rootNodeRef });
+        method.invoke(proxy, new Object[]{null, null, null, rootNodeRef});
     }
 
     public void testMultiChildAssocRefMethodsArg0() throws Exception
@@ -465,16 +465,16 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         Object o = new ClassWithMethods();
         Method method = o.getClass().getMethod(
                 "testManyChildAssociationRef",
-                new Class[] { ChildAssociationRef.class, ChildAssociationRef.class, ChildAssociationRef.class,
-                        ChildAssociationRef.class });
+                new Class[]{ChildAssociationRef.class, ChildAssociationRef.class, ChildAssociationRef.class,
+                        ChildAssociationRef.class});
 
         Object proxy = getProxy(o, ACL_NODE_0_SYS_BASE_READ);
 
-        method.invoke(proxy, new Object[] { null, null, null, null });
+        method.invoke(proxy, new Object[]{null, null, null, null});
 
         try
         {
-            method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(rootNodeRef), null, null, null });
+            method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(rootNodeRef), null, null, null});
             fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
@@ -484,7 +484,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
                 ANDY, AccessStatus.ALLOWED));
-        method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(rootNodeRef), null, null, null });
+        method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(rootNodeRef), null, null, null});
     }
 
     public void testMultiChildAssocRefMethodsArg1() throws Exception
@@ -494,16 +494,16 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         Object o = new ClassWithMethods();
         Method method = o.getClass().getMethod(
                 "testManyChildAssociationRef",
-                new Class[] { ChildAssociationRef.class, ChildAssociationRef.class, ChildAssociationRef.class,
-                        ChildAssociationRef.class });
+                new Class[]{ChildAssociationRef.class, ChildAssociationRef.class, ChildAssociationRef.class,
+                        ChildAssociationRef.class});
 
         Object proxy = getProxy(o, "ACL_NODE.1.sys:base.Read");
 
-        method.invoke(proxy, new Object[] { null, null, null, null });
+        method.invoke(proxy, new Object[]{null, null, null, null});
 
         try
         {
-            method.invoke(proxy, new Object[] { null, nodeService.getPrimaryParent(rootNodeRef), null, null });
+            method.invoke(proxy, new Object[]{null, nodeService.getPrimaryParent(rootNodeRef), null, null});
             fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
@@ -513,7 +513,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
                 ANDY, AccessStatus.ALLOWED));
-        method.invoke(proxy, new Object[] { null, nodeService.getPrimaryParent(rootNodeRef), null, null });
+        method.invoke(proxy, new Object[]{null, nodeService.getPrimaryParent(rootNodeRef), null, null});
     }
 
     public void testMultiChildAssocRefMethodsArg2() throws Exception
@@ -523,16 +523,16 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         Object o = new ClassWithMethods();
         Method method = o.getClass().getMethod(
                 "testManyChildAssociationRef",
-                new Class[] { ChildAssociationRef.class, ChildAssociationRef.class, ChildAssociationRef.class,
-                        ChildAssociationRef.class });
+                new Class[]{ChildAssociationRef.class, ChildAssociationRef.class, ChildAssociationRef.class,
+                        ChildAssociationRef.class});
 
         Object proxy = getProxy(o, "ACL_NODE.2.sys:base.Read");
 
-        method.invoke(proxy, new Object[] { null, null, null, null });
+        method.invoke(proxy, new Object[]{null, null, null, null});
 
         try
         {
-            method.invoke(proxy, new Object[] { null, null, nodeService.getPrimaryParent(rootNodeRef), null });
+            method.invoke(proxy, new Object[]{null, null, nodeService.getPrimaryParent(rootNodeRef), null});
             fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
@@ -542,7 +542,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
                 ANDY, AccessStatus.ALLOWED));
-        method.invoke(proxy, new Object[] { null, null, nodeService.getPrimaryParent(rootNodeRef), null });
+        method.invoke(proxy, new Object[]{null, null, nodeService.getPrimaryParent(rootNodeRef), null});
     }
 
     public void testMultiChildAssocRefMethodsArg3() throws Exception
@@ -552,16 +552,16 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         Object o = new ClassWithMethods();
         Method method = o.getClass().getMethod(
                 "testManyChildAssociationRef",
-                new Class[] { ChildAssociationRef.class, ChildAssociationRef.class, ChildAssociationRef.class,
-                        ChildAssociationRef.class });
+                new Class[]{ChildAssociationRef.class, ChildAssociationRef.class, ChildAssociationRef.class,
+                        ChildAssociationRef.class});
 
         Object proxy = getProxy(o, "ACL_NODE.3.sys:base.Read");
 
-        method.invoke(proxy, new Object[] { null, null, null, null });
+        method.invoke(proxy, new Object[]{null, null, null, null});
 
         try
         {
-            method.invoke(proxy, new Object[] { null, null, null, nodeService.getPrimaryParent(rootNodeRef) });
+            method.invoke(proxy, new Object[]{null, null, null, nodeService.getPrimaryParent(rootNodeRef)});
             fail(SHOULD_FAIL_DENIED);
         }
         catch (InvocationTargetException e)
@@ -571,7 +571,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ),
                 ANDY, AccessStatus.ALLOWED));
-        method.invoke(proxy, new Object[] { null, null, null, nodeService.getPrimaryParent(rootNodeRef) });
+        method.invoke(proxy, new Object[]{null, null, null, nodeService.getPrimaryParent(rootNodeRef)});
     }
 
     public void testMethodACL() throws Exception
@@ -579,7 +579,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         runAs(ANDY);
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testMethod", new Class[] {});
+        Method method = o.getClass().getMethod("testMethod", new Class[]{});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -588,7 +588,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         proxyFactory.setTargetSource(new SingletonTargetSource(o));
         Object proxy = proxyFactory.getProxy();
 
-        method.invoke(proxy, new Object[] {});
+        method.invoke(proxy, new Object[]{});
     }
 
     public void testMethodACL2() throws Exception
@@ -596,7 +596,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         runAs(ANDY);
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testMethod", new Class[] {});
+        Method method = o.getClass().getMethod("testMethod", new Class[]{});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -606,7 +606,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         proxyFactory.setTargetSource(new SingletonTargetSource(o));
         Object proxy = proxyFactory.getProxy();
 
-        method.invoke(proxy, new Object[] {});
+        method.invoke(proxy, new Object[]{});
     }
 
     public void testMethodACL3() throws Exception
@@ -614,7 +614,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         runAs(ANDY);
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testMethod", new Class[] {});
+        Method method = o.getClass().getMethod("testMethod", new Class[]{});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -624,7 +624,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         proxyFactory.setTargetSource(new SingletonTargetSource(o));
         Object proxy = proxyFactory.getProxy();
 
-        method.invoke(proxy, new Object[] {});
+        method.invoke(proxy, new Object[]{});
 
     }
 
@@ -633,7 +633,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         runAs(ANDY);
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("testMethod", new Class[] {});
+        Method method = o.getClass().getMethod("testMethod", new Class[]{});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -644,7 +644,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         try
         {
-            method.invoke(proxy, new Object[] {});
+            method.invoke(proxy, new Object[]{});
         }
         catch (InvocationTargetException e)
         {
@@ -676,7 +676,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         {
             method.invoke(proxy, singletonList(rootNodeRef));
             fail(SHOULD_FAIL_DENIED);
-        } catch (InvocationTargetException e)
+        }
+        catch (InvocationTargetException e)
         {
             verifyAccessDenied(e);
         }
@@ -718,7 +719,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         {
             method.invoke(proxy, Arrays.asList(systemNodeRef, rootNodeRef, systemNodeRef));
             fail(SHOULD_FAIL_DENIED);
-        } catch (InvocationTargetException e)
+        }
+        catch (InvocationTargetException e)
         {
             verifyAccessDenied(e);
         }
@@ -737,7 +739,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         {
             method.invoke(proxy, Collections.singletonList(abstainedNode));
             fail(SHOULD_FAIL_ABSTAINED);
-        } catch (InvocationTargetException e)
+        }
+        catch (InvocationTargetException e)
         {
             verifyAccessAbstain(e);
         }
@@ -756,7 +759,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         {
             method.invoke(proxy, Collections.singletonList(abstainedNode));
             fail(SHOULD_FAIL_ABSTAINED);
-        } catch (InvocationTargetException e)
+        }
+        catch (InvocationTargetException e)
         {
             verifyAccessAbstain(e);
         }
@@ -775,7 +779,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         {
             method.invoke(proxy, Collections.singletonList(abstainedNode));
             fail(SHOULD_FAIL_ABSTAINED);
-        } catch (InvocationTargetException e)
+        }
+        catch (InvocationTargetException e)
         {
             verifyAccessAbstain(e);
         }
@@ -795,7 +800,8 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         {
             method.invoke(proxy, Arrays.asList(rootNodeRef, abstainedNode, rootNodeRef));
             fail(SHOULD_FAIL_ABSTAINED);
-        } catch (InvocationTargetException e)
+        }
+        catch (InvocationTargetException e)
         {
             verifyAccessAbstain(e);
         }
@@ -814,12 +820,12 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         {
             method.invoke(proxy, Arrays.asList(abstainedNode, systemNodeRef, abstainedNode));
             fail(SHOULD_FAIL_DENIED);
-        } catch (InvocationTargetException e)
+        }
+        catch (InvocationTargetException e)
         {
             verifyAccessDenied(e);
         }
     }
-
 
     private void verifyAccessAbstain(InvocationTargetException e)
     {
@@ -866,8 +872,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
         }
 
         public void testListOfNodeRefs(List listOfNodeRefs)
-        {
-        }
+        {}
 
     }
 
@@ -877,8 +882,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         Interceptor(final String config1, final String config2)
         {
-            cad.addConfigAttribute(new ConfigAttribute()
-            {
+            cad.addConfigAttribute(new ConfigAttribute() {
 
                 /**
                  * Comment for <code>serialVersionUID</code>
@@ -891,8 +895,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
                 }
 
             });
-            cad.addConfigAttribute(new ConfigAttribute()
-            {
+            cad.addConfigAttribute(new ConfigAttribute() {
 
                 /**
                  * Comment for <code>serialVersionUID</code>
@@ -909,8 +912,7 @@ public class ACLEntryVoterTest extends AbstractPermissionTest
 
         Interceptor(final String config)
         {
-            cad.addConfigAttribute(new ConfigAttribute()
-            {
+            cad.addConfigAttribute(new ConfigAttribute() {
 
                 /**
                  * Comment for <code>serialVersionUID</code>

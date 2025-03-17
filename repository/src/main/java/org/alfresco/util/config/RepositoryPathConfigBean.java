@@ -27,19 +27,20 @@ package org.alfresco.util.config;
 
 import java.util.List;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 
 /**
  * Composite property bean to identify a repository path.
  * 
  * @author Derek Hulley
- * @since 3.2 
+ * @since 3.2
  */
 public class RepositoryPathConfigBean
 {
@@ -60,7 +61,7 @@ public class RepositoryPathConfigBean
     }
 
     /**
-     * @return          Returns the string representation of the store reference
+     * @return Returns the string representation of the store reference
      */
     public String getStore()
     {
@@ -88,7 +89,7 @@ public class RepositoryPathConfigBean
     }
 
     /**
-     * Sets the path within the store.  This must start with <b>/</b> at least.
+     * Sets the path within the store. This must start with <b>/</b> at least.
      * 
      * @param path
      *            the path within the store
@@ -109,7 +110,7 @@ public class RepositoryPathConfigBean
      * <p>
      * Authentication and transactions are the client's responsibility.
      * 
-     * @return                      Returns the node reference (first one found) or <tt>null</tt>
+     * @return Returns the node reference (first one found) or <tt>null</tt>
      */
     public NodeRef resolveNodePath(NamespaceService namespaceService, NodeService nodeService, SearchService searchService)
     {

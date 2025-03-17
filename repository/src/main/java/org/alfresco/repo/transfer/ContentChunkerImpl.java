@@ -29,10 +29,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.transfer.TransferException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.transfer.TransferException;
 
 /**
  * The Content Chunker Splits Content into "Chunks" of a given size.
@@ -42,22 +43,22 @@ import org.apache.commons.logging.LogFactory;
 public class ContentChunkerImpl implements ContentChunker
 {
     private static Log logger = LogFactory.getLog(ContentChunkerImpl.class);
-    
+
     /**
      * The chunk size.
      */
     private long chunkSize = 1000000;
-    
+
     /**
      * The handler to recieve the "chunks"
      */
     private ContentChunkProcessor handler;
-    
+
     /**
      * The internal buffer
      */
     private Set<ContentData> buffer = new HashSet<ContentData>();
-    
+
     /**
      * 
      */
@@ -65,35 +66,35 @@ public class ContentChunkerImpl implements ContentChunker
     {
         logger.debug("add content size:" + data.getSize());
         buffer.add(data);
-        
+
         /**
          * work out whether the buffer has filled up and needs to be flushed
          */
-        Iterator<ContentData> iter = buffer.iterator();      
+        Iterator<ContentData> iter = buffer.iterator();
         long totalContentSize = 0;
-        
+
         while (iter.hasNext())
         {
-            ContentData x = (ContentData)iter.next();
+            ContentData x = (ContentData) iter.next();
             totalContentSize += x.getSize();
         }
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("elements " + buffer.size() + ", totalContentSize:" + totalContentSize);
         }
-        if(totalContentSize >= chunkSize)
+        if (totalContentSize >= chunkSize)
         {
             flush();
         }
     }
-    
+
     /**
      * 
      */
     public void flush() throws TransferException
     {
         logger.debug("flush number of contents:" + buffer.size());
-        if(buffer.size() > 0)
+        if (buffer.size() > 0)
         {
             handler.processChunk(buffer);
         }

@@ -75,21 +75,18 @@ public class SwaggerModel
         this.model = model;
         this.swagger = swagger;
 
-        
-        if(model.getValue().getProperties()!=null)
+        if (model.getValue().getProperties() != null)
         {
-            /*
-             * compute the properties of this model
-             */
+            /* compute the properties of this model */
             for (Entry<String, io.swagger.models.properties.Property> property : model.getValue().getProperties().entrySet())
             {
                 if (property.getKey().equals("entry"))
                     continue;
-    
-                properties.add(RestModelProperty.build(property));        
+
+                properties.add(RestModelProperty.build(property));
             }
         }
-        
+
     }
 
     /**
@@ -153,9 +150,9 @@ public class SwaggerModel
         template.process(data, append);
 
         append.close();
-        
+
         System.out.println("----- " + getPath().getName() + " -----\n");
-        System.out.println(Generator.line);        
+        System.out.println(Generator.line);
         System.out.println(append.toString());
         System.out.printf("\nGenerating Model: %-10s to ->'%-60s'", getName(), getPath());
         if (exist())
@@ -176,11 +173,11 @@ public class SwaggerModel
 
         }
     }
-    
+
     private void writeContent(String content) throws IOException
     {
         FileWriter fw = new FileWriter(getPath());
         fw.write(content);
-        fw.close();  
+        fw.close();
     }
 }

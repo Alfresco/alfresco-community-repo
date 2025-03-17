@@ -38,7 +38,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.servlet.ServletAuthenticatorFactory;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRuntime;
 
-
 /**
  * HTTP Servlet Web Script Runtime which can handle a tenant id in a web script path
  * 
@@ -52,8 +51,8 @@ public class TenantWebScriptServletRuntime extends WebScriptServletRuntime
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptRuntime#getScriptUrl()
-     */
+     * 
+     * @see org.alfresco.web.scripts.WebScriptRuntime#getScriptUrl() */
     @Override
     protected String getScriptUrl()
     {
@@ -61,7 +60,7 @@ public class TenantWebScriptServletRuntime extends WebScriptServletRuntime
         final String requestURI = req.getRequestURI();
         final String serviceContextPath = req.getContextPath() + req.getServletPath();
         String pathInfo;
-        
+
         if (serviceContextPath.length() > requestURI.length())
         {
             // NOTE: assume a redirect has taken place e.g. tomcat welcome-page
@@ -72,7 +71,7 @@ public class TenantWebScriptServletRuntime extends WebScriptServletRuntime
         {
             pathInfo = URLDecoder.decode(requestURI.substring(serviceContextPath.length()));
         }
-        
+
         // ensure tenant is specified at beginning of path
         // NOTE: must contain at least root / and single character for tenant name
         if (pathInfo.length() < 2)
@@ -84,22 +83,22 @@ public class TenantWebScriptServletRuntime extends WebScriptServletRuntime
         pathInfo = pathInfo.substring(idx == -1 ? pathInfo.length() : idx);
         return pathInfo;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptRuntime#createRequest(org.alfresco.web.scripts.WebScriptMatch)
-     */
+     * 
+     * @see org.alfresco.web.scripts.WebScriptRuntime#createRequest(org.alfresco.web.scripts.WebScriptMatch) */
     @Override
     protected WebScriptRequest createRequest(Match match)
     {
         // TODO: construct org.springframework.extensions.webscripts.servlet.WebScriptServletResponse when
-        //       org.alfresco.web.scripts.WebScriptServletResponse (deprecated) is removed
+        // org.alfresco.web.scripts.WebScriptServletResponse (deprecated) is removed
         servletReq = new TenantWebScriptServletRequest(this, req, match, serverProperties);
         return servletReq;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptContainer#getName()
-     */
+     * 
+     * @see org.alfresco.web.scripts.WebScriptContainer#getName() */
     public String getName()
     {
         return "TenantServletRuntime";

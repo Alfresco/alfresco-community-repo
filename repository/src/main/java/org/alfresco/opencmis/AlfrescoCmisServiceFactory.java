@@ -30,16 +30,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionInterceptor;
-import org.alfresco.service.cmr.security.AuthorityService;
+import lib3party.org.apache.chemistry.opencmis.server.support.wrapper.ConformanceCmisServiceWrapper;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
-import lib3party.org.apache.chemistry.opencmis.server.support.wrapper.ConformanceCmisServiceWrapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.aop.framework.ProxyFactory;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionInterceptor;
+import org.alfresco.service.cmr.security.AuthorityService;
 
 /**
  * Factory for OpenCMIS service objects.
@@ -65,7 +66,8 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
 
     /**
      *
-     * @param memoryThreshold in KB
+     * @param memoryThreshold
+     *            in KB
      */
     public void setMemoryThreshold(double memoryThreshold)
     {
@@ -74,7 +76,8 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
 
     /**
      *
-     * @param maxContentSize in MB
+     * @param maxContentSize
+     *            in MB
      */
     public void setMaxContentSize(double maxContentSize)
     {
@@ -82,12 +85,14 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
     }
 
     @Override
-    public int getMemoryThreshold() {
+    public int getMemoryThreshold()
+    {
         return memoryThreshold;
     }
 
     @Override
-    public long getMaxContentSize() {
+    public long getMaxContentSize()
+    {
         return maxContentSize;
     }
 
@@ -108,7 +113,8 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
     }
 
     /**
-     * @param cmisTransactions                      the interceptor that applies appropriate transactions
+     * @param cmisTransactions
+     *            the interceptor that applies appropriate transactions
      */
     public void setCmisTransactions(RetryingTransactionInterceptor cmisTransactions)
     {
@@ -116,7 +122,8 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
     }
 
     /**
-     * @param cmisExceptions                        interceptor to translate exceptions
+     * @param cmisExceptions
+     *            interceptor to translate exceptions
      */
     public void setCmisExceptions(AlfrescoCmisExceptionInterceptor cmisExceptions)
     {
@@ -124,7 +131,8 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
     }
 
     /**
-     * @param cmisControl                           interceptor that provides logging and authentication checks
+     * @param cmisControl
+     *            interceptor that provides logging and authentication checks
      */
     public void setCmisControl(AlfrescoCmisServiceInterceptor cmisControl)
     {
@@ -132,7 +140,8 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
     }
 
     /**
-     * @param cmisStreams                   interceptor to create reusable ContentStreams
+     * @param cmisStreams
+     *            interceptor to create reusable ContentStreams
      */
     public void setCmisStreams(AlfrescoCmisStreamInterceptor cmisStreams)
     {
@@ -144,36 +153,37 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
         this.cmisHolder = cmisHolder;
     }
 
-    public String getCmisCreateDocRequestRenditionsSet() {
+    public String getCmisCreateDocRequestRenditionsSet()
+    {
         return cmisCreateDocRequestRenditionsSet;
     }
 
-    public void setCmisCreateDocRequestRenditionsSet(String cmisCreateDocRequestRenditionsSet) {
+    public void setCmisCreateDocRequestRenditionsSet(String cmisCreateDocRequestRenditionsSet)
+    {
         this.cmisCreateDocRequestRenditionsSet = cmisCreateDocRequestRenditionsSet;
     }
 
     @Override
     public void init(Map<String, String> parameters)
-    {
-    }
-    
+    {}
+
     public void init()
     {
-//        this.service = getCmisServiceTarget(connector);
-//        
-//        // Wrap it
-//        ProxyFactory proxyFactory = new ProxyFactory(service);
-//        proxyFactory.addInterface(AlfrescoCmisService.class);
-//        proxyFactory.addAdvice(cmisExceptions);
-//        proxyFactory.addAdvice(cmisControl);
-//        proxyFactory.addAdvice(cmisStreams);
-//        proxyFactory.addAdvice(cmisTransactions);
-//        AlfrescoCmisService cmisService = (AlfrescoCmisService) proxyFactory.getProxy();
-//
-//        this.serviceWrapper = new CmisServiceWrapper<CmisService>(
-//                cmisService,
-//                connector.getTypesDefaultMaxItems(), connector.getTypesDefaultDepth(),
-//                connector.getObjectsDefaultMaxItems(), connector.getObjectsDefaultDepth());
+        // this.service = getCmisServiceTarget(connector);
+        //
+        // // Wrap it
+        // ProxyFactory proxyFactory = new ProxyFactory(service);
+        // proxyFactory.addInterface(AlfrescoCmisService.class);
+        // proxyFactory.addAdvice(cmisExceptions);
+        // proxyFactory.addAdvice(cmisControl);
+        // proxyFactory.addAdvice(cmisStreams);
+        // proxyFactory.addAdvice(cmisTransactions);
+        // AlfrescoCmisService cmisService = (AlfrescoCmisService) proxyFactory.getProxy();
+        //
+        // this.serviceWrapper = new CmisServiceWrapper<CmisService>(
+        // cmisService,
+        // connector.getTypesDefaultMaxItems(), connector.getTypesDefaultDepth(),
+        // connector.getObjectsDefaultMaxItems(), connector.getObjectsDefaultDepth());
 
         if (logger.isInfoEnabled())
         {
@@ -183,12 +193,10 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
 
     @Override
     public void destroy()
-    {
-    }
-    
+    {}
+
     /**
-     * TODO:
-     *      We are producing new instances each time.   
+     * TODO: We are producing new instances each time.
      */
     @Override
     public CmisService getService(final CallContext context)
@@ -205,7 +213,7 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
         }
 
         // Avoid using guest user if the user is provided in the context
-        if(AuthenticationUtil.getFullyAuthenticatedUser() != null && authorityService.isGuestAuthority(AuthenticationUtil.getFullyAuthenticatedUser()))
+        if (AuthenticationUtil.getFullyAuthenticatedUser() != null && authorityService.isGuestAuthority(AuthenticationUtil.getFullyAuthenticatedUser()))
         {
             AuthenticationUtil.clearCurrentSecurityContext();
         }
@@ -214,7 +222,7 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
         if (service instanceof AlfrescoCmisServiceImpl)
         {
             Set<String> stringSet = parseCommaSeparatedSet(getCmisCreateDocRequestRenditionsSet());
-            ((AlfrescoCmisServiceImpl)service).setCmisRequestRenditionsOnCreateDoc(stringSet);
+            ((AlfrescoCmisServiceImpl) service).setCmisRequestRenditionsOnCreateDoc(stringSet);
 
             if (logger.isTraceEnabled())
             {

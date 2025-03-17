@@ -40,8 +40,11 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
-
 import jakarta.transaction.UserTransaction;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.ConfigElement;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
@@ -57,7 +60,6 @@ import org.alfresco.jlan.server.filesys.DiskDeviceContext;
 import org.alfresco.jlan.server.filesys.DiskFullException;
 import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.jlan.server.filesys.DiskSizeInterface;
-import org.alfresco.jlan.server.filesys.FileAttribute;
 import org.alfresco.jlan.server.filesys.FileExistsException;
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileName;
@@ -80,7 +82,6 @@ import org.alfresco.jlan.smb.WinNT;
 import org.alfresco.jlan.smb.server.SMBServer;
 import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.jlan.util.MemorySize;
-import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.admin.SysAdminParams;
@@ -118,14 +119,12 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.config.ConfigElement;
 
 /**
  * Content repository filesystem driver class
  * 
- * <p>Provides a filesystem interface for various protocols such as SMB/CIFS and FTP.
+ * <p>
+ * Provides a filesystem interface for various protocols such as SMB/CIFS and FTP.
  * 
  * @author gkspencer
  */
@@ -133,57 +132,56 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 {
     // Logging
     private static final Log logger = LogFactory.getLog(ContentDiskDriver.class);
-    
+
     // Configuration key names
-    
+
     private static final String KEY_STORE = "store";
     private static final String KEY_ROOT_PATH = "rootPath";
     private static final String KEY_RELATIVE_PATH = "relativePath";
-    
+
     // File status values used in the file state cache
-    
-    public static final int FileUnknown     = FileStatus.Unknown;
-    public static final int FileNotExist    = FileStatus.NotExist;
-    public static final int FileExists      = FileStatus.FileExists;
+
+    public static final int FileUnknown = FileStatus.Unknown;
+    public static final int FileNotExist = FileStatus.NotExist;
+    public static final int FileExists = FileStatus.FileExists;
     public static final int DirectoryExists = FileStatus.DirectoryExists;
-    
-    public static final int CustomFileStatus= FileStatus.MaxStatus + 1;
-    public static final int FileRenamed     = CustomFileStatus;
-    public static final int DeleteOnClose   = CustomFileStatus + 1;
-    
+
+    public static final int CustomFileStatus = FileStatus.MaxStatus + 1;
+    public static final int FileRenamed = CustomFileStatus;
+    public static final int DeleteOnClose = CustomFileStatus + 1;
+
     // File state attributes
-    
+
     public static final String AttrLinkNode = "ContentLinkNode";
     public static final String CanDeleteWithoutPerms = "CanDeleteWithoutPerms";
-        
+
     // List of content properties to copy during rename
-    
-    private static QName[] _copyProperties = { ContentModel.PROP_AUTHOR, ContentModel.PROP_TITLE, ContentModel.PROP_DESCRIPTION };
+
+    private static QName[] _copyProperties = {ContentModel.PROP_AUTHOR, ContentModel.PROP_TITLE, ContentModel.PROP_DESCRIPTION};
 
     // List of property namespaces to exclude from copy during rename
-    
-    private static Set<String> _excludedNamespaces = new TreeSet<String>(Arrays.asList(new String[]
-    {
-        NamespaceService.CONTENT_MODEL_1_0_URI, NamespaceService.SYSTEM_MODEL_1_0_URI
+
+    private static Set<String> _excludedNamespaces = new TreeSet<String>(Arrays.asList(new String[]{
+            NamespaceService.CONTENT_MODEL_1_0_URI, NamespaceService.SYSTEM_MODEL_1_0_URI
     }));
-    
+
     // Disk sizing contants
-    
-    private static final int DiskBlockSize			= 512;	// bytes per block
-    private static final long DiskAllocationUnit	= 32 * MemorySize.KILOBYTE;
-    private static final long DiskBlocksPerUnit		= DiskAllocationUnit / DiskBlockSize;
-    
+
+    private static final int DiskBlockSize = 512; // bytes per block
+    private static final long DiskAllocationUnit = 32 * MemorySize.KILOBYTE;
+    private static final long DiskBlocksPerUnit = DiskAllocationUnit / DiskBlockSize;
+
     // Disk size returned in the content store does not support free/total size
-    
-    protected static final long DiskSizeDefault		= 1 * MemorySize.TERABYTE;
-    protected static final long DiskFreeDefault		= DiskSizeDefault / 2;
+
+    protected static final long DiskSizeDefault = 1 * MemorySize.TERABYTE;
+    protected static final long DiskFreeDefault = DiskSizeDefault / 2;
 
     private boolean isReadOnly;
     private boolean isLockedFilesAsOffline;
     // pattern for detect CSV files.
     private Pattern renameCSVShufflePattern = Pattern.compile(".*[a-f0-9]{8}+$");
     // Services and helpers
-    
+
     private CifsHelper cifsHelper;
     private NamespaceService namespaceService;
     private NodeService nodeService;
@@ -198,25 +196,25 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     private DictionaryService dictionaryService;
     private OwnableService ownableService;
     private ActionService actionService;
-    
+
     private AuthenticationContext authContext;
     private AuthenticationService authService;
     private SysAdminParams sysAdminParams;
 
     private BehaviourFilter policyBehaviourFilter;
     private NodeMonitorFactory m_nodeMonitorFactory;
-    
-    
+
     /**
      * Class constructor
      * 
-     * @param cifsHelper to connect to the repository services
+     * @param cifsHelper
+     *            to connect to the repository services
      */
     public ContentDiskDriver(CifsHelper cifsHelper)
     {
         this.cifsHelper = cifsHelper;
     }
-    
+
     public void init()
     {
         PropertyCheck.mandatory(this, "nodeService", nodeService);
@@ -229,9 +227,9 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      */
     public final CifsHelper getCifsHelper()
     {
-    	return this.cifsHelper;
+        return this.cifsHelper;
     }
-    
+
     /**
      * Return the authentication service
      * 
@@ -239,7 +237,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      */
     public final AuthenticationService getAuthenticationService()
     {
-    	return authService;
+        return authService;
     }
 
     /**
@@ -247,10 +245,11 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      * 
      * @return AuthenticationContext
      */
-    public final AuthenticationContext getAuthenticationContext() {
-    	return authContext;
+    public final AuthenticationContext getAuthenticationContext()
+    {
+        return authContext;
     }
-    
+
     /**
      * Return the node service
      * 
@@ -258,11 +257,11 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      */
     public final NodeService getNodeService()
     {
-    	return this.nodeService;
+        return this.nodeService;
     }
 
     /**
-     * @return          service to provide information on check-in and check-out
+     * @return service to provide information on check-in and check-out
      */
     public CheckOutCheckInService getCheckOutCheckInService()
     {
@@ -276,7 +275,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      */
     public final ContentService getContentService()
     {
-    	return this.contentService;
+        return this.contentService;
     }
 
     /**
@@ -286,16 +285,17 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      */
     public final NamespaceService getNamespaceService()
     {
-    	return this.namespaceService;
+        return this.namespaceService;
     }
-    
+
     /**
      * Return the search service
      * 
      * @return SearchService
      */
-    public final SearchService getSearchService(){
-    	return this.searchService;
+    public final SearchService getSearchService()
+    {
+        return this.searchService;
     }
 
     /**
@@ -303,35 +303,39 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      * 
      * @return FileFolderService
      */
-    public final FileFolderService getFileFolderService() {
-    	return this.fileFolderService;
+    public final FileFolderService getFileFolderService()
+    {
+        return this.fileFolderService;
     }
-    
+
     /**
      * Return the permission service
      * 
      * @return PermissionService
      */
-    public final PermissionService getPermissionService() {
-    	return this.permissionService;
+    public final PermissionService getPermissionService()
+    {
+        return this.permissionService;
     }
 
     /**
      * Return the node archive service
      */
-    public final NodeArchiveService getNodeArchiveService() {
-    	return nodeArchiveService;
+    public final NodeArchiveService getNodeArchiveService()
+    {
+        return nodeArchiveService;
     }
-    
+
     /**
      * Return the lock service
      * 
      * @return LockService
      */
-    public final LockService getLockService() {
+    public final LockService getLockService()
+    {
         return lockService;
     }
-    
+
     /**
      * Get the policy behaviour filter, used to inhibit versioning on a per transaction basis
      */
@@ -345,21 +349,24 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      * 
      * @return DictionaryService
      */
-    public final DictionaryService getDictionaryService() {
+    public final DictionaryService getDictionaryService()
+    {
         return dictionaryService;
     }
-    
+
     /**
      * Get the ownable service
      * 
      * @return OwnableService
      */
-    public final OwnableService getOwnableService() {
+    public final OwnableService getOwnableService()
+    {
         return ownableService;
     }
-    
+
     /**
-     * @param contentService the content service
+     * @param contentService
+     *            the content service
      */
     public void setContentService(ContentService contentService)
     {
@@ -367,7 +374,8 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     }
 
     /**
-     * @param namespaceService the namespace service
+     * @param namespaceService
+     *            the namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -375,7 +383,8 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     }
 
     /**
-     * @param nodeService the node service
+     * @param nodeService
+     *            the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -383,7 +392,8 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     }
 
     /**
-     * @param checkOutCheckInService            used to check for checked out nodes
+     * @param checkOutCheckInService
+     *            used to check for checked out nodes
      */
     public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
     {
@@ -391,27 +401,30 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     }
 
     /**
-     * @param searchService the search service
+     * @param searchService
+     *            the search service
      */
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
     }
-    
+
     /**
      * Set the permission service
      * 
-     * @param permissionService PermissionService
+     * @param permissionService
+     *            PermissionService
      */
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
-    
+
     /**
      * Set the authentication context
      * 
-     * @param authContext AuthenticationContext
+     * @param authContext
+     *            AuthenticationContext
      */
     public void setAuthenticationContext(AuthenticationContext authContext)
     {
@@ -421,13 +434,14 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Set the authentication service
      * 
-     * @param authService AuthenticationService
+     * @param authService
+     *            AuthenticationService
      */
     public void setAuthenticationService(AuthenticationService authService)
     {
-    	this.authService = authService;
+        this.authService = authService;
     }
-    
+
     /**
      * Sets the sys admin params.
      * 
@@ -442,15 +456,17 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Set the file folder service
      * 
-     * @param fileService FileFolderService
+     * @param fileService
+     *            FileFolderService
      */
     public void setFileFolderService(FileFolderService fileService)
     {
-    	fileFolderService = fileService;
+        fileFolderService = fileService;
     }
-    
+
     /**
-     * @param mimetypeService       service for helping with mimetypes and encoding
+     * @param mimetypeService
+     *            service for helping with mimetypes and encoding
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {
@@ -460,34 +476,41 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Set the node monitor factory
      * 
-     * @param nodeMonitorFactory NodeMonitorFactory
+     * @param nodeMonitorFactory
+     *            NodeMonitorFactory
      */
-    public void setNodeMonitorFactory(NodeMonitorFactory nodeMonitorFactory) {
-    	m_nodeMonitorFactory = nodeMonitorFactory;
+    public void setNodeMonitorFactory(NodeMonitorFactory nodeMonitorFactory)
+    {
+        m_nodeMonitorFactory = nodeMonitorFactory;
     }
-    
+
     /**
      * Set the node archive service
      * 
-     * @param nodeArchiveService nodeArchiveService
+     * @param nodeArchiveService
+     *            nodeArchiveService
      */
-    public void setNodeArchiveService(NodeArchiveService nodeArchiveService) {
-    	this.nodeArchiveService = nodeArchiveService;
+    public void setNodeArchiveService(NodeArchiveService nodeArchiveService)
+    {
+        this.nodeArchiveService = nodeArchiveService;
     }
-    
+
     /**
      * Set the lock service
      * 
-     * @param lockService LockService
+     * @param lockService
+     *            LockService
      */
-    public void setLockService(LockService lockService) {
+    public void setLockService(LockService lockService)
+    {
         this.lockService = lockService;
     }
-    
+
     /**
      * Set the policy behaviour filter, used to inhibit versioning on a per transaction basis
      * 
-     * @param policyFilter PolicyBehaviourFilter
+     * @param policyFilter
+     *            PolicyBehaviourFilter
      */
     public void setPolicyFilter(BehaviourFilter policyFilter)
     {
@@ -497,49 +520,53 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Set the dictionary service
      * 
-     * @param dictionaryService DictionaryService
+     * @param dictionaryService
+     *            DictionaryService
      */
-    public void setDictionaryService(DictionaryService dictionaryService) {
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * Set the ownable servive
      * 
-     * @param ownableService OwnableService
+     * @param ownableService
+     *            OwnableService
      */
-    public void setOwnableService(OwnableService ownableService) {
+    public void setOwnableService(OwnableService ownableService)
+    {
         this.ownableService = ownableService;
     }
 
     /**
-     * Set the regular expression that will be applied to CSV files during renames.
-     * <b>MNT-211</b>
+     * Set the regular expression that will be applied to CSV files during renames. <b>MNT-211</b>
      * 
-     * @param renameCSVShufflePattern      a regular expression CSV filename match
+     * @param renameCSVShufflePattern
+     *            a regular expression CSV filename match
      */
     public void setRenameCSVShufflePattern(Pattern renameCSVShufflePattern)
     {
         this.renameCSVShufflePattern = renameCSVShufflePattern;
     }
-    
+
     /**
-     * Parse and validate the parameter string and create a device context object for this instance
-     * of the shared device. The same DeviceInterface implementation may be used for multiple
-     * shares.
+     * Parse and validate the parameter string and create a device context object for this instance of the shared device. The same DeviceInterface implementation may be used for multiple shares.
      * <p>
      * WARNING: side effect, may commit or roll back current user transaction context.
      * 
-     * @param deviceName The name of the device
-     * @param cfg ConfigElement the configuration of the device context.
+     * @param deviceName
+     *            The name of the device
+     * @param cfg
+     *            ConfigElement the configuration of the device context.
      * @return DeviceContext
      * @exception DeviceContextException
      */
-    //  MER TODO - transaction handling in registerContext needs changing
+    // MER TODO - transaction handling in registerContext needs changing
     public DeviceContext createContext(String deviceName, ConfigElement cfg) throws DeviceContextException
     {
         ContentContext context = null;
-        
+
         try
         {
             // Get the store
@@ -551,17 +578,16 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             String storeValue = storeElement.getValue();
 
             // Get the root path
-            
+
             ConfigElement rootPathElement = cfg.getChild(KEY_ROOT_PATH);
             if (rootPathElement == null || rootPathElement.getValue() == null || rootPathElement.getValue().length() == 0)
             {
                 throw new DeviceContextException("Device missing init value: " + KEY_ROOT_PATH);
             }
             String rootPath = rootPathElement.getValue();
-            
 
             // Create the context
-            
+
             context = new ContentContext();
             context.setDeviceName(deviceName);
             context.setStoreName(storeValue);
@@ -569,132 +595,129 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             context.setSysAdminParams(this.sysAdminParams);
 
             // Check if a relative path has been specified
-            
+
             ConfigElement relativePathElement = cfg.getChild(KEY_RELATIVE_PATH);
-            
-            if ( relativePathElement != null)
+
+            if (relativePathElement != null)
             {
                 // Make sure the path is in CIFS format
-                
-                String relPath = relativePathElement.getValue().replace( '/', FileName.DOS_SEPERATOR);
+
+                String relPath = relativePathElement.getValue().replace('/', FileName.DOS_SEPERATOR);
                 context.setRelativePath(relPath);
             }
         }
-        /* 
-         * MER - I changed the code below - resulted in a NPE anyway 
-         * lower down
-         */
+        /* MER - I changed the code below - resulted in a NPE anyway lower down */
         catch (DeviceContextException ex)
         {
             logger.error("Error during create context", ex);
             throw ex;
-            
+
         }
-          
+
         // Check if URL link files are enabled
-        
-        ConfigElement urlFileElem = cfg.getChild( "urlFile");
-        if ( urlFileElem != null)
+
+        ConfigElement urlFileElem = cfg.getChild("urlFile");
+        if (urlFileElem != null)
         {
             // Get the pseudo file name and web prefix path
-            
-            ConfigElement pseudoName = urlFileElem.getChild( "filename");
-            
-            if ( pseudoName != null)
+
+            ConfigElement pseudoName = urlFileElem.getChild("filename");
+
+            if (pseudoName != null)
             {
                 context.setURLFileName(pseudoName.getValue());
             }
         }
-        
+
         // Check if locked files should be marked as offline
-        
-        ConfigElement offlineFiles = cfg.getChild( "offlineFiles");
-        if ( offlineFiles != null)
+
+        ConfigElement offlineFiles = cfg.getChild("offlineFiles");
+        if (offlineFiles != null)
         {
             context.setOfflineFiles(true);
         }
-        
+
         // Install the node service monitor
-        
+
         // MER 01/03/2011 - I think one of these is the "wrong way round"
-        
-        if ( cfg.getChild("disableNodeMonitor") == null) {
-        	
-        	// Create the node monitor
+
+        if (cfg.getChild("disableNodeMonitor") == null)
+        {
+
+            // Create the node monitor
             context.setDisableNodeMonitor(true);
         }
-        
+
         // Check if oplocks are enabled, if so then enable oplocks in the lock manager
-        
-        if ( cfg.getChild("disableOplocks") != null) {
-        	context.setDisableOplocks( true);
+
+        if (cfg.getChild("disableOplocks") != null)
+        {
+            context.setDisableOplocks(true);
         }
-        
+
         // Register the device context
-        
+
         registerContext(context);
-        
+
         // Return the context for this shared filesystem
-        
+
         return context;
     }
 
-    
     /**
-     * Registers a device context object for this instance
-     * of the shared device. The same DeviceInterface implementation may be used for multiple
-     * shares.
+     * Registers a device context object for this instance of the shared device. The same DeviceInterface implementation may be used for multiple shares.
      * 
      * WARNING: side effect, will commit or roll back current user transaction context.
      * 
-     * @param ctx the context
+     * @param ctx
+     *            the context
      * @exception DeviceContextException
      */
-    //  MER TODO - transaction handling in registerContext needs changing
+    // MER TODO - transaction handling in registerContext needs changing
     @Override
     public void registerContext(DeviceContext ctx) throws DeviceContextException
     {
         super.registerContext(ctx);
 
-        ContentContext context = (ContentContext)ctx;
+        ContentContext context = (ContentContext) ctx;
 
         // Wrap the initialization in a transaction
-        
+
         UserTransaction tx = getTransactionService().getUserTransaction(true);
 
         try
         {
             // Use the system user as the authenticated context for the filesystem initialization
-            
+
             AuthenticationUtil.pushAuthentication();
             AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-            
+
             // Start the transaction
-            
-            if ( tx != null)
+
+            if (tx != null)
                 tx.begin();
-            
+
             // Get the store
             String storeValue = context.getStoreName();
             StoreRef storeRef = new StoreRef(storeValue);
-            
+
             // Connect to the repo and ensure that the store exists
-            
-            if (! nodeService.exists(storeRef))
+
+            if (!nodeService.exists(storeRef))
             {
                 throw new DeviceContextException("Store not created prior to application startup: " + storeRef);
             }
             NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
-            
+
             // Get the root path
             String rootPath = context.getRootPath();
-            
+
             // Find the root node for this device
-            
+
             List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, rootPath, null, namespaceService, false);
-            
+
             NodeRef rootNodeRef = null;
-            
+
             if (nodeRefs.size() > 1)
             {
                 throw new DeviceContextException("Multiple possible roots for device: \n" +
@@ -704,43 +727,44 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             else if (nodeRefs.size() == 0)
             {
                 // Nothing found
-                
+
                 throw new DeviceContextException("No root found for device: \n" +
                         "   root path: " + rootPath);
             }
             else
             {
                 // We found a node
-                
+
                 rootNodeRef = nodeRefs.get(0);
             }
 
             // Check if a relative path has been specified
-            
+
             String relPath = context.getRelativePath();
-            
-            if ( relPath != null && relPath.length() > 0)
+
+            if (relPath != null && relPath.length() > 0)
             {
                 // Find the node and validate that the relative path is to a folder
-                
-                NodeRef relPathNode = cifsHelper.getNodeRef( rootNodeRef, relPath);
-                if ( cifsHelper.isDirectory( relPathNode) == false)
+
+                NodeRef relPathNode = cifsHelper.getNodeRef(rootNodeRef, relPath);
+                if (cifsHelper.isDirectory(relPathNode) == false)
                     throw new DeviceContextException("Relative path is not a folder, " + relPath);
-                
+
                 // Use the relative path node as the root of the filesystem
-                
+
                 rootNodeRef = relPathNode;
             }
-            else {
-                
+            else
+            {
+
                 // Make sure the default root node is a folder
-                
-                if ( cifsHelper.isDirectory( rootNodeRef) == false)
+
+                if (cifsHelper.isDirectory(rootNodeRef) == false)
                     throw new DeviceContextException("Root node is not a folder type node");
             }
-            
+
             // Commit the transaction
-            
+
             // MER 16/03/2010 - Why is this transaction management here?
             tx.commit();
             tx = null;
@@ -751,7 +775,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         catch (Exception ex)
         {
             logger.error("Error during create context", ex);
-            
+
             // MER BUGBUG Exception swallowed - will result in null pointer errors at best.
             throw new DeviceContextException("unable to register context", ex);
             // MER END
@@ -759,12 +783,12 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         finally
         {
             // Restore authentication context
-            
+
             AuthenticationUtil.popAuthentication();
-            
+
             // If there is an active transaction then roll it back
-            
-            if ( tx != null)
+
+            if (tx != null)
             {
                 try
                 {
@@ -778,94 +802,105 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         }
 
         // Check if locked files should be marked as offline
-        if ( context.getOfflineFiles() )
+        if (context.getOfflineFiles())
         {
             // Enable marking locked files as offline
             isLockedFilesAsOffline = true;
-            
+
             // Logging
-            
+
             logger.info("Locked files will be marked as offline");
         }
-                
+
         // Enable file state caching
-        
-//        context.enableStateCache(serverConfig, true);
-        
+
+        // context.enableStateCache(serverConfig, true);
+
         // Install the node service monitor
-        
-        if ( !context.getDisableNodeMonitor() && m_nodeMonitorFactory != null) {
-            
+
+        if (!context.getDisableNodeMonitor() && m_nodeMonitorFactory != null)
+        {
+
             // Create the node monitor
 
             NodeMonitor nodeMonitor = m_nodeMonitorFactory.createNodeMonitor(context);
-            context.setNodeMonitor( nodeMonitor);
+            context.setNodeMonitor(nodeMonitor);
         }
-        
+
         // Check if oplocks are enabled
-        
-        if ( context.getDisableOplocks() == true)
-        	logger.warn("Oplock support disabled for filesystem " + ctx.getDeviceName());
-        
+
+        if (context.getDisableOplocks() == true)
+            logger.warn("Oplock support disabled for filesystem " + ctx.getDeviceName());
+
         // Start the quota manager, if enabled
-        
-        if ( context.hasQuotaManager()) {
-            
-            try {
+
+        if (context.hasQuotaManager())
+        {
+
+            try
+            {
 
                 // Start the quota manager
-                
-                context.getQuotaManager().startManager( this, context);
+
+                context.getQuotaManager().startManager(this, context);
                 logger.info("Quota manager enabled for filesystem");
             }
-            catch ( QuotaManagerException ex) {
+            catch (QuotaManagerException ex)
+            {
                 logger.error("Failed to start quota manager", ex);
             }
         }
     }
-    
+
     /**
      * Determine if the disk device is read-only.
      * 
-     * @param sess Server session
-     * @param ctx Device context
+     * @param sess
+     *            Server session
+     * @param ctx
+     *            Device context
      * @return boolean
-     * @exception java.io.IOException If an error occurs.
+     * @exception java.io.IOException
+     *                If an error occurs.
      */
     public boolean isReadOnly(SrvSession sess, DeviceContext ctx) throws IOException
     {
         return isReadOnly;
     }
-    
+
     /**
      * Get the file information for the specified file.
      * 
-     * @param session Server session
-     * @param tree Tree connection
-     * @param path File name/path that information is required for.
+     * @param session
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param path
+     *            File name/path that information is required for.
      * @return File information if valid, else null
-     * @exception java.io.IOException The exception description.
+     * @exception java.io.IOException
+     *                The exception description.
      */
     public FileInfo getFileInformation(SrvSession session, TreeConnection tree, String path) throws IOException
     {
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("getFileInformation:" + path);
         }
-    	// Start a transaction
-    	
-    	beginReadTransaction( session);
-        
+        // Start a transaction
+
+        beginReadTransaction(session);
+
         // Get the device root
-        
+
         ContentContext ctx = (ContentContext) tree.getContext();
         NodeRef infoParentNodeRef = ctx.getRootNode();
-        
-        if ( path == null || path.length() == 0)
+
+        if (path == null || path.length() == 0)
             path = FileName.DOS_SEPERATOR_STR;
-        
+
         String infoPath = path;
-        
+
         try
         {
             // Check if the path is to a pseudo file
@@ -873,105 +908,107 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             FileInfo finfo = null;
 
             // Get the node ref for the path, chances are there is a file state in the cache
-            
+
             NodeRef nodeRef = getNodeForPath(tree, infoPath);
-            
-            if ( nodeRef != null)
+
+            if (nodeRef != null)
             {
                 // Get the file information for the node
-                
+
                 finfo = cifsHelper.getFileInformation(nodeRef, isReadOnly, isLockedFilesAsOffline);
 
                 // DEBUG
-                
-                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
+
+                if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                     logger.debug("getInfo using cached noderef for path " + path);
             }
-            
+
             // If the required node was not in the state cache, the parent folder node might be
-            
-            
-            if ( finfo == null)
+
+            if (finfo == null)
             {
-                String[] paths = FileName.splitPath( path);
-                
-                if ( paths[0] != null && paths[0].length() > 1)
+                String[] paths = FileName.splitPath(path);
+
+                if (paths[0] != null && paths[0].length() > 1)
                 {
                     // Find the node ref for the folder being searched
-                    
+
                     nodeRef = getNodeForPath(tree, paths[0]);
-                    
-                    if ( nodeRef != null)
+
+                    if (nodeRef != null)
                     {
                         infoParentNodeRef = nodeRef;
-                        infoPath          = paths[1];
-                        
+                        infoPath = paths[1];
+
                         // DEBUG
-                        
-                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
+
+                        if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                             logger.debug("getInfo using cached noderef for parent " + path);
                     }
                 }
-            
+
                 // Access the repository to get the file information
-                
+
                 finfo = cifsHelper.getFileInformation(infoParentNodeRef, infoPath, isReadOnly, isLockedFilesAsOffline);
-                
+
                 // DEBUG
-                
+
                 if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                     logger.debug("Getting file information: path=" + path + " file info: " + finfo);
             }
 
             // Set the file id for the file using the relative path
-            
-            if ( finfo != null) {
-            	
-            	// Set the file id
-  
+
+            if (finfo != null)
+            {
+
+                // Set the file id
+
                 long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
                 finfo.setFileId((int) (id & 0xFFFFFFFFL));
 
-            	// Copy cached file details, if available
-            	
+                // Copy cached file details, if available
+
                 FileState fstate = getStateForPath(tree, infoPath);
-                if ( fstate != null) {
-                    
+                if (fstate != null)
+                {
+
                     // Copy cached timestamps
-                    
-//                	if ( fstate.hasAccessDateTime())
-//                		finfo.setAccessDateTime(fstate.getAccessDateTime());
-                	if ( fstate.hasChangeDateTime())
-                		finfo.setChangeDateTime(fstate.getChangeDateTime());
-                	if ( fstate.hasModifyDateTime())
-                		finfo.setModifyDateTime(fstate.getModifyDateTime());
-                	
-                	// File allocation size
-                	
-                	if ( fstate.hasAllocationSize() && fstate.getAllocationSize() > finfo.getSize())
-                	    finfo.setAllocationSize( fstate.getAllocationSize());
+
+                    // if ( fstate.hasAccessDateTime())
+                    // finfo.setAccessDateTime(fstate.getAccessDateTime());
+                    if (fstate.hasChangeDateTime())
+                        finfo.setChangeDateTime(fstate.getChangeDateTime());
+                    if (fstate.hasModifyDateTime())
+                        finfo.setModifyDateTime(fstate.getModifyDateTime());
+
+                    // File allocation size
+
+                    if (fstate.hasAllocationSize() && fstate.getAllocationSize() > finfo.getSize())
+                        finfo.setAllocationSize(fstate.getAllocationSize());
                 }
-                else {
-                	
-                	// Create a file state for the file/folder
-                	
-                	fstate = ctx.getStateCache().findFileState( path, true);
-                	if ( finfo.isDirectory())
-                	    fstate.setFileStatus( DirectoryExists);
-                	else
-                	    fstate.setFileStatus( FileExists);
-                	fstate.setFilesystemObject( nodeRef);
+                else
+                {
+
+                    // Create a file state for the file/folder
+
+                    fstate = ctx.getStateCache().findFileState(path, true);
+                    if (finfo.isDirectory())
+                        fstate.setFileStatus(DirectoryExists);
+                    else
+                        fstate.setFileStatus(FileExists);
+                    fstate.setFilesystemObject(nodeRef);
                 }
             }
-            
+
             // Return the file information
-            
+
             return finfo;
         }
         catch (FileNotFoundException e)
         {
             // Debug
-        	
+
             if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                 logger.debug("Get file info - file not found, " + path);
             throw e;
@@ -979,46 +1016,50 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                 logger.debug("Get file info - access denied, " + path);
-            
+
             // Convert to a filesystem access denied status
-            
+
             throw new AccessDeniedException("Get file information " + path);
         }
         catch (RuntimeException ex)
         {
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                 logger.debug("Get file info error", ex);
-            
+
             // Convert to a general I/O exception
-            
+
             throw new IOException("Get file information " + path);
         }
     }
 
     /**
-     * Start a new search on the filesystem using the specified searchPath that may contain
-     * wildcards.
+     * Start a new search on the filesystem using the specified searchPath that may contain wildcards.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param searchPath File(s) to search for, may include wildcards.
-     * @param attributes Attributes of the file(s) to search for, see class SMBFileAttribute.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param searchPath
+     *            File(s) to search for, may include wildcards.
+     * @param attributes
+     *            Attributes of the file(s) to search for, see class SMBFileAttribute.
      * @return SearchContext
-     * @exception java.io.FileNotFoundException If the search could not be started.
+     * @exception java.io.FileNotFoundException
+     *                If the search could not be started.
      */
     public SearchContext startSearch(SrvSession sess, TreeConnection tree, String searchPath, int attributes) throws FileNotFoundException
     {
         // Access the device context
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
-            logger.debug("startSearch: "+ searchPath);
+            logger.debug("startSearch: " + searchPath);
         }
-        
+
         ContentContext ctx = (ContentContext) tree.getContext();
 
         try
@@ -1026,213 +1067,219 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             String searchFileSpec = searchPath;
             NodeRef searchRootNodeRef = ctx.getRootNode();
             FileState searchFolderState = null;
-            
+
             // Create the transaction
-            
-            beginReadTransaction( sess);
-            
+
+            beginReadTransaction(sess);
+
             // If the state table is available see if we can speed up the search using either cached
             // file information or find the folder node to be searched without having to walk the path
 
             String[] paths = FileName.splitPath(searchPath);
-            
-            if ( ctx.hasStateCache())
+
+            if (ctx.hasStateCache())
             {
                 // See if the folder to be searched has a file state, we can avoid having to walk the path
-                
-                if ( paths[0] != null && paths[0].length() >= 1)
+
+                if (paths[0] != null && paths[0].length() >= 1)
                 {
                     // Find the node ref for the folder being searched
-                    
+
                     NodeRef nodeRef = getNodeForPath(tree, paths[0]);
-                    
+
                     // Get the file state for the folder being searched
-                    
+
                     searchFolderState = getStateForPath(tree, paths[0]);
-                    if ( searchFolderState == null)
+                    if (searchFolderState == null)
                     {
                         // Create a file state for the folder
 
-                        searchFolderState = ctx.getStateCache().findFileState( paths[0], true);
+                        searchFolderState = ctx.getStateCache().findFileState(paths[0], true);
                     }
-                    
+
                     // Make sure the associated node is set
-                    
-                    if ( searchFolderState.hasFilesystemObject() == false)
+
+                    if (searchFolderState.hasFilesystemObject() == false)
                     {
                         // Set the associated node for the folder
-                        
-                        searchFolderState.setFilesystemObject( nodeRef);
+
+                        searchFolderState.setFilesystemObject(nodeRef);
                     }
 
                     // Set the search node and file spec
-                    
-                    if ( nodeRef != null)
+
+                    if (nodeRef != null)
                     {
                         searchRootNodeRef = nodeRef;
-                        searchFileSpec    = paths[1];
-                        
+                        searchFileSpec = paths[1];
+
                         // DEBUG
-                        
-                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
+
+                        if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
                             logger.debug("Search using cached noderef for path " + searchPath);
                     }
                 }
             }
-            
+
             // Convert the all files wildcard
-            
-            if ( searchFileSpec.equals( "*.*"))
-            	searchFileSpec = "*";
-            
+
+            if (searchFileSpec.equals("*.*"))
+                searchFileSpec = "*";
+
             // Debug
-            
+
             long startTime = 0L;
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
-            	startTime = System.currentTimeMillis();
-            
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
+                startTime = System.currentTimeMillis();
+
             // Perform the search
-            
+
             List<NodeRef> results = cifsHelper.getNodeRefs(searchRootNodeRef, searchFileSpec);
 
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH)) {
-            	long endTime = System.currentTimeMillis();
-            	if (( endTime - startTime) > 500)
-            		logger.debug("Search for searchPath=" + searchPath + ", searchSpec=" + searchFileSpec + ", searchRootNode=" + searchRootNodeRef + " took "
-            				     + ( endTime - startTime) + "ms results=" + results.size());
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
+            {
+                long endTime = System.currentTimeMillis();
+                if ((endTime - startTime) > 500)
+                    logger.debug("Search for searchPath=" + searchPath + ", searchSpec=" + searchFileSpec + ", searchRootNode=" + searchRootNodeRef + " took "
+                            + (endTime - startTime) + "ms results=" + results.size());
             }
 
             // Build the search context to store the results, use the cache lookup search for wildcard searches
-            
+
             SearchContext searchCtx = null;
-            
-            if ( searchFileSpec.equals( "*"))
+
+            if (searchFileSpec.equals("*"))
             {
-            	// Use a cache lookup search context 
-                                                                                                                                                                               
-            	CacheLookupSearchContext cacheContext = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, paths[0], ctx.getStateCache(), isLockedFilesAsOffline);
-            	searchCtx = cacheContext;
-            	
-            	// Set the '.' and '..' pseudo file entry details
-            	
-            	if ( searchFolderState != null && searchFolderState.hasFilesystemObject())
-            	{
-            		// Get the '.' pseudo entry file details
-            	
-            		FileInfo finfo = cifsHelper.getFileInformation((NodeRef) searchFolderState.getFilesystemObject(), isReadOnly, isLockedFilesAsOffline);
-            		
-            		// Blend in any cached timestamps
-            		
-            		if ( searchFolderState != null) {
-            			if ( searchFolderState.hasAccessDateTime())
-            				finfo.setAccessDateTime( searchFolderState.getAccessDateTime());
-            			
-            			if ( searchFolderState.hasChangeDateTime())
-            				finfo.setChangeDateTime( searchFolderState.getChangeDateTime());
-            			
-            			if ( searchFolderState.hasModifyDateTime())
-            				finfo.setModifyDateTime( searchFolderState.getModifyDateTime());
-            		}
-            		
-            		// Set the '.' pseudo entry details
-            		
-            		cacheContext.setDotInfo( finfo);
-            		
-            		// Check if the search folder has a parent, if we are at the root of the filesystem then re-use
-            		// the file information
-            		
-            		if ( searchFolderState.getPath().equals( FileName.DOS_SEPERATOR_STR)) {
-            			
-            			// Searching the root folder, re-use the search folder file information for the '..' pseudo entry
-            			
-            			FileInfo dotDotInfo = new FileInfo();
-            			dotDotInfo.copyFrom( finfo);
-            			cacheContext.setDotDotInfo( dotDotInfo);
-            		}
-            		else {
-            			
-            			// Get the parent folder path
-            			
-            			String parentPath = searchFolderState.getPath();
-            			if ( parentPath.endsWith( FileName.DOS_SEPERATOR_STR) && parentPath.length() > 1)
-            				parentPath = parentPath.substring(0, parentPath.length() - 1);
-            			
-            			int pos = parentPath.lastIndexOf( FileName.DOS_SEPERATOR_STR);
-            			if ( pos != -1)
-            				parentPath = parentPath.substring(0, pos + 1);
-            			
-            			// Get the file state for the parent path, if available
-            			
-            			FileState parentState = ctx.getStateCache().findFileState( parentPath);
-            			NodeRef parentNode = null;
-            			
-            			if ( parentState != null)
-            				parentNode = (NodeRef) parentState.getFilesystemObject();
-            			
-            			if ( parentState == null || parentNode == null)
-            				parentNode = getNodeForPath( tree, parentPath);
+                // Use a cache lookup search context
 
-            			// Get the file information for the parent folder
-            			
-            			finfo = cifsHelper.getFileInformation( parentNode, isReadOnly, isLockedFilesAsOffline);
-            			
-            			// Blend in any cached timestamps
-            			
-                		if ( parentState != null) {
-                			if ( parentState.hasAccessDateTime())
-                				finfo.setAccessDateTime( parentState.getAccessDateTime());
-                			
-                			if ( parentState.hasChangeDateTime())
-                				finfo.setChangeDateTime( parentState.getChangeDateTime());
-                			
-                			if ( parentState.hasModifyDateTime())
-                				finfo.setModifyDateTime( parentState.getModifyDateTime());
-                		}
+                CacheLookupSearchContext cacheContext = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, paths[0], ctx.getStateCache(), isLockedFilesAsOffline);
+                searchCtx = cacheContext;
 
-                		// Set the '..' pseudo entry details
-                		
-            			cacheContext.setDotDotInfo( finfo);
-            		}
-           		}
+                // Set the '.' and '..' pseudo file entry details
+
+                if (searchFolderState != null && searchFolderState.hasFilesystemObject())
+                {
+                    // Get the '.' pseudo entry file details
+
+                    FileInfo finfo = cifsHelper.getFileInformation((NodeRef) searchFolderState.getFilesystemObject(), isReadOnly, isLockedFilesAsOffline);
+
+                    // Blend in any cached timestamps
+
+                    if (searchFolderState != null)
+                    {
+                        if (searchFolderState.hasAccessDateTime())
+                            finfo.setAccessDateTime(searchFolderState.getAccessDateTime());
+
+                        if (searchFolderState.hasChangeDateTime())
+                            finfo.setChangeDateTime(searchFolderState.getChangeDateTime());
+
+                        if (searchFolderState.hasModifyDateTime())
+                            finfo.setModifyDateTime(searchFolderState.getModifyDateTime());
+                    }
+
+                    // Set the '.' pseudo entry details
+
+                    cacheContext.setDotInfo(finfo);
+
+                    // Check if the search folder has a parent, if we are at the root of the filesystem then re-use
+                    // the file information
+
+                    if (searchFolderState.getPath().equals(FileName.DOS_SEPERATOR_STR))
+                    {
+
+                        // Searching the root folder, re-use the search folder file information for the '..' pseudo entry
+
+                        FileInfo dotDotInfo = new FileInfo();
+                        dotDotInfo.copyFrom(finfo);
+                        cacheContext.setDotDotInfo(dotDotInfo);
+                    }
+                    else
+                    {
+
+                        // Get the parent folder path
+
+                        String parentPath = searchFolderState.getPath();
+                        if (parentPath.endsWith(FileName.DOS_SEPERATOR_STR) && parentPath.length() > 1)
+                            parentPath = parentPath.substring(0, parentPath.length() - 1);
+
+                        int pos = parentPath.lastIndexOf(FileName.DOS_SEPERATOR_STR);
+                        if (pos != -1)
+                            parentPath = parentPath.substring(0, pos + 1);
+
+                        // Get the file state for the parent path, if available
+
+                        FileState parentState = ctx.getStateCache().findFileState(parentPath);
+                        NodeRef parentNode = null;
+
+                        if (parentState != null)
+                            parentNode = (NodeRef) parentState.getFilesystemObject();
+
+                        if (parentState == null || parentNode == null)
+                            parentNode = getNodeForPath(tree, parentPath);
+
+                        // Get the file information for the parent folder
+
+                        finfo = cifsHelper.getFileInformation(parentNode, isReadOnly, isLockedFilesAsOffline);
+
+                        // Blend in any cached timestamps
+
+                        if (parentState != null)
+                        {
+                            if (parentState.hasAccessDateTime())
+                                finfo.setAccessDateTime(parentState.getAccessDateTime());
+
+                            if (parentState.hasChangeDateTime())
+                                finfo.setChangeDateTime(parentState.getChangeDateTime());
+
+                            if (parentState.hasModifyDateTime())
+                                finfo.setModifyDateTime(parentState.getModifyDateTime());
+                        }
+
+                        // Set the '..' pseudo entry details
+
+                        cacheContext.setDotDotInfo(finfo);
+                    }
+                }
             }
-            else {
-            	if ( ctx.hasStateCache())
-                	searchCtx = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, paths[0], ctx.getStateCache(), isLockedFilesAsOffline);
-            	else
-                	searchCtx = new ContentSearchContext(cifsHelper, results, searchFileSpec, paths[0], isLockedFilesAsOffline);
+            else
+            {
+                if (ctx.hasStateCache())
+                    searchCtx = new CacheLookupSearchContext(cifsHelper, results, searchFileSpec, paths[0], ctx.getStateCache(), isLockedFilesAsOffline);
+                else
+                    searchCtx = new ContentSearchContext(cifsHelper, results, searchFileSpec, paths[0], isLockedFilesAsOffline);
             }
-            
+
             // Debug
-            
+
             if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
                 logger.debug("Started search: search path=" + searchPath + " attributes=" + attributes + ", ctx=" + searchCtx);
-            
+
             // Return the search context
-            
+
             return searchCtx;
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
                 logger.debug("Start search - access denied, " + searchPath);
-            
+
             // Convert to a file not found status
-            
+
             throw new FileNotFoundException("Start search " + searchPath);
         }
         catch (RuntimeException ex)
         {
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_SEARCH))
                 logger.debug("Start search", ex);
-            
+
             // Convert to a file not found status
-            
+
             throw new FileNotFoundException("Start search " + searchPath);
         }
     }
@@ -1241,12 +1288,15 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      * Check if the specified file exists, and whether it is a file or directory.
      * 
      * <p>
-     * WARNING: side effect, commit or roll back current user transaction context.  Current transaction becomes read only.
+     * WARNING: side effect, commit or roll back current user transaction context. Current transaction becomes read only.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param name the path of the file 
-     * @return FileStatus (0: NotExist, 1 : FileExist, 2: DirectoryExists) 
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param name
+     *            the path of the file
+     * @return FileStatus (0: NotExist, 1 : FileExist, 2: DirectoryExists)
      * @see FileStatus
      */
     public int fileExists(SrvSession sess, TreeConnection tree, String name)
@@ -1254,37 +1304,37 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         ContentContext ctx = (ContentContext) tree.getContext();
         int status = FileStatus.Unknown;
         FileState fstate = null;
-        
+
         try
         {
             // Check for a cached file state
-            
-            if ( ctx.hasStateCache())
+
+            if (ctx.hasStateCache())
                 fstate = ctx.getStateCache().findFileState(name, true);
-            
-            if ( fstate != null && fstate.getFileStatus() != FileUnknown)
+
+            if (fstate != null && fstate.getFileStatus() != FileUnknown)
             {
                 status = fstate.getFileStatus();
-                if ( status >= CustomFileStatus)
+                if (status >= CustomFileStatus)
                     status = FileNotExist;
 
                 // DEBUG
-                
-                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
+
+                if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                     logger.debug("Cache hit - fileExists() " + name + ", sts=" + status);
             }
             else
             {
                 // If the file is not a pseudo file then search for the file
-                
-                if ( status == FileStatus.Unknown) 
+
+                if (status == FileStatus.Unknown)
                 {
-	            	// Create the transaction
-	                
-                	beginReadTransaction( sess);
-	                
-	                // Get the file information to check if the file/folder exists
-	                
+                    // Create the transaction
+
+                    beginReadTransaction(sess);
+
+                    // Get the file information to check if the file/folder exists
+
                     FileInfo info = getFileInformation(sess, tree, name);
                     NodeRef nodeRef = getNodeOrNull(name, ctx, fstate);
                     nodeRef = ((null == nodeRef) && (info instanceof ContentFileInfo)) ? (((ContentFileInfo) info).getNodeRef()) : (nodeRef);
@@ -1295,460 +1345,481 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                     }
                     else
                     {
-		                if (info.isDirectory())
-		                {
-		                    status = FileStatus.DirectoryExists;
-		                }
-		                else
-		                {
-		                    status = FileStatus.FileExists;
-		                }
-	                }
+                        if (info.isDirectory())
+                        {
+                            status = FileStatus.DirectoryExists;
+                        }
+                        else
+                        {
+                            status = FileStatus.FileExists;
+                        }
+                    }
 
-	                // Update the file state status
+                    // Update the file state status
 
-	                if ( fstate != null)
-	                    fstate.setFileStatus( status);
+                    if (fstate != null)
+                        fstate.setFileStatus(status);
                 }
             }
         }
         catch (FileNotFoundException e)
         {
             status = FileStatus.NotExist;
-            if ( fstate != null)
-                fstate.setFileStatus( status);
+            if (fstate != null)
+                fstate.setFileStatus(status);
         }
         catch (IOException e)
         {
             // Debug
 
-        	if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
-        		logger.debug("File exists error, " + name, e);
-            
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
+                logger.debug("File exists error, " + name, e);
+
             status = FileStatus.NotExist;
         }
 
         // Debug
-        
+
         if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
             logger.debug("File status determined: name=" + name + " status=" + fileStatusString(fstate.getFileStatus()));
-        
+
         // Return the file/folder status
-        
+
         return status;
     }
-    
+
     /**
      * Open a file or folder
      * 
-     * @param sess SrvSession
-     * @param tree TreeConnection
-     * @param params FileOpenParams
+     * @param sess
+     *            SrvSession
+     * @param tree
+     *            TreeConnection
+     * @param params
+     *            FileOpenParams
      * @return NetworkFile
      * @exception IOException
      */
-    public NetworkFile openFile(SrvSession sess, TreeConnection tree, FileOpenParams params ) throws IOException
+    public NetworkFile openFile(SrvSession sess, TreeConnection tree, FileOpenParams params) throws IOException
     {
         // Create the transaction
-        
-    	beginReadTransaction( sess);
+
+        beginReadTransaction(sess);
         ContentContext ctx = (ContentContext) tree.getContext();
-        
+
         try
         {
             // Not a pseudo file, try and open a normal file/folder node
-            
+
             NodeRef nodeRef = getNodeForPath(tree, params.getPath());
-            
+
             // Check permissions on the file/folder node
             //
             // Check for read access
-            
-            if ( params.hasAccessMode(AccessMode.NTRead) &&
+
+            if (params.hasAccessMode(AccessMode.NTRead) &&
                     permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
                 throw new AccessDeniedException("No read access to " + params.getFullPath());
-                
+
             // Check for write access
-            
-            if ( params.hasAccessMode(AccessMode.NTWrite) &&
+
+            if (params.hasAccessMode(AccessMode.NTWrite) &&
                     permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
                 throw new AccessDeniedException("No write access to " + params.getFullPath());
-            
+
             // Check for delete access
-            
-//            if ( params.hasAccessMode(AccessMode.NTDelete) &&
-//                    permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.DENIED)
-//                throw new AccessDeniedException("No delete access to " + params.getFullPath());
+
+            // if ( params.hasAccessMode(AccessMode.NTDelete) &&
+            // permissionService.hasPermission(nodeRef, PermissionService.DELETE) == AccessStatus.DENIED)
+            // throw new AccessDeniedException("No delete access to " + params.getFullPath());
 
             // Check if the file has a lock
-            
-            String lockTypeStr = (String) nodeService.getProperty( nodeRef, ContentModel.PROP_LOCK_TYPE);
-            
-            if ( params.hasAccessMode(AccessMode.NTWrite) && lockTypeStr != null)
+
+            String lockTypeStr = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_TYPE);
+
+            if (params.hasAccessMode(AccessMode.NTWrite) && lockTypeStr != null)
                 throw new AccessDeniedException("File is locked, no write access to " + params.getFullPath());
-            
-            //  Check if there is a file state for the file
+
+            // Check if there is a file state for the file
 
             FileState fstate = null;
-            
-            if ( ctx.hasStateCache())
+
+            if (ctx.hasStateCache())
             {
                 // Check if there is a file state for the file
 
-                fstate = ctx.getStateCache().findFileState( params.getPath());
-            
-                if ( fstate != null)
-                {                
+                fstate = ctx.getStateCache().findFileState(params.getPath());
+
+                if (fstate != null)
+                {
                     // Check if the file exists
-                    
-                    if ( fstate.exists() == false)
+
+                    if (fstate.exists() == false)
                         throw new FileNotFoundException();
                 }
-                else {
-                	
-                	// Create a file state for the path
-                	
-                    fstate = ctx.getStateCache().findFileState( params.getPath(), true);
-                }                	
-                    
-            	// Check if the current file open allows the required shared access
-            	
-            	boolean nosharing = false;
-            	String noshrReason = null;
-            	
-            	// TEST
-            	
-        		if ( params.getAccessMode() == AccessMode.NTFileGenericExecute && params.getPath().toLowerCase().endsWith( ".exe") == false) {
-        			
-            		// DEBUG
-            		
-            		if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE)) {
-            			logger.debug( "Execute access mode, path" + params.getPath());
-            			logger.debug( "  Fstate=" + fstate);
-            		}
-        		
+                else
+                {
+
+                    // Create a file state for the path
+
+                    fstate = ctx.getStateCache().findFileState(params.getPath(), true);
+                }
+
+                // Check if the current file open allows the required shared access
+
+                boolean nosharing = false;
+                String noshrReason = null;
+
+                // TEST
+
+                if (params.getAccessMode() == AccessMode.NTFileGenericExecute && params.getPath().toLowerCase().endsWith(".exe") == false)
+                {
+
+                    // DEBUG
+
+                    if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                    {
+                        logger.debug("Execute access mode, path" + params.getPath());
+                        logger.debug("  Fstate=" + fstate);
+                    }
+
                     throw new AccessDeniedException("Invalid access mode");
                 }
-                
-                if ( fstate.getOpenCount() > 0 && params.isAttributesOnlyAccess() == false) {
-                    
-    				// Check for impersonation security level from the original process that opened the file
-    				
-    				if ( params.getSecurityLevel() == WinNT.SecurityImpersonation && params.getProcessId() == fstate.getProcessId())
-    					nosharing = false;
-    	
-    				// Check if the caller wants read access, check the sharing mode
-    				// Check if the caller wants write access, check if the sharing mode allows write
-    				
-    		    	else if ( params.isReadOnlyAccess() && (fstate.getSharedAccess() & SharingMode.READ) != 0)
-    		    		nosharing = false;
-    				
-    				// Check if the caller wants write access, check the sharing mode
-    				
-    		    	else if (( params.isReadWriteAccess() || params.isWriteOnlyAccess()) && (fstate.getSharedAccess() & SharingMode.WRITE) == 0)
-    		    	{
-    					nosharing = true;
-    					noshrReason = "Sharing mode disallows write";
-    					
-    		    		// DEBUG
-    		    		
-                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-    		    			logger.debug("Sharing mode disallows write access path=" + params.getPath());
-    		    	}
-    		    	
-    				// Check if the file has been opened for exclusive access
-    				
-    				else if ( fstate.getSharedAccess() == SharingMode.NOSHARING) {
-    					nosharing = true;
-    					noshrReason = "Sharing mode exclusive";
-    				}
-    				
-    				// Check if the required sharing mode is allowed by the current file open
-    				
-    				else if ((fstate.getSharedAccess() & params.getSharedAccess()) != params.getSharedAccess()) {
-    					nosharing = true;
-    					noshrReason = "Sharing mode mismatch";
-    					
-                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-    		    			logger.debug("Local share mode=0x" + Integer.toHexString(fstate.getSharedAccess()) + ", params share mode=0x" + Integer.toHexString(params.getSharedAccess()));
-    				}
-    				
-    				// Check if the caller wants exclusive access to the file
-    				
-    		    	else if ( params.getSharedAccess() == SharingMode.NOSHARING) {
-    		    		nosharing = true;
-    		    		noshrReason = "Requestor wants exclusive mode";
-    		    	}
-                }
-                
-                // Check if the file allows shared access
-                
-                if ( nosharing == true)
+
+                if (fstate.getOpenCount() > 0 && params.isAttributesOnlyAccess() == false)
                 {
-                    if ( params.getPath().equals( "\\") == false) {
-                        
+
+                    // Check for impersonation security level from the original process that opened the file
+
+                    if (params.getSecurityLevel() == WinNT.SecurityImpersonation && params.getProcessId() == fstate.getProcessId())
+                        nosharing = false;
+
+                    // Check if the caller wants read access, check the sharing mode
+                    // Check if the caller wants write access, check if the sharing mode allows write
+
+                    else if (params.isReadOnlyAccess() && (fstate.getSharedAccess() & SharingMode.READ) != 0)
+                        nosharing = false;
+
+                    // Check if the caller wants write access, check the sharing mode
+
+                    else if ((params.isReadWriteAccess() || params.isWriteOnlyAccess()) && (fstate.getSharedAccess() & SharingMode.WRITE) == 0)
+                    {
+                        nosharing = true;
+                        noshrReason = "Sharing mode disallows write";
+
                         // DEBUG
-                        
-                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+                        if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                            logger.debug("Sharing mode disallows write access path=" + params.getPath());
+                    }
+
+                    // Check if the file has been opened for exclusive access
+
+                    else if (fstate.getSharedAccess() == SharingMode.NOSHARING)
+                    {
+                        nosharing = true;
+                        noshrReason = "Sharing mode exclusive";
+                    }
+
+                    // Check if the required sharing mode is allowed by the current file open
+
+                    else if ((fstate.getSharedAccess() & params.getSharedAccess()) != params.getSharedAccess())
+                    {
+                        nosharing = true;
+                        noshrReason = "Sharing mode mismatch";
+
+                        if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                            logger.debug("Local share mode=0x" + Integer.toHexString(fstate.getSharedAccess()) + ", params share mode=0x" + Integer.toHexString(params.getSharedAccess()));
+                    }
+
+                    // Check if the caller wants exclusive access to the file
+
+                    else if (params.getSharedAccess() == SharingMode.NOSHARING)
+                    {
+                        nosharing = true;
+                        noshrReason = "Requestor wants exclusive mode";
+                    }
+                }
+
+                // Check if the file allows shared access
+
+                if (nosharing == true)
+                {
+                    if (params.getPath().equals("\\") == false)
+                    {
+
+                        // DEBUG
+
+                        if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                             logger.debug("Sharing violation path=" + params.getPath() + ", sharing=0x" + Integer.toHexString(fstate.getSharedAccess()) + ",reason=" + noshrReason);
-                    
+
                         // File is locked by another user
-                        
+
                         throw new FileSharingException("File already open, " + params.getPath());
                     }
                 }
-                
+
                 // Update the file sharing mode and process id, if this is the first file open
-                
-                fstate.setSharedAccess( params.getSharedAccess());
-                fstate.setProcessId( params.getProcessId());
-                
+
+                fstate.setSharedAccess(params.getSharedAccess());
+                fstate.setProcessId(params.getProcessId());
+
                 // DEBUG
-                
-                if ( logger.isDebugEnabled() && fstate.getOpenCount() == 0 && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+                if (logger.isDebugEnabled() && fstate.getOpenCount() == 0 && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                     logger.debug("Path " + params.getPath() + ", sharing=0x" + Integer.toHexString(params.getSharedAccess()) + ", PID=" + params.getProcessId());
             }
-            
+
             // Check if the node is a link node
-            
+
             NodeRef linkRef = (NodeRef) nodeService.getProperty(nodeRef, ContentModel.PROP_LINK_DESTINATION);
             AlfrescoNetworkFile netFile = null;
-            
-            if ( linkRef == null)
+
+            if (linkRef == null)
             {
                 // Check if the file is already opened by this client/process
-                
-                if ( tree.openFileCount() > 0 && params.isAttributesOnlyAccess() == false) {
-                
+
+                if (tree.openFileCount() > 0 && params.isAttributesOnlyAccess() == false)
+                {
+
                     // Search the open file table for this session/virtual circuit
-                    
+
                     int idx = 0;
-                    
-                    while ( idx < tree.getFileTableLength() && netFile == null) {
-                        
+
+                    while (idx < tree.getFileTableLength() && netFile == null)
+                    {
+
                         // Get the current file from the open file table
-                        
-                        NetworkFile curFile = tree.findFile( idx);
-                        if ( curFile != null && curFile instanceof ContentNetworkFile) {
-                            
+
+                        NetworkFile curFile = tree.findFile(idx);
+                        if (curFile != null && curFile instanceof ContentNetworkFile)
+                        {
+
                             // Check if the file is the same path and process id
-                            
+
                             ContentNetworkFile contentFile = (ContentNetworkFile) curFile;
-                            if ( contentFile.getProcessId() == params.getProcessId() &&
-                                    contentFile.getFullName().equalsIgnoreCase( params.getFullPath())) {
-                                
+                            if (contentFile.getProcessId() == params.getProcessId() &&
+                                    contentFile.getFullName().equalsIgnoreCase(params.getFullPath()))
+                            {
+
                                 // Check that the access mode is the same
-                                
-                                if (( params.isReadWriteAccess() && contentFile.getGrantedAccess() == NetworkFile.READWRITE) ||
-                                        ( params.isReadOnlyAccess() && contentFile.getGrantedAccess() == NetworkFile.READONLY)) {
-                                    
+
+                                if ((params.isReadWriteAccess() && contentFile.getGrantedAccess() == NetworkFile.READWRITE) ||
+                                        (params.isReadOnlyAccess() && contentFile.getGrantedAccess() == NetworkFile.READONLY))
+                                {
+
                                     // Found a match, re-use the open file
-                                    
+
                                     netFile = contentFile;
-                                    
+
                                     // Increment the file open count, last file close will actually close the file/stream
-                                    
+
                                     contentFile.incrementOpenCount();
-    
+
                                     // DEBUG
-                                    
-                                    if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+                                    if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                                         logger.debug("Re-use existing file open Path " + params.getPath() + ", PID=" + params.getProcessId() + ", params=" +
-                                                ( params.isReadOnlyAccess() ? "ReadOnly" : "Write") + ", file=" + 
-                                                ( contentFile.getGrantedAccess() <= NetworkFile.READONLY ? "ReadOnly" : "Write"));
+                                                (params.isReadOnlyAccess() ? "ReadOnly" : "Write") + ", file=" +
+                                                (contentFile.getGrantedAccess() <= NetworkFile.READONLY ? "ReadOnly" : "Write"));
                                 }
-                                else if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                                else if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                                     logger.debug("Not re-using file path=" + params.getPath() + ", readWrite=" + (params.isReadWriteAccess() ? "true" : "false") +
                                             ", readOnly=" + (params.isReadOnlyAccess() ? "true" : "false") +
                                             ", grantedAccess=" + contentFile.getGrantedAccessAsString());
                             }
                         }
-                        
+
                         // Update the file table index
-                        
+
                         idx++;
                     }
                 }
-                
+
                 // Create the network file, if we could not match an existing file open
-                
-                if ( netFile == null) {
-                    
+
+                if (netFile == null)
+                {
+
                     // Create a new network file for the open request
-                
+
                     netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, nodeRef, params.getPath(), params.isReadOnlyAccess(), params.isAttributesOnlyAccess(), sess);
                 }
             }
             else
             {
                 // Get the CIFS server name
-                
+
                 String srvName = null;
-                SMBServer cifsServer = (SMBServer) sess.getServer().getConfiguration().findServer( "CIFS");
-                
-                if(sess instanceof SMBSrvSession)
+                SMBServer cifsServer = (SMBServer) sess.getServer().getConfiguration().findServer("CIFS");
+
+                if (sess instanceof SMBSrvSession)
                 {
-                    SMBSrvSession smbSess = (SMBSrvSession)sess;
+                    SMBSrvSession smbSess = (SMBSrvSession) sess;
                     srvName = smbSess.getShareHostName();
                 }
-                else if ( cifsServer != null)
+                else if (cifsServer != null)
                 {
                     // Use the CIFS server name in the URL
-                
+
                     srvName = cifsServer.getServerName();
                 }
                 else
                 {
                     // Use the local server name in the URL
-                  
+
                     srvName = InetAddress.getLocalHost().getHostName();
                 }
-                
+
                 // Convert the target node to a path, convert to URL format
-                
-                String path = getPathForNode( tree, linkRef);
-                path = path.replace( FileName.DOS_SEPERATOR, '/');
-                
+
+                String path = getPathForNode(tree, linkRef);
+                path = path.replace(FileName.DOS_SEPERATOR, '/');
+
                 // Build the URL file data
-                
+
                 StringBuilder urlStr = new StringBuilder();
-            
+
                 urlStr.append("[InternetShortcut]\r\n");
                 urlStr.append("URL=file://");
-                urlStr.append( srvName);
+                urlStr.append(srvName);
                 urlStr.append("/");
-                urlStr.append( tree.getSharedDevice().getName());
-                urlStr.append( path);
+                urlStr.append(tree.getSharedDevice().getName());
+                urlStr.append(path);
                 urlStr.append("\r\n");
-    
+
                 // Create the in memory pseudo file for the URL link
-                
+
                 byte[] urlData = urlStr.toString().getBytes();
-                
+
                 // Get the file information for the link node
-                
-                FileInfo fInfo = cifsHelper.getFileInformation( nodeRef, isReadOnly, isLockedFilesAsOffline);
+
+                FileInfo fInfo = cifsHelper.getFileInformation(nodeRef, isReadOnly, isLockedFilesAsOffline);
 
                 // Set the file size to the actual data length
-                
-                fInfo.setFileSize( urlData.length);
-                
+
+                fInfo.setFileSize(urlData.length);
+
                 // Create the network file using the in-memory file data
-                
-                netFile = new LinkMemoryNetworkFile( fInfo.getFileName(), urlData, fInfo, nodeRef);
-                netFile.setFullName( params.getPath());
+
+                netFile = new LinkMemoryNetworkFile(fInfo.getFileName(), urlData, fInfo, nodeRef);
+                netFile.setFullName(params.getPath());
             }
-            
+
             // Generate a file id for the file
-            
-            if ( netFile != null) {
+
+            if (netFile != null)
+            {
                 long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
-                netFile.setFileId(( int) ( id & 0xFFFFFFFFL));
-                
+                netFile.setFileId((int) (id & 0xFFFFFFFFL));
+
                 // Indicate the file is open
-                
-                netFile.setClosed( false);
+
+                netFile.setClosed(false);
             }
-            
+
             // If the file has been opened for overwrite then truncate the file to zero length, this will
             // also prevent the existing content data from being copied to the new version of the file
-            
-            if ( params.isOverwrite() && netFile != null)
+
+            if (params.isOverwrite() && netFile != null)
             {
                 // Truncate the file to zero length
-                
-                netFile.truncateFile( 0L);
+
+                netFile.truncateFile(0L);
             }
-            
+
             // Create a file state for the open file
-            
-            if ( ctx.hasStateCache())
+
+            if (ctx.hasStateCache())
             {
-                if ( fstate  == null)
+                if (fstate == null)
                     fstate = ctx.getStateCache().findFileState(params.getPath(), true);
-            
+
                 // Update the file state, cache the node
-                
-                if ( netFile.getGrantedAccess() > NetworkFile.ATTRIBUTESONLY)
-                	fstate.incrementOpenCount();
+
+                if (netFile.getGrantedAccess() > NetworkFile.ATTRIBUTESONLY)
+                    fstate.incrementOpenCount();
                 fstate.setFilesystemObject(nodeRef);
-                
+
                 // Store the state with the file
-                
-                netFile.setFileState( fstate);
-                
+
+                netFile.setFileState(fstate);
+
                 // Set the file access date/time, if available
-                
-//                if ( fstate.hasAccessDateTime())
-//                    netFile.setAccessDate( fstate.getAccessDateTime());
-                
-                
-               // Set the live file size, if available
-                
-               if ( fstate.hasFileSize())
-            	   netFile.setFileSize( fstate.getFileSize());
+
+                // if ( fstate.hasAccessDateTime())
+                // netFile.setAccessDate( fstate.getAccessDateTime());
+
+                // Set the live file size, if available
+
+                if (fstate.hasFileSize())
+                    netFile.setFileSize(fstate.getFileSize());
             }
-            
+
             // Debug
-            
+
             if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Opened network file: path=" + params.getPath() + " file open parameters=" + params + " network file=" + netFile);
 
             // Return the network file
-            
+
             return netFile;
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Open file - access denied, " + params.getFullPath());
-            
+
             // Convert to a filesystem access denied status
-            
+
             throw new AccessDeniedException("Open file " + params.getFullPath());
         }
         catch (RuntimeException ex)
         {
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Open file error", ex);
-            
+
             // Convert to a general I/O exception
-            
+
             throw new IOException("Open file " + params.getFullPath());
         }
     }
-    
+
     /**
      * Create a new file on the file system.
      * 
      * <p>
      * WARNING : side effect - closes current transaction context.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param params File create parameters
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param params
+     *            File create parameters
      * @return NetworkFile
-     * @exception java.io.IOException If an error occurs.
+     * @exception java.io.IOException
+     *                If an error occurs.
      */
     public NetworkFile createFile(SrvSession sess, final TreeConnection tree, final FileOpenParams params) throws IOException
     {
         final ContentContext ctx = (ContentContext) tree.getContext();
-        
+
         try
         {
 
             // Access the repository in a retryable write transaction
-            Pair<String, NodeRef> result = doInWriteTransaction(sess, new CallableIO<Pair<String, NodeRef>>(){
+            Pair<String, NodeRef> result = doInWriteTransaction(sess, new CallableIO<Pair<String, NodeRef>>() {
                 public Pair<String, NodeRef> call() throws IOException
                 {
                     // Get the device root
 
                     NodeRef deviceRootNodeRef = ctx.getRootNode();
-                    
+
                     String path = params.getPath();
                     String parentPath = null;
 
@@ -1756,217 +1827,6 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                     // to save having to walk the path
 
                     if (ctx.hasStateCache())
-                    {
-                        // See if the parent folder has a file state, we can avoid having to walk the path
-                        
-                        String[] paths = FileName.splitPath(path);
-                        if ( paths[0] != null && paths[0].length() > 1)
-                        {
-                            // Find the node ref for the folder being searched
-                            
-                            NodeRef nodeRef = getNodeForPath(tree, paths[0]);
-                            
-                            if ( nodeRef != null)
-                            {
-                                deviceRootNodeRef = nodeRef;
-                                path              = paths[1];
-                                
-                                // DEBUG
-                                
-                                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                                    logger.debug("Create file using cached noderef for path " + paths[0]);
-                            }
-                            
-                            parentPath = paths[0];
-                        }
-                    }
-                    
-                    // Create it - the path will be created, if necessary
-                    if(logger.isDebugEnabled())
-                    {
-                        logger.debug("create new file" + path);
-                    }
-
-
-                    NodeRef nodeRef = null;
-
-                    try
-                    {
-                        nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, ContentModel.TYPE_CONTENT);
-                        nodeService.addAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT, null);
-                    }
-                    catch ( FileExistsException ex)
-                    {
-                        nodeRef = cifsHelper.getNodeRef(deviceRootNodeRef, path);
-                        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_SOFT_DELETE))
-                        {
-                            throw ex;
-                        }
-                    }
-                    
-                    return new Pair<String, NodeRef>(parentPath, nodeRef);
-                }});
-
-            // Get or create the file state for the parent folder
-            FileState parentState = null;
-            String parentPath = result.getFirst();
-            if (parentPath != null)
-            {
-                parentState = getStateForPath(tree, parentPath);
-                if (parentState == null && ctx.hasStateCache())
-                    parentState = ctx.getStateCache().findFileState(parentPath, true);
-            }
-            
-            NodeRef nodeRef = result.getSecond();
-            if (nodeRef != null && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_SOFT_DELETE))
-            {
-                nodeService.removeAspect(nodeRef, ContentModel.ASPECT_SOFT_DELETE);
-            }
-  
-            // Create the network file
-            
-            ContentNetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, result.getSecond(), params.getPath(), params.isReadOnlyAccess(), params.isAttributesOnlyAccess(), sess);
-            
-            // Always allow write access to a newly created file
-            
-            netFile.setGrantedAccess(NetworkFile.READWRITE);
-            
-            // Set the owner process id for this open file
-            
-            netFile.setProcessId( params.getProcessId());
-            
-            // Truncate the file so that the content stream is created
-            
-            netFile.truncateFile( 0L);
-
-            // Indicate the file is open
-            
-            netFile.setClosed( false);
-            
-            // Generate a file id for the file
-            
-            if ( netFile != null) {
-                long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(netFile.getNodeRef(), ContentModel.PROP_NODE_DBID));
-                netFile.setFileId((int) (id & 0xFFFFFFFFL));
-            }
-            
-            // Add a file state for the new file/folder
-            
-            if ( ctx.hasStateCache())
-            {
-                FileState fstate = ctx.getStateCache().findFileState(params.getPath(), true);
-                if ( fstate != null)
-                {
-                    // Save the file sharing mode, needs to be done before the open count is incremented
-                    
-                    fstate.setSharedAccess( params.getSharedAccess());
-                    fstate.setProcessId( params.getProcessId());
-                    
-                    // Indicate that the file is open
-    
-                    fstate.setFileStatus( FileExists);
-                    fstate.incrementOpenCount();
-                    fstate.setFilesystemObject(result.getSecond());
-                    
-                    // Track the intial allocation size
-                    
-                    fstate.setAllocationSize( params.getAllocationSize());
-                    
-                    // Store the file state with the file
-                    
-                    netFile.setFileState( fstate);
-                    
-                    // DEBUG
-                    
-                    if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                        logger.debug("Create file, state=" + fstate);
-                }
-                
-                // Update the parent folder file state
-                
-                if ( parentState != null)
-                    parentState.updateModifyDateTime();
-            }
-            
-            // Debug
-            
-            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                logger.debug("Created file: path=" + params.getPath() + " file open parameters=" + params + " node=" + result.getSecond() + " network file=" + netFile);
-
-            // Return the new network file
-            
-            return netFile;
-        }
-        catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
-        {
-            // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                logger.debug("Create file - access denied, " + params.getFullPath());
-            
-            // Convert to a filesystem access denied status
-            
-            throw new AccessDeniedException("Create file " + params.getFullPath());
-        }
-        catch (ContentIOException ex)
-        {
-            // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                logger.debug("Create file - content I/O error, " + params.getFullPath());
-            
-            // Convert to a filesystem disk full status
-            
-            throw new DiskFullException("Create file " + params.getFullPath());
-        }
-        catch (RuntimeException ex)
-        {
-            // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                logger.debug("Create file error", ex);
-            
-            // Convert to a general I/O exception
-            
-            throw new IOException("Create file " + params.getFullPath(), ex);
-        }
-        
-    }
-
-    /**
-     * Create a new directory on this file system.
-     *
-     * <p>
-     * WARNING : side effect - closes current transaction context.
-     *
-     * @param sess Server session
-     * @param tree Tree connection.
-     * @param params Directory create parameters
-     * @exception java.io.IOException If an error occurs.
-     */
-    public void createDirectory(SrvSession sess, final TreeConnection tree, final FileOpenParams params) throws IOException
-    {
-        final ContentContext ctx = (ContentContext) tree.getContext();
-        
-        try
-        {
-            // Access the repository in a retryable write transaction
-            Pair<String, NodeRef> result = doInWriteTransaction(sess, new CallableIO<Pair<String, NodeRef>>()
-            {
-
-                public Pair<String, NodeRef> call() throws IOException
-                {
-                    // get the device root
-
-                    NodeRef deviceRootNodeRef = ctx.getRootNode();
-
-                    String path = params.getPath();
-                    String parentPath = null;
-
-                    // If the state table is available then try to find the parent folder node for the new folder
-                    // to save having to walk the path
-
-                    if ( ctx.hasStateCache())
                     {
                         // See if the parent folder has a file state, we can avoid having to walk the path
 
@@ -1987,16 +1847,34 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                                 if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                                     logger.debug("Create file using cached noderef for path " + paths[0]);
                             }
-                            
-                            parentPath = paths[0];                            
+
+                            parentPath = paths[0];
                         }
                     }
 
                     // Create it - the path will be created, if necessary
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("create new file" + path);
+                    }
 
-                    NodeRef nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, ContentModel.TYPE_FOLDER);
-                    
-                    return new Pair<String, NodeRef>(parentPath, nodeRef);                    
+                    NodeRef nodeRef = null;
+
+                    try
+                    {
+                        nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, ContentModel.TYPE_CONTENT);
+                        nodeService.addAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT, null);
+                    }
+                    catch (FileExistsException ex)
+                    {
+                        nodeRef = cifsHelper.getNodeRef(deviceRootNodeRef, path);
+                        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_SOFT_DELETE))
+                        {
+                            throw ex;
+                        }
+                    }
+
+                    return new Pair<String, NodeRef>(parentPath, nodeRef);
                 }
             });
 
@@ -2009,56 +1887,253 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                 if (parentState == null && ctx.hasStateCache())
                     parentState = ctx.getStateCache().findFileState(parentPath, true);
             }
-            
-            // Add a file state for the new folder
-            
-            if ( ctx.hasStateCache())
+
+            NodeRef nodeRef = result.getSecond();
+            if (nodeRef != null && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_SOFT_DELETE))
             {
-                FileState fstate = ctx.getStateCache().findFileState( params.getPath(), true);
-                if ( fstate != null)
+                nodeService.removeAspect(nodeRef, ContentModel.ASPECT_SOFT_DELETE);
+            }
+
+            // Create the network file
+
+            ContentNetworkFile netFile = ContentNetworkFile.createFile(nodeService, contentService, mimetypeService, cifsHelper, result.getSecond(), params.getPath(), params.isReadOnlyAccess(), params.isAttributesOnlyAccess(), sess);
+
+            // Always allow write access to a newly created file
+
+            netFile.setGrantedAccess(NetworkFile.READWRITE);
+
+            // Set the owner process id for this open file
+
+            netFile.setProcessId(params.getProcessId());
+
+            // Truncate the file so that the content stream is created
+
+            netFile.truncateFile(0L);
+
+            // Indicate the file is open
+
+            netFile.setClosed(false);
+
+            // Generate a file id for the file
+
+            if (netFile != null)
+            {
+                long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(netFile.getNodeRef(), ContentModel.PROP_NODE_DBID));
+                netFile.setFileId((int) (id & 0xFFFFFFFFL));
+            }
+
+            // Add a file state for the new file/folder
+
+            if (ctx.hasStateCache())
+            {
+                FileState fstate = ctx.getStateCache().findFileState(params.getPath(), true);
+                if (fstate != null)
                 {
+                    // Save the file sharing mode, needs to be done before the open count is incremented
+
+                    fstate.setSharedAccess(params.getSharedAccess());
+                    fstate.setProcessId(params.getProcessId());
+
                     // Indicate that the file is open
-    
-                    fstate.setFileStatus( DirectoryExists);
+
+                    fstate.setFileStatus(FileExists);
+                    fstate.incrementOpenCount();
                     fstate.setFilesystemObject(result.getSecond());
-                    
+
+                    // Track the intial allocation size
+
+                    fstate.setAllocationSize(params.getAllocationSize());
+
+                    // Store the file state with the file
+
+                    netFile.setFileState(fstate);
+
                     // DEBUG
-                    
-                    if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
-                        logger.debug("Create folder, state=" + fstate); 
+
+                    if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                        logger.debug("Create file, state=" + fstate);
                 }
-                
+
                 // Update the parent folder file state
-                
-                if ( parentState != null)
+
+                if (parentState != null)
                     parentState.updateModifyDateTime();
             }
-            
+
             // Debug
-            
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                logger.debug("Created file: path=" + params.getPath() + " file open parameters=" + params + " node=" + result.getSecond() + " network file=" + netFile);
+
+            // Return the new network file
+
+            return netFile;
+        }
+        catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
+        {
+            // Debug
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                logger.debug("Create file - access denied, " + params.getFullPath());
+
+            // Convert to a filesystem access denied status
+
+            throw new AccessDeniedException("Create file " + params.getFullPath());
+        }
+        catch (ContentIOException ex)
+        {
+            // Debug
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                logger.debug("Create file - content I/O error, " + params.getFullPath());
+
+            // Convert to a filesystem disk full status
+
+            throw new DiskFullException("Create file " + params.getFullPath());
+        }
+        catch (RuntimeException ex)
+        {
+            // Debug
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                logger.debug("Create file error", ex);
+
+            // Convert to a general I/O exception
+
+            throw new IOException("Create file " + params.getFullPath(), ex);
+        }
+
+    }
+
+    /**
+     * Create a new directory on this file system.
+     *
+     * <p>
+     * WARNING : side effect - closes current transaction context.
+     *
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection.
+     * @param params
+     *            Directory create parameters
+     * @exception java.io.IOException
+     *                If an error occurs.
+     */
+    public void createDirectory(SrvSession sess, final TreeConnection tree, final FileOpenParams params) throws IOException
+    {
+        final ContentContext ctx = (ContentContext) tree.getContext();
+
+        try
+        {
+            // Access the repository in a retryable write transaction
+            Pair<String, NodeRef> result = doInWriteTransaction(sess, new CallableIO<Pair<String, NodeRef>>() {
+
+                public Pair<String, NodeRef> call() throws IOException
+                {
+                    // get the device root
+
+                    NodeRef deviceRootNodeRef = ctx.getRootNode();
+
+                    String path = params.getPath();
+                    String parentPath = null;
+
+                    // If the state table is available then try to find the parent folder node for the new folder
+                    // to save having to walk the path
+
+                    if (ctx.hasStateCache())
+                    {
+                        // See if the parent folder has a file state, we can avoid having to walk the path
+
+                        String[] paths = FileName.splitPath(path);
+                        if (paths[0] != null && paths[0].length() > 1)
+                        {
+                            // Find the node ref for the folder being searched
+
+                            NodeRef nodeRef = getNodeForPath(tree, paths[0]);
+
+                            if (nodeRef != null)
+                            {
+                                deviceRootNodeRef = nodeRef;
+                                path = paths[1];
+
+                                // DEBUG
+
+                                if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                                    logger.debug("Create file using cached noderef for path " + paths[0]);
+                            }
+
+                            parentPath = paths[0];
+                        }
+                    }
+
+                    // Create it - the path will be created, if necessary
+
+                    NodeRef nodeRef = cifsHelper.createNode(deviceRootNodeRef, path, ContentModel.TYPE_FOLDER);
+
+                    return new Pair<String, NodeRef>(parentPath, nodeRef);
+                }
+            });
+
+            // Get or create the file state for the parent folder
+            FileState parentState = null;
+            String parentPath = result.getFirst();
+            if (parentPath != null)
+            {
+                parentState = getStateForPath(tree, parentPath);
+                if (parentState == null && ctx.hasStateCache())
+                    parentState = ctx.getStateCache().findFileState(parentPath, true);
+            }
+
+            // Add a file state for the new folder
+
+            if (ctx.hasStateCache())
+            {
+                FileState fstate = ctx.getStateCache().findFileState(params.getPath(), true);
+                if (fstate != null)
+                {
+                    // Indicate that the file is open
+
+                    fstate.setFileStatus(DirectoryExists);
+                    fstate.setFilesystemObject(result.getSecond());
+
+                    // DEBUG
+
+                    if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                        logger.debug("Create folder, state=" + fstate);
+                }
+
+                // Update the parent folder file state
+
+                if (parentState != null)
+                    parentState.updateModifyDateTime();
+            }
+
+            // Debug
+
             if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Created directory: path=" + params.getPath() + " file open params=" + params + " node=" + result.getSecond());
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Create directory - access denied, " + params.getFullPath());
-            
+
             // Convert to a filesystem access denied status
-            
+
             throw new AccessDeniedException("Create directory " + params.getFullPath());
         }
         catch (RuntimeException ex)
         {
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Create directory error", ex);
-            
+
             // Convert to a general I/O exception
-            
+
             throw new IOException("Create directory " + params.getFullPath(), ex);
         }
     }
@@ -2066,100 +2141,105 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Delete the directory from the filesystem.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param dir Directory name.
-     * @exception java.io.IOException The exception description.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param dir
+     *            Directory name.
+     * @exception java.io.IOException
+     *                The exception description.
      */
     public void deleteDirectory(SrvSession sess, TreeConnection tree, final String dir) throws IOException
     {
         // get the device root
-        
+
         ContentContext ctx = (ContentContext) tree.getContext();
         final NodeRef deviceRootNodeRef = ctx.getRootNode();
-        
+
         try
         {
-            NodeRef nodeRef = doInWriteTransaction(sess, new CallableIO<NodeRef>(){
+            NodeRef nodeRef = doInWriteTransaction(sess, new CallableIO<NodeRef>() {
 
                 public NodeRef call() throws IOException
                 {
-                    // Get the node for the folder                    
-            
+                    // Get the node for the folder
+
                     NodeRef nodeRef = cifsHelper.getNodeRef(deviceRootNodeRef, dir);
                     if (fileFolderService.exists(nodeRef))
                     {
-                        // Check if the folder is empty                        
-                
-                        if ( cifsHelper.isFolderEmpty( nodeRef))
-                        {                            
-                            // Delete the folder node           
-    
+                        // Check if the folder is empty
+
+                        if (cifsHelper.isFolderEmpty(nodeRef))
+                        {
+                            // Delete the folder node
+
                             fileFolderService.delete(nodeRef);
                             return nodeRef;
                         }
                         else
                         {
-                            throw new DirectoryNotEmptyException( dir);                            
+                            throw new DirectoryNotEmptyException(dir);
                         }
                     }
                     return null;
-                }});
+                }
+            });
             if (nodeRef != null && ctx.hasStateCache())
             {
                 // Remove the file state
-            
+
                 ctx.getStateCache().removeFileState(dir);
-            
+
                 // Update, or create, a parent folder file state
-                
+
                 String[] paths = FileName.splitPath(dir);
-                if ( paths[0] != null && paths[0].length() > 1)
+                if (paths[0] != null && paths[0].length() > 1)
                 {
                     // Get the file state for the parent folder
-                    
+
                     FileState parentState = getStateForPath(tree, paths[0]);
-                            if ( parentState == null && ctx.hasStateCache())
-                                parentState = ctx.getStateCache().findFileState( paths[0], true);
+                    if (parentState == null && ctx.hasStateCache())
+                        parentState = ctx.getStateCache().findFileState(paths[0], true);
 
                     // Update the modification timestamp
-                    
+
                     parentState.updateModifyDateTime();
                 }
             }
-            
+
             // Debug
-            
+
             if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Deleted directory: directory=" + dir + " node=" + nodeRef);
         }
         catch (FileNotFoundException e)
         {
             // Debug
-            
+
             if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Delete directory - file not found, " + dir);
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Delete directory - access denied, " + dir);
-            
+
             // Convert to a filesystem access denied status
-            
+
             throw new AccessDeniedException("Delete directory " + dir);
         }
         catch (RuntimeException ex)
         {
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Delete directory", ex);
-            
+
             // Convert to a general I/O exception
-            
+
             throw new IOException("Delete directory " + dir);
         }
     }
@@ -2167,82 +2247,94 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Flush any buffered output for the specified file.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param file Network file context.
-     * @exception java.io.IOException The exception description.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param file
+     *            Network file context.
+     * @exception java.io.IOException
+     *                The exception description.
      */
     public void flushFile(SrvSession sess, TreeConnection tree, NetworkFile file) throws IOException
     {
         // Debug
-        
+
         ContentContext ctx = (ContentContext) tree.getContext();
-        
-        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILEIO))
+
+        if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILEIO))
             logger.debug("Flush file=" + file.getFullName());
-        
+
         // Flush the file data
-        
+
         file.flushFile();
     }
 
     /**
      * Close the file.
      * 
-     * @param sess Server session
-     * @param tree Tree connection.
-     * @param file Network file context.
-     * @exception java.io.IOException If an error occurs.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection.
+     * @param file
+     *            Network file context.
+     * @exception java.io.IOException
+     *                If an error occurs.
      */
     public void closeFile(SrvSession sess, TreeConnection tree, final NetworkFile file) throws IOException
-    {  
+    {
         if (logger.isDebugEnabled())
         {
             logger.debug("Close file: file" + file);
         }
-        
+
         // Get the associated file state
-        
+
         final ContentContext ctx = (ContentContext) tree.getContext();
         FileState toUpdate = null;
 
         // Check for a content file
-        
-        if ( file instanceof ContentNetworkFile) {
-            
+
+        if (file instanceof ContentNetworkFile)
+        {
+
             // Update the file state
-            
-            if ( ctx.hasStateCache())
+
+            if (ctx.hasStateCache())
             {
                 FileState fstate = ctx.getStateCache().findFileState(file.getFullName());
-                if ( fstate != null) {
-                    
+                if (fstate != null)
+                {
+
                     // If the file open count is now zero then reset the stored sharing mode
-                    
-                    if ( file.getGrantedAccess() > NetworkFile.ATTRIBUTESONLY && fstate.decrementOpenCount() == 0)
-                        fstate.setSharedAccess( SharingMode.READWRITE + SharingMode.DELETE);
-                    
+
+                    if (file.getGrantedAccess() > NetworkFile.ATTRIBUTESONLY && fstate.decrementOpenCount() == 0)
+                        fstate.setSharedAccess(SharingMode.READWRITE + SharingMode.DELETE);
+
                     // Check if there is an oplock on the file
-                    
-                    if ( file.hasOpLock()) {
-                    	
-                    	// Release the oplock
-                    	
+
+                    if (file.hasOpLock())
+                    {
+
+                        // Release the oplock
+
                         OpLockInterface flIface = (OpLockInterface) this;
                         OpLockManager oplockMgr = flIface.getOpLockManager(sess, tree);
-                        
-                        oplockMgr.releaseOpLock( file.getOpLock().getPath());
 
-                        //  DEBUG
-                        
-                        if ( logger.isDebugEnabled())
-                          logger.debug("Released oplock for closed file, file=" + file.getFullName());
+                        oplockMgr.releaseOpLock(file.getOpLock().getPath());
+
+                        // DEBUG
+
+                        if (logger.isDebugEnabled())
+                            logger.debug("Released oplock for closed file, file=" + file.getFullName());
                     }
-                    
+
                     // Check if there is a cached modification timestamp to be written out
-                    
-                    if ( file.hasDeleteOnClose() == false && fstate.hasModifyDateTime() && fstate.hasFilesystemObject() && fstate.isDirectory() == false) {
-                        
+
+                    if (file.hasDeleteOnClose() == false && fstate.hasModifyDateTime() && fstate.hasFilesystemObject() && fstate.isDirectory() == false)
+                    {
+
                         // Update the modification date on the file/folder node
                         toUpdate = fstate;
                     }
@@ -2250,47 +2342,49 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             }
 
             // Decrement the file open count
-            
+
             ContentNetworkFile contentFile = (ContentNetworkFile) file;
-            
-            if ( contentFile.decrementOpenCount() > 0) {
-                
+
+            if (contentFile.decrementOpenCount() > 0)
+            {
+
                 // DEBUG
-                
-                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+                if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                     logger.debug("Deferred file close, path=" + file.getFullName() + ", openCount=" + contentFile.getOpenCount());
-                
+
                 // Defer the file close to the last reference
-                
+
                 return;
             }
-            else if ( logger.isDebugEnabled())
+            else if (logger.isDebugEnabled())
                 logger.debug("Last reference to file, closing, path=" + file.getFullName() + ", access=" + file.getGrantedAccessAsString() + ", fid=" + file.getProtocolId() +
                         ", modified=" + contentFile.isModified());
         }
-        
+
         // Check if there is a quota manager enabled
-        
+
         long fileSize = 0L;
-        
-        if ( ctx.hasQuotaManager() && file.hasDeleteOnClose()) {
-            
+
+        if (ctx.hasQuotaManager() && file.hasDeleteOnClose())
+        {
+
             // Make sure the content stream has been opened, to get the current file size
-            
-            if ( file instanceof ContentNetworkFile) {
+
+            if (file instanceof ContentNetworkFile)
+            {
                 ContentNetworkFile contentFile = (ContentNetworkFile) file;
-                if ( contentFile.hasContent() == false)
-                    contentFile.openContent( false, false);
-                
+                if (contentFile.hasContent() == false)
+                    contentFile.openContent(false, false);
+
                 // Save the current file size
-                
+
                 fileSize = contentFile.getFileSize();
             }
         }
-        
+
         // Depending on whether the node has the NO_CONTENT aspect, we may have to wipe it out on error
-        final CallableIO<Void> errorHandler = new CallableIO<Void>()
-        {
+        final CallableIO<Void> errorHandler = new CallableIO<Void>() {
             public Void call() throws IOException
             {
                 if (file instanceof NodeRefNetworkFile)
@@ -2302,7 +2396,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                         fileFolderService.delete(nodeRef);
                     }
                 }
-                
+
                 return null;
             }
         };
@@ -2310,25 +2404,26 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         {
             // Perform repository updates in a retryable write transaction
             final FileState finalFileState = toUpdate;
-            Pair<NodeRef, Boolean> result = doInWriteTransaction(sess, new CallableIO<Pair<NodeRef, Boolean>>()
-            {
+            Pair<NodeRef, Boolean> result = doInWriteTransaction(sess, new CallableIO<Pair<NodeRef, Boolean>>() {
                 public Pair<NodeRef, Boolean> call() throws IOException
                 {
                     // Check if the file is an OpenOffice document and the truncation flag is set
                     //
                     // Note: Check before the timestamp update
-                    
-                    if ( file instanceof OpenOfficeContentNetworkFile) {
+
+                    if (file instanceof OpenOfficeContentNetworkFile)
+                    {
                         OpenOfficeContentNetworkFile ooFile = (OpenOfficeContentNetworkFile) file;
-                        if ( ooFile.truncatedToZeroLength()) {
-                            
+                        if (ooFile.truncatedToZeroLength())
+                        {
+
                             // Inhibit versioning for this transaction
-                            
-                            getPolicyFilter().disableBehaviour( ContentModel.ASPECT_VERSIONABLE);
-    
+
+                            getPolicyFilter().disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+
                             // Debug
-                            
-                            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+                            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                                 logger.debug("OpenOffice file truncation update only, inhibit versioning, " + file.getFullName());
                         }
                     }
@@ -2337,91 +2432,91 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                     if (finalFileState != null && file instanceof ContentNetworkFile)
                     {
                         NodeRef nodeRef = (NodeRef) finalFileState.getFilesystemObject();
-    
+
                         // Check if the file data has been updated, if not then inhibit versioning for this txn
                         // so the timestamp update does not generate a new file version
-                        
+
                         ContentNetworkFile contentFile = (ContentNetworkFile) file;
-                        if ( contentFile.isModified() == false && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE)) {
-    
+                        if (contentFile.isModified() == false && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+                        {
+
                             // Stop a new file version being generated
-                            
-                            getPolicyFilter().disableBehaviour( ContentModel.ASPECT_VERSIONABLE);
-    
+
+                            getPolicyFilter().disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+
                             // Debug
-                            
-                            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+                            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                                 logger.debug("Timestamp update only, inhibit versioning, " + file.getFullName());
                         }
-    
+
                         // Update the modification timestamp
-                        
+
                         getPolicyFilter().disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
-    
+
                         if (permissionService.hasPermission((NodeRef) finalFileState.getFilesystemObject(), PermissionService.WRITE_PROPERTIES) == AccessStatus.ALLOWED)
-                        { 
+                        {
                             nodeService.setProperty(nodeRef, ContentModel.PROP_MODIFIER, authService.getCurrentUserName());
                             Date modifyDate = new Date(finalFileState.getModifyDateTime());
                             nodeService.setProperty(nodeRef, ContentModel.PROP_MODIFIED, modifyDate);
-                            
+
                             // Debug
-                            
-                            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+                            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                                 logger.debug("Updated modification timestamp, " + file.getFullName() + ", modTime=" + modifyDate);
                         }
                     }
-                
+
                     // Defer to the network file to close the stream and remove the content
-                       
+
                     file.close();
-                    
+
                     // Remove the node if marked for delete
-                    
+
                     if (file.hasDeleteOnClose())
                     {
                         logger.debug("File has delete on close");
                         // Check if the file is a noderef based file
-                        
-                        if ( file instanceof NodeRefNetworkFile)
+
+                        if (file instanceof NodeRefNetworkFile)
                         {
                             NodeRefNetworkFile nodeNetFile = (NodeRefNetworkFile) file;
                             final NodeRef nodeRef = nodeNetFile.getNodeRef();
-                            
+
                             // We don't know how long the network file has had the reference, so check for existence
-                            
+
                             if (fileFolderService.exists(nodeRef))
                             {
                                 try
                                 {
-                                   boolean isVersionable = nodeService.hasAspect( nodeRef, ContentModel.ASPECT_VERSIONABLE);
-                           
+                                    boolean isVersionable = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+
                                     try
                                     {
-                                        // Delete the file                                    
-                                    	FileState fileState = ctx.getStateCache().findFileState(file.getFullName());
-                                    	if (fileState!= null && fileState.findAttribute(CanDeleteWithoutPerms) != null)
-                                    	{
-                                    	    //Has CanDeleteWithoutPerms attribute, so delete from system user
-                                            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-                                            {
+                                        // Delete the file
+                                        FileState fileState = ctx.getStateCache().findFileState(file.getFullName());
+                                        if (fileState != null && fileState.findAttribute(CanDeleteWithoutPerms) != null)
+                                        {
+                                            // Has CanDeleteWithoutPerms attribute, so delete from system user
+                                            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
                                                 @Override
-                                                public Object doWork() throws Exception 
+                                                public Object doWork() throws Exception
                                                 {
                                                     logger.debug("delete as system" + nodeRef);
                                                     fileFolderService.delete(nodeRef);
                                                     return null;
                                                 }
-                                			
+
                                             }, AuthenticationUtil.getSystemUserName());
-                               
+
                                         }
-                                    	else
-                                    	{
-                                    	    logger.debug("delete nodeRef:" + nodeRef);
-                                    		fileFolderService.delete(nodeRef);
-                                    	}
+                                        else
+                                        {
+                                            logger.debug("delete nodeRef:" + nodeRef);
+                                            fileFolderService.delete(nodeRef);
+                                        }
                                     }
-                                    catch ( Exception ex)
+                                    catch (Exception ex)
                                     {
                                         logger.debug("on delete on close", ex);
                                         // Propagate retryable errors. Log the rest.
@@ -2429,82 +2524,85 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                                         {
                                             if (ex instanceof RuntimeException)
                                             {
-                                                throw (RuntimeException)ex;
+                                                throw (RuntimeException) ex;
                                             }
                                             else
                                             {
                                                 throw new AlfrescoRuntimeException("Error during delete on close, " + file.getFullName(), ex);
                                             }
                                         }
-                                        if ( logger.isWarnEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+                                        if (logger.isWarnEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                                             logger.warn("Error during delete on close, " + file.getFullName(), ex);
                                     }
-                                    
+
                                     // Return a node ref to update in the state table
-                                    return new Pair<NodeRef, Boolean>(nodeRef, isVersionable);            
+                                    return new Pair<NodeRef, Boolean>(nodeRef, isVersionable);
                                 }
                                 catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
                                 {
                                     // Debug
-                                    
-                                    if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+                                    if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                                         logger.debug("Delete on close - access denied, " + file.getFullName());
-                                    
+
                                     // Convert to a filesystem access denied exception
-                                    
+
                                     throw new AccessDeniedException("Delete on close " + file.getFullName());
                                 }
                             }
                         }
                     }
-    
+
                     return null;
-                }});
-    
+                }
+            });
+
             if (result != null)
             {
                 // Check if there is a quota manager enabled, release space back to the user quota
-                
-                if ( ctx.hasQuotaManager())
+
+                if (ctx.hasQuotaManager())
                     ctx.getQuotaManager().releaseSpace(sess, tree, file.getFileId(), file.getFullName(), fileSize);
-    
+
                 // Set the file state to indicate a delete on close
-    
+
                 if (ctx.hasStateCache())
                 {
                     if (result.getSecond())
                     {
-    
+
                         // Get, or create, the file state
-    
+
                         FileState fState = ctx.getStateCache().findFileState(file.getFullName(), true);
-    
+
                         // Indicate that the file was deleted via a delete on close request
-    
+
                         fState.setFileStatus(DeleteOnClose);
-    
+
                         // Make sure the file state is cached for a short while, save the noderef details
-    
+
                         fState.setExpiryTime(System.currentTimeMillis() + FileState.RenameTimeout);
                         fState.setFilesystemObject(result.getFirst());
                     }
                     else
                     {
-    
+
                         // Remove the file state
-    
+
                         ctx.getStateCache().removeFileState(file.getFullName());
                     }
                 }
             }
-            
+
             // DEBUG
-            
-            if (logger.isDebugEnabled() && (ctx.hasDebug(AlfrescoContext.DBG_FILE) || ctx.hasDebug(AlfrescoContext.DBG_RENAME))) {
+
+            if (logger.isDebugEnabled() && (ctx.hasDebug(AlfrescoContext.DBG_FILE) || ctx.hasDebug(AlfrescoContext.DBG_RENAME)))
+            {
                 logger.debug("Closed file: network file=" + file + " delete on close=" + file.hasDeleteOnClose());
-                if ( file.hasDeleteOnClose() == false && file instanceof ContentNetworkFile) {
+                if (file.hasDeleteOnClose() == false && file instanceof ContentNetworkFile)
+                {
                     ContentNetworkFile cFile = (ContentNetworkFile) file;
-                    logger.debug("  File " + file.getFullName() + ", version=" + nodeService.getProperty( cFile.getNodeRef(), ContentModel.PROP_VERSION_LABEL));
+                    logger.debug("  File " + file.getFullName() + ", version=" + nodeService.getProperty(cFile.getNodeRef(), ContentModel.PROP_VERSION_LABEL));
                 }
             }
         }
@@ -2551,57 +2649,59 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Delete the specified file.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param name NetworkFile
-     * @exception java.io.IOException The exception description.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param name
+     *            NetworkFile
+     * @exception java.io.IOException
+     *                The exception description.
      */
     public void deleteFile(final SrvSession sess, final TreeConnection tree, final String name) throws IOException
     {
         // Get the device context
-        
-        if ( logger.isDebugEnabled())
+
+        if (logger.isDebugEnabled())
         {
             logger.debug("Delete file - " + name);
         }
-        
+
         final ContentContext ctx = (ContentContext) tree.getContext();
-        
+
         try
         {
             // Check if there is a quota manager enabled, if so then we need to save the current file size
-            
+
             final QuotaManager quotaMgr = ctx.getQuotaManager();
 
             // Perform repository updates in a retryable write transaction
-            Callable<Void> postTxn = doInWriteTransaction(sess, new CallableIO<Callable<Void>>()
-            {
+            Callable<Void> postTxn = doInWriteTransaction(sess, new CallableIO<Callable<Void>>() {
                 public Callable<Void> call() throws IOException
                 {
                     // Get the node and delete it
                     final NodeRef nodeRef = getNodeForPath(tree, name);
-                    
+
                     Callable<Void> result = null;
                     if (fileFolderService.exists(nodeRef))
                     {
                         // Get the size of the file being deleted
-                        
+
                         final FileInfo fInfo = quotaMgr == null ? null : getFileInformation(sess, tree, name);
 
                         // Check if the node is versionable
 
                         final boolean isVersionable = nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
 
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("deleted file" + name);
                         }
                         fileFolderService.delete(nodeRef);
 
                         // Return the operations to perform when the transaction succeeds
-                        
-                        result = new Callable<Void>()
-                        {
+
+                        result = new Callable<Void>() {
 
                             public Void call() throws Exception
                             {
@@ -2620,7 +2720,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
                                         FileState delState = ctx.getStateCache().findFileState(name, true);
 
-                                        if(logger.isDebugEnabled())
+                                        if (logger.isDebugEnabled())
                                         {
                                             logger.debug("set delete on close" + name);
                                         }
@@ -2657,44 +2757,44 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
                                 if (quotaMgr != null)
                                     quotaMgr.releaseSpace(sess, tree, fInfo.getFileId(), name, fInfo.getSize());
-                                
+
                                 return null;
                             }
                         };
                     }
 
                     // Debug
-                    
+
                     if (logger.isDebugEnabled() && (ctx.hasDebug(AlfrescoContext.DBG_FILE) || ctx.hasDebug(AlfrescoContext.DBG_RENAME)))
                         logger.debug("Deleted file: " + name + ", node=" + nodeRef);
 
                     return result;
                 }
             });
-            
+
             // Perform state updates after the transaction succeeds
             postTxn.call();
         }
         catch (NodeLockedException ex)
         {
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Delete file - access denied (locked)");
-            
+
             // Convert to a filesystem access denied status
-            
+
             throw new AccessDeniedException("Delete " + name);
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Delete file - access denied");
-            
+
             // Convert to a filesystem access denied status
-            
+
             throw new AccessDeniedException("Delete " + name);
         }
         catch (IOException ex)
@@ -2705,12 +2805,12 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         catch (Exception ex)
         {
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILE))
                 logger.debug("Delete file error", ex);
-            
+
             // Convert to a general I/O exception
-            
+
             IOException ioe = new IOException("Delete file " + name);
             ioe.initCause(ex);
             throw ioe;
@@ -2720,11 +2820,16 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Rename the specified file.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param oldName java.lang.String
-     * @param newName java.lang.String
-     * @exception java.io.IOException The exception description.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param oldName
+     *            java.lang.String
+     * @param newName
+     *            java.lang.String
+     * @exception java.io.IOException
+     *                The exception description.
      */
     public void renameFile(final SrvSession sess, final TreeConnection tree, final String oldName, final String newName)
             throws IOException
@@ -2750,7 +2855,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
             // Check if the node is a link node
 
-            if ( nodeToMoveRef != null && nodeService.getProperty(nodeToMoveRef, ContentModel.PROP_LINK_DESTINATION) != null)
+            if (nodeToMoveRef != null && nodeService.getProperty(nodeToMoveRef, ContentModel.PROP_LINK_DESTINATION) != null)
                 throw new AccessDeniedException("Cannot rename link nodes");
 
             // Get the new target folder - it must be a folder
@@ -2763,7 +2868,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             final String name = splitPaths[1];
 
             // Check if this is a rename within the same folder
-            
+
             final boolean sameFolder = splitPaths[0].equalsIgnoreCase(oldPaths[0]);
 
             // Get the file state for the old file, if available
@@ -2774,12 +2879,12 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
             boolean isFolder = cifsHelper.isDirectory(nodeToMoveRef);
 
-            if ( isFolder == true || sameFolder == false) {
-                
+            if (isFolder == true || sameFolder == false)
+            {
+
                 // Rename or move the file/folder
 
-                doInWriteTransaction(sess, new CallableIO<Void>()
-                {
+                doInWriteTransaction(sess, new CallableIO<Void>() {
 
                     public Void call() throws IOException
                     {
@@ -2806,9 +2911,9 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                     logger.debug("  Renamed " + (isFolder ? "folder" : "file") + " using "
                             + (sameFolder ? "rename" : "move"));
             }
-            else 
+            else
             {
-                
+
                 // Rename a file within the same folder
                 //
                 // Check if the target file already exists
@@ -2816,8 +2921,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                 final int newExists = fileExists(sess, tree, newName);
                 final FileState newState = ctx.getStateCache().findFileState(newName, true);
 
-                List<Runnable> postTxn = doInWriteTransaction(sess, new CallableIO<List<Runnable>>()
-                {
+                List<Runnable> postTxn = doInWriteTransaction(sess, new CallableIO<List<Runnable>>() {
 
                     public List<Runnable> call() throws IOException
                     {
@@ -2825,59 +2929,59 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
                         NodeRef targetNodeRef = null;
 
-                        boolean isFromVersionable = nodeService.hasAspect( nodeToMoveRef, ContentModel.ASPECT_VERSIONABLE);
+                        boolean isFromVersionable = nodeService.hasAspect(nodeToMoveRef, ContentModel.ASPECT_VERSIONABLE);
                         boolean typesCompatible = true;
-                        
+
                         // HACK ALF-3856: Version History lost when Versionable Content renamed via CIFS
-                        //                This code will move into the repo layer (or just above it)
-                        //                and this complexity removed from here.
-                        //          Attempt to detect normal renames.  Hack alert!
+                        // This code will move into the repo layer (or just above it)
+                        // and this complexity removed from here.
+                        // Attempt to detect normal renames. Hack alert!
                         Pattern renameShufflePattern = ctx.getRenameShufflePattern();
                         boolean renameShuffle = isRenameShuffle(oldName, newName, renameShufflePattern);
                         if (logger.isDebugEnabled())
                         {
                             logger.debug(
                                     "Rename file: \n" +
-                                    "   Old name:      " + oldName + "\n" +
-                                    "   New name:      " + newName + "\n" +
-                                    "   Pattern:       " + renameShufflePattern.pattern() + "\n" +
-                                    "   Is shuffle:    " + renameShuffle + "\n" +
-                                    "   Source folder: " + sourceFolderRef + "\n" +
-                                    "   Target folder: " + targetFolderRef + "\n" +
-                                    "   Node:          " + nodeToMoveRef + "\n" +
-                                    "   Aspects:       " + nodeService.getAspects(nodeToMoveRef));
-                                    
+                                            "   Old name:      " + oldName + "\n" +
+                                            "   New name:      " + newName + "\n" +
+                                            "   Pattern:       " + renameShufflePattern.pattern() + "\n" +
+                                            "   Is shuffle:    " + renameShuffle + "\n" +
+                                            "   Source folder: " + sourceFolderRef + "\n" +
+                                            "   Target folder: " + targetFolderRef + "\n" +
+                                            "   Node:          " + nodeToMoveRef + "\n" +
+                                            "   Aspects:       " + nodeService.getAspects(nodeToMoveRef));
+
                         }
-                        
-                        if ( newExists == FileStatus.FileExists)
+
+                        if (newExists == FileStatus.FileExists)
                         {
-                            
+
                             // Use the existing file as the target node
-                            
-                            targetNodeRef = getNodeForPath( tree, newName);
+
+                            targetNodeRef = getNodeForPath(tree, newName);
                         }
                         else if (renameShuffle)
                         {
                             logger.debug("is rename shuffle");
                             // Check if the target has a renamed or delete-on-close state
-                            
-                            if ( newState.getFileStatus() == FileRenamed) 
+
+                            if (newState.getFileStatus() == FileRenamed)
                             {
                                 logger.debug("file status == FileRenamed");
-                                
-                                
+
                                 // DEBUG
-                                
-                                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+
+                                if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                                     logger.debug("  Using renamed node, " + newState);
-                                
-                                NodeRef newStateNode = (NodeRef)newState.getFilesystemObject();
-                                QName oldType = nodeService.getType(nodeToMoveRef); 
+
+                                NodeRef newStateNode = (NodeRef) newState.getFilesystemObject();
+                                QName oldType = nodeService.getType(nodeToMoveRef);
                                 QName newType = nodeService.getType(newStateNode);
-                                if (oldType.equals(newType)) {
+                                if (oldType.equals(newType))
+                                {
 
                                     // Use the renamed node to clone aspects/state if it is of the correct type
-                                    
+
                                     cloneNode(name, newStateNode, nodeToMoveRef, ctx);
                                 }
                                 else
@@ -2885,81 +2989,83 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                                     logger.debug("not renamed, must create new node");
                                     // Otherwise we must create a node of the correct type
                                     targetNodeRef = cifsHelper.createNode(ctx.getRootNode(), newName, newType);
-                                    
+
                                     // Force a copy to this target
                                     typesCompatible = false;
-                                    
+
                                     // DEBUG
-                                    
-                                    if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+
+                                    if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                                         logger.debug("  Created new node for " + newName + " type " + newType + ", isFromVersionable=false");
-            
+
                                     // Copy aspects from the original state
-                                    
-                                    cloneNode( name, newStateNode, targetNodeRef, ctx);
+
+                                    cloneNode(name, newStateNode, targetNodeRef, ctx);
                                 }
 
-                                //Change state for tmp node to allow delete it without special permission
+                                // Change state for tmp node to allow delete it without special permission
                                 String newStateNodeName = (String) nodeService.getProperty(newStateNode, ContentModel.PROP_NAME);
-                                FileState stateForTmp = ctx.getStateCache().findFileState(newName.substring(0,newName.lastIndexOf("\\")) +"\\"+ newStateNodeName, true);
+                                FileState stateForTmp = ctx.getStateCache().findFileState(newName.substring(0, newName.lastIndexOf("\\")) + "\\" + newStateNodeName, true);
                                 stateForTmp.addAttribute(CanDeleteWithoutPerms, true);
-                                stateForTmp.setFileStatus(FileStatus.FileExists); 
+                                stateForTmp.setFileStatus(FileStatus.FileExists);
                                 stateForTmp.setExpiryTime(System.currentTimeMillis() + FileState.DeleteTimeout);
-                                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                                if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                                     logger.debug("  Set CanDeleteWithoutPerms=true for " + stateForTmp);
-                                
+
                             }
-                            else if ( newState.getFileStatus() == DeleteOnClose) 
+                            else if (newState.getFileStatus() == DeleteOnClose)
                             {
                                 logger.debug("file state is delete on close");
-                                
+
                                 // DEBUG
-                                
-                                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+
+                                if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                                     logger.debug("  Restoring delete-on-close node, " + newState);
-                                
+
                                 // Restore the deleted node so we can relink the new version to the old history/properties
-                                
+
                                 NodeRef archivedNode = getNodeArchiveService().getArchivedNode((NodeRef) newState.getFilesystemObject());
-                                
+
                                 // DEBUG
-                                
-                                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+
+                                if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                                     logger.debug("  Found archived node " + archivedNode);
-                                
-                                if ( archivedNode != null && getNodeService().exists(archivedNode) )
+
+                                if (archivedNode != null && getNodeService().exists(archivedNode))
                                 {
                                     // Restore the node
-                                    
-                                    targetNodeRef = getNodeService().restoreNode( archivedNode, null, null, null);
-                                    
+
+                                    targetNodeRef = getNodeService().restoreNode(archivedNode, null, null, null);
+
                                     // DEBUG
-                                    
-                                    if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
-                                        logger.debug("  Restored node " + targetNodeRef + ", version=" + nodeService.getProperty( targetNodeRef, ContentModel.PROP_VERSION_LABEL));
-                                    
+
+                                    if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                                        logger.debug("  Restored node " + targetNodeRef + ", version=" + nodeService.getProperty(targetNodeRef, ContentModel.PROP_VERSION_LABEL));
+
                                     // Check if the deleted file had a linked node, due to a rename
-                                    
-                                    NodeRef linkNode = (NodeRef) newState.findAttribute( AttrLinkNode);
-                                    
-                                    if ( linkNode != null && nodeService.exists( linkNode)) {
-                                        
+
+                                    NodeRef linkNode = (NodeRef) newState.findAttribute(AttrLinkNode);
+
+                                    if (linkNode != null && nodeService.exists(linkNode))
+                                    {
+
                                         // Clone aspects from the linked node onto the restored node
-                                        
-                                        cloneNode( name, linkNode, targetNodeRef, ctx);
+
+                                        cloneNode(name, linkNode, targetNodeRef, ctx);
 
                                         // DEBUG
-                                        
-                                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME)) {
+
+                                        if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                                        {
                                             logger.debug("  Moved aspects from linked node " + linkNode);
-        
+
                                             // Check if the node is a working copy
-                                            
+
                                             NodeRef mainNodeRef = checkOutCheckInService.getCheckedOut(targetNodeRef);
-                                            if ( mainNodeRef != null)
+                                            if (mainNodeRef != null)
                                             {
                                                 // Check if the main document is still locked
-                                                LockType lockTyp = lockService.getLockType( mainNodeRef);
+                                                LockType lockTyp = lockService.getLockType(mainNodeRef);
                                                 logger.debug("  Main node ref lock type = " + lockTyp);
                                             }
                                         }
@@ -2969,38 +3075,38 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
                             // Check if the node being renamed is versionable
 
-                            else if ( isFromVersionable == true) 
+                            else if (isFromVersionable == true)
                             {
                                 logger.debug("from node is versionable");
-                                
+
                                 // Create a new node for the target
-                                
+
                                 targetNodeRef = cifsHelper.createNode(ctx.getRootNode(), newName, nodeService.getType(nodeToMoveRef));
-                                
+
                                 // DEBUG
-                                
-                                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+
+                                if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                                     logger.debug("  Created new node for " + newName + ", isFromVersionable=true");
-        
+
                                 // Copy aspects from the original file
-                                
-                                cloneNode( name, nodeToMoveRef, targetNodeRef, ctx);
-                                
-                                //Change state for tmp node to allow delete it without special permission
+
+                                cloneNode(name, nodeToMoveRef, targetNodeRef, ctx);
+
+                                // Change state for tmp node to allow delete it without special permission
                                 FileState stateForTmp = ctx.getStateCache().findFileState(newName, true);
                                 stateForTmp.addAttribute(CanDeleteWithoutPerms, true);
-                                stateForTmp.setFileStatus(FileStatus.FileExists); 
+                                stateForTmp.setFileStatus(FileStatus.FileExists);
                                 stateForTmp.setExpiryTime(System.currentTimeMillis() + FileState.DeleteTimeout);
-                                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+                                if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                                     logger.debug("  Set CanDeleteWithoutPerms=true for " + stateForTmp);
                             }
                         }
 
                         // If the original or target nodes are not versionable and types are compatible then just use a standard rename of the node
-                        if (    !renameShuffle ||
-                                (   !isFromVersionable &&
-                                    typesCompatible &&
-                                    ( targetNodeRef == null || nodeService.hasAspect( targetNodeRef, ContentModel.ASPECT_VERSIONABLE) == false)))
+                        if (!renameShuffle ||
+                                (!isFromVersionable &&
+                                        typesCompatible &&
+                                        (targetNodeRef == null || nodeService.hasAspect(targetNodeRef, ContentModel.ASPECT_VERSIONABLE) == false)))
                         {
                             logger.debug("do simple rename");
 
@@ -3008,8 +3114,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
                             cifsHelper.rename(nodeToMoveRef, name);
 
-                            postTxn.add(new Runnable()
-                            {
+                            postTxn.add(new Runnable() {
                                 public void run()
                                 {
                                     // Mark the new file as existing
@@ -3038,13 +3143,14 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                             if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                                 logger.debug("  Use standard rename for " + name + "(versionable=" + isFromVersionable + ", targetNodeRef=" + targetNodeRef + ")");
                         }
-                        else 
+                        else
                         {
-                            
+
                             // Make sure we have a valid target node
-                            
-                            if ( targetNodeRef == null) {
-                                
+
+                            if (targetNodeRef == null)
+                            {
+
                                 // DEBUG
 
                                 if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
@@ -3060,8 +3166,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                             copyContentData(sess, tree, nodeToMoveRef, targetNodeRef, newName);
 
                             final NodeRef finalTargetNodeRef = targetNodeRef;
-                            postTxn.add(new Runnable()
-                            {
+                            postTxn.add(new Runnable() {
 
                                 public void run()
                                 {
@@ -3076,32 +3181,31 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
                                     // Make sure the old file state is cached for a short while, the file may not be open so the
                                     // file state could be expired
-                                    
+
                                     oldState.setExpiryTime(System.currentTimeMillis() + FileState.DeleteTimeout);
-                                    
+
                                     // Indicate that this is a deleted file state, set the node ref of the file that was renamed
-                                    
-                                    oldState.setFileStatus( DeleteOnClose);
+
+                                    oldState.setFileStatus(DeleteOnClose);
                                     oldState.setFilesystemObject(nodeToMoveRef);
-                                    
+
                                     // Link to the new node, a new file may be renamed into place, we need to transfer aspect/locks
-                                    
-                                    oldState.addAttribute( AttrLinkNode, finalTargetNodeRef);
-                                    
+
+                                    oldState.addAttribute(AttrLinkNode, finalTargetNodeRef);
+
                                     // DEBUG
-                                    
-                                    if ( logger.isDebugEnabled() && ctx.hasDebug( AlfrescoContext.DBG_RENAME))
+
+                                    if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                                         logger.debug("  Cached delete state for " + oldName);
                                 }
                             });
-                            
+
                             logger.debug("delete the old file");
 
                             // Delete the old file
                             if (renameShuffle && isFromVersionable && permissionService.hasPermission(nodeToMoveRef, PermissionService.EDITOR) == AccessStatus.ALLOWED)
                             {
-                                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-                                {
+                                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
                                     @Override
                                     public Object doWork() throws Exception
                                     {
@@ -3177,13 +3281,13 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
             // Convert to a filesystem access denied status
 
-            throw new FileNotFoundException("File doesn't exist " + oldName);	
+            throw new FileNotFoundException("File doesn't exist " + oldName);
         }
         catch (RuntimeException ex)
         {
             // Unexpected Exception being consumed here - hence the error logging.
             logger.error("Unable to rename file" + oldName, ex);
-            
+
             // Convert to a general I/O exception
 
             throw new AccessDeniedException("Rename file " + oldName);
@@ -3193,44 +3297,48 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Set file information
      * 
-     * @param sess SrvSession
-     * @param tree TreeConnection
-     * @param name String
-     * @param info FileInfo
+     * @param sess
+     *            SrvSession
+     * @param tree
+     *            TreeConnection
+     * @param name
+     *            String
+     * @param info
+     *            FileInfo
      * @exception IOException
      */
-    public void setFileInformation(SrvSession sess, final TreeConnection tree, final String name , final FileInfo info) throws IOException
+    public void setFileInformation(SrvSession sess, final TreeConnection tree, final String name, final FileInfo info) throws IOException
     {
         // Get the device context
-        
+
         final ContentContext ctx = (ContentContext) tree.getContext();
-        
+
         try
         {
             final FileState fstate = getStateForPath(tree, name);
 
-            doInWriteTransaction(sess, new CallableIO<Pair<Boolean, Boolean>>(){
+            doInWriteTransaction(sess, new CallableIO<Pair<Boolean, Boolean>>() {
 
                 public Pair<Boolean, Boolean> call() throws IOException
                 {
                     // Get the file/folder node
-                    
+
                     NodeRef nodeRef = getNodeForPath(tree, name);
-                    
+
                     // Check permissions on the file/folder node
-                    
-                    if ( permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
+
+                    if (permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED)
                     {
                         throw new AccessDeniedException("No write access to " + name);
                     }
 
                     // Inhibit versioning for this transaction
-                    
-                    getPolicyFilter().disableBehaviour( ContentModel.ASPECT_VERSIONABLE);
-                    
+
+                    getPolicyFilter().disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+
                     // Check if the file is being marked for deletion, if so then check if the file is locked
-                    
-                    if ( info.hasSetFlag(FileInfo.SetDeleteOnClose) && info.hasDeleteOnClose())
+
+                    if (info.hasSetFlag(FileInfo.SetDeleteOnClose) && info.hasDeleteOnClose())
                     {
                         // Check deleting permissions on the node if action of deleting was configured only
                         if ((AccessStatus.DENIED == permissionService.hasPermission(nodeRef, PermissionService.DELETE))
@@ -3240,58 +3348,60 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                         }
 
                         // Check if the node is locked
-                        
-                        if ( nodeService.hasAspect( nodeRef, ContentModel.ASPECT_LOCKABLE))
+
+                        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
                         {
                             // Get the lock type, if any
-                            
-                            String lockTypeStr = (String) nodeService.getProperty( nodeRef, ContentModel.PROP_LOCK_TYPE);
-                            
-                            if ( lockTypeStr != null)
+
+                            String lockTypeStr = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_TYPE);
+
+                            if (lockTypeStr != null)
                                 throw new org.alfresco.repo.security.permissions.AccessDeniedException("Node locked, cannot mark for delete");
                         }
-                        
+
                         // Get the node for the folder
-                        
+
                         if (fileFolderService.exists(nodeRef))
                         {
                             // Check if it is a folder that is being deleted, make sure it is empty
-                            
+
                             boolean isFolder = true;
-                            
-                            if ( fstate != null)
+
+                            if (fstate != null)
                                 isFolder = fstate.isDirectory();
-                            else {
-                                ContentFileInfo cInfo = cifsHelper.getFileInformation( nodeRef, isReadOnly, isLockedFilesAsOffline);
-                                if ( cInfo != null && cInfo.isDirectory() == false)
+                            else
+                            {
+                                ContentFileInfo cInfo = cifsHelper.getFileInformation(nodeRef, isReadOnly, isLockedFilesAsOffline);
+                                if (cInfo != null && cInfo.isDirectory() == false)
                                     isFolder = false;
                             }
 
                             // Check if the folder is empty
-                            
-                            if ( isFolder == true && cifsHelper.isFolderEmpty( nodeRef) == false)
-                                throw new DirectoryNotEmptyException( name);
+
+                            if (isFolder == true && cifsHelper.isFolderEmpty(nodeRef) == false)
+                                throw new DirectoryNotEmptyException(name);
                         }
-                                                
+
                         // DEBUG
-                        
-                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
+
+                        if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                             logger.debug("Set deleteOnClose=true file=" + name);
                     }
-                    
+
                     // Set the creation and modified date/time
                     Map<QName, Serializable> auditableProps = new HashMap<QName, Serializable>(5);
-                    
-                    if ( info.hasSetFlag(FileInfo.SetCreationDate))
+
+                    if (info.hasSetFlag(FileInfo.SetCreationDate))
                     {
                         // Set the creation date on the file/folder node
-                        Date createDate = new Date( info.getCreationDateTime());
+                        Date createDate = new Date(info.getCreationDateTime());
                         auditableProps.put(ContentModel.PROP_CREATED, createDate);
                     }
-                    if ( info.hasSetFlag(FileInfo.SetModifyDate)) {
-                        
+                    if (info.hasSetFlag(FileInfo.SetModifyDate))
+                    {
+
                         // Set the modification date on the file/folder node
-                        Date modifyDate = new Date( info.getModifyDateTime());
+                        Date modifyDate = new Date(info.getModifyDateTime());
                         auditableProps.put(ContentModel.PROP_MODIFIED, modifyDate);
                     }
 
@@ -3300,14 +3410,15 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                     {
                         getPolicyFilter().disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
                         nodeService.addProperties(nodeRef, auditableProps);
-                        
+
                         // DEBUG
-                        if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
+                        if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                             logger.debug("Set auditable props: " + auditableProps + " file=" + name);
                     }
-                    
+
                     return null;
-                }});
+                }
+            });
             // Check if the file is being marked for deletion, if so then check if the file is locked
 
             // Update the change date/time
@@ -3326,31 +3437,31 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                 {
                     // Update the change date/time, clear the cached modification date/time
                     fstate.updateChangeDateTime();
-                    Date modifyDate = new Date( info.getModifyDateTime());
-                    fstate.updateModifyDateTime(modifyDate.getTime()); 
-                }                
+                    Date modifyDate = new Date(info.getModifyDateTime());
+                    fstate.updateModifyDateTime(modifyDate.getTime());
+                }
             }
         }
         catch (org.alfresco.repo.security.permissions.AccessDeniedException ex)
         {
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                 logger.debug("Set file information - access denied, " + name, ex);
-            
+
             // Convert to a filesystem access denied status
-            
+
             throw new AccessDeniedException("Set file information " + name);
         }
         catch (RuntimeException ex)
         {
             // Debug
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_INFO))
                 logger.debug("Open file error", ex);
-            
+
             // Convert to a general I/O exception
-            
+
             throw new IOException("Set file information " + name);
         }
     }
@@ -3358,91 +3469,103 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Truncate a file to the specified size
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param file Network file details
-     * @param size New file length
-     * @exception java.io.IOException The exception description.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param file
+     *            Network file details
+     * @param size
+     *            New file length
+     * @exception java.io.IOException
+     *                The exception description.
      */
     public void truncateFile(SrvSession sess, TreeConnection tree, NetworkFile file, long size) throws IOException
     {
-        //  Keep track of the allocation/release size in case the file resize fails
-        
+        // Keep track of the allocation/release size in case the file resize fails
+
         ContentContext ctx = (ContentContext) tree.getContext();
-        
-        long allocSize   = 0L;
+
+        long allocSize = 0L;
         long releaseSize = 0L;
-        
-        //  Check if there is a quota manager
+
+        // Check if there is a quota manager
 
         QuotaManager quotaMgr = ctx.getQuotaManager();
-              
-        if ( ctx.hasQuotaManager()) {
-          
+
+        if (ctx.hasQuotaManager())
+        {
+
             // Check if the file content has been opened, we need the content to be opened to get the
             // current file size
-            
-            if ( file instanceof ContentNetworkFile) {
+
+            if (file instanceof ContentNetworkFile)
+            {
                 ContentNetworkFile contentFile = (ContentNetworkFile) file;
-                if ( contentFile.hasContent() == false)
-                    contentFile.openContent( false, false);
+                if (contentFile.hasContent() == false)
+                    contentFile.openContent(false, false);
             }
             else
                 throw new IOException("Invalid file class type, " + file.getClass().getName());
-            
-            //  Determine if the new file size will release space or require space allocating
-          
-            if ( size > file.getFileSize()) {
-            
-                //  Calculate the space to be allocated
-            
+
+            // Determine if the new file size will release space or require space allocating
+
+            if (size > file.getFileSize())
+            {
+
+                // Calculate the space to be allocated
+
                 allocSize = size - file.getFileSize();
-            
-                //  Allocate space to extend the file
-            
+
+                // Allocate space to extend the file
+
                 quotaMgr.allocateSpace(sess, tree, file, allocSize);
             }
-            else {
-            
-              //  Calculate the space to be released as the file is to be truncated, release the space if
-              //  the file truncation is successful
-            
-              releaseSize = file.getFileSize() - size;
+            else
+            {
+
+                // Calculate the space to be released as the file is to be truncated, release the space if
+                // the file truncation is successful
+
+                releaseSize = file.getFileSize() - size;
             }
         }
-        
-        //  Check if this is a file extend, update the cached allocation size if necessary
-        
-        if ( file instanceof ContentNetworkFile) {
-            
+
+        // Check if this is a file extend, update the cached allocation size if necessary
+
+        if (file instanceof ContentNetworkFile)
+        {
+
             // Get the cached state for the file
-        
+
             ContentNetworkFile contentFile = (ContentNetworkFile) file;
             FileState fstate = contentFile.getFileState();
-            if ( fstate != null && size > fstate.getAllocationSize())
-                fstate.setAllocationSize( size);
+            if (fstate != null && size > fstate.getAllocationSize())
+                fstate.setAllocationSize(size);
         }
-        
-        //  Set the file length
 
-        try {
+        // Set the file length
+
+        try
+        {
             file.truncateFile(size);
         }
-        catch (IOException ex) {
-          
-            //  Check if we allocated space to the file
-          
-            if ( allocSize > 0 && quotaMgr != null)
+        catch (IOException ex)
+        {
+
+            // Check if we allocated space to the file
+
+            if (allocSize > 0 && quotaMgr != null)
                 quotaMgr.releaseSpace(sess, tree, file.getFileId(), null, allocSize);
 
-            //  Rethrow the exception
-          
-            throw ex;       
+            // Rethrow the exception
+
+            throw ex;
         }
-        
-        //  Check if space has been released by the file resizing
-        
-        if ( releaseSize > 0 && quotaMgr != null)
+
+        // Check if space has been released by the file resizing
+
+        if (releaseSize > 0 && quotaMgr != null)
             quotaMgr.releaseSpace(sess, tree, file.getFileId(), null, releaseSize);
 
         // Debug
@@ -3454,81 +3577,94 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Read a block of data from the specified file.
      * 
-     * @param sess Session details
-     * @param tree Tree connection
-     * @param file Network file
-     * @param buffer Buffer to return data to
-     * @param bufferPosition Starting position in the return buffer
-     * @param size Maximum size of data to return
-     * @param fileOffset File offset to read data
+     * @param sess
+     *            Session details
+     * @param tree
+     *            Tree connection
+     * @param file
+     *            Network file
+     * @param buffer
+     *            Buffer to return data to
+     * @param bufferPosition
+     *            Starting position in the return buffer
+     * @param size
+     *            Maximum size of data to return
+     * @param fileOffset
+     *            File offset to read data
      * @return Number of bytes read
-     * @exception java.io.IOException The exception description.
+     * @exception java.io.IOException
+     *                The exception description.
      */
     public int readFile(
             SrvSession sess, TreeConnection tree, NetworkFile file,
             byte[] buffer, int bufferPosition, int size, long fileOffset) throws IOException
     {
         // Check if the file is a directory
-        
-        if(file.isDirectory())
+
+        if (file.isDirectory())
             throw new AccessDeniedException();
-            
+
         // If the content channel is not open for the file then start a transaction
-        
-        if ( file instanceof ContentNetworkFile)
+
+        if (file instanceof ContentNetworkFile)
         {
             ContentNetworkFile contentFile = (ContentNetworkFile) file;
-            
-            if ( contentFile.hasContent() == false)
-                beginReadTransaction( sess);
+
+            if (contentFile.hasContent() == false)
+                beginReadTransaction(sess);
         }
-        
+
         // Read a block of data from the file
-        
+
         int count = file.readFile(buffer, size, bufferPosition, fileOffset);
-        
-        if ( count == -1)
+
+        if (count == -1)
         {
             // Read count of -1 indicates a read past the end of file
-            
+
             count = 0;
         }
-        
+
         // Debug
 
         ContentContext ctx = (ContentContext) tree.getContext();
-        
+
         if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILEIO))
             logger.debug("Read bytes from file: network file=" + file + " buffer size=" + buffer.length + " buffer pos=" + bufferPosition +
                     " size=" + size + " file offset=" + fileOffset + " bytes read=" + count);
-        
+
         return count;
     }
 
     /**
      * Seek to the specified file position.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param file Network file.
-     * @param pos Position to seek to.
-     * @param typ Seek type.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param file
+     *            Network file.
+     * @param pos
+     *            Position to seek to.
+     * @param typ
+     *            Seek type.
      * @return New file position, relative to the start of file.
      */
     public long seekFile(SrvSession sess, TreeConnection tree, NetworkFile file, long pos, int typ) throws IOException
     {
         // Check if the file is a directory
-        
-        if ( file.isDirectory())
+
+        if (file.isDirectory())
             throw new AccessDeniedException();
-      
+
         // If the content channel is not open for the file then start a transaction
-        
+
         ContentNetworkFile contentFile = (ContentNetworkFile) file;
-        
-        if ( contentFile.hasContent() == false)
-            beginReadTransaction( sess);
-        
+
+        if (contentFile.hasContent() == false)
+            beginReadTransaction(sess);
+
         // Set the file position
 
         return file.seekFile(pos, typ);
@@ -3537,72 +3673,84 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Write a block of data to the file.
      * 
-     * @param sess Server session
-     * @param tree Tree connection
-     * @param file Network file details
-     * @param buffer byte[] Data to be written
-     * @param bufferOffset Offset within the buffer that the data starts
-     * @param size int Data length
-     * @param fileOffset Position within the file that the data is to be written.
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
+     * @param file
+     *            Network file details
+     * @param buffer
+     *            byte[] Data to be written
+     * @param bufferOffset
+     *            Offset within the buffer that the data starts
+     * @param size
+     *            int Data length
+     * @param fileOffset
+     *            Position within the file that the data is to be written.
      * @return Number of bytes actually written
-     * @exception java.io.IOException The exception description.
+     * @exception java.io.IOException
+     *                The exception description.
      */
     public int writeFile(SrvSession sess, TreeConnection tree, NetworkFile file,
             byte[] buffer, int bufferOffset, int size, long fileOffset) throws IOException
     {
         // If the content channel is not open for the file then start a transaction
-        
-        if ( file instanceof ContentNetworkFile)
+
+        if (file instanceof ContentNetworkFile)
         {
             ContentNetworkFile contentFile = (ContentNetworkFile) file;
-            
-            if ( contentFile.hasContent() == false)
-                beginReadTransaction( sess);
+
+            if (contentFile.hasContent() == false)
+                beginReadTransaction(sess);
         }
 
-        //  Check if there is a quota manager
-        
+        // Check if there is a quota manager
+
         ContentContext ctx = (ContentContext) tree.getContext();
         QuotaManager quotaMgr = ctx.getQuotaManager();
         long curSize = file.getFileSize();
-        
-        if ( quotaMgr != null) {
-          
-          //  Check if the file requires extending
-          
-          long extendSize = 0L;
-          long endOfWrite = fileOffset + size;
-          
-          if ( endOfWrite > curSize) {
-            
-            //  Calculate the amount the file must be extended
 
-            extendSize = endOfWrite - file.getFileSize();
-            
-            //  Allocate space for the file extend
-            
-            quotaMgr.allocateSpace(sess, tree, file, extendSize);
-          }
+        if (quotaMgr != null)
+        {
+
+            // Check if the file requires extending
+
+            long extendSize = 0L;
+            long endOfWrite = fileOffset + size;
+
+            if (endOfWrite > curSize)
+            {
+
+                // Calculate the amount the file must be extended
+
+                extendSize = endOfWrite - file.getFileSize();
+
+                // Allocate space for the file extend
+
+                quotaMgr.allocateSpace(sess, tree, file, extendSize);
+            }
         }
-        
+
         // Write to the file
-        
+
         file.writeFile(buffer, size, bufferOffset, fileOffset);
 
         // Check if the file size was reduced by the write, may have been extended previously
-        
-        if ( quotaMgr != null) {
-            
+
+        if (quotaMgr != null)
+        {
+
             // Check if the file size reduced
-            
-            if ( file.getFileSize() < curSize) {
-                
+
+            if (file.getFileSize() < curSize)
+            {
+
                 // Release space that was freed by the write
-                
-                quotaMgr.releaseSpace( sess, tree, file.getFileId(), file.getFullName(), curSize - file.getFileSize());
+
+                quotaMgr.releaseSpace(sess, tree, file.getFileId(), file.getFullName(), curSize - file.getFileSize());
             }
         }
-        
+
         // Debug
 
         if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_FILEIO))
@@ -3614,20 +3762,22 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Get the node for the specified path
      * 
-     * @param tree TreeConnection
-     * @param path String
+     * @param tree
+     *            TreeConnection
+     * @param path
+     *            String
      * @return NodeRef
      * @exception FileNotFoundException
      */
     public NodeRef getNodeForPath(TreeConnection tree, String path)
-        throws FileNotFoundException
+            throws FileNotFoundException
     {
         // Check if there is a cached state for the path
-        
+
         ContentContext ctx = (ContentContext) tree.getContext();
-        
+
         NodeRef result = null;
-        if ( ctx.hasStateCache())
+        if (ctx.hasStateCache())
         {
             // Try and get the node ref from an in memory file state
             FileState fstate = ctx.getStateCache().findFileState(path);
@@ -3636,20 +3786,21 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                 return result;
             }
         }
-        
+
         // Search the repository for the node
-        
+
         return cifsHelper.getNodeRef(ctx.getRootNode(), path);
     }
 
     /**
-     * Determines current existence state of the file object from the cache.
-     * Updates state of the object in the cache according to existence state: increasing expiration time if
-     * object exists or removing object from the cache if it does not exist
+     * Determines current existence state of the file object from the cache. Updates state of the object in the cache according to existence state: increasing expiration time if object exists or removing object from the cache if it does not exist
      * 
-     * @param path - {@link String} value which contains relative path to the file object
-     * @param ctx - {@link ContentContext} instance of the current {@link TreeConnection}
-     * @param fstate - {@link FileState} instance which represents current state of the cached object
+     * @param path
+     *            - {@link String} value which contains relative path to the file object
+     * @param ctx
+     *            - {@link ContentContext} instance of the current {@link TreeConnection}
+     * @param fstate
+     *            - {@link FileState} instance which represents current state of the cached object
      * @return {@link NodeRef} instance of existent file object or <code>null</code> if object is not exist
      */
     private NodeRef getNodeOrNull(String path, ContentContext ctx, FileState fstate)
@@ -3677,69 +3828,75 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Convert a node into a share relative path
      */
-    public String getPathForNode( TreeConnection tree, NodeRef nodeRef)
-        throws FileNotFoundException
+    public String getPathForNode(TreeConnection tree, NodeRef nodeRef)
+            throws FileNotFoundException
     {
         // Convert the target node to a path
-        
+
         ContentContext ctx = (ContentContext) tree.getContext();
         List<org.alfresco.service.cmr.model.FileInfo> linkPaths = null;
-        
-        try {
-            linkPaths = fileFolderService.getNamePath( ctx.getRootNode(), nodeRef);
+
+        try
+        {
+            linkPaths = fileFolderService.getNamePath(ctx.getRootNode(), nodeRef);
         }
-        catch ( org.alfresco.service.cmr.model.FileNotFoundException ex)
+        catch (org.alfresco.service.cmr.model.FileNotFoundException ex)
         {
             throw new FileNotFoundException();
         }
 
         // Build the share relative path to the node
-        
+
         StringBuilder pathStr = new StringBuilder();
-        
-        for ( org.alfresco.service.cmr.model.FileInfo fInfo : linkPaths) {
-            pathStr.append( FileName.DOS_SEPERATOR);
-            pathStr.append( fInfo.getName());
+
+        for (org.alfresco.service.cmr.model.FileInfo fInfo : linkPaths)
+        {
+            pathStr.append(FileName.DOS_SEPERATOR);
+            pathStr.append(fInfo.getName());
         }
-        
+
         // Return the share relative path
-        
+
         return pathStr.toString();
     }
-    
+
     /**
      * Get the file state for the specified path
      * 
-     * @param tree TreeConnection
-     * @param path String
+     * @param tree
+     *            TreeConnection
+     * @param path
+     *            String
      * @return FileState
      * @exception FileNotFoundException
      */
     public FileState getStateForPath(TreeConnection tree, String path)
-        throws FileNotFoundException
+            throws FileNotFoundException
     {
         // Check if there is a cached state for the path
-        
+
         ContentContext ctx = (ContentContext) tree.getContext();
         FileState fstate = null;
-        
-        if ( ctx.hasStateCache())
+
+        if (ctx.hasStateCache())
         {
             // Get the file state for a file/folder
-            
+
             fstate = ctx.getStateCache().findFileState(path);
         }
-        
+
         // Return the file state
-        
+
         return fstate;
     }
-    
+
     /**
      * Connection opened to this disk device
      * 
-     * @param sess Server session
-     * @param tree Tree connection
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
      */
     public void treeClosed(SrvSession sess, TreeConnection tree)
     {
@@ -3749,8 +3906,10 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Connection closed to this device
      * 
-     * @param sess Server session
-     * @param tree Tree connection
+     * @param sess
+     *            Server session
+     * @param tree
+     *            Tree connection
      */
     public void treeOpened(SrvSession sess, TreeConnection tree)
     {
@@ -3760,112 +3919,132 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Return the lock manager used by this filesystem
      * 
-     * @param sess SrvSession
-     * @param tree TreeConnection
+     * @param sess
+     *            SrvSession
+     * @param tree
+     *            TreeConnection
      * @return LockManager
      */
-    public LockManager getLockManager(SrvSession sess, TreeConnection tree) {
+    public LockManager getLockManager(SrvSession sess, TreeConnection tree)
+    {
         ContentContext ctx = (ContentContext) tree.getContext();
         return ctx.getLockManager();
     }
-    
+
     /**
      * Return the oplock manager implementation associated with this virtual filesystem
      * 
-     * @param sess SrvSession
-     * @param tree TreeConnection
+     * @param sess
+     *            SrvSession
+     * @param tree
+     *            TreeConnection
      * @return OpLockManager
      */
-    public OpLockManager getOpLockManager(SrvSession sess, TreeConnection tree) {
+    public OpLockManager getOpLockManager(SrvSession sess, TreeConnection tree)
+    {
         ContentContext ctx = (ContentContext) tree.getContext();
         return ctx.getLockManager();
     }
-    
+
     /**
      * Enable/disable oplock support
      * 
-     * @param sess SrvSession
-     * @param tree TreeConnection
+     * @param sess
+     *            SrvSession
+     * @param tree
+     *            TreeConnection
      * @return boolean
      */
-    public boolean isOpLocksEnabled(SrvSession sess, TreeConnection tree) {
-        
+    public boolean isOpLocksEnabled(SrvSession sess, TreeConnection tree)
+    {
+
         // Check if oplocks are enabled
-        
+
         ContentContext ctx = (ContentContext) tree.getContext();
         return ctx.getDisableOplocks() ? false : true;
     }
-    
+
     /**
      * Copy content data from file to file
      * 
-     * @param sess SrvSession
-     * @param tree TreeConnection
-     * @param fromNode NodeRef
-     * @param toNode NodeRef
-     * @param newName String
+     * @param sess
+     *            SrvSession
+     * @param tree
+     *            TreeConnection
+     * @param fromNode
+     *            NodeRef
+     * @param toNode
+     *            NodeRef
+     * @param newName
+     *            String
      */
-    private void copyContentData( SrvSession sess, TreeConnection tree, NodeRef fromNode, NodeRef toNode, String newName)
+    private void copyContentData(SrvSession sess, TreeConnection tree, NodeRef fromNode, NodeRef toNode, String newName)
     {
         ContentData content = (ContentData) nodeService.getProperty(fromNode, ContentModel.PROP_CONTENT);
-        if ( newName != null)
-            content = ContentData.setMimetype( content, mimetypeService.guessMimetype( newName));
+        if (newName != null)
+            content = ContentData.setMimetype(content, mimetypeService.guessMimetype(newName));
         nodeService.setProperty(toNode, ContentModel.PROP_CONTENT, content);
     }
-    
-    
+
     /**
      * Clone/move aspects/properties between nodes
      * 
-     * @param newName new name of the file
-     * @param fromNode NodeRef the node to copy from
-     * @param toNode NodeRef the node to copy to
-     * @param ctx Filesystem Context
+     * @param newName
+     *            new name of the file
+     * @param fromNode
+     *            NodeRef the node to copy from
+     * @param toNode
+     *            NodeRef the node to copy to
+     * @param ctx
+     *            Filesystem Context
      */
-    private void cloneNodeAspects( String newName, NodeRef fromNode, NodeRef toNode, ContentContext ctx)
+    private void cloneNodeAspects(String newName, NodeRef fromNode, NodeRef toNode, ContentContext ctx)
     {
         // We need to remove various aspects/properties from the original file, and move them to the new file
         //
         // Check for the lockable aspect
-        
-        if ( nodeService.hasAspect( fromNode, ContentModel.ASPECT_LOCKABLE)) {
-            
+
+        if (nodeService.hasAspect(fromNode, ContentModel.ASPECT_LOCKABLE))
+        {
+
             // Remove the lockable aspect from the old working copy, add it to the new file
-            
-            nodeService.removeAspect( fromNode, ContentModel.ASPECT_LOCKABLE);
-            nodeService.addAspect( toNode, ContentModel.ASPECT_LOCKABLE, null);
+
+            nodeService.removeAspect(fromNode, ContentModel.ASPECT_LOCKABLE);
+            nodeService.addAspect(toNode, ContentModel.ASPECT_LOCKABLE, null);
 
             // DEBUG
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                 logger.debug("  Moved aspect " + ContentModel.ASPECT_LOCKABLE + " to new document");
         }
-        
+
         // Check for the working copy aspect
-        
-        if ( nodeService.hasAspect( fromNode, ContentModel.ASPECT_WORKING_COPY)) {
-            
+
+        if (nodeService.hasAspect(fromNode, ContentModel.ASPECT_WORKING_COPY))
+        {
+
             // Add the working copy aspect to the new file
-            
+
             Map<QName, Serializable> workingCopyProperties = new HashMap<QName, Serializable>(1);
-            workingCopyProperties.put(ContentModel.PROP_WORKING_COPY_OWNER, nodeService.getProperty( fromNode, ContentModel.PROP_WORKING_COPY_OWNER));
-            
-            nodeService.addAspect( toNode, ContentModel.ASPECT_WORKING_COPY, workingCopyProperties);
-            
-            // Remove the working copy aspect from old working copy file 
-            
-            nodeService.removeAspect( fromNode, ContentModel.ASPECT_WORKING_COPY);
+            workingCopyProperties.put(ContentModel.PROP_WORKING_COPY_OWNER, nodeService.getProperty(fromNode, ContentModel.PROP_WORKING_COPY_OWNER));
+
+            nodeService.addAspect(toNode, ContentModel.ASPECT_WORKING_COPY, workingCopyProperties);
+
+            // Remove the working copy aspect from old working copy file
+
+            nodeService.removeAspect(fromNode, ContentModel.ASPECT_WORKING_COPY);
 
             // DEBUG
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                 logger.debug("  Moved aspect " + ContentModel.ASPECT_WORKING_COPY + " to new document");
         }
-        
+
         // Check for the copied from aspect
-        
-        if ( nodeService.hasAspect( fromNode, ContentModel.ASPECT_COPIEDFROM)) {
-            
+
+        if (nodeService.hasAspect(fromNode, ContentModel.ASPECT_COPIEDFROM))
+        {
+
             // Add the copied from aspect to the new file
             List<AssociationRef> assocs = nodeService.getSourceAssocs(fromNode, ContentModel.ASSOC_ORIGINAL);
             if (assocs.size() > 0)
@@ -3874,93 +4053,99 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
                 NodeRef originalNodeRef = assoc.getTargetRef();
                 nodeService.createAssociation(toNode, originalNodeRef, ContentModel.ASSOC_ORIGINAL);
             }
-            
-            // Remove the copied from aspect from old working copy file 
-            
-            nodeService.removeAspect( fromNode, ContentModel.ASPECT_COPIEDFROM);
+
+            // Remove the copied from aspect from old working copy file
+
+            nodeService.removeAspect(fromNode, ContentModel.ASPECT_COPIEDFROM);
 
             // DEBUG
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                 logger.debug("  Moved aspect " + ContentModel.ASPECT_COPIEDFROM + " to new document");
-            
-//            // Check if the original node is locked
-//            
-//            if ( lockService.getLockType( copiedFromNode) == null) {
-//                
-//                // Add the lock back onto the original file
-//                
-//                lockService.lock( copiedFromNode, LockType.READ_ONLY_LOCK);
-//
-//                // DEBUG
-//                
-//                if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
-//                    logger.debug("  Re-locked copied from node " + copiedFromNode);
-//            }
+
+            // // Check if the original node is locked
+            //
+            // if ( lockService.getLockType( copiedFromNode) == null) {
+            //
+            // // Add the lock back onto the original file
+            //
+            // lockService.lock( copiedFromNode, LockType.READ_ONLY_LOCK);
+            //
+            // // DEBUG
+            //
+            // if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+            // logger.debug(" Re-locked copied from node " + copiedFromNode);
+            // }
         }
-        
+
         // Copy over all aspects from non-system namespaces (we will copy their properties later)
 
         for (QName aspectName : nodeService.getAspects(fromNode))
         {
             if (!_excludedNamespaces.contains(aspectName.getNamespaceURI()))
             {
-                nodeService.addAspect(toNode, aspectName, null);                
-            }            
+                nodeService.addAspect(toNode, aspectName, null);
+            }
         }
 
         // Copy over all other properties from non system namespaces
         Map<QName, Serializable> fromProps = nodeService.getProperties(fromNode);
-        for ( Map.Entry<QName, Serializable> entry : fromProps.entrySet()) {
+        for (Map.Entry<QName, Serializable> entry : fromProps.entrySet())
+        {
             QName propName = entry.getKey();
             if (!_excludedNamespaces.contains(propName.getNamespaceURI()))
             {
-                nodeService.setProperty( toNode, propName, entry.getValue());                
+                nodeService.setProperty(toNode, propName, entry.getValue());
             }
         }
 
         // Check if the new file name is a temporary file, remove any versionable aspect from it
-        
+
         String newNameNorm = newName.toLowerCase();
-        
-        if ( newNameNorm.endsWith( ".tmp") || newNameNorm.endsWith( ".temp")) {
-            
+
+        if (newNameNorm.endsWith(".tmp") || newNameNorm.endsWith(".temp"))
+        {
+
             // Remove the versionable aspect
-            
-            if ( nodeService.hasAspect( toNode, ContentModel.ASPECT_VERSIONABLE))
-                nodeService.removeAspect( toNode, ContentModel.ASPECT_VERSIONABLE);
+
+            if (nodeService.hasAspect(toNode, ContentModel.ASPECT_VERSIONABLE))
+                nodeService.removeAspect(toNode, ContentModel.ASPECT_VERSIONABLE);
 
             // Add the temporary aspect, also prevents versioning
-            
-            nodeService.addAspect( toNode, ContentModel.ASPECT_TEMPORARY, null);
+
+            nodeService.addAspect(toNode, ContentModel.ASPECT_TEMPORARY, null);
 
             // DEBUG
-            
-            if ( logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
+
+            if (logger.isDebugEnabled() && ctx.hasDebug(AlfrescoContext.DBG_RENAME))
                 logger.debug("  Removed versionable aspect from temp file");
         }
-        
+
         // Copy over various properties
-        
-        for ( QName propName : _copyProperties) {
-            Serializable nodeProp = nodeService.getProperty( fromNode, propName);
-            if ( nodeProp != null)
-                nodeService.setProperty( toNode, propName, nodeProp);
+
+        for (QName propName : _copyProperties)
+        {
+            Serializable nodeProp = nodeService.getProperty(fromNode, propName);
+            if (nodeProp != null)
+                nodeService.setProperty(toNode, propName, nodeProp);
         }
-        
-    } 
-    
+
+    }
+
     /**
      * Clone node
      * 
-     * @param newName the new name of the node
-     * @param fromNode the node to copy from
-     * @param toNode the node to copy to
+     * @param newName
+     *            the new name of the node
+     * @param fromNode
+     *            the node to copy from
+     * @param toNode
+     *            the node to copy to
      * @param ctx
      */
-    private void cloneNode(String newName, NodeRef fromNode, NodeRef toNode, ContentContext ctx) 
+    private void cloneNode(String newName, NodeRef fromNode, NodeRef toNode, ContentContext ctx)
     {
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("clone node from fromNode:" + fromNode + "toNode:" + toNode);
         }
@@ -3971,32 +4156,32 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
         policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
         try
         {
-        	nodeService.setProperty(toNode, ContentModel.PROP_CREATOR, nodeService.getProperty(fromNode, ContentModel.PROP_CREATOR));
-        	ownableService.setOwner(toNode, ownableService.getOwner(fromNode));
+            nodeService.setProperty(toNode, ContentModel.PROP_CREATOR, nodeService.getProperty(fromNode, ContentModel.PROP_CREATOR));
+            ownableService.setOwner(toNode, ownableService.getOwner(fromNode));
         }
         finally
         {
             policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
         }
-        
+
         Set<AccessPermission> permissions = permissionService.getAllSetPermissions(fromNode);
         boolean inheritParentPermissions = permissionService.getInheritParentPermissions(fromNode);
         permissionService.deletePermissions(fromNode);
-        
-        permissionService.setInheritParentPermissions(toNode, inheritParentPermissions);        
-        for(AccessPermission permission : permissions)
+
+        permissionService.setInheritParentPermissions(toNode, inheritParentPermissions);
+        for (AccessPermission permission : permissions)
         {
             permissionService.setPermission(toNode, permission.getAuthority(), permission.getPermission(), (permission.getAccessStatus() == AccessStatus.ALLOWED));
         }
-        
+
         // Need to take a new guess at the mimetype based upon the new file name.
-        ContentData content = (ContentData)nodeService.getProperty(toNode, ContentModel.PROP_CONTENT);
-            
+        ContentData content = (ContentData) nodeService.getProperty(toNode, ContentModel.PROP_CONTENT);
+
         // Take a guess at the mimetype (if it has not been set by something already)
         if (content != null && (content.getMimetype() == null || content.getMimetype().equals(MimetypeMap.MIMETYPE_BINARY)))
         {
             String mimetype = mimetypeService.guessMimetype(newName);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("set new mimetype to:" + mimetype);
             }
@@ -4006,88 +4191,95 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
         // Extract metadata pending change for ALF-5082
         Action action = getActionService().createAction(ContentMetadataExtracter.EXECUTOR_NAME);
-        if(action != null)
+        if (action != null)
         {
             getActionService().executeAction(action, toNode);
         }
     }
-    
+
     /**
      * Return the file state status as a string
      * 
-     * @param sts int
+     * @param sts
+     *            int
      * @return String
      */
-    private final String fileStatusString( int sts) {
+    private final String fileStatusString(int sts)
+    {
         String fstatus = "Unknown";
-        
-        switch ( sts) {
-            case FileUnknown:
-                fstatus = "Unknown";
-                break;
-            case FileNotExist:
-                fstatus = "NotExist";
-                break;
-            case FileExists:
-                fstatus = "FileExists";
-                break;
-            case DirectoryExists:
-                fstatus = "DirectoryExists";
-                break;
-            case FileRenamed:
-                fstatus = "FileRenamed";
-                break;
-            case DeleteOnClose:
-                fstatus = "DeleteOnClose";
-                break;
+
+        switch (sts)
+        {
+        case FileUnknown:
+            fstatus = "Unknown";
+            break;
+        case FileNotExist:
+            fstatus = "NotExist";
+            break;
+        case FileExists:
+            fstatus = "FileExists";
+            break;
+        case DirectoryExists:
+            fstatus = "DirectoryExists";
+            break;
+        case FileRenamed:
+            fstatus = "FileRenamed";
+            break;
+        case DeleteOnClose:
+            fstatus = "DeleteOnClose";
+            break;
         }
-        
+
         return fstatus;
     }
-    
-    private boolean isRenameShuffle(String oldFilename, String newFilename, Pattern renameShufflePattern) 
+
+    private boolean isRenameShuffle(String oldFilename, String newFilename, Pattern renameShufflePattern)
     {
-    	boolean renameShuffle = false;
+        boolean renameShuffle = false;
         String oldNameLower = oldFilename.toLowerCase();
         String newNameLower = newFilename.toLowerCase();
         renameShuffle = renameShuffle || renameShufflePattern.matcher(oldNameLower).matches();
         renameShuffle = renameShuffle || renameShufflePattern.matcher(newNameLower).matches();
 
-    	return renameShuffle;
+        return renameShuffle;
     }
-    
+
     /**
      * Get the disk information for this shared disk device.
      *
-     * @param ctx       DiskDeviceContext
-     * @param diskDev   SrvDiskInfo
+     * @param ctx
+     *            DiskDeviceContext
+     * @param diskDev
+     *            SrvDiskInfo
      * @exception IOException
      */
     public void getDiskInformation(DiskDeviceContext ctx, SrvDiskInfo diskDev)
-      throws IOException {
-        
+            throws IOException
+    {
+
         // Set the block size and blocks per allocation unit
-        
-        diskDev.setBlockSize( DiskBlockSize);
-        diskDev.setBlocksPerAllocationUnit( DiskBlocksPerUnit);
-        
+
+        diskDev.setBlockSize(DiskBlockSize);
+        diskDev.setBlocksPerAllocationUnit(DiskBlocksPerUnit);
+
         // Get the free and total disk size in bytes from the content store
-        
+
         long freeSpace = contentService.getStoreFreeSpace();
-        long totalSpace= contentService.getStoreTotalSpace();
-        
-        if ( totalSpace == -1L) {
-            
+        long totalSpace = contentService.getStoreTotalSpace();
+
+        if (totalSpace == -1L)
+        {
+
             // Use a fixed value for the total space, content store does not support size information
-            
+
             totalSpace = DiskSizeDefault;
-            freeSpace  = DiskFreeDefault;
+            freeSpace = DiskFreeDefault;
         }
 
         // Convert the total/free space values to allocation units
-        
-        diskDev.setTotalUnits( totalSpace / DiskAllocationUnit);
-        diskDev.setFreeUnits( freeSpace / DiskAllocationUnit);
+
+        diskDev.setTotalUnits(totalSpace / DiskAllocationUnit);
+        diskDev.setFreeUnits(freeSpace / DiskAllocationUnit);
     }
 
     public void setActionService(ActionService actionService)

@@ -26,8 +26,10 @@
 package org.alfresco.rest.requests.syncServiceAPI;
 
 import java.util.List;
-
 import jakarta.json.JsonArrayBuilder;
+
+import io.restassured.http.ContentType;
+import org.springframework.http.HttpMethod;
 
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
@@ -39,9 +41,6 @@ import org.alfresco.rest.model.RestSyncSetRequestModel;
 import org.alfresco.rest.requests.ModelRequest;
 import org.alfresco.rest.requests.privateAPI.RestPrivateAPI;
 import org.alfresco.utility.Utility;
-import org.springframework.http.HttpMethod;
-
-import io.restassured.http.ContentType;
 
 /**
  * Declares all Rest API under the /subscribers/<subscriberId>/subscriptions/<subscriptionId>/sync path
@@ -102,8 +101,7 @@ public class Sync extends ModelRequest<RestPrivateAPI>
     }
 
     /**
-     * Gets the Change Set for the specified subscriber/subscription and SyncId using GET call on
-     * /subscribers/{deviceSubscriptionId}/subscriptions/{nodeSubscriptionId}/sync
+     * Gets the Change Set for the specified subscriber/subscription and SyncId using GET call on /subscribers/{deviceSubscriptionId}/subscriptions/{nodeSubscriptionId}/sync
      * 
      * @param syncRequest
      * @return

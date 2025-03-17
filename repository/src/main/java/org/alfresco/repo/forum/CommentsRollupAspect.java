@@ -36,14 +36,12 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * {@link ForumModel#ASPECT_COMMENTS_ROLLUP comments rollup} aspect behaviour bean.
- * This aspect should not be copied.
+ * {@link ForumModel#ASPECT_COMMENTS_ROLLUP comments rollup} aspect behaviour bean. This aspect should not be copied.
  * 
  * @author Neil Mc Erlean
  * @since 4.0
  * 
- * @see ForumPostBehaviours#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
- *      for a {@link ForumModel#ASPECT_COMMENTS_ROLLUP}-related behaviour, which handles comment count recalculations.
+ * @see ForumPostBehaviours#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map) for a {@link ForumModel#ASPECT_COMMENTS_ROLLUP}-related behaviour, which handles comment count recalculations.
  */
 public class CommentsRollupAspect implements CopyServicePolicies.OnCopyNodePolicy
 {
@@ -52,26 +50,27 @@ public class CommentsRollupAspect implements CopyServicePolicies.OnCopyNodePolic
     /**
      * Set the policy component
      * 
-     * @param policyComponent   policy component
+     * @param policyComponent
+     *            policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * Initialise method
      */
     public void init()
     {
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"), 
-                ForumModel.ASPECT_COMMENTS_ROLLUP, 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                ForumModel.ASPECT_COMMENTS_ROLLUP,
                 new JavaBehaviour(this, "getCopyCallback"));
     }
-    
+
     /**
-     * @return              Returns CopyBehaviourCallback
+     * @return Returns CopyBehaviourCallback
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
@@ -84,7 +83,7 @@ public class CommentsRollupAspect implements CopyServicePolicies.OnCopyNodePolic
     private static class CommentsRollupAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
     {
         private static final CopyBehaviourCallback INSTANCE = new CommentsRollupAspectCopyBehaviourCallback();
-        
+
         /**
          * We do not copy the {@link ForumModel#ASPECT_COMMENTS_ROLLUP fm:commentsRollup} aspect.
          */

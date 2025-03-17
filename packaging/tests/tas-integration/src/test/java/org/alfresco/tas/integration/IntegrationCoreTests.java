@@ -4,9 +4,15 @@ import static org.alfresco.utility.report.log.Step.STEP;
 
 import jakarta.mail.FolderNotFoundException;
 
+import junit.framework.Assert;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.model.RestCommentModel;
-import org.alfresco.rest.model.RestDeploymentModel;
-import org.alfresco.rest.model.RestDeploymentModelsCollection;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPersonFavoritesModel;
 import org.alfresco.rest.model.RestPersonFavoritesModelsCollection;
@@ -17,14 +23,6 @@ import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.*;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.Test;
-
-import junit.framework.Assert;
 
 /**
  * Created by Claudia Agache on 12/13/2016.
@@ -39,17 +37,12 @@ public class IntegrationCoreTests extends IntegrationTest
     RestRatingModel returnedRatingModel;
     RestPersonFavoritesModel restPersonFavoritesModel;
     private String newContent = "new TAS content";
-    
+
     /**
-     * Scenario 22
-     * 1. Using CMIS create 2 test users: u1 and u2
-     * 2. U1 creates a public test site and U2 a public test site using CMIS
-     * 3. U1 creates a folder with a file in his public site's document library using WebDav
-     * 4. U1 tries to move his folder to U2 public site using IMAP
-     * 5. Verify folder with file is not moved. U1 is not authorized to access the public site
+     * Scenario 22 1. Using CMIS create 2 test users: u1 and u2 2. U1 creates a public test site and U2 a public test site using CMIS 3. U1 creates a folder with a file in his public site's document library using WebDav 4. U1 tries to move his folder to U2 public site using IMAP 5. Verify folder with file is not moved. U1 is not authorized to access the public site
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE  }, expectedExceptions = FolderNotFoundException.class)
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE}, expectedExceptions = FolderNotFoundException.class)
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION,
             description = "Verify user is not able to move a folder with a file to a public site if he is not a member of that site.")
     public void moveFolderWithFileToPublicSiteByUninvitedUser() throws Exception
     {
@@ -77,17 +70,10 @@ public class IntegrationCoreTests extends IntegrationTest
     }
 
     /**
-     * Scenario 23
-     * 1. Using CMIS create 1 test user: u1
-     * 2. U1 creates a public test site
-     * 3. U1 creates a folder (parentFolder) inside public site's document library using WebDav
-     * 4. Inside parentFolder create 4 files using CMIS, WebDAV, FTP
-     * 5. Inside parentFolder create 1 subfolder using IMAP
-     * 6. Delete parentFolder using CMIS
-     * 7. Verify folder is deleted along with all its children
+     * Scenario 23 1. Using CMIS create 1 test user: u1 2. U1 creates a public test site 3. U1 creates a folder (parentFolder) inside public site's document library using WebDav 4. Inside parentFolder create 4 files using CMIS, WebDAV, FTP 5. Inside parentFolder create 1 subfolder using IMAP 6. Delete parentFolder using CMIS 7. Verify folder is deleted along with all its children
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE  })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION,
             description = "Verify user is able to delete parent folder along with all its children using CMIS.")
     public void deleteFolderWithChildrenUsingCMIS() throws Exception
     {
@@ -137,16 +123,10 @@ public class IntegrationCoreTests extends IntegrationTest
     }
 
     /**
-     * Scenario 24
-     * 1. Using CMIS create 1 test user: u1
-     * 2. U1 creates a public test site
-     * 3. U1 creates a folder (parentFolder) inside public site's document library using IMAP
-     * 4. Inside parentFolder create 4 files using CMIS, WebDAV, FTP
-     * 5. Inside parentFolder create 1 subfolder using WebDAV
-     * 6. Delete parentFolder using WebDAV
+     * Scenario 24 1. Using CMIS create 1 test user: u1 2. U1 creates a public test site 3. U1 creates a folder (parentFolder) inside public site's document library using IMAP 4. Inside parentFolder create 4 files using CMIS, WebDAV, FTP 5. Inside parentFolder create 1 subfolder using WebDAV 6. Delete parentFolder using WebDAV
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE  })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION,
             description = "Verify user is able to delete parent folder along with all its children using WebDAV.")
     public void deleteFolderWithChildrenUsingWebDAV() throws Exception
     {
@@ -193,18 +173,10 @@ public class IntegrationCoreTests extends IntegrationTest
     }
 
     /**
-     * Scenario 25
-     * 1. Using CMIS create 2 test users: u1 and u2
-     * 2. U1 creates a public test site and adds u2 as manager to his site using CMIS
-     * 3. U1 creates a folder (parentFolder) inside public site's document library using CMIS
-     * 4. U1 creates a subfolder1 and a file1 inside parentFolder using FTP
-     * 5. U1 creates a subfolder2 and a file2 inside subfolder1 using CMIS
-     * 6. U2 creates a subfolder3 and a file3 using WebDAV
-     * 7. U2 deletes parentFolder using FTP
-     * 8. Verify folder is deleted along with all its children
+     * Scenario 25 1. Using CMIS create 2 test users: u1 and u2 2. U1 creates a public test site and adds u2 as manager to his site using CMIS 3. U1 creates a folder (parentFolder) inside public site's document library using CMIS 4. U1 creates a subfolder1 and a file1 inside parentFolder using FTP 5. U1 creates a subfolder2 and a file2 inside subfolder1 using CMIS 6. U2 creates a subfolder3 and a file3 using WebDAV 7. U2 deletes parentFolder using FTP 8. Verify folder is deleted along with all its children
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE})
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION,
             description = "Verify user is able to delete parent folder along with all its children using FTP.")
     public void deleteFolderWithChildrenUsingFTP() throws Exception
     {
@@ -284,16 +256,10 @@ public class IntegrationCoreTests extends IntegrationTest
     }
 
     /**
-     * Scenario 28
-     * 1. Using CMIS create one test user: U1
-     * 2. Using CMIS U1 creates a public test site
-     * 3. Using CMIS, WebDAV and FTP U1 creates multiple files and folders in parent folder
-     * 4. Using CMIS, U1 checks out a document from parent folder
-     * 5. Using CMIS, U1 deletes parent folder (deleteTree)
-     * 6. Using WebDAV, U1 verifies that parent folder and all children are NOT present in Repo and WebDAV
+     * Scenario 28 1. Using CMIS create one test user: U1 2. Using CMIS U1 creates a public test site 3. Using CMIS, WebDAV and FTP U1 creates multiple files and folders in parent folder 4. Using CMIS, U1 checks out a document from parent folder 5. Using CMIS, U1 deletes parent folder (deleteTree) 6. Using WebDAV, U1 verifies that parent folder and all children are NOT present in Repo and WebDAV
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE})
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION, description = "Verify deletion of a parentFolder with checkedout file using CMIS.")
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION, description = "Verify deletion of a parentFolder with checkedout file using CMIS.")
     public void deleteParentFolderWithCheckoutFileInUsingCMIS() throws Exception
     {
         STEP("1. Using CMIS create one test user: U1");
@@ -348,17 +314,10 @@ public class IntegrationCoreTests extends IntegrationTest
     }
 
     /**
-     * Scenario 29
-     * 1. Using CMIS create one test user: U1
-     * 2. Using CMIS U1 creates a public test site
-     * 3. Using FTP U1 creates a parent folder in public site's document library
-     * 4. Using CMIS, WebDAV and FTP U1 creates multiple files and folders in parent folder
-     * 5. Using CMIS, U1 checks out a document from parent folder
-     * 6. Using WebDAV, U1 deletes parent folder (deleteFolder)
-     * 7. Using FTP, U1 verifies that parent folder and all children are NOT present in Repo and FTP
+     * Scenario 29 1. Using CMIS create one test user: U1 2. Using CMIS U1 creates a public test site 3. Using FTP U1 creates a parent folder in public site's document library 4. Using CMIS, WebDAV and FTP U1 creates multiple files and folders in parent folder 5. Using CMIS, U1 checks out a document from parent folder 6. Using WebDAV, U1 deletes parent folder (deleteFolder) 7. Using FTP, U1 verifies that parent folder and all children are NOT present in Repo and FTP
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE})
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION, description = "Verify deletion of a parentFolder with checkedout file using WebDAV.")
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION, description = "Verify deletion of a parentFolder with checkedout file using WebDAV.")
     public void deleteParentFolderWithCheckoutFileInUsingWebDAV() throws Exception
     {
         STEP("1. Using CMIS create one test user: U1");
@@ -413,16 +372,10 @@ public class IntegrationCoreTests extends IntegrationTest
     }
 
     /**
-     * Scenario 30
-     * 1. Using CMIS create one test user: U1
-     * 2. Using CMIS U1 creates a public test site
-     * 3. Using WebDAV U1 creates a parent folder in public site's document library
-     * 4. Using CMIS, WebDAV and FTP U1 creates multiple files and folders in parent folder
-     * 5. Using CMIS, U1 checks out a document from parent folder
-     * 6. Using FTP, U1 deletes parent folder (deleteDirectory)
+     * Scenario 30 1. Using CMIS create one test user: U1 2. Using CMIS U1 creates a public test site 3. Using WebDAV U1 creates a parent folder in public site's document library 4. Using CMIS, WebDAV and FTP U1 creates multiple files and folders in parent folder 5. Using CMIS, U1 checks out a document from parent folder 6. Using FTP, U1 deletes parent folder (deleteDirectory)
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE})
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION, description = "Verify deletion of a parentFolder with checkedout file using FTP.")
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION, description = "Verify deletion of a parentFolder with checkedout file using FTP.")
     public void deleteParentFolderWithCheckoutFileInUsingFTP() throws Exception
     {
         STEP("1. Using CMIS create one test user: U1");
@@ -466,24 +419,14 @@ public class IntegrationCoreTests extends IntegrationTest
         ftpProtocol.usingResource(testFolder1).delete()
                 .and().assertThat().doesNotExistInFtp().and().assertThat().doesNotExistInRepo();
     }
-    
+
     /**
      * Scenario 32 - Document updates
      * 
-     * 1. Using CMIS create 2 test users: U1 and U2
-     * 2. Using CMIS and RestAPI U1 creates a public test site and U2 user is added with collaborator role
-     * 3. Using WebDAV U1 creates a folder in his public site's document library
-     * 4. Using WebDAV U1 creates a document inside the above folder
-     * 5. Using RestAPI U2 adds the document to favorites
-     * 6. Using CMIS U1 adds content to document
-     * 7. Using WebDAV U2 validates document's content
-     * 8. Using WebDAV U2 updates content from document
-     * 9. Using CMIS U2 validates document's content
-     * 10. Using WebDAV U1 deletes the file
-     * 11. Using RestAPI U1 deletes the folder
+     * 1. Using CMIS create 2 test users: U1 and U2 2. Using CMIS and RestAPI U1 creates a public test site and U2 user is added with collaborator role 3. Using WebDAV U1 creates a folder in his public site's document library 4. Using WebDAV U1 creates a document inside the above folder 5. Using RestAPI U2 adds the document to favorites 6. Using CMIS U1 adds content to document 7. Using WebDAV U2 validates document's content 8. Using WebDAV U2 updates content from document 9. Using CMIS U2 validates document's content 10. Using WebDAV U1 deletes the file 11. Using RestAPI U1 deletes the folder
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE  })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with collaborator role can update document content in a public site.")
     public void usersCanUpdateDocumentContentInsideAPublicSite() throws Exception
     {
@@ -491,71 +434,61 @@ public class IntegrationCoreTests extends IntegrationTest
         String updatedContent = "updatedContent";
         testFolder1 = FolderModel.getRandomFolderModel();
         testFile1 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
-        
+
         STEP("1. Using CMIS create 2 test users: U1 and U2");
         testUser1 = dataUser.createRandomTestUser();
         testUser2 = dataUser.createRandomTestUser();
-        
+
         STEP("2. Using CMIS and RestAPI U1 creates a public test site and U2 user is added with collaborator role");
         testSitePublic = dataSite.usingUser(testUser1).createPublicRandomSite();
         testUser2.setUserRole(UserRole.SiteCollaborator);
         restAPI.authenticateUser(testUser1).withCoreAPI().usingSite(testSitePublic).addPerson(testUser2);
-        
+
         STEP("3. Using WebDAV U1 creates a folder in his public site's document library");
         webDavProtocol.authenticateUser(testUser1).usingSite(testSitePublic).createFolder(testFolder1)
-            .and().assertThat().existsInRepo();
-        
+                .and().assertThat().existsInRepo();
+
         STEP("4. Using WebDAV U1 creates a document inside the above folder");
         webDavProtocol.authenticateUser(testUser1).usingResource(testFolder1).createFile(testFile1)
-            .and().assertThat().existsInWebdav()
-            .and().assertThat().existsInRepo();
-        
+                .and().assertThat().existsInWebdav()
+                .and().assertThat().existsInRepo();
+
         STEP("5. Using RestAPI U2 adds the document to favorites");
         restAPI.authenticateUser(testUser2).withCoreAPI().usingAuthUser().addFolderToFavorites(testFolder1);
         restAPI.assertStatusCodeIs(HttpStatus.CREATED);
 
-        STEP("6. Using CMIS U1 adds content to document");     
+        STEP("6. Using CMIS U1 adds content to document");
         cmisAPI.authenticateUser(testUser1).usingResource(testFile1)
-        .and().assertThat().existsInRepo()
-        .and().update(originalContent);
-        
+                .and().assertThat().existsInRepo()
+                .and().update(originalContent);
+
         STEP("7. Using WebDAV U2 validates document's content");
         webDavProtocol.authenticateUser(testUser2).usingResource(testFile1).assertThat().contentIs(originalContent);
-        
+
         STEP("8. Using WebDAV U2 updates content from document");
         webDavProtocol.usingUser(testUser2).usingResource(testFile1)
-        .assertThat().existsInRepo()
-        .and().update(updatedContent);
-        
+                .assertThat().existsInRepo()
+                .and().update(updatedContent);
+
         STEP("9. Using CMIS U2 validates document's content");
         cmisAPI.authenticateUser(testUser2).usingResource(testFile1).assertThat().contentIs(updatedContent);
-        
+
         STEP("10. Using WebDAV U1 deletes the file");
         webDavProtocol.authenticateUser(testUser1).usingResource(testFile1).delete()
-        .and().assertThat().doesNotExistInRepo();
-        
+                .and().assertThat().doesNotExistInRepo();
+
         STEP("11. Using WebDAV U1 deletes the folder");
         webDavProtocol.authenticateUser(testUser1).usingResource(testFolder1).delete()
-        .and().assertThat().doesNotExistInRepo();          
+                .and().assertThat().doesNotExistInRepo();
     }
 
     /**
      * Scenario 33 - Document likes
      *
-     * 1. Using CMIS create 2 test users: U1 and U2
-     * 2. Using RestAPI U1 creates a public test site and U2 user is added with contributor role
-     * 3. Using WebDAV U1 creates a folder in his public site's document library 
-     * 4. Using WebDAV U1 creates a document1 inside the above folder 
-     * 5. Using WebDAV U2 creates a document2 inside folder 
-     * 6. Using RestAPI U2 likes document1 
-     * 7. Using RestAPI U1 likes document2 
-     * 8. Using RestAPI U1 dislikes document2 
-     * 9. Using RestAPI U2 add to favorites document1 
-     * 10. Using CMIS U1 delete document1 
-     * 11. Using CMIS U2 delete the folder 
+     * 1. Using CMIS create 2 test users: U1 and U2 2. Using RestAPI U1 creates a public test site and U2 user is added with contributor role 3. Using WebDAV U1 creates a folder in his public site's document library 4. Using WebDAV U1 creates a document1 inside the above folder 5. Using WebDAV U2 creates a document2 inside folder 6. Using RestAPI U2 likes document1 7. Using RestAPI U1 likes document2 8. Using RestAPI U1 dislikes document2 9. Using RestAPI U2 add to favorites document1 10. Using CMIS U1 delete document1 11. Using CMIS U2 delete the folder
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE  }, expectedExceptions = {CmisPermissionDeniedException.class, CmisUnauthorizedException.class} )
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE}, expectedExceptions = {CmisPermissionDeniedException.class, CmisUnauthorizedException.class})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with contributor role can like/favorite a document in a public site.")
     public void usersCanLikeADocumentInPublicSite() throws Exception
     {
@@ -632,21 +565,11 @@ public class IntegrationCoreTests extends IntegrationTest
     /**
      * Scenario 34 - Document ratings
      *
-     * 1. Using CMIS create 2 test users: U1 and U2
-     * 2. Using RestAPI U1 creates a public test site and U2 user is added with collaborator role
-     * 3. Using CMIS U1 creates a new folder in site
-     * 4. Using WebDAV U2 creates file1 in public site document library
-     * 5. Using WebDAV U1 creates a file2 in public site document library
-     * 6. Using RestAPI U2 rates with 5 stars file2
-     * 7. Using RestAPI U1 rates with 1 star file1
-     * 8. Using RestAPI U2 likes file1
-     * 9. Using RestAPI U2 removes the rating of 5 stars for file2
-     * 10. Using WebDAV U1 delete file1. Using RestAPI get ratings of file1.
-     * 11. Using WebDAV U1 delete the folder
+     * 1. Using CMIS create 2 test users: U1 and U2 2. Using RestAPI U1 creates a public test site and U2 user is added with collaborator role 3. Using CMIS U1 creates a new folder in site 4. Using WebDAV U2 creates file1 in public site document library 5. Using WebDAV U1 creates a file2 in public site document library 6. Using RestAPI U2 rates with 5 stars file2 7. Using RestAPI U1 rates with 1 star file1 8. Using RestAPI U2 likes file1 9. Using RestAPI U2 removes the rating of 5 stars for file2 10. Using WebDAV U1 delete file1. Using RestAPI get ratings of file1. 11. Using WebDAV U1 delete the folder
      */
 
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE  })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with collaborator role can rate a document in a public site.")
     public void usersCanRateADocumentInPublicSite() throws Exception
     {
@@ -724,27 +647,13 @@ public class IntegrationCoreTests extends IntegrationTest
                 .and().usingResource(testFolder1).delete()
                 .and().assertThat().doesNotExistInRepo();
     }
-    
+
     /**
-     * Scenario 35
-     * 1. Using CMIS create 2 test user: U1 and U2
-     * 2. Using CMIS U1 creates a public test site
-     * 3. Using FTP U1 creates a folder in public site's document library: folder1
-     * 4. Using WebDAV U1 creates inside folder1 a new folder: folder2
-     * 5. Using WebDAV U1 creates inside folder2 a new folder: folder3
-     * 6. Using CMIS U1 creates inside folder1 a new file: file1
-     * 7. Using WebDAV U1 creates inside folder2 a new file: file2
-     * 8. Using FTP U1 creates inside folder3 a new file: file3
-     * 9. Using WebDAV U1 deletes file1
-     * 10. Using IMAP U1 deletes file2
-     * 11. Using WebDAV U1 updates content of file3
-     * 12. Using RestAPI U1 adds a comment to file3
-     * 13. Using RestAPI U1 likes file3 and user U2 rates file3
-     * 14. Using CMIS U1 deletes file3
+     * Scenario 35 1. Using CMIS create 2 test user: U1 and U2 2. Using CMIS U1 creates a public test site 3. Using FTP U1 creates a folder in public site's document library: folder1 4. Using WebDAV U1 creates inside folder1 a new folder: folder2 5. Using WebDAV U1 creates inside folder2 a new folder: folder3 6. Using CMIS U1 creates inside folder1 a new file: file1 7. Using WebDAV U1 creates inside folder2 a new file: file2 8. Using FTP U1 creates inside folder3 a new file: file3 9. Using WebDAV U1 deletes file1 10. Using IMAP U1 deletes file2 11. Using WebDAV U1 updates content of file3 12. Using RestAPI U1 adds a comment to file3 13. Using RestAPI U1 likes file3 and user U2 rates file3 14. Using CMIS U1 deletes file3
      */
-  
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE  })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION,
+
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION,
             description = "File handling - perform actions: create, delete, add comment, like and rate, update file content ")
     public void fileHandlingCreateUpdateContentDeleteLikeAndRate() throws Exception
     {
@@ -755,181 +664,161 @@ public class IntegrationCoreTests extends IntegrationTest
         STEP("2. U1 creates a public test site using CMIS");
         testSitePublic = dataSite.usingUser(testUser1).createIMAPSite();
 
-        STEP("3. Using FTP U1 creates folder: folder1"); 
+        STEP("3. Using FTP U1 creates folder: folder1");
         FolderModel folder1 = FolderModel.getRandomFolderModel();
         ftpProtocol.authenticateUser(testUser1).usingSite(testSitePublic).createFolder(folder1)
-                   .assertThat().existsInRepo();
-        
+                .assertThat().existsInRepo();
+
         STEP("4. Using WebDAV U1 creates folder2 inside folder1");
-        FolderModel folder2 = FolderModel.getRandomFolderModel();        
+        FolderModel folder2 = FolderModel.getRandomFolderModel();
         webDavProtocol.authenticateUser(testUser1).usingResource(folder1).createFolder(folder2);
-        
+
         STEP("5. Using webDAV U1 creates folder3 inside folder2");
         FolderModel folder3 = FolderModel.getRandomFolderModel();
         webDavProtocol.authenticateUser(testUser1).usingResource(folder2).createFolder(folder3);
-        
-        STEP("6. Using CMIS U1 creates file1 inside folder1");         
+
+        STEP("6. Using CMIS U1 creates file1 inside folder1");
         FileModel file1 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "file 1 content");
         cmisAPI.authenticateUser(testUser1).usingResource(folder1).createFile(file1)
-        .assertThat().existsInRepo();
-        
-        STEP("7. Using webDAV U1 creates file2 inside folder2");        
+                .assertThat().existsInRepo();
+
+        STEP("7. Using webDAV U1 creates file2 inside folder2");
         FileModel file2 = FileModel.getRandomFileModel(FileType.HTML, "file 2 content");
         webDavProtocol.authenticateUser(testUser1).usingResource(folder2).createFile(file2)
-        .assertThat().existsInWebdav().assertThat().existsInRepo();
-        
+                .assertThat().existsInWebdav().assertThat().existsInRepo();
+
         STEP("8. Using FTP U1 creates file3 inside folder3");
         FileModel file3 = FileModel.getRandomFileModel(FileType.MSWORD, "file 3 content");
         ftpProtocol.authenticateUser(testUser1).usingResource(folder3).createFile(file3)
-                   .assertThat().existsInRepo();
-        
-        STEP("9. Using webDAV U1 deletes file1"); 
+                .assertThat().existsInRepo();
+
+        STEP("9. Using webDAV U1 deletes file1");
         webDavProtocol.authenticateUser(testUser1).usingResource(file1).delete()
-                      .assertThat().doesNotExistInRepo().and().assertThat().doesNotExistInWebdav();
-        
-        STEP("10. Using IMAP U1 deletes file2");    
+                .assertThat().doesNotExistInRepo().and().assertThat().doesNotExistInWebdav();
+
+        STEP("10. Using IMAP U1 deletes file2");
         imapProtocol.authenticateUser(testUser1).usingResource(file2).deleteMessage()
-                    .and().usingResource(file2).assertThat().doesNotExistInRepo();
-        
+                .and().usingResource(file2).assertThat().doesNotExistInRepo();
+
         STEP("11. Using WebDAV U1 update content of file3");
         webDavProtocol.authenticateUser(testUser1)
-                       .usingResource(file3).assertThat().existsInRepo()
-                       .update(newContent).assertThat().contentIs(newContent);
-        
-        STEP("12. Using RestAPI U1 adds a comment to file3"); 
+                .usingResource(file3).assertThat().existsInRepo()
+                .update(newContent).assertThat().contentIs(newContent);
+
+        STEP("12. Using RestAPI U1 adds a comment to file3");
         String comment = RandomData.getRandomName("comment1");
         file3.setNodeRef(dataContent.usingUser(testUser1).usingSite(testSitePublic)
-             .usingResource(folder3).usingResource(file3).getNodeRef());
-        RestCommentModel commentModel  = restAPI.authenticateUser(testUser1).withCoreAPI()
-                                         .usingResource(file3).addComment(comment);
-        restAPI.assertStatusCodeIs(HttpStatus.CREATED);       
+                .usingResource(folder3).usingResource(file3).getNodeRef());
+        RestCommentModel commentModel = restAPI.authenticateUser(testUser1).withCoreAPI()
+                .usingResource(file3).addComment(comment);
+        restAPI.assertStatusCodeIs(HttpStatus.CREATED);
         commentModel.assertThat().field("content").isNotEmpty()
-                     .and().field("content").is(comment);
-                                  
-        STEP("13. Using RestAPI U1 likes file3 and user U2 rates file3"); 
+                .and().field("content").is(comment);
+
+        STEP("13. Using RestAPI U1 likes file3 and user U2 rates file3");
         returnedRatingModel = restAPI.authenticateUser(testUser1).withCoreAPI().usingResource(file3).likeDocument();
         restAPI.assertStatusCodeIs(HttpStatus.CREATED);
         returnedRatingModel.assertThat().field("myRating").is("true").and().field("id").is("likes").and().field("aggregate").isNotEmpty();
-        
+
         returnedRatingModel = restAPI.authenticateUser(testUser2).withCoreAPI()
-                              .usingResource(file3).rateStarsToDocument(5);
+                .usingResource(file3).rateStarsToDocument(5);
         restAPI.assertStatusCodeIs(HttpStatus.CREATED);
         returnedRatingModel.assertThat().field("myRating").is("5").and().field("id").is("fiveStar").and().field("aggregate").isNotEmpty();
-                
-        STEP("14. Using CMIS U1 deletes file3"); 
+
+        STEP("14. Using CMIS U1 deletes file3");
         cmisAPI.authenticateUser(testUser1).usingResource(file3).delete()
-                .assertThat().doesNotExistInRepo();        
+                .assertThat().doesNotExistInRepo();
     }
 
     /**
-     * Scenario 37
-     * 1. Using CMIS creates 2 users: U1 and U  
-     * 2. U1 creates a public test site using CMIS
-     * 3. Using CMIS U1 creates folder: folder1
-     * 4. Using WebDAV U1 creates folder2 and folder3 inside folder1
-     * 5. Using FTP U1 creates file1 inside folder1
-     * 6. Using CMIS U1 copies file1 to folder2
-     * 7. Using WebDAV U1 update content of file1 from folder2
-     * 8. Using FTP U1 tries to move file1 from folder2 to folder1
-     * 9. Using WebDAV U1 updates content of file1 from folder1
-     * 10. Using RestAPI U1 adds file1 to favorites
-     * 11. Using RestAPI U1 likes file1 and U2 user rates file1
-     * 12. Using CMIS U1 moves file1 from folder1 to folder3
-     * 13. Using CMIS/RestAPI U1 checks that content, favorites and ratings are kept
-      */
-  
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION,
+     * Scenario 37 1. Using CMIS creates 2 users: U1 and U 2. U1 creates a public test site using CMIS 3. Using CMIS U1 creates folder: folder1 4. Using WebDAV U1 creates folder2 and folder3 inside folder1 5. Using FTP U1 creates file1 inside folder1 6. Using CMIS U1 copies file1 to folder2 7. Using WebDAV U1 update content of file1 from folder2 8. Using FTP U1 tries to move file1 from folder2 to folder1 9. Using WebDAV U1 updates content of file1 from folder1 10. Using RestAPI U1 adds file1 to favorites 11. Using RestAPI U1 likes file1 and U2 user rates file1 12. Using CMIS U1 moves file1 from folder1 to folder3 13. Using CMIS/RestAPI U1 checks that content, favorites and ratings are kept
+     */
+
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION,
             description = "File handling - perform actions: copy, move, add/update content, favorites, like and rate")
     public void fileHandlingCopyMoveAddUpdateContentFavoritesLikeAndRate() throws Exception
     {
         STEP("1. Using CMIS creates 2 users: U1 and U2");
         testUser1 = dataUser.createRandomTestUser();
         testUser2 = dataUser.createRandomTestUser();
-        
+
         STEP("2. U1 creates a public test site using CMIS");
         testSitePublic = dataSite.usingUser(testUser1).createPublicRandomSite();
 
-        STEP("3. Using CMIS U1 creates folder: folder1"); 
+        STEP("3. Using CMIS U1 creates folder: folder1");
         FolderModel folder1 = FolderModel.getRandomFolderModel();
         cmisAPI.authenticateUser(testUser1).usingSite(testSitePublic).createFolder(folder1)
-                   .assertThat().existsInRepo();
-        
+                .assertThat().existsInRepo();
+
         STEP("4. Using WebDAV U1 creates folder2 and folder3 inside folder1");
-        FolderModel folder2 = FolderModel.getRandomFolderModel();        
-        FolderModel folder3 = FolderModel.getRandomFolderModel();        
+        FolderModel folder2 = FolderModel.getRandomFolderModel();
+        FolderModel folder3 = FolderModel.getRandomFolderModel();
         webDavProtocol.authenticateUser(testUser1)
                 .usingResource(folder1).createFolder(folder2).and().assertThat().existsInWebdav()
                 .usingResource(folder1).createFolder(folder3).and().assertThat().existsInWebdav();
-        
+
         STEP("5. Using FTP U1 creates file1 inside folder1");
         FileModel file1 = FileModel.getRandomFileModel(FileType.MSWORD2007, "tasTesting");
         ftpProtocol.authenticateUser(testUser1).usingResource(folder1).createFile(file1)
-             .assertThat().existsInRepo();             
-        
+                .assertThat().existsInRepo();
+
         STEP("6. Using CMIS U1 copies file1 to folder2");
         FileModel copiedFile = new FileModel(file1);
         cmisAPI.authenticateUser(testUser1).usingResource(file1).copyTo(folder2);
         copiedFile.setCmisLocation(cmisAPI.getLastResource());
         cmisAPI.usingResource(folder2).assertThat().hasFiles(file1);
-        
+
         STEP("7. Using WebDAV U1 update content of file1 from folder2");
         webDavProtocol.usingResource(copiedFile).assertThat().existsInRepo()
-                       .update(newContent).assertThat().contentIs(newContent);
-        
+                .update(newContent).assertThat().contentIs(newContent);
+
         STEP("8. Using FTP U1 tries to move file1 from folder2 to folder1");
         ftpProtocol.authenticateUser(testUser1)
                 .usingResource(copiedFile).moveTo(folder1).assertThat().existsInRepo();
         Assert.assertTrue(ftpProtocol.usingResource(folder1).getFiles().size() == 1);
-        
+
         STEP("9. Using WebDAV U1 updates content of file1 from folder1");
         webDavProtocol.usingResource(file1).update("content folder1")
-                   .assertThat().contentIs("content folder1");
-        
-        STEP("10. Using RestAPI U1 adds file1 to favorites"); 
+                .assertThat().contentIs("content folder1");
+
+        STEP("10. Using RestAPI U1 adds file1 to favorites");
         file1.setNodeRef(dataContent.usingUser(testUser1).usingSite(testSitePublic)
                 .usingResource(folder1).usingResource(file1).getNodeRef());
-        
+
         restPersonFavoritesModel = restAPI.authenticateUser(testUser1).withCoreAPI()
                 .usingAuthUser().addFileToFavorites(file1);
         restAPI.assertStatusCodeIs(org.springframework.http.HttpStatus.CREATED);
-        restPersonFavoritesModel.assertThat().field("targetGuid").is(file1.getNodeRefWithoutVersion());     
-        
-        STEP("11. Using RestAPI U1 likes file1 and U2 user rates file1");         
+        restPersonFavoritesModel.assertThat().field("targetGuid").is(file1.getNodeRefWithoutVersion());
+
+        STEP("11. Using RestAPI U1 likes file1 and U2 user rates file1");
         returnedRatingModel = restAPI.authenticateUser(testUser1).withCoreAPI()
                 .usingResource(file1).likeDocument();
         restAPI.assertStatusCodeIs(org.springframework.http.HttpStatus.CREATED);
         returnedRatingModel.assertThat().field("myRating").is("true").and().field("id").is("likes")
-                           .and().field("aggregate").isNotEmpty();
-        
+                .and().field("aggregate").isNotEmpty();
+
         returnedRatingModel = restAPI.authenticateUser(testUser2).withCoreAPI()
                 .usingResource(file1).rateStarsToDocument(5);
         restAPI.assertStatusCodeIs(org.springframework.http.HttpStatus.CREATED);
-        returnedRatingModel.assertThat().field("myRating").is("5").and().field("id").is("fiveStar") 
-                           .and().field("aggregate").isNotEmpty();
-        
-        STEP("12. Using CMIS U1 moves file1 from folder1 to folder3"); 
+        returnedRatingModel.assertThat().field("myRating").is("5").and().field("id").is("fiveStar")
+                .and().field("aggregate").isNotEmpty();
+
+        STEP("12. Using CMIS U1 moves file1 from folder1 to folder3");
         cmisAPI.usingSite(testSitePublic).usingResource(file1).moveTo(folder3)
-                .and().assertThat().existsInRepo();    
-        
+                .and().assertThat().existsInRepo();
+
         STEP("13. Using CMIS/RestAPI U1 checks that content, favorites and ratings are kept");
         returnedRatingModel.assertThat().field("myRating").is("5").and().field("id").is("fiveStar")
-                           .and().field("aggregate").isNotEmpty();
-        restPersonFavoritesModel.assertThat().field("targetGuid").is(file1.getNodeRefWithoutVersion());            
+                .and().field("aggregate").isNotEmpty();
+        restPersonFavoritesModel.assertThat().field("targetGuid").is(file1.getNodeRefWithoutVersion());
     }
-    
+
     /**
-     * Scenario 38
-     * 1. Using CMIS create one test user: U1
-     * 2. Using CMIS U1 creates a new document in Share
-     * 3. Using WebDAV U1 creates a new document in User Home
-     * 4. Using WebDAV U1 updates both documents
-     * 5. Verify if only first document's version is increased using CMIS
-     * 6. Verify if content is updated using WebDav
-     * 7. Verify if the size of the document is increased
+     * Scenario 38 1. Using CMIS create one test user: U1 2. Using CMIS U1 creates a new document in Share 3. Using WebDAV U1 creates a new document in User Home 4. Using WebDAV U1 updates both documents 5. Verify if only first document's version is increased using CMIS 6. Verify if content is updated using WebDav 7. Verify if the size of the document is increased
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION, description = "Verify document versioning after appending content using WebDAV.")
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION, description = "Verify document versioning after appending content using WebDAV.")
     public void checkDocumentVersionAfterAppendingContent() throws Exception
     {
         STEP("1. Using CMIS create one test user: U1");
@@ -967,20 +856,11 @@ public class IntegrationCoreTests extends IntegrationTest
     }
 
     /**
-     * Scenario 40
-     * 1. Using CMIS create test user: U1
-     * 2. U1 creates a private test site using CMIS
-     * 3. Using WebDAV U1 creates a folder
-     * 4. Using WebDAV U1 creates a file inside the folder
-     * 5. Using CMIS, check out the document
-     * 6. Using CMIS verify if PWC is created
-     * 7. Using CMIS check in document with content
-     * 8. Using CMIS verify that version does not increase
-     * 9. Using CMIS verify new content is added to document
+     * Scenario 40 1. Using CMIS create test user: U1 2. U1 creates a private test site using CMIS 3. Using WebDAV U1 creates a folder 4. Using WebDAV U1 creates a file inside the folder 5. Using CMIS, check out the document 6. Using CMIS verify if PWC is created 7. Using CMIS check in document with content 8. Using CMIS verify that version does not increase 9. Using CMIS verify new content is added to document
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION,
-        description = "Verify increased version and new content of a file that was check out then check in.")
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION,
+            description = "Verify increased version and new content of a file that was check out then check in.")
     public void verifyIncreasedVersionAndNewContentOfCheckInDocument() throws Exception
     {
         STEP("Step 1. Using CMIS create test user: U1");
@@ -990,52 +870,43 @@ public class IntegrationCoreTests extends IntegrationTest
         testSitePublic = dataSite.usingUser(testUser1).createPrivateRandomSite();
 
         STEP("Step 3. Using WebDAV U1 creates a folder");
-        FolderModel folder = FolderModel.getRandomFolderModel();        
+        FolderModel folder = FolderModel.getRandomFolderModel();
         webDavProtocol.authenticateUser(testUser1).usingSite(testSitePublic).createFolder(folder);
-        
-        STEP("Step 4. Using WebDAV U1 creates a file inside the folder"); 
+
+        STEP("Step 4. Using WebDAV U1 creates a file inside the folder");
         FileModel file = FileModel.getRandomFileModel(FileType.XML, "file content");
         webDavProtocol.authenticateUser(testUser1).usingResource(folder).createFile(file)
-                      .assertThat().existsInWebdav().assertThat().existsInRepo();
-        
+                .assertThat().existsInWebdav().assertThat().existsInRepo();
+
         STEP("Step 5: Using CMIS, check out the document and verify document version");
         cmisAPI.authenticateUser(testUser1).usingResource(file).checkOut()
-               .assertThat().documentIsCheckedOut();
+                .assertThat().documentIsCheckedOut();
 
         STEP("Step 6: Using CMIS verify if PWC is created");
         FileModel filePWC = cmisAPI.usingResource(file).withCMISUtil().getPWCFileModel();
         cmisAPI.usingResource(filePWC).assertThat().existsInRepo();
-        
+
         STEP("Step 7: Using CMIS check in document with content");
         String newContent = "new major content";
         cmisAPI.usingResource(folder).assertThat().folderHasCheckedOutDocument(file);
         cmisAPI.usingResource(file).prepareDocumentForCheckIn()
-               .withMajorVersion()
-               .withContent(newContent)
-               .checkIn().refreshResource()
-               .and().assertThat().documentIsNotCheckedOut();    
-        
+                .withMajorVersion()
+                .withContent(newContent)
+                .checkIn().refreshResource()
+                .and().assertThat().documentIsNotCheckedOut();
+
         STEP("Step 8: Using CMIS verify that version does not increase");
         cmisAPI.usingResource(file).assertThat().documentHasVersion(1.0);
-        
+
         STEP("Step 9: Using CMIS verify new content is added to document");
         cmisAPI.usingResource(file).assertThat().contentIs(newContent);
     }
 
     /**
-     * Scenario 41
-     * 1. Using CMIS create test user: U1
-     * 2. U1 creates a private test site using CMIS
-     * 3. Using WebDAV U1 creates a folder
-     * 4. Using WebDAV U1 creates a file inside the folder
-     * 5. Using CMIS, check out the document
-     * 6. Using CMIS verify if PWC is created
-     * 7. Using CMIS, cancel check out
-     * 8. Using CMIS, verify original document has version 1.0
-     * 9. Using CMIS, verify original document has same content
+     * Scenario 41 1. Using CMIS create test user: U1 2. U1 creates a private test site using CMIS 3. Using WebDAV U1 creates a folder 4. Using WebDAV U1 creates a file inside the folder 5. Using CMIS, check out the document 6. Using CMIS verify if PWC is created 7. Using CMIS, cancel check out 8. Using CMIS, verify original document has version 1.0 9. Using CMIS, verify original document has same content
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION,
             description = "Verify that version and the content of a file are not changed if the checkout is canceled.")
     public void verifyVersionAndContentOfACanceledCheckoutDocument() throws Exception
     {
@@ -1074,88 +945,72 @@ public class IntegrationCoreTests extends IntegrationTest
     }
 
     /**
-     * Scenario 42
-     * 1. Using CMIS create one test user: U1
-     * 2. Using CMIS U1 creates a file: file
-     * 3. Using WebDAV U1 renames file and verify if the new document exists
-     * 4. Using FTP verify old document does not exists
+     * Scenario 42 1. Using CMIS create one test user: U1 2. Using CMIS U1 creates a file: file 3. Using WebDAV U1 renames file and verify if the new document exists 4. Using FTP verify old document does not exists
      */
-  
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE  })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION,
+
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION,
             description = "Edit document name and verify document with new name")
     public void renameDocument() throws Exception
     {
         STEP("1. Using CMIS create test user: U1");
-        testUser1 = dataUser.createRandomTestUser();       
+        testUser1 = dataUser.createRandomTestUser();
 
-        STEP("2. Using CMIS U1 creates file"); 
+        STEP("2. Using CMIS U1 creates file");
         FileModel file = FileModel.getRandomFileModel(FileType.PDF, "file content");
         cmisAPI.authenticateUser(testUser1).usingUserHome().createFile(file)
-               .assertThat().existsInRepo();
+                .assertThat().existsInRepo();
 
         STEP("3. Using WebDAV U1 renames file and verify if the new document exists");
         FileModel oldFile = new FileModel(file);
         webDavProtocol.authenticateUser(testUser1).usingResource(file).rename(renamePrefix + file.getName())
-                    .and().assertThat().existsInRepo().and().assertThat().existsInWebdav();
-        
-        STEP("4. Using FTP verify old document does not exists");      
+                .and().assertThat().existsInRepo().and().assertThat().existsInWebdav();
+
+        STEP("4. Using FTP verify old document does not exists");
         ftpProtocol.authenticateUser(testUser1).usingResource(oldFile)
-                   .assertThat().doesNotExistInRepo()
-                   .and().assertThat().doesNotExistInFtp();
+                .assertThat().doesNotExistInRepo()
+                .and().assertThat().doesNotExistInFtp();
     }
-    
+
     /**
-     * Scenario 43
-     * 1. Using CMIS create test user: U1   
-     * 2. Using WebDAV U1 creates a file using shared
-     * 3. Using webDAV append content to document
-     * 4. Using CMIS, verify original document has version 1.0
-     * 5. Using CMIS delete document
-     * 6. Using WebDAV, verify document is deleted
+     * Scenario 43 1. Using CMIS create test user: U1 2. Using WebDAV U1 creates a file using shared 3. Using webDAV append content to document 4. Using CMIS, verify original document has version 1.0 5. Using CMIS delete document 6. Using WebDAV, verify document is deleted
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION,
-        description = "Delete document after append content and verify document version.")
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION,
+            description = "Delete document after append content and verify document version.")
     public void deleteDocumentAfterAppendContent() throws Exception
     {
         STEP("Step 1. Using CMIS create test user: U1");
         testUser1 = dataUser.createRandomTestUser();
-                    
+
         STEP("Step 2. Using WebDAV U1 creates a file using shared");
         FileModel file = FileModel.getRandomFileModel(FileType.XML, "file content");
         webDavProtocol.authenticateUser(testUser1).usingUserHome().createFile(file)
-                      .assertThat().existsInRepo();
-        
-        STEP("Step 3. Using webDAV append content to document"); 
+                .assertThat().existsInRepo();
+
+        STEP("Step 3. Using webDAV append content to document");
         String newContentToAppend = " - append this text to the file";
         webDavProtocol.authenticateUser(testUser1).usingResource(file).assertThat().contentIs("file content")
-                   .then().update(file.getContent() + newContentToAppend)
-                   .assertThat().contentIs(file.getContent() + newContentToAppend);    
-        
+                .then().update(file.getContent() + newContentToAppend)
+                .assertThat().contentIs(file.getContent() + newContentToAppend);
+
         STEP("Step 4: Using CMIS, verify original document has version 1.0");
         cmisAPI.authenticateUser(testUser1).usingResource(file).assertThat().isNotPrivateWorkingCopy()
                 .then().assertThat().documentHasVersion(1.0);
-        
+
         STEP("Step 4: Using CMIS, delete document");
         cmisAPI.usingResource(file).assertThat().existsInRepo().delete();
-        
+
         STEP("Step 5: Using WebDAV, verify document is deleted");
         webDavProtocol.authenticateUser(testUser1).usingResource(file).assertThat().doesNotExistInWebdav()
-                    .and().assertThat().doesNotExistInRepo();
+                .and().assertThat().doesNotExistInRepo();
     }
 
     /**
-     * Scenario 44
-     * 1. Using CMIS create one test user: U1
-     * 2. Using CMIS U1 creates a public test site
-     * 3. Using WebDAV U1 creates a new file in User Home
-     * 4. Using WebDAV U1 creates another file in public site document library.
-     * 5. Using CMIS U1 creates a relationship between documents
-     * 6. Verify if relationship is created
+     * Scenario 44 1. Using CMIS create one test user: U1 2. Using CMIS U1 creates a public test site 3. Using WebDAV U1 creates a new file in User Home 4. Using WebDAV U1 creates another file in public site document library. 5. Using CMIS U1 creates a relationship between documents 6. Verify if relationship is created
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION, description = "Verify if relationship is created between 2 items using CMIS.")
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION, description = "Verify if relationship is created between 2 items using CMIS.")
     public void checkRelationshipBetween2Files() throws Exception
     {
         STEP("1. Using CMIS create one test user: U1");
@@ -1165,12 +1020,12 @@ public class IntegrationCoreTests extends IntegrationTest
         testSitePublic = dataSite.usingUser(testUser1).createPublicRandomSite();
 
         STEP("3. Using WebDAV U1 creates a new file in User Home");
-        FileModel sourceFile= FileModel.getRandomFileModel(FileType.PDF, "file content");
+        FileModel sourceFile = FileModel.getRandomFileModel(FileType.PDF, "file content");
         webDavProtocol.authenticateUser(testUser1).usingUserHome()
                 .createFile(sourceFile).assertThat().existsInRepo();
 
         STEP("4. Using WebDAV U1 creates another file in public site document library.");
-        FileModel targetFile= FileModel.getRandomFileModel(FileType.PDF, "file content");
+        FileModel targetFile = FileModel.getRandomFileModel(FileType.PDF, "file content");
         webDavProtocol.authenticateUser(testUser1).usingSite(testSitePublic)
                 .createFile(targetFile).assertThat().existsInRepo();
 
@@ -1180,23 +1035,10 @@ public class IntegrationCoreTests extends IntegrationTest
     }
 
     /**
-     * Scenario 46
-     * 1. Using CMIS create one test user: U1
-     * 2. Using CMIS U1 creates an imap test site
-     * 3. Using CMIS U1 creates cmisFolder in Shared
-     * 4. Using IMAP U1 creates parentFolder in private site document library.
-     * 5. Using FTP U1 creates a subfolder in parentFolder
-     * 6. Using WebDAV U1 creates a webdavFolder in User Home
-     * 7. Using WebDAV U1 creates a document in parentFolder
-     * 8. Using CMIS U1 adds document to cmisFolder, subfolder, webdavFolder
-     * 9. Using WebDAV verify document is present in all folders
-     * 10. Using CMIS U1 removes document from subFolder
-     * 11. Using WebDAV verify document is not present in subFolder
-     * 12. Using FTP U1 deletes original document from parentFolder
-     * 13. Using CMIS verify document does not exist
+     * Scenario 46 1. Using CMIS create one test user: U1 2. Using CMIS U1 creates an imap test site 3. Using CMIS U1 creates cmisFolder in Shared 4. Using IMAP U1 creates parentFolder in private site document library. 5. Using FTP U1 creates a subfolder in parentFolder 6. Using WebDAV U1 creates a webdavFolder in User Home 7. Using WebDAV U1 creates a document in parentFolder 8. Using CMIS U1 adds document to cmisFolder, subfolder, webdavFolder 9. Using WebDAV verify document is present in all folders 10. Using CMIS U1 removes document from subFolder 11. Using WebDAV verify document is not present in subFolder 12. Using FTP U1 deletes original document from parentFolder 13. Using CMIS verify document does not exist
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION, description = "Verify parents list for an object using CMIS.")
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION, description = "Verify parents list for an object using CMIS.")
     public void addAndRemoveDocumentFromFolders() throws Exception
     {
         STEP("1. Using CMIS create one test user: U1");
@@ -1230,7 +1072,7 @@ public class IntegrationCoreTests extends IntegrationTest
                 .assertThat().existsInRepo();
 
         STEP("7. Using WebDAV U1 creates a document in parentFolder");
-        testFile1= FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "file content");
+        testFile1 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, "file content");
         webDavProtocol.authenticateUser(testUser1)
                 .usingResource(parentFolder).createFile(testFile1)
                 .assertThat().existsInRepo();
@@ -1276,18 +1118,11 @@ public class IntegrationCoreTests extends IntegrationTest
     /**
      * Scenario 47 - Delete many documents
      *
-     * 1. Using CMIS create test user: U1
-     * 2. Using CMIS U1 creates a public test site
-     * 3. Using CMIS and WebDAV U1 creates parentFolder1, doc1 and doc2 in document library
-     * 4. Using WebDAV and FTP U1 creates inside parentFolder1: childDoc1 to childDoc5
-     * 5. Using IMAP bulk delete doc1 and doc2
-     * 6. Using CMIS verify that doc1 and doc2 are deleted
-     * 7. Using IMAP delete childDoc1 to childDoc4
-     * 8. Using WebDAV and FTP verify if docs are deleted from their folders
+     * 1. Using CMIS create test user: U1 2. Using CMIS U1 creates a public test site 3. Using CMIS and WebDAV U1 creates parentFolder1, doc1 and doc2 in document library 4. Using WebDAV and FTP U1 creates inside parentFolder1: childDoc1 to childDoc5 5. Using IMAP bulk delete doc1 and doc2 6. Using CMIS verify that doc1 and doc2 are deleted 7. Using IMAP delete childDoc1 to childDoc4 8. Using WebDAV and FTP verify if docs are deleted from their folders
      */
 
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION,
             description = "Verify users can delete many documents in a public site using different protocols.")
     public void usersCanDeleteManyDocuments() throws Exception
     {
@@ -1325,20 +1160,18 @@ public class IntegrationCoreTests extends IntegrationTest
         imapProtocol.authenticateUser(testUser1).usingSite(testSitePublic).deleteMessage(testFile1.getName(), testFile2.getName()).assertThat().doesNotContainMessages(testFile1, testFile2);
 
         STEP("6. Using CMIS verify that doc1 and doc2 are deleted");
-        Utility.sleep(500, 10000, () ->
-                cmisAPI.authenticateUser(testUser1)
-                    .usingResource(testFile1).assertThat().doesNotExistInRepo()
-                    .and().usingResource(testFile2).assertThat().doesNotExistInRepo());
+        Utility.sleep(500, 10000, () -> cmisAPI.authenticateUser(testUser1)
+                .usingResource(testFile1).assertThat().doesNotExistInRepo()
+                .and().usingResource(testFile2).assertThat().doesNotExistInRepo());
 
         STEP("7. Using IMAP delete childDoc1 to childDoc4");
         imapProtocol.authenticateUser(testUser1).usingResource(parentFolder1).deleteMessage(childDoc1.getName(), childDoc2.getName(), childDoc3.getName(), childDoc4.getName())
                 .assertThat().doesNotContainMessages(childDoc1, childDoc2, childDoc3, childDoc4);
 
         STEP("8. Using WebDAV and FTP verify if docs are deleted from their folders");
-        Utility.sleep(500, 10000, () ->
-                webDavProtocol.authenticateUser(testUser1).usingResource(parentFolder1).assertThat().hasFiles(childDoc5)
-                    .and().usingResource(childDoc1).assertThat().doesNotExistInRepo()
-                    .and().usingResource(childDoc2).assertThat().doesNotExistInRepo());
+        Utility.sleep(500, 10000, () -> webDavProtocol.authenticateUser(testUser1).usingResource(parentFolder1).assertThat().hasFiles(childDoc5)
+                .and().usingResource(childDoc1).assertThat().doesNotExistInRepo()
+                .and().usingResource(childDoc2).assertThat().doesNotExistInRepo());
 
         ftpProtocol.authenticateUser(testUser1).usingResource(childDoc3)
                 .assertThat().doesNotExistInRepo()
@@ -1348,75 +1181,65 @@ public class IntegrationCoreTests extends IntegrationTest
     /**
      * Scenario 48 - Move folder in another folder
      * 
-     * 1. Using CMIS create user u1 and public site
-     * 2. Using WebDAV U1 creates folder1 and folder2
-     * 3. Using WebDAV U1 creates doc1 in folder1
-     * 4. Using FTP U1 moves folder1 in folder2
-     * 5. Using WebDAV verify that folder1 is not in the original location and is present in folder2
-     * 6. Using CMIS verify if doc1 is still present in folder1
+     * 1. Using CMIS create user u1 and public site 2. Using WebDAV U1 creates folder1 and folder2 3. Using WebDAV U1 creates doc1 in folder1 4. Using FTP U1 moves folder1 in folder2 5. Using WebDAV verify that folder1 is not in the original location and is present in folder2 6. Using CMIS verify if doc1 is still present in folder1
      */
-    
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION, description = "Verify user is able to move a non empty folder to another folder from the same site.")
+
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION, description = "Verify user is able to move a non empty folder to another folder from the same site.")
     public void moveFolderInAnotherFolder() throws Exception
     {
         testFolder1 = FolderModel.getRandomFolderModel();
         testFolder2 = FolderModel.getRandomFolderModel();
         testFile1 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
-        
+
         STEP("1. Using CMIS create user u1 and public site");
         testUser1 = dataUser.createRandomTestUser();
         testSitePublic = dataSite.usingUser(testUser1).createPublicRandomSite();
-        
+
         STEP("2. Using WebDAV U1 creates folder1 and folder2");
         webDavProtocol.authenticateUser(testUser1).usingSite(testSitePublic)
-        .createFolder(testFolder1)
-        .and().assertThat().existsInRepo().and().assertThat().existsInWebdav()
-        .then().createFolder(testFolder2)
-        .and().assertThat().existsInRepo().and().assertThat().existsInWebdav();
-        
+                .createFolder(testFolder1)
+                .and().assertThat().existsInRepo().and().assertThat().existsInWebdav()
+                .then().createFolder(testFolder2)
+                .and().assertThat().existsInRepo().and().assertThat().existsInWebdav();
+
         STEP("3. Using WebDAV U1 creates doc1 in folder1");
         webDavProtocol.authenticateUser(testUser1).usingResource(testFolder1).createFile(testFile1)
-        .and().assertThat().existsInRepo().and().assertThat().existsInWebdav()
-        .and().usingResource(testFolder1).assertThat().hasFiles(testFile1);
-              
+                .and().assertThat().existsInRepo().and().assertThat().existsInWebdav()
+                .and().usingResource(testFolder1).assertThat().hasFiles(testFile1);
+
         STEP("4. Using FTP U1 moves folder1 in folder2");
         ftpProtocol.authenticateUser(testUser1)
-            .usingResource(testFolder1).moveTo(testFolder2)
-            .assertThat().existsInRepo()
+                .usingResource(testFolder1).moveTo(testFolder2)
+                .assertThat().existsInRepo()
                 .then().usingResource(testFolder1).assertThat().doesNotExistInRepo();
-     
+
         STEP("5. Using WebDAV verify that folder1 is not in the original location and is present in folder2");
         webDavProtocol.authenticateUser(testUser1).usingResource(testFolder1).assertThat().doesNotExistInRepo()
-        .and().usingResource(testFolder2).assertThat().hasFolders(testFolder1);
-        
+                .and().usingResource(testFolder2).assertThat().hasFolders(testFolder1);
+
         STEP("6. Using CMIS verify if doc1 is still present in folder1");
         FolderModel newTestFolder1 = new FolderModel(testFolder1.getName(), testFolder1.getTitle(), testFolder1.getDescription());
         newTestFolder1.setCmisLocation(Utility.buildPath(testFolder2.getCmisLocation(), testFolder1.getName()));
-        
+
         FileModel newTestFile1 = new FileModel(testFile1.getName(), testFile1.getTitle(), testFile1.getDescription(), testFile1.getFileType(), testFile1.getContent());
         newTestFile1.setCmisLocation(Utility.buildPath(newTestFolder1.getCmisLocation(), testFile1.getName()));
-        
+
         cmisAPI.authenticateUser(testUser1).usingResource(newTestFolder1)
-        .assertThat().existsInRepo()
-        .assertThat().hasFiles(newTestFile1);
+                .assertThat().existsInRepo()
+                .assertThat().hasFiles(newTestFile1);
     }
-    
+
     /**
      * Scenario 49 - Copy folder in another folder
      * 
-     * 1. Using CMIS create user u1 and public site
-     * 2. Using CMIS U1 creates folder1 and folder2
-     * 3. Using WebDAV U1 creates doc1 in folder1
-     * 4. Using WebDAV U1 copies folder1 in folder2
-     * 5. Using FTP verify that folder1 is in the original location and contains doc1
-     * 6. Using WebDAV verify that folder1 is in folder2 and contains doc1
+     * 1. Using CMIS create user u1 and public site 2. Using CMIS U1 creates folder1 and folder2 3. Using WebDAV U1 creates doc1 in folder1 4. Using WebDAV U1 copies folder1 in folder2 5. Using FTP verify that folder1 is in the original location and contains doc1 6. Using WebDAV verify that folder1 is in folder2 and contains doc1
      */
-    
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION, description = "Verify user is able to copy non empty folder to another folder in the same site.")
+
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE})
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION, description = "Verify user is able to copy non empty folder to another folder in the same site.")
     public void copyFolderInAnotherFolder() throws Exception
-    {       
+    {
         testFolder1 = FolderModel.getRandomFolderModel();
         testFolder2 = FolderModel.getRandomFolderModel();
         testFile1 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -1424,23 +1247,23 @@ public class IntegrationCoreTests extends IntegrationTest
         STEP("1. Using CMIS create user u1 and public site");
         testUser1 = dataUser.createUser(RandomStringUtils.randomAlphanumeric(20));
         testSitePublic = dataSite.usingUser(testUser1).createPublicRandomSite();
-        
-        STEP("2. Using CMIS U1 creates folder1 and folder2");               
+
+        STEP("2. Using CMIS U1 creates folder1 and folder2");
         cmisAPI.authenticateUser(testUser1).usingSite(testSitePublic)
                 .createFolder(testFolder1).and().assertThat().existsInRepo().and()
                 .createFolder(testFolder2).and().assertThat().existsInRepo();
-        
+
         STEP("3. Using WebDAV U1 creates doc1 in folder1");
         webDavProtocol.authenticateUser(testUser1).usingResource(testFolder1)
-        .createFile(testFile1).and().assertThat().existsInRepo()
+                .createFile(testFile1).and().assertThat().existsInRepo()
                 .and().assertThat().existsInWebdav();
-        
+
         STEP("4. Using WebDAV U1 copies folder1 in folder2");
         testFolder2.setProtocolLocation(webDavProtocol.getPrefixSpace() + testFolder2.getCmisLocation());
         webDavProtocol.authenticateUser(testUser1).usingResource(testFolder1).copyTo(testFolder2)
                 .assertThat().existsInRepo()
                 .then().usingResource(testFolder1).assertThat().existsInRepo();
-        
+
         STEP("5. Using FTP verify that folder1 is in the original location and contains doc1");
         ftpProtocol.authenticateUser(testUser1).usingResource(testFolder1)
                 .assertThat().existsInRepo()
@@ -1450,10 +1273,10 @@ public class IntegrationCoreTests extends IntegrationTest
         STEP("6. Using WebDAV verify that folder1 is in folder2 and contains doc1");
         FolderModel newTestFolder1 = new FolderModel(testFolder1.getName(), testFolder1.getTitle(), testFolder1.getDescription());
         newTestFolder1.setCmisLocation(Utility.buildPath(testFolder2.getCmisLocation(), testFolder1.getName()));
-        
+
         FileModel newTestFile1 = new FileModel(testFile1.getName(), testFile1.getTitle(), testFile1.getDescription(), testFile1.getFileType(), testFile1.getContent());
         newTestFile1.setCmisLocation(Utility.buildPath(newTestFolder1.getCmisLocation(), testFile1.getName()));
-        
+
         webDavProtocol.authenticateUser(testUser1).usingResource(testFolder2)
                 .assertThat().hasFolders(newTestFolder1)
                 .and().usingResource(newTestFolder1)
@@ -1464,14 +1287,10 @@ public class IntegrationCoreTests extends IntegrationTest
     /**
      * Scenario 50 - Rename site
      *
-     * 1. Using CMIS create one test user: U1
-     * 2. Using CMIS U1 creates a moderated site
-     * 3. Using WebDAV U1 creates a folder in the moderated site document library
-     * 4. Using CMIS U1 tries to rename site
-     * 5. Verify that a site cannot be renamed
+     * 1. Using CMIS create one test user: U1 2. Using CMIS U1 creates a moderated site 3. Using WebDAV U1 creates a folder in the moderated site document library 4. Using CMIS U1 tries to rename site 5. Verify that a site cannot be renamed
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.CORE }, expectedExceptions = CmisRuntimeException.class, expectedExceptionsMessageRegExp = "^.*Sites can not be renamed.$")
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION, description = "Verify sites cannot be renamed using CMIS.")
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.CORE}, expectedExceptions = CmisRuntimeException.class, expectedExceptionsMessageRegExp = "^.*Sites can not be renamed.$")
+    @TestRail(section = {TestGroup.INTEGRATION, TestGroup.CONTENT}, executionType = ExecutionType.REGRESSION, description = "Verify sites cannot be renamed using CMIS.")
     public void renameSite() throws Exception
     {
         STEP("1. Using CMIS create one test user: U1");

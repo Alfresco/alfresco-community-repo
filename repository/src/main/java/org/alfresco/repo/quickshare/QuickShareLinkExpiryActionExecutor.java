@@ -26,17 +26,18 @@
 
 package org.alfresco.repo.quickshare;
 
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.quickshare.QuickShareLinkExpiryAction;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.util.List;
 
 /**
  * This action executor unshares the shared link when the quick share link expiry action is triggered.
@@ -93,7 +94,7 @@ public class QuickShareLinkExpiryActionExecutor extends ActionExecuterAbstractBa
             if (ex instanceof QuickShareLinkExpiryActionException)
             {
                 LOGGER.error("Couldn't delete the quick share expiry action [" + quickShareLinkExpiryAction.getNodeRef() + "] for the sharedId:"
-                            + sharedId);
+                        + sharedId);
             }
             else
             {

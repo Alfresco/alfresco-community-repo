@@ -48,18 +48,7 @@ import org.alfresco.utility.model.TestModel;
  * 
  * @author Meenal Bhave
  * 
- * Request POST
- * End point: /sql
- * PostBody:
- * {
- *   "stmt":"Select SITE from alfresco where SITE = 'swsdp' limit 2",
- *   "locales":["en-Uk"],
- *   "timezone":"Israel",
- *   "includeMetadata":true,
- *   "format":"solr",
- *   "limit":100,
- *   "filterQueries":["-ASPECT:ASPECT_CLASSIFIED"]
- * }
+ *         Request POST End point: /sql PostBody: { "stmt":"Select SITE from alfresco where SITE = 'swsdp' limit 2", "locales":["en-Uk"], "timezone":"Israel", "includeMetadata":true, "format":"solr", "limit":100, "filterQueries":["-ASPECT:ASPECT_CLASSIFIED"] }
  */
 public class SearchSqlRequest extends TestModel
 {
@@ -144,6 +133,5 @@ public class SearchSqlRequest extends TestModel
     }
 
     public SearchSqlRequest()
-    {
-    }
+    {}
 }

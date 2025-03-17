@@ -53,11 +53,10 @@ public class AbstractBaseCopyService
     /**
      * Set the namespaces that should be treated as 'system' namespaces.
      * <p>
-     * When files or folders are renamed, the association path (QName) is normally modified to follow the name of the node.
-     * If, however, the namespace of the patch QName is in this list, the association path is left alone. This allows parts
-     * of the application to use well-known paths even if the end-user is able to modify the objects <b>cm:name</b> value.
+     * When files or folders are renamed, the association path (QName) is normally modified to follow the name of the node. If, however, the namespace of the patch QName is in this list, the association path is left alone. This allows parts of the application to use well-known paths even if the end-user is able to modify the objects <b>cm:name</b> value.
      * 
-     * @param systemNamespaces a list of system namespaces
+     * @param systemNamespaces
+     *            a list of system namespaces
      */
     public void setSystemNamespaces(List<String> systemNamespaces)
     {
@@ -72,12 +71,15 @@ public class AbstractBaseCopyService
     /**
      * Calculates {@link QName} type of target association, which will be created after copying
      * 
-     * @param sourceNodeRef             the node that will be copied (never <tt>null</tt>)
-     * @param sourceParentRef           the parent of the node being copied (may be <tt>null</tt>)
-     * @param newName                   the planned new name of the node
-     * @param nameChanged               <tt>true</tt> if the name of the node is being changed
-     * @return                          Returns the path part for a new association and the effective
-     *                                  primary parent association that was used
+     * @param sourceNodeRef
+     *            the node that will be copied (never <tt>null</tt>)
+     * @param sourceParentRef
+     *            the parent of the node being copied (may be <tt>null</tt>)
+     * @param newName
+     *            the planned new name of the node
+     * @param nameChanged
+     *            <tt>true</tt> if the name of the node is being changed
+     * @return Returns the path part for a new association and the effective primary parent association that was used
      */
     protected AssociationCopyInfo getAssociationCopyInfo(
             NodeService nodeService,
@@ -127,8 +129,7 @@ public class AbstractBaseCopyService
     }
 
     /**
-     * Simple container for storing data required to copy a node, including the parent association that will be copied along with
-     * the new path part of the association that will be created by the copy.
+     * Simple container for storing data required to copy a node, including the parent association that will be copied along with the new path part of the association that will be created by the copy.
      * <p/>
      * This container is immutable.
      * 

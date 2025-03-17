@@ -45,8 +45,7 @@ public class UserMapping implements BeanNameAware
      * Default constructor for container initialisation.
      */
     public UserMapping()
-    {
-    }
+    {}
 
     /**
      * The Constructor.
@@ -76,10 +75,9 @@ public class UserMapping implements BeanNameAware
         return this.name;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String) */
     public void setBeanName(String name)
     {
         this.name = name;

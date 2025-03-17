@@ -29,6 +29,8 @@ package org.alfresco.rest.api.cmm;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.CustomModels;
 import org.alfresco.rest.api.model.CustomModelConstraint;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -37,16 +39,15 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * @author Jamal Kaabi-Mofrad
  */
 @RelationshipResource(name = "constraints", entityResource = CustomModelEntityResource.class, title = "Custom Model Constraints")
 public class CustomModelConstraintRelation implements RelationshipResourceAction.Read<CustomModelConstraint>,
-            RelationshipResourceAction.ReadById<CustomModelConstraint>,
-            RelationshipResourceAction.Create<CustomModelConstraint>,
-            InitializingBean
+        RelationshipResourceAction.ReadById<CustomModelConstraint>,
+        RelationshipResourceAction.Create<CustomModelConstraint>,
+        InitializingBean
 {
 
     private CustomModels customModels;

@@ -41,21 +41,21 @@ public interface RecordsManagementActionCondition
     /**
      * Get the name of the action condition
      *
-     * @return  String  action condition name
+     * @return String action condition name
      */
     String getBeanName();
 
     /**
      * Get the label of the action condition
      *
-     * @return  String  action condition label
+     * @return String action condition label
      */
     String getLabel();
 
     /**
      * Get the description of the action condition
      *
-     * @return  String  action condition description
+     * @return String action condition description
      */
     String getDescription();
 

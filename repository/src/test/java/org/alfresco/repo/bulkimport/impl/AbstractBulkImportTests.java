@@ -25,6 +25,29 @@
  */
 package org.alfresco.repo.bulkimport.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import jakarta.transaction.HeuristicMixedException;
+import jakarta.transaction.HeuristicRollbackException;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.SystemException;
+import jakarta.transaction.UserTransaction;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.PagingRequest;
@@ -49,29 +72,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-
-import jakarta.transaction.HeuristicMixedException;
-import jakarta.transaction.HeuristicRollbackException;
-import jakarta.transaction.NotSupportedException;
-import jakarta.transaction.RollbackException;
-import jakarta.transaction.SystemException;
-import jakarta.transaction.UserTransaction;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @since 4.0
@@ -115,14 +115,14 @@ public abstract class AbstractBulkImportTests
     {
         try
         {
-            nodeService = (NodeService)ctx.getBean("nodeService");
-            fileFolderService = (FileFolderService)ctx.getBean("fileFolderService");
-            transactionService = (TransactionService)ctx.getBean("transactionService");
-            bulkImporter = (MultiThreadedBulkFilesystemImporter)ctx.getBean("bulkFilesystemImporter");
-            contentService = (ContentService)ctx.getBean("contentService");
-            actionService = (ActionService)ctx.getBean("actionService");
-            ruleService = (RuleService)ctx.getBean("ruleService");
-            versionService = (VersionService)ctx.getBean("versionService");
+            nodeService = (NodeService) ctx.getBean("nodeService");
+            fileFolderService = (FileFolderService) ctx.getBean("fileFolderService");
+            transactionService = (TransactionService) ctx.getBean("transactionService");
+            bulkImporter = (MultiThreadedBulkFilesystemImporter) ctx.getBean("bulkFilesystemImporter");
+            contentService = (ContentService) ctx.getBean("contentService");
+            actionService = (ActionService) ctx.getBean("actionService");
+            ruleService = (RuleService) ctx.getBean("ruleService");
+            versionService = (VersionService) ctx.getBean("versionService");
 
             AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
@@ -137,12 +137,12 @@ public abstract class AbstractBulkImportTests
             StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, s);
             rootNodeRef = nodeService.getRootNode(storeRef);
             top = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}top"), ContentModel.TYPE_FOLDER).getChildRef();
-            
+
             topLevelFolder = fileFolderService.create(top, s, ContentModel.TYPE_FOLDER);
 
             txn.commit();
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             fail(e.getMessage());
         }
@@ -152,7 +152,7 @@ public abstract class AbstractBulkImportTests
     public void teardown() throws Exception
     {
         AuthenticationUtil.popAuthentication();
-        if(txn != null)
+        if (txn != null)
         {
             txn.commit();
         }
@@ -190,7 +190,7 @@ public abstract class AbstractBulkImportTests
                         "This is an example file. This content is version 1.")
         };
 
-        ExpectedFolder[] expectedFolders = new ExpectedFolder[] { };
+        ExpectedFolder[] expectedFolders = new ExpectedFolder[]{};
 
         // Import initial version
         bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
@@ -229,7 +229,7 @@ public abstract class AbstractBulkImportTests
                 new ExpectedFile("example.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN,
                         "This is an example file. This content is version 4."),
         };
-        expectedFolders = new ExpectedFolder[] {
+        expectedFolders = new ExpectedFolder[]{
                 new ExpectedFolder("banana")
         };
         checkFiles(folderNode, null, expectedFiles, expectedFolders);
@@ -240,7 +240,7 @@ public abstract class AbstractBulkImportTests
                 new ExpectedFile("file.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN,
                         "Version 2")
         };
-        expectedFolders = new ExpectedFolder[] { };
+        expectedFolders = new ExpectedFolder[]{};
         checkFiles(subFolder, null, expectedFiles, expectedFolders);
 
         assertTrue("Imported file should be versioned:", versionService.isVersioned(fileNodeRef));
@@ -275,8 +275,6 @@ public abstract class AbstractBulkImportTests
         assertEquals("This is an example file. This content is version 1.", contentReader.getContentString());
     }
 
-
-
     protected List<FileInfo> getFiles(NodeRef parent, String pattern)
     {
         PagingResults<FileInfo> page = fileFolderService.list(parent, true, false, pattern, null, null, new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
@@ -287,7 +285,7 @@ public abstract class AbstractBulkImportTests
     protected Map<String, FileInfo> toMap(List<FileInfo> list)
     {
         Map<String, FileInfo> map = new HashMap<String, FileInfo>(list.size());
-        for(FileInfo fileInfo : list)
+        for (FileInfo fileInfo : list)
         {
             map.put(fileInfo.getName(), fileInfo);
         }
@@ -303,7 +301,7 @@ public abstract class AbstractBulkImportTests
     }
 
     protected void checkFiles(NodeRef parent, String pattern,
-                              ExpectedFile[] expectedFiles, ExpectedFolder[] expectedFolders)
+            ExpectedFile[] expectedFiles, ExpectedFolder[] expectedFolders)
     {
         int expectedFilesLength = expectedFiles != null ? expectedFiles.length : 0;
         int expectedFoldersLength = expectedFolders != null ? expectedFolders.length : 0;
@@ -318,32 +316,33 @@ public abstract class AbstractBulkImportTests
         assertEquals("Incorrect number of folders", expectedNumFolders, folders.size());
         assertEquals("Incorrect number of files", expectedNumFiles, files.size());
 
-        if(expectedFiles != null)
+        if (expectedFiles != null)
         {
-            for(ExpectedFile expectedFile : expectedFiles)
+            for (ExpectedFile expectedFile : expectedFiles)
             {
                 FileInfo fileInfo = files.get(expectedFile.getName());
                 assertNotNull(
-                        "Couldn't find expected file: "+expectedFile.getName()+
-                        ", found: "+files.keySet(), fileInfo);
-                assertNotNull("Content data unexpected null for "+expectedFile.getName(), fileInfo.getContentData());
+                        "Couldn't find expected file: " + expectedFile.getName() +
+                                ", found: " + files.keySet(),
+                        fileInfo);
+                assertNotNull("Content data unexpected null for " + expectedFile.getName(), fileInfo.getContentData());
                 assertEquals(expectedFile.getMimeType(), fileInfo.getContentData().getMimetype());
-                if(fileInfo.getContentData().getMimetype().equals(MimetypeMap.MIMETYPE_TEXT_PLAIN)
+                if (fileInfo.getContentData().getMimetype().equals(MimetypeMap.MIMETYPE_TEXT_PLAIN)
                         && expectedFile.getContentContains() != null)
                 {
                     ContentReader reader = contentService.getReader(fileInfo.getNodeRef(), ContentModel.PROP_CONTENT);
                     String contentContains = expectedFile.getContentContains();
                     String actualContent = reader.getContentString();
                     assertTrue("Expected contents doesn't include text: " + contentContains +
-                            ", full text:\n"+actualContent,
+                            ", full text:\n" + actualContent,
                             actualContent.contains(contentContains));
                 }
             }
         }
-        
-        if(expectedFolders != null)
+
+        if (expectedFolders != null)
         {
-            for(ExpectedFolder expectedFolder : expectedFolders)
+            for (ExpectedFolder expectedFolder : expectedFolders)
             {
                 FileInfo fileInfo = folders.get(expectedFolder.getName());
                 assertNotNull("", fileInfo);
@@ -356,8 +355,7 @@ public abstract class AbstractBulkImportTests
         assertEquals("", name, file.getName());
         assertEquals("", mimeType, file.getContentData().getMimetype());
     }
-    
-    
+
     protected static class ExpectedFolder
     {
         private String name;
@@ -379,13 +377,13 @@ public abstract class AbstractBulkImportTests
         private String name;
         private String mimeType;
         private String contentContains = null;
-        
+
         public ExpectedFile(String name, String mimeType, String contentContains)
         {
             this(name, mimeType);
             this.contentContains = contentContains;
         }
-        
+
         public ExpectedFile(String name, String mimeType)
         {
             super();

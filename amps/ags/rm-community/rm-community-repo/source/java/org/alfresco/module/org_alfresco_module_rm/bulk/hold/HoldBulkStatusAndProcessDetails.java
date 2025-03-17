@@ -30,6 +30,5 @@ package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
  * An immutable POJO that contains the status of a hold bulk operation and the details of the process
  */
 public record HoldBulkStatusAndProcessDetails(HoldBulkStatus holdBulkStatus,
-                                              HoldBulkProcessDetails holdBulkProcessDetails)
-{
-}
+        HoldBulkProcessDetails holdBulkProcessDetails)
+{}

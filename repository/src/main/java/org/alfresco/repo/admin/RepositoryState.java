@@ -41,8 +41,7 @@ public class RepositoryState
     /**
      * Determine if the repository is ready to use.
      * 
-     * @return                  <tt>true</tt> if the repository bootstrap process is still going,
-     *                          or <tt>false</tt> if the repository is ready to use
+     * @return <tt>true</tt> if the repository bootstrap process is still going, or <tt>false</tt> if the repository is ready to use
      */
     public boolean isBootstrapping()
     {
@@ -69,5 +68,5 @@ public class RepositoryState
             this.lock.writeLock().unlock();
         }
     }
-    
+
 }

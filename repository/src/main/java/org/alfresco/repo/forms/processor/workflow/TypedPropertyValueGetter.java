@@ -32,14 +32,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.forms.FormException;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.util.ISO8601DateFormat;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Utility class that retrieves the appropriately typed value for a property.
@@ -59,17 +60,16 @@ public class TypedPropertyValueGetter
         }
 
         // before persisting check data type of property
-        if (propDef.isMultiValued()) 
+        if (propDef.isMultiValued())
         {
             return processMultiValuedType(value);
         }
-        
-        
-        if (isBooleanProperty(propDef)) 
+
+        if (isBooleanProperty(propDef))
         {
             return processBooleanValue(value);
         }
-        else if (isLocaleProperty(propDef)) 
+        else if (isLocaleProperty(propDef))
         {
             return processLocaleValue(value);
         }
@@ -83,11 +83,11 @@ public class TypedPropertyValueGetter
             {
                 return valStr;
             }
-            if(valStr.isEmpty())
+            if (valStr.isEmpty())
             {
                 return null;
             }
-            if(isDateProperty(propDef) && !ISO8601DateFormat.isTimeComponentDefined(valStr))
+            if (isDateProperty(propDef) && !ISO8601DateFormat.isTimeComponentDefined(valStr))
             {
                 // Special handling for day-only date storage (ALF-10243)
                 return ISO8601DateFormat.parseDayOnly(valStr, TimeZone.getDefault());
@@ -105,14 +105,14 @@ public class TypedPropertyValueGetter
 
     private boolean isTextProperty(PropertyDefinition propDef)
     {
-        return propDef.getDataType().getName().equals(DataTypeDefinition.TEXT) || 
-               propDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT);
+        return propDef.getDataType().getName().equals(DataTypeDefinition.TEXT) ||
+                propDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT);
     }
 
     private Boolean processBooleanValue(Object value)
     {
         // check for browser representation of true, that being "on"
-        if (value instanceof String) 
+        if (value instanceof String)
         {
             if (ON.equals(value))
             {
@@ -120,7 +120,7 @@ public class TypedPropertyValueGetter
             }
             else
             {
-                return Boolean.valueOf((String)value);
+                return Boolean.valueOf((String) value);
             }
         }
         else
@@ -133,15 +133,15 @@ public class TypedPropertyValueGetter
     {
         return propDef.getDataType().getName().equals(DataTypeDefinition.BOOLEAN);
     }
-    
-    private boolean isDateProperty(PropertyDefinition propDef) 
+
+    private boolean isDateProperty(PropertyDefinition propDef)
     {
-    	 return propDef.getDataType().getName().equals(DataTypeDefinition.DATE);
+        return propDef.getDataType().getName().equals(DataTypeDefinition.DATE);
     }
 
     private Serializable processLocaleValue(Object value)
     {
-        if (value instanceof String) 
+        if (value instanceof String)
         {
             return I18NUtil.parseLocale((String) value);
         }
@@ -161,12 +161,12 @@ public class TypedPropertyValueGetter
     {
         // depending on client the value could be a comma separated string,
         // a List object or a JSONArray object
-        if (value instanceof String) 
+        if (value instanceof String)
         {
             String stringValue = (String) value;
             return processMultiValueString(stringValue);
         }
-        else if (value instanceof JSONArray) 
+        else if (value instanceof JSONArray)
         {
             // if value is a JSONArray convert to List of Object
             JSONArray jsonArr = (JSONArray) value;
@@ -187,14 +187,14 @@ public class TypedPropertyValueGetter
     {
         int arrLength = jsonArr.length();
         ArrayList<Object> list = new ArrayList<Object>(arrLength);
-        try 
+        try
         {
-            for (int x = 0; x < arrLength; x++) 
+            for (int x = 0; x < arrLength; x++)
             {
                 list.add(jsonArr.get(x));
             }
         }
-        catch (JSONException je) 
+        catch (JSONException je)
         {
             throw new FormException("Failed to convert JSONArray to List", je);
         }
@@ -203,13 +203,13 @@ public class TypedPropertyValueGetter
 
     private Serializable processMultiValueString(String stringValue)
     {
-        if (stringValue.length() == 0) 
+        if (stringValue.length() == 0)
         {
             // empty string for multi-valued properties
             // should be stored as null
             return null;
         }
-        else 
+        else
         {
             // if value is a String convert to List of String persist the List
             String[] values = stringValue.split(",");

@@ -41,28 +41,28 @@ import org.alfresco.util.ParameterCheck;
 /**
  * Implementation of the download service.
  * 
- * Persists the download reqest and then uses a local action service to execute
- * the {@link CreateDownloadArchiveAction}.
+ * Persists the download reqest and then uses a local action service to execute the {@link CreateDownloadArchiveAction}.
  *
  * @author Alex Miller
  */
-public class DownloadServiceImpl implements DownloadService {
+public class DownloadServiceImpl implements DownloadService
+{
 
     // Dependencies
     private ActionServiceHelper actionServiceHelper;
     private DownloadStorage downloadStorage;
     private RetryingTransactionHelper transactionHelper;
     private NodeService nodeService;
-    
+
     // Dependency setters
     public void setActionServiceHelper(ActionServiceHelper actionServiceHelper)
     {
         this.actionServiceHelper = actionServiceHelper;
     }
-    
+
     public void setTransactionHelper(RetryingTransactionHelper transactionHelper)
     {
-        this.transactionHelper = transactionHelper; 
+        this.transactionHelper = transactionHelper;
     }
 
     public void setDownloadStorage(DownloadStorage downloadStorage)
@@ -76,33 +76,34 @@ public class DownloadServiceImpl implements DownloadService {
     }
 
     @Override
-	public NodeRef createDownload(final NodeRef[] requestedNodes, final boolean recursive) {
+    public NodeRef createDownload(final NodeRef[] requestedNodes, final boolean recursive)
+    {
         return createDownload(requestedNodes, recursive, null);
     }
 
-	@Override
-	public NodeRef createDownload(final NodeRef[] requestedNodes, final boolean recursive, String downloadNodeName) {
-	    ParameterCheck.mandatory("nodeRefs", requestedNodes);
-	    if (requestedNodes.length < 1)
-	    {
-	        throw new IllegalArgumentException("Need at least 1 node ref");
-	    }
-	    
-	    // This is done in a new transaction to avoid node not found errors when the zip creation occurs 
-	    // on a remote transformation server. 
-        NodeRef downloadNode = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+    @Override
+    public NodeRef createDownload(final NodeRef[] requestedNodes, final boolean recursive, String downloadNodeName)
+    {
+        ParameterCheck.mandatory("nodeRefs", requestedNodes);
+        if (requestedNodes.length < 1)
         {
+            throw new IllegalArgumentException("Need at least 1 node ref");
+        }
+
+        // This is done in a new transaction to avoid node not found errors when the zip creation occurs
+        // on a remote transformation server.
+        NodeRef downloadNode = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
 
             @Override
             public NodeRef execute() throws Throwable
             {
-                //Create a download node
+                // Create a download node
                 NodeRef downloadNode = downloadStorage.createDownloadNode(recursive);
-                
-                //Add requested nodes
+
+                // Add requested nodes
                 for (NodeRef node : requestedNodes)
                 {
-                   downloadStorage.addNodeToDownload(downloadNode, node);
+                    downloadStorage.addNodeToDownload(downloadNode, node);
                 }
 
                 if (downloadNodeName != null)
@@ -113,24 +114,22 @@ public class DownloadServiceImpl implements DownloadService {
                 return downloadNode;
             }
         }, false, true);
-	    
-	    //Trigger the action.
-	    actionServiceHelper.executeAction(downloadNode);
-	    
-	    return downloadNode;
-	}
 
+        // Trigger the action.
+        actionServiceHelper.executeAction(downloadNode);
 
-	@Override
-	public DownloadStatus getDownloadStatus(NodeRef downloadNode) {
-		ParameterCheck.mandatory("downloadNode", downloadNode);
-		
-		return downloadStorage.getDownloadStatus(downloadNode);
+        return downloadNode;
     }
 
-    /*
-     * @see org.alfresco.service.cmr.download.DownloadService#deleteDownloads(java.util.Date)
-     */
+    @Override
+    public DownloadStatus getDownloadStatus(NodeRef downloadNode)
+    {
+        ParameterCheck.mandatory("downloadNode", downloadNode);
+
+        return downloadStorage.getDownloadStatus(downloadNode);
+    }
+
+    /* @see org.alfresco.service.cmr.download.DownloadService#deleteDownloads(java.util.Date) */
     @Override
     public void deleteDownloads(Date before)
     {
@@ -150,15 +149,13 @@ public class DownloadServiceImpl implements DownloadService {
         }
     }
 
-    /*
-     * @see org.alfresco.service.cmr.download.DownloadService#cancelDownload(org.alfresco.service.cmr.repository.NodeRef)
-     */
+    /* @see org.alfresco.service.cmr.download.DownloadService#cancelDownload(org.alfresco.service.cmr.repository.NodeRef) */
     @Override
     public void cancelDownload(NodeRef downloadNodeRef)
     {
         ParameterCheck.mandatory("downloadNodeRef", downloadNodeRef);
-        
+
         downloadStorage.cancelDownload(downloadNodeRef);
     }
-    
+
 }

@@ -26,25 +26,22 @@
 package org.alfresco.repo.site;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.alfresco.model.ContentModel;
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.Pair;
-import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Test custom role for a Site. Based on MNT-12873

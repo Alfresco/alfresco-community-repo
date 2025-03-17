@@ -25,22 +25,22 @@ package org.alfresco.web.app.servlet;
 
 import static junit.framework.TestCase.assertEquals;
 
+import java.util.Properties;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 
-import java.util.Properties;
-
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.httpclient.HttpClientFactory.SecureCommsType;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.httpclient.HttpClientFactory.SecureCommsType;
+
 /**
- *  Unit tests for {@link AlfrescoX509ServletFilter}.
+ * Unit tests for {@link AlfrescoX509ServletFilter}.
  */
 public class AlfrescoX509ServletFilterTest
 {
@@ -79,7 +79,7 @@ public class AlfrescoX509ServletFilterTest
         this.filter = new AlfrescoX509ServletFilter();
     }
 
-    @Test (expected = AlfrescoRuntimeException.class)
+    @Test(expected = AlfrescoRuntimeException.class)
     public void testSharedSecretIsEmpty() throws ServletException
     {
         Mockito.when(globalProperties.getProperty(PROP_SECURE_COMMS)).thenReturn(SecureCommsType.SECRET.name());
@@ -97,7 +97,7 @@ public class AlfrescoX509ServletFilterTest
         }
     }
 
-    @Test (expected = AlfrescoRuntimeException.class)
+    @Test(expected = AlfrescoRuntimeException.class)
     public void testSharedSecretIsNull() throws ServletException
     {
         Mockito.when(globalProperties.getProperty(PROP_SECURE_COMMS)).thenReturn(SecureCommsType.SECRET.name());
@@ -115,7 +115,7 @@ public class AlfrescoX509ServletFilterTest
         }
     }
 
-    @Test (expected = AlfrescoRuntimeException.class)
+    @Test(expected = AlfrescoRuntimeException.class)
     public void testSharedSecretHeaderIsEmpty() throws ServletException
     {
         Mockito.when(globalProperties.getProperty(PROP_SECURE_COMMS)).thenReturn(SecureCommsType.SECRET.name());
@@ -133,7 +133,7 @@ public class AlfrescoX509ServletFilterTest
         }
     }
 
-    @Test (expected = AlfrescoRuntimeException.class)
+    @Test(expected = AlfrescoRuntimeException.class)
     public void testSharedSecretHeaderIsNull() throws ServletException
     {
         Mockito.when(globalProperties.getProperty(PROP_SECURE_COMMS)).thenReturn(SecureCommsType.SECRET.name());
@@ -161,7 +161,7 @@ public class AlfrescoX509ServletFilterTest
         filter.init(filterConfig);
     }
 
-    @Test (expected = AlfrescoRuntimeException.class)
+    @Test(expected = AlfrescoRuntimeException.class)
     public void testSecureCommsNoneAndNotAllowUnauthenticatedSolrEndpoint() throws ServletException
     {
         Mockito.when(globalProperties.getProperty(PROP_SECURE_COMMS)).thenReturn(SecureCommsType.NONE.name());

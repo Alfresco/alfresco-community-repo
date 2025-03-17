@@ -36,18 +36,17 @@ import java.util.List;
 public class PropertyIdQueryParameter
 {
     private List<Long> rootPropIds;
-    
+
     public PropertyIdQueryParameter()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("PropertyIdQueryParameter")
-          .append(", rootPropIds=").append(rootPropIds)
-          .append("]");
+                .append(", rootPropIds=").append(rootPropIds)
+                .append("]");
         return sb.toString();
     }
 

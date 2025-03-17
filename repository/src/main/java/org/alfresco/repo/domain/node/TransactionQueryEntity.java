@@ -45,30 +45,29 @@ public class TransactionQueryEntity
     private Boolean ascending;
     private Long typeQNameId;
     private Long storeId;
-    
+
     /**
      * Required default constructor
      */
     public TransactionQueryEntity()
-    {
-    }
+    {}
 
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("TransactionQueryEntity")
-          .append("[ id=").append(id)
-          .append(", minId=").append(minId)
-          .append(", maxId=").append(maxId)
-          .append(", minCommitTime=").append(minCommitTime)
-          .append(", maxCommitTime=").append(maxCommitTime)
-          .append(", includeTxnIds=").append(includeTxnIds)
-          .append(", excludeTxnIds=").append(excludeTxnIds)
-          .append(", ascending=").append(ascending)
-          .append(", typeQNameId=").append(typeQNameId)
-          .append(", storeId=").append(storeId)
-          .append("]");
+                .append("[ id=").append(id)
+                .append(", minId=").append(minId)
+                .append(", maxId=").append(maxId)
+                .append(", minCommitTime=").append(minCommitTime)
+                .append(", maxCommitTime=").append(maxCommitTime)
+                .append(", includeTxnIds=").append(includeTxnIds)
+                .append(", excludeTxnIds=").append(excludeTxnIds)
+                .append(", ascending=").append(ascending)
+                .append(", typeQNameId=").append(typeQNameId)
+                .append(", storeId=").append(storeId)
+                .append("]");
         return sb.toString();
     }
 

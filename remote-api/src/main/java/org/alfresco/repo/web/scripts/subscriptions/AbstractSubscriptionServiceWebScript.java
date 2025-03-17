@@ -31,6 +31,15 @@ import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.List;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.Format;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -42,14 +51,6 @@ import org.alfresco.service.cmr.subscriptions.PrivateSubscriptionListException;
 import org.alfresco.service.cmr.subscriptions.SubscriptionService;
 import org.alfresco.service.cmr.subscriptions.SubscriptionsDisabledException;
 import org.alfresco.util.ISO8601DateFormat;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
-import org.springframework.extensions.webscripts.AbstractWebScript;
-import org.springframework.extensions.webscripts.Format;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 
 public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebScript
 {
@@ -94,31 +95,39 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
                 if (obj instanceof JSONObject)
                 {
                     ((JSONObject) obj).writeJSONString(writer);
-                } else
+                }
+                else
                 {
                     ((JSONArray) obj).writeJSONString(writer);
                 }
                 writer.flush();
-            } else
+            }
+            else
             {
                 res.setStatus(204);
             }
-        } catch (SubscriptionsDisabledException sde)
+        }
+        catch (SubscriptionsDisabledException sde)
         {
             throw new WebScriptException(404, "Subscription service is disabled!", sde);
-        } catch (NoSuchPersonException nspe)
+        }
+        catch (NoSuchPersonException nspe)
         {
             throw new WebScriptException(404, "Unknown user '" + nspe.getUserName() + "'!", nspe);
-        } catch (PrivateSubscriptionListException psle)
+        }
+        catch (PrivateSubscriptionListException psle)
         {
             throw new WebScriptException(403, "Subscription list is private!", psle);
-        } catch (ParseException pe)
+        }
+        catch (ParseException pe)
         {
             throw new WebScriptException(400, "Unable to parse JSON!", pe);
-        } catch (ClassCastException cce)
+        }
+        catch (ClassCastException cce)
         {
             throw new WebScriptException(400, "Unable to parse JSON!", cce);
-        } catch (IOException ioe)
+        }
+        catch (IOException ioe)
         {
             throw new WebScriptException(500, "Unable to serialize JSON!", ioe);
         }
@@ -135,11 +144,13 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
             {
                 return Integer.parseInt(number);
 
-            } catch (NumberFormatException e)
+            }
+            catch (NumberFormatException e)
             {
                 throw new WebScriptException(400, name + " is not a number!", e);
             }
-        } else
+        }
+        else
         {
             return def;
         }
@@ -181,7 +192,7 @@ public abstract class AbstractSubscriptionServiceWebScript extends AbstractWebSc
             statusTimeJson.put("iso8601", ISO8601DateFormat.format(statusTime));
             result.put("userStatusTime", statusTimeJson);
         }
-        
+
         // Get the avatar for the user id if one is available
         List<AssociationRef> assocRefs = this.nodeService.getTargetAssocs(node, ContentModel.ASSOC_AVATAR);
         if (!assocRefs.isEmpty())

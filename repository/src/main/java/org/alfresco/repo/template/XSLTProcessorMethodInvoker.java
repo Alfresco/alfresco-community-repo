@@ -47,18 +47,17 @@ import org.w3c.dom.traversal.NodeIterator;
 public class XSLTProcessorMethodInvoker
 {
     private final static Log log = LogFactory.getLog(XSLTProcessorMethodInvoker.class);
-    
+
     private final static Map<String, TemplateProcessorMethod> PROCESSOR_METHODS = new TreeMap<String, TemplateProcessorMethod>();
 
     public XSLTProcessorMethodInvoker()
-    {
-    }
+    {}
 
     public static void addMethod(String name, TemplateProcessorMethod method)
     {
         PROCESSOR_METHODS.put(name, method);
     }
-    
+
     public static void removeMethods(Collection<String> methodNames)
     {
         for (String methodName : methodNames)
@@ -66,7 +65,7 @@ public class XSLTProcessorMethodInvoker
             PROCESSOR_METHODS.remove(methodName);
         }
     }
-    
+
     private Object[] convertArguments(final Object[] arguments)
     {
         final List<Object> result = new LinkedList<Object>();
@@ -137,8 +136,7 @@ public class XSLTProcessorMethodInvoker
         {
             log.debug("converting " + result + " to a node iterator");
             final Node[] array = (Node[]) result;
-            return new NodeIterator()
-            {
+            return new NodeIterator() {
                 private int index = 0;
                 private boolean detached = false;
 
@@ -166,8 +164,7 @@ public class XSLTProcessorMethodInvoker
 
                 public NodeFilter getFilter()
                 {
-                    return new NodeFilter()
-                    {
+                    return new NodeFilter() {
                         public short acceptNode(final Node n)
                         {
                             return NodeFilter.FILTER_ACCEPT;

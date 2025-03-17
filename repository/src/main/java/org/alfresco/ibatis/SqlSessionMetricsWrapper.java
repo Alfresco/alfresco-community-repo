@@ -25,7 +25,10 @@
  */
 package org.alfresco.ibatis;
 
-import org.alfresco.metrics.db.DBMetricsReporter;
+import java.sql.Connection;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ibatis.cursor.Cursor;
@@ -36,9 +39,7 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
 
-import java.sql.Connection;
-import java.util.List;
-import java.util.Map;
+import org.alfresco.metrics.db.DBMetricsReporter;
 
 /**
  * Wrapper around the SqlSession object that allows us to report on the DB executed queries
@@ -442,10 +443,7 @@ public class SqlSessionMetricsWrapper implements SqlSession
     }
 
     /**
-     * Reports on the time it actually took to execute the query.
-     * The execution time is the interval until the first call to "handleResult" method
-     * If there are no results returned by the query, then "handleResult" method is not called
-     * so we need to mark this and report the time outside this utility pass through class
+     * Reports on the time it actually took to execute the query. The execution time is the interval until the first call to "handleResult" method If there are no results returned by the query, then "handleResult" method is not called so we need to mark this and report the time outside this utility pass through class
      */
     class PassThroughMetricsResultsHandler implements ResultHandler
     {

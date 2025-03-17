@@ -32,8 +32,11 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
 
 public interface Networks
 {
-	public Network validateNetwork(String networkId);
+    public Network validateNetwork(String networkId);
+
     public Network getNetwork(String networkId);
+
     public PersonNetwork getNetwork(String personId, String networkId);
+
     public CollectionWithPagingInfo<PersonNetwork> getNetworks(String personId, Paging paging);
 }

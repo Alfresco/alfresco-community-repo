@@ -44,7 +44,7 @@ public class NoIndexCategoryServiceImpl extends AbstractCategoryServiceImpl
     @Override
     public List<Pair<NodeRef, Integer>> getTopCategories(StoreRef storeRef, QName aspectName, int count)
     {
-        return Collections.<Pair<NodeRef, Integer>>emptyList();
+        return Collections.<Pair<NodeRef, Integer>> emptyList();
     }
 
 }

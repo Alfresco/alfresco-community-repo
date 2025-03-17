@@ -32,9 +32,10 @@ import static junit.framework.TestCase.assertNotNull;
 
 import java.util.Collections;
 
+import org.junit.Test;
+
 import org.alfresco.rest.api.search.model.SearchSQLQuery;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.junit.Test;
 
 /**
  * Tests the SearchSQLApiWebscript class
@@ -51,21 +52,22 @@ public class SearchSQLApiWebscriptTests
         String query = "select SITE from alfresco";
         SearchSQLQuery searchQuery = new SearchSQLQuery(query, "solr", emptyList(), 1000, false, "", emptyList());
         SearchParameters sparams = webscript.buildSearchParameters(searchQuery);
-        
+
         assertNotNull(sparams);
         assertEquals(query, sparams.getQuery());
         assertEquals(false, sparams.isIncludeMetadata());
         assertEquals(Collections.EMPTY_LIST, sparams.getLocales());
-        assertEquals("solr",sparams.getExtraParameters().get("format"));
+        assertEquals("solr", sparams.getExtraParameters().get("format"));
         assertEquals(null, sparams.getTimezone());
     }
+
     @Test
     public void testSearchQueryParamsTimezone() throws Exception
     {
         String query = "select SITE from alfresco";
         SearchSQLQuery searchQuery = new SearchSQLQuery(query, "solr", emptyList(), 1000, false, "Israel", emptyList());
         SearchParameters sparams = webscript.buildSearchParameters(searchQuery);
-        
+
         assertNotNull(sparams);
         assertEquals(query, sparams.getQuery());
         assertEquals(false, sparams.isIncludeMetadata());
@@ -73,23 +75,24 @@ public class SearchSQLApiWebscriptTests
         assertEquals("solr", sparams.getExtraParameters().get("format"));
         assertEquals("Israel", sparams.getTimezone());
     }
+
     @Test
     public void testSearchQueryParamsFormatNull() throws Exception
     {
         String query = "select SITE from alfresco";
         SearchSQLQuery searchQuery = new SearchSQLQuery(query, "", emptyList(), 1000, false, "", emptyList());
         SearchParameters sparams = webscript.buildSearchParameters(searchQuery);
-        
+
         assertNotNull(sparams);
         assertEquals(query, sparams.getQuery());
         assertEquals(false, sparams.isIncludeMetadata());
         assertEquals(Collections.EMPTY_LIST, sparams.getLocales());
         assertEquals(null, sparams.getExtraParameters().get("format"));
         assertEquals(null, sparams.getTimezone());
-        
+
         searchQuery = new SearchSQLQuery(query, null, emptyList(), 1000, true, "", emptyList());
         sparams = webscript.buildSearchParameters(searchQuery);
-        
+
         assertNotNull(sparams);
         assertEquals(query, sparams.getQuery());
         assertEquals(true, sparams.isIncludeMetadata());
@@ -97,6 +100,7 @@ public class SearchSQLApiWebscriptTests
         assertEquals(null, sparams.getExtraParameters().get("format"));
         assertEquals(null, sparams.getTimezone());
     }
+
     @Test
     public void testSearchQueryNullStmt() throws Exception
     {
@@ -105,11 +109,10 @@ public class SearchSQLApiWebscriptTests
         {
             webscript.buildSearchParameters(searchQuery);
         }
-        catch (Exception e) 
+        catch (Exception e)
         {
             assertEquals(true, e.getMessage().contains("Required stmt parameter is missing."));
         }
     }
-
 
 }

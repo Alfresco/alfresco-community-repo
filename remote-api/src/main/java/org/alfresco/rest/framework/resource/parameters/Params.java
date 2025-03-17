@@ -30,6 +30,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.poi.ss.formula.functions.T;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
@@ -37,9 +41,6 @@ import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryImpl;
-import org.apache.commons.beanutils.ConvertUtils;
-import org.apache.poi.ss.formula.functions.T;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Parameters passed in from a Rest client for use in calls to the rest api.
@@ -49,9 +50,9 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class Params implements Parameters
 {
     // Note: isCollectionResource maps to "readAll". It can apply to these levels, eg ...
-    //            /entities,
-    //            /entities/{entityAId}/relationship1,
-    //            /entities/{entityAId}/relationship1/{entityBId}/relationship2
+    // /entities,
+    // /entities/{entityAId}/relationship1,
+    // /entities/{entityAId}/relationship1/{entityBId}/relationship2
     private final boolean isCollectionResource;
 
     private final String entityId;
@@ -65,10 +66,10 @@ public class Params implements Parameters
     private final BasicContentInfo contentInfo;
     private final WebScriptRequest request;
 
-    //Constants
+    // Constants
     private static final RecognizedParams NULL_PARAMS = new RecognizedParams(null, null, null, null, null, null, null, null, false);
     private static final BasicContentInfo DEFAULT_CONTENT_INFO = new ContentInfoImpl(MimetypeMap.MIMETYPE_BINARY, "UTF-8", -1, null);
-    
+
     protected Params(Boolean isCollectionResource, String entityId, String relationshipId, String relationship2Id, Object passedIn, InputStream stream, String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo, WebScriptRequest request)
     {
         super();
@@ -81,7 +82,7 @@ public class Params implements Parameters
         this.recognizedParams = recognizedParams;
         this.addressedProperty = addressedProperty;
         this.request = request;
-        this.contentInfo = contentInfo==null?DEFAULT_CONTENT_INFO:contentInfo;
+        this.contentInfo = contentInfo == null ? DEFAULT_CONTENT_INFO : contentInfo;
     }
 
     public static Params valueOf(BeanPropertiesFilter paramFilter, String entityId, WebScriptRequest request)
@@ -91,14 +92,14 @@ public class Params implements Parameters
 
     public static Params valueOf(String entityId, String relationshipId, WebScriptRequest request)
     {
-        return new Params(null, entityId, relationshipId, null, null,null, null, NULL_PARAMS, null, request);
+        return new Params(null, entityId, relationshipId, null, null, null, null, NULL_PARAMS, null, request);
     }
-    
+
     public static Params valueOf(RecognizedParams recognizedParams, String entityId, String relationshipId, WebScriptRequest request)
     {
         return new Params(null, entityId, relationshipId, null, null, null, null, recognizedParams, null, request);
     }
-    
+
     public static Params valueOf(String entityId, RecognizedParams recognizedParams, Object passedIn, WebScriptRequest request)
     {
         return new Params(null, entityId, null, null, passedIn, null, null, recognizedParams, null, request);
@@ -110,17 +111,17 @@ public class Params implements Parameters
     }
 
     public static Params valueOf(String entityId, String relationshipId, Object passedIn, InputStream stream,
-                                 String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo, WebScriptRequest request)
+            String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo, WebScriptRequest request)
     {
         return new Params(null, entityId, relationshipId, null, passedIn, stream, addressedProperty, recognizedParams, contentInfo, request);
     }
 
     public static Params valueOf(boolean isCollectionResource, String entityId, String relationshipId, String relationship2Id, Object passedIn, InputStream stream,
-                                 String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo, WebScriptRequest request)
+            String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo, WebScriptRequest request)
     {
         return new Params(isCollectionResource, entityId, relationshipId, relationship2Id, passedIn, stream, addressedProperty, recognizedParams, contentInfo, request);
     }
-    
+
     public String getEntityId()
     {
         return this.entityId;
@@ -177,9 +178,7 @@ public class Params implements Parameters
         return this.stream;
     }
 
-    /*
-     * @see java.lang.Object#toString()
-     */
+    /* @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
@@ -213,36 +212,38 @@ public class Params implements Parameters
         builder.append("]");
         return builder.toString();
     }
-    
+
     @Override
     /**
-     * Similar to the standard HTTPRequest method.  Just returns the first parameter value or NULL.
+     * Similar to the standard HTTPRequest method. Just returns the first parameter value or NULL.
      */
     public String getParameter(String parameterName)
     {
-        if (recognizedParams.requestParameters!= null && !recognizedParams.requestParameters.isEmpty())
+        if (recognizedParams.requestParameters != null && !recognizedParams.requestParameters.isEmpty())
         {
             String[] vals = recognizedParams.requestParameters.get(parameterName);
-            if (vals!= null && vals.length>0)
+            if (vals != null && vals.length > 0)
             {
-                return vals[0]; //Just return the first element.
+                return vals[0]; // Just return the first element.
             }
         }
         return null;
     }
 
-	@Override
-	public T getParameter(String parameterName, Class<T> clazz) throws InvalidArgumentException {
-		String param = getParameter(parameterName);
-		if (param == null) return null;
-		Object obj = ConvertUtils.convert(param, clazz);
-		if (obj != null && obj.getClass().equals(clazz))
-		{
-			return (T) obj;
-		}
-		throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID, new Object[] {parameterName});
-	}
-	
+    @Override
+    public T getParameter(String parameterName, Class<T> clazz) throws InvalidArgumentException
+    {
+        String param = getParameter(parameterName);
+        if (param == null)
+            return null;
+        Object obj = ConvertUtils.convert(param, clazz);
+        if (obj != null && obj.getClass().equals(clazz))
+        {
+            return (T) obj;
+        }
+        throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID, new Object[]{parameterName});
+    }
+
     @Override
     public boolean hasBinaryProperty(String propertyName)
     {
@@ -260,7 +261,7 @@ public class Params implements Parameters
     {
         return addressedProperty;
     }
-    
+
     @Override
     public List<String> getSelectedProperties()
     {
@@ -272,7 +273,7 @@ public class Params implements Parameters
     {
         return recognizedParams.include;
     }
-    
+
     @Override
     public BasicContentInfo getContentInfo()
     {
@@ -288,7 +289,7 @@ public class Params implements Parameters
     /**
      * A formal set of params that any rest service could potentially have passed in as request params
      */
-    public static class RecognizedParams 
+    public static class RecognizedParams
     {
         final Paging paging;
         private final BeanPropertiesFilter filter;
@@ -302,26 +303,26 @@ public class Params implements Parameters
 
         private final List<SortColumn> sorting;
         private final boolean includeSource;
-        
+
         @SuppressWarnings("unchecked")
         public RecognizedParams(Map<String, String[]> requestParameters, Paging paging, BeanPropertiesFilter filter,
-                                Map<String, BeanPropertiesFilter> relationshipFilter, List<String> include, List<String> select,
-                                Query query, List<SortColumn> sorting, boolean includeSource)
+                Map<String, BeanPropertiesFilter> relationshipFilter, List<String> include, List<String> select,
+                Query query, List<SortColumn> sorting, boolean includeSource)
         {
             super();
 
             this.requestParameters = requestParameters;
-            this.paging = paging==null?Paging.DEFAULT:paging;
-            this.filter = filter==null?BeanPropertiesFilter.ALLOW_ALL:filter;
-            this.query = query==null?QueryImpl.EMPTY:query;
-            this.relationshipFilter = (Map<String, BeanPropertiesFilter>) (relationshipFilter==null?Collections.emptyMap():relationshipFilter);
+            this.paging = paging == null ? Paging.DEFAULT : paging;
+            this.filter = filter == null ? BeanPropertiesFilter.ALLOW_ALL : filter;
+            this.query = query == null ? QueryImpl.EMPTY : query;
+            this.relationshipFilter = (Map<String, BeanPropertiesFilter>) (relationshipFilter == null ? Collections.emptyMap() : relationshipFilter);
 
-            this.include = (List<String>) (include==null?Collections.emptyList():include);
-            this.select = (List<String>) (select==null?Collections.emptyList():select);
+            this.include = (List<String>) (include == null ? Collections.emptyList() : include);
+            this.select = (List<String>) (select == null ? Collections.emptyList() : select);
 
-            this.sorting = (List<SortColumn>) (sorting==null?Collections.emptyList():sorting);
+            this.sorting = (List<SortColumn>) (sorting == null ? Collections.emptyList() : sorting);
             this.includeSource = includeSource;
         }
-        
+
     }
 }

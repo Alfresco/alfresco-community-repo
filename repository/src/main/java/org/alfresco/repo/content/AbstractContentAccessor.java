@@ -36,16 +36,17 @@ import java.nio.channels.WritableByteChannel;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.aop.AfterReturningAdvice;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.aop.AfterReturningAdvice;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Provides basic support for content accessors.
@@ -63,16 +64,17 @@ public abstract class AbstractContentAccessor implements ContentAccessor
             loggerTrace.warn("Trace channel assignment logging is on and will affect performance");
         }
     }
-    
+
     private StackTraceElement[] traceLoggerChannelAssignTrace;
-    
+
     private String contentUrl;
     private String mimetype;
     private String encoding;
     private Locale locale;
 
     /**
-     * @param contentUrl the content URL
+     * @param contentUrl
+     *            the content URL
      */
     protected AbstractContentAccessor(String contentUrl)
     {
@@ -82,13 +84,13 @@ public abstract class AbstractContentAccessor implements ContentAccessor
             throw new IllegalArgumentException("contentUrl is invalid:" + contentUrl);
         }
         this.contentUrl = contentUrl;
-        
+
         // the default encoding is Java's default encoding
         encoding = "UTF-8";
         // the default locale
         locale = I18NUtil.getLocale();
     }
-    
+
     @Override
     protected void finalize() throws Throwable
     {
@@ -107,21 +109,21 @@ public abstract class AbstractContentAccessor implements ContentAccessor
             }
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(100);
         sb.append("ContentAccessor")
-          .append("[ contentUrl=").append(getContentUrl())
-          .append(", mimetype=").append(getMimetype())
-          .append(", size=").append(getSize())
-          .append(", encoding=").append(getEncoding())
-          .append(", locale=").append(getLocale())
-          .append("]");
+                .append("[ contentUrl=").append(getContentUrl())
+                .append(", mimetype=").append(getMimetype())
+                .append(", size=").append(getSize())
+                .append(", encoding=").append(getEncoding())
+                .append(", locale=").append(getLocale())
+                .append("]");
         return sb.toString();
     }
-    
+
     public ContentData getContentData()
     {
         ContentData property = new ContentData(contentUrl, mimetype, getSize(), encoding, locale);
@@ -129,8 +131,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     }
 
     /**
-     * Derived classes can call this method to ensure that necessary trace logging is performed
-     * when the IO Channel is opened.
+     * Derived classes can call this method to ensure that necessary trace logging is performed when the IO Channel is opened.
      */
     protected final void channelOpened()
     {
@@ -142,31 +143,32 @@ public abstract class AbstractContentAccessor implements ContentAccessor
             traceLoggerChannelAssignTrace = e.getStackTrace();
         }
     }
-    
+
     public String getContentUrl()
     {
         return contentUrl;
     }
-    
+
     /**
-     * Allow derived implementations to set the Content URL.  This allows for implementations
-     * where the URL is not known when the accessor is first constructed.
+     * Allow derived implementations to set the Content URL. This allows for implementations where the URL is not known when the accessor is first constructed.
      * 
-     * @param contentUrl            the new content URL
+     * @param contentUrl
+     *            the new content URL
      */
     protected void setContentUrl(String contentUrl)
     {
         ParameterCheck.mandatoryString("contentUrl", contentUrl);
         this.contentUrl = contentUrl;
     }
-    
+
     public String getMimetype()
     {
         return mimetype;
     }
 
     /**
-     * @param mimetype the underlying content's mimetype - null if unknown
+     * @param mimetype
+     *            the underlying content's mimetype - null if unknown
      */
     public void setMimetype(String mimetype)
     {
@@ -182,7 +184,8 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     }
 
     /**
-     * @param encoding the underlying content's encoding - null if unknown
+     * @param encoding
+     *            the underlying content's encoding - null if unknown
      */
     public void setEncoding(String encoding)
     {
@@ -190,7 +193,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     }
 
     /**
-     * @return  Returns the content locale or <tt>null</tt> if unkown
+     * @return Returns the content locale or <tt>null</tt> if unkown
      */
     public Locale getLocale()
     {
@@ -198,7 +201,8 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     }
 
     /**
-     * @param locale    the content's locale, if known.
+     * @param locale
+     *            the content's locale, if known.
      */
     public void setLocale(Locale locale)
     {
@@ -207,11 +211,12 @@ public abstract class AbstractContentAccessor implements ContentAccessor
 
     /**
      * Generate a callback instance of the {@link FileChannel FileChannel}.
-     *  
-     * @param directChannel the delegate that to perform the actual operations
-     * @param listeners the listeners to call
-     * @return Returns a new channel that functions just like the original, except
-     *      that it issues callbacks to the listeners
+     * 
+     * @param directChannel
+     *            the delegate that to perform the actual operations
+     * @param listeners
+     *            the listeners to call
+     * @return Returns a new channel that functions just like the original, except that it issues callbacks to the listeners
      * @throws ContentIOException
      */
     protected FileChannel getCallbackFileChannel(
@@ -225,10 +230,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
     }
 
     /**
-     * Advise that listens for the completion of specific methods on the
-     * {@link java.nio.channels.ByteChannel} interface.  This advise reacts
-     * only in the {@link #afterReturning(Object, Method, Object[], Object) afterReturning} phase
-     * so that the underlying stream methods have been successfully completed.
+     * Advise that listens for the completion of specific methods on the {@link java.nio.channels.ByteChannel} interface. This advise reacts only in the {@link #afterReturning(Object, Method, Object[], Object) afterReturning} phase so that the underlying stream methods have been successfully completed.
      * 
      * @author Derek Hulley
      */
@@ -240,9 +242,9 @@ public abstract class AbstractContentAccessor implements ContentAccessor
         {
             this.listeners = listeners;
         }
-        
+
         /**
-         * Provides transactional callbacks to the listeners 
+         * Provides transactional callbacks to the listeners
          */
         public void afterReturning(Object returnValue, Method method, Object[] args, Object target) throws Throwable
         {
@@ -252,7 +254,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
                 fireChannelClosed();
             }
         }
-        
+
         private void fireChannelClosed()
         {
             if (listeners.size() == 0)
@@ -265,7 +267,7 @@ public abstract class AbstractContentAccessor implements ContentAccessor
             {
                 listener.contentStreamClosed();
             }
-                    
+
             // done
             if (logger.isDebugEnabled())
             {
@@ -273,14 +275,11 @@ public abstract class AbstractContentAccessor implements ContentAccessor
             }
         }
     }
-    
+
     /**
-     * Wraps a <code>FileChannel</code> to provide callbacks to listeners when the
-     * channel is {@link java.nio.channels.Channel#close() closed}.
+     * Wraps a <code>FileChannel</code> to provide callbacks to listeners when the channel is {@link java.nio.channels.Channel#close() closed}.
      * <p>
-     * This class is unfortunately necessary as the {@link FileChannel} doesn't have
-     * an single interface defining its methods, making it difficult to put an
-     * advice around the methods that require overriding.
+     * This class is unfortunately necessary as the {@link FileChannel} doesn't have an single interface defining its methods, making it difficult to put an advice around the methods that require overriding.
      * 
      * @author Derek Hulley
      */
@@ -292,8 +291,10 @@ public abstract class AbstractContentAccessor implements ContentAccessor
         private List<ContentStreamListener> listeners;
 
         /**
-         * @param delegate the channel that will perform the work
-         * @param listeners listeners for events coming from this channel
+         * @param delegate
+         *            the channel that will perform the work
+         * @param listeners
+         *            listeners for events coming from this channel
          */
         public CallbackFileChannel(
                 FileChannel delegate,
@@ -307,11 +308,11 @@ public abstract class AbstractContentAccessor implements ContentAccessor
             {
                 throw new IllegalArgumentException("FileChannel delegate may not be a CallbackFileChannel");
             }
-            
+
             this.delegate = delegate;
             this.listeners = listeners;
         }
-        
+
         /**
          * Closes the channel and makes the callbacks to the listeners
          */
@@ -332,19 +333,19 @@ public abstract class AbstractContentAccessor implements ContentAccessor
                 // nothing to do
                 return;
             }
-          
+
             for (ContentStreamListener listener : listeners)
             {
                 listener.contentStreamClosed();
             }
-                   
+
             // done
             if (logger.isDebugEnabled())
             {
                 logger.debug("" + listeners.size() + " content listeners called: close");
             }
         }
-            
+
         @Override
         public void force(boolean metaData) throws IOException
         {

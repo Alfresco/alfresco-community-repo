@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.search.impl.parsers;
 
-
 /**
  * @author Andy
  */
@@ -33,32 +32,33 @@ public class GenerateUnicodeRanges
 {
 
     /**
-     * @param args String[]
+     * @param args
+     *            String[]
      */
     public static void main(String[] args)
     {
 
-        int  start = 0;
-        int  last = 0;
+        int start = 0;
+        int last = 0;
         for (int i = 0; i < 0xFFFF; i++)
         {
-            //if (Character.isSpaceChar(i))
-            switch(Character.getType(i))
+            // if (Character.isSpaceChar(i))
+            switch (Character.getType(i))
             {
-            case Character.LOWERCASE_LETTER:  // V1 V2 V3-SW
-            case Character.MODIFIER_LETTER:   // V1 V2 V3-SW
-            case Character.OTHER_LETTER:      // V1 V2 V3-SW
-            case Character.TITLECASE_LETTER:  // V1 V2 V3-SW
-            case Character.UPPERCASE_LETTER:  // V1 V2 V3-SW
+            case Character.LOWERCASE_LETTER: // V1 V2 V3-SW
+            case Character.MODIFIER_LETTER: // V1 V2 V3-SW
+            case Character.OTHER_LETTER: // V1 V2 V3-SW
+            case Character.TITLECASE_LETTER: // V1 V2 V3-SW
+            case Character.UPPERCASE_LETTER: // V1 V2 V3-SW
             case Character.COMBINING_SPACING_MARK: // V2 V3-SW
             case Character.ENCLOSING_MARK: // V2 V3-SW
             case Character.NON_SPACING_MARK: // V2 V3-SW
-            case Character.DECIMAL_DIGIT_NUMBER:  // V1 V2 V3-SW
+            case Character.DECIMAL_DIGIT_NUMBER: // V1 V2 V3-SW
             case Character.LETTER_NUMBER: // V2 V3-SW
             case Character.OTHER_NUMBER: // V2 V3-SW
             case Character.CURRENCY_SYMBOL: // V2 V3-SW
             case Character.OTHER_SYMBOL: // V2 V3-SW
-                
+
             case Character.CONNECTOR_PUNCTUATION: // V3-W
             case Character.DASH_PUNCTUATION: // V3-W
             case Character.OTHER_PUNCTUATION: // V3-W
@@ -89,21 +89,20 @@ public class GenerateUnicodeRanges
                     }
                 }
                 break;
-           
-                
+
             case Character.CONTROL: // X
-            case Character.FORMAT:  // X
+            case Character.FORMAT: // X
             case Character.PRIVATE_USE: // X
             case Character.SURROGATE: // X
-            //case Character.CONNECTOR_PUNCTUATION: // V3-W
-            //case Character.DASH_PUNCTUATION: // V3-W
+                // case Character.CONNECTOR_PUNCTUATION: // V3-W
+                // case Character.DASH_PUNCTUATION: // V3-W
             case Character.END_PUNCTUATION: // X
-            case Character.FINAL_QUOTE_PUNCTUATION: //X
+            case Character.FINAL_QUOTE_PUNCTUATION: // X
             case Character.INITIAL_QUOTE_PUNCTUATION: // X
-            //case Character.OTHER_PUNCTUATION: // V3-W
+                // case Character.OTHER_PUNCTUATION: // V3-W
             case Character.START_PUNCTUATION: // X
             case Character.MODIFIER_SYMBOL: // X
-            //case Character.MATH_SYMBOL: // V3-W
+                // case Character.MATH_SYMBOL: // V3-W
             case Character.LINE_SEPARATOR:
             case Character.PARAGRAPH_SEPARATOR:
             case Character.SPACE_SEPARATOR:

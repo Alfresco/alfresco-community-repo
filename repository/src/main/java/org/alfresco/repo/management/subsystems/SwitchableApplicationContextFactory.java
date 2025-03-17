@@ -32,9 +32,7 @@ import java.util.Set;
 import org.springframework.context.ApplicationContext;
 
 /**
- * A configurable proxy for a set of {@link ApplicationContextFactory} beans that allows dynamic selection of one or
- * more alternative subsystems via a <code>sourceBeanName</code> property. As with other {@link PropertyBackedBean}s,
- * can be stopped, reconfigured, started and tested.
+ * A configurable proxy for a set of {@link ApplicationContextFactory} beans that allows dynamic selection of one or more alternative subsystems via a <code>sourceBeanName</code> property. As with other {@link PropertyBackedBean}s, can be stopped, reconfigured, started and tested.
  */
 public class SwitchableApplicationContextFactory extends AbstractPropertyBackedBean implements
         ApplicationContextFactory
@@ -61,11 +59,10 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
     {
         return getState(false).getProperty(SwitchableApplicationContextFactory.SOURCE_BEAN_PROPERTY);
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.ApplicationContextFactory#getApplicationContext()
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.ApplicationContextFactory#getApplicationContext() */
     public ApplicationContext getApplicationContext()
     {
         this.lock.readLock().lock();
@@ -79,10 +76,9 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#createInitialState()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#createInitialState() */
     @Override
     protected PropertyBackedBeanState createInitialState() throws IOException
     {
@@ -112,10 +108,9 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
             this.sourceBeanName = sourceBeanName;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.enterprise.repo.management.ConfigurableBean#onStart()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.enterprise.repo.management.ConfigurableBean#onStart() */
         public void start()
         {
             if (this.sourceApplicationContextFactory == null)
@@ -126,10 +121,9 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
             }
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.SelfDescribingBean#onStop()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.SelfDescribingBean#onStop() */
         public void stop()
         {
             if (this.sourceApplicationContextFactory != null)
@@ -160,10 +154,9 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
             return this.sourceApplicationContextFactory.getApplicationContext();
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getProperty(java.lang.String)
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getProperty(java.lang.String) */
         public String getProperty(String name)
         {
             if (!name.equals(SwitchableApplicationContextFactory.SOURCE_BEAN_PROPERTY))
@@ -173,20 +166,17 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
             return this.sourceBeanName;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getPropertyNames()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getPropertyNames() */
         public Set<String> getPropertyNames()
         {
             return Collections.singleton(SwitchableApplicationContextFactory.SOURCE_BEAN_PROPERTY);
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#setProperty(java.lang.String,
-         * java.lang.String)
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#setProperty(java.lang.String, java.lang.String) */
         public void setProperty(String name, String value)
         {
             if (!name.equals(SwitchableApplicationContextFactory.SOURCE_BEAN_PROPERTY))

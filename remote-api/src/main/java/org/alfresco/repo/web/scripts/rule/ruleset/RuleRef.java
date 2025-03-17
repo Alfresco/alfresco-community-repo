@@ -53,7 +53,8 @@ public class RuleRef
     /**
      * Set the rule
      * 
-     * @param rule the rule to set
+     * @param rule
+     *            the rule to set
      */
     public void setRule(Rule rule)
     {
@@ -73,7 +74,8 @@ public class RuleRef
     /**
      * Set the owning file info reference for rule
      * 
-     * @param owningFileInfo the owning file info reference to set
+     * @param owningFileInfo
+     *            the owning file info reference to set
      */
     public void setOwningFileInfo(FileInfo owningFileInfo)
     {

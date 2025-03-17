@@ -26,6 +26,7 @@
 package org.alfresco.rest.framework.tests.api.mocks4;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.framework.resource.UniqueId;
 
 /**
@@ -49,6 +50,7 @@ public class TypeB1
     {
         return this.name;
     }
+
     public void setName(String name)
     {
         this.name = name;

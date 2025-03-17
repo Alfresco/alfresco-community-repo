@@ -37,7 +37,8 @@ public class DBResultSetRowIterator extends AbstractResultSetRowIterator
 {
 
     /**
-     * @param resultSet ResultSet
+     * @param resultSet
+     *            ResultSet
      */
     public DBResultSetRowIterator(ResultSet resultSet)
     {
@@ -46,21 +47,21 @@ public class DBResultSetRowIterator extends AbstractResultSetRowIterator
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.AbstractResultSetRowIterator#next()
-     */
+     * 
+     * @see org.alfresco.repo.search.AbstractResultSetRowIterator#next() */
     @Override
     public ResultSetRow next()
     {
-        return new DBResultSetRow((DBResultSet)getResultSet(), moveToNextPosition());
+        return new DBResultSetRow((DBResultSet) getResultSet(), moveToNextPosition());
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.AbstractResultSetRowIterator#previous()
-     */
+     * 
+     * @see org.alfresco.repo.search.AbstractResultSetRowIterator#previous() */
     @Override
     public ResultSetRow previous()
     {
-        return new DBResultSetRow((DBResultSet)getResultSet(), moveToPreviousPosition());
+        return new DBResultSetRow((DBResultSet) getResultSet(), moveToPreviousPosition());
     }
 
 }

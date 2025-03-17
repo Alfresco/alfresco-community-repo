@@ -29,11 +29,9 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.util.ParameterCheck;
 
 /**
- * Class used purely to represent the result of an action being 
- * executed via the {@link ActionFormProcessor}.
+ * Class used purely to represent the result of an action being executed via the {@link ActionFormProcessor}.
  * 
- * This class holds the {@link Action} executed and any optional
- * results stored by the action.
+ * This class holds the {@link Action} executed and any optional results stored by the action.
  *
  * @author Gavin Cornwell
  */
@@ -41,17 +39,19 @@ public class ActionFormResult
 {
     private Action action;
     private Object result;
-    
+
     /**
      * Default constructor.
      * 
-     * @param action The action that was executed, can not be null
-     * @param result The result from the action, can be null
+     * @param action
+     *            The action that was executed, can not be null
+     * @param result
+     *            The result from the action, can be null
      */
     public ActionFormResult(Action action, Object result)
     {
         ParameterCheck.mandatory("action", action);
-        
+
         this.action = action;
         this.result = result;
     }

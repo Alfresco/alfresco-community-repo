@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.domain.permissions;
 
-
 /**
  * Entity for <b>alf_ace_context</b> persistence.
  * 
@@ -35,7 +34,10 @@ package org.alfresco.repo.domain.permissions;
 public interface AceContext
 {
     public Long getId();
+
     public String getClassContext();
+
     public String getPropertyContext();
+
     public String getKvpContext();
 }

@@ -31,12 +31,9 @@ import java.util.Collection;
 import org.alfresco.api.AlfrescoPublicApi;
 
 /**
- * <code>QName</code> represents the qualified name of a Repository item. Each
- * QName consists of a local name qualified by a namespace.
+ * <code>QName</code> represents the qualified name of a Repository item. Each QName consists of a local name qualified by a namespace.
  * <p>
- * The {@link org.alfresco.service.namespace.QNamePattern QNamePattern} is implemented
- * to allow instances of this class to be used for direct pattern matching where
- * required on interfaces.
+ * The {@link org.alfresco.service.namespace.QNamePattern QNamePattern} is implemented to allow instances of this class to be used for direct pattern matching where required on interfaces.
  * 
  * @author David Caruana
  */
@@ -44,11 +41,11 @@ import org.alfresco.api.AlfrescoPublicApi;
 public final class QName implements QNamePattern, Serializable, Cloneable, Comparable<QName>
 {
     public static final String EMPTY_URI_SUBSTITUTE = ".empty";
-    
+
     private static final long serialVersionUID = 3977016258204348976L;
 
-    private final String namespaceURI;                // never null
-    private final String localName;                   // never null
+    private final String namespaceURI; // never null
+    private final String localName; // never null
     private int hashCode;
     private final String prefix;
 
@@ -56,18 +53,20 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
     public static final char NAMESPACE_BEGIN = '{';
     public static final char NAMESPACE_END = '}';
     public static final int MAX_LENGTH = 255;
-    
+
     /**
      * Create a QName
      * 
      * (With no prefix)
      * 
-     * @param namespaceURI  the qualifying namespace (maybe null or empty string)
-     * @param localName  the local name
+     * @param namespaceURI
+     *            the qualifying namespace (maybe null or empty string)
+     * @param localName
+     *            the local name
      * @return the QName
      */
     public static QName createQName(String namespaceURI, String localName)
-        throws InvalidQNameException
+            throws InvalidQNameException
     {
         if (localName == null || localName.length() == 0)
         {
@@ -76,17 +75,19 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
         return new QName(namespaceURI, localName, null);
     }
 
-
     /**
      * Create a QName
      * 
-     * @param prefix  namespace prefix (maybe null or empty string)
-     * @param localName  local name
-     * @param prefixResolver  lookup to resolve mappings between prefix and namespace
-     * @return  the QName
+     * @param prefix
+     *            namespace prefix (maybe null or empty string)
+     * @param localName
+     *            local name
+     * @param prefixResolver
+     *            lookup to resolve mappings between prefix and namespace
+     * @return the QName
      */
     public static QName createQName(String prefix, String localName, NamespacePrefixResolver prefixResolver)
-        throws InvalidQNameException, NamespaceException
+            throws InvalidQNameException, NamespaceException
     {
         // Validate Arguments
         if (localName == null || localName.length() == 0)
@@ -95,13 +96,13 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
         }
         if (prefixResolver == null)
         {
-            throw new IllegalArgumentException("A Prefix Resolver must be specified"); 
+            throw new IllegalArgumentException("A Prefix Resolver must be specified");
         }
         if (prefix == null)
         {
-            prefix = NamespaceService.DEFAULT_PREFIX; 
+            prefix = NamespaceService.DEFAULT_PREFIX;
         }
-        
+
         // Calculate namespace URI and create QName
         String uri = prefixResolver.getNamespaceURI(prefix);
         if (uri == null)
@@ -111,41 +112,42 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
         return new QName(uri, localName, prefix);
     }
 
-
     /**
      * Create a QName (from prefix format) <code>prefix:localName</code>
      * 
-     * @param qname  qualified name of the following format <code>prefix:localName</code>
-     * @param prefixResolver  lookup to resolve mappings between prefix and namespace
-     * @return  the QName
+     * @param qname
+     *            qualified name of the following format <code>prefix:localName</code>
+     * @param prefixResolver
+     *            lookup to resolve mappings between prefix and namespace
+     * @return the QName
      */
     public static QName createQName(String qname, NamespacePrefixResolver prefixResolver)
-        throws InvalidQNameException, NamespaceException
+            throws InvalidQNameException, NamespaceException
     {
         QName name = null;
         if (qname != null)
         {
             int colonIndex = qname.indexOf(NAMESPACE_PREFIX);
             String prefix = (colonIndex == -1) ? NamespaceService.DEFAULT_PREFIX : qname.substring(0, colonIndex);
-            String localName = (colonIndex == -1) ? qname : qname.substring(colonIndex +1);
+            String localName = (colonIndex == -1) ? qname : qname.substring(colonIndex + 1);
             name = createQName(prefix, localName, prefixResolver);
         }
         return name;
     }
-
 
     /**
      * Create a QName from its internal string representation of the following format:
      * 
      * <code>{namespaceURI}localName</code>
      * 
-     * @param qname  the string representation of the QName
+     * @param qname
+     *            the string representation of the QName
      * @return the QName
      * @throws IllegalArgumentException
      * @throws InvalidQNameException
      */
     public static QName createQName(String qname)
-        throws InvalidQNameException
+            throws InvalidQNameException
     {
         if (qname == null || qname.length() == 0)
         {
@@ -186,19 +188,22 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
     /**
      * Create a QName, optionally truncating the localname to {@link QName#MAX_LENGTH}.
      * 
-     * @param namespaceURI  the qualifying namespace (maybe null or empty string)
-     * @param localName     the local name, which will be truncated, if necessary
-     * @return              the QName with potentially-truncated localname
+     * @param namespaceURI
+     *            the qualifying namespace (maybe null or empty string)
+     * @param localName
+     *            the local name, which will be truncated, if necessary
+     * @return the QName with potentially-truncated localname
      */
     public static QName createQNameWithValidLocalName(final String namespaceURI, String localName)
     {
         return new QName(namespaceURI, QName.createValidLocalName(localName), null);
     }
-    
+
     /**
      * Create a valid local name from the specified name
      * 
-     * @param name  name to create valid local name from
+     * @param name
+     *            name to create valid local name from
      * @return valid local name
      */
     public static String createValidLocalName(String name)
@@ -215,36 +220,39 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
 
         return name;
     }
-    
+
     /**
      * Create a QName
      * 
-     * @param qname  qualified name of the following format <code>prefix:localName</code>
-     * @return  string array where index 0 => prefix and index 1 => local name
+     * @param qname
+     *            qualified name of the following format <code>prefix:localName</code>
+     * @return string array where index 0 => prefix and index 1 => local name
      */
     public static String[] splitPrefixedQName(String qname)
-        throws InvalidQNameException, NamespaceException
+            throws InvalidQNameException, NamespaceException
     {
         if (qname != null)
         {
             int colonIndex = qname.indexOf(NAMESPACE_PREFIX);
             String prefix = (colonIndex == -1) ? NamespaceService.DEFAULT_PREFIX : qname.substring(0, colonIndex);
-            String localName = (colonIndex == -1) ? qname : qname.substring(colonIndex +1);
-            return new String[] { prefix, localName };
+            String localName = (colonIndex == -1) ? qname : qname.substring(colonIndex + 1);
+            return new String[]{prefix, localName};
         }
         return null;
     }
 
-    
     /**
      * Construct QName
      * 
-     * @param namespace  qualifying namespace (maybe null or empty string)
-     * @param name  qualified name
-     * @param prefix  prefix (maybe null or empty string)
+     * @param namespace
+     *            qualifying namespace (maybe null or empty string)
+     * @param name
+     *            qualified name
+     * @param prefix
+     *            prefix (maybe null or empty string)
      */
     private QName(String namespace, String name, String prefix)
-    {   
+    {
         this.namespaceURI = ((namespace == null) || (namespace.equals(QName.EMPTY_URI_SUBSTITUTE))) ? NamespaceService.DEFAULT_URI : namespace;
         this.prefix = prefix;
         this.localName = name;
@@ -267,7 +275,6 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
         return this.localName;
     }
 
-
     /**
      * Gets the namespace
      * 
@@ -278,11 +285,11 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
         return this.namespaceURI;
     }
 
-
     /**
      * Gets a prefix resolved version of this QName
      * 
-     * @param resolver  namespace prefix resolver
+     * @param resolver
+     *            namespace prefix resolver
      * @return QName with prefix resolved
      */
     public QName getPrefixedQName(NamespacePrefixResolver resolver)
@@ -297,10 +304,9 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
         {
             return this;
         }
-        return new QName(namespaceURI, localName, resolvedPrefix);        
+        return new QName(namespaceURI, localName, resolvedPrefix);
     }
-    
-    
+
     /**
      * Two QNames are equal only when both their name and namespace match.
      * 
@@ -315,7 +321,7 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
         }
         if (object instanceof QName)
         {
-            QName other = (QName)object;
+            QName other = (QName) object;
             // namespaceURI and localname are not allowed to be null
             return (this.localName.equals(other.localName) &&
                     this.namespaceURI.equals(other.namespaceURI));
@@ -334,8 +340,7 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
     }
 
     /**
-     * Calculate hashCode. Follows pattern used by String where hashCode is
-     * cached (QName is immutable).
+     * Calculate hashCode. Follows pattern used by String where hashCode is cached (QName is immutable).
      */
     @Override
     public int hashCode()
@@ -348,7 +353,6 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
         return this.hashCode;
     }
 
-
     /**
      * Render string representation of QName using format:
      * 
@@ -360,14 +364,13 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
     public String toString()
     {
         return new StringBuilder(80).append(NAMESPACE_BEGIN)
-                                    .append(namespaceURI)
-                                    .append(NAMESPACE_END)
-                                    .append(localName).toString();
+                .append(namespaceURI)
+                .append(NAMESPACE_END)
+                .append(localName).toString();
     }
 
     /**
-     * Uses the {@link #getNamespaceURI() namespace URI} and then the {@link #getLocalName() localname}
-     * to do the comparison i.e. the comparison is alphabetical.
+     * Uses the {@link #getNamespaceURI() namespace URI} and then the {@link #getLocalName() localname} to do the comparison i.e. the comparison is alphabetical.
      */
     public int compareTo(QName qname)
     {
@@ -376,10 +379,9 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
         {
             return namespaceComparison;
         }
-        // Namespaces are the same.  Do comparison on localname
+        // Namespaces are the same. Do comparison on localname
         return this.localName.compareTo(qname.localName);
     }
-
 
     /**
      * Render string representation of QName using format:
@@ -393,18 +395,16 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
         return (prefix == null) ? localName : prefix + NAMESPACE_PREFIX + localName;
     }
 
-    
     /**
      * Getter version of toPrefixString()
      * 
-     * @return  the string representation of QName
+     * @return the string representation of QName
      */
     public String getPrefixString()
     {
         return toPrefixString();
     }
 
-    
     /**
      * Render string representation of QName using format:
      * 
@@ -412,9 +412,10 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
      * 
      * according to namespace prefix mappings of specified namespace resolver.
      * 
-     * @param prefixResolver namespace prefix resolver
+     * @param prefixResolver
+     *            namespace prefix resolver
      * 
-     * @return  the string representation
+     * @return the string representation
      */
     public String toPrefixString(NamespacePrefixResolver prefixResolver)
     {
@@ -434,12 +435,11 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
         }
     }
 
-
     /**
-     * Creates a QName representation for the given String. If the String has no namespace the Alfresco namespace is
-     * added. If the String has a prefix an attempt to resolve the prefix to the full URI will be made.
+     * Creates a QName representation for the given String. If the String has no namespace the Alfresco namespace is added. If the String has a prefix an attempt to resolve the prefix to the full URI will be made.
      * 
-     * @param str The string to convert
+     * @param str
+     *            The string to convert
      * @return A QName representation of the given string
      */
     public static QName resolveToQName(NamespacePrefixResolver prefixResolver, String str)
@@ -479,11 +479,8 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
         return qname;
     }
 
-
     /**
-     * Creates a string representation of a QName for the given string. If the given string already has a namespace,
-     * either a URL or a prefix, nothing the given string is returned. If it does not have a namespace the Alfresco
-     * namespace is added.
+     * Creates a string representation of a QName for the given string. If the given string already has a namespace, either a URL or a prefix, nothing the given string is returned. If it does not have a namespace the Alfresco namespace is added.
      * 
      * @param str
      *            The string to convert
@@ -508,21 +505,21 @@ public final class QName implements QNamePattern, Serializable, Cloneable, Compa
                 String prefix = str.substring(0, end);
                 String localName = str.substring(end + 1);
                 String uri = prefixResolver.getNamespaceURI(prefix);
-    
+
                 if (uri != null)
                 {
                     result = new StringBuilder(64).append(NAMESPACE_BEGIN).append(uri).append(NAMESPACE_END)
-                                                  .append(localName).toString();
+                            .append(localName).toString();
                 }
             }
             else
             {
                 // there's no namespace so prefix with Alfresco's Content Model
                 result = new StringBuilder(64).append(NAMESPACE_BEGIN).append(NamespaceService.CONTENT_MODEL_1_0_URI)
-                                              .append(NAMESPACE_END).append(str).toString();
+                        .append(NAMESPACE_END).append(str).toString();
             }
         }
-        
+
         return result;
     }
 }

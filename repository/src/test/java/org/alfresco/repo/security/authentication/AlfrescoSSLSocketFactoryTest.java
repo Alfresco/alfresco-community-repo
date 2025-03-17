@@ -25,12 +25,13 @@
  */
 package org.alfresco.repo.security.authentication;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.junit.Test;
+import static org.junit.Assert.fail;
 
 import java.security.KeyStore;
 
-import static org.junit.Assert.fail;
+import org.junit.Test;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * SSL socket factory test

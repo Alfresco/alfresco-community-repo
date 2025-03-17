@@ -35,19 +35,18 @@ public class LuceneChildApplicationContextFactory extends ChildApplicationContex
 {
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.ChildApplicationContextFactory#createInitialState()
-     */
+     * 
+     * @see org.alfresco.repo.management.subsystems.ChildApplicationContextFactory#createInitialState() */
     @Override
     protected PropertyBackedBeanState createInitialState() throws IOException
     {
         return new ApplicationContextState(true);
     }
-    
+
     protected void destroy(boolean isPermanent)
     {
         super.destroy(isPermanent);
         doInit();
     }
 
-    
 }

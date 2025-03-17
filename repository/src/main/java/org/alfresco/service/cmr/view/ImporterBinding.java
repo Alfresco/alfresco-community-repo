@@ -27,7 +27,6 @@ package org.alfresco.service.cmr.view;
 
 import org.alfresco.service.namespace.QName;
 
-
 /**
  * Encapsulation of Import binding parameters
  * 
@@ -37,7 +36,7 @@ public interface ImporterBinding
 {
 
     /**
-     * UUID Binding 
+     * UUID Binding
      */
     public enum UUID_BINDING
     {
@@ -47,30 +46,30 @@ public interface ImporterBinding
     /**
      * Gets the Node UUID Binding
      * 
-     * @return  UUID_BINDING
+     * @return UUID_BINDING
      */
     public UUID_BINDING getUUIDBinding();
 
     /**
-     * Gets whether the search for imported node references should search within the import
-     * transaction or not.
+     * Gets whether the search for imported node references should search within the import transaction or not.
      * 
-     * @return true => search within import transaction;  false => only search existing committed items 
+     * @return true => search within import transaction; false => only search existing committed items
      */
     public boolean allowReferenceWithinTransaction();
-    
+
     /**
      * Gets a value for the specified name - to support simple name / value substitution
      * 
-     * @param key   the value name
-     * @return  the value
+     * @param key
+     *            the value name
+     * @return the value
      */
     public String getValue(String key);
 
     /**
      * Gets the list of content model classes to exclude from import
      * 
-     * @return  list of model class qnames to exclude (return null to indicate use of default list)
+     * @return list of model class qnames to exclude (return null to indicate use of default list)
      */
     public QName[] getExcludedClasses();
 

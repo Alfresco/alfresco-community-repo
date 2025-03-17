@@ -30,11 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.rating.Rating;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.service.cmr.rating.Rating;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * This class is the controller for the ratings.get web script.
@@ -50,10 +51,10 @@ public class RatingsGet extends AbstractRatingWebScript
         Map<String, Object> model = new HashMap<String, Object>();
 
         NodeRef nodeRef = parseRequestForNodeRef(req);
-        
+
         // These are the data for the current user's ratings of this node, if any.
         List<Rating> myRatings = new ArrayList<Rating>();
-        
+
         // These maps hold the average rating, accumulated total of all ratings and
         // the number of ratings applied for this node as a function of rating scheme.
         Map<String, Float> averageRatings = new HashMap<String, Float>();
@@ -77,7 +78,7 @@ public class RatingsGet extends AbstractRatingWebScript
         model.put(AVERAGE_RATINGS, averageRatings);
         model.put(RATINGS_TOTALS, ratingsTotals);
         model.put(RATINGS_COUNTS, ratingsCounts);
-      
+
         return model;
     }
 }

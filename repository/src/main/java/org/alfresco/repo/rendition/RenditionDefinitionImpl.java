@@ -80,73 +80,48 @@ public class RenditionDefinitionImpl extends ActionImpl implements RenditionDefi
         super(action, renderingEngineName);
     }
 
-    /*
-     * @see
-     * org.alfresco.service.cmr.rendition.RenditionDefinition#getRenditionName()
-     */
+    /* @see org.alfresco.service.cmr.rendition.RenditionDefinition#getRenditionName() */
     public QName getRenditionName()
     {
         Serializable parameterValue = getParameterValue(RENDITION_DEFINITION_NAME);
-		return (QName) parameterValue;
+        return (QName) parameterValue;
     }
 
-    /*
-     * @see
-     * org.alfresco.service.cmr.rendition.RenditionDefinition#getRenditionParent
-     * ()
-     */
+    /* @see org.alfresco.service.cmr.rendition.RenditionDefinition#getRenditionParent () */
     public NodeRef getRenditionParent()
     {
         return this.renditionParent;
     }
 
-    /*
-     * @see
-     * org.alfresco.service.cmr.rendition.RenditionDefinition#setRenditionParent
-     * (org.alfresco.service.cmr.repository.NodeRef)
-     */
+    /* @see org.alfresco.service.cmr.rendition.RenditionDefinition#setRenditionParent (org.alfresco.service.cmr.repository.NodeRef) */
     public void setRenditionParent(NodeRef renditionParent)
     {
         this.renditionParent = renditionParent;
     }
 
-    /*
-     * @seeorg.alfresco.service.cmr.rendition.RenditionDefinition#
-     * getRenditionAssociationType()
-     */
+    /* @seeorg.alfresco.service.cmr.rendition.RenditionDefinition# getRenditionAssociationType() */
     public QName getRenditionAssociationType()
     {
         return this.renditionAssociationType;
     }
 
-    /*
-     * @seeorg.alfresco.service.cmr.rendition.RenditionDefinition#
-     * setRenditionAssociationType(org.alfresco.service.namespace.QName)
-     */
+    /* @seeorg.alfresco.service.cmr.rendition.RenditionDefinition# setRenditionAssociationType(org.alfresco.service.namespace.QName) */
     public void setRenditionAssociationType(QName renditionAssociationType)
     {
         this.renditionAssociationType = renditionAssociationType;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see
-     * org.alfresco.service.cmr.rendition.RenditionDefinition#setCallback(org
-     * .alfresco.service.cmr.rendition.RenderCallback)
-     */
+     * @see org.alfresco.service.cmr.rendition.RenditionDefinition#setCallback(org .alfresco.service.cmr.rendition.RenderCallback) */
     public void setCallback(RenderCallback callback)
     {
         this.renderCallback = callback;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see
-     * org.alfresco.service.cmr.rendition.RenditionDefinition#setCallback(org
-     * .alfresco.service.cmr.rendition.RenderCallback)
-     */
+     * @see org.alfresco.service.cmr.rendition.RenditionDefinition#setCallback(org .alfresco.service.cmr.rendition.RenderCallback) */
     public RenderCallback getCallback()
     {
         return this.renderCallback;

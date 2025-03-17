@@ -35,11 +35,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -53,9 +54,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.usage.RepoUsageComponent;
 import org.alfresco.repo.usage.RepoUsageComponentImpl;
-import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.admin.RepoUsage;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -76,14 +75,12 @@ import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 @Category({OwnJVMTestsCategory.class})
 public class PersonTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    
+
     private TransactionService transactionService;
     private PersonService personService;
     private UserNameMatcherImpl userNameMatcher;
@@ -100,14 +97,14 @@ public class PersonTest extends TestCase
     public void setUp() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
         {
             throw new AlfrescoRuntimeException(
                     "A previous tests did not clean up transaction: " +
-                    AlfrescoTransactionSupport.getTransactionId());
+                            AlfrescoTransactionSupport.getTransactionId());
         }
-        
+
         transactionService = (TransactionService) ctx.getBean("transactionService");
         personService = (PersonService) ctx.getBean("personService");
         userNameMatcher = (UserNameMatcherImpl) ctx.getBean("userNameMatcher");
@@ -120,7 +117,7 @@ public class PersonTest extends TestCase
         testTX = transactionService.getUserTransaction();
         testTX.begin();
 
-        //Set a max number of users.
+        // Set a max number of users.
         RepoUsageComponentImpl repoUsageComponent = (RepoUsageComponentImpl) ctx.getBean("repoUsageComponent");
         RepoUsage r = repoUsageComponent.getRestrictions();
         repoUsageComponent.setRestrictions(
@@ -130,10 +127,10 @@ public class PersonTest extends TestCase
                         r.getLicenseMode(),
                         r.getLicenseExpiryDate(),
                         r.isReadOnly()));
-        
+
         StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
-        
+
         for (NodeRef nodeRef : personService.getAllPeople())
         {
             String uid = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
@@ -142,9 +139,9 @@ public class PersonTest extends TestCase
                 personService.deletePerson(nodeRef);
             }
         }
-        
+
         personService.setCreateMissingPeople(true);
-        
+
         testTX.commit();
         testTX = transactionService.getUserTransaction();
         testTX.begin();
@@ -154,54 +151,51 @@ public class PersonTest extends TestCase
     protected void tearDown() throws Exception
     {
         userNameMatcher.setUserNamesAreCaseSensitive(false); // Put back the default
-        
-        /*
-         * The default value for the CreateMissingPeople is true (see
-         * "server.transaction.allow-writes"). So if the last executed test in
-         * this class changes the value to false, and this class is executed
-         * within the same context as other security classes (e.g. SecurityTestSuite), 
-         * any test that follows and rely on the default
-         * value will fail. E.g. OwnableServiceTest.testCMObject().
-         */
+
+        /* The default value for the CreateMissingPeople is true (see "server.transaction.allow-writes"). So if the last executed test in this class changes the value to false, and this class is executed within the same context as other security classes (e.g. SecurityTestSuite), any test that follows and rely on the default value will fail. E.g. OwnableServiceTest.testCMObject(). */
         personService.setCreateMissingPeople(true); // Put back the default
         if (testTX != null)
         {
-            try { testTX.rollback(); } catch (Throwable e) {}
+            try
+            {
+                testTX.rollback();
+            }
+            catch (Throwable e)
+            {}
         }
         AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
     }
-    
-    
+
     private int getPeopleCount()
     {
         // Can either get a large page with all results (up to a given max) ...
-        
+
         PagingRequest pagingRequest = new PagingRequest(20000, null); // note: people (up to max of 20000)
         int count = personService.getPeople(null, null, null, pagingRequest).getPage().size();
-        
+
         // ... or request 1 item + total count (up to a given max)
-        
+
         pagingRequest = new PagingRequest(0, 1, null);
         pagingRequest.setRequestTotalCountMax(20000); // note: request total people count (up to max of 20000)
-        
+
         PagingResults<PersonInfo> ppr = personService.getPeople(null, null, null, pagingRequest);
-        
+
         Pair<Integer, Integer> totalResultCount = ppr.getTotalResultCount();
         assertNotNull(totalResultCount);
         assertTrue(totalResultCount.getFirst() == totalResultCount.getSecond());
-        
+
         assertEquals(count, totalResultCount.getFirst().intValue());
-        
+
         return count;
-        
+
     }
-    
+
     private void checkPeopleContain(String userName)
     {
         PagingRequest pagingRequest = new PagingRequest(0, 20000, null);
         PagingResults<PersonInfo> ppr = personService.getPeople(null, null, null, pagingRequest);
-        
+
         boolean found = false;
         for (PersonInfo person : ppr.getPage())
         {
@@ -213,7 +207,7 @@ public class PersonTest extends TestCase
         }
         assertTrue(found);
     }
-    
+
     public void xtestLazyHomeFolderCreation() throws Exception
     {
         String firstName = "" + System.currentTimeMillis();
@@ -236,10 +230,9 @@ public class PersonTest extends TestCase
         testTX.commit();
         testTX = transactionService.getUserTransaction();
         testTX.begin();
-        
+
         RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
-        helper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        helper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 assertTrue(personService.personExists(username));
@@ -248,24 +241,24 @@ public class PersonTest extends TestCase
                 NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(madePerson, ContentModel.PROP_HOMEFOLDER));
                 if (homeFolder == null)
                 {
-                   throw new IllegalStateException("Home folder not created lazily");
+                    throw new IllegalStateException("Home folder not created lazily");
                 }
                 return null;
             }
         }, true, false);
-     
+
         homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(madePerson, ContentModel.PROP_HOMEFOLDER));
         if (homeFolder == null)
         {
             throw new IllegalStateException("Home folder not created lazily");
         }
     }
-    
+
     public void testZones()
     {
         assertNull(authorityService.getAuthorityZones("derek"));
         assertNull(authorityService.getAuthorityZones("null"));
-        
+
         personService.createPerson(createDefaultProperties("derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
         Set<String> zones = authorityService.getAuthorityZones("derek");
         assertEquals(2, zones.size());
@@ -273,55 +266,55 @@ public class PersonTest extends TestCase
         assertEquals(0, authorityService.getAuthorityZones("derek").size());
         authorityService.addAuthorityToZones("derek", zones);
         assertEquals(2, authorityService.getAuthorityZones("derek").size());
-        
+
         HashSet<String> newZones = null;
         personService.createPerson(createDefaultProperties("null", "null", "null", "null", "null", rootNodeRef), newZones);
         assertEquals(0, authorityService.getAuthorityZones("null").size());
-        
+
         newZones = new HashSet<String>();
         personService.createPerson(createDefaultProperties("empty", "empty", "empty", "empty", "empty", rootNodeRef), newZones);
         assertEquals(0, authorityService.getAuthorityZones("empty").size());
-        
+
         newZones.add("One");
         personService.createPerson(createDefaultProperties("1", "1", "1", "1", "1", rootNodeRef), newZones);
         assertEquals(1, authorityService.getAuthorityZones("1").size());
-        
+
         newZones.add("Two");
         personService.createPerson(createDefaultProperties("2", "2", "2", "2", "2", rootNodeRef), newZones);
         assertEquals(2, authorityService.getAuthorityZones("2").size());
-        
+
         newZones.add("Three");
         personService.createPerson(createDefaultProperties("3", "3", "3", "3", "3", rootNodeRef), newZones);
         assertEquals(3, authorityService.getAuthorityZones("3").size());
-        
+
         HashSet<String> toRemove = null;
         authorityService.removeAuthorityFromZones("3", toRemove);
         assertEquals(3, authorityService.getAuthorityZones("3").size());
-        
+
         toRemove = new HashSet<String>();
         authorityService.removeAuthorityFromZones("3", toRemove);
         assertEquals(3, authorityService.getAuthorityZones("3").size());
-        
+
         toRemove.add("Three");
         authorityService.removeAuthorityFromZones("3", toRemove);
         assertEquals(2, authorityService.getAuthorityZones("3").size());
-        
+
         toRemove.add("Two");
         authorityService.removeAuthorityFromZones("3", toRemove);
         assertEquals(1, authorityService.getAuthorityZones("3").size());
-        
+
         toRemove.add("One");
         authorityService.removeAuthorityFromZones("3", toRemove);
         assertEquals(0, authorityService.getAuthorityZones("3").size());
-        
+
         authorityService.addAuthorityToZones("3", newZones);
         assertEquals(3, authorityService.getAuthorityZones("3").size());
         assertEquals(3, authorityService.getAllAuthoritiesInZone("One", null).size());
         assertEquals(2, authorityService.getAllAuthoritiesInZone("Two", null).size());
         assertEquals(1, authorityService.getAllAuthoritiesInZone("Three", null).size());
-        
+
     }
-    
+
     public void xtestPerformance()
     {
         personService.setCreateMissingPeople(false);
@@ -448,14 +441,14 @@ public class PersonTest extends TestCase
         {
 
         }
-        //Just for .equals
+        // Just for .equals
         assertTrue(personService.equals(personService));
     }
 
     public void testPersonServiceImpl()
     {
         PersonServiceImpl theImpl = (PersonServiceImpl) personService;
-        assertTrue("Tests the impl method. We should have at least 1 person.", theImpl.countPeople()>0);
+        assertTrue("Tests the impl method. We should have at least 1 person.", theImpl.countPeople() > 0);
     }
 
     public void testCreatePersonWithIllegalCharacters() throws Exception
@@ -467,7 +460,7 @@ public class PersonTest extends TestCase
             try
             {
                 personService.createPerson(createDefaultProperties(personName, "Some", "User", "some.user@example.com", "alfresco", rootNodeRef));
-                fail("IllegalArgumentException not caught for illegalCharacter: " +personName.charAt(personName.indexOf(illegalCharacter)));
+                fail("IllegalArgumentException not caught for illegalCharacter: " + personName.charAt(personName.indexOf(illegalCharacter)));
             }
             catch (IllegalArgumentException ignored)
             {
@@ -541,35 +534,35 @@ public class PersonTest extends TestCase
     public void testCreateMissingPeople()
     {
         assertEquals(2, getPeopleCount());
-        
+
         checkPeopleContain(AuthenticationUtil.getAdminUserName());
         checkPeopleContain(AuthenticationUtil.getGuestUserName());
-        
+
         assertFalse(personService.personExists("andy"));
         assertFalse(personService.personExists("derek"));
-        
+
         personService.setCreateMissingPeople(false);
         assertFalse(personService.createMissingPeople());
-        
+
         personService.setCreateMissingPeople(true);
         assertTrue(personService.createMissingPeople());
-        
+
         NodeRef nodeRef = personService.getPerson("andy");
         assertNotNull(nodeRef);
         testProperties(nodeRef, "andy", "andy", "", "", "");
-        
+
         personService.setCreateMissingPeople(true);
         personService.setPersonProperties("derek", createDefaultProperties("derek", "Derek", "Hulley", "dh@dh", "alfresco", rootNodeRef));
         testProperties(personService.getPerson("derek"), "derek", "Derek", "Hulley", "dh@dh", "alfresco");
-        
+
         testProperties(personService.getPerson("andy"), "andy", "andy", "", "", "");
-        
+
         assertTrue(personService.personExists("andy"));
         assertTrue(personService.personExists("derek"));
-        
+
         checkPeopleContain("andy");
         checkPeopleContain("derek");
-        
+
         assertEquals(4, getPeopleCount());
     }
 
@@ -683,85 +676,85 @@ public class PersonTest extends TestCase
         personService.deletePerson("Derek");
         assertEquals(2, getPeopleCount());
     }
-    
+
     public void testPeopleFiltering()
     {
         personService.setCreateMissingPeople(false);
-        
+
         assertEquals(2, getPeopleCount());
-        
+
         checkPeopleContain(AuthenticationUtil.getAdminUserName());
         checkPeopleContain(AuthenticationUtil.getGuestUserName());
-        
+
         personService.createPerson(createDefaultProperties("aa", "Aa", "Aa", "aa@aa", "alfresco", rootNodeRef));
         personService.createPerson(createDefaultProperties("bc", "c", "C", "bc@bc", "alfresco", rootNodeRef));
         personService.createPerson(createDefaultProperties("yy", "B", "D", "yy@yy", "alfresco", rootNodeRef));
         personService.createPerson(createDefaultProperties("Yz", "yz", "B", "yz@yz", "alfresco", rootNodeRef));
-        
+
         assertEquals(6, getPeopleCount());
-        
+
         PagingRequest pr = new PagingRequest(100, null);
-        
+
         PagingResults<PersonInfo> people = personService.getPeople(null, null, null, null, false, null, pr);
         assertEquals("Administrators not filtered", 5, people.getPage().size());
 
         List<QName> filters = new ArrayList<QName>(4);
-        
+
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
         assertEquals(2, personService.getPeople("y", filters, null, pr).getPage().size());
-        
+
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
         filters.add(ContentModel.PROP_FIRSTNAME);
         filters.add(ContentModel.PROP_LASTNAME);
         assertEquals(3, personService.getPeople("b", filters, null, pr).getPage().size());
-        
+
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
         assertEquals(2, personService.getPeople("A", filters, null, pr).getPage().size()); // includes "admin"
-        
+
         personService.deletePerson("aa");
-        
+
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
         assertEquals(1, personService.getPeople("a", filters, null, pr).getPage().size()); // includes "admin"
-        
+
         // a* is the same as a
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
         assertEquals(1, personService.getPeople("a*", filters, null, pr).getPage().size()); // includes "admin"
-        
+
         // * means everyone
         filters.clear();
         filters.add(ContentModel.PROP_USERNAME);
         assertEquals(5, getPeopleCount());
         assertEquals(5, personService.getPeople("*", filters, null, pr).getPage().size());
     }
-    
+
     public void testPeopleSortingPaging()
     {
         personService.setCreateMissingPeople(false);
-        
+
         assertEquals(2, getPeopleCount());
-        
+
         NodeRef p1 = personService.getPerson(AuthenticationUtil.getAdminUserName()); // admin - by default
         NodeRef p2 = personService.getPerson(AuthenticationUtil.getGuestUserName()); // guest - by default
-        
+
         NodeRef p3 = personService.createPerson(createDefaultProperties("aa", "Aa", "Aa", "aa@aa", "alfresco", rootNodeRef));
         NodeRef p4 = personService.createPerson(createDefaultProperties("cc", "Cc", "Cc", "cc@cc", "alfresco", rootNodeRef));
         NodeRef p5 = personService.createPerson(createDefaultProperties("hh", "Hh", "Hh", "hh@hh", "alfresco", rootNodeRef));
         NodeRef p6 = personService.createPerson(createDefaultProperties("bb", "Bb", "Bb", "bb@bb", "alfresco", rootNodeRef));
         NodeRef p7 = personService.createPerson(createDefaultProperties("dd", "Dd", "Dd", "dd@dd", "alfresco", rootNodeRef));
-        
+
         int expectedTotalCount = 7;
         assertEquals(expectedTotalCount, getPeopleCount());
-        
-        Pair<Integer,Integer> expectedResultCount = new Pair<Integer,Integer>(expectedTotalCount,expectedTotalCount);
-        
+
+        Pair<Integer, Integer> expectedResultCount = new Pair<Integer, Integer>(expectedTotalCount, expectedTotalCount);
+
         List<Pair<QName, Boolean>> sort = new ArrayList<Pair<QName, Boolean>>(1);
-        sort.add(new Pair<QName,Boolean>(ContentModel.PROP_USERNAME, true));
-        
+        sort.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, true));
+
         // page 1
         PagingRequest pr = new PagingRequest(0, 2, null);
         PagingResults<PersonInfo> ppr = personService.getPeople(null, true, sort, pr);
@@ -769,18 +762,18 @@ public class PersonTest extends TestCase
         assertEquals(2, results.size());
         assertEquals(p3, results.get(0).getNodeRef());
         assertEquals(p1, results.get(1).getNodeRef());
-        
+
         // page 2 (with total count)
         pr = new PagingRequest(2, 2, null);
         pr.setRequestTotalCountMax(Integer.MAX_VALUE);
-        
+
         ppr = personService.getPeople(null, true, sort, pr);
         results = ppr.getPage();
         assertEquals(2, results.size());
         assertEquals(p6, results.get(0).getNodeRef());
         assertEquals(p4, results.get(1).getNodeRef());
         assertEquals(expectedResultCount, ppr.getTotalResultCount());
-        
+
         // page 3
         pr = new PagingRequest(4, 2, null);
         ppr = personService.getPeople(null, true, sort, pr);
@@ -788,42 +781,42 @@ public class PersonTest extends TestCase
         assertEquals(2, results.size());
         assertEquals(p7, results.get(0).getNodeRef());
         assertEquals(p2, results.get(1).getNodeRef());
-        
+
         // page 4 (with total count)
         pr = new PagingRequest(6, 2, null);
         pr.setRequestTotalCountMax(Integer.MAX_VALUE);
-        
+
         ppr = personService.getPeople(null, true, sort, pr);
         results = ppr.getPage();
         assertEquals(1, results.size());
         assertEquals(p5, results.get(0).getNodeRef());
         assertEquals(expectedResultCount, ppr.getTotalResultCount());
     }
-    
+
     public void testPeopleSortingPaging_NoAdmin()
     {
         personService.setCreateMissingPeople(false);
-        
+
         assertEquals(2, getPeopleCount());
-        
+
         NodeRef p1 = personService.getPerson(AuthenticationUtil.getAdminUserName()); // admin - by default
         NodeRef p2 = personService.getPerson(AuthenticationUtil.getGuestUserName()); // guest - by default
-        
+
         NodeRef p3 = personService.createPerson(createDefaultProperties("aa", "Aa", "Aa", "aa@aa", "alfresco", rootNodeRef));
         NodeRef p4 = personService.createPerson(createDefaultProperties("cc", "Cc", "Cc", "cc@cc", "alfresco", rootNodeRef));
         NodeRef p5 = personService.createPerson(createDefaultProperties("hh", "Hh", "Hh", "hh@hh", "alfresco", rootNodeRef));
         NodeRef p6 = personService.createPerson(createDefaultProperties("bb", "Bb", "Bb", "bb@bb", "alfresco", rootNodeRef));
         NodeRef p7 = personService.createPerson(createDefaultProperties("dd", "Dd", "Dd", "dd@dd", "alfresco", rootNodeRef));
-        
+
         int expectedTotalCount = 7;
         assertEquals(expectedTotalCount, getPeopleCount());
-        
+
         int expectedTotalCountWithAdmin = expectedTotalCount - 1;
-        Pair<Integer,Integer> expectedResultCount = new Pair<Integer,Integer>(expectedTotalCountWithAdmin,expectedTotalCountWithAdmin);
-        
+        Pair<Integer, Integer> expectedResultCount = new Pair<Integer, Integer>(expectedTotalCountWithAdmin, expectedTotalCountWithAdmin);
+
         List<Pair<QName, Boolean>> sort = new ArrayList<Pair<QName, Boolean>>(1);
-        sort.add(new Pair<QName,Boolean>(ContentModel.PROP_USERNAME, true));
-        
+        sort.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, true));
+
         // page 1
         PagingRequest pr = new PagingRequest(0, 2, null);
         PagingResults<PersonInfo> ppr = personService.getPeople(null, null, null, null, false, sort, pr);
@@ -831,18 +824,18 @@ public class PersonTest extends TestCase
         assertEquals(2, results.size());
         assertEquals(p3, results.get(0).getNodeRef());
         assertEquals(p6, results.get(1).getNodeRef());
-        
+
         // page 2 (with total count)
         pr = new PagingRequest(2, 2, null);
         pr.setRequestTotalCountMax(Integer.MAX_VALUE);
-        
+
         ppr = personService.getPeople(null, null, null, null, false, sort, pr);
         results = ppr.getPage();
         assertEquals(2, results.size());
         assertEquals(p4, results.get(0).getNodeRef());
         assertEquals(p7, results.get(1).getNodeRef());
         assertEquals(expectedResultCount, ppr.getTotalResultCount());
-        
+
         // page 3
         pr = new PagingRequest(4, 2, null);
         ppr = personService.getPeople(null, null, null, null, false, sort, pr);
@@ -850,40 +843,38 @@ public class PersonTest extends TestCase
         assertEquals(2, results.size());
         assertEquals(p2, results.get(0).getNodeRef());
         assertEquals(p5, results.get(1).getNodeRef());
-        
+
         // page 4 (with total count)
         pr = new PagingRequest(6, 2, null);
         pr.setRequestTotalCountMax(Integer.MAX_VALUE);
-        
+
         ppr = personService.getPeople(null, null, null, null, false, sort, pr);
         results = ppr.getPage();
         assertEquals(0, results.size());
         assertEquals(expectedResultCount, ppr.getTotalResultCount());
     }
-    
+
     // note: this test can be removed as and when we remove the deprecated "getPeople" impl
     public void testPeopleSortingPaging_deprecatedCQ_via_getChildren()
     {
         personService.setCreateMissingPeople(false);
-        
+
         assertEquals(2, getPeopleCount());
-        
+
         NodeRef p1 = personService.getPerson(AuthenticationUtil.getAdminUserName()); // admin - by default
         NodeRef p2 = personService.getPerson(AuthenticationUtil.getGuestUserName()); // guest - by default
-        
+
         NodeRef p3 = personService.createPerson(createDefaultProperties("aa", "Aa", "Aa", "aa@aa", "alfresco", rootNodeRef));
         NodeRef p4 = personService.createPerson(createDefaultProperties("cc", "Cc", "Cc", "cc@cc", "alfresco", rootNodeRef));
         NodeRef p5 = personService.createPerson(createDefaultProperties("hh", "Hh", "Hh", "hh@hh", "alfresco", rootNodeRef));
         NodeRef p6 = personService.createPerson(createDefaultProperties("bb", "Bb", "Bb", "bb@bb", "alfresco", rootNodeRef));
         NodeRef p7 = personService.createPerson(createDefaultProperties("dd", "Dd", "Dd", "dd@dd", "alfresco", rootNodeRef));
-        
-        
-        
+
         assertEquals(7, getPeopleCount());
-        
+
         List<Pair<QName, Boolean>> sort = new ArrayList<Pair<QName, Boolean>>(1);
-        sort.add(new Pair<QName,Boolean>(ContentModel.PROP_USERNAME, true));
-        
+        sort.add(new Pair<QName, Boolean>(ContentModel.PROP_USERNAME, true));
+
         // page 1
         PagingRequest pr = new PagingRequest(0, 2, null);
         PagingResults<PersonInfo> ppr = personService.getPeople(null, null, sort, pr);
@@ -891,7 +882,7 @@ public class PersonTest extends TestCase
         assertEquals(2, results.size());
         assertEquals(p3, results.get(0).getNodeRef());
         assertEquals(p1, results.get(1).getNodeRef());
-        
+
         // page 2
         pr = new PagingRequest(2, 2, null);
         ppr = personService.getPeople(null, null, sort, pr);
@@ -899,7 +890,7 @@ public class PersonTest extends TestCase
         assertEquals(2, results.size());
         assertEquals(p6, results.get(0).getNodeRef());
         assertEquals(p4, results.get(1).getNodeRef());
-        
+
         // page 3
         pr = new PagingRequest(4, 2, null);
         ppr = personService.getPeople(null, null, sort, pr);
@@ -907,7 +898,7 @@ public class PersonTest extends TestCase
         assertEquals(2, results.size());
         assertEquals(p7, results.get(0).getNodeRef());
         assertEquals(p2, results.get(1).getNodeRef());
-        
+
         // page 4
         pr = new PagingRequest(6, 2, null);
         ppr = personService.getPeople(null, null, sort, pr);
@@ -999,15 +990,13 @@ public class PersonTest extends TestCase
     {
         // Kill the annoying Spring-managed txn
         testTX.commit();
-        
 
         boolean createMissingPeople = personService.createMissingPeople();
         assertTrue("Default should be to create missing people", createMissingPeople);
 
         final String username = "Derek";
         // Make sure that the person is missing
-        RetryingTransactionCallback<Object> deletePersonWork = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> deletePersonWork = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 personService.deletePerson(username);
@@ -1016,8 +1005,7 @@ public class PersonTest extends TestCase
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(deletePersonWork, false, true);
         // Make a read-only transaction and check that we get NoSuchPersonException
-        RetryingTransactionCallback<NodeRef> getMissingPersonWork = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> getMissingPersonWork = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 return personService.getPerson(username);
@@ -1034,17 +1022,16 @@ public class PersonTest extends TestCase
         }
         // It should work in a write transaction, though
         transactionService.getRetryingTransactionHelper().doInTransaction(getMissingPersonWork, false, true);
-        
+
         transactionService.getRetryingTransactionHelper().doInTransaction(deletePersonWork, false, true);
     }
-    
+
     /**
-     * Disabled due to time constraints.  This <i>does</i> highlight a problem, but one that won't manifest
-     * itself critically in the product.
+     * Disabled due to time constraints. This <i>does</i> highlight a problem, but one that won't manifest itself critically in the product.
      */
     public void xtestSplitPersonCleanupManyTimes() throws Throwable
     {
-        for (int i = 0; i < 100; i++)            // Bump this number up to 1000 for 'real' testing
+        for (int i = 0; i < 100; i++) // Bump this number up to 1000 for 'real' testing
         {
             try
             {
@@ -1071,8 +1058,7 @@ public class PersonTest extends TestCase
         // The user to duplicate
         final String duplicateUsername = GUID.generate();
         // Make sure that the person is missing
-        RetryingTransactionCallback<Object> deletePersonWork = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> deletePersonWork = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 personService.deletePerson(duplicateUsername);
@@ -1085,12 +1071,10 @@ public class PersonTest extends TestCase
         final CountDownLatch startLatch = new CountDownLatch(threadCount);
         final CountDownLatch endLatch = new CountDownLatch(threadCount);
         final Map<String, NodeRef> cleanableNodeRefs = new ConcurrentHashMap<String, NodeRef>(17);
-        Runnable createPersonRunnable = new Runnable()
-        {
+        Runnable createPersonRunnable = new Runnable() {
             public void run()
             {
-                final RetryingTransactionCallback<NodeRef> createPersonWork = new RetryingTransactionCallback<NodeRef>()
-                {
+                final RetryingTransactionCallback<NodeRef> createPersonWork = new RetryingTransactionCallback<NodeRef>() {
                     public NodeRef execute() throws Throwable
                     {
                         // Wait for the trigger to start
@@ -1099,8 +1083,7 @@ public class PersonTest extends TestCase
                             startLatch.await();
                         }
                         catch (InterruptedException e)
-                        {
-                        }
+                        {}
 
                         // Trigger
                         NodeRef personNodeRef = personService.getPerson(duplicateUsername);
@@ -1137,21 +1120,19 @@ public class PersonTest extends TestCase
             endLatch.await(60, TimeUnit.SECONDS);
         }
         catch (InterruptedException e)
-        {
-        }
+        {}
 
         // Now, get the user with full split person handling
         personServiceImpl.setDuplicateMode("DELETE");
 
-        RetryingTransactionCallback<NodeRef> getPersonWork = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> getPersonWork = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 return personService.getPerson(duplicateUsername);
             }
         };
         final NodeRef remainingNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(getPersonWork, false, true);
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>(){
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() {
 
             public Object execute() throws Throwable
             {
@@ -1170,10 +1151,10 @@ public class PersonTest extends TestCase
                 }
                 return null;
             }
-        }, true, true);        
+        }, true, true);
     }
-    
-    public void testSplitDuplicates()  throws Exception
+
+    public void testSplitDuplicates() throws Exception
     {
         testProcessDuplicates(true);
 
@@ -1181,14 +1162,14 @@ public class PersonTest extends TestCase
         SplitPersonCleanupBootstrapBean splitPersonBean = new SplitPersonCleanupBootstrapBean();
         splitPersonBean.setNodeService(nodeService);
         splitPersonBean.setPersonService(personService);
-        splitPersonBean.setTransactionService(transactionService);        
+        splitPersonBean.setTransactionService(transactionService);
         Assert.assertEquals(9, splitPersonBean.removePeopleWithGUIDBasedIds());
-        
+
     }
-    
+
     public void testDeleteDuplicates() throws Exception
     {
-        testProcessDuplicates(false);        
+        testProcessDuplicates(false);
     }
 
     private void testProcessDuplicates(final boolean split) throws Exception
@@ -1201,23 +1182,22 @@ public class PersonTest extends TestCase
 
         final String duplicateUserName = GUID.generate();
         final NodeRef[] duplicates = transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionCallback<NodeRef[]>()
-                {
+                new RetryingTransactionCallback<NodeRef[]>() {
                     public NodeRef[] execute() throws Throwable
                     {
                         NodeRef[] duplicates = new NodeRef[10];
-                        
+
                         // Generate a first person node
-                        Map<QName, Serializable> properties = createDefaultProperties(duplicateUserName, "firstName", "lastName", "email@orgId", "orgId", null); 
+                        Map<QName, Serializable> properties = createDefaultProperties(duplicateUserName, "firstName", "lastName", "email@orgId", "orgId", null);
                         duplicates[0] = personService.createPerson(properties);
                         ChildAssociationRef container = nodeService.getPrimaryParent(duplicates[0]);
                         List<ChildAssociationRef> parents = nodeService.getParentAssocs(duplicates[0]);
-                        
+
                         // Generate some duplicates
                         try
                         {
                             policyBehaviourFilter.disableBehaviour(ContentModel.TYPE_PERSON);
-                            
+
                             for (int i = 1; i < duplicates.length; i++)
                             {
                                 // Create the node with the same parent assocs
@@ -1237,16 +1217,15 @@ public class PersonTest extends TestCase
                         {
                             policyBehaviourFilter.enableBehaviour(ContentModel.TYPE_PERSON);
                         }
-                        
+
                         // With the default settings, the last created node should be the one that wins
                         assertEquals(duplicates[duplicates.length - 1], personService.getPerson(duplicateUserName));
                         return duplicates;
                     }
                 }, false, true);
-        
+
         // Check the duplicates were processed appropriately in the previous transaction
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 for (int i = 0; i < duplicates.length - 1; i++)
@@ -1262,7 +1241,7 @@ public class PersonTest extends TestCase
                         assertFalse(nodeService.exists(duplicates[i]));
                     }
                 }
-                
+
                 // Get rid of the non-split person
                 assertTrue(personService.personExists(duplicateUserName));
                 personService.deletePerson(duplicateUserName);
@@ -1270,303 +1249,298 @@ public class PersonTest extends TestCase
             }
         }, false, true);
     }
-    
+
     public void testCheckForDuplicateCaseInsensitive()
     {
         final String TEST_PERSON_MIXED = "Test_Person_One";
         final String TEST_PERSON_UPPER = TEST_PERSON_MIXED.toUpperCase();
         final String TEST_PERSON_LOWER = TEST_PERSON_MIXED.toLowerCase();
-        
+
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         final NodeRef peopleContainer = personService.getPeopleContainer();
-        
+
         final Map<QName, Serializable> personProps = new HashMap<QName, Serializable>();
-        
+
         personProps.put(ContentModel.PROP_HOMEFOLDER, peopleContainer);
         personProps.put(ContentModel.PROP_FIRSTNAME, "test first name");
         personProps.put(ContentModel.PROP_LASTNAME, "test last name");
         personProps.put(ContentModel.PROP_SIZE_CURRENT, 0);
-        
+
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-        
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
-                if (! personService.personExists(TEST_PERSON_UPPER))
+                if (!personService.personExists(TEST_PERSON_UPPER))
                 {
                     personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_MIXED);
                     personService.createPerson(personProps);
                 }
-                
+
                 return null;
             }
         };
-        
+
         txnHelper.doInTransaction(callback);
-        
+
         @SuppressWarnings("unused")
         NodeRef personRef = null;
-        
+
         // -ve test
         try
         {
             @SuppressWarnings("unused")
             ChildAssociationRef childAssocRef = nodeService.createNode(
-                        peopleContainer,
-                        ContentModel.ASSOC_CHILDREN,
-                        QName.createQName("{test}testperson"),
-                        ContentModel.TYPE_PERSON,
-                        personProps);
-            
+                    peopleContainer,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName("{test}testperson"),
+                    ContentModel.TYPE_PERSON,
+                    personProps);
+
             fail("Shouldn't be able to create person node directly (within people container) - use createPerson instead");
         }
         catch (AlfrescoRuntimeException are)
         {
-            if (! are.getMessage().contains("use PersonService"))
+            if (!are.getMessage().contains("use PersonService"))
             {
                 throw are;
             }
             // ignore - expected
         }
-        
+
         // -ve test
         try
         {
             personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_LOWER);
             personRef = personService.createPerson(personProps);
-            
+
             fail("Shouldn't be able to create duplicate person");
         }
         catch (AlfrescoRuntimeException are)
         {
-            if (! are.getMessage().contains("already exists"))
+            if (!are.getMessage().contains("already exists"))
             {
                 throw are;
             }
             // ignore - expected
         }
-        
+
         // -ve test
         try
         {
             personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_UPPER);
             personRef = personService.createPerson(personProps);
-            
+
             fail("Shouldn't be able to create duplicate person");
         }
         catch (AlfrescoRuntimeException are)
         {
-            if (! are.getMessage().contains("already exists"))
+            if (!are.getMessage().contains("already exists"))
             {
                 throw are;
             }
             // ignore - expected
         }
     }
-    
+
     public void testCheckForDuplicateCaseSensitive()
     {
         final String TEST_PERSON_MIXED = "Test_Person_Two";
         final String TEST_PERSON_UPPER = TEST_PERSON_MIXED.toUpperCase();
         final String TEST_PERSON_LOWER = TEST_PERSON_MIXED.toLowerCase();
-        
+
         userNameMatcher.setUserNamesAreCaseSensitive(true);
-        
+
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         final NodeRef peopleContainer = personService.getPeopleContainer();
-        
+
         final Map<QName, Serializable> personProps = new HashMap<QName, Serializable>();
-        
+
         personProps.put(ContentModel.PROP_HOMEFOLDER, peopleContainer);
         personProps.put(ContentModel.PROP_FIRSTNAME, "test first name");
         personProps.put(ContentModel.PROP_LASTNAME, "test last name");
         personProps.put(ContentModel.PROP_SIZE_CURRENT, 0);
-        
+
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-        
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
-                if (! personService.personExists(TEST_PERSON_MIXED))
+                if (!personService.personExists(TEST_PERSON_MIXED))
                 {
                     personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_MIXED);
                     personService.createPerson(personProps);
                 }
-                
+
                 return null;
             }
         };
-        
+
         txnHelper.doInTransaction(callback);
-        
+
         @SuppressWarnings("unused")
         NodeRef personRef = null;
-        
+
         personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_LOWER);
         personRef = personService.createPerson(personProps);
-        
+
         personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_UPPER);
         personRef = personService.createPerson(personProps);
-        
+
         // -ve test
         try
         {
             personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_MIXED);
             personRef = personService.createPerson(personProps);
-            
+
             fail("Shouldn't be able to create duplicate person");
         }
         catch (AlfrescoRuntimeException are)
         {
-            if (! are.getMessage().contains("already exists"))
+            if (!are.getMessage().contains("already exists"))
             {
                 throw are;
             }
             // ignore - expected
         }
-        
+
         // -ve test
         try
         {
             personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_LOWER);
             personRef = personService.createPerson(personProps);
-            
+
             fail("Shouldn't be able to create duplicate person");
         }
         catch (AlfrescoRuntimeException are)
         {
-            if (! are.getMessage().contains("already exists"))
+            if (!are.getMessage().contains("already exists"))
             {
                 throw are;
             }
             // ignore - expected
         }
-        
+
         // -ve test
         try
         {
             personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_MIXED);
             personRef = personService.createPerson(personProps);
-            
+
             fail("Shouldn't be able to create duplicate person");
         }
         catch (AlfrescoRuntimeException are)
         {
-            if (! are.getMessage().contains("already exists"))
+            if (!are.getMessage().contains("already exists"))
             {
                 throw are;
             }
             // ignore - expected
         }
     }
-    
+
     public void testUpdateUserNameCase()
     {
         final String TEST_PERSON_UPPER = "TEST_PERSON_THREE";
         final String TEST_PERSON_LOWER = TEST_PERSON_UPPER.toLowerCase();
-        
+
         userNameMatcher.setUserNamesAreCaseSensitive(true);
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-        
+
         final Map<QName, Serializable> personProps = new HashMap<QName, Serializable>();
-        
+
         personProps.put(ContentModel.PROP_HOMEFOLDER, rootNodeRef);
         personProps.put(ContentModel.PROP_FIRSTNAME, "test first name ");
         personProps.put(ContentModel.PROP_LASTNAME, "test last name");
         personProps.put(ContentModel.PROP_SIZE_CURRENT, 0);
-        
-        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
-        {
+
+        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON_LOWER);
                 return personService.createPerson(personProps);
             }
         };
-        
+
         final NodeRef personRef = txnHelper.doInTransaction(callback);
-        
-        RetryingTransactionCallback<Void> callback2 = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> callback2 = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 nodeService.setProperty(personRef, ContentModel.PROP_USERNAME, TEST_PERSON_UPPER);
-                
+
                 return null;
             }
         };
-        
+
         txnHelper.doInTransaction(callback2);
     }
-    
+
     public void testCheckForIndirectUsage() throws Exception
     {
         final String TEST_PERSON = "Test_Person_Four";
-        
+
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         final NodeRef peopleContainer = personService.getPeopleContainer();
-        
+
         final Map<QName, Serializable> personProps = new HashMap<QName, Serializable>();
-        
+
         personProps.put(ContentModel.PROP_USERNAME, TEST_PERSON);
         personProps.put(ContentModel.PROP_HOMEFOLDER, peopleContainer);
         personProps.put(ContentModel.PROP_FIRSTNAME, "test first name");
         personProps.put(ContentModel.PROP_LASTNAME, "test last name");
         personProps.put(ContentModel.PROP_SIZE_CURRENT, 0);
-        
+
         // -ve test
         try
         {
             @SuppressWarnings("unused")
             ChildAssociationRef childAssocRef = nodeService.createNode(
-                        peopleContainer,
-                        ContentModel.ASSOC_CHILDREN,
-                        QName.createQName("{test}testperson"),
-                        ContentModel.TYPE_PERSON,
-                        personProps);
-            
+                    peopleContainer,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName("{test}testperson"),
+                    ContentModel.TYPE_PERSON,
+                    personProps);
+
             fail("Shouldn't be able to create person node directly (within people container) - use createPerson instead");
         }
         catch (AlfrescoRuntimeException are)
         {
-            if (! are.getMessage().contains("use PersonService"))
+            if (!are.getMessage().contains("use PersonService"))
             {
                 throw are;
             }
             // ignore - expected
         }
-        
+
         NodeRef personRef = personService.createPerson(personProps);
-        
+
         // -ve test
         try
         {
             nodeService.deleteNode(personRef);
-            
+
             fail("Shouldn't be able to delete person node directly (within people container) - use deletePerson instead");
         }
         catch (AlfrescoRuntimeException are)
         {
-            if (! are.getMessage().contains("use PersonService"))
+            if (!are.getMessage().contains("use PersonService"))
             {
                 throw are;
             }
             // ignore - expected
         }
-        
+
         // The transaction is broken
         testTX.rollback();
-        
+
         // Clean up
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1575,13 +1549,13 @@ public class PersonTest extends TestCase
             }
         });
     }
-    
+
     public void testDisableEnablePerson()
     {
         String userName = GUID.generate();
-        
+
         authenticationDAO.createUser(userName, "abc".toCharArray());
-        
+
         Map<QName, Serializable> properties = createDefaultProperties(
                 userName,
                 "firstName",
@@ -1592,40 +1566,40 @@ public class PersonTest extends TestCase
         NodeRef personNodeRef = personService.createPerson(properties);
         assertTrue("Person should be enabled.", authenticationDAO.getEnabled(userName));
         assertFalse("Person should not be disabled.", nodeService.hasAspect(personNodeRef, ContentModel.ASPECT_PERSON_DISABLED));
-        
+
         authenticationDAO.setEnabled(userName, true);
         assertTrue("Person should be enabled.", authenticationDAO.getEnabled(userName));
         assertFalse("Person should not be disabled.", nodeService.hasAspect(personNodeRef, ContentModel.ASPECT_PERSON_DISABLED));
-        
+
         authenticationDAO.setEnabled(userName, false);
         assertFalse("Person should be disabled.", authenticationDAO.getEnabled(userName));
         assertFalse("Person should be disabled.", personService.isEnabled(userName));
         assertTrue("Person should be disabled.", nodeService.hasAspect(personNodeRef, ContentModel.ASPECT_PERSON_DISABLED));
     }
-    
+
     public void testDisableEnableAdmin()
     {
         String admin = AuthenticationUtil.getAdminUserName();
-        
+
         assertTrue("Admin must be enabled", authenticationDAO.getEnabled(admin));
         authenticationDAO.setEnabled(admin, true);
         assertTrue("Admin must be enabled", authenticationDAO.getEnabled(admin));
         authenticationDAO.setEnabled(admin, false);
         assertTrue("Admin must STILL be enabled", authenticationDAO.getEnabled(admin));
-        
+
         assertFalse("Admin must be unlocked", authenticationDAO.getLocked(admin));
         authenticationDAO.setLocked(admin, false);
         assertFalse("Admin must be unlocked", authenticationDAO.getLocked(admin));
         authenticationDAO.setLocked(admin, true);
         assertFalse("Admin must STILL be enabled", authenticationDAO.getLocked(admin));
-        
+
         assertFalse("Admin account does not expire", authenticationDAO.getAccountExpires(admin));
         authenticationDAO.setAccountExpires(admin, false);
         assertFalse("Admin account does not expire", authenticationDAO.getAccountExpires(admin));
         authenticationDAO.setAccountExpires(admin, true);
         assertFalse("Admin account STILL does not expire", authenticationDAO.getAccountExpires(admin));
     }
-    
+
     public void testNotifyPerson()
     {
         String userName = GUID.generate();
@@ -1644,19 +1618,18 @@ public class PersonTest extends TestCase
     public void testRenameUser() throws Exception
     {
         // Note: RenameUserTest contains unit tests.
-        
+
         // End the Spring-managed txn
         testTX.commit();
 
         final String username = AuthenticationUtil.getAdminUserName();
 
         final String oldUsername = GUID.generate();
-        final String newUsername = oldUsername+GUID.generate();
-        
+        final String newUsername = oldUsername + GUID.generate();
+
         // Create a person
         final NodeRef person = transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionCallback<NodeRef>()
-                {
+                new RetryingTransactionCallback<NodeRef>() {
                     public NodeRef execute() throws Throwable
                     {
                         // Tidy up failed runs
@@ -1670,9 +1643,9 @@ public class PersonTest extends TestCase
                         }
 
                         // Generate a person node
-                        Map<QName, Serializable> properties = createDefaultProperties(oldUsername, "firstName", "lastName", "email@orgId", "orgId", null); 
+                        Map<QName, Serializable> properties = createDefaultProperties(oldUsername, "firstName", "lastName", "email@orgId", "orgId", null);
                         NodeRef person = personService.createPerson(properties);
-                        
+
                         // Check the person exists
                         assertEquals(oldUsername, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
                         assertEquals(person, personService.getPerson(oldUsername));
@@ -1680,13 +1653,12 @@ public class PersonTest extends TestCase
                         return person;
                     }
                 }, false, true);
-        
+
         // Run the RenameUser cmd line tool
-        //   - override exit so we don't and assert normal exit
-        //   - Don't ask for a password as we may not know it in a test
-        //   - call start rather than main to get correct instance
-        RenameUser renameUser = new RenameUser()
-        {
+        // - override exit so we don't and assert normal exit
+        // - Don't ask for a password as we may not know it in a test
+        // - call start rather than main to get correct instance
+        RenameUser renameUser = new RenameUser() {
             @Override
             protected void exit(int status)
             {
@@ -1694,16 +1666,15 @@ public class PersonTest extends TestCase
             }
         };
         renameUser.setLogin(false);
-        renameUser.start(new String[] {"-user", username, oldUsername, newUsername});
-        
+        renameUser.start(new String[]{"-user", username, oldUsername, newUsername});
+
         // Check person has been renamed and the delete it.
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 String newUserName = (String) nodeService.getProperty(person, ContentModel.PROP_USERNAME);
                 assertEquals(newUsername, newUserName);
-  
+
                 // Check the person exists
                 assertEquals(newUsername, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
                 assertEquals(person, personService.getPerson(newUsername));
@@ -1714,8 +1685,8 @@ public class PersonTest extends TestCase
                 return null;
             }
         }, false, true);
-    }    
-    
+    }
+
     public void testPreventCreationOfBuiltInAuthorities()
     {
         try
@@ -1804,15 +1775,14 @@ public class PersonTest extends TestCase
         }
         catch (RuntimeException e)
         {
-            //  expect to go here
+            // expect to go here
         }
     }
-    
+
     public void testBuitInSystemUser()
     {
 
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
@@ -1822,7 +1792,7 @@ public class PersonTest extends TestCase
                     fail("A NoSuchPersonException should have been thrown for " + AuthenticationUtil.SYSTEM_USER_NAME +
                             " but " + person + " was returned");
                 }
-                catch(NoSuchPersonException ignore)
+                catch (NoSuchPersonException ignore)
                 {
                     // This is expected for system.;
                 }

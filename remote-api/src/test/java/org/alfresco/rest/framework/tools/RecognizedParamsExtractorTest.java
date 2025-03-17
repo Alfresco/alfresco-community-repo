@@ -30,6 +30,16 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.resource.parameters.InvalidSelectException;
@@ -37,15 +47,6 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.rest.framework.tests.core.ParamsExtender;
-import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Test the RecognizedParamsExtractor
@@ -57,15 +58,15 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
     @Test
     public void getFilterTest()
     {
-        BeanPropertiesFilter theFilter  = getFilter(null);
+        BeanPropertiesFilter theFilter = getFilter(null);
         assertNotNull(theFilter);
         assertTrue("Null passed in so must return the default BeanPropertiesFilter.ALLOW_ALL class", BeanPropertiesFilter.AllProperties.class.equals(theFilter.getClass()));
         assertTrue(theFilter.isAllowed("bob"));
         assertTrue(theFilter.isAllowed("fred"));
         assertTrue(theFilter.isAllowed("50"));
         assertTrue(theFilter.isAllowed("b.z"));
-        
-        theFilter  = getFilter("bob");
+
+        theFilter = getFilter("bob");
         assertNotNull(theFilter);
         assertTrue("Must return the BeanPropertiesFilter class", theFilter instanceof BeanPropertiesFilter);
         assertTrue(theFilter.isAllowed("bob"));
@@ -73,15 +74,15 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         assertFalse(theFilter.isAllowed("50"));
         assertFalse(theFilter.isAllowed("b.z"));
 
-        theFilter  = getFilter("50,fred,b.z");
+        theFilter = getFilter("50,fred,b.z");
         assertNotNull(theFilter);
         assertTrue("Must return the BeanPropertiesFilter class", theFilter instanceof BeanPropertiesFilter);
         assertFalse(theFilter.isAllowed("bob"));
         assertTrue(theFilter.isAllowed("fred"));
         assertTrue(theFilter.isAllowed("50"));
         assertTrue(theFilter.isAllowed("b.z"));
-        
-        theFilter  = getFilter("50,fred,");
+
+        theFilter = getFilter("50,fred,");
         assertNotNull(theFilter);
         assertTrue("Must return the BeanPropertiesFilter class", theFilter instanceof BeanPropertiesFilter);
         assertFalse(theFilter.isAllowed("bob"));
@@ -89,7 +90,7 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         assertTrue(theFilter.isAllowed("50"));
         assertFalse(theFilter.isAllowed("b.z"));
 
-        theFilter  = getFilter("50, bob, fred ,");
+        theFilter = getFilter("50, bob, fred ,");
         assertNotNull(theFilter);
         assertTrue("Must return the BeanPropertiesFilter class", theFilter instanceof BeanPropertiesFilter);
         assertTrue(theFilter.isAllowed("bob"));
@@ -98,98 +99,97 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         assertFalse(theFilter.isAllowed("b.z"));
     }
 
-
     @Test
     public void getSortingTest()
     {
-        List<SortColumn> theSort  = getSort(null);
+        List<SortColumn> theSort = getSort(null);
         assertNotNull(theSort);
         assertTrue("Null passed in so empty sort list should be returned.", theSort.isEmpty());
 
-        theSort  = getSort("name ASC");
+        theSort = getSort("name ASC");
         assertNotNull(theSort);
         assertTrue("Must have a value for column: NAME", !theSort.isEmpty());
         assertTrue(theSort.size() == 1);
         assertEquals("name", theSort.get(0).column);
         assertTrue(theSort.get(0).asc);
 
-        theSort  = getSort("name ");
+        theSort = getSort("name ");
         assertNotNull(theSort);
         assertTrue("Must have a value for column: NAME", !theSort.isEmpty());
         assertTrue(theSort.size() == 1);
         assertEquals("name", theSort.get(0).column);
         assertTrue(theSort.get(0).asc);
 
-        theSort  = getSort("name DESC");
+        theSort = getSort("name DESC");
         assertNotNull(theSort);
         assertTrue("Must have a value for column: NAME", !theSort.isEmpty());
         assertTrue(theSort.size() == 1);
         assertEquals("name", theSort.get(0).column);
-        assertTrue(!theSort.get(0).asc);  //desc
+        assertTrue(!theSort.get(0).asc); // desc
 
-        theSort  = getSort("name desc");
+        theSort = getSort("name desc");
         assertNotNull(theSort);
         assertTrue("Must have a value for column: NAME", !theSort.isEmpty());
         assertTrue(theSort.size() == 1);
         assertEquals("name", theSort.get(0).column);
-        assertTrue(!theSort.get(0).asc);  //desc
+        assertTrue(!theSort.get(0).asc); // desc
 
-        theSort  = getSort("name,age desc");
+        theSort = getSort("name,age desc");
         assertNotNull(theSort);
         assertTrue("Must have a value for column: NAME", !theSort.isEmpty());
         assertTrue(theSort.size() == 2);
         assertEquals("name", theSort.get(0).column);
         assertTrue(theSort.get(0).asc);
         assertEquals("age", theSort.get(1).column);
-        assertTrue(!theSort.get(1).asc);  //desc
+        assertTrue(!theSort.get(1).asc); // desc
 
-        theSort  = getSort(" name, age desc");
+        theSort = getSort(" name, age desc");
         assertNotNull(theSort);
         assertTrue("Must have a value for column: NAME", !theSort.isEmpty());
         assertTrue(theSort.size() == 2);
         assertEquals("name", theSort.get(0).column);
         assertTrue(theSort.get(0).asc);
         assertEquals("age", theSort.get(1).column);
-        assertTrue(!theSort.get(1).asc);  //desc
+        assertTrue(!theSort.get(1).asc); // desc
 
-        theSort  = getSort("name DESC, age desc");
+        theSort = getSort("name DESC, age desc");
         assertNotNull(theSort);
         assertTrue("Must have a value for column: NAME", !theSort.isEmpty());
         assertTrue(theSort.size() == 2);
         assertEquals("name", theSort.get(0).column);
-        assertTrue(!theSort.get(0).asc);  //desc
+        assertTrue(!theSort.get(0).asc); // desc
         assertEquals("age", theSort.get(1).column);
-        assertTrue(!theSort.get(1).asc);  //desc
+        assertTrue(!theSort.get(1).asc); // desc
 
-        theSort  = getSort("age DeSc, name AsC");
+        theSort = getSort("age DeSc, name AsC");
         assertNotNull(theSort);
         assertTrue("Must have a value for column: NAME", !theSort.isEmpty());
         assertTrue(theSort.size() == 2);
         assertEquals("age", theSort.get(0).column);
-        assertTrue(!theSort.get(0).asc);  //desc
+        assertTrue(!theSort.get(0).asc); // desc
         assertEquals("name", theSort.get(1).column);
         assertTrue(theSort.get(1).asc);
-        
-        theSort  = getSort("name asc,");  // ok for now, trailing comma is ignored
+
+        theSort = getSort("name asc,"); // ok for now, trailing comma is ignored
         assertNotNull(theSort);
         assertTrue("Must have a value for column: NAME", !theSort.isEmpty());
         assertTrue(theSort.size() == 1);
         assertEquals("name", theSort.get(0).column);
         assertTrue(theSort.get(0).asc);
-        
+
         try
         {
-            getSort("age asc, name des");  // invalid, should be desc
+            getSort("age asc, name des"); // invalid, should be desc
             fail("Should throw an InvalidArgumentException");
         }
         catch (InvalidArgumentException error)
         {
             // this is correct
         }
-        
+
         try
         {
-            getSort("age asc name");  // invalid, missing comma
+            getSort("age asc name"); // invalid, missing comma
             fail("Should throw an InvalidArgumentException");
         }
         catch (InvalidArgumentException error)
@@ -215,7 +215,7 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
     {
         List<String> theClause = getCorrectClause(paramName, null);
         assertNotNull(theClause);
-        assertFalse("Null passed in so nothing in the "+paramName, theClause.size() > 0);
+        assertFalse("Null passed in so nothing in the " + paramName, theClause.size() > 0);
 
         try
         {
@@ -224,7 +224,7 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         }
         catch (InvalidSelectException error)
         {
-            //this is correct
+            // this is correct
         }
 
         try
@@ -234,7 +234,7 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         }
         catch (InvalidSelectException error)
         {
-            //this is correct
+            // this is correct
         }
 
         try
@@ -244,7 +244,7 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         }
         catch (InvalidSelectException error)
         {
-            //this is correct
+            // this is correct
         }
 
         try
@@ -254,7 +254,7 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         }
         catch (InvalidSelectException error)
         {
-            //this is correct
+            // this is correct
         }
 
         try
@@ -264,7 +264,7 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         }
         catch (InvalidSelectException error)
         {
-            //this is correct
+            // this is correct
         }
 
         try
@@ -274,7 +274,7 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         }
         catch (InvalidSelectException error)
         {
-            //this is correct
+            // this is correct
         }
 
         try
@@ -284,69 +284,69 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         }
         catch (InvalidSelectException error)
         {
-            //this is correct
+            // this is correct
         }
 
         try
         {
-            theClause = getCorrectClause(paramName,  "path, isLink");
+            theClause = getCorrectClause(paramName, "path, isLink");
             fail("Should throw an InvalidSelectException. No identifier specified.");
         }
         catch (InvalidSelectException error)
         {
-            //this is correct
+            // this is correct
         }
 
         theClause = getCorrectClause(paramName, "king/kong");
-        assertTrue("has a valid "+paramName, theClause.size() == 1);
-        assertEquals("king/kong",theClause.get(0));
+        assertTrue("has a valid " + paramName, theClause.size() == 1);
+        assertEquals("king/kong", theClause.get(0));
 
         theClause = getCorrectClause(paramName, "x,y");
-        assertTrue("has a valid "+paramName, theClause.size() == 2);
-        assertEquals("x",theClause.get(0));
-        assertEquals("y",theClause.get(1));
+        assertTrue("has a valid " + paramName, theClause.size() == 2);
+        assertEquals("x", theClause.get(0));
+        assertEquals("y", theClause.get(1));
 
         theClause = getCorrectClause(paramName, "x,/z");
-        assertTrue("has a valid "+paramName, theClause.size() == 2);
-        assertEquals("x",theClause.get(0));
-        assertEquals("/z",theClause.get(1));
+        assertTrue("has a valid " + paramName, theClause.size() == 2);
+        assertEquals("x", theClause.get(0));
+        assertEquals("/z", theClause.get(1));
 
         theClause = getCorrectClause(paramName, "/b");
-        assertTrue("has a valid "+paramName, theClause.size() == 1);
-        assertEquals("/b",theClause.get(0));
+        assertTrue("has a valid " + paramName, theClause.size() == 1);
+        assertEquals("/b", theClause.get(0));
 
         theClause = getCorrectClause(paramName, "/be,/he");
-        assertTrue("has a valid "+paramName, theClause.size() == 2);
-        assertEquals("/be",theClause.get(0));
-        assertEquals("/he",theClause.get(1));
+        assertTrue("has a valid " + paramName, theClause.size() == 2);
+        assertEquals("/be", theClause.get(0));
+        assertEquals("/he", theClause.get(1));
 
         theClause = getCorrectClause(paramName, "/king/kong");
-        assertTrue("has a valid "+paramName, theClause.size() == 1);
-        assertEquals("/king/kong",theClause.get(0));
+        assertTrue("has a valid " + paramName, theClause.size() == 1);
+        assertEquals("/king/kong", theClause.get(0));
 
         theClause = getCorrectClause(paramName, "/name,/person/age");
-        assertTrue("has a valid "+paramName, theClause.size() == 2);
-        assertEquals("/name",theClause.get(0));
-        assertEquals("/person/age",theClause.get(1));
+        assertTrue("has a valid " + paramName, theClause.size() == 2);
+        assertEquals("/name", theClause.get(0));
+        assertEquals("/person/age", theClause.get(1));
 
         theClause = getCorrectClause(paramName, "/foo");
-        assertTrue("has a valid select",theClause.size() == 1);
-        assertEquals("/foo",theClause.get(0));
+        assertTrue("has a valid select", theClause.size() == 1);
+        assertEquals("/foo", theClause.get(0));
 
         theClause = getCorrectClause(paramName, "/foo/anArray/x");
-        assertTrue("has a valid "+paramName, theClause.size() == 1);
-        assertEquals("/foo/anArray/x",theClause.get(0));
+        assertTrue("has a valid " + paramName, theClause.size() == 1);
+        assertEquals("/foo/anArray/x", theClause.get(0));
 
         theClause = getCorrectClause(paramName, "/foo/anArray/x,/person/age,/eggs/bacon/sausage,/p");
-        assertTrue("has a valid "+paramName, theClause.size() == 4);
-        assertEquals("/foo/anArray/x",theClause.get(0));
-        assertEquals("/person/age",theClause.get(1));
-        assertEquals("/eggs/bacon/sausage",theClause.get(2));
-        assertEquals("/p",theClause.get(3));
+        assertTrue("has a valid " + paramName, theClause.size() == 4);
+        assertEquals("/foo/anArray/x", theClause.get(0));
+        assertEquals("/person/age", theClause.get(1));
+        assertEquals("/eggs/bacon/sausage", theClause.get(2));
+        assertEquals("/p", theClause.get(3));
 
         theClause = getCorrectClause(paramName, "/foo/_bar ");
-        assertTrue("has a valid "+paramName, theClause.size() == 1);
-        assertEquals("/foo/_bar",theClause.get(0));
+        assertTrue("has a valid " + paramName, theClause.size() == 1);
+        assertEquals("/foo/_bar", theClause.get(0));
     }
 
     private List<String> getCorrectClause(String paramName, String paramValue)
@@ -360,39 +360,39 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
             return getSelectClause(paramValue);
         }
 
-        fail("Unexpected clause: "+paramName);
+        fail("Unexpected clause: " + paramName);
         return null;
     }
 
     @Test
     public void getRelationFilterTest()
     {
-        Map<String, BeanPropertiesFilter> theFilter  = getRelationFilter(null);
+        Map<String, BeanPropertiesFilter> theFilter = getRelationFilter(null);
         assertNotNull(theFilter);
-        assertTrue("Null passed in so nothing to filter.",theFilter.isEmpty());
+        assertTrue("Null passed in so nothing to filter.", theFilter.isEmpty());
 
-        theFilter  = getRelationFilter("bob");
+        theFilter = getRelationFilter("bob");
         assertNotNull(theFilter);
         assertTrue("Must be a single relationship", theFilter.size() == 1);
         assertTrue("Must be a single relationship called bob", theFilter.containsKey("bob"));
         BeanPropertiesFilter aFilter = theFilter.get("bob");
         assertTrue("No bean properties specified so need a BeanPropertiesFilter.ALLOW_ALL class", BeanPropertiesFilter.AllProperties.class.equals(aFilter.getClass()));
 
-        theFilter  = getRelationFilter("bob,hope");
+        theFilter = getRelationFilter("bob,hope");
         assertNotNull(theFilter);
         assertTrue("Must be a two relationships", theFilter.size() == 2);
         assertTrue("Must have hope.", theFilter.containsKey("hope"));
         aFilter = theFilter.get("hope");
         assertTrue("No bean properties specified so need a BeanPropertiesFilter.ALLOW_ALL class", BeanPropertiesFilter.AllProperties.class.equals(aFilter.getClass()));
 
-        theFilter  = getRelationFilter("bob(name),hope");
+        theFilter = getRelationFilter("bob(name),hope");
         assertNotNull(theFilter);
         assertTrue("Must be a two relationships", theFilter.size() == 2);
         assertTrue("Must have bob.", theFilter.containsKey("bob"));
         aFilter = theFilter.get("bob");
         assertTrue("Bean properties specified so must be an BeanPropertiesFilter class", BeanPropertiesFilter.class.equals(aFilter.getClass()));
 
-        theFilter  = getRelationFilter("bob,hope(age,name)");
+        theFilter = getRelationFilter("bob,hope(age,name)");
         assertNotNull(theFilter);
         assertTrue("Must be a two relationships", theFilter.size() == 2);
         aFilter = theFilter.get("bob");
@@ -400,8 +400,7 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         aFilter = theFilter.get("hope");
         assertTrue("Bean properties specified so must be an BeanPropertiesFilter class", BeanPropertiesFilter.class.equals(aFilter.getClass()));
 
-
-        theFilter  = getRelationFilter("bob(name,age),nohope,hope(height,width)");
+        theFilter = getRelationFilter("bob(name,age),nohope,hope(height,width)");
         assertNotNull(theFilter);
         assertTrue("Must be a three relationships", theFilter.size() == 3);
         aFilter = theFilter.get("bob");
@@ -412,7 +411,6 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         assertTrue("Bean properties specified so must be an BeanPropertiesFilter class", BeanPropertiesFilter.class.equals(aFilter.getClass()));
 
     }
-
 
     @Test
     public void findPagingTest()
@@ -475,7 +473,7 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
             assertNotNull(iae); // Must throw this exceptions
         }
 
-        //Test Case cloud-2198
+        // Test Case cloud-2198
         request = mock(WebScriptRequest.class);
         when(request.getParameter("skipCount")).thenReturn("0");
         when(request.getParameter("maxItems")).thenReturn("a");
@@ -534,14 +532,14 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         assertNotNull(pagin);
         assertTrue("skip count defaults to 0", pagin.getSkipCount() == Paging.DEFAULT_SKIP_COUNT);
 
-        //End of Test Case cloud-2198
+        // End of Test Case cloud-2198
     }
 
     @Test
     public void paramsTest()
     {
-        Map<String,List<String>> mockParams = new HashMap<String,List<String>>();
-        mockParams.put("age", Arrays.asList("23","45"));
+        Map<String, List<String>> mockParams = new HashMap<String, List<String>>();
+        mockParams.put("age", Arrays.asList("23", "45"));
         mockParams.put("name", Arrays.asList("fred"));
         WebScriptRequest request = mockRequest(mockParams);
         Map<String, String[]> params = getRequestParameters(request);
@@ -556,14 +554,15 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
 
     }
 
-    private WebScriptRequest mockRequest(final Map<String,List<String>> params)
+    private WebScriptRequest mockRequest(final Map<String, List<String>> params)
     {
         final String[] paramNames = params.keySet().toArray(new String[]{});
         WebScriptRequest request = mock(WebScriptRequest.class);
         when(request.getParameterNames()).thenReturn(paramNames);
         when(request.getParameterValues(anyString())).thenAnswer(new Answer<String[]>() {
             @Override
-            public String[] answer(InvocationOnMock invocation) throws Throwable {
+            public String[] answer(InvocationOnMock invocation) throws Throwable
+            {
                 Object[] args = invocation.getArguments();
                 return params.get((String) args[0]).toArray(new String[]{});
             }

@@ -25,6 +25,9 @@
  */
 package org.alfresco.repo.search.impl.noindex;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.search.EmptyResultSet;
@@ -33,19 +36,13 @@ import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.solr.SolrSearchService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * @author Andy
- * log4j:logger=org.alfresco.repo.search.impl.noindex.NoIndexSearchService
+ * @author Andy log4j:logger=org.alfresco.repo.search.impl.noindex.NoIndexSearchService
  */
 public class NoIndexSearchService extends SolrSearchService
 {
     private static Log s_logger = LogFactory.getLog(NoIndexSearchService.class);
-
-    
-    
 
     private void trace()
     {
@@ -60,13 +57,9 @@ public class NoIndexSearchService extends SolrSearchService
         }
     }
 
-    
-
-   
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.search.SearchParameters)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.search.SearchParameters) */
     @Override
     public ResultSet query(SearchParameters searchParameters)
     {
@@ -79,19 +72,18 @@ public class NoIndexSearchService extends SolrSearchService
         {
             return super.query(searchParameters);
         }
-        catch(SearcherException e)
+        catch (SearcherException e)
         {
             return new EmptyResultSet();
         }
-        catch(QueryModelException e)
+        catch (QueryModelException e)
         {
             return new EmptyResultSet();
         }
-        catch(AlfrescoRuntimeException e)
+        catch (AlfrescoRuntimeException e)
         {
             return new EmptyResultSet();
         }
     }
 
-    
 }

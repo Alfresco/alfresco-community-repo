@@ -38,14 +38,14 @@ import org.aopalliance.intercept.MethodInvocation;
  */
 public class ExceptionInterceptor implements MethodInterceptor
 {
-	private List<ExceptionHandler> exceptionHandlers;
+    private List<ExceptionHandler> exceptionHandlers;
 
     public void setExceptionHandlers(List<ExceptionHandler> exceptionHandlers)
-	{
-		this.exceptionHandlers = exceptionHandlers;
-	}
+    {
+        this.exceptionHandlers = exceptionHandlers;
+    }
 
-	public ExceptionInterceptor()
+    public ExceptionInterceptor()
     {
         super();
     }
@@ -56,16 +56,16 @@ public class ExceptionInterceptor implements MethodInterceptor
         {
             return mi.proceed();
         }
-        catch(Throwable t)
+        catch (Throwable t)
         {
-        	for(ExceptionHandler handler : exceptionHandlers)
-        	{
-        		if(handler.handle(t))
-        		{
-        			break;
-        		}
-        	}
-        	throw t;
+            for (ExceptionHandler handler : exceptionHandlers)
+            {
+                if (handler.handle(t))
+                {
+                    break;
+                }
+            }
+            throw t;
         }
     }
 }

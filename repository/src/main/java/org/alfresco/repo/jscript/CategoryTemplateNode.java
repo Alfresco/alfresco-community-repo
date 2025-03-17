@@ -47,21 +47,24 @@ public class CategoryTemplateNode extends TemplateNode
     /**
      * Constructor
      * 
-     * @param nodeRef NodeRef
-     * @param services ServiceRegistry
-     * @param resolver TemplateImageResolver
+     * @param nodeRef
+     *            NodeRef
+     * @param services
+     *            ServiceRegistry
+     * @param resolver
+     *            TemplateImageResolver
      */
     public CategoryTemplateNode(NodeRef nodeRef, ServiceRegistry services, TemplateImageResolver resolver)
     {
         super(nodeRef, services, resolver);
     }
-    
+
     @Override
     public boolean getIsCategory()
     {
         return true;
     }
-    
+
     /**
      * @return all the member of a category
      */
@@ -74,7 +77,7 @@ public class CategoryTemplateNode extends TemplateNode
         }
         else
         {
-            return Collections.<TemplateNode>emptyList();
+            return Collections.<TemplateNode> emptyList();
         }
     }
 
@@ -90,7 +93,7 @@ public class CategoryTemplateNode extends TemplateNode
         }
         else
         {
-            return Collections.<CategoryTemplateNode>emptyList();
+            return Collections.<CategoryTemplateNode> emptyList();
         }
     }
 
@@ -107,7 +110,7 @@ public class CategoryTemplateNode extends TemplateNode
         }
         else
         {
-            return Collections.<TemplateNode>emptyList();
+            return Collections.<TemplateNode> emptyList();
         }
     }
 
@@ -123,7 +126,7 @@ public class CategoryTemplateNode extends TemplateNode
         }
         else
         {
-            return Collections.<TemplateNode>emptyList();
+            return Collections.<TemplateNode> emptyList();
         }
     }
 
@@ -139,7 +142,7 @@ public class CategoryTemplateNode extends TemplateNode
         }
         else
         {
-            return Collections.<CategoryTemplateNode>emptyList();
+            return Collections.<CategoryTemplateNode> emptyList();
         }
     }
 
@@ -155,14 +158,15 @@ public class CategoryTemplateNode extends TemplateNode
         }
         else
         {
-            return Collections.<TemplateNode>emptyList();
+            return Collections.<TemplateNode> emptyList();
         }
     }
 
     /**
      * Support to build node lists from category service API calls.
      * 
-     * @param childRefs Collection<ChildAssociationRef>
+     * @param childRefs
+     *            Collection<ChildAssociationRef>
      * 
      * @return List of TemplateNode
      */
@@ -177,7 +181,7 @@ public class CategoryTemplateNode extends TemplateNode
         }
         return answer;
     }
-    
+
     private List<CategoryTemplateNode> buildCategoryNodeList(Collection<ChildAssociationRef> childRefs)
     {
         List<CategoryTemplateNode> answer = new ArrayList<CategoryTemplateNode>(childRefs.size());
@@ -189,7 +193,7 @@ public class CategoryTemplateNode extends TemplateNode
         }
         return answer;
     }
-    
+
     private List<TemplateNode> buildMixedNodeList(Collection<ChildAssociationRef> cars)
     {
         List<TemplateNode> nodes = new ArrayList<TemplateNode>(cars.size());

@@ -25,11 +25,12 @@
  */
 package org.alfresco.repo.tenant;
 
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.repo.admin.patch.PatchService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * This component is responsible for starting the enabled tenants (if MT is enabled).
@@ -41,25 +42,26 @@ public class MultiTenantBootstrap extends AbstractLifecycleBean
     private TenantAdminService tenantAdminService;
     private PatchService patchService;
     private DescriptorService descriptorService;
-    
+
     /**
-     * @param tenantAdminService        the service that will perform the bootstrap
+     * @param tenantAdminService
+     *            the service that will perform the bootstrap
      */
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
         this.tenantAdminService = tenantAdminService;
     }
-    
+
     public void setPatchService(PatchService patchService)
     {
         this.patchService = patchService;
     }
-    
+
     public void setDescriptorService(DescriptorService descriptorService)
     {
         this.descriptorService = descriptorService;
     }
-    
+
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -73,7 +75,7 @@ public class MultiTenantBootstrap extends AbstractLifecycleBean
             tenantAdminService.startTenants();
         }
     }
-    
+
     @Override
     protected void onShutdown(ApplicationEvent event)
     {

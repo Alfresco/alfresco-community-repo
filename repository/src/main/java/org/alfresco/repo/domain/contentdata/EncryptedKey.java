@@ -36,7 +36,7 @@ public class EncryptedKey implements Serializable
     private String masterKeyAlias;
     private final String algorithm;
     private final ByteBuffer encryptedKeyBytes;
-    
+
     public EncryptedKey(String masterKeystoreId, String masterKeyAlias, String algorithm, ByteBuffer encryptedKeyBytes)
     {
         this.masterKeyAlias = masterKeyAlias;
@@ -64,7 +64,7 @@ public class EncryptedKey implements Serializable
     {
         return this.algorithm;
     }
-    
+
     public ByteBuffer getByteBuffer()
     {
         return this.encryptedKeyBytes.asReadOnlyBuffer();

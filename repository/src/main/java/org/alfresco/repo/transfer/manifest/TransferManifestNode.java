@@ -42,14 +42,18 @@ import org.alfresco.service.cmr.repository.Path;
 public interface TransferManifestNode
 {
     public NodeRef getNodeRef();
+
     public void setNodeRef(NodeRef nodeRef);
 
     public void setUuid(String uuid);
+
     public String getUuid();
-    
+
     public void setParentPath(Path parentPath);
+
     public Path getParentPath();
-    
+
     public void setPrimaryParentAssoc(ChildAssociationRef primaryParent);
+
     public ChildAssociationRef getPrimaryParentAssoc();
 }

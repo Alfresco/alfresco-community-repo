@@ -1,5 +1,10 @@
 package org.alfresco.rest.tags.nodes;
 
+import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.RestErrorModel;
@@ -14,10 +19,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 /**
  * Created by Claudia Agache on 10/3/2016.
@@ -36,45 +37,45 @@ public class AddTagTests extends TagsDataPrep
         tagValue = RandomData.getRandomName("tag").toLowerCase();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin user adds tags with Rest API and status code is 201")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void adminIsAbleToAddTag()
     {
         restClient.authenticateUser(adminUserModel);
         returnedModel = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedModel.assertThat().field("tag").is(tagValue)
-            .and().field("id").isNotEmpty();
+                .and().field("id").isNotEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.SANITY,
             description = "Verify Manager user adds tags with Rest API and status code is 201")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY})
     public void managerIsAbleToTagAFile()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         returnedModel = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedModel.assertThat().field("tag").is(tagValue)
-            .and().field("id").isNotEmpty();
+                .and().field("id").isNotEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator user adds tags with Rest API and status code is 201")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void collaboratorIsAbleToTagAFile()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         returnedModel = restClient.withCoreAPI().usingResource(document).addTag(tagValue);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedModel.assertThat().field("tag").is(tagValue)
-            .and().field("id").isNotEmpty();
+                .and().field("id").isNotEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify Contributor user doesn't have permission to add tags with Rest API and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void contributorIsNotAbleToAddTagToAnotherContent()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -82,9 +83,9 @@ public class AddTagTests extends TagsDataPrep
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify Contributor user adds tags to his content with Rest API and status code is 201")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void contributorIsAbleToAddTagToHisContent()
     {
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
@@ -93,12 +94,12 @@ public class AddTagTests extends TagsDataPrep
         returnedModel = restClient.withCoreAPI().usingResource(contributorDoc).addTag(tagValue);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedModel.assertThat().field("id").isNotEmpty()
-            .and().field("tag").is(tagValue);
+                .and().field("tag").is(tagValue);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify Consumer user doesn't have permission to add tags with Rest API and status code is 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void consumerIsNotAbleToTagAFile()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -106,10 +107,10 @@ public class AddTagTests extends TagsDataPrep
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY,
-            description = "Verify user gets status code 401 if authentication call fails")    
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
-//    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.SANITY,
+            description = "Verify user gets status code 401 if authentication call fails")
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY})
+    // @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void userIsNotAbleToAddTagIfAuthenticationFails()
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
@@ -121,9 +122,9 @@ public class AddTagTests extends TagsDataPrep
         siteManager.setPassword(managerPassword);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that adding empty tag returns status code 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void emptyTagTest()
     {
         restClient.authenticateUser(adminUserModel);
@@ -131,9 +132,9 @@ public class AddTagTests extends TagsDataPrep
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.NULL_ARGUMENT, "tag"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that adding tag with user that has no permissions returns status code 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void addTagWithUserThatDoesNotHavePermissions()
     {
         restClient.authenticateUser(dataUser.createRandomTestUser());
@@ -141,9 +142,9 @@ public class AddTagTests extends TagsDataPrep
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that adding tag to a node that does not exist returns status code 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void addTagToInexistentNode()
     {
         String oldNodeRef = document.getNodeRef();
@@ -156,9 +157,9 @@ public class AddTagTests extends TagsDataPrep
         document.setNodeRef(oldNodeRef);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.SANITY,
             description = "Verify that manager is able to tag a folder")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY})
     public void managerIsAbleToTagAFolder()
     {
         FolderModel folderModel = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
@@ -168,9 +169,9 @@ public class AddTagTests extends TagsDataPrep
         returnedModel.assertThat().field("tag").is(tagValue).and().field("id").isNotEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that tagged file can be tagged again")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void addTagToATaggedFile()
     {
         restClient.authenticateUser(adminUserModel);
@@ -192,9 +193,9 @@ public class AddTagTests extends TagsDataPrep
                 .and().entriesListContains("tag", "random_tag_value");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that user cannot add invalid tag")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void addInvalidTag()
     {
         restClient.authenticateUser(adminUserModel);
@@ -202,9 +203,9 @@ public class AddTagTests extends TagsDataPrep
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_TAG, "|"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that contributor is able to tag a folder created by self")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void contributorIsAbleToTagAFolderCreatedBySelf()
     {
         FolderModel folderModel = dataContent.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingSite(siteModel).createFolder();
@@ -215,9 +216,9 @@ public class AddTagTests extends TagsDataPrep
         returnedModel.assertThat().field("tag").is(tagValue).and().field("id").isNotEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that collaborator is able to tag a folder")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void collaboratorIsAbleToTagAFolder()
     {
         FolderModel folderModel = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
@@ -228,9 +229,9 @@ public class AddTagTests extends TagsDataPrep
         returnedModel.assertThat().field("tag").is(tagValue).and().field("id").isNotEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that consumer is not able to tag a folder. Check default error model schema.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void consumerIsNotAbleToTagAFolder()
     {
         FolderModel folderModel = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
@@ -243,9 +244,9 @@ public class AddTagTests extends TagsDataPrep
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that tagged folder can be tagged again")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void addTagToATaggedFolder()
     {
         FolderModel folderModel = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
@@ -266,9 +267,9 @@ public class AddTagTests extends TagsDataPrep
                 .and().entriesListCountIs(2);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Using collaborator provide more than one tag element")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void provideMoreThanOneTagElement()
     {
         FolderModel folderModel = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
@@ -285,9 +286,9 @@ public class AddTagTests extends TagsDataPrep
                 .and().entriesListCountIs(3);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that manager cannot add tag with special characters.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void addTagWithSpecialCharacters()
     {
         FolderModel folderModel = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
@@ -298,9 +299,9 @@ public class AddTagTests extends TagsDataPrep
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_TAG, "|"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that you cannot tag a comment and it returns status code 405")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void addTagToAComment()
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -313,9 +314,9 @@ public class AddTagTests extends TagsDataPrep
         restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(RestErrorModel.CANNOT_TAG);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that you cannot tag a tag and it returns status code 405")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void addTagToATag()
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -327,9 +328,9 @@ public class AddTagTests extends TagsDataPrep
         restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED).assertLastError().containsSummary(RestErrorModel.CANNOT_TAG);
     }
 
-    @TestRail (section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify the tag name is converted to lower case before being applied")
-    @Test (groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void tagNameIsConvertedToLowerCase()
     {
         restClient.authenticateUser(adminUserModel);
@@ -337,6 +338,6 @@ public class AddTagTests extends TagsDataPrep
         returnedModel = restClient.withCoreAPI().usingResource(document).addTag(tagName);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         returnedModel.assertThat().field("tag").is(tagName.toLowerCase())
-                     .and().field("id").isNotEmpty();
+                .and().field("id").isNotEmpty();
     }
 }

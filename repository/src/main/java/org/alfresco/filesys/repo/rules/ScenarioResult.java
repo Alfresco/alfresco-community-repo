@@ -33,7 +33,7 @@ public class ScenarioResult
         this.scenario = scenario;
         this.command = command;
     }
+
     ScenarioInstance scenario;
     Command command;
 };
-

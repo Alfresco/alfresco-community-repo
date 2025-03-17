@@ -56,21 +56,21 @@ public class XPathNodeLocator extends AbstractNodeLocator
 
     private SearchService searchService;
     private StoreRef defaultStore;
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public NodeRef getNode(NodeRef source, Map<String, Serializable> params)
     {
         String query = (String) params.get(QUERY_KEY);
         ParameterCheck.mandatoryString("query", query);
         StoreRef store = null;
-        if (source!=null)
+        if (source != null)
         {
             store = source.getStoreRef();
         }
-        else 
+        else
         {
             String storeType = (String) params.get(STORE_TYPE_KEY);
             String storeId = (String) params.get(STORE_ID_KEY);
@@ -78,7 +78,8 @@ public class XPathNodeLocator extends AbstractNodeLocator
             {
                 store = new StoreRef(storeType, storeId);
             }
-            else store = defaultStore;
+            else
+                store = defaultStore;
         }
         try
         {
@@ -98,8 +99,8 @@ public class XPathNodeLocator extends AbstractNodeLocator
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public List<ParameterDefinition> getParameterDefinitions()
     {
@@ -111,24 +112,26 @@ public class XPathNodeLocator extends AbstractNodeLocator
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public String getName()
     {
         return NAME;
     }
- 
+
     /**
-     * @param searchService the searchService to set
+     * @param searchService
+     *            the searchService to set
      */
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
     }
-    
+
     /**
-     * @param defaultStoreStr the defaultStoreStr to set
+     * @param defaultStoreStr
+     *            the defaultStoreStr to set
      */
     public void setDefaultStore(String defaultStoreStr)
     {

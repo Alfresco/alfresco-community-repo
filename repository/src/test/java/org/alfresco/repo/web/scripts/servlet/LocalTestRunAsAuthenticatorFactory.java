@@ -27,7 +27,6 @@ package org.alfresco.repo.web.scripts.servlet;
 
 import jakarta.servlet.ServletContext;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.springframework.extensions.webscripts.Authenticator;
 import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
 import org.springframework.extensions.webscripts.servlet.ServletAuthenticatorFactory;
@@ -35,6 +34,7 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest
 import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
 import org.springframework.web.context.ServletContextAware;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 
 /**
  * Used for local web script tests when MT is enabled - eg. WebScriptTestSuite, BaseCMISTest (AspectTest, PolicyTest), etc.
@@ -50,9 +50,8 @@ public class LocalTestRunAsAuthenticatorFactory implements ServletAuthenticatorF
 {
     @Override
     public void setServletContext(ServletContext context)
-    {
-    }
-    
+    {}
+
     @Override
     public Authenticator create(WebScriptServletRequest req, WebScriptServletResponse res)
     {
@@ -63,27 +62,27 @@ public class LocalTestRunAsAuthenticatorFactory implements ServletAuthenticatorF
         }
         return new LocalTestRunAsAuthenticator(runAsUser);
     }
-    
+
     public static class LocalTestRunAsAuthenticator implements Authenticator
     {
         private String userName;
-        
+
         public LocalTestRunAsAuthenticator(String userName)
         {
             this.userName = userName;
         }
-        
+
         @Override
         public boolean authenticate(RequiredAuthentication required, boolean isGuest)
         {
-            if (! emptyCredentials())
+            if (!emptyCredentials())
             {
                 AuthenticationUtil.setRunAsUser(userName);
                 return true;
             }
             return false;
         }
-        
+
         @Override
         public boolean emptyCredentials()
         {

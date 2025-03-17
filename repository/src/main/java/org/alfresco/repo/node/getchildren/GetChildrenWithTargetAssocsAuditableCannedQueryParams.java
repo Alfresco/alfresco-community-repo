@@ -36,10 +36,10 @@ import org.alfresco.repo.query.NodeWithTargetsEntity;
 public class GetChildrenWithTargetAssocsAuditableCannedQueryParams extends NodeWithTargetsEntity
 {
     public GetChildrenWithTargetAssocsAuditableCannedQueryParams(Long parentNodeId,
-                                         Long nameQNameId,
-                                         Long contentTypeQNameId,
-                                         Long assocTypeId)
-                                         
+            Long nameQNameId,
+            Long contentTypeQNameId,
+            Long assocTypeId)
+
     {
         super(parentNodeId, nameQNameId, contentTypeQNameId, assocTypeId);
     }

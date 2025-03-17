@@ -33,8 +33,7 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Generated from 'Alfresco Core REST API' swagger file
- * Base Path {@linkplain /alfresco/api/-default-/public/alfresco/versions/1}
+ * Generated from 'Alfresco Core REST API' swagger file Base Path {@linkplain /alfresco/api/-default-/public/alfresco/versions/1}
  */
 public class RestNodeModel extends TestModel implements IRestModel<RestNodeModel>
 {
@@ -46,13 +45,12 @@ public class RestNodeModel extends TestModel implements IRestModel<RestNodeModel
     {
         return model;
     }
-    
+
     @JsonProperty(required = true)
     private String id;
 
     /**
-     * The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
-     * The character . must not be used at the end of the name.
+     * The name must not contain spaces or the following special characters: * " < > \ / ? : and |. The character . must not be used at the end of the name.
      */
     @JsonProperty(required = true)
     private String name;
@@ -76,10 +74,10 @@ public class RestNodeModel extends TestModel implements IRestModel<RestNodeModel
 
     @JsonProperty(required = true)
     private String createdAt;
-    
+
     @JsonProperty
     private String archivedAt;
-    
+
     @JsonProperty
     private RestByUserModel archivedByUser;
 
@@ -201,7 +199,7 @@ public class RestNodeModel extends TestModel implements IRestModel<RestNodeModel
     {
         this.archivedByUser = archivedByUser;
     }
-    
+
     public String getParentId()
     {
         return this.parentId;

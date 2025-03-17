@@ -25,11 +25,12 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
-import org.alfresco.repo.search.impl.AbstractJSONAPIResult;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.alfresco.repo.search.impl.AbstractJSONAPIResult;
 
 /**
  * The results of executing a SOLR BACKUP command
@@ -40,45 +41,46 @@ import org.slf4j.LoggerFactory;
 public class SolrCommandBackupResult extends AbstractJSONAPIResult
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SolrCommandBackupResult.class);
-    
+
     /**
      * Parses the JSON to create a new result object
-     * @param json JSONObject returned by SOLR API
+     * 
+     * @param json
+     *            JSONObject returned by SOLR API
      */
     public SolrCommandBackupResult(JSONObject json)
     {
-        try 
+        try
         {
             processJson(json);
         }
         catch (NullPointerException | JSONException e)
         {
-           LOGGER.info(e.getMessage());
+            LOGGER.info(e.getMessage());
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.lucene.AbstractSolrActionAPIResult#processCoresInfoJson(org.json.JSONObject)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.lucene.AbstractSolrActionAPIResult#processCoresInfoJson(org.json.JSONObject) */
     @Override
     protected void processCoresInfoJson(JSONObject json) throws JSONException
-    {
-    }
-    
+    {}
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.JSONAPIResult#getStatus()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.JSONAPIResult#getStatus() */
     public Long getStatus()
     {
         return this.status;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.JSONAPIResult#getQueryTime()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.JSONAPIResult#getQueryTime() */
     public Long getQueryTime()
     {
         return this.queryTime;
     }
-    
+
 }

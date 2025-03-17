@@ -37,14 +37,15 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface PublishExecutor
 {
     /**
-     * @return  publish exector name
+     * @return publish exector name
      */
     String getName();
-    
+
     /**
      * Publish changes to node.
      * 
-     * @param nodeRef   node reference
+     * @param nodeRef
+     *            node reference
      */
     void publish(NodeRef nodeRef);
 }

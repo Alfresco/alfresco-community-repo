@@ -37,24 +37,23 @@ public class AclChangeSetEntity implements AclChangeSet
 {
     private Long id;
     private Long commitTimeMs;
-    
+
     /**
      * Default constructor
      */
     public AclChangeSetEntity()
-    {
-    }
-    
+    {}
+
     public Long getId()
     {
         return id;
     }
-    
+
     public void setId(Long id)
     {
         this.id = id;
     }
-    
+
     public Long getCommitTimeMs()
     {
         return commitTimeMs;
@@ -70,7 +69,7 @@ public class AclChangeSetEntity implements AclChangeSet
     {
         return (id == null ? 0 : id.hashCode());
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -80,7 +79,7 @@ public class AclChangeSetEntity implements AclChangeSet
         }
         else if (obj instanceof AclChangeSetEntity)
         {
-            AclChangeSetEntity that = (AclChangeSetEntity)obj;
+            AclChangeSetEntity that = (AclChangeSetEntity) obj;
             return (EqualsHelper.nullSafeEquals(this.id, that.id));
         }
         else
@@ -88,15 +87,15 @@ public class AclChangeSetEntity implements AclChangeSet
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("AclChangeSetEntity")
-          .append("[ ID=").append(id)
-          .append(", commitTimeMs=").append(commitTimeMs)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", commitTimeMs=").append(commitTimeMs)
+                .append("]");
         return sb.toString();
     }
 }

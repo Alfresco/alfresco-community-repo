@@ -32,96 +32,119 @@ import org.alfresco.repo.search.adaptor.LuceneFunction;
 import org.alfresco.repo.search.adaptor.QueryParserAdaptor;
 import org.alfresco.repo.search.impl.querymodel.PredicateMode;
 
-
 /**
  * Encapsulate the building of lucene queries for property predicates
  */
 public interface CMISPropertyLuceneBuilder
 {
     /**
-     * @param value Serializable
-     * @param mode PredicateMode
-     * @param luceneFunction LuceneFunction
+     * @param value
+     *            Serializable
+     * @param mode
+     *            PredicateMode
+     * @param luceneFunction
+     *            LuceneFunction
      * @return the query - may be null if no query is required
      * @throws E
      */
     public <Q, S, E extends Throwable> Q buildLuceneEquality(QueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E;
 
     /**
-     * @param not Boolean
+     * @param not
+     *            Boolean
      * @return the query - may be null if no query is required
      * @throws E
      */
     public <Q, S, E extends Throwable> Q buildLuceneExists(QueryParserAdaptor<Q, S, E> lqpa, Boolean not) throws E;
 
     /**
-     * @param value Serializable
-     * @param mode PredicateMode
-     * @param luceneFunction LuceneFunction
+     * @param value
+     *            Serializable
+     * @param mode
+     *            PredicateMode
+     * @param luceneFunction
+     *            LuceneFunction
      * @return the query - may be null if no query is required
      * @throws E
      */
     public <Q, S, E extends Throwable> Q buildLuceneGreaterThan(QueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E;
 
     /**
-     * @param value Serializable
-     * @param mode PredicateMode
-     * @param luceneFunction LuceneFunction
+     * @param value
+     *            Serializable
+     * @param mode
+     *            PredicateMode
+     * @param luceneFunction
+     *            LuceneFunction
      * @return the query - may be null if no query is required
      * @throws E
      */
     public <Q, S, E extends Throwable> Q buildLuceneGreaterThanOrEquals(QueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E;
 
     /**
-     * @param not Boolean
-     * @param mode PredicateMode
+     * @param not
+     *            Boolean
+     * @param mode
+     *            PredicateMode
      * @return the query - may be null if no query is required
      * @throws E
      */
     public <Q, S, E extends Throwable> Q buildLuceneIn(QueryParserAdaptor<Q, S, E> lqpa, Collection<Serializable> values, Boolean not, PredicateMode mode) throws E;
 
     /**
-     * @param value PredicateMode
-     * @param mode PredicateMode
-     * @param luceneFunction LuceneFunction
+     * @param value
+     *            PredicateMode
+     * @param mode
+     *            PredicateMode
+     * @param luceneFunction
+     *            LuceneFunction
      * @return the query - may be null if no query is required
      * @throws E
      */
     public <Q, S, E extends Throwable> Q buildLuceneInequality(QueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E;
 
     /**
-     * @param value Serializable
-     * @param mode PredicateMode
-     * @param luceneFunction LuceneFunction
+     * @param value
+     *            Serializable
+     * @param mode
+     *            PredicateMode
+     * @param luceneFunction
+     *            LuceneFunction
      * @return the query - may be null if no query is required
      * @throws E
      */
     public <Q, S, E extends Throwable> Q buildLuceneLessThan(QueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E;
 
     /**
-     * @param value Serializable
-     * @param mode PredicateMode
-     * @param luceneFunction LuceneFunction
+     * @param value
+     *            Serializable
+     * @param mode
+     *            PredicateMode
+     * @param luceneFunction
+     *            LuceneFunction
      * @return the query - may be null if no query is required
      * @throws E
      */
     public <Q, S, E extends Throwable> Q buildLuceneLessThanOrEquals(QueryParserAdaptor<Q, S, E> lqpa, Serializable value, PredicateMode mode, LuceneFunction luceneFunction) throws E;
 
     /**
-     * @param value Serializable
-     * @param not Boolean
+     * @param value
+     *            Serializable
+     * @param not
+     *            Boolean
      * @return the query - may be null if no query is required
      * @throws E
      */
     public <Q, S, E extends Throwable> Q buildLuceneLike(QueryParserAdaptor<Q, S, E> lqpa, Serializable value, Boolean not) throws E;
 
     /**
-     * @param lqpa TODO
+     * @param lqpa
+     *            TODO
      * @return the sort field
-     * @throws E 
+     * @throws E
      */
     public <Q, S, E extends Throwable> String getLuceneSortField(QueryParserAdaptor<Q, S, E> lqpa) throws E;
-    
+
     /**
      * @return the field name
      * 

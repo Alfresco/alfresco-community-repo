@@ -46,14 +46,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.traitextender.SpringBeanExtension;
 
 /**
- * PreferenceServiceImpl extension used for manipulate favorites preferences
- * that are set for virtual references.
+ * PreferenceServiceImpl extension used for manipulate favorites preferences that are set for virtual references.
  * 
  * @author sdinuta
  */
 public class VirtualPreferenceServiceExtension extends
-            SpringBeanExtension<PreferenceServiceExtension, PreferenceServiceTrait> implements
-            PreferenceServiceExtension
+        SpringBeanExtension<PreferenceServiceExtension, PreferenceServiceTrait> implements
+        PreferenceServiceExtension
 {
     private static final String EMPTY_STRING = "";
 
@@ -80,15 +79,10 @@ public class VirtualPreferenceServiceExtension extends
     }
 
     /**
-     * Obtains the org.alfresco.ext.documents.favourites.* or
-     * org.alfresco.ext.folders.favourites.* key used for setting favorites for
-     * documents and folders, or null if not favorites are targeted.
+     * Obtains the org.alfresco.ext.documents.favourites.* or org.alfresco.ext.folders.favourites.* key used for setting favorites for documents and folders, or null if not favorites are targeted.
      * 
      * @param preferences
-     * @return the org.alfresco.ext.documents.favourites.* or
-     *         org.alfresco.ext.folders.favourites.* key used for setting
-     *         favorites for documents and folders, or null if not favorites are
-     *         targeted.
+     * @return the org.alfresco.ext.documents.favourites.* or org.alfresco.ext.folders.favourites.* key used for setting favorites for documents and folders, or null if not favorites are targeted.
      */
     private String getExtPreferenceKey(Map<String, Serializable> preferences)
     {
@@ -121,11 +115,7 @@ public class VirtualPreferenceServiceExtension extends
     }
 
     /**
-     * If the favorites preferences are changed then for virtual references the
-     * actual nodeRef is added/removed from favorites preferences instead of
-     * virtual nodeRef. For non virtual entries or for preferences that are not
-     * related to favorites the original implementation from
-     * PreferenceServiceImpl is used.
+     * If the favorites preferences are changed then for virtual references the actual nodeRef is added/removed from favorites preferences instead of virtual nodeRef. For non virtual entries or for preferences that are not related to favorites the original implementation from PreferenceServiceImpl is used.
      */
     @Override
     public void setPreferences(String userName, Map<String, Serializable> preferences) throws Throwable
@@ -176,14 +166,14 @@ public class VirtualPreferenceServiceExtension extends
                             {
                                 Serializable value = preferences.get(extKey);
                                 preferences.put(actualExtPreference,
-                                                value);
+                                        value);
                             }
                             preferences.remove(extKey);
 
                             if (!favorites.contains(actualNodeRefStr))
                             {
                                 favorites = favorites.replace(documentNodeRefStr,
-                                                              actualNodeRefStr);
+                                        actualNodeRefStr);
                             }
                             else
                             {
@@ -201,7 +191,7 @@ public class VirtualPreferenceServiceExtension extends
                             {
                                 elements.remove(actualNodeRefStr);
                                 preferenceService.clearPreferences(userName,
-                                                                   actualExtPreference);
+                                        actualExtPreference);
                                 elementsChanged = true;
                             }
                         }
@@ -222,12 +212,12 @@ public class VirtualPreferenceServiceExtension extends
                             }
                         }
                         preferences.put(favKey,
-                                        favorites);
+                                favorites);
                     }
                 }
             }
         }
         getTrait().setPreferences(userName,
-                                  preferences);
+                preferences);
     }
 }

@@ -34,8 +34,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * An implementation of {@link AbstractRatingRollupAlgorithm} which calculates the count (number) of all
- * ratings in a given scheme.
+ * An implementation of {@link AbstractRatingRollupAlgorithm} which calculates the count (number) of all ratings in a given scheme.
  * 
  * @author Neil McErlean
  * @since 3.5
@@ -43,12 +42,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class RatingCountRollupAlgorithm extends AbstractRatingRollupAlgorithm
 {
     public static final String ROLLUP_NAME = "Count";
-    
+
     public RatingCountRollupAlgorithm()
     {
         super(ROLLUP_NAME);
     }
-    
+
     public Integer recalculate(NodeRef ratedNode)
     {
         int result = 0;
@@ -68,7 +67,7 @@ public class RatingCountRollupAlgorithm extends AbstractRatingRollupAlgorithm
                 }
             }
         }
-        
+
         return result;
     }
 }

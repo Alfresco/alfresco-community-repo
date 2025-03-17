@@ -31,14 +31,12 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.util.Hashtable;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
-import java.util.Hashtable;
-
-import org.alfresco.repo.webdav.WebDAVServlet.WebDAVInitParameters;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,10 +44,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import org.alfresco.repo.webdav.WebDAVServlet.WebDAVInitParameters;
+
 /**
  * Tests for the allowInsecurePOSTMethod flag.
  *
- * @see  WebDAVInitParameters
+ * @see WebDAVInitParameters
  * @author Aleksandra Onych
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -59,7 +59,7 @@ public class WebDAVInsecurePostMethodTest
     private @Mock WebDAVInitParameters webDAVInitParameters;
     private @Mock HttpServletRequest request;
     private @Mock HttpServletResponse response;
-    private @Mock Hashtable<String,Class<? extends WebDAVMethod>> davMethods;
+    private @Mock Hashtable<String, Class<? extends WebDAVMethod>> davMethods;
 
     @Before
     public void setUp()
@@ -69,7 +69,6 @@ public class WebDAVInsecurePostMethodTest
         ReflectionTestUtils.setField(davServlet, "m_davMethods", davMethods);
         when(webDAVInitParameters.getEnabled()).thenReturn(true);
     }
-
 
     @Test
     public void shouldReturn405StatusWhenPostMethodIsNotAllowed() throws ServletException, IOException

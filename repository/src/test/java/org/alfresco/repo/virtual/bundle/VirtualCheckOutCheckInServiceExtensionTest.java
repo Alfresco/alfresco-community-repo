@@ -32,6 +32,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.coci.CheckOutCheckInServiceImpl;
 import org.alfresco.repo.content.MimetypeMap;
@@ -47,11 +53,6 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 @Category(LuceneTests.class)
 public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIntegrationTest
@@ -94,29 +95,29 @@ public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIn
         super.setUp();
         PROP_WORKING_COPY_NAME = CheckOutCheckInServiceImpl
                 .createWorkingCopyName(PROP_FILE_NAME,
-                                       I18NUtil.getMessage("coci_service.working_copy_label"));
-        
+                        I18NUtil.getMessage("coci_service.working_copy_label"));
+
         checkOutCheckInService = ctx.getBean("checkOutCheckInService",
-                                                                                        CheckOutCheckInService.class);
+                CheckOutCheckInService.class);
         versionService = ctx.getBean("versionService",
-                                                                                VersionService.class);
+                VersionService.class);
 
         node = nodeService.getChildByName(virtualFolder1NodeRef,
-                                          ContentModel.ASSOC_CONTAINS,
-                                          "Node1");
+                ContentModel.ASSOC_CONTAINS,
+                "Node1");
         originalContentNodeRef = createContent(node,
-                                               PROP_FILE_NAME,
-                                               TEST_CONTENT_1,
-                                               MimetypeMap.MIMETYPE_TEXT_PLAIN,
-                                               "UTF-8").getChildRef();
+                PROP_FILE_NAME,
+                TEST_CONTENT_1,
+                MimetypeMap.MIMETYPE_TEXT_PLAIN,
+                "UTF-8").getChildRef();
         nodeService.addAspect(originalContentNodeRef,
-                              ContentModel.ASPECT_VERSIONABLE,
-                              null);
+                ContentModel.ASPECT_VERSIONABLE,
+                null);
         physicalFileNodeRef = nodeService.getChildByName(virtualFolder1NodeRef,
-                                                         ContentModel.ASSOC_CONTAINS,
-                                                         PROP_FILE_NAME);
+                ContentModel.ASSOC_CONTAINS,
+                PROP_FILE_NAME);
     }
-    
+
     @After
     public void tearDown() throws Exception
     {
@@ -132,21 +133,21 @@ public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIn
         assertTrue(checkOutCheckInService.isCheckedOut(physicalFileNodeRef));
 
         assertEquals(checkOutCheckInService.getWorkingCopy(originalContentNodeRef),
-                     workingCopy);
+                workingCopy);
         checkOutCheckInService.cancelCheckout(workingCopy);
 
         // method2
         ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(node);
         NodeRef workingCopy1 = checkOutCheckInService.checkout(originalContentNodeRef,
-                                                               childAssocRef.getParentRef(),
-                                                               childAssocRef.getTypeQName(),
-                                                               childAssocRef.getQName());
+                childAssocRef.getParentRef(),
+                childAssocRef.getTypeQName(),
+                childAssocRef.getQName());
 
         assertNotNull(workingCopy1);
         assertTrue(checkOutCheckInService.isCheckedOut(physicalFileNodeRef));
 
         assertEquals(checkOutCheckInService.getWorkingCopy(physicalFileNodeRef),
-                     workingCopy1);
+                workingCopy1);
         checkOutCheckInService.cancelCheckout(workingCopy1);
 
     }
@@ -156,124 +157,124 @@ public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIn
     {
         checkOutCheckInService.checkout(originalContentNodeRef);
         NodeRef workingCopyVirtualContext = nodeService.getChildByName(node,
-                                                                       ContentModel.ASSOC_CONTAINS,
-                                                                       PROP_WORKING_COPY_NAME);
+                ContentModel.ASSOC_CONTAINS,
+                PROP_WORKING_COPY_NAME);
 
         Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
         versionProperties.put(VersionModel.PROP_DESCRIPTION,
-                              PROP_VERSION_DESCRIPTION_1);
+                PROP_VERSION_DESCRIPTION_1);
         versionProperties.put(VersionModel.PROP_VERSION_TYPE,
-                              VersionType.MINOR);
+                VersionType.MINOR);
         NodeRef origNodeRef = checkOutCheckInService.checkin(workingCopyVirtualContext,
-                                                             versionProperties);
+                versionProperties);
 
         assertNotNull(origNodeRef);
         assertEquals(originalContentNodeRef,
-                     origNodeRef);
+                origNodeRef);
         assertFalse(checkOutCheckInService.isCheckedOut(physicalFileNodeRef));
 
         // Check that the version history is correct
         Version version = this.versionService.getCurrentVersion(origNodeRef);
         assertNotNull(version);
         assertEquals(PROP_VERSION_DESCRIPTION_1,
-                     version.getDescription());
+                version.getDescription());
         assertEquals(VersionType.MINOR,
-                     version.getVersionType());
+                version.getVersionType());
         assertEquals(PROP_VERSION_LABEL_1,
-                     version.getVersionLabel());
+                version.getVersionLabel());
 
         // method2
 
         checkOutCheckInService.checkout(originalContentNodeRef);
         workingCopyVirtualContext = nodeService.getChildByName(node,
-                                                               ContentModel.ASSOC_CONTAINS,
-                                                               PROP_WORKING_COPY_NAME);
+                ContentModel.ASSOC_CONTAINS,
+                PROP_WORKING_COPY_NAME);
 
         versionProperties = new HashMap<String, Serializable>();
         versionProperties.put(VersionModel.PROP_DESCRIPTION,
-                              PROP_VERSION_DESCRIPTION_2);
+                PROP_VERSION_DESCRIPTION_2);
         versionProperties.put(VersionModel.PROP_VERSION_TYPE,
-                              VersionType.MINOR);
+                VersionType.MINOR);
 
         ContentWriter tempWriter = this.contentService.getWriter(workingCopyVirtualContext,
-                                                                 ContentModel.PROP_CONTENT,
-                                                                 false);
+                ContentModel.PROP_CONTENT,
+                false);
         assertNotNull(tempWriter);
         tempWriter.putContent(TEST_CONTENT_2);
 
         String contentUrl = tempWriter.getContentUrl();
         origNodeRef = checkOutCheckInService.checkin(workingCopyVirtualContext,
-                                                     versionProperties,
-                                                     contentUrl);
+                versionProperties,
+                contentUrl);
         assertNotNull(origNodeRef);
         assertEquals(originalContentNodeRef,
-                     origNodeRef);
+                origNodeRef);
         assertFalse(checkOutCheckInService.isCheckedOut(physicalFileNodeRef));
 
         // Check the checked in content
         ContentReader contentReader = this.contentService.getReader(origNodeRef,
-                                                                    ContentModel.PROP_CONTENT);
+                ContentModel.PROP_CONTENT);
         assertNotNull(contentReader);
         assertEquals(TEST_CONTENT_2,
-                     contentReader.getContentString());
+                contentReader.getContentString());
 
         // Check that the version history is correct
 
         version = this.versionService.getCurrentVersion(origNodeRef);
         assertNotNull(version);
         assertEquals(PROP_VERSION_DESCRIPTION_2,
-                     version.getDescription());
+                version.getDescription());
         assertEquals(VersionType.MINOR,
-                     version.getVersionType());
+                version.getVersionType());
         assertEquals(PROP_VERSION_LABEL_2,
-                     version.getVersionLabel());
+                version.getVersionLabel());
 
         // method3
 
         checkOutCheckInService.checkout(originalContentNodeRef);
         workingCopyVirtualContext = nodeService.getChildByName(node,
-                                                               ContentModel.ASSOC_CONTAINS,
-                                                               PROP_WORKING_COPY_NAME);
+                ContentModel.ASSOC_CONTAINS,
+                PROP_WORKING_COPY_NAME);
 
         versionProperties = new HashMap<String, Serializable>();
         versionProperties.put(VersionModel.PROP_DESCRIPTION,
-                              PROP_VERSION_DESCRIPTION_3);
+                PROP_VERSION_DESCRIPTION_3);
         versionProperties.put(VersionModel.PROP_VERSION_TYPE,
-                              VersionType.MAJOR);
+                VersionType.MAJOR);
 
         tempWriter = this.contentService.getWriter(workingCopyVirtualContext,
-                                                   ContentModel.PROP_CONTENT,
-                                                   false);
+                ContentModel.PROP_CONTENT,
+                false);
         assertNotNull(tempWriter);
         tempWriter.putContent(TEST_CONTENT_3);
 
         contentUrl = tempWriter.getContentUrl();
         origNodeRef = checkOutCheckInService.checkin(workingCopyVirtualContext,
-                                                     versionProperties,
-                                                     contentUrl,
-                                                     false);
+                versionProperties,
+                contentUrl,
+                false);
         assertNotNull(origNodeRef);
         assertEquals(originalContentNodeRef,
-                     origNodeRef);
+                origNodeRef);
         assertFalse(checkOutCheckInService.isCheckedOut(physicalFileNodeRef));
 
         // Check the checked in content
         contentReader = this.contentService.getReader(origNodeRef,
-                                                      ContentModel.PROP_CONTENT);
+                ContentModel.PROP_CONTENT);
         assertNotNull(contentReader);
         assertEquals(TEST_CONTENT_3,
-                     contentReader.getContentString());
+                contentReader.getContentString());
 
         // Check that the version history is correct
 
         version = this.versionService.getCurrentVersion(origNodeRef);
         assertNotNull(version);
         assertEquals(PROP_VERSION_DESCRIPTION_3,
-                     version.getDescription());
+                version.getDescription());
         assertEquals(VersionType.MAJOR,
-                     version.getVersionType());
+                version.getVersionType());
         assertEquals(PROP_VERSION_LABEL_3,
-                     version.getVersionLabel());
+                version.getVersionLabel());
     }
 
     @Test
@@ -283,15 +284,15 @@ public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIn
         assertTrue(checkOutCheckInService.isCheckedOut(physicalFileNodeRef));
 
         NodeRef workingCopyVirtualContext = nodeService.getChildByName(node,
-                                                                       ContentModel.ASSOC_CONTAINS,
-                                                                       PROP_WORKING_COPY_NAME);
+                ContentModel.ASSOC_CONTAINS,
+                PROP_WORKING_COPY_NAME);
         assertNotNull(workingCopyVirtualContext);
         checkOutCheckInService.cancelCheckout(workingCopyVirtualContext);
 
         assertFalse(checkOutCheckInService.isCheckedOut(physicalFileNodeRef));
         workingCopyVirtualContext = nodeService.getChildByName(node,
-                                                               ContentModel.ASSOC_CONTAINS,
-                                                               PROP_WORKING_COPY_NAME);
+                ContentModel.ASSOC_CONTAINS,
+                PROP_WORKING_COPY_NAME);
         assertNull(workingCopyVirtualContext);
 
     }
@@ -304,7 +305,7 @@ public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIn
         NodeRef workingCopy = checkOutCheckInService.getWorkingCopy(originalContentNodeRef);
         assertNotNull(workingCopy);
         assertEquals(checkedOut,
-                     workingCopy);
+                workingCopy);
 
         checkOutCheckInService.cancelCheckout(workingCopy);
 
@@ -319,14 +320,14 @@ public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIn
     {
         checkOutCheckInService.checkout(originalContentNodeRef);
         NodeRef workingCopyVirtualContext = nodeService.getChildByName(node,
-                                                                       ContentModel.ASSOC_CONTAINS,
-                                                                       PROP_WORKING_COPY_NAME);
+                ContentModel.ASSOC_CONTAINS,
+                PROP_WORKING_COPY_NAME);
         assertNotNull(workingCopyVirtualContext);
 
         NodeRef checkedOut = checkOutCheckInService.getCheckedOut(workingCopyVirtualContext);
         assertNotNull(checkedOut);
         assertEquals(originalContentNodeRef,
-                     checkedOut);
+                checkedOut);
 
         checkOutCheckInService.cancelCheckout(workingCopyVirtualContext);
 
@@ -340,8 +341,8 @@ public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIn
     {
         checkOutCheckInService.checkout(originalContentNodeRef);
         NodeRef workingCopyVirtualContext = nodeService.getChildByName(node,
-                                                                       ContentModel.ASSOC_CONTAINS,
-                                                                       PROP_WORKING_COPY_NAME);
+                ContentModel.ASSOC_CONTAINS,
+                PROP_WORKING_COPY_NAME);
         assertNotNull(workingCopyVirtualContext);
 
         assertTrue(checkOutCheckInService.isWorkingCopy(workingCopyVirtualContext));
@@ -369,26 +370,26 @@ public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIn
     {
         checkOutCheckInService.checkout(originalContentNodeRef);
         NodeRef workingCopyVirtualContext = nodeService.getChildByName(node,
-                                                                       ContentModel.ASSOC_CONTAINS,
-                                                                       PROP_WORKING_COPY_NAME);
+                ContentModel.ASSOC_CONTAINS,
+                PROP_WORKING_COPY_NAME);
 
-        //test target association reference
+        // test target association reference
         List<AssociationRef> targetAssocs = nodeService.getTargetAssocs(originalContentNodeRef,
-                                                                        ContentModel.ASSOC_WORKING_COPY_LINK);
+                ContentModel.ASSOC_WORKING_COPY_LINK);
         assertNotNull(targetAssocs);
         assertEquals(1,
-                     targetAssocs.size());
+                targetAssocs.size());
         assertEquals(workingCopyVirtualContext,
-                     targetAssocs.get(0).getTargetRef());
+                targetAssocs.get(0).getTargetRef());
 
-        //test source association reference
+        // test source association reference
         List<AssociationRef> sourceAssocs = nodeService.getSourceAssocs(workingCopyVirtualContext,
-                                                                        ContentModel.ASSOC_WORKING_COPY_LINK);
+                ContentModel.ASSOC_WORKING_COPY_LINK);
         assertNotNull(sourceAssocs);
         assertEquals(1,
-                     sourceAssocs.size());
+                sourceAssocs.size());
         assertEquals(originalContentNodeRef,
-                     sourceAssocs.get(0).getSourceRef());
+                sourceAssocs.get(0).getSourceRef());
         checkOutCheckInService.cancelCheckout(workingCopyVirtualContext);
     }
 
@@ -397,11 +398,11 @@ public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIn
     {
         checkOutCheckInService.checkout(originalContentNodeRef);
         NodeRef workingCopyVirtualContext = nodeService.getChildByName(node,
-                                                                       ContentModel.ASSOC_CONTAINS,
-                                                                       PROP_WORKING_COPY_NAME);
+                ContentModel.ASSOC_CONTAINS,
+                PROP_WORKING_COPY_NAME);
         assertNotNull(workingCopyVirtualContext);
         NodeRef cancelCheckoutNodeRef = checkOutCheckInService.cancelCheckout(workingCopyVirtualContext);
         assertEquals(originalContentNodeRef,
-                     cancelCheckoutNodeRef);
+                cancelCheckoutNodeRef);
     }
 }

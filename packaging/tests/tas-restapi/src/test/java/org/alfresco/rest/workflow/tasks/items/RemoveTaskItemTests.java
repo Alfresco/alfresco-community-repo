@@ -1,5 +1,9 @@
 package org.alfresco.rest.workflow.tasks.items;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
@@ -7,9 +11,6 @@ import org.alfresco.rest.model.RestItemModel;
 import org.alfresco.utility.model.*;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * @author bogdan.bocancea
@@ -22,7 +23,7 @@ public class RemoveTaskItemTests extends RestTest
     private TaskModel taskModel;
     private RestItemModel taskItem;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         adminUser = dataUser.getAdminUser();
@@ -32,9 +33,9 @@ public class RemoveTaskItemTests extends RestTest
         assigneeUser = dataUser.createRandomTestUser();
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.SANITY,
             description = "Delete existing task item")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
     public void deleteTaskItem() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
@@ -49,9 +50,9 @@ public class RemoveTaskItemTests extends RestTest
                 .entriesListDoesNotContain("name", document2.getName());
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Try to Delete existing task item using invalid taskId")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void deleteTaskItemUsingInvalidTaskId() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
@@ -65,9 +66,9 @@ public class RemoveTaskItemTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidTaskId"));
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Try to Delete existing task item using invalid itemId")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void deleteTaskItemUsingInvalidItemId() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
@@ -80,9 +81,9 @@ public class RemoveTaskItemTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.PROCESS_ENTITY_NOT_FOUND, "incorrectItemId"));
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Delete existing task item with empty item id")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void deleteTaskItemEmptyItemId() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
@@ -95,9 +96,9 @@ public class RemoveTaskItemTests extends RestTest
                 .assertLastError().containsSummary(RestErrorModel.DELETE_EMPTY_ARGUMENT);
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Delete existing task item for completed task")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void deleteTaskItemForCompletedTask() throws Exception
     {
         TaskModel completedTask = dataWorkflow.usingUser(userWhoStartsTask)
@@ -113,9 +114,9 @@ public class RemoveTaskItemTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, completedTask.getId()));
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.SANITY,
             description = "Delete existing task item with candidate user")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
     public void deleteTaskItemWithCandidateUser() throws Exception
     {
         GroupModel group = dataGroup.createRandomGroup();
@@ -132,9 +133,9 @@ public class RemoveTaskItemTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Delete existing task item with unauthorized user")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void deleteTaskItemWithUnauthorizedUser() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
@@ -146,10 +147,10 @@ public class RemoveTaskItemTests extends RestTest
                 .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.SANITY,
             description = "Delete existing task item with inexistent user")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY })
-//    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.SANITY})
+    // @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void deleteTaskItemWithInexistentUser() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
@@ -159,9 +160,9 @@ public class RemoveTaskItemTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Delete existing task item for deleted task")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void deleteTaskItemFromDeletedProcess() throws Exception
     {
         ProcessModel deletedProcess = dataWorkflow.usingUser(userWhoStartsTask)
@@ -178,9 +179,9 @@ public class RemoveTaskItemTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, task.getId()));
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Delete task item twice")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void deleteTaskItemTwice() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
@@ -192,15 +193,15 @@ public class RemoveTaskItemTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
         restClient.withWorkflowAPI().usingTask(taskModel).deleteTaskItem(taskItem);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-            .assertLastError().containsSummary(String.format(RestErrorModel.PROCESS_ENTITY_NOT_FOUND, document2.getNodeRefWithoutVersion()))
-                              .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
-                              .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                              .stackTraceIs(RestErrorModel.STACKTRACE);
+                .assertLastError().containsSummary(String.format(RestErrorModel.PROCESS_ENTITY_NOT_FOUND, document2.getNodeRefWithoutVersion()))
+                .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
     }
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Delete task item with locked document")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void deleteTaskItemWithLockedDocument() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
@@ -209,18 +210,18 @@ public class RemoveTaskItemTests extends RestTest
         taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document2);
 
         dataContent.usingUser(userWhoStartsTask).usingResource(document2).checkOutDocument();
-        
+
         restClient.withWorkflowAPI().usingTask(taskModel).deleteTaskItem(taskItem);
         restClient.assertStatusCodeIs(HttpStatus.CONFLICT)
-            .assertLastError().containsSummary(String.format(RestErrorModel.LOCKED_NODE_OPERATION, document2.getNodeRefWithoutVersion()))
-                              .containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
-                              .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                              .stackTraceIs(RestErrorModel.STACKTRACE);
+                .assertLastError().containsSummary(String.format(RestErrorModel.LOCKED_NODE_OPERATION, document2.getNodeRefWithoutVersion()))
+                .containsErrorKey(RestErrorModel.API_DEFAULT_ERRORKEY)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
     }
-    
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS}, executionType = ExecutionType.REGRESSION,
             description = "Delete task item with deleted document")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
     public void deleteTaskItemWithDeletedDocument() throws Exception
     {
         taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
@@ -229,12 +230,12 @@ public class RemoveTaskItemTests extends RestTest
         taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document2);
 
         dataContent.usingUser(userWhoStartsTask).usingResource(document2).deleteContent();
-        
+
         restClient.withWorkflowAPI().usingTask(taskModel).deleteTaskItem(taskItem);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-            .assertLastError().containsSummary(String.format(RestErrorModel.PROCESS_ENTITY_NOT_FOUND, document2.getNodeRefWithoutVersion()))
-                              .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
-                              .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                              .stackTraceIs(RestErrorModel.STACKTRACE);
+                .assertLastError().containsSummary(String.format(RestErrorModel.PROCESS_ENTITY_NOT_FOUND, document2.getNodeRefWithoutVersion()))
+                .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 }

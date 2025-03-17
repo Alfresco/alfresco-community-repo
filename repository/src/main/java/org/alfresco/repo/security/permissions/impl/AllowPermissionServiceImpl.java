@@ -33,18 +33,17 @@ public class AllowPermissionServiceImpl extends PermissionServiceImpl
 {
 
     public AllowPermissionServiceImpl()
-    {
-    }
+    {}
 
     @Override
     public AccessStatus hasPermission(NodeRef nodeRef, PermissionReference perm)
     {
-       return AccessStatus.ALLOWED;
+        return AccessStatus.ALLOWED;
     }
 
     @Override
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
     {
-       return AccessStatus.ALLOWED;
+        return AccessStatus.ALLOWED;
     }
 }

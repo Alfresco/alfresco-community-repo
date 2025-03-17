@@ -1,5 +1,10 @@
 package org.alfresco.rest.workflow.processDefinitions;
 
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
@@ -8,10 +13,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Created by Claudia Agache on 2/1/2017.
@@ -27,10 +28,10 @@ public class GetProcessDefinitionFullTests extends RestTest
         adminUser = dataUser.getAdminUser();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,  TestGroup.PROCESS_DEFINITION },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION},
             executionType = ExecutionType.REGRESSION,
             description = "Verify if get process definition returns all process definitions when empty processDefinitionId is used")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION})
     public void getProcessDefinitionUsingEmptyProcessDefinitionId() throws Exception
     {
         restClient.authenticateUser(adminUser).withWorkflowAPI();
@@ -40,10 +41,10 @@ public class GetProcessDefinitionFullTests extends RestTest
         processDefinitions.assertThat().entriesListIsNotEmpty();
     }
 
-    @TestRail(section = { TestGroup.REST_API,  TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION},
             executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user gets a process definition with properties parameter applied using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION})
     public void getProcessDefinitionWithValidProperties() throws Exception
     {
         randomProcessDefinition = restClient.authenticateUser(adminUser).withWorkflowAPI().getAllProcessDefinitions().getOneRandomEntry().onModel();

@@ -29,11 +29,9 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.action.CancellableAction;
 
 /**
- * The Exception thrown when a {@link CancellableAction} detects
- *  that a cancel was requested, and needs the transaction it
- *  is in to be wound back as part of the cancellation.
+ * The Exception thrown when a {@link CancellableAction} detects that a cancel was requested, and needs the transaction it is in to be wound back as part of the cancellation.
  */
-public class ActionCancelledException extends AlfrescoRuntimeException 
+public class ActionCancelledException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = -3895466153727814956L;
 

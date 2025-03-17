@@ -25,8 +25,6 @@
  */
 package org.alfresco.repo.management.subsystems;
 
-
-
 /**
  * An event emitted before a {@link PropertyBackedBean} updates a property.
  * 
@@ -35,7 +33,7 @@ package org.alfresco.repo.management.subsystems;
 public class PropertyBackedBeanSetPropertyEvent extends PropertyBackedBeanEvent
 {
     private static final long serialVersionUID = 7421919310357212865L;
-    
+
     private String name;
     private String value;
 

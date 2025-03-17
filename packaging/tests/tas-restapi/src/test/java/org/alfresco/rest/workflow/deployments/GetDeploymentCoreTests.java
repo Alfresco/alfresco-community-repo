@@ -1,5 +1,9 @@
 package org.alfresco.rest.workflow.deployments;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestDeploymentModel;
 import org.alfresco.rest.model.RestErrorModel;
@@ -7,9 +11,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Created by Claudia Agache on 12/7/2016.
@@ -25,10 +26,10 @@ public class GetDeploymentCoreTests extends RestTest
         adminUser = dataUser.getAdminUser();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
-            executionType = ExecutionType.REGRESSION, 
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS},
+            executionType = ExecutionType.REGRESSION,
             description = "Verify if get deployment request returns status code 404 when invalid deploymentId is used.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.REGRESSION})
     public void getNonNetworkDeploymentUsingInvalidDeploymentId() throws Exception
     {
         expectedDeployment = restClient.authenticateUser(adminUser).withWorkflowAPI().getDeployments().getOneRandomEntry().onModel();

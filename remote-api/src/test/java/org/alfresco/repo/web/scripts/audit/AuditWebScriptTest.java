@@ -29,6 +29,16 @@ import java.net.URL;
 import java.util.Date;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+import org.springframework.util.ResourceUtils;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.audit.AuditServiceImpl;
@@ -50,15 +60,6 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.TestWebScriptServer;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-import org.springframework.util.ResourceUtils;
 
 /**
  * Test the audit web scripts
@@ -80,20 +81,20 @@ public class AuditWebScriptTest extends BaseWebScriptTest
     private AuthenticationService authenticationService;
     private FileFolderService fileFolderService;
     private Repository repositoryHelper;
-    
+
     private String admin;
     private boolean wasGloballyEnabled;
     boolean wasRepoEnabled;
     private boolean wasSearchEnabled;
-    
+
     private NodeRef testRoot;
-    
+
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
         ctx = getServer().getApplicationContext();
-        //MNT-10807 : Auditing does not take into account audit.filter.alfresco-access.transaction.user
+        // MNT-10807 : Auditing does not take into account audit.filter.alfresco-access.transaction.user
         UserAuditFilter userAuditFilter = new UserAuditFilter();
         userAuditFilter.setUserFilterPattern("System;.*");
         userAuditFilter.afterPropertiesSet();
@@ -104,8 +105,8 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         authenticationService = (AuthenticationService) ctx.getBean("AuthenticationService");
         auditService = (AuditService) ctx.getBean("AuditService");
         searchService = (SearchService) ctx.getBean("SearchService");
-        repositoryHelper = (Repository)getServer().getApplicationContext().getBean("repositoryHelper");
-        fileFolderService = (FileFolderService)getServer().getApplicationContext().getBean("FileFolderService");
+        repositoryHelper = (Repository) getServer().getApplicationContext().getBean("repositoryHelper");
+        fileFolderService = (FileFolderService) getServer().getApplicationContext().getBean("FileFolderService");
         admin = AuthenticationUtil.getAdminUserName();
 
         // Register the test models
@@ -115,9 +116,9 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         auditModelRegistry.registerModel(testModelUrl);
         auditModelRegistry.registerModel(testModelUrl1);
         auditModelRegistry.loadAuditModels();
-        
+
         AuthenticationUtil.setFullyAuthenticatedUser(admin);
-        
+
         wasGloballyEnabled = auditService.isAuditEnabled();
         wasRepoEnabled = auditService.isAuditEnabled(APP_REPOTEST_NAME, APP_REPOTEST_PATH);
         wasSearchEnabled = auditService.isAuditEnabled(APP_SEARCHTEST_NAME, APP_SEARCHTEST_PATH);
@@ -198,14 +199,14 @@ public class AuditWebScriptTest extends BaseWebScriptTest
             throw new RuntimeException("Failed to set search audit back to enabled/disabled state", e);
         }
     }
-    
+
     public void testGetWithoutPermissions() throws Exception
     {
         String url = "/api/audit/control";
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
         sendRequest(req, 401, AuthenticationUtil.getGuestRoleName());
     }
-    
+
     public void testGetIsAuditEnabledGlobally() throws Exception
     {
         boolean wasEnabled = auditService.isAuditEnabled();
@@ -213,7 +214,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
 
         String url = "/api/audit/control";
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
-        
+
         Response response = sendRequest(req, Status.STATUS_OK, admin);
         JSONObject json = new JSONObject(response.getContentAsString());
         boolean enabled = json.getBoolean(AbstractAuditWebScript.JSON_KEY_ENABLED);
@@ -221,15 +222,15 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         JSONArray apps = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_APPLICATIONS);
         assertEquals("Incorrect number of applications reported", checkApps.size(), apps.length());
     }
-    
+
     public void testGetIsAuditEnabledMissingApp() throws Exception
     {
         String url = "/api/audit/control/xxx";
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
-        
+
         sendRequest(req, 404, admin);
     }
-    
+
     public void testSetAuditEnabledGlobally() throws Exception
     {
         boolean wasEnabled = auditService.isAuditEnabled();
@@ -246,11 +247,11 @@ public class AuditWebScriptTest extends BaseWebScriptTest
             TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
             sendRequest(req, Status.STATUS_OK, admin);
         }
-        
+
         // Check that it worked
         testGetIsAuditEnabledGlobally();
     }
-    
+
     public void testGetIsAuditEnabledRepo() throws Exception
     {
         boolean wasEnabled = auditService.isAuditEnabled(APP_REPOTEST_NAME, null);
@@ -328,19 +329,18 @@ public class AuditWebScriptTest extends BaseWebScriptTest
             TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
             sendRequest(req, Status.STATUS_OK, admin);
         }
-        
+
         // Check that it worked
         testGetIsAuditEnabledRepo();
     }
-    
+
     /**
      * Perform a failed login attempt
      */
     private void loginWithFailure(final String username) throws Exception
     {
         // Force a failed login
-        RunAsWork<Void> failureWork = new RunAsWork<Void>()
-        {
+        RunAsWork<Void> failureWork = new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -358,23 +358,22 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         };
         AuthenticationUtil.runAs(failureWork, AuthenticationUtil.getSystemUserName());
     }
-    
+
     public synchronized void testClearAuditRepo() throws Exception
     {
-        long now = System.currentTimeMillis() - 10L;        // Accuracy can be a problem
+        long now = System.currentTimeMillis() - 10L; // Accuracy can be a problem
         long future = Long.MAX_VALUE;
-        
+
         loginWithFailure(getName());
-        
+
         // Wait for the background thread to run
         try
         {
             this.wait(100);
         }
         catch (Throwable e)
-        {
-        }
-        
+        {}
+
         // Delete audit entries that could not have happened
         String url = "/api/audit/clear/" + APP_REPOTEST_NAME + "?fromTime=" + future;
         TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
@@ -382,10 +381,10 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         JSONObject json = new JSONObject(response.getContentAsString());
         int cleared = json.getInt(AbstractAuditWebScript.JSON_KEY_CLEARED);
         assertEquals("Could not have cleared more than 0", 0, cleared);
-        
+
         // ALF-3055 : auditing of failures is now asynchronous, so loop 60 times with a
         // 1 second sleep to ensure that the audit is processed
-        for(int i = 0; i < 60; i++)
+        for (int i = 0; i < 60; i++)
         {
             // Delete the entry (at least)
             url = "/api/audit/clear/" + APP_REPOTEST_NAME + "?fromTime=" + now + "&toTime=" + future;
@@ -397,30 +396,31 @@ public class AuditWebScriptTest extends BaseWebScriptTest
             {
                 break;
             }
-            
+
             Thread.sleep(1000);
         }
         assertTrue("Should have cleared at least 1 entry", cleared > 0);
 
         // Delete all entries
-        url = "/api/audit/clear/" + APP_REPOTEST_NAME;;
+        url = "/api/audit/clear/" + APP_REPOTEST_NAME;
+        ;
         req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
         response = sendRequest(req, Status.STATUS_OK, admin);
         json = new JSONObject(response.getContentAsString());
         cleared = json.getInt(AbstractAuditWebScript.JSON_KEY_CLEARED);
     }
-    
+
     @SuppressWarnings("unused")
     public void testQueryAuditRepo() throws Exception
     {
         long now = System.currentTimeMillis();
         long future = Long.MAX_VALUE;
-        
+
         auditService.setAuditEnabled(true);
         auditService.enableAudit(APP_REPOTEST_NAME, APP_REPOTEST_PATH);
 
         loginWithFailure(getName());
-        
+
         // Query for audit entries that could not have happened
         String url = "/api/audit/query/" + APP_REPOTEST_NAME + "?fromTime=" + now + "&verbose=true";
         JSONArray jsonEntries = null;
@@ -430,19 +430,19 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         Long entryCount = null;
         // ALF-3055 : auditing of failures is now asynchronous, so loop 60 times with a
         // 1 second sleep to ensure that the audit is processed
-        for(int i = 0; i < 60; i++)
+        for (int i = 0; i < 60; i++)
         {
-	        req = new TestWebScriptServer.GetRequest(url);
-	        response = sendRequest(req, Status.STATUS_OK, admin);
-	        json = new JSONObject(response.getContentAsString());
-	        entryCount = json.getLong(AbstractAuditWebScript.JSON_KEY_ENTRY_COUNT);
-	        jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+            req = new TestWebScriptServer.GetRequest(url);
+            response = sendRequest(req, Status.STATUS_OK, admin);
+            json = new JSONObject(response.getContentAsString());
+            entryCount = json.getLong(AbstractAuditWebScript.JSON_KEY_ENTRY_COUNT);
+            jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
 
-	        if(jsonEntries.length() > 0)
-	        {
-	        	break;
-	        }
-        	Thread.sleep(1000);
+            if (jsonEntries.length() > 0)
+            {
+                break;
+            }
+            Thread.sleep(1000);
         }
         assertTrue("Expected at least one entry", jsonEntries.length() > 0);
         assertEquals("Entry count and physical count don't match", Long.valueOf(jsonEntries.length()), entryCount);
@@ -451,21 +451,21 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         assertNotNull("No entry ID", entryId);
         String entryTimeStr = jsonEntry.getString(AbstractAuditWebScript.JSON_KEY_ENTRY_TIME);
         assertNotNull("No entry time String", entryTimeStr);
-        Date entryTime = ISO8601DateFormat.parse((String)entryTimeStr); // Check conversion
+        Date entryTime = ISO8601DateFormat.parse((String) entryTimeStr); // Check conversion
         JSONObject jsonValues = jsonEntry.getJSONObject(AbstractAuditWebScript.JSON_KEY_ENTRY_VALUES);
         String entryUsername = jsonValues.getString("/repositorytest/login/error/user");
         assertEquals("Didn't find the login-failure-user", getName(), entryUsername);
-        
+
         // Query using well-known ID
-        Long fromEntryId = entryId;                 // Search is inclusive on the 'from' side
-        Long toEntryId = entryId.longValue() + 1L;  // Search is exclusive on the 'to' side
+        Long fromEntryId = entryId; // Search is inclusive on the 'from' side
+        Long toEntryId = entryId.longValue() + 1L; // Search is exclusive on the 'to' side
         url = "/api/audit/query/" + APP_REPOTEST_NAME + "?fromId=" + fromEntryId + "&toId=" + toEntryId;
         req = new TestWebScriptServer.GetRequest(url);
         response = sendRequest(req, Status.STATUS_OK, admin);
         json = new JSONObject(response.getContentAsString());
         jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
         assertEquals("Incorrect number of search results", 1, jsonEntries.length());
-        
+
         // Query using a non-existent entry path
         url = "/api/audit/query/" + APP_REPOTEST_NAME + "/repositorytest/login/error/userXXX" + "?verbose=true";
         req = new TestWebScriptServer.GetRequest(url);
@@ -473,7 +473,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         json = new JSONObject(response.getContentAsString());
         jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
         assertTrue("Should not have found anything", jsonEntries.length() == 0);
-        
+
         // Query using a good entry path
         url = "/api/audit/query/" + APP_REPOTEST_NAME + "/repositorytest/login/error/user" + "?verbose=true";
         req = new TestWebScriptServer.GetRequest(url);
@@ -481,7 +481,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         json = new JSONObject(response.getContentAsString());
         jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
         assertTrue("Should have found entries", jsonEntries.length() > 0);
-        
+
         // Now login with failure using a GUID and ensure that we can find it
         String missingUser = Long.valueOf(System.currentTimeMillis()).toString();
 
@@ -492,27 +492,27 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         json = new JSONObject(response.getContentAsString());
         jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
         assertEquals("Incorrect number of search results", 0, jsonEntries.length());
-        
+
         loginWithFailure(missingUser);
-        
+
         // Query for event that has happened once
         url = "/api/audit/query/" + APP_REPOTEST_NAME + "/repositorytest/login/error/user" + "?value=" + missingUser;
         // ALF-3055 : auditing of failures is now asynchronous, so loop 60 times with a
         // 1 second sleep to ensure that the audit is processed
-        for(int i = 0; i < 60; i++)
+        for (int i = 0; i < 60; i++)
         {
-	        req = new TestWebScriptServer.GetRequest(url);
-	        response = sendRequest(req, Status.STATUS_OK, admin);
-	        json = new JSONObject(response.getContentAsString());
-	        jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
-	        if(jsonEntries.length() == 1)
-	        {
-	        	break;
-	        }
-        	Thread.sleep(1000);
+            req = new TestWebScriptServer.GetRequest(url);
+            response = sendRequest(req, Status.STATUS_OK, admin);
+            json = new JSONObject(response.getContentAsString());
+            jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+            if (jsonEntries.length() == 1)
+            {
+                break;
+            }
+            Thread.sleep(1000);
         }
         assertEquals("Incorrect number of search results", 1, jsonEntries.length());
-        
+
         // Query for event, but casting the value to the incorrect type
         url = "/api/audit/query/" + APP_REPOTEST_NAME + "/repositorytest/login/error/user" + "?value=" + missingUser + "&valueType=java.lang.Long";
         req = new TestWebScriptServer.GetRequest(url);
@@ -520,28 +520,28 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         json = new JSONObject(response.getContentAsString());
         jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
         assertEquals("Incorrect number of search results", 0, jsonEntries.length());
-        
+
         // Test what happens when the target data needs encoding
         now = System.currentTimeMillis();
-        
+
         String oddUser = "%$£\\\"\'";
         loginWithFailure(oddUser);
-        
+
         // Query for the event limiting to one by count and descending (i.e. get last)
         url = "/api/audit/query/" + APP_REPOTEST_NAME + "?forward=false&limit=1&verbose=true&fromTime=" + now;
         // ALF-3055 : auditing of failures is now asynchronous, so loop 60 times with a
         // 1 second sleep to ensure that the audit is processed
-        for(int i = 0; i < 60; i++)
+        for (int i = 0; i < 60; i++)
         {
             req = new TestWebScriptServer.GetRequest(url);
             response = sendRequest(req, Status.STATUS_OK, admin);
             json = new JSONObject(response.getContentAsString());
             jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
-	        if(jsonEntries.length() == 1)
-	        {
-	        	break;
-	        }
-        	Thread.sleep(1000);
+            if (jsonEntries.length() == 1)
+            {
+                break;
+            }
+            Thread.sleep(1000);
         }
         assertEquals("Incorrect number of search results", 1, jsonEntries.length());
 

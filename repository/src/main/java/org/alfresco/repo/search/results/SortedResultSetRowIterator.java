@@ -37,7 +37,8 @@ public class SortedResultSetRowIterator extends AbstractResultSetRowIterator
 {
 
     /**
-     * @param resultSet ResultSet
+     * @param resultSet
+     *            ResultSet
      */
     public SortedResultSetRowIterator(ResultSet resultSet)
     {
@@ -47,13 +48,13 @@ public class SortedResultSetRowIterator extends AbstractResultSetRowIterator
     @Override
     public ResultSetRow next()
     {
-       return new SortedResultSetRow((SortedResultSet)getResultSet(), moveToNextPosition());
+        return new SortedResultSetRow((SortedResultSet) getResultSet(), moveToNextPosition());
     }
 
     @Override
     public ResultSetRow previous()
     {
-        return new SortedResultSetRow((SortedResultSet)getResultSet(), moveToPreviousPosition());
+        return new SortedResultSetRow((SortedResultSet) getResultSet(), moveToPreviousPosition());
     }
 
 }

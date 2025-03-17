@@ -25,7 +25,6 @@
  */
 package org.alfresco.util.schemacomp;
 
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -39,16 +38,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.util.TempFileProvider;
-import org.alfresco.util.schemacomp.MultiFileDumper.DbToXMLFactory;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.schemacomp.MultiFileDumper.DbToXMLFactory;
 
 /**
  * Tests for the MultiFileDumper class.
@@ -62,87 +60,81 @@ public class MultiFileDumperTest
     private @Mock DbToXML dbToXMLForA;
     private @Mock DbToXML dbToXMLForB;
     private @Mock DbToXML dbToXMLForC;
-    
-    
-    @Test(expected=IllegalArgumentException.class)
+
+    @Test(expected = IllegalArgumentException.class)
     public void exceptionThrownWhenZeroPrefixesUsed()
     {
         // Shouldn't be able to construct a dumper with no prefixes to dump.
-        new MultiFileDumper(new String[] {}, TempFileProvider.getTempDir(), "", dbToXMLFactory, null);
+        new MultiFileDumper(new String[]{}, TempFileProvider.getTempDir(), "", dbToXMLFactory, null);
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void exceptionThrownWhenNullPrefixListUsed()
     {
         // Shouldn't be able to construct a dumper with no prefixes to dump.
         new MultiFileDumper(null, TempFileProvider.getTempDir(), "", dbToXMLFactory, null);
     }
-    
-    
+
     @Test
     public void canDumpSchemaToFiles()
     {
-        String[] prefixes = new String[] { "a_", "b_", "c_" };
+        String[] prefixes = new String[]{"a_", "b_", "c_"};
         File directory = TempFileProvider.getTempDir();
         String fileNamePattern = "SchemaDump-MySQL-{0}-";
-        
-        MultiFileDumper dumper = new MultiFileDumper(prefixes, directory, fileNamePattern, dbToXMLFactory, null);
-        
-        when(dbToXMLFactory.create(argThat(isFileNameStartingWith("SchemaDump-MySQL-a_-")), eq("a_"))).
-            thenReturn(dbToXMLForA);
-        when(dbToXMLFactory.create(argThat(isFileNameStartingWith("SchemaDump-MySQL-b_-")), eq("b_"))).
-            thenReturn(dbToXMLForB);
-        when(dbToXMLFactory.create(argThat(isFileNameStartingWith("SchemaDump-MySQL-c_-")), eq("c_"))).
-            thenReturn(dbToXMLForC);
 
-        
+        MultiFileDumper dumper = new MultiFileDumper(prefixes, directory, fileNamePattern, dbToXMLFactory, null);
+
+        when(dbToXMLFactory.create(argThat(isFileNameStartingWith("SchemaDump-MySQL-a_-")), eq("a_"))).thenReturn(dbToXMLForA);
+        when(dbToXMLFactory.create(argThat(isFileNameStartingWith("SchemaDump-MySQL-b_-")), eq("b_"))).thenReturn(dbToXMLForB);
+        when(dbToXMLFactory.create(argThat(isFileNameStartingWith("SchemaDump-MySQL-c_-")), eq("c_"))).thenReturn(dbToXMLForC);
+
         List<File> files = dumper.dumpFiles();
         Iterator<File> it = files.iterator();
         assertPathCorrect("SchemaDump-MySQL-a_-", directory, it.next());
         assertPathCorrect("SchemaDump-MySQL-b_-", directory, it.next());
         assertPathCorrect("SchemaDump-MySQL-c_-", directory, it.next());
-        
+
         verify(dbToXMLForA).execute();
         verify(dbToXMLForB).execute();
         verify(dbToXMLForC).execute();
     }
-    
+
     @Test
     public void canDumpSchemaToFilesForDefaultDBPrefixes()
     {
         File directory = TempFileProvider.getTempDir();
         String fileNamePattern = "SchemaDump-MySQL-{0}-";
-        
+
         MultiFileDumper dumper = new MultiFileDumper(directory, fileNamePattern, dbToXMLFactory, null);
-        
+
         Map<String, DbToXML> xmlExporters = new HashMap<String, DbToXML>(MultiFileDumper.DEFAULT_PREFIXES.length);
-        
+
         // Each of the prefixes will be used to call DbToXMLFactory.create(...)
         for (String prefix : MultiFileDumper.DEFAULT_PREFIXES)
         {
-            DbToXML dbToXML = mock(DbToXML.class); 
+            DbToXML dbToXML = mock(DbToXML.class);
             xmlExporters.put(prefix, dbToXML);
             when(dbToXMLFactory.create(any(File.class), eq(prefix))).thenReturn(dbToXML);
         }
 
         dumper.dumpFiles();
-        
+
         // Check that each DEFAULT_PREFIX prefix resulted in its associated DbToXML object being used.
         for (DbToXML dbToXML : xmlExporters.values())
-        {            
+        {
             verify(dbToXML).execute();
         }
     }
-    
+
     private ArgumentMatcher<File> isFileNameStartingWith(String startOfName)
     {
         return new FileNameBeginsWith(startOfName);
     }
-    
+
     private static class FileNameBeginsWith implements ArgumentMatcher<File>
     {
         private final String startOfName;
-        
+
         public FileNameBeginsWith(String startOfName)
         {
             this.startOfName = startOfName;
@@ -159,13 +151,14 @@ public class MultiFileDumperTest
             return false;
         }
     }
-    
+
     /**
-     * Check that actualFile has the expected directory and file name prefix, e.g. if the actual file
-     * is /temp/my_file_123.xml and we call:
+     * Check that actualFile has the expected directory and file name prefix, e.g. if the actual file is /temp/my_file_123.xml and we call:
+     * 
      * <pre>
-     *    assertPathCorrect("my_file_", new File("/tmp"), actualFile)
+     * assertPathCorrect("my_file_", new File("/tmp"), actualFile)
      * </pre>
+     * 
      * Then the assertion should hold true.
      * 
      * @param expectedFileNamePrefix
@@ -178,7 +171,7 @@ public class MultiFileDumperTest
         if (!actualFile.getAbsolutePath().startsWith(expectedPath.getAbsolutePath()))
         {
             String failureMsg = "File path " + actualFile.getAbsolutePath() +
-                " does not start as expected: " + expectedPath.getAbsolutePath();
+                    " does not start as expected: " + expectedPath.getAbsolutePath();
             Assert.fail(failureMsg);
         }
     }

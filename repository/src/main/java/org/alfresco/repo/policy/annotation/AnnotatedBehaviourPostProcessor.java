@@ -27,14 +27,15 @@ package org.alfresco.repo.policy.annotation;
 
 import java.lang.reflect.Method;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.config.BeanPostProcessor;
 
 /**
  * Annotated behaviour bean post processor.
@@ -56,7 +57,8 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
     private NamespaceService namespaceService;
 
     /**
-     * @param policyComponent   policy component
+     * @param policyComponent
+     *            policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -64,7 +66,8 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
     }
 
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -97,8 +100,10 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
     /**
      * Register behaviours.
      *
-     * @param bean      bean
-     * @param beanName  bean name
+     * @param bean
+     *            bean
+     * @param beanName
+     *            bean name
      */
     private void registerBehaviours(Object bean, String beanName)
     {
@@ -125,10 +130,14 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
     /**
      * Register behaviour.
      *
-     * @param behaviourBean behaviour bean annotation
-     * @param bean          bean
-     * @param beanName      bean name
-     * @param method        method
+     * @param behaviourBean
+     *            behaviour bean annotation
+     * @param bean
+     *            bean
+     * @param beanName
+     *            bean name
+     * @param method
+     *            method
      */
     private void registerBehaviour(BehaviourBean behaviourBean, Object bean, String beanName, Method method)
     {
@@ -148,13 +157,13 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
             if (!behaviour.isService())
             {
                 logger.debug("   ... binding " + behaviour.kind() + " behaviour for " + beanName + "." + method.getName() +
-                                   " for policy " + policy.toString() +
-                                   " and type " + type.toString());
+                        " for policy " + policy.toString() +
+                        " and type " + type.toString());
             }
             else
             {
                 logger.debug("   ... binding " + behaviour.kind() + " service behaviour for " + beanName + "." + method.getName() +
-                                   " for policy " + policy.toString());
+                        " for policy " + policy.toString());
             }
         }
 
@@ -169,7 +178,7 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
                 logger.debug("   ... adding behaviour to registry with name " + behaviour.name());
             }
 
-            ((BehaviourRegistry)bean).registerBehaviour(behaviour.name(), javaBehaviour);
+            ((BehaviourRegistry) bean).registerBehaviour(behaviour.name(), javaBehaviour);
         }
 
         // deal with class behaviours
@@ -193,9 +202,9 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
             {
                 // bind association behaviour for given type and assoc type
                 policyComponent.bindAssociationBehaviour(policy,
-                                                         type,
-                                                         toQName(behaviour.assocType()),
-                                                         javaBehaviour);
+                        type,
+                        toQName(behaviour.assocType()),
+                        javaBehaviour);
             }
             else
             {
@@ -208,8 +217,10 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
     /**
      * Resolve the policy qname, defaulting to the qualified name of the method if none specified.
      *
-     * @param policyName     policy name
-     * @param method         method
+     * @param policyName
+     *            policy name
+     * @param method
+     *            method
      * @return {@link QName} qualified name of the policy
      */
     private QName resolvePolicy(String policyName, Method method)
@@ -229,8 +240,10 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
 
     /**
      *
-     * @param behaviourBean BehaviourBean
-     * @param behaviour Behaviour
+     * @param behaviourBean
+     *            BehaviourBean
+     * @param behaviour
+     *            Behaviour
      * @return QName
      */
     private QName resolveType(BehaviourBean behaviourBean, Behaviour behaviour)
@@ -254,7 +267,8 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
 
     /**
      *
-     * @param name String
+     * @param name
+     *            String
      * @return QName
      */
     private QName toQName(String name)

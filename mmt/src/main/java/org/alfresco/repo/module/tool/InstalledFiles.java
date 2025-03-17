@@ -48,33 +48,35 @@ public class InstalledFiles
     private static final String MOD_ADD_FILE = "add";
     private static final String MOD_UPDATE_FILE = "update";
     private static final String MOD_MK_DIR = "mkdir";
-    
+
     /** Delimieter used in the file */
     private static final String DELIMITER = "|";
-    
+
     /** War location **/
     private String warLocation;
-    
+
     /** Module id **/
     private String moduleId;
-    
+
     /** Lists containing the modifications made */
     private List<String> adds = new ArrayList<String>();
     private Map<String, String> updates = new HashMap<String, String>();
     private List<String> mkdirs = new ArrayList<String>();
-    
+
     /**
      * Constructor
      * 
-     * @param warLocation   the war location
-     * @param moduleId      the module id
+     * @param warLocation
+     *            the war location
+     * @param moduleId
+     *            the module id
      */
     public InstalledFiles(String warLocation, String moduleId)
     {
         this.warLocation = warLocation;
         this.moduleId = moduleId;
     }
-    
+
     /**
      * Loads the exisiting information about the installed files from the WAR
      */
@@ -114,21 +116,21 @@ public class InstalledFiles
                     reader.close();
                 }
             }
-            catch(FileNotFoundException exception)
+            catch (FileNotFoundException exception)
             {
                 throw new ModuleManagementToolException("The module file install file '" + getFileLocation() + "' does not exist", exception);
             }
-            catch(IOException exception)
+            catch (IOException exception)
             {
                 throw new ModuleManagementToolException("Error whilst reading file '" + getFileLocation(), exception);
             }
         }
-        else 
+        else
         {
-            throw new ModuleManagementToolException("Invalid module.  The installation file does not exist for module: "+moduleId);
+            throw new ModuleManagementToolException("Invalid module.  The installation file does not exist for module: " + moduleId);
         }
     }
-    
+
     /**
      * Saves the current modification details into the WAR
      */
@@ -139,8 +141,8 @@ public class InstalledFiles
             TFile file = new TFile(getFileLocation());
             if (file.exists() == false)
             {
-                file.createNewFile();               
-            } 
+                file.createNewFile();
+            }
             TFileOutputStream os = new TFileOutputStream(file);
             try
             {
@@ -165,30 +167,30 @@ public class InstalledFiles
                 os.close();
             }
         }
-        catch(IOException exception)
+        catch (IOException exception)
         {
             throw new ModuleManagementToolException("Error whilst saving modifications file.", exception);
         }
     }
-    
+
     /**
      * Returns the location of the modifications file based on the module id
      * 
-     * @return  the file location
+     * @return the file location
      */
     public String getFileLocation()
     {
         return this.warLocation + getFilePathInWar();
     }
-    
+
     /**
-     * @return      Returns the path of the install file within the WAR
+     * @return Returns the path of the install file within the WAR
      */
     public String getFilePathInWar()
     {
         return WarHelper.MODULE_NAMESPACE_DIR + "/" + this.moduleId + "/modifications.install";
     }
-    
+
     /**
      * Get all the added files
      * 
@@ -198,53 +200,56 @@ public class InstalledFiles
     {
         return adds;
     }
-    
-    /** 
-     * Get all the updated files, key is the file that has been updated and the value is the 
-     * location of the backup made before modification took place.
+
+    /**
+     * Get all the updated files, key is the file that has been updated and the value is the location of the backup made before modification took place.
      * 
-     * @return  map of file locaiton and backup
+     * @return map of file locaiton and backup
      */
     public Map<String, String> getUpdates()
     {
         return updates;
     }
-    
+
     /**
      * Gets a list of the dirs added during install
      * 
-     * @return  list of directories added
+     * @return list of directories added
      */
     public List<String> getMkdirs()
     {
         return mkdirs;
     }
-    
+
     /**
      * Add a file addition
      * 
-     * @param location  the file added
+     * @param location
+     *            the file added
      */
     public void addAdd(String location)
     {
         this.adds.add(location);
     }
-    
+
     /**
      * Add a file update
      * 
-     * @param location  the file updated
-     * @param backup    the backup location
+     * @param location
+     *            the file updated
+     * @param backup
+     *            the backup location
      */
     public void addUpdate(String location, String backup)
     {
         this.updates.put(location, backup);
     }
-    
+
     /**
-     * Add a directory 
+     * Add a directory
      * 
-     * @param location  the directory location
+     * @param location
+     *            the directory location
      */
     public void addMkdir(String location)
     {
@@ -256,8 +261,8 @@ public class InstalledFiles
     {
         StringBuilder builder = new StringBuilder();
         builder.append("InstalledFiles [warLocation=").append(this.warLocation).append(", moduleId=")
-                    .append(this.moduleId).append(", adds=").append(this.adds).append(", updates=")
-                    .append(this.updates).append(", mkdirs=").append(this.mkdirs).append("]");
+                .append(this.moduleId).append(", adds=").append(this.adds).append(", updates=")
+                .append(this.updates).append(", mkdirs=").append(this.mkdirs).append("]");
         return builder.toString();
     }
 }

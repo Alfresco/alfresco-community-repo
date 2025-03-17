@@ -36,10 +36,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.util.EqualsHelper;
-import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.hslf.usermodel.HSLFSlideShowImpl;
@@ -49,13 +45,17 @@ import org.apache.poi.poifs.filesystem.EntryUtils;
 import org.apache.poi.poifs.filesystem.FilteringDirectoryNode;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
+import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.TempFileProvider;
+
 /**
  * Compares content for to see if content is equal.
  * <p>
- * Most mimetypes can simply be binary compared but for some mimetypes
- * there may be trivial differences so a binary compare is not sufficient.
+ * Most mimetypes can simply be binary compared but for some mimetypes there may be trivial differences so a binary compare is not sufficient.
  * <p>
- * In particular MS Project and MS Excel write to header fields without changing content. 
+ * In particular MS Project and MS Excel write to header fields without changing content.
  * 
  * @author mrogers
  *
@@ -64,18 +64,18 @@ public class CIFSContentComparator implements ContentComparator
 {
     // TODO Externalize Map of mimetype to comparator
     private Map<String, ContentComparator> customComparators = new HashMap<String, ContentComparator>();
-    
+
     private static final Log logger = LogFactory.getLog(CIFSContentComparator.class);
-    
+
     /**
      * 
      */
     public void init()
-    {   
+    {
         customComparators.put("application/vnd.ms-project", new MPPContentComparator());
         customComparators.put("application/vnd.ms-excel", new XLSContentComparator());
         customComparators.put("application/vnd.ms-powerpoint", new PPTContentComparator());
-    }  
+    }
 
     @Override
     public boolean isContentEqual(ContentReader existingContent,
@@ -83,32 +83,32 @@ public class CIFSContentComparator implements ContentComparator
     {
         String mimetype = existingContent.getMimetype();
         logger.debug("isContentEqual mimetype=" + mimetype);
-        
+
         long newSize = newFile.length();
-   
+
         ContentComparator custom = customComparators.get(mimetype);
-        
-        if(custom == null)
+
+        if (custom == null)
         {
             // No custom comparator - check length then do a binary diff
-            if(existingContent.getSize() != newSize)
+            if (existingContent.getSize() != newSize)
             {
                 // Different size
                 logger.debug("generic comparision, size is different - not equal");
                 return false;
             }
-            
+
             InputStream rightIs = null;
             InputStream leftIs = null;
             try
-            {   
+            {
                 rightIs = new BufferedInputStream(new FileInputStream(newFile));
                 leftIs = existingContent.getContentInputStream();
                 boolean retVal = EqualsHelper.binaryStreamEquals(leftIs, rightIs);
                 rightIs = null;
                 leftIs = null;
-                
-                if(logger.isDebugEnabled())
+
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("generic comparision, binary content comparison equal=" + retVal);
                 }
@@ -122,23 +122,23 @@ public class CIFSContentComparator implements ContentComparator
             }
             finally
             {
-                if(leftIs != null)
+                if (leftIs != null)
                 {
                     try
                     {
                         leftIs.close();
-                    } 
+                    }
                     catch (IOException e)
                     {
                         // Do nothing this is cleanup code
                     }
                 }
-                if(rightIs != null)
+                if (rightIs != null)
                 {
                     try
                     {
                         rightIs.close();
-                    } 
+                    }
                     catch (IOException e)
                     {
                         // Do nothing this is cleanup code
@@ -162,54 +162,53 @@ public class CIFSContentComparator implements ContentComparator
         FilteringDirectoryNode fs2Filtered = new FilteringDirectoryNode(de2, excludes);
 
         boolean retVal = EntryUtils.areDirectoriesIdentical(fs1Filtered, fs2Filtered);
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
-            logger.debug("returning equal="+ retVal);
+            logger.debug("returning equal=" + retVal);
         }
         return retVal;
     }
-    
- 
+
     // Comparator for MS Project
     private class MPPContentComparator implements ContentComparator
     {
-     
+
         @Override
         public boolean isContentEqual(ContentReader existingContent,
                 File newFile)
         {
             long newSize = newFile.length();
-            
-            if(logger.isDebugEnabled())
+
+            if (logger.isDebugEnabled())
             {
                 logger.debug("comparing two project files size:" + existingContent.getSize() + ", and " + newFile.length());
             }
-           
-            if(existingContent.getSize() != newSize)
+
+            if (existingContent.getSize() != newSize)
             {
                 logger.debug("project files are different size");
                 // Different size
                 return false;
             }
-            
+
             /**
              * Use POI to compare the content of the MPP file, exluding certain properties
              */
             InputStream leftIs = null;
 
             try
-            {  
+            {
                 Collection<String> excludes = new HashSet<String>();
                 excludes.add("Props");
                 excludes.add("Props12");
                 excludes.add("Props9");
-                
+
                 leftIs = existingContent.getContentInputStream();
 
                 // this call guarantees that leftIs is closed.
                 POIFSFileSystem fs2 = new POIFSFileSystem(leftIs);
                 // this call keeps an open file handle and needs closing.
-                POIFSFileSystem fs1 = new POIFSFileSystem(newFile);  
+                POIFSFileSystem fs1 = new POIFSFileSystem(newFile);
                 try
                 {
 
@@ -217,22 +216,22 @@ public class CIFSContentComparator implements ContentComparator
                 }
                 finally
                 {
-                	try
-                	{
-                		fs1.close();
-                	}
-                	catch (IOException e)
-                	{
-                		// ignore
-                	}
-                	try
-                	{
-                		fs2.close();
-                	}
-                	catch (IOException e)
-                	{
-                		// ignore
-                	}
+                    try
+                    {
+                        fs1.close();
+                    }
+                    catch (IOException e)
+                    {
+                        // ignore
+                    }
+                    try
+                    {
+                        fs2.close();
+                    }
+                    catch (IOException e)
+                    {
+                        // ignore
+                    }
                 }
             }
             catch (ContentIOException ce)
@@ -247,84 +246,84 @@ public class CIFSContentComparator implements ContentComparator
             }
             finally
             {
-                if(leftIs != null)
+                if (leftIs != null)
                 {
                     try
                     {
                         leftIs.close();
-                    } 
+                    }
                     catch (IOException e)
                     {
-                       // Ignore
+                        // Ignore
                     }
                 }
             }
         }
     }
-    
+
     // Comparator for MS Excel
     private class XLSContentComparator implements ContentComparator
     {
-     
+
         @Override
         public boolean isContentEqual(ContentReader existingContent,
                 File newFile)
         {
             long newSize = newFile.length();
-            
-            if(logger.isDebugEnabled())
+
+            if (logger.isDebugEnabled())
             {
                 logger.debug("comparing two excel files size:" + existingContent.getSize() + ", and " + newFile.length());
             }
-           
-            if(existingContent.getSize() != newSize)
+
+            if (existingContent.getSize() != newSize)
             {
                 logger.debug("excel files are different size");
                 // Different size
                 return false;
             }
-            
+
             /**
              * Use POI to compare the content of the XLS file, exluding certain properties
              */
             File tpm1 = null;
             File tpm2 = null;
             InputStream leftIs = null;
-            try 
-            {  
+            try
+            {
                 Collection<String> excludes = new HashSet<String>();
-                
+
                 tpm1 = TempFileProvider.createTempFile("CIFSContentComparator1", "xls");
                 tpm2 = TempFileProvider.createTempFile("CIFSContentComparator2", "xls");
-                
+
                 leftIs = existingContent.getContentInputStream();
                 HSSFWorkbook wb1 = new HSSFWorkbook(leftIs);
                 HSSFWorkbook wb2 = new HSSFWorkbook(new FileInputStream(newFile));
                 wb1.writeProtectWorkbook("", "CIFSContentComparator");
                 wb2.writeProtectWorkbook("", "CIFSContentComparator");
-                
+
                 FileOutputStream os = new FileOutputStream(tpm1);
                 try
                 {
-                	wb1.write(os);
+                    wb1.write(os);
                 }
                 finally
                 {
-                	os.close();
+                    os.close();
                 }
                 FileOutputStream os2 = new FileOutputStream(tpm2);
                 try
                 {
-                	wb2.write(os2);
+                    wb2.write(os2);
                 }
                 finally
                 {
-                	os2.close();
+                    os2.close();
                 }
-                
+
                 POIFSFileSystem fs1 = new POIFSFileSystem(tpm1);
                 POIFSFileSystem fs2 = new POIFSFileSystem(tpm2);
-                
+
                 return isContentIdentical(fs1, fs2, excludes);
             }
             catch (ContentIOException ce)
@@ -339,29 +338,29 @@ public class CIFSContentComparator implements ContentComparator
             }
             finally
             {
-            	if(tpm1 != null)
-            	{
-            		try 
-            		{
-            	        tpm1.delete();
-            		}
-            		catch (Exception e)
-            		{
-            			// ignore
-            		}
-            	}
-            	if(tpm2 != null)
-            	{
-            		try 
-            		{
-            		    tpm2.delete();
-        		    }
-        		    catch (Exception e)
-        		    {
-        			    // ignore
-        		    }
-            	}
-                if(leftIs != null)
+                if (tpm1 != null)
+                {
+                    try
+                    {
+                        tpm1.delete();
+                    }
+                    catch (Exception e)
+                    {
+                        // ignore
+                    }
+                }
+                if (tpm2 != null)
+                {
+                    try
+                    {
+                        tpm2.delete();
+                    }
+                    catch (Exception e)
+                    {
+                        // ignore
+                    }
+                }
+                if (leftIs != null)
                 {
                     try
                     {
@@ -369,23 +368,23 @@ public class CIFSContentComparator implements ContentComparator
                     }
                     catch (IOException e)
                     {
-                       // Ignore
+                        // Ignore
                     }
                 }
             }
         }
     }
-                
+
     // Comparator for MS PowerPoint
     private class PPTContentComparator implements ContentComparator
     {
-                
+
         @Override
         public boolean isContentEqual(ContentReader existingContent, File newFile)
         {
             long fileSizesDifference = newFile.length() - existingContent.getSize();
-                
-            if(logger.isDebugEnabled())
+
+            if (logger.isDebugEnabled())
             {
                 logger.debug("comparing two powerpoint files size:" + existingContent.getSize() + ", and " + newFile.length());
             }
@@ -395,7 +394,7 @@ public class CIFSContentComparator implements ContentComparator
             InputStream leftIs = null;
             try
             {
-                if(fileSizesDifference != 0)
+                if (fileSizesDifference != 0)
                 {
                     // ALF-18793
                     // Experience has shown that the size of opened/closed file increases to 3072 bytes.
@@ -426,7 +425,7 @@ public class CIFSContentComparator implements ContentComparator
                     }
                     else
                     {
-                        //make sure that nothing has been changed except lastEditUsername
+                        // make sure that nothing has been changed except lastEditUsername
                         tpm1 = TempFileProvider.createTempFile("CIFSContentComparator1", "ppt");
                         FileOutputStream os = new FileOutputStream(tpm1);
                         try
@@ -437,7 +436,7 @@ public class CIFSContentComparator implements ContentComparator
                         {
                             try
                             {
-                            	os.close();
+                                os.close();
                             }
                             catch (IOException ie)
                             {
@@ -467,7 +466,7 @@ public class CIFSContentComparator implements ContentComparator
 
                         return isContentIdentical(fs1, fs2, excludes);
                     }
-                
+
                 }
 
                 return true;
@@ -484,37 +483,37 @@ public class CIFSContentComparator implements ContentComparator
             }
             finally
             {
-            	if(tpm1 != null)
-            	{
-            		try 
-            		{
-            	        tpm1.delete();
-            		}
-            		catch (Exception e)
-            		{
-            			// ignore
-            		}
-            	}
-            	if(tpm2 != null)
-            	{
-            		try 
-            		{
-            		    tpm2.delete();
-        		    }
-        		    catch (Exception e)
-        		    {
-        			    // ignore
-        		    }
-            	}
-                if(leftIs != null)
+                if (tpm1 != null)
+                {
+                    try
+                    {
+                        tpm1.delete();
+                    }
+                    catch (Exception e)
+                    {
+                        // ignore
+                    }
+                }
+                if (tpm2 != null)
+                {
+                    try
+                    {
+                        tpm2.delete();
+                    }
+                    catch (Exception e)
+                    {
+                        // ignore
+                    }
+                }
+                if (leftIs != null)
                 {
                     try
                     {
                         leftIs.close();
-                    } 
+                    }
                     catch (IOException e)
                     {
-                       // Ignore
+                        // Ignore
                     }
                 }
             }

@@ -50,18 +50,18 @@ public class MoveActionExecuter extends ActionExecuterAbstractBase
 {
     public static final String NAME = "move";
     public static final String PARAM_DESTINATION_FOLDER = "destination-folder";
-    
+
     /**
      * FileFolder service
      */
     private FileFolderService fileFolderService;
-    
+
     /**
      * The node service
      */
     private NodeService nodeService;
-    
-    public void setFileFolderService(FileFolderService fileFolderService) 
+
+    public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
     }
@@ -69,13 +69,13 @@ public class MoveActionExecuter extends ActionExecuterAbstractBase
     /**
      * Sets the node service
      */
-    public void setNodeService(NodeService nodeService) 
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
     }

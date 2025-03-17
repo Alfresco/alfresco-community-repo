@@ -37,9 +37,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
- * <p>WebDAVSessionListener is used to forcibly unlock documents that were 
- * persistently locked during user's session and were not unlocked because of some extraordinary
- * situations such as network connection lost. Was introduced in ALF-11777 jira issue.
+ * <p>
+ * WebDAVSessionListener is used to forcibly unlock documents that were persistently locked during user's session and were not unlocked because of some extraordinary situations such as network connection lost. Was introduced in ALF-11777 jira issue.
  * </p>
  * 
  * @author Pavel.Yurkevich
@@ -83,13 +82,12 @@ public class WebDAVSessionListener implements HttpSessionListener, ServletContex
 
     @Override
     public void contextDestroyed(ServletContextEvent sce)
-    {
-    }
+    {}
 
     @Override
     public void contextInitialized(ServletContextEvent sce)
     {
         ApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(sce.getServletContext());
-        this.webDAVLockService = (WebDAVLockService)context.getBean(WebDAVLockService.BEAN_NAME);
+        this.webDAVLockService = (WebDAVLockService) context.getBean(WebDAVLockService.BEAN_NAME);
     }
 }

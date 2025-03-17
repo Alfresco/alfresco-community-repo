@@ -50,19 +50,19 @@ public abstract class AbstractSimpleLuceneBuilder extends BaseLuceneBuilder
     }
 
     protected abstract String getValueAsString(Serializable value);
-    
+
     protected String getRangeMax()
     {
         return "\uFFFF";
     }
-    
+
     protected String getRangeMin()
     {
         return "\u0000";
     }
-    
+
     protected abstract DataTypeDefinition getInDataType();
-    
+
     protected abstract QName getQNameForExists();
 
     @Override
@@ -70,7 +70,7 @@ public abstract class AbstractSimpleLuceneBuilder extends BaseLuceneBuilder
     {
         return lqpa.getFieldQuery(getLuceneFieldName(), getValueAsString(value), AnalysisMode.IDENTIFIER, luceneFunction);
     }
-    
+
     @Override
     public <Q, S, E extends Throwable> Q buildLuceneExists(QueryParserAdaptor<Q, S, E> lqpa, Boolean not) throws E
     {
@@ -122,7 +122,7 @@ public abstract class AbstractSimpleLuceneBuilder extends BaseLuceneBuilder
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
 
-        Q q =  lqpa.getLikeQuery(field, stringValue, AnalysisMode.IDENTIFIER);
+        Q q = lqpa.getLikeQuery(field, stringValue, AnalysisMode.IDENTIFIER);
         if (not)
         {
             q = lqpa.getNegatedQuery(q);

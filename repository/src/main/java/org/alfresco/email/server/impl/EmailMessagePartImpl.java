@@ -31,7 +31,7 @@ import java.io.InputStream;
 import org.alfresco.service.cmr.email.EmailMessagePart;
 
 /**
- * Implementation EmailMessagePart interface. 
+ * Implementation EmailMessagePart interface.
  * 
  * @deprecated class not used.
  * @author maxim
@@ -44,13 +44,12 @@ public class EmailMessagePartImpl implements EmailMessagePart
     private byte[] content;
     private String encoding;
     private String fileName;
-    
 
     public EmailMessagePartImpl(String fileName, byte[] content)
     {
         this(fileName, null, content);
     }
-    
+
     public EmailMessagePartImpl(String fileName, String encoding, byte[] content)
     {
         if (fileName == null)
@@ -75,27 +74,27 @@ public class EmailMessagePartImpl implements EmailMessagePart
         }
     }
 
-    public InputStream getContent() 
+    public InputStream getContent()
     {
         return new ByteArrayInputStream(content);
     }
 
-    public String getContentType() 
+    public String getContentType()
     {
         return "text/plain";
     }
 
-    public String getEncoding() 
+    public String getEncoding()
     {
         return encoding;
     }
 
-    public String getFileName() 
+    public String getFileName()
     {
         return fileName;
     }
 
-    public int getSize() 
+    public int getSize()
     {
         return content.length;
     }

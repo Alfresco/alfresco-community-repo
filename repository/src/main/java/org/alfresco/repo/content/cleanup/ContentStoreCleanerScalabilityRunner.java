@@ -29,6 +29,10 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Date;
 
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentStore;
@@ -52,15 +56,11 @@ import org.alfresco.tools.Repository;
 import org.alfresco.tools.ToolException;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.VmShutdownListener;
-import org.apache.commons.lang3.mutable.MutableInt;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Loads the repository up with orphaned content and then runs the cleaner.
  * <p>
- * A null content store produces ficticious content URLs.  The DB is loaded with ficticious URLs.
- * The process is kicked off. 
+ * A null content store produces ficticious content URLs. The DB is loaded with ficticious URLs. The process is kicked off.
  * 
  * @author Derek Hulley
  * @since 2.1.3
@@ -68,14 +68,14 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class ContentStoreCleanerScalabilityRunner extends Repository
 {
     private VmShutdownListener vmShutdownListener = new VmShutdownListener("ContentStoreCleanerScalabilityRunner");
-    
+
     private ApplicationContext ctx;
     private NodeHelper nodeHelper;
     private TransactionService transactionService;
     private NodeDAO nodeDAO;
     private ContentStore contentStore;
     private ContentStoreCleaner cleaner;
-    
+
     /**
      * Do the load and cleanup.
      */
@@ -83,46 +83,50 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
     {
         new ContentStoreCleanerScalabilityRunner().start(args);
     }
-    
+
     @Override
     protected synchronized int execute() throws ToolException
     {
         ctx = super.getApplicationContext();
-        
+
         nodeHelper = new NodeHelper();
-        
+
         transactionService = (TransactionService) ctx.getBean("TransactionService");
         nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
-        
+
         int orphanCount = 1000;
-        
+
         contentStore = new NullContentStore(10000);
-        
+
         loadData(orphanCount);
-    
+
         System.out.println("Ready to clean store: " + contentStore);
-        synchronized(this)
+        synchronized (this)
         {
-            try { this.wait(10000L); } catch (InterruptedException e) {}
+            try
+            {
+                this.wait(10000L);
+            }
+            catch (InterruptedException e)
+            {}
         }
-        
+
         long beforeClean = System.currentTimeMillis();
         clean();
         long afterClean = System.currentTimeMillis();
         double aveClean = (double) (afterClean - beforeClean) / (double) orphanCount / 1000D;
-        
+
         System.out.println();
         System.out.println(String.format("Cleaning took %3f per 1000 content URLs in DB", aveClean));
-        
+
         return 0;
     }
-    
+
     private void loadData(final int maxCount)
     {
         final MutableInt doneCount = new MutableInt(0);
         // Batches of 1000 objects
-        RetryingTransactionCallback<Integer> makeNodesCallback = new RetryingTransactionCallback<Integer>()
-        {
+        RetryingTransactionCallback<Integer> makeNodesCallback = new RetryingTransactionCallback<Integer>() {
             public Integer execute() throws Throwable
             {
                 for (int i = 0; i < 1000; i++)
@@ -131,17 +135,17 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
                     String contentUrl = FileContentStore.createNewFileStoreUrl();
                     ContentData contentData = new ContentData(contentUrl, MimetypeMap.MIMETYPE_TEXT_PLAIN, 10, "UTF-8");
                     nodeHelper.makeNode(contentData);
-                    
+
                     int count = doneCount.intValue();
                     count++;
                     doneCount.setValue(count);
-                    
+
                     // Do some reporting
                     if (count % 1000 == 0)
                     {
                         System.out.println(String.format("   " + (new Date()) + "Total created: %6d", count));
                     }
-                    
+
                     // Double check for shutdown
                     if (vmShutdownListener.isVmShuttingDown())
                     {
@@ -151,18 +155,18 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
                 return maxCount;
             }
         };
-        int repetitions = (int) Math.floor((double)maxCount / 1000.0);
+        int repetitions = (int) Math.floor((double) maxCount / 1000.0);
         for (int i = 0; i < repetitions; i++)
         {
             transactionService.getRetryingTransactionHelper().doInTransaction(makeNodesCallback);
         }
     }
-    
+
     private void clean()
     {
-        ContentStoreCleanerListener listener = new ContentStoreCleanerListener()
-        {
+        ContentStoreCleanerListener listener = new ContentStoreCleanerListener() {
             private int count = 0;
+
             public void beforeDelete(ContentStore store, String contentUrl) throws ContentIOException
             {
                 count++;
@@ -178,29 +182,28 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
         eagerCleaner.setStores(Collections.singletonList(contentStore));
         cleaner = (ContentStoreCleaner) ctx.getBean("contentStoreCleaner");
         cleaner.setProtectDays(0);
-        
+
         // The cleaner has its own txns
         cleaner.execute();
     }
-    
+
     private class NullContentStore extends AbstractContentStore
     {
         private ThreadLocal<File> hammeredFile;
         private int deletedCount;
-        
+
         private NullContentStore(int count)
         {
             hammeredFile = new ThreadLocal<File>();
         }
-        
+
         public boolean isWriteSupported()
         {
             return true;
         }
 
         /**
-         * Returns a writer to a thread-unique file.  It's always the same file per thread so you must
-         * use and close the writer before getting another.
+         * Returns a writer to a thread-unique file. It's always the same file per thread so you must use and close the writer before getting another.
          */
         @Override
         protected ContentWriter getWriterInternal(ContentReader existingContentReader, String newContentUrl)
@@ -238,15 +241,16 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
             return true;
         }
     }
-    
+
     private class NodeHelper
     {
         private QName contentQName;
-        
+
         public NodeHelper()
         {
             contentQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "realContent");
         }
+
         /**
          * Creates a node with two properties
          */

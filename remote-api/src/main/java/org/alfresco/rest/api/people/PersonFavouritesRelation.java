@@ -28,6 +28,10 @@ package org.alfresco.rest.api.people;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Favourites;
 import org.alfresco.rest.api.model.Favourite;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -37,13 +41,10 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 @RelationshipResource(name = "favorites", entityResource = PeopleEntityResource.class, title = "Person Favorites")
 public class PersonFavouritesRelation implements RelationshipResourceAction.Read<Favourite>, RelationshipResourceAction.ReadById<Favourite>,
-RelationshipResourceAction.Create<Favourite>,  RelationshipResourceAction.Delete, InitializingBean
+        RelationshipResourceAction.Create<Favourite>, RelationshipResourceAction.Delete, InitializingBean
 {
     private static final Log logger = LogFactory.getLog(PersonFavouritesRelation.class);
 
@@ -82,7 +83,7 @@ RelationshipResourceAction.Create<Favourite>,  RelationshipResourceAction.Delete
     public List<Favourite> create(String personId, List<Favourite> entity, Parameters parameters)
     {
         List<Favourite> ret = new ArrayList<Favourite>(entity.size());
-        for(Favourite favourite : entity)
+        for (Favourite favourite : entity)
         {
             ret.add(favourites.addFavourite(personId, favourite, parameters));
         }

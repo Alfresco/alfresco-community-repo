@@ -48,7 +48,8 @@ public class ContentCleanserSevenPassUnitTest extends BaseUnitTest
 {
     @InjectMocks
     @Spy
-    private ContentCleanserSevenPass contentCleanserSevenPass = new ContentCleanserSevenPass() {
+    private ContentCleanserSevenPass contentCleanserSevenPass = new ContentCleanserSevenPass() 
+    {
         /** dummy implementations */
         @Override
         protected void overwrite(File file, OverwriteOperation overwriteOperation)

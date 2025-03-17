@@ -34,8 +34,9 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  *
  * @author janv
  */
-@EntityResource(name="type-b1", title="TypeB1")
-public class TypeB1EntityResource implements EntityResourceAction.ReadById<TypeB1>{
+@EntityResource(name = "type-b1", title = "TypeB1")
+public class TypeB1EntityResource implements EntityResourceAction.ReadById<TypeB1>
+{
 
     // GET /type-b1/b1
     @Override

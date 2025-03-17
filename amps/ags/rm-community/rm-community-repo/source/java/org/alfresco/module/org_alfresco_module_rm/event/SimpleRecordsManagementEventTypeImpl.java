@@ -60,7 +60,8 @@ public class SimpleRecordsManagementEventTypeImpl implements RecordsManagementEv
     /**
      * Set the records management event service
      *
-     * @param recordsManagementEventService     records management service
+     * @param recordsManagementEventService
+     *            records management service
      */
     public void setRecordsManagementEventService(RecordsManagementEventService recordsManagementEventService)
     {

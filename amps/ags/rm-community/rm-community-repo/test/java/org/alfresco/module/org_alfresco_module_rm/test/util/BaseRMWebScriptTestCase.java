@@ -31,6 +31,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
@@ -74,20 +76,19 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @author Roy Wetherall
  */
 public class BaseRMWebScriptTestCase extends BaseWebScriptTest
 {
-	/** Common test utils */
-	protected CommonRMTestUtils utils;
+    /** Common test utils */
+    protected CommonRMTestUtils utils;
 
-	/** Application context */
-	protected ApplicationContext applicationContext;
+    /** Application context */
+    protected ApplicationContext applicationContext;
 
-	 /** Services */
+    /** Services */
     protected NodeService nodeService;
     protected ContentService contentService;
     protected DictionaryService dictionaryService;
@@ -124,7 +125,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     protected SiteInfo siteInfo;
     protected NodeRef folder;
     protected NodeRef filePlan;
-    protected NodeRef recordSeries;			// A category with no disposition schedule
+    protected NodeRef recordSeries; // A category with no disposition schedule
     protected NodeRef recordCategory;
     protected DispositionSchedule dispositionSchedule;
     protected NodeRef recordFolder;
@@ -135,8 +136,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     protected static final String ADMIN_USER = "admin";
 
     /**
-     * Indicates whether the test collaboration site should be created
-     * or not.
+     * Indicates whether the test collaboration site should be created or not.
      */
     protected boolean isCollaborationSiteTest()
     {
@@ -146,7 +146,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     @Override
     protected void setUp() throws Exception
     {
-    	super.setUp();
+        super.setUp();
 
         // Initialise the service beans
         initServices();
@@ -160,40 +160,40 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
      */
     protected void initServices()
     {
-    	applicationContext = getServer().getApplicationContext();
+        applicationContext = getServer().getApplicationContext();
 
-    	// Common test utils
-    	utils = new CommonRMTestUtils(applicationContext);
+        // Common test utils
+        utils = new CommonRMTestUtils(applicationContext);
 
         // Get services
-        nodeService = (NodeService)applicationContext.getBean("NodeService");
-        contentService = (ContentService)applicationContext.getBean("ContentService");
-        retryingTransactionHelper = (RetryingTransactionHelper)applicationContext.getBean("retryingTransactionHelper");
-        namespaceService = (NamespaceService)applicationContext.getBean("NamespaceService");
-        searchService = (SearchService)applicationContext.getBean("SearchService");
-        policyComponent = (PolicyComponent)applicationContext.getBean("policyComponent");
-        dictionaryService = (DictionaryService)applicationContext.getBean("DictionaryService");
-        siteService = (SiteService)applicationContext.getBean("SiteService");
-        authorityService = (AuthorityService)applicationContext.getBean("AuthorityService");
-        authenticationService = (MutableAuthenticationService)applicationContext.getBean("AuthenticationService");
-        personService = (PersonService)applicationContext.getBean("PersonService");
-        transactionService = (TransactionService)applicationContext.getBean("TransactionService");
-        taggingService = (TaggingService)applicationContext.getBean("TaggingService");
+        nodeService = (NodeService) applicationContext.getBean("NodeService");
+        contentService = (ContentService) applicationContext.getBean("ContentService");
+        retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
+        namespaceService = (NamespaceService) applicationContext.getBean("NamespaceService");
+        searchService = (SearchService) applicationContext.getBean("SearchService");
+        policyComponent = (PolicyComponent) applicationContext.getBean("policyComponent");
+        dictionaryService = (DictionaryService) applicationContext.getBean("DictionaryService");
+        siteService = (SiteService) applicationContext.getBean("SiteService");
+        authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
+        authenticationService = (MutableAuthenticationService) applicationContext.getBean("AuthenticationService");
+        personService = (PersonService) applicationContext.getBean("PersonService");
+        transactionService = (TransactionService) applicationContext.getBean("TransactionService");
+        taggingService = (TaggingService) applicationContext.getBean("TaggingService");
 
         // Get RM services
-        dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
-        eventService = (RecordsManagementEventService)applicationContext.getBean("RecordsManagementEventService");
-        adminService = (RecordsManagementAdminService)applicationContext.getBean("RecordsManagementAdminService");
-        actionService = (RecordsManagementActionService)applicationContext.getBean("RecordsManagementActionService");
-        rmSearchService = (RecordsManagementSearchService)applicationContext.getBean("RecordsManagementSearchService");
-        filePlanRoleService = (FilePlanRoleService)applicationContext.getBean("FilePlanRoleService");
-        filePlanPermissionService = (FilePlanPermissionService)applicationContext.getBean("FilePlanPermissionService");
-        auditService = (RecordsManagementAuditService)applicationContext.getBean("RecordsManagementAuditService");
-        capabilityService = (CapabilityService)applicationContext.getBean("CapabilityService");
-        vitalRecordService = (VitalRecordService)applicationContext.getBean("VitalRecordService");
-        filePlanService = (FilePlanService)applicationContext.getBean("FilePlanService");
-        recordFolderService = (RecordFolderService)applicationContext.getBean("RecordFolderService");
-        caveatConfigService = (RMCaveatConfigService)applicationContext.getBean("CaveatConfigService");
+        dispositionService = (DispositionService) applicationContext.getBean("DispositionService");
+        eventService = (RecordsManagementEventService) applicationContext.getBean("RecordsManagementEventService");
+        adminService = (RecordsManagementAdminService) applicationContext.getBean("RecordsManagementAdminService");
+        actionService = (RecordsManagementActionService) applicationContext.getBean("RecordsManagementActionService");
+        rmSearchService = (RecordsManagementSearchService) applicationContext.getBean("RecordsManagementSearchService");
+        filePlanRoleService = (FilePlanRoleService) applicationContext.getBean("FilePlanRoleService");
+        filePlanPermissionService = (FilePlanPermissionService) applicationContext.getBean("FilePlanPermissionService");
+        auditService = (RecordsManagementAuditService) applicationContext.getBean("RecordsManagementAuditService");
+        capabilityService = (CapabilityService) applicationContext.getBean("CapabilityService");
+        vitalRecordService = (VitalRecordService) applicationContext.getBean("VitalRecordService");
+        filePlanService = (FilePlanService) applicationContext.getBean("FilePlanService");
+        recordFolderService = (RecordFolderService) applicationContext.getBean("RecordFolderService");
+        caveatConfigService = (RMCaveatConfigService) applicationContext.getBean("CaveatConfigService");
     }
 
     /**
@@ -202,8 +202,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     @Override
     protected void tearDown() throws Exception
     {
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             @Override
             public Object execute() throws Throwable
             {
@@ -241,8 +240,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
      */
     protected void setupTestData()
     {
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             @Override
             public Object execute() throws Throwable
             {
@@ -252,8 +250,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
             }
         });
 
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             @Override
             public Object execute() throws Throwable
             {
@@ -280,11 +277,11 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         Map<QName, Serializable> containerProps = new HashMap<>(1);
         containerProps.put(ContentModel.PROP_NAME, containerName);
         folder = nodeService.createNode(
-              rootNodeRef,
-              ContentModel.ASSOC_CHILDREN,
-              QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, containerName),
-              ContentModel.TYPE_FOLDER,
-              containerProps).getChildRef();
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, containerName),
+                ContentModel.TYPE_FOLDER,
+                containerProps).getChildRef();
         assertNotNull("Could not create base folder", folder);
 
         // Create the site
@@ -320,8 +317,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
 
     protected void setupCollaborationSiteTestData()
     {
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             @Override
             public Object execute() throws Throwable
             {
@@ -392,9 +388,9 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
             authorityService.deleteAuthority(groupName, true);
         }
     }
-    
+
     protected String getRMSiteId()
     {
-    	return GUID.generate();
+        return GUID.generate();
     }
 }

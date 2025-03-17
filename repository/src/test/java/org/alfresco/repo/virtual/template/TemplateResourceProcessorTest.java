@@ -33,13 +33,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
-import org.alfresco.repo.virtual.VirtualContext;
-import org.alfresco.repo.virtual.ref.ClasspathResource;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.virtual.VirtualContext;
+import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
+import org.alfresco.repo.virtual.ref.ClasspathResource;
 
 public class TemplateResourceProcessorTest extends VirtualizationIntegrationTest
 {
@@ -52,13 +53,13 @@ public class TemplateResourceProcessorTest extends VirtualizationIntegrationTest
         super.setUp();
 
         VirtualContext context = new VirtualContext(environment,
-                                                    virtualFolder1NodeRef);
-        nodeService.setProperty(virtualFolder1NodeRef, ContentModel.PROP_DESCRIPTION,"AContextDescription");
+                virtualFolder1NodeRef);
+        nodeService.setProperty(virtualFolder1NodeRef, ContentModel.PROP_DESCRIPTION, "AContextDescription");
         InputStream vanillaIS = getClass().getResourceAsStream(TEST_TEMPLATE_2_JSON_CLASSPATH);
         String vanillaJSON = IOUtils.toString(vanillaIS,
-                                              StandardCharsets.UTF_8);
+                StandardCharsets.UTF_8);
         context.setParameter(ApplyTemplateMethod.VANILLA_JSON_PARAM_NAME,
-                             vanillaJSON);
+                vanillaJSON);
         TemplateResourceProcessor processor = new TemplateResourceProcessor(context);
 
         testTemplate2Definition = processor.process(new ClasspathResource(VANILLA_PROCESSOR_JS_CLASSPATH));
@@ -77,32 +78,32 @@ public class TemplateResourceProcessorTest extends VirtualizationIntegrationTest
         assertNotNull(testTemplate2Definition);
         assertNotNull(testTemplate2Definition.getChildren());
         assertEquals(4,
-                     testTemplate2Definition.getChildren().size());
+                testTemplate2Definition.getChildren().size());
 
         assertEquals("Test",
-                     testTemplate2Definition.getName());
+                testTemplate2Definition.getName());
 
         VirtualFolderDefinition node2 = testTemplate2Definition.findChildByName("Node2");
 
         assertEquals("Node2",
-                     node2.getName());
+                node2.getName());
         assertEquals("The2ndNode",
-                     node2.getDescription());
+                node2.getDescription());
         assertEquals("2",
-                     node2.getId());
+                node2.getId());
 
         VirtualQuery node2Query = node2.getQuery();
         assertNotNull(node2Query);
 
         Map<String, String> node2Properties = node2.getProperties();
         assertTrue(node2Properties.keySet().containsAll(Arrays.asList("cm:modifier",
-                                                                      "cm:description",
-                                                                      "sys:node-dbid")));
-        
-        assertEquals("admin",node2Properties.get("cm:modifier"));
-        //there is no node so values with property placeholder remain as they are   
-        assertEquals("AContextDescription",node2Properties.get("cm:description"));
-        assertEquals("34567",node2Properties.get("sys:node-dbid"));
+                "cm:description",
+                "sys:node-dbid")));
+
+        assertEquals("admin", node2Properties.get("cm:modifier"));
+        // there is no node so values with property placeholder remain as they are
+        assertEquals("AContextDescription", node2Properties.get("cm:description"));
+        assertEquals("34567", node2Properties.get("sys:node-dbid"));
     }
 
     @Test

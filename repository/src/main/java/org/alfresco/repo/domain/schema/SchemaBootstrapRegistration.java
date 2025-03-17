@@ -47,7 +47,7 @@ public class SchemaBootstrapRegistration
     private List<SchemaUpgradeScriptPatch> postUpdateScriptPatches;
     private List<SchemaUpgradeScriptPatch> updateActivitiScriptPatches;
     private SchemaDifferenceHelper differenceHelper;
-    
+
     public SchemaBootstrapRegistration()
     {
         this.preCreateScriptUrls = Collections.emptyList();
@@ -58,7 +58,8 @@ public class SchemaBootstrapRegistration
     }
 
     /**
-     * @param schemaBootstrap           the component with which to register the URLs
+     * @param schemaBootstrap
+     *            the component with which to register the URLs
      */
     public void setSchemaBootstrap(SchemaBootstrap schemaBootstrap)
     {
@@ -66,7 +67,8 @@ public class SchemaBootstrapRegistration
     }
 
     /**
-     * @param differenceHelper           the component with which to register upgrade script pacthes
+     * @param differenceHelper
+     *            the component with which to register upgrade script pacthes
      */
     public void setDifferenceHelper(SchemaDifferenceHelper differenceHelper)
     {
@@ -74,7 +76,8 @@ public class SchemaBootstrapRegistration
     }
 
     /**
-     * @param preCreateScriptUrls       a list of schema create URLs that will be registered in order.
+     * @param preCreateScriptUrls
+     *            a list of schema create URLs that will be registered in order.
      * 
      * @see SchemaBootstrap#addPreCreateScriptUrl(String)
      */
@@ -84,7 +87,8 @@ public class SchemaBootstrapRegistration
     }
 
     /**
-     * @param preCreateScriptUrls      a list of schema create URLs that will be registered in order.
+     * @param preCreateScriptUrls
+     *            a list of schema create URLs that will be registered in order.
      * 
      * @see SchemaBootstrap#addPostCreateScriptUrl(String)
      */
@@ -94,7 +98,8 @@ public class SchemaBootstrapRegistration
     }
 
     /**
-     * @param updateActivitiScriptPatches    a list of schema upgade script patches for Activiti tables to execute
+     * @param updateActivitiScriptPatches
+     *            a list of schema upgade script patches for Activiti tables to execute
      * 
      * @see SchemaBootstrap#addUpdateActivitiScriptPatch(org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch)
      */
@@ -104,7 +109,8 @@ public class SchemaBootstrapRegistration
     }
 
     /**
-     * @param preUpdateScriptPatches    a list of schema upgade script patches to execute before Hibernate patching
+     * @param preUpdateScriptPatches
+     *            a list of schema upgade script patches to execute before Hibernate patching
      * 
      * @see SchemaBootstrap#addPreUpdateScriptPatch(org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch)
      */
@@ -114,7 +120,8 @@ public class SchemaBootstrapRegistration
     }
 
     /**
-     * @param postUpdateScriptPatches   a list of schema upgade script patches to execute after Hibernate patching
+     * @param postUpdateScriptPatches
+     *            a list of schema upgade script patches to execute after Hibernate patching
      * 
      * @see SchemaBootstrap#addPostUpdateScriptPatch(org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch)
      */
@@ -134,7 +141,7 @@ public class SchemaBootstrapRegistration
         PropertyCheck.mandatory(this, "preUpdateScriptPatches", preUpdateScriptPatches);
         PropertyCheck.mandatory(this, "postUpdateScriptPatches", postUpdateScriptPatches);
         PropertyCheck.mandatory(this, "updateActivitiScriptPatches", updateActivitiScriptPatches);
-        
+
         for (String preCreateScriptUrl : preCreateScriptUrls)
         {
             schemaBootstrap.addPreCreateScriptUrl(preCreateScriptUrl);

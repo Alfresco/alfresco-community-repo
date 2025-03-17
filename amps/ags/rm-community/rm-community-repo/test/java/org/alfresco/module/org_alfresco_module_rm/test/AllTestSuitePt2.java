@@ -71,5 +71,4 @@ import org.junit.runner.RunWith;
         "!.*EmailMapScriptTest"
 })
 public class AllTestSuitePt2
-{
-}
+{}

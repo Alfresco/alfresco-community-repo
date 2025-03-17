@@ -1,5 +1,12 @@
 package org.alfresco.rest.sites.groups;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.*;
 import org.alfresco.utility.constants.UserRole;
@@ -10,12 +17,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class GetSiteGroupsTests extends RestTest
 {
@@ -25,7 +26,7 @@ public class GetSiteGroupsTests extends RestTest
     private UserModel siteCreator;
     private UserModel regularUser;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         siteCreator = dataUser.createRandomTestUser();
@@ -34,15 +35,15 @@ public class GetSiteGroupsTests extends RestTest
         publicSite = dataSite.usingUser(siteCreator).createPublicRandomSite();
         moderatedSite = dataSite.usingUser(siteCreator).createModeratedRandomSite();
 
-        publicSiteUsers = dataUser.addUsersWithRolesToSite(publicSite,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
-        publicSiteGroups = addGroupToSite(publicSite,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
+        publicSiteUsers = dataUser.addUsersWithRolesToSite(publicSite, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
+        publicSiteGroups = addGroupToSite(publicSite, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
         moderatedSiteGroups = addGroupToSite(moderatedSite, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
 
         RestSiteGroupModelsCollection siteGroups = restClient.authenticateUser(siteCreator).withCoreAPI().usingSite(moderatedSite).usingParams("properties=role,id").getSiteGroups();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.SANITY,
             description = "Verify Manager role gets site groups and gets status code OK (200)")
     public void getSiteGroupsWithManagerRole() throws Exception
     {
@@ -61,8 +62,8 @@ public class GetSiteGroupsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator role gets site groups and gets status code OK (200)")
     public void getSiteGroupsWithCollaboratorRole() throws Exception
     {
@@ -75,8 +76,8 @@ public class GetSiteGroupsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Contributor role gets site groups and gets status code OK (200)")
     public void getSiteGroupsWithContributorRole() throws Exception
     {
@@ -89,8 +90,8 @@ public class GetSiteGroupsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Consumer role gets site groups and gets status code OK (200)")
     public void getSiteGroupsWithConsumerRole() throws Exception
     {
@@ -103,8 +104,8 @@ public class GetSiteGroupsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin user gets site groups and gets status code OK (200)")
     public void getSiteGroupsWithAdminUser() throws Exception
     {
@@ -117,8 +118,8 @@ public class GetSiteGroupsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.SANITY,
             description = "Failed authentication get site groups call returns status code 401")
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteGroups() throws Exception
     {
@@ -129,9 +130,9 @@ public class GetSiteGroupsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify get site members call returns status code 404 if siteId does not exist")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify get site members call returns status code 404 if siteId does not exist")
     public void checkStatusCodeForNonExistentSiteId() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI()
@@ -140,9 +141,9 @@ public class GetSiteGroupsTests extends RestTest
                 .assertLastError().containsSummary(String.format("Site %s does not exist", "NonExistentSiteId"));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify get site groups call returns status code 400 for invalid maxItems")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify get site groups call returns status code 400 for invalid maxItems")
     public void checkStatusCodeForInvalidMaxItems() throws Exception
     {
         restClient.authenticateUser(regularUser).withParams("maxItems=0").withCoreAPI().usingSite(publicSite).getSiteGroups();
@@ -157,9 +158,9 @@ public class GetSiteGroupsTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "A"));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify get site groups call returns status code 400 for invalid skipCount ")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify get site groups call returns status code 400 for invalid skipCount ")
     public void checkStatusCodeForInvalidSkipCount() throws Exception
     {
         restClient.authenticateUser(regularUser).withParams("skipCount=A")
@@ -173,9 +174,9 @@ public class GetSiteGroupsTests extends RestTest
                 .assertLastError().containsSummary(RestErrorModel.NEGATIVE_VALUES_SKIPCOUNT);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if any user gets public site groups and status code is 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if any user gets public site groups and status code is 200")
     public void getPublicSiteGroups() throws Exception
     {
         RestSiteGroupModelsCollection siteGroups = restClient.authenticateUser(regularUser).withCoreAPI().usingSite(publicSite).getSiteGroups();
@@ -188,9 +189,9 @@ public class GetSiteGroupsTests extends RestTest
                 .and().paginationField("count").is("4");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if any user gets moderated site groups and status code is 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if any user gets moderated site groups and status code is 200")
     public void getModeratedSiteGroups() throws Exception
     {
         RestSiteGroupModelsCollection siteGroups = restClient.authenticateUser(regularUser).withCoreAPI().usingSite(moderatedSite).getSiteGroups();
@@ -203,9 +204,9 @@ public class GetSiteGroupsTests extends RestTest
                 .paginationField("count").is("4");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if any user gets moderated site groups with properties parameter applied and status code is 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if any user gets moderated site groups with properties parameter applied and status code is 200")
     public void getModeratedSiteGroupsUsingPropertiesParameter() throws Exception
     {
         RestSiteGroupModelsCollection siteGroups = restClient.authenticateUser(siteCreator).withCoreAPI().usingSite(moderatedSite).usingParams("properties=role,id").getSiteGroups();
@@ -222,9 +223,9 @@ public class GetSiteGroupsTests extends RestTest
                 .and().entriesListContains("id", getId(moderatedSiteGroups.get(3)));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if any user gets moderated site groups with skipCount parameter applied")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if any user gets moderated site groups with skipCount parameter applied")
     public void getModeratedSiteGroupsUsingSkipCountParameter() throws Exception
     {
         RestSiteGroupModelsCollection siteGroups = restClient.authenticateUser(siteCreator).withCoreAPI().usingSite(moderatedSite).usingParams("skipCount=2").getSiteGroups();
@@ -233,9 +234,9 @@ public class GetSiteGroupsTests extends RestTest
         siteGroups.assertThat().paginationField("skipCount").is("2");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if any user gets moderated site groups with high skipCount parameter applied")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if any user gets moderated site groups with high skipCount parameter applied")
     public void getModeratedSiteGroupsUsingHighSkipCountParameter() throws Exception
     {
         RestSiteGroupModelsCollection siteGroups = restClient.authenticateUser(siteCreator).withCoreAPI().usingSite(moderatedSite).usingParams("skipCount=100").getSiteGroups();
@@ -245,9 +246,9 @@ public class GetSiteGroupsTests extends RestTest
         siteGroups.assertThat().entriesListIsEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if any user gets moderated site groups with maxItems parameter applied and check all pagination fields")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if any user gets moderated site groups with maxItems parameter applied and check all pagination fields")
     public void getModeratedSiteGroupsUsingMaxItemsParameter() throws Exception
     {
         RestSiteGroupModelsCollection siteGroups = restClient.authenticateUser(siteCreator).withCoreAPI().usingSite(moderatedSite).usingParams("maxItems=1").getSiteGroups();
@@ -259,17 +260,20 @@ public class GetSiteGroupsTests extends RestTest
         siteGroups.assertThat().entriesListCountIs(1);
     }
 
-    List<GroupModel> addGroupToSite(SiteModel siteModel, UserRole ...roles) {
+    List<GroupModel> addGroupToSite(SiteModel siteModel, UserRole... roles)
+    {
         List<GroupModel> groups = new ArrayList<GroupModel>();
-        for (UserRole role: roles) {
-            GroupModel group =  dataGroup.createRandomGroup();
+        for (UserRole role : roles)
+        {
+            GroupModel group = dataGroup.createRandomGroup();
             restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingSite(siteModel).addSiteGroup(getId(group), role);
             groups.add(group);
         }
         return groups;
     }
 
-    String getId(GroupModel group) {
+    String getId(GroupModel group)
+    {
         return "GROUP_" + group.getGroupIdentifier();
     }
 }

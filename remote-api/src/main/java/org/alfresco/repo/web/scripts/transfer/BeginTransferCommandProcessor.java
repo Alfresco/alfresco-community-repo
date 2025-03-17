@@ -28,12 +28,6 @@ package org.alfresco.repo.web.scripts.transfer;
 
 import java.io.StringWriter;
 
-import org.alfresco.repo.transfer.RepoTransferReceiverImpl;
-import org.alfresco.repo.transfer.TransferCommons;
-import org.alfresco.repo.transfer.TransferVersionImpl;
-import org.alfresco.service.cmr.transfer.TransferException;
-import org.alfresco.service.cmr.transfer.TransferReceiver;
-import org.alfresco.service.cmr.transfer.TransferVersion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
@@ -41,9 +35,14 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.json.JSONWriter;
 
+import org.alfresco.repo.transfer.TransferCommons;
+import org.alfresco.repo.transfer.TransferVersionImpl;
+import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferReceiver;
+import org.alfresco.service.cmr.transfer.TransferVersion;
+
 /**
- * This command processor is used to record the start a transfer. No other transfer can be started after this command
- * has executed until the started transfer terminates.
+ * This command processor is used to record the start a transfer. No other transfer can be started after this command has executed until the started transfer terminates.
  *
  * @author brian
  *
@@ -56,66 +55,63 @@ public class BeginTransferCommandProcessor implements CommandProcessor
 
     private final static Log logger = LogFactory.getLog(BeginTransferCommandProcessor.class);
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      *
-     * @see org.alfresco.repo.web.scripts.transfer.CommandProcessor#process(org.alfresco .web.scripts.WebScriptRequest,
-     * org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * @see org.alfresco.repo.web.scripts.transfer.CommandProcessor#process(org.alfresco .web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     public int process(WebScriptRequest req, WebScriptResponse resp)
     {
         String transferId = null;
         try
         {
-            String [] fromRepositoryIdValues = req.getParameterValues(TransferCommons.PARAM_FROM_REPOSITORYID);
-            String [] transferToSelfValues = req.getParameterValues(TransferCommons.PARAM_ALLOW_TRANSFER_TO_SELF);
-            String [] editionValues = req.getParameterValues(TransferCommons.PARAM_VERSION_EDITION);
-            String [] majorValues = req.getParameterValues(TransferCommons.PARAM_VERSION_MAJOR);
-            String [] minorValues = req.getParameterValues(TransferCommons.PARAM_VERSION_MINOR);
-            String [] revisionValues = req.getParameterValues(TransferCommons.PARAM_VERSION_REVISION);
-            String [] rootFileTransfer = req.getParameterValues(TransferCommons.PARAM_ROOT_FILE_TRANSFER);
+            String[] fromRepositoryIdValues = req.getParameterValues(TransferCommons.PARAM_FROM_REPOSITORYID);
+            String[] transferToSelfValues = req.getParameterValues(TransferCommons.PARAM_ALLOW_TRANSFER_TO_SELF);
+            String[] editionValues = req.getParameterValues(TransferCommons.PARAM_VERSION_EDITION);
+            String[] majorValues = req.getParameterValues(TransferCommons.PARAM_VERSION_MAJOR);
+            String[] minorValues = req.getParameterValues(TransferCommons.PARAM_VERSION_MINOR);
+            String[] revisionValues = req.getParameterValues(TransferCommons.PARAM_VERSION_REVISION);
+            String[] rootFileTransfer = req.getParameterValues(TransferCommons.PARAM_ROOT_FILE_TRANSFER);
 
             String fromRepositoryId = null;
-            if(fromRepositoryIdValues != null && fromRepositoryIdValues.length > 0)
+            if (fromRepositoryIdValues != null && fromRepositoryIdValues.length > 0)
             {
                 fromRepositoryId = fromRepositoryIdValues[0];
             }
 
             boolean transferToSelf = false;
-            if(transferToSelfValues != null && transferToSelfValues.length > 0)
+            if (transferToSelfValues != null && transferToSelfValues.length > 0)
             {
-                if(transferToSelfValues[0].equalsIgnoreCase("true"))
+                if (transferToSelfValues[0].equalsIgnoreCase("true"))
                 {
                     transferToSelf = true;
                 }
             }
 
             String edition = "Unknown";
-            if(editionValues != null && editionValues.length > 0)
+            if (editionValues != null && editionValues.length > 0)
             {
                 edition = editionValues[0];
             }
             String major = "0";
-            if(majorValues != null && majorValues.length > 0)
+            if (majorValues != null && majorValues.length > 0)
             {
                 major = majorValues[0];
             }
             String minor = "0";
-            if(minorValues != null && minorValues.length > 0)
+            if (minorValues != null && minorValues.length > 0)
             {
                 minor = minorValues[0];
             }
             String revision = "0";
-            if(revisionValues != null && revisionValues.length > 0)
+            if (revisionValues != null && revisionValues.length > 0)
             {
                 revision = revisionValues[0];
             }
 
             TransferVersion fromVersion = new TransferVersionImpl(major, minor, revision, edition);
 
-            //set the root for the root node for the file transfer receiver
-            //It replaces the root node if transfers on file system
-            if(rootFileTransfer != null && rootFileTransfer.length > 0 )
+            // set the root for the root node for the file transfer receiver
+            // It replaces the root node if transfers on file system
+            if (rootFileTransfer != null && rootFileTransfer.length > 0)
             {
                 receiver.setTransferRootNode(rootFileTransfer[0]);
             }
@@ -135,7 +131,7 @@ public class BeginTransferCommandProcessor implements CommandProcessor
 
             jsonWriter.writeValue(TransferCommons.PARAM_TRANSFER_ID, transferId);
 
-            if(version != null)
+            if (version != null)
             {
                 jsonWriter.writeValue(TransferCommons.PARAM_VERSION_EDITION, version.getEdition());
                 jsonWriter.writeValue(TransferCommons.PARAM_VERSION_MAJOR, version.getVersionMajor());
@@ -161,7 +157,7 @@ public class BeginTransferCommandProcessor implements CommandProcessor
         catch (Exception ex)
         {
             logger.debug("exception caught", ex);
-            if(transferId != null)
+            if (transferId != null)
             {
                 logger.debug("ending transfer", ex);
                 receiver.end(transferId);
@@ -175,12 +171,12 @@ public class BeginTransferCommandProcessor implements CommandProcessor
     }
 
     /**
-     * @param receiver the receiver to set
+     * @param receiver
+     *            the receiver to set
      */
     public void setReceiver(TransferReceiver receiver)
     {
         this.receiver = receiver;
     }
-
 
 }

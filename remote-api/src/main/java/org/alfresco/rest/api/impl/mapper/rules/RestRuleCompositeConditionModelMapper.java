@@ -35,13 +35,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.rest.api.model.rules.CompositeCondition;
 import org.alfresco.rest.api.model.rules.ConditionOperator;
 import org.alfresco.rest.api.model.rules.SimpleCondition;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionCondition;
-import org.apache.commons.collections.CollectionUtils;
 
 @Experimental
 public class RestRuleCompositeConditionModelMapper implements RestModelMapper<CompositeCondition, ActionCondition>
@@ -57,7 +58,8 @@ public class RestRuleCompositeConditionModelMapper implements RestModelMapper<Co
     /**
      * Converts Action conditions (service POJO) list to composite condition (REST model).
      *
-     * @param actionConditions - list of {@link ActionCondition} service POJOs
+     * @param actionConditions
+     *            - list of {@link ActionCondition} service POJOs
      * @return {@link CompositeCondition} REST model
      */
     @Override
@@ -122,7 +124,7 @@ public class RestRuleCompositeConditionModelMapper implements RestModelMapper<Co
     }
 
     private CompositeCondition ofActionConditions(final List<ActionCondition> actionConditions, final boolean inverted,
-                                                  final ConditionOperator conditionOperator)
+            final ConditionOperator conditionOperator)
     {
         if (CollectionUtils.isEmpty(actionConditions))
         {
@@ -134,19 +136,22 @@ public class RestRuleCompositeConditionModelMapper implements RestModelMapper<Co
     /**
      * Creates a composite condition instance of simple conditions.
      *
-     * @param simpleConditions  - list of {@link SimpleCondition}
-     * @param inverted          - determines if condition should be inverted
-     * @param conditionOperator - determines the operation, see {@link ConditionOperator}
+     * @param simpleConditions
+     *            - list of {@link SimpleCondition}
+     * @param inverted
+     *            - determines if condition should be inverted
+     * @param conditionOperator
+     *            - determines the operation, see {@link ConditionOperator}
      * @return {@link CompositeCondition}
      */
     private CompositeCondition ofSimpleConditions(final List<SimpleCondition> simpleConditions, final boolean inverted,
-                                                  final ConditionOperator conditionOperator)
+            final ConditionOperator conditionOperator)
     {
         return of(simpleConditions, null, inverted, conditionOperator);
     }
 
     private CompositeCondition of(final List<SimpleCondition> simpleConditions, final List<CompositeCondition> compositeConditions,
-                                  final boolean inverted, final ConditionOperator conditionOperator)
+            final boolean inverted, final ConditionOperator conditionOperator)
     {
         if (CollectionUtils.isEmpty(simpleConditions) && CollectionUtils.isEmpty(compositeConditions))
         {

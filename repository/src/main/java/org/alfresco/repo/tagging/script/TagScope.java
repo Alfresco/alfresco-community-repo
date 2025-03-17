@@ -39,49 +39,52 @@ public class TagScope
 {
     /** Tagging service */
     private TaggingService taggingService;
-    
+
     /** Repository tag scope object */
     private org.alfresco.service.cmr.tagging.TagScope tagScopeImpl;
-    
+
     /**
      * Constructor
      * 
-     * @param tagScopeImpl  repository tag scope object
+     * @param tagScopeImpl
+     *            repository tag scope object
      */
     public TagScope(TaggingService taggingService, org.alfresco.service.cmr.tagging.TagScope tagScopeImpl)
     {
         this.taggingService = taggingService;
         this.tagScopeImpl = tagScopeImpl;
     }
-    
+
     /**
      * Gets all the tags, ordered by count, for the tag scope
      * 
-     * @return  TagDetails[]    tags ordered by count
+     * @return TagDetails[] tags ordered by count
      */
     public TagDetails[] getTags()
     {
         List<TagDetails> tags = tagScopeImpl.getTags();
-        return (TagDetails[])tags.toArray(new TagDetails[tags.size()]);
+        return (TagDetails[]) tags.toArray(new TagDetails[tags.size()]);
     }
-    
+
     /**
      * Gets the top N tags ordered by count
      * 
-     * @param topN              the number of top tags to return
-     * @return TagDetails[]     the top N tags ordered by count
+     * @param topN
+     *            the number of top tags to return
+     * @return TagDetails[] the top N tags ordered by count
      */
     public TagDetails[] getTopTags(int topN)
     {
         List<TagDetails> tags = tagScopeImpl.getTags(topN);
-        return (TagDetails[])tags.toArray(new TagDetails[tags.size()]);
+        return (TagDetails[]) tags.toArray(new TagDetails[tags.size()]);
     }
-    
+
     /**
      * Get the count of a tag, 0 if not present
      * 
-     * @param tag   tag name
-     * @return int  tag count
+     * @param tag
+     *            tag name
+     * @return int tag count
      */
     public int getCount(String tag)
     {
@@ -93,7 +96,7 @@ public class TagScope
         }
         return result;
     }
-    
+
     /**
      * Refresh the tag scope
      */
@@ -101,7 +104,7 @@ public class TagScope
     {
         // Refresh the tag scope
         this.taggingService.refreshTagScope(tagScopeImpl.getNodeRef(), false);
-        
+
         // Update the tag scope implementation
         this.tagScopeImpl = this.taggingService.findTagScope(tagScopeImpl.getNodeRef());
     }

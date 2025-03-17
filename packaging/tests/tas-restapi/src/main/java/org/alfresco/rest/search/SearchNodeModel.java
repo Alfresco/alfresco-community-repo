@@ -34,8 +34,10 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.rest.model.RestByUserModel;
 import org.alfresco.rest.model.RestContentModel;
 import org.alfresco.utility.model.TestModel;
+
 /**
  * Object that represent search response entry.
+ * 
  * @author Michael Suzuki
  *
  */
@@ -49,8 +51,7 @@ public class SearchNodeModel extends TestModel implements IRestModel<SearchNodeM
     private String id;
 
     /**
-     * The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
-     * The character . must not be used at the end of the name.
+     * The name must not contain spaces or the following special characters: * " < > \ / ? : and |. The character . must not be used at the end of the name.
      */
     @JsonProperty(required = true)
     private String name;
@@ -98,7 +99,7 @@ public class SearchNodeModel extends TestModel implements IRestModel<SearchNodeM
 
     @JsonProperty
     private Object permissions;
-    
+
     private String location;
 
     private Boolean isFavorite;
@@ -329,11 +330,13 @@ public class SearchNodeModel extends TestModel implements IRestModel<SearchNodeM
         this.location = location;
     }
 
-    public Boolean isFavorite() {
+    public Boolean isFavorite()
+    {
         return isFavorite;
     }
 
-    public void setIsFavorite(Boolean favorite) {
+    public void setIsFavorite(Boolean favorite)
+    {
         isFavorite = favorite;
     }
 }

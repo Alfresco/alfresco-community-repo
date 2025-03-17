@@ -35,14 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.admin.registry.RegistryService;
-import org.alfresco.repo.tenant.TenantAdminService;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.module.ModuleDetails;
-import org.alfresco.service.cmr.module.ModuleService;
-import org.alfresco.service.descriptor.DescriptorService;
-import org.alfresco.util.VersionNumber;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -52,18 +44,20 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.admin.registry.RegistryService;
+import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.module.ModuleDetails;
+import org.alfresco.service.cmr.module.ModuleService;
+import org.alfresco.service.descriptor.DescriptorService;
+
 /**
- * This component controls the execution of
- * {@link org.alfresco.repo.module.ModuleComponent module startup components}.
+ * This component controls the execution of {@link org.alfresco.repo.module.ModuleComponent module startup components}.
  * <p/>
- * All required startup executions are performed in a single transaction, so this
- * component guarantees that the module initialization is consistent.  Module components are
- * executed in dependency order <i>only</i>.  The version numbering is not to be used
- * for ordering purposes.
+ * All required startup executions are performed in a single transaction, so this component guarantees that the module initialization is consistent. Module components are executed in dependency order <i>only</i>. The version numbering is not to be used for ordering purposes.
  * <p/>
- * Afterwards, execution details are persisted in the
- * {@link org.alfresco.repo.admin.registry.RegistryService service registry} to be used when the
- * server starts up again.
+ * Afterwards, execution details are persisted in the {@link org.alfresco.repo.admin.registry.RegistryService service registry} to be used when the server starts up again.
  *
  * @author Roy Wetherall
  * @author Derek Hulley
@@ -76,16 +70,16 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
 
     /** The classpath search path for module properties */
     private static final String MODULE_CONFIG_SEARCH_ALL = "classpath*:alfresco/module/*/module.properties";
-    
+
     private static Log logger = LogFactory.getLog(ModuleServiceImpl.class);
 
     private ServiceRegistry serviceRegistry;
     private ModuleComponentHelper moduleComponentHelper;
     /** A cache of module details by module ID */
-    private Map<String, ModuleDetails> moduleDetailsById;    
+    private Map<String, ModuleDetails> moduleDetailsById;
 
     ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-    
+
     /** Default constructor */
     public ModuleServiceImpl()
     {
@@ -105,26 +99,28 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
     }
 
     /**
-     * @param registryService the service used to persist component execution details.
+     * @param registryService
+     *            the service used to persist component execution details.
      */
     public void setRegistryService(RegistryService registryService)
     {
         this.moduleComponentHelper.setRegistryService(registryService);
     }
-    
+
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
         this.moduleComponentHelper.setTenantAdminService(tenantAdminService);
     }
-    
+
     /**
-     * @throws UnsupportedOperationException This feature was never active and cannot be used (ALF-19207)
+     * @throws UnsupportedOperationException
+     *             This feature was never active and cannot be used (ALF-19207)
      */
     public void setApplyToTenants(boolean applyToTenants)
     {
         throw new UnsupportedOperationException("Applying modules to individual tenants is unsupported. See ALF-19207: MT module startup does not work");
     }
-    
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
@@ -138,7 +134,7 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
     {
         this.moduleComponentHelper.registerComponent(component);
     }
-    
+
     /**
      * {@inheritDoc}
      * 
@@ -158,7 +154,7 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
     {
         moduleComponentHelper.shutdownModules();
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -190,13 +186,13 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
     public List<ModuleDetails> getMissingModules()
     {
         cacheModuleDetails();
-        
+
         // Get the IDs of all modules from the registry
         Collection<String> moduleIds = moduleComponentHelper.getRegistryModuleIDs();
-        
+
         List<ModuleDetails> result = new ArrayList<ModuleDetails>();
-        
-        //Check for missing modules
+
+        // Check for missing modules
         for (String moduleId : moduleIds)
         {
             ModuleDetails moduleDetails = getModule(moduleId);
@@ -204,9 +200,9 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
             {
                 // Get the specifics of the missing module and add them to the list.
                 ModuleVersionNumber currentVersion = moduleComponentHelper.getVersion(moduleId);
-                
+
                 ModuleDetails newModuleDetails = new ModuleDetailsImpl(moduleId, currentVersion, "", "");
-                
+
                 result.add(newModuleDetails);
             }
         }
@@ -216,8 +212,7 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
     /**
      * Ensure that the {@link #moduleDetailsById module details} are populated.
      * <p/>
-     * TODO: We will have to avoid caching or add context listening if we support reloading
-     *       of beans one day.
+     * TODO: We will have to avoid caching or add context listening if we support reloading of beans one day.
      */
     private synchronized void cacheModuleDetails()
     {
@@ -229,9 +224,9 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
         try
         {
             moduleDetailsById = new HashMap<String, ModuleDetails>(13);
-            
+
             Resource[] resources = resolver.getResources(MODULE_CONFIG_SEARCH_ALL);
-            
+
             // Read each resource
             for (Resource resource : resources)
             {
@@ -245,7 +240,7 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
                 }
                 catch (Throwable e)
                 {
-                    logger.error("Unable to use module information.",e);
+                    logger.error("Unable to use module information.", e);
                     throw AlfrescoRuntimeException.create(e, ERR_UNABLE_TO_OPEN_MODULE_PROPETIES, resource);
                 }
             }
@@ -259,7 +254,7 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
         {
             logger.debug(
                     "Found " + moduleDetailsById.size() + " modules: \n" +
-                    "   Modules: " + moduleDetailsById);
+                            "   Modules: " + moduleDetailsById);
         }
     }
 }

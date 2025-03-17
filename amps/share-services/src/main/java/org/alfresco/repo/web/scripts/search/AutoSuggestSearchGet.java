@@ -25,10 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.search.SuggesterParameters;
-import org.alfresco.service.cmr.search.SuggesterResult;
-import org.alfresco.service.cmr.search.SuggesterService;
-import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
@@ -36,9 +32,13 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.service.cmr.search.SuggesterParameters;
+import org.alfresco.service.cmr.search.SuggesterResult;
+import org.alfresco.service.cmr.search.SuggesterService;
+import org.alfresco.util.Pair;
+
 /**
- * This class is the controller for the <i>auto-suggest-search.get</i> web
- * script.
+ * This class is the controller for the <i>auto-suggest-search.get</i> web script.
  * 
  * @author Jamal Kaabi-Mofrad
  * @since 5.0

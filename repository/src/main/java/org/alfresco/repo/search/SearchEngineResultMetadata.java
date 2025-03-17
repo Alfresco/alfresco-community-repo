@@ -35,8 +35,7 @@ package org.alfresco.repo.search;
 public interface SearchEngineResultMetadata
 {
     /**
-     * Returns the query execution time, or put in other words, the amount of
-     * time the search engine spent for processing the request.
+     * Returns the query execution time, or put in other words, the amount of time the search engine spent for processing the request.
      *
      * @return the query execution time
      */

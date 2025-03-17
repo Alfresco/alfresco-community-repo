@@ -25,9 +25,10 @@
  */
 package org.alfresco.repo.jscript;
 
-import org.alfresco.api.AlfrescoPublicApi;     
-import org.alfresco.repo.processor.BaseProcessorExtension;
 import org.mozilla.javascript.Scriptable;
+
+import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.repo.processor.BaseProcessorExtension;
 
 /**
  * Abstract base class for a script implementation that requires a script execution scope.
@@ -40,17 +41,18 @@ import org.mozilla.javascript.Scriptable;
 public class BaseScopableProcessorExtension extends BaseProcessorExtension implements Scopeable
 {
     private static ThreadLocal<Scriptable> scope = new ThreadLocal<Scriptable>();
-    
+
     /**
      * Set the Scriptable global scope
      * 
-     * @param scope relative global scope
+     * @param scope
+     *            relative global scope
      */
     public void setScope(Scriptable scope)
     {
         BaseScopableProcessorExtension.scope.set(scope);
     }
-    
+
     /**
      * @return script global scope
      */

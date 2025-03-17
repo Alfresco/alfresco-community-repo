@@ -28,10 +28,11 @@ package org.alfresco.filesys.repo;
 
 import java.util.List;
 
-import org.alfresco.jlan.server.filesys.FileInfo;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.jlan.server.filesys.FileInfo;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Cache Lookup Search Context Class
@@ -39,26 +40,31 @@ import org.apache.commons.logging.LogFactory;
  * ContentSearchContext with DotDot methods.
  * 
  */
-public class DotDotContentSearchContext extends ContentSearchContext {
+public class DotDotContentSearchContext extends ContentSearchContext
+{
 
-	// Debug logging
-	
+    // Debug logging
+
     private static final Log logger = LogFactory.getLog(DotDotContentSearchContext.class);
-    
-	
-	// File information for the '.' and '..' pseduo entries, returned during a wildcard search
-	
-	private FileInfo m_dotInfo;
-	private FileInfo m_dotDotInfo;
-	
+
+    // File information for the '.' and '..' pseduo entries, returned during a wildcard search
+
+    private FileInfo m_dotInfo;
+    private FileInfo m_dotDotInfo;
+
     /**
      * Class constructor
      * 
-     * @param cifsHelper Filesystem helper class
-     * @param results List of file/folder nodes that match the search pattern
-     * @param searchStr Search path
-     * @param relPath Relative path being searched
-     * @param lockedFilesAsOffline set state
+     * @param cifsHelper
+     *            Filesystem helper class
+     * @param results
+     *            List of file/folder nodes that match the search pattern
+     * @param searchStr
+     *            Search path
+     * @param relPath
+     *            Relative path being searched
+     * @param lockedFilesAsOffline
+     *            set state
      */
     protected DotDotContentSearchContext(
             CifsHelper cifsHelper,
@@ -66,83 +72,94 @@ public class DotDotContentSearchContext extends ContentSearchContext {
             String searchStr,
             String relPath,
             boolean lockedFilesAsOffline)
-           
+
     {
         super(cifsHelper, results, searchStr, relPath, lockedFilesAsOffline);
         super.setSearchString(searchStr);
     }
-    
+
     /**
      * Check if the '.' and '..' pseudo file entries are available
      * 
      * @return boolean
      */
-    public boolean hasDotFiles() {
-    	return (m_dotInfo != null && m_dotDotInfo != null) ? true : false;
+    public boolean hasDotFiles()
+    {
+        return (m_dotInfo != null && m_dotDotInfo != null) ? true : false;
     }
-    
+
     /**
      * Return the '.' pseudo file entry details
      * 
-     * @param finfo FileInfo
+     * @param finfo
+     *            FileInfo
      * @return boolean
      */
-    public boolean getDotInfo(FileInfo finfo) {
+    public boolean getDotInfo(FileInfo finfo)
+    {
 
-    	// Check if the '.' file information is valid
-    	
-    	if ( m_dotInfo != null) {
-    		finfo.copyFrom( m_dotInfo);
-    		return true;
-    	}
-    	
-    	// File information not valid
-    	
-    	return false;
+        // Check if the '.' file information is valid
+
+        if (m_dotInfo != null)
+        {
+            finfo.copyFrom(m_dotInfo);
+            return true;
+        }
+
+        // File information not valid
+
+        return false;
     }
-    
+
     /**
      * Return the '..' pseudo file entry details
      * 
-     * @param finfo FileInfo
+     * @param finfo
+     *            FileInfo
      * @return boolean
      */
-    public boolean getDotDotInfo(FileInfo finfo) {
+    public boolean getDotDotInfo(FileInfo finfo)
+    {
 
-    	// Check if the '..' file information is valid
-    	
-    	if ( m_dotDotInfo != null) {
-    		finfo.copyFrom( m_dotDotInfo);
-    		return true;
-    	}
-    	
-    	// File information not valid
-    	
-    	return false;
+        // Check if the '..' file information is valid
+
+        if (m_dotDotInfo != null)
+        {
+            finfo.copyFrom(m_dotDotInfo);
+            return true;
+        }
+
+        // File information not valid
+
+        return false;
     }
 
     /**
      * Set the '.' pseudo file entry details
      * 
-     * @param finfo FileInfo
+     * @param finfo
+     *            FileInfo
      */
-    protected void setDotInfo(FileInfo finfo) {
-    	m_dotInfo = finfo;
-    	if ( m_dotInfo != null)
-    		m_dotInfo.setFileName( ".");
+    protected void setDotInfo(FileInfo finfo)
+    {
+        m_dotInfo = finfo;
+        if (m_dotInfo != null)
+            m_dotInfo.setFileName(".");
     }
-    
+
     /**
      * Set the '..' pseudo file entry details
      * 
-     * @param finfo FileInfo
+     * @param finfo
+     *            FileInfo
      */
-    protected void setDotDotInfo(FileInfo finfo) {
-    	m_dotDotInfo = finfo;
-    	if ( m_dotDotInfo != null)
-    		m_dotDotInfo.setFileName( "..");
+    protected void setDotDotInfo(FileInfo finfo)
+    {
+        m_dotDotInfo = finfo;
+        if (m_dotDotInfo != null)
+            m_dotDotInfo.setFileName("..");
     }
-    
+
     /**
      * Return the search as a string
      * 
@@ -156,12 +173,12 @@ public class DotDotContentSearchContext extends ContentSearchContext {
         sb.append(getSearchString());
         sb.append(", resultCount=");
         sb.append(getResultsSize());
-        if ( m_dotInfo != null)
-        	sb.append(",Dot");
-        if ( m_dotDotInfo != null)
-        	sb.append(",DotDot");
+        if (m_dotInfo != null)
+            sb.append(",Dot");
+        if (m_dotDotInfo != null)
+            sb.append(",DotDot");
         sb.append("]");
-        
+
         return sb.toString();
     }
 }

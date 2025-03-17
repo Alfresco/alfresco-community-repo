@@ -67,10 +67,10 @@ public class Transfer
 
     public Transfer()
     {
-        //Default constructor
+        // Default constructor
     }
 
-    @JsonProperty ("id")
+    @JsonProperty("id")
     @UniqueId
     public NodeRef getNodeRef()
     {

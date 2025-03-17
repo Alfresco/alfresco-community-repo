@@ -25,12 +25,13 @@
  */
 package org.alfresco.rest.requests;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestCustomTypeModel;
 import org.alfresco.utility.model.CustomAspectPropertiesModel;
 import org.alfresco.utility.model.CustomContentModel;
-import org.springframework.http.HttpMethod;
 
 /**
  * @author Bogdan Bocancea
@@ -58,33 +59,33 @@ public class CustomTypeManager extends ModelRequest<CustomTypeManager>
     public void addProperty(CustomAspectPropertiesModel propertyModel)
     {
         customProperties.addProperty(propertyModel, this.customContentModel, false,
-            this.customTypeModel.getName(), false, null);
+                this.customTypeModel.getName(), false, null);
     }
 
     public void addPropertyWithMinMaxValueConstraint(CustomAspectPropertiesModel propertyModel, int minValue, int maxValue)
     {
         customProperties.addProperty(propertyModel, this.customContentModel, false, this.customTypeModel.getName(),
-        true, customProperties.createMinMaxValueConstraintArray(minValue, maxValue));
+                true, customProperties.createMinMaxValueConstraintArray(minValue, maxValue));
     }
 
     public void addPropertyWithMinMaxLengthConstraint(CustomAspectPropertiesModel propertyModel, int minLength, int maxLength)
     {
         customProperties.addProperty(propertyModel, this.customContentModel, false, this.customTypeModel.getName(),
-        true, customProperties.createMinMaxLengthConstraint(minLength, maxLength));
+                true, customProperties.createMinMaxLengthConstraint(minLength, maxLength));
     }
 
     public void addPropertyWithListOfValues(CustomAspectPropertiesModel propertyModel, boolean sorted, String... listOfValues)
     {
         customProperties.addProperty(propertyModel, this.customContentModel, false, this.customTypeModel.getName(),
-        true, customProperties.createListOfValuesConstraint(sorted, listOfValues));
+                true, customProperties.createListOfValuesConstraint(sorted, listOfValues));
     }
 
     public void deleteCustomType()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE,
-            "cmm/{modelName}/types/{typeName}",
-            this.customContentModel.getName(),
-            this.customTypeModel.getName());
+                "cmm/{modelName}/types/{typeName}",
+                this.customContentModel.getName(),
+                this.customTypeModel.getName());
         restWrapper.processEmptyModel(request);
     }
 }

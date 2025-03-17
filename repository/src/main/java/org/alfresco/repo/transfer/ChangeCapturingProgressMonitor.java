@@ -36,13 +36,12 @@ import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferProgress.Status;
 
 /**
- * A delegating implementation of the {@link TransferProgressMonitor} interface that
- * keeps a record of the nodes that have been changed during the course of processing
- * an incoming transfer. Used by the {@link RepoTransferReceiverImpl}.
+ * A delegating implementation of the {@link TransferProgressMonitor} interface that keeps a record of the nodes that have been changed during the course of processing an incoming transfer. Used by the {@link RepoTransferReceiverImpl}.
+ * 
  * @author Brian
  * @since 3.4
  */
-/*package*/ final class ChangeCapturingProgressMonitor implements TransferProgressMonitor
+/* package */ final class ChangeCapturingProgressMonitor implements TransferProgressMonitor
 {
     private final TransferProgressMonitor delegate;
 
@@ -81,7 +80,7 @@ import org.alfresco.service.cmr.transfer.TransferProgress.Status;
         {
             createdNodes.add(nodeRef);
         }
-        
+
         public void reset()
         {
             createdNodes.clear();
@@ -91,7 +90,7 @@ import org.alfresco.service.cmr.transfer.TransferProgress.Status;
     }
 
     private final TreeMap<String, TransferChangesRecord> changeRecords = new TreeMap<String, TransferChangesRecord>();
-    
+
     public ChangeCapturingProgressMonitor(TransferProgressMonitor delegatedProgressMonitor)
     {
         delegate = delegatedProgressMonitor;
@@ -155,8 +154,8 @@ import org.alfresco.service.cmr.transfer.TransferProgress.Status;
     public void updateStatus(String transferId, Status status) throws TransferException
     {
         delegate.updateStatus(transferId, status);
-        //If we are entering a "don't commit" state then reset the changes record
-        //for this transfer, since the effective result is "no change".
+        // If we are entering a "don't commit" state then reset the changes record
+        // for this transfer, since the effective result is "no change".
         if (status == Status.CANCELLED || status == Status.ERROR)
         {
             getChangesRecord(transferId).reset();
@@ -167,7 +166,7 @@ import org.alfresco.service.cmr.transfer.TransferProgress.Status;
     {
         return changeRecords.remove(transferId);
     }
-    
+
     private TransferChangesRecord getChangesRecord(String transferId)
     {
         TransferChangesRecord record = changeRecords.get(transferId);

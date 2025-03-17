@@ -31,6 +31,8 @@
  */
 package org.alfresco.rest.requests;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
@@ -38,9 +40,8 @@ import org.alfresco.rest.model.RestArchiveContentRequestModel;
 import org.alfresco.rest.model.RestContentStorageInfoModel;
 import org.alfresco.rest.model.RestRestoreArchivedContentRequestModel;
 import org.alfresco.utility.model.TestModel;
-import org.springframework.http.HttpMethod;
 
-public class ContentStorageInformation extends ModelRequest<ContentStorageInformation> 
+public class ContentStorageInformation extends ModelRequest<ContentStorageInformation>
 {
     private static final String BASE_PATH = "nodes/{nodeId}/storage-info/{contentPropName}";
     private static final String VERSIONS_BASE_PATH = "nodes/{nodeId}/versions/{versionId}/storage-info/{contentPropName}";
@@ -51,11 +52,10 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
     private String contentPropName;
     private String versionId;
 
-    public ContentStorageInformation(RestWrapper restWrapper) 
+    public ContentStorageInformation(RestWrapper restWrapper)
     {
         super(restWrapper);
     }
-
 
     public ContentStorageInformation withNodeId(String nodeId)
     {
@@ -77,6 +77,7 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
 
     /**
      * Get Content Storage Properties using GET call on "nodes/{nodeId}/storage-info/{contentPropName}"
+     * 
      * @return
      */
     public RestContentStorageInfoModel getStorageInfo()
@@ -86,6 +87,7 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
 
     /**
      * Get Content Version Storage Properties using GET call on "nodes/{nodeId}/versions/{versionId}/storage-info/{contentPropName}"
+     * 
      * @return
      */
     public RestContentStorageInfoModel getVersionStorageInfo()
@@ -95,8 +97,11 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
 
     /**
      * Get Content Storage Properties using GET call on "nodes/{nodeId}/storage-info/{contentPropName}"
-     * @param nodeId The nodeId
-     * @param contentPropName The content property QNAME ie. "cm:content"
+     * 
+     * @param nodeId
+     *            The nodeId
+     * @param contentPropName
+     *            The content property QNAME ie. "cm:content"
      * @return
      */
     public RestContentStorageInfoModel getStorageInfo(String nodeId, String contentPropName)
@@ -107,9 +112,13 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
 
     /**
      * Get Content Version Storage Properties using GET call on "nodes/{nodeId}/versions/{versionId}/storage-info/{contentPropName}"
-     * @param nodeId The nodeId
-     * @param versionId The versionId
-     * @param contentPropName The content property QNAME ie. "cm:content"
+     * 
+     * @param nodeId
+     *            The nodeId
+     * @param versionId
+     *            The versionId
+     * @param contentPropName
+     *            The content property QNAME ie. "cm:content"
      * @return object of {@link RestContentStorageInfoModel}
      */
     public RestContentStorageInfoModel getVersionStorageInfo(String nodeId, String versionId, String contentPropName)
@@ -121,7 +130,8 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
     /**
      * Send content to archive using POST call on "nodes/{nodeId}/storage-info/{contentPropName}/archive"
      * 
-     * @param archiveContentRequest The request body
+     * @param archiveContentRequest
+     *            The request body
      * @return
      */
     public RestResponse requestArchiveContent(RestArchiveContentRequestModel archiveContentRequest)
@@ -132,7 +142,8 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
     /**
      * Send version content to archive using POST call on "nodes/{nodeId}/versions/{versionId}/storage-info/{contentPropName}/archive"
      *
-     * @param archiveContentRequest The request body
+     * @param archiveContentRequest
+     *            The request body
      * @return
      */
     public RestResponse requestArchiveVersionContent(RestArchiveContentRequestModel archiveContentRequest)
@@ -143,9 +154,12 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
     /**
      * Send content to archive using POST call on "nodes/{nodeId}/storage-info/{contentPropName}/archive"
      * 
-     * @param nodeId The nodeId
-     * @param contentPropName The content property QNAME ie. "cm:content"
-     * @param archiveContentRequest The request body
+     * @param nodeId
+     *            The nodeId
+     * @param contentPropName
+     *            The content property QNAME ie. "cm:content"
+     * @param archiveContentRequest
+     *            The request body
      * @return
      */
     public RestResponse requestArchiveContent(String nodeId, String contentPropName, RestArchiveContentRequestModel archiveContentRequest)
@@ -157,10 +171,14 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
     /**
      * Send version content to archive using POST call on "nodes/{nodeId}/versions/{versionId}/storage-info/{contentPropName}/archive"
      *
-     * @param nodeId The nodeId
-     * @param contentPropName The content property QNAME ie. "cm:content"
-     * @param versionId  The versionId
-     * @param archiveContentRequest The request body
+     * @param nodeId
+     *            The nodeId
+     * @param contentPropName
+     *            The content property QNAME ie. "cm:content"
+     * @param versionId
+     *            The versionId
+     * @param archiveContentRequest
+     *            The request body
      * @return
      */
     public RestResponse requestArchiveVersionContent(String nodeId, String contentPropName, String versionId, RestArchiveContentRequestModel archiveContentRequest)
@@ -172,7 +190,8 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
     /**
      * Restore content from archive using POST call on "nodes/{nodeId}/storage-info/{contentPropName}/archive-restore"
      * 
-     * @param restoreArchivedContentRequest The request body
+     * @param restoreArchivedContentRequest
+     *            The request body
      * @return
      */
     public RestResponse requestRestoreContentFromArchive(RestRestoreArchivedContentRequestModel restoreArchivedContentRequest)
@@ -183,7 +202,8 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
     /**
      * Restore version content from archive using POST call on "nodes/{nodeId}/storage-info/versions/{versionId}/{contentPropName}/archive-restore"
      *
-     * @param restoreArchivedContentRequest The request body
+     * @param restoreArchivedContentRequest
+     *            The request body
      * @return
      */
     public RestResponse requestRestoreVersionContentFromArchive(RestRestoreArchivedContentRequestModel restoreArchivedContentRequest)
@@ -194,9 +214,12 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
     /**
      * Restore content from archive using POST call on "nodes/{nodeId}/storage-info/{contentPropName}/archive-restore"
      * 
-     * @param nodeId The nodeId
-     * @param contentPropName The content property QNAME ie. "cm:content"
-     * @param restoreArchivedContentRequest The request body
+     * @param nodeId
+     *            The nodeId
+     * @param contentPropName
+     *            The content property QNAME ie. "cm:content"
+     * @param restoreArchivedContentRequest
+     *            The request body
      * @return
      */
     public RestResponse requestRestoreContentFromArchive(String nodeId, String contentPropName, RestRestoreArchivedContentRequestModel restoreArchivedContentRequest)
@@ -209,20 +232,24 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
     /**
      * Restore version content from archive using POST call on "nodes/{nodeId}/storage-info/{contentPropName}/archive-restore"
      *
-     * @param nodeId The nodeId
-     * @param contentPropName The content property QNAME ie. "cm:content"
-     * @param versionId  The versionId
-     * @param restoreArchivedContentRequest The request body
+     * @param nodeId
+     *            The nodeId
+     * @param contentPropName
+     *            The content property QNAME ie. "cm:content"
+     * @param versionId
+     *            The versionId
+     * @param restoreArchivedContentRequest
+     *            The request body
      * @return
      */
     public RestResponse requestRestoreVersionContentFromArchive(String nodeId, String contentPropName, String versionId,
-                                                                RestRestoreArchivedContentRequestModel restoreArchivedContentRequest)
+            RestRestoreArchivedContentRequestModel restoreArchivedContentRequest)
     {
         RestRequest request = createRestRequestWithBody(HttpMethod.POST, restoreArchivedContentRequest, VERSIONS_BASE_PATH +
                 ARCHIVE_RESTORE_PATH_SUFFIX, nodeId, versionId, contentPropName);
         return restWrapper.process(request);
     }
-    
+
     private RestRequest createRestRequestWithBody(HttpMethod httpMethod, TestModel request, String path, String... pathParams)
     {
         if (request != null)

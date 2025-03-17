@@ -38,16 +38,16 @@ import org.alfresco.service.namespace.QName;
 public class DefaultWorkflowPropertyHandler extends AbstractWorkflowPropertyHandler
 {
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public Object handleProperty(QName key, Serializable value, TypeDefinition type, Object object, Class<?> objectType)
     {
         return handleDefaultProperty(object, type, key, value);
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     protected QName getKey()
     {

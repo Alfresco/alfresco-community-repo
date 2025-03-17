@@ -25,11 +25,12 @@
  */
 package org.alfresco.repo.events;
 
-import org.alfresco.sync.events.types.ExceptionGeneratedEvent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.tenant.TenantUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.sync.events.types.ExceptionGeneratedEvent;
 
 public class ExceptionEventsServiceImpl extends AbstractEventsService implements ExceptionEventsService
 {
@@ -49,13 +50,12 @@ public class ExceptionEventsServiceImpl extends AbstractEventsService implements
     }
 
     public void init()
-    {
-    }
+    {}
 
     @Override
     public void exceptionGenerated(String txnId, Throwable t)
     {
-        if(enabled)
+        if (enabled)
         {
             try
             {
@@ -66,7 +66,7 @@ public class ExceptionEventsServiceImpl extends AbstractEventsService implements
                         networkId, t, username);
                 messageProducer.send(event);
             }
-            catch(MessagingException e)
+            catch (MessagingException e)
             {
                 logger.error(e);
             }

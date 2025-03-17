@@ -53,7 +53,8 @@ public class GroupImpl implements Group
     /**
      * Sets the capability service
      *
-     * @param capabilityService the capability service
+     * @param capabilityService
+     *            the capability service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {

@@ -25,8 +25,6 @@
  */
 package org.alfresco.repo.lock.mem;
 
-
-
 /**
  * Factory to create {@link LockStore} instances.
  * 

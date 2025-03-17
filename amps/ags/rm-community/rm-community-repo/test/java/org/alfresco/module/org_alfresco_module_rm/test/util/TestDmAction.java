@@ -42,11 +42,9 @@ public class TestDmAction extends ActionExecuterAbstractBase
 {
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-    {
-    }
+    {}
 
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramDefs)
-    {
-    }
+    {}
 }

@@ -40,6 +40,8 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryPageDetails;
@@ -72,7 +74,6 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.alfresco.util.collections.Function;
-import org.apache.commons.collections.CollectionUtils;
 
 /**
  * Category service implementation
@@ -85,7 +86,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     static final String NODE_WITH_CATEGORY_ROOT_TYPE_NOT_FOUND = "Node with category_root type not found";
 
     protected NodeService nodeService;
-    
+
     protected NodeService publicNodeService;
 
     protected TenantService tenantService;
@@ -95,7 +96,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     protected DictionaryService dictionaryService;
 
     protected IndexerAndSearcher indexerAndSearcher;
-    
+
     protected int queryFetchSize = 5000;
 
     /**
@@ -111,17 +112,19 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     /**
      * Set the node service
      * 
-     * @param nodeService NodeService
+     * @param nodeService
+     *            NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set the public node service
      * 
-     * @param publicNodeService NodeService
+     * @param publicNodeService
+     *            NodeService
      */
     public void setPublicNodeService(NodeService publicNodeService)
     {
@@ -131,7 +134,8 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     /**
      * Set the tenant service
      * 
-     * @param tenantService TenantService
+     * @param tenantService
+     *            TenantService
      */
     public void setTenantService(TenantService tenantService)
     {
@@ -141,7 +145,8 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     /**
      * Set the service to map prefixes to uris
      * 
-     * @param namespacePrefixResolver NamespacePrefixResolver
+     * @param namespacePrefixResolver
+     *            NamespacePrefixResolver
      */
     public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
     {
@@ -151,7 +156,8 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     /**
      * Set the dictionary service
      * 
-     * @param dictionaryService DictionaryService
+     * @param dictionaryService
+     *            DictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -161,25 +167,27 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     /**
      * Set the indexer and searcher
      * 
-     * @param indexerAndSearcher IndexerAndSearcher
+     * @param indexerAndSearcher
+     *            IndexerAndSearcher
      */
     public void setIndexerAndSearcher(IndexerAndSearcher indexerAndSearcher)
     {
         this.indexerAndSearcher = indexerAndSearcher;
     }
-    
-    public void setQueryFetchSize(int queryFetchSize) {
-		this.queryFetchSize = queryFetchSize;
-	}
 
-	public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth)
+    public void setQueryFetchSize(int queryFetchSize)
     {
-    	return getChildren(categoryRef, mode, depth, false, (Collection<String>) null, queryFetchSize);
+        this.queryFetchSize = queryFetchSize;
     }
-    
+
+    public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth)
+    {
+        return getChildren(categoryRef, mode, depth, false, (Collection<String>) null, queryFetchSize);
+    }
+
     public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth, String filter)
     {
-    	return getChildren(categoryRef, mode, depth, false, filter, queryFetchSize);
+        return getChildren(categoryRef, mode, depth, false, filter, queryFetchSize);
     }
 
     private Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth, boolean sortByName, String filter, int fetchSize)
@@ -194,9 +202,9 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
         {
             return Collections.<ChildAssociationRef> emptyList();
         }
-        
+
         categoryRef = tenantService.getBaseName(categoryRef); // for solr
-        
+
         ResultSet resultSet = null;
         try
         {
@@ -242,14 +250,14 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
 
             // Get a searcher that will include Categories added in this transaction
             SearchService searcher = indexerAndSearcher.getSearcher(categoryRef.getStoreRef(), true);
-            
+
             // Perform the search
             SearchParameters searchParameters = new SearchParameters();
             resultSet = searcher.query(categoryRef.getStoreRef(), "lucene", luceneQuery.toString(), null);
             searchParameters.setLanguage("lucene");
-            if(sortByName)
+            if (sortByName)
             {
-            	searchParameters.addSort("@" + ContentModel.PROP_NAME, true);
+                searchParameters.addSort("@" + ContentModel.PROP_NAME, true);
             }
             searchParameters.setQuery(luceneQuery.toString());
             searchParameters.setLimit(-1);
@@ -330,7 +338,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
                     ChildAssociationRef car = nodeService.getPrimaryParent(row.getNodeRef());
                     collection.add(car);
                 }
-                catch(InvalidNodeRefException inre)
+                catch (InvalidNodeRefException inre)
                 {
                     // keep going the node has gone beneath us just skip it
                 }
@@ -402,7 +410,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     }
 
     public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName,
-        Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+            Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
     {
         final Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectName);
         final List<ChildAssociationRef> associations = new LinkedList<>();
@@ -414,19 +422,19 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
 
         final Function<NodeRef, Collection<ChildAssociationRef>> childNodesSupplier = getNodeRefCollectionFunction(sortByName, exactNamesFilter, alikeNamesFilter, skipCount, maxItems);
 
-        OUTER_LOOP: for(NodeRef nodeRef : nodeRefs)
+        OUTER_LOOP: for (NodeRef nodeRef : nodeRefs)
         {
             Collection<ChildAssociationRef> children = childNodesSupplier.apply(nodeRef);
-            for(ChildAssociationRef child : children)
+            for (ChildAssociationRef child : children)
             {
                 count++;
 
-                if(count <= skipCount)
+                if (count <= skipCount)
                 {
                     continue;
                 }
 
-                if(count > size)
+                if (count > size)
                 {
                     moreItems = true;
                     break OUTER_LOOP;
@@ -540,7 +548,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
         }
         return assocs;
     }
-    
+
     public NodeRef createCategory(NodeRef parent, String name)
     {
         return createCategoryInternal(parent, name).getChildRef();
@@ -583,23 +591,26 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     public abstract List<Pair<NodeRef, Integer>> getTopCategories(StoreRef storeRef, QName aspectName, int count);
 
     /**
-     * Creates search query parameters used to get top categories.
-     * Can be used as a base both wih SOLR and ES.
-     * @param storeRef Node store reference
-     * @param aspectName Aspect name. "cm:generalclassifiable" aspect should be used for usual cases.
-     *                   It is possible to use a custom aspect but it must have valid category property
-     * @param count Will be used as faceted results limit, when system has very many categories this must be reflecting that number
+     * Creates search query parameters used to get top categories. Can be used as a base both wih SOLR and ES.
+     * 
+     * @param storeRef
+     *            Node store reference
+     * @param aspectName
+     *            Aspect name. "cm:generalclassifiable" aspect should be used for usual cases. It is possible to use a custom aspect but it must have valid category property
+     * @param count
+     *            Will be used as faceted results limit, when system has very many categories this must be reflecting that number
      * @return SearchParameters to perform search for top categories.
      */
-    protected SearchParameters createSearchTopCategoriesParameters(StoreRef storeRef, QName aspectName, int count) {
+    protected SearchParameters createSearchTopCategoriesParameters(StoreRef storeRef, QName aspectName, int count)
+    {
         final AspectDefinition aspectDefinition = dictionaryService.getAspect(aspectName);
-        if(aspectDefinition == null)
+        if (aspectDefinition == null)
         {
             throw new IllegalStateException("Unknown aspect");
         }
         final Map<QName, PropertyDefinition> aspectProperties = aspectDefinition.getProperties();
         final Optional<QName> catProperty = aspectProperties.entrySet().stream()
-                //for backwards compatibility I'm leaving the part where we get custom category aspects
+                // for backwards compatibility I'm leaving the part where we get custom category aspects
                 .filter(ap -> ContentModel.ASPECT_GEN_CLASSIFIABLE.isMatch(aspectName) || isValidCategoryTypeProperty(aspectName, ap))
                 .map(Map.Entry::getKey)
                 .findFirst();
@@ -609,7 +620,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
             final SearchParameters sp = new SearchParameters();
             sp.addStore(storeRef);
             sp.setQuery(cp + ":*");
-            //we only care about faceted results and don't need query results so we can limit them to minimum
+            // we only care about faceted results and don't need query results so we can limit them to minimum
             sp.setMaxItems(1);
             sp.setSkipCount(0);
             final SearchParameters.FieldFacet ff = new SearchParameters.FieldFacet(field);
@@ -622,9 +633,11 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
 
     /**
      * Checks whether given aspect property definition is valid category property
-
-     * @param aspectName Aspect name
-     * @param propertyDef Aspect property definition.
+     * 
+     * @param aspectName
+     *            Aspect name
+     * @param propertyDef
+     *            Aspect property definition.
      * @return is valid category property
      */
     private boolean isValidCategoryTypeProperty(QName aspectName, Map.Entry<QName, PropertyDefinition> propertyDef)
@@ -644,16 +657,16 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     {
         final NodeRef rootNode = nodeService.getRootNode(storeRef);
         final ChildAssociationRef categoryRoot = nodeService.getChildAssocs(rootNode, Set.of(ContentModel.TYPE_CATEGORYROOT)).stream()
-            .findFirst()
-            .orElseThrow(() -> new CategoryServiceException(NODE_WITH_CATEGORY_ROOT_TYPE_NOT_FOUND));
+                .findFirst()
+                .orElseThrow(() -> new CategoryServiceException(NODE_WITH_CATEGORY_ROOT_TYPE_NOT_FOUND));
         final List<ChildAssociationRef> categoryRootAssocs = nodeService.getChildAssocs(categoryRoot.getChildRef());
         if (CollectionUtils.isEmpty(categoryRootAssocs))
         {
             throw new CategoryServiceException(CATEGORY_ROOT_NODE_NOT_FOUND);
         }
         return categoryRootAssocs.stream()
-            .filter(ca -> ca.getQName().equals(childNodeType))
-            .map(ChildAssociationRef::getChildRef)
-            .findFirst();
+                .filter(ca -> ca.getQName().equals(childNodeType))
+                .map(ChildAssociationRef::getChildRef)
+                .findFirst();
     }
 }

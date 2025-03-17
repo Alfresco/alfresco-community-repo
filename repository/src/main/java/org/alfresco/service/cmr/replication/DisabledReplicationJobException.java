@@ -34,7 +34,7 @@ public class DisabledReplicationJobException extends ReplicationServiceException
     {
         super(message);
     }
-    
+
     public DisabledReplicationJobException(String message, Throwable source)
     {
         super(message, source);

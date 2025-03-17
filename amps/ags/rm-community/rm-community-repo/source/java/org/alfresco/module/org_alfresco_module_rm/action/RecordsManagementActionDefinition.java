@@ -43,7 +43,7 @@ import org.alfresco.service.cmr.action.ActionDefinition;
 public interface RecordsManagementActionDefinition extends ActionDefinition
 {
     /**
-     * @return  list of applicable file plan component kinds
+     * @return list of applicable file plan component kinds
      */
     Set<FilePlanComponentKind> getApplicableKinds();
 }

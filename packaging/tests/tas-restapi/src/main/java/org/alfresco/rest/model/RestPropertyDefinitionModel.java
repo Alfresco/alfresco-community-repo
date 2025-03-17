@@ -40,37 +40,37 @@ public class RestPropertyDefinitionModel
     private Boolean isProtected;
     private List<RestConstraintDefinitionModel> constraints;
 
-    public String getId() 
+    public String getId()
     {
         return id;
     }
 
-    public void setId(String id) 
+    public void setId(String id)
     {
         this.id = id;
     }
 
-    public String getTitle() 
+    public String getTitle()
     {
         return title;
     }
 
-    public void setTitle(String title) 
+    public void setTitle(String title)
     {
         this.title = title;
     }
 
-    public String getDescription() 
+    public String getDescription()
     {
         return description;
     }
 
-    public void setDescription(String description) 
+    public void setDescription(String description)
     {
         this.description = description;
     }
 
-    public String getDefaultValue() 
+    public String getDefaultValue()
     {
         return defaultValue;
     }
@@ -110,32 +110,32 @@ public class RestPropertyDefinitionModel
         this.constraints = constraints;
     }
 
-    public boolean getIsMultiValued() 
+    public boolean getIsMultiValued()
     {
         return isMultiValued;
     }
 
-    public void setIsMultiValued(boolean isMultiValued) 
+    public void setIsMultiValued(boolean isMultiValued)
     {
         this.isMultiValued = isMultiValued;
     }
 
-    public boolean getIsMandatory() 
+    public boolean getIsMandatory()
     {
         return isMandatory;
     }
 
-    public void setIsMandatory(boolean isMandatory) 
+    public void setIsMandatory(boolean isMandatory)
     {
         this.isMandatory = isMandatory;
     }
 
-    public boolean getIsMandatoryEnforced() 
+    public boolean getIsMandatoryEnforced()
     {
         return isMandatoryEnforced;
     }
 
-    public void setIsMandatoryEnforced(boolean isMandatoryEnforced) 
+    public void setIsMandatoryEnforced(boolean isMandatoryEnforced)
     {
         this.isMandatoryEnforced = isMandatoryEnforced;
     }

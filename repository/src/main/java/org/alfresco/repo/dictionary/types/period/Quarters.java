@@ -29,6 +29,7 @@ import java.util.Calendar;
 
 /**
  * Quarters
+ * 
  * @author andyh
  *
  */
@@ -37,7 +38,7 @@ public class Quarters extends AbstractCalendarPeriodProvider
     /**
      * 
      */
-    public static final String PERIOD_TYPE = "quarter"; 
+    public static final String PERIOD_TYPE = "quarter";
 
     public String getPeriodType()
     {
@@ -47,6 +48,6 @@ public class Quarters extends AbstractCalendarPeriodProvider
     @Override
     public void add(Calendar calendar, int value)
     {
-        calendar.add(Calendar.MONTH, value*3);
+        calendar.add(Calendar.MONTH, value * 3);
     }
 }

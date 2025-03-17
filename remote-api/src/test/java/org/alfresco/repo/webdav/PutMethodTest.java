@@ -25,14 +25,39 @@
  */
 package org.alfresco.repo.webdav;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Status;
+import jakarta.transaction.UserTransaction;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.rest.api.tests.client.data.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
@@ -45,7 +70,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -57,33 +81,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.transaction.Status;
-import jakarta.transaction.UserTransaction;
-
-import java.io.InputStream;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for the {@link PutMethod} class.
@@ -132,12 +129,11 @@ public class PutMethodTest
     @BeforeClass
     public static void setUpBeforeClass() throws Exception
     {
-        ctx = ApplicationContextHelper.getApplicationContext(new String[]
-            {
+        ctx = ApplicationContextHelper.getApplicationContext(new String[]{
                 "classpath:alfresco/application-context.xml",
                 "classpath:alfresco/web-scripts-application-context.xml",
                 "classpath:alfresco/remote-api-context.xml"
-            });
+        });
     }
 
     @Before
@@ -159,7 +155,7 @@ public class PutMethodTest
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-        repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
+        repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
         companyHomeNodeRef = repositoryHelper.getCompanyHome();
         txn = transactionService.getUserTransaction();
         txn.begin();
@@ -169,7 +165,7 @@ public class PutMethodTest
         InputStream testDataIS = getClass().getClassLoader().getResourceAsStream(TEST_DATA_FILE_NAME);
         InputStream davLockInfoAdminIS = getClass().getClassLoader().getResourceAsStream(DAV_LOCK_INFO_ADMIN);
         InputStream davLockInfoUser2IS = getClass().getClassLoader().getResourceAsStream(DAV_LOCK_INFO_USER2);
-        
+
         testDataFile = IOUtils.toByteArray(testDataIS);
         davLockInfoAdminFile = IOUtils.toByteArray(davLockInfoAdminIS);
         davLockInfoUser2File = IOUtils.toByteArray(davLockInfoUser2IS);
@@ -231,7 +227,7 @@ public class PutMethodTest
         {
             txn.commit();
         }
-        
+
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         deleteUser(USER1_NAME);
         deleteUser(USER2_NAME);
@@ -285,7 +281,7 @@ public class PutMethodTest
             executeMethod(WebDAV.METHOD_PUT, fileName, testDataFile, null);
 
             List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(storeRef),
-                "/app:company_home/cm:" + fileName , null, namespaceService, false);
+                    "/app:company_home/cm:" + fileName, null, namespaceService, false);
             fileNoderef = refs.get(0);
 
             assertTrue("File does not exist.", nodeService.exists(fileNoderef));
@@ -614,7 +610,7 @@ public class PutMethodTest
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         nodeService.deleteNode(folder.getNodeRef());
     }
-    
+
     /**
      * Putting a content and check versioning
      * <p>
@@ -708,7 +704,7 @@ public class PutMethodTest
             executeMethod(WebDAV.METHOD_PUT, fileName, new byte[0], null);
 
             List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(storeRef),
-                "/app:company_home/cm:" + fileName , null, namespaceService, false);
+                    "/app:company_home/cm:" + fileName, null, namespaceService, false);
             fileNoderef = refs.get(0);
 
             assertTrue("File should exist.", nodeService.exists(fileNoderef));
@@ -796,7 +792,7 @@ public class PutMethodTest
         {
             executeMethod(WebDAV.METHOD_LOCK, fileName, davLockInfoAdminFile, null);
             List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE),
-                "/app:company_home/cm:" + fileName , null, namespaceService, false);
+                    "/app:company_home/cm:" + fileName, null, namespaceService, false);
             fileNoderef = refs.get(0);
         }
         catch (Exception e)
@@ -854,10 +850,14 @@ public class PutMethodTest
      * <p>
      * Sets content to request from a test file
      * 
-     * @param methodName Method to prepare, should be initialized (PUT, LOCK, UNLOCK are supported)
-     * @param fileName the name of the file set to the context, can be used with path, i.e. "path/to/file/fileName.txt"
-     * @param content If <b>not null</b> adds test content to the request
-     * @param headers to set to request, can be null
+     * @param methodName
+     *            Method to prepare, should be initialized (PUT, LOCK, UNLOCK are supported)
+     * @param fileName
+     *            the name of the file set to the context, can be used with path, i.e. "path/to/file/fileName.txt"
+     * @param content
+     *            If <b>not null</b> adds test content to the request
+     * @param headers
+     *            to set to request, can be null
      * @throws Exception
      */
     private void executeMethod(String methodName, String fileName, byte[] content, Map<String, String> headers) throws Exception

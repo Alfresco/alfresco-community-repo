@@ -33,6 +33,12 @@ import static org.mockito.BDDMockito.then;
 
 import java.util.List;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
@@ -49,11 +55,6 @@ import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleType;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 @Experimental
 @RunWith(MockitoJUnitRunner.class)
@@ -192,7 +193,8 @@ public class RestRuleModelMapperTest
         return CompositeCondition.builder().create();
     }
 
-    private Action createAction() {
+    private Action createAction()
+    {
         return Action.builder().actionDefinitionId(ACTION_DEFINITION_NAME).create();
     }
 
@@ -234,8 +236,7 @@ public class RestRuleModelMapperTest
 
     private static org.alfresco.service.cmr.action.Action createCompensatingActionModel()
     {
-        final org.alfresco.service.cmr.action.Action compensatingActionModel =
-                new ActionImpl(null, "compensating-action-id", ScriptActionExecuter.NAME);
+        final org.alfresco.service.cmr.action.Action compensatingActionModel = new ActionImpl(null, "compensating-action-id", ScriptActionExecuter.NAME);
         compensatingActionModel.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, ERROR_SCRIPT);
 
         return compensatingActionModel;

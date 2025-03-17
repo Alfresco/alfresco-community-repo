@@ -32,6 +32,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.audit.model.AuditApplication;
@@ -61,17 +65,13 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
- * Creates high level audit records on the creation, deletion, modification and access
- * of content and folders. Lower level events are grouped together by transaction
- * and node.<p>
+ * Creates high level audit records on the creation, deletion, modification and access of content and folders. Lower level events are grouped together by transaction and node.
+ * <p>
  * 
- * To turn on auditing of these events and sub events add the following property to
- * alfresco-global.properties:
+ * To turn on auditing of these events and sub events add the following property to alfresco-global.properties:
+ * 
  * <pre>
  *    # Enable audit in general
  *    audit.enabled=true
@@ -84,11 +84,8 @@ import org.springframework.beans.factory.InitializingBean;
  *    audit.alfresco-access.sub-actions.enabled=true
  * </pre>
  * 
- * The following properties are set by default to discard events where the user is
- * 'null' or 'System', the node path is '/sys:archivedItem' or under '/ver:' or 
- * the node type is not 'cm:folder', 'cm:content' or 'st:site'. These values result
- * in events only being recorded for common actions initiated by users of the system.
- * These vales may be overridden if required.
+ * The following properties are set by default to discard events where the user is 'null' or 'System', the node path is '/sys:archivedItem' or under '/ver:' or the node type is not 'cm:folder', 'cm:content' or 'st:site'. These values result in events only being recorded for common actions initiated by users of the system. These vales may be overridden if required.
+ * 
  * <pre>
  *    audit.filter.alfresco-access.default.enabled=true
  *    audit.filter.alfresco-access.transaction.user=~System;~null;.*
@@ -96,10 +93,8 @@ import org.springframework.beans.factory.InitializingBean;
  *    audit.filter.alfresco-access.transaction.path=~/sys:archivedItem;~/ver:;.*
  * </pre>
  * 
- * Node and Content changes generate the following audit structure. Elements are omitted
- * if not changed by the transaction. The {@code /sub-action/<sequence>} structure holds
- * cut down details of each sub-action, but are only included if the global property
- * {@code audit.alfresco-access.sub-actions.enabled=true}.
+ * Node and Content changes generate the following audit structure. Elements are omitted if not changed by the transaction. The {@code /sub-action/<sequence>} structure holds cut down details of each sub-action, but are only included if the global property {@code audit.alfresco-access.sub-actions.enabled=true}.
+ * 
  * <pre>
  *    /alfresco-access
  *     /transaction
@@ -159,10 +154,9 @@ import org.springframework.beans.factory.InitializingBean;
  *    /alfresco-access/transaction/sub-action/00/move/from/type=cm:folder
  *    /alfresco-access/transaction/sub-action/01/action=readContent
  * </pre>
- * The trace output from this class may be useful to developers as it logs method
- * calls grouped by transaction. The debug output is of the audit records written
- * and full inbound audit data. However for developers trace will provide a more
- * readable form. Setting the following dev-log4j.properties:
+ * 
+ * The trace output from this class may be useful to developers as it logs method calls grouped by transaction. The debug output is of the audit records written and full inbound audit data. However for developers trace will provide a more readable form. Setting the following dev-log4j.properties:
+ * 
  * <pre>
  *    log4j.appender.File.Threshold=trace
  *    log4j.logger.org.alfresco.repo.audit.access.AccessAuditor=trace
@@ -170,26 +164,26 @@ import org.springframework.beans.factory.InitializingBean;
  * 
  * @author Alan Davis
  */
-public class AccessAuditor implements InitializingBean, 
+public class AccessAuditor implements InitializingBean,
 
         BeforeDeleteNodePolicy, OnAddAspectPolicy, OnCreateNodePolicy, OnMoveNodePolicy,
         OnRemoveAspectPolicy, OnUpdatePropertiesPolicy,
-        
+
         OnContentReadPolicy, OnContentUpdatePolicy,
-        
+
         OnCreateVersionPolicy,
-        
+
         OnCopyCompletePolicy,
-        
+
         OnCheckOut, OnCheckIn, OnCancelCheckOut
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(AccessAuditor.class);
-    
+
     private static final String ROOT_PATH = "/alfresco-access";
     private static final String TRANSACTION = "transaction";
     private static final String AUDIT_SUB_ACTIONS = "audit.alfresco-access.sub-actions.enabled";
-    
+
     private Properties properties;
     private PolicyComponent policyComponent;
     private AuditComponent auditComponent;
@@ -202,6 +196,7 @@ public class AccessAuditor implements InitializingBean,
 
     /**
      * Set the properties object holding filter configuration
+     * 
      * @since 3.2
      */
     public void setProperties(Properties properties)
@@ -261,7 +256,7 @@ public class AccessAuditor implements InitializingBean,
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
         PropertyCheck.mandatory(this, "nodeInfoFactory", nodeInfoFactory);
-        
+
         policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME, this, new JavaBehaviour(this, "beforeDeleteNode"));
         policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, this, new JavaBehaviour(this, "onCreateNode"));
         policyComponent.bindClassBehaviour(OnMoveNodePolicy.QNAME, this, new JavaBehaviour(this, "onMoveNode"));
@@ -282,11 +277,11 @@ public class AccessAuditor implements InitializingBean,
         policyComponent.bindClassBehaviour(OnCheckIn.QNAME, ContentModel.TYPE_CONTENT, new JavaBehaviour(this, "onCheckIn"));
         policyComponent.bindClassBehaviour(OnCancelCheckOut.QNAME, ContentModel.TYPE_CONTENT, new JavaBehaviour(this, "onCancelCheckOut"));
     }
-    
+
     private boolean auditEnabled()
     {
         return transactionService.getAllowWrite() &&
-               auditComponent.areAuditValuesRequired(ROOT_PATH);
+                auditComponent.areAuditValuesRequired(ROOT_PATH);
     }
 
     @Override
@@ -315,7 +310,7 @@ public class AccessAuditor implements InitializingBean,
         {
             getNodeChange(toChildAssocRef.getChildRef()).onMoveNode(fromChildAssocRef, toChildAssocRef);
         }
-    }  
+    }
 
     @Override
     public void onUpdateProperties(NodeRef nodeRef,
@@ -345,7 +340,7 @@ public class AccessAuditor implements InitializingBean,
         }
 
     }
-    
+
     @Override
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
@@ -373,7 +368,7 @@ public class AccessAuditor implements InitializingBean,
             getNodeChange(nodeRef).onCreateVersion(classRef, nodeRef, versionProperties, nodeDetails);
         }
     }
-    
+
     public void onCopyComplete(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef,
             boolean copyToNewNode, Map<NodeRef, NodeRef> copyMap)
     {
@@ -383,7 +378,7 @@ public class AccessAuditor implements InitializingBean,
                     copyToNewNode, copyMap);
         }
     }
-    
+
     public void onCheckOut(NodeRef workingCopy)
     {
         if (auditEnabled())
@@ -391,7 +386,7 @@ public class AccessAuditor implements InitializingBean,
             getNodeChange(workingCopy).onCheckOut(workingCopy);
         }
     }
-    
+
     public void onCheckIn(NodeRef nodeRef)
     {
         if (auditEnabled())
@@ -399,7 +394,7 @@ public class AccessAuditor implements InitializingBean,
             getNodeChange(nodeRef).onCheckIn(nodeRef);
         }
     }
-    
+
     public void onCancelCheckOut(NodeRef nodeRef)
     {
         if (auditEnabled())
@@ -409,19 +404,17 @@ public class AccessAuditor implements InitializingBean,
     }
 
     /**
-     * @return the {@link NodeChange} for the supplied {@code nodeRef} from
-     *         the current transaction context or create one if required.
+     * @return the {@link NodeChange} for the supplied {@code nodeRef} from the current transaction context or create one if required.
      */
     private NodeChange getNodeChange(NodeRef nodeRef)
     {
-        Map<NodeRef, NodeChange> accessAuditNodes =
-            TransactionalResourceHelper.getMap(transactionListener);
-        
+        Map<NodeRef, NodeChange> accessAuditNodes = TransactionalResourceHelper.getMap(transactionListener);
+
         if (accessAuditNodes.isEmpty())
         {
             AlfrescoTransactionSupport.bindListener(transactionListener);
         }
-        
+
         NodeChange nodeChange = accessAuditNodes.get(nodeRef);
         if (nodeChange == null)
         {
@@ -429,15 +422,17 @@ public class AccessAuditor implements InitializingBean,
             nodeChange.setAuditSubActions(auditSubActions);
             accessAuditNodes.put(nodeRef, nodeChange);
         }
-        
+
         return nodeChange;
     }
 
     /**
      * Record audit values and log trace and debug messages.
-     * @param action String giving the action performed. Becomes the second component
-     *        of the audit path after the root path.
-     * @param auditMap Map of values to be audited.
+     * 
+     * @param action
+     *            String giving the action performed. Becomes the second component of the audit path after the root path.
+     * @param auditMap
+     *            Map of values to be audited.
      * @return {@code true} if any values were audited.
      */
     private boolean recordAuditValues(String action, Map<String, Serializable> auditMap)
@@ -452,7 +447,7 @@ public class AccessAuditor implements InitializingBean,
                 // Trace is used by a developer to produce a cut down log output that is simpler
                 // to read (no audit data section or summary keys)
                 boolean devOutput = logger.isTraceEnabled();
-                
+
                 StringBuilder sb = new StringBuilder();
                 StringBuilder subActions = new StringBuilder("");
                 if (!devOutput)
@@ -472,8 +467,9 @@ public class AccessAuditor implements InitializingBean,
                     if (!devOutput || !NodeChange.SUMMARY_KEYS.contains(key))
                     {
                         StringBuilder output = (key.startsWith(NodeChange.SUB_ACTION_PREFIX))
-                            ? subActions : sb;
-                        
+                                ? subActions
+                                : sb;
+
                         output.append("\n\t\t").append(rootPath).append('/').append(key).append('=');
                         appendAuditMapValue(output, auditMap.get(key));
                     }
@@ -496,10 +492,9 @@ public class AccessAuditor implements InitializingBean,
         }
         return false;
     }
-    
+
     /**
-     * Appends a more readable version of an audit map value. The prefix is used for
-     * {@link QName} values, including when used in Maps, Sets and Lists.
+     * Appends a more readable version of an audit map value. The prefix is used for {@link QName} values, including when used in Maps, Sets and Lists.
      */
     private void appendAuditMapValue(StringBuilder sb, Serializable value)
     {
@@ -507,14 +502,14 @@ public class AccessAuditor implements InitializingBean,
         {
             // Note there is no need to use the toPrefixString(namespace) method
             // as all QNames will have a prefix by this stage.
-            sb.append(((QName)value).toPrefixString());
+            sb.append(((QName) value).toPrefixString());
         }
         else if (value instanceof Map)
         {
             sb.append('{');
             boolean first = true;
-            Map<?,?> map = (Map<?,?>)value;
-            for (Map.Entry<?,?> entry: map.entrySet())
+            Map<?, ?> map = (Map<?, ?>) value;
+            for (Map.Entry<?, ?> entry : map.entrySet())
             {
                 if (!first)
                 {
@@ -524,8 +519,8 @@ public class AccessAuditor implements InitializingBean,
                 {
                     first = false;
                 }
-                Serializable key = (Serializable)entry.getKey();
-                Serializable val = (Serializable)entry.getValue();
+                Serializable key = (Serializable) entry.getKey();
+                Serializable val = (Serializable) entry.getValue();
                 appendAuditMapValue(sb, key);
                 sb.append('=');
                 appendAuditMapValue(sb, val);
@@ -536,8 +531,8 @@ public class AccessAuditor implements InitializingBean,
         {
             sb.append('[');
             boolean first = true;
-            List<?> list = (List<?>)value;
-            for (Object element: list)
+            List<?> list = (List<?>) value;
+            for (Object element : list)
             {
                 if (!first)
                 {
@@ -547,7 +542,7 @@ public class AccessAuditor implements InitializingBean,
                 {
                     first = false;
                 }
-                appendAuditMapValue(sb, (Serializable)element);
+                appendAuditMapValue(sb, (Serializable) element);
             }
             sb.append(']');
         }
@@ -555,8 +550,8 @@ public class AccessAuditor implements InitializingBean,
         {
             sb.append('[');
             boolean first = true;
-            Set<?> set = (Set<?>)value;
-            for (Object element: set)
+            Set<?> set = (Set<?>) value;
+            for (Object element : set)
             {
                 if (!first)
                 {
@@ -566,7 +561,7 @@ public class AccessAuditor implements InitializingBean,
                 {
                     first = false;
                 }
-                appendAuditMapValue(sb, (Serializable)element);
+                appendAuditMapValue(sb, (Serializable) element);
             }
             sb.append(']');
         }
@@ -575,7 +570,7 @@ public class AccessAuditor implements InitializingBean,
             sb.append(value);
         }
     }
-    
+
     /**
      * Listen for commit to audit gathered audit activity for the current user transaction.
      */
@@ -585,12 +580,12 @@ public class AccessAuditor implements InitializingBean,
         public void afterCommit()
         {
             // Note: auditComponent.recordAuditValues(...) creates a transaction to record
-            //       audit messages, so there is no need to create our own. dod5015 still
-            //       does (not sure why).
-            
-            final Map<NodeRef, NodeChange> changedNodes = TransactionalResourceHelper.getMap(this); 
+            // audit messages, so there is no need to create our own. dod5015 still
+            // does (not sure why).
+
+            final Map<NodeRef, NodeChange> changedNodes = TransactionalResourceHelper.getMap(this);
             for (Map.Entry<NodeRef, NodeChange> entry : changedNodes.entrySet())
-            {              
+            {
                 NodeChange nodeChange = entry.getValue();
                 if (!nodeChange.isTemporaryNode())
                 {

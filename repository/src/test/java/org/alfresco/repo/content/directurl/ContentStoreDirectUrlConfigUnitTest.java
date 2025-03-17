@@ -151,6 +151,7 @@ public class ContentStoreDirectUrlConfigUnitTest
         contentStoreDirectUrlConfig.validate();
         verifyDirectAccessConfig(DISABLED, SYS_DEFAULT_EXPIRY_TIME_IN_SECS, MAX_EXPIRY_TIME_IN_SECS);
     }
+
     @Test
     public void testInvalidConfig_DefaultExpiryTimeExceedsSystemDefault_ValidReplacement()
     {

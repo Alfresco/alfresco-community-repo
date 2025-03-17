@@ -25,9 +25,10 @@
  */
 package org.alfresco.repo.webdav;
 
-import org.alfresco.util.PropertyCheck;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
+import org.alfresco.util.PropertyCheck;
 
 /**
  * Bootstrap WebDav
@@ -39,21 +40,22 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class WebDavBootstrap extends AbstractLifecycleBean
 {
     private MTNodesCache2 rootNode;
-    
+
     public void init()
     {
-        PropertyCheck.mandatory(this, "rootNode", getRootNode());   
+        PropertyCheck.mandatory(this, "rootNode", getRootNode());
     }
-    
+
     public void setRootNode(MTNodesCache2 rootNode)
     {
         this.rootNode = rootNode;
     }
+
     public MTNodesCache2 getRootNode()
     {
         return rootNode;
-    }  
-    
+    }
+
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -65,8 +67,7 @@ public class WebDavBootstrap extends AbstractLifecycleBean
     protected void onShutdown(ApplicationEvent event)
     {
         // TODO Auto-generated method stub
-        
+
     }
- 
 
 }

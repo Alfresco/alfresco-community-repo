@@ -51,5 +51,4 @@ import org.alfresco.rest.core.RestModels;
  * @author Tuna Aksoy
  */
 public class RestShardInfoModelCollection extends RestModels<RestShardInfoModel, RestShardInfoModelCollection>
-{
-}
+{}

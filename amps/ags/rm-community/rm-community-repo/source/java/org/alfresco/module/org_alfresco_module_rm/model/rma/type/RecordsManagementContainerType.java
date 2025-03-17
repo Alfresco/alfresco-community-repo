@@ -51,13 +51,11 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:recordsManagementContainer"
-)
-public class RecordsManagementContainerType extends    BaseBehaviourBean
-                                            implements NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                            NodeServicePolicies.OnDeleteChildAssociationPolicy
+@BehaviourBean(
+        defaultType = "rma:recordsManagementContainer")
+public class RecordsManagementContainerType extends BaseBehaviourBean
+        implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+        NodeServicePolicies.OnDeleteChildAssociationPolicy
 {
     /** behaviour name */
     private static final String BEHAVIOUR_NAME = "onCreateContainerType";
@@ -78,7 +76,8 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     private static final String MSG_CANNOT_CAST_TO_RM_TYPE = "rm.action.cast-to-rm-type";
 
     /**
-     * @param rmContainerCacheManager        RM container cache manager
+     * @param rmContainerCacheManager
+     *            RM container cache manager
      *
      */
     public void setRmContainerCacheManager(RMContainerCacheManager rmContainerCacheManager)
@@ -87,7 +86,8 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     }
 
     /**
-     * @param identifierService identifier service
+     * @param identifierService
+     *            identifier service
      */
     public void setIdentifierService(IdentifierService identifierService)
     {
@@ -95,7 +95,8 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     }
 
     /**
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -103,7 +104,8 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     }
 
     /**
-     * @param recordFolderService record folder service
+     * @param recordFolderService
+     *            record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
@@ -131,19 +133,15 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     }
 
     /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation
-     *      (ChildAssociationRef, boolean)
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation (ChildAssociationRef, boolean)
      */
-    @Behaviour
-    (
-       kind = BehaviourKind.ASSOCIATION,
-       policy = "alf:onCreateChildAssociation",
-       notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
+    @Behaviour(
+            kind = BehaviourKind.ASSOCIATION,
+            policy = "alf:onCreateChildAssociation",
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void onCreateChildAssoiationFirstEvent(final ChildAssociationRef childAssocRef, final boolean bNew)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
@@ -153,7 +151,7 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                 boolean parentIsUnfiledRecordFolder = parentType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
 
                 NodeRef child = childAssocRef.getChildRef();
-                if((parentIsUnfiledRecordContainer || parentIsUnfiledRecordFolder) && isContentSubType && !recordService.isRecord(child))
+                if ((parentIsUnfiledRecordContainer || parentIsUnfiledRecordFolder) && isContentSubType && !recordService.isRecord(child))
                 {
                     if (!nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT))
                     {
@@ -173,16 +171,13 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(ChildAssociationRef, boolean)
      *
      */
-    @Behaviour
-    (
-       kind = BehaviourKind.ASSOCIATION,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT,
-       name = BEHAVIOUR_NAME
-    )
+    @Behaviour(
+            kind = BehaviourKind.ASSOCIATION,
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT,
+            name = BEHAVIOUR_NAME)
     public void onCreateChildAssociation(final ChildAssociationRef childAssocRef, boolean isNewNode)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
@@ -226,16 +221,13 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.OnDeleteAssociationPolicy#onDeleteAssociation(org.alfresco.service.cmr.repository.AssociationRef)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.ASSOCIATION,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
-	public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
+    @Behaviour(
+            kind = BehaviourKind.ASSOCIATION,
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
+    public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
 
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
@@ -255,16 +247,16 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     /**
      * Set the identifier property
      *
-     * @param nodeRef	node reference
+     * @param nodeRef
+     *            node reference
      */
     protected void setIdenifierProperty(final NodeRef nodeRef)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Object>() {
             public Object doWork()
             {
                 if (nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) &&
-                    nodeService.getProperty(nodeRef, PROP_IDENTIFIER) == null)
+                        nodeService.getProperty(nodeRef, PROP_IDENTIFIER) == null)
                 {
                     String id = identifierService.generateIdentifier(nodeRef);
                     nodeService.setProperty(nodeRef, RecordsManagementModel.PROP_IDENTIFIER, id);
@@ -275,11 +267,10 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     }
 
     /**
-     * Converted the child node to a fileplan component
-     * The conversion is needed here to be able to generate the identifier
-     * If there is no conversion rule for the created type nothing happens and the current type is returned
+     * Converted the child node to a fileplan component The conversion is needed here to be able to generate the identifier If there is no conversion rule for the created type nothing happens and the current type is returned
      *
-     * @param childAssocRef reference to the new association
+     * @param childAssocRef
+     *            reference to the new association
      * @return the new type of the child node
      */
     protected QName convertNodeToFileplanComponent(final ChildAssociationRef childAssocRef)
@@ -288,19 +279,19 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
         QName childType = nodeService.getType(child);
         QName parentType = nodeService.getType(childAssocRef.getParentRef());
 
-        if(childType.equals(ContentModel.TYPE_FOLDER))
+        if (childType.equals(ContentModel.TYPE_FOLDER))
         {
-            if(parentType.equals(TYPE_FILE_PLAN))
+            if (parentType.equals(TYPE_FILE_PLAN))
             {
                 nodeService.setType(child, TYPE_RECORD_CATEGORY);
                 return TYPE_RECORD_CATEGORY;
             }
-            if(parentType.equals(TYPE_RECORD_CATEGORY))
+            if (parentType.equals(TYPE_RECORD_CATEGORY))
             {
                 nodeService.setType(child, TYPE_RECORD_FOLDER);
                 return TYPE_RECORD_FOLDER;
             }
-            if(parentType.equals(TYPE_UNFILED_RECORD_CONTAINER) || parentType.equals(TYPE_UNFILED_RECORD_FOLDER))
+            if (parentType.equals(TYPE_UNFILED_RECORD_CONTAINER) || parentType.equals(TYPE_UNFILED_RECORD_FOLDER))
             {
                 nodeService.setType(child, TYPE_UNFILED_RECORD_FOLDER);
                 return TYPE_UNFILED_RECORD_FOLDER;

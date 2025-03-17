@@ -25,19 +25,18 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.junit.Assume.assumeFalse;
-
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.opencmis.OpenCMISClientContext;
-import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.tck.impl.TestParameters;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
+
+import org.alfresco.opencmis.OpenCMISClientContext;
+import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 
 /**
  * OpenCMIS TCK unit tests.
@@ -47,26 +46,26 @@ import org.junit.Before;
  */
 public class TestPublicApiBrowser11TCK extends AbstractEnterpriseOpenCMIS11TCKTest
 {
-	private static final String CMIS_URL = "http://{0}:{1}/{2}/api/{3}/{4}/cmis/versions/1.1/browser";
-	protected static final Log logger = LogFactory.getLog(TestPublicApiBrowser11TCK.class);
+    private static final String CMIS_URL = "http://{0}:{1}/{2}/api/{3}/{4}/cmis/versions/1.1/browser";
+    protected static final Log logger = LogFactory.getLog(TestPublicApiBrowser11TCK.class);
 
-	@Before
-	public void before() throws Exception
-	{
+    @Before
+    public void before() throws Exception
+    {
         // see REPO-1524
         // the tests are always run on PostgreSQL only
-//        Dialect dialect = (Dialect) applicationContext.getBean("dialect");
-//        assumeFalse(dialect instanceof Oracle9Dialect);
+        // Dialect dialect = (Dialect) applicationContext.getBean("dialect");
+        // assumeFalse(dialect instanceof Oracle9Dialect);
 
-		int port = getTestFixture().getJettyComponent().getPort();
-		TestNetwork network = getTestFixture().getRandomNetwork();
-    	Map<String, String> cmisParameters = new HashMap<String, String>();
-    	cmisParameters.put(TestParameters.DEFAULT_RELATIONSHIP_TYPE, "R:cm:replaces");
+        int port = getTestFixture().getJettyComponent().getPort();
+        TestNetwork network = getTestFixture().getRandomNetwork();
+        Map<String, String> cmisParameters = new HashMap<String, String>();
+        cmisParameters.put(TestParameters.DEFAULT_RELATIONSHIP_TYPE, "R:cm:replaces");
         cmisParameters.put(TestParameters.DEFAULT_SECONDARY_TYPE, "P:cm:author");
         cmisParameters.put(TestParameters.DEFAULT_ITEM_TYPE, "I:cm:cmobject");
-    	clientContext = new OpenCMISClientContext(BindingType.BROWSER,
-    			MessageFormat.format(CMIS_URL, "localhost", String.valueOf(port), "alfresco", network.getId(), "public"),
-    			"admin@" + network.getId(), "admin", cmisParameters, getTestFixture().getJettyComponent().getApplicationContext());
+        clientContext = new OpenCMISClientContext(BindingType.BROWSER,
+                MessageFormat.format(CMIS_URL, "localhost", String.valueOf(port), "alfresco", network.getId(), "public"),
+                "admin@" + network.getId(), "admin", cmisParameters, getTestFixture().getJettyComponent().getApplicationContext());
         overrideVersionableAspectProperties(getTestFixture().getJettyComponent().getApplicationContext());
-	}
+    }
 }

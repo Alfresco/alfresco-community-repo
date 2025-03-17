@@ -28,7 +28,6 @@ package org.alfresco.repo.jscript;
 import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.Scriptable;
 
-
 /**
  * A sandboxed {@link NativeJavaObject} that prevents using reflection to escape a sandbox.
  */

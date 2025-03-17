@@ -35,12 +35,12 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class PublicApiBrowserCMISDispatcher extends BrowserCMISDispatcher
 {
-	@Override
-	protected CMISHttpServletRequest getHttpRequest(WebScriptRequest req)
-	{
-		String serviceName = getServiceName();
-		CMISHttpServletRequest httpReqWrapper = new PublicApiCMISHttpServletRequest(req, serviceName,
-		        baseUrlGenerator, getBinding(), getCurrentDescriptor(), tenantAdminService);
-    	return httpReqWrapper;
-	}
+    @Override
+    protected CMISHttpServletRequest getHttpRequest(WebScriptRequest req)
+    {
+        String serviceName = getServiceName();
+        CMISHttpServletRequest httpReqWrapper = new PublicApiCMISHttpServletRequest(req, serviceName,
+                baseUrlGenerator, getBinding(), getCurrentDescriptor(), tenantAdminService);
+        return httpReqWrapper;
+    }
 }

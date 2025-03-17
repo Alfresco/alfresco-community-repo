@@ -31,9 +31,7 @@ import java.util.Set;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * A component that pre-fetches cached data for the given nodes.  Client code can use
- * this component when a list of <code>NodeRef</code> instances will be processed in
- * a data-intensive manner.
+ * A component that pre-fetches cached data for the given nodes. Client code can use this component when a list of <code>NodeRef</code> instances will be processed in a data-intensive manner.
  * 
  * @author Andy Hind
  * @author Derek Hulley
@@ -50,29 +48,26 @@ public interface NodeBulkLoader
     public Set<Long> getCachedAncestors(List<Long> nodeIds);
 
     /**
-     * Transaction-scope setting to make the Node loader to guarantee the validity of all
-     * caches: some cache data will be reloaded; some cache data will be considered safe. 
+     * Transaction-scope setting to make the Node loader to guarantee the validity of all caches: some cache data will be reloaded; some cache data will be considered safe.
      */
     public void setCheckNodeConsistency();
 
     /**
-     * Pre-cache data relevant to the given nodes.  There is no need to split the collection
-     * up before calling this method; it is up to the implementations to ensure that batching
-     * is done where necessary.
+     * Pre-cache data relevant to the given nodes. There is no need to split the collection up before calling this method; it is up to the implementations to ensure that batching is done where necessary.
      * 
-     * @param nodeRefs          the nodes that will be cached.
+     * @param nodeRefs
+     *            the nodes that will be cached.
      */
     public void cacheNodes(List<NodeRef> nodeRefs);
-    
+
     /**
-     * Pre-cache data relevant to the given nodes.  There is no need to split the collection
-     * up before calling this method; it is up to the implementations to ensure that batching
-     * is done where necessary.
+     * Pre-cache data relevant to the given nodes. There is no need to split the collection up before calling this method; it is up to the implementations to ensure that batching is done where necessary.
      * 
-     * @param nodeIds           the nodes that will be cached.
+     * @param nodeIds
+     *            the nodes that will be cached.
      */
     public void cacheNodesById(List<Long> nodeIds);
-    
+
     /**
      * <b>FOR TESTING ONLY: </b>Clears out node cache data
      */

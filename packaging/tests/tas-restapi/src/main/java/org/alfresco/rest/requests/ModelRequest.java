@@ -61,7 +61,7 @@ public abstract class ModelRequest<Request>
      * <p>
      * Nb. Replaces any existing parameters.
      */
-    @SuppressWarnings ("unchecked")
+    @SuppressWarnings("unchecked")
     public Request include(String... includes)
     {
         String includeString = Arrays.stream(includes).collect(Collectors.joining(","));

@@ -29,6 +29,7 @@ import java.text.MessageFormat;
 import java.util.*;
 
 import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.action.ParameterizedItem;
 import org.alfresco.service.cmr.action.ParameterizedItemDefinition;
@@ -41,25 +42,25 @@ import org.alfresco.service.cmr.rule.RuleServiceException;
  * 
  * @author Roy Wetherall
  */
-public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstractBase 
+public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstractBase
 {
     /**
      * Error messages
      */
     private static final String ERR_MAND_PROP = "A value for the mandatory parameter {0} has not been set on the rule item {1}";
-    
+
     /**
      * Look-up constants
      */
     private static final String TITLE = "title";
     private static final String DESCRIPTION = "description";
     protected static final String DISPLAY_LABEL = "display-label";
-    
+
     /**
-     * Indicates whether or not ad-hoc properties can be provided. Default so false. 
+     * Indicates whether or not ad-hoc properties can be provided. Default so false.
      */
     protected boolean adhocPropertiesAllowed = false;
-    
+
     /**
      * Action service
      */
@@ -74,9 +75,9 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
     {
         StringBuilder sb = new StringBuilder(60);
         sb.append("ParameterizedItem")
-          .append("[ title='").append(getTitleKey()).append("'")
-          .append(", description='").append(getDescriptionKey()).append("'")
-          .append("]");
+                .append("[ title='").append(getTitleKey()).append("'")
+                .append(", description='").append(getDescriptionKey()).append("'")
+                .append("]");
         return sb.toString();
     }
 
@@ -88,7 +89,7 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
     /**
      * Gets a list containing the parameter definitions for this rule item.
      * 
-     * @return  the list of parameter definitions
+     * @return the list of parameter definitions
      */
     protected List<ParameterDefinition> getParameterDefintions()
     {
@@ -96,18 +97,19 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
         addParameterDefinitions(result);
         return result;
     }
-    
+
     /**
      * Adds the parameter definitions to the list
      * 
-     * @param paramList     the parameter definitions list
+     * @param paramList
+     *            the parameter definitions list
      */
     protected abstract void addParameterDefinitions(List<ParameterDefinition> paramList);
 
     /**
      * Gets a list containing the parameter definitions for this rule item.
      *
-     * @return  the map of parameter definitions with locales
+     * @return the map of parameter definitions with locales
      */
     protected Map<Locale, List<ParameterDefinition>> getLocalizedParameterDefinitions()
     {
@@ -130,17 +132,17 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
                                 definition.isMandatory(),
                                 paramDisplayLabel,
                                 definition.isMultiValued(),
-                                definition.getParameterConstraintName()
-                        ));
+                                definition.getParameterConstraintName()));
             }
         }
         return result;
     }
 
     /**
-     * Sets the action service 
+     * Sets the action service
      * 
-     * @param runtimeActionService the action service
+     * @param runtimeActionService
+     *            the action service
      */
     public void setRuntimeActionService(RuntimeActionService runtimeActionService)
     {
@@ -150,9 +152,9 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
     /**
      * Gets the title I18N key
      * 
-     * @return    the title key
+     * @return the title key
      */
-    protected String getTitleKey() 
+    protected String getTitleKey()
     {
         return this.name + "." + TITLE;
     }
@@ -160,27 +162,28 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
     /**
      * Gets the description I18N key
      * 
-     * @return    the description key
+     * @return the description key
      */
-    protected String getDescriptionKey() 
+    protected String getDescriptionKey()
     {
         return this.name + "." + DESCRIPTION;
-    }    
-    
+    }
+
     /**
      * Setter for Spring injection of adhocPropertiesAllowed property
      * 
-     * @param allowed boolean
+     * @param allowed
+     *            boolean
      */
     public void setAdhocPropertiesAllowed(boolean allowed)
     {
         this.adhocPropertiesAllowed = allowed;
     }
-    
+
     /**
      * Indicates whether adhoc property definitions are allowed or not
      * 
-     * @return    true if they are, by default false
+     * @return true if they are, by default false
      */
     protected boolean getAdhocPropertiesAllowed()
     {
@@ -191,8 +194,9 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
     /**
      * Gets the parameter definition display label from the properties file.
      * 
-     * @param paramName  the name of the parameter
-     * @return             the diaplay label of the parameter
+     * @param paramName
+     *            the name of the parameter
+     * @return the diaplay label of the parameter
      */
     protected String getParamDisplayLabel(String paramName)
     {
@@ -202,24 +206,29 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
     /**
      * Gets the parameter definition display label from the properties file.
      *
-     * @param paramName  the name of the parameter
-     * @param locale  the name of the locale
-     * @return    the display label of the parameter
+     * @param paramName
+     *            the name of the parameter
+     * @param locale
+     *            the name of the locale
+     * @return the display label of the parameter
      */
     protected String getParamDisplayLabel(String paramName, Locale locale)
     {
         return I18NUtil.getMessage(this.name + "." + paramName + "." + DISPLAY_LABEL, locale);
     }
+
     /**
      * Checked whether all the mandatory parameters for the rule item have been assigned.
      * 
-     * @param ruleItem                the rule item
-     * @param ruleItemDefinition    the rule item definition
+     * @param ruleItem
+     *            the rule item
+     * @param ruleItemDefinition
+     *            the rule item definition
      */
     protected void checkMandatoryProperties(ParameterizedItem ruleItem, ParameterizedItemDefinition ruleItemDefinition)
     {
         List<ParameterDefinition> definitions = ruleItemDefinition.getParameterDefinitions();
-        if (definitions!= null && definitions.size()>0)
+        if (definitions != null && definitions.size() > 0)
         {
             for (ParameterDefinition definition : definitions)
             {

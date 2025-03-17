@@ -35,8 +35,10 @@ public class DBSelectorArgument extends BaseSelectorArgument
 {
 
     /**
-     * @param name String
-     * @param selector String
+     * @param name
+     *            String
+     * @param selector
+     *            String
      */
     public DBSelectorArgument(String name, String selector)
     {

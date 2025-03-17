@@ -32,15 +32,14 @@ import java.io.ObjectOutput;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.util.VersionNumber;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 
+import org.alfresco.util.VersionNumber;
+
 /**
- * The exising Alfresco VersionNumber can only be numeric.
- * ModuleVersionNumber allows string literals in the version number.
+ * The exising Alfresco VersionNumber can only be numeric. ModuleVersionNumber allows string literals in the version number.
  * 
- * It follows maven conventions and actually uses the ComparableVersion class
- * from the maven code base.
+ * It follows maven conventions and actually uses the ComparableVersion class from the maven code base.
  *
  * @author Gethin James
  */
@@ -48,21 +47,21 @@ import org.apache.maven.artifact.versioning.ComparableVersion;
 public class ModuleVersionNumber implements Externalizable
 {
     private static final long serialVersionUID = 8594906471270433420L;
-    
+
     public static final ModuleVersionNumber VERSION_ZERO = new ModuleVersionNumber("0");;
-    public static final ModuleVersionNumber VERSION_BIG  = new ModuleVersionNumber("999.999.999.99");
+    public static final ModuleVersionNumber VERSION_BIG = new ModuleVersionNumber("999.999.999.99");
 
     // Matches versions with 3 or 4 parts to their basic number such as 1.2.3 or 1.2.3.4
     // that also optionally have a -A9 -M9 or -RC9 suffix whe 9 is an integer.
     private static Pattern A_M_RC_VERSION_PATTERN = Pattern.compile("((\\d+\\.){2,3}\\d+)(-(A|M|RC)\\d+)?");
 
     protected ComparableVersion delegate;
-    
+
     public ModuleVersionNumber()
     {
         super();
     }
-    
+
     public ModuleVersionNumber(String versionString)
     {
         delegate = new ComparableVersion(versionString);
@@ -74,18 +73,13 @@ public class ModuleVersionNumber implements Externalizable
     }
 
     /**
-     * Now that we create internal releases of the form {@code M.m.r-M9} (milestone), {@code M.m.r-A9} (alpha) and
-     * {@code M.m.r-RC9} (release candidate) during development and testing, we need to ensure we can upgrade from any
-     * of these to any other, as they may occur in any order and also to the final external release {@code M.m.r}. We
-     * also will allow a change from the final release back to an internal one for regression testing.
+     * Now that we create internal releases of the form {@code M.m.r-M9} (milestone), {@code M.m.r-A9} (alpha) and {@code M.m.r-RC9} (release candidate) during development and testing, we need to ensure we can upgrade from any of these to any other, as they may occur in any order and also to the final external release {@code M.m.r}. We also will allow a change from the final release back to an internal one for regression testing.
      *
-     * The code within {@link ModuleComponentHelper} which calls this method, checks if it is the same version
-     * ({@code 0}) and then if it is downgrading ({@code > 0}), so if they share the same {@code M.m.r} part matches
-     * AND is one of these formats, we return {@code <0}.
+     * The code within {@link ModuleComponentHelper} which calls this method, checks if it is the same version ({@code 0}) and then if it is downgrading ({@code > 0}), so if they share the same {@code M.m.r} part matches AND is one of these formats, we return {@code <0}.
      *
-     * @param installingVersion the new version
-     * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than
-     *         the specified object.
+     * @param installingVersion
+     *            the new version
+     * @return a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object.
      */
     public int compareTo(ModuleVersionNumber installingVersion)
     {
@@ -135,22 +129,27 @@ public class ModuleVersionNumber implements Externalizable
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
         ModuleVersionNumber other = (ModuleVersionNumber) obj;
         if (this.delegate == null)
         {
-            if (other.delegate != null) return false;
+            if (other.delegate != null)
+                return false;
         }
-        else if (!this.delegate.equals(other.delegate)) return false;
+        else if (!this.delegate.equals(other.delegate))
+            return false;
         return true;
     }
 
     @Override
     public String toString()
     {
-    	return this.delegate.toString();
+        return this.delegate.toString();
     }
 
     @Override

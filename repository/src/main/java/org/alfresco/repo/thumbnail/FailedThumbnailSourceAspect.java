@@ -28,6 +28,9 @@ package org.alfresco.repo.thumbnail;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
@@ -46,18 +49,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.thumbnail.FailedThumbnailInfo;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Behaviour/Policies for the {@link ContentModel#ASPECT_FAILED_THUMBNAIL_SOURCE} aspect.
- * When the last {@link ContentModel#TYPE_FAILED_THUMBNAIL} child is deleted from under
- * a source node, then all failures are considered removed and the {@link ContentModel#ASPECT_FAILED_THUMBNAIL_SOURCE}
- * aspect can be removed.
+ * Behaviour/Policies for the {@link ContentModel#ASPECT_FAILED_THUMBNAIL_SOURCE} aspect. When the last {@link ContentModel#TYPE_FAILED_THUMBNAIL} child is deleted from under a source node, then all failures are considered removed and the {@link ContentModel#ASPECT_FAILED_THUMBNAIL_SOURCE} aspect can be removed.
  * <p/>
- * Also, any {@link ContentModel#TYPE_FAILED_THUMBNAIL failed thumbnails} should be
- * removed from the model onUpdateProperties as the new content may have become thumbnailable.
-
+ * Also, any {@link ContentModel#TYPE_FAILED_THUMBNAIL failed thumbnails} should be removed from the model onUpdateProperties as the new content may have become thumbnailable.
+ * 
  * @author Neil Mc Erlean
  * @since 3.5.0
  *
@@ -65,7 +62,7 @@ import org.apache.commons.logging.LogFactory;
  */
 @Deprecated
 public class FailedThumbnailSourceAspect implements NodeServicePolicies.OnDeleteNodePolicy,
-                                                    ContentServicePolicies.OnContentUpdatePolicy
+        ContentServicePolicies.OnContentUpdatePolicy
 {
     private static final Log log = LogFactory.getLog(FailedThumbnailSourceAspect.class);
 
@@ -75,47 +72,47 @@ public class FailedThumbnailSourceAspect implements NodeServicePolicies.OnDelete
     private PolicyComponent policyComponent;
     private LockService lockService;
     private ThumbnailService thumbnailService;
-    
+
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setThumbnailService(ThumbnailService thumbnailService)
     {
         this.thumbnailService = thumbnailService;
     }
-    
+
     public void setLockService(LockService lockService)
     {
         this.lockService = lockService;
     }
-    
+
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
     }
-    
+
     /**
      * Initialise method
      */
     public void init()
     {
         this.policyComponent.bindClassBehaviour(
-                OnDeleteNodePolicy.QNAME, 
-                ContentModel.TYPE_FAILED_THUMBNAIL, 
+                OnDeleteNodePolicy.QNAME,
+                ContentModel.TYPE_FAILED_THUMBNAIL,
                 new JavaBehaviour(this, "onDeleteNode", Behaviour.NotificationFrequency.EVERY_EVENT));
         this.policyComponent.bindClassBehaviour(
-                OnContentUpdatePolicy.QNAME, 
-                ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE, 
+                OnContentUpdatePolicy.QNAME,
+                ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE,
                 new JavaBehaviour(this, "onContentUpdate", Behaviour.NotificationFrequency.TRANSACTION_COMMIT));
     }
-    
+
     @Override
     public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
     {
@@ -124,7 +121,7 @@ public class FailedThumbnailSourceAspect implements NodeServicePolicies.OnDelete
             // We are in the process of deleting the parent.
             return;
         }
-        
+
         // When a failedThumbnail node has been deleted, we should check if there are any other
         // failedThumbnail peer nodes left.
         // If there are not, then we can remove the failedThumbnailSource aspect.
@@ -137,8 +134,8 @@ public class FailedThumbnailSourceAspect implements NodeServicePolicies.OnDelete
             {
                 StringBuilder msg = new StringBuilder();
                 msg.append("No remaining failedThumbnail children of ")
-                   .append(childAssocRef.getParentRef())
-                   .append(" therefore removing aspect ").append(ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE);
+                        .append(childAssocRef.getParentRef())
+                        .append(" therefore removing aspect ").append(ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE);
                 log.debug(msg.toString());
             }
             behaviourFilter.disableBehaviour(childAssocRef.getParentRef(), ContentModel.ASPECT_AUDITABLE);
@@ -152,12 +149,11 @@ public class FailedThumbnailSourceAspect implements NodeServicePolicies.OnDelete
             }
         }
     }
-    
+
     @Override
     public void onContentUpdate(final NodeRef nodeRef, boolean newContent)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Object>() {
             @Override
             public Object doWork()
             {
@@ -171,17 +167,14 @@ public class FailedThumbnailSourceAspect implements NodeServicePolicies.OnDelete
     }
 
     /**
-     * Delete all cm:failedThumbnail children as they represent a failure to thumbnail
-     * the old content. By deleting all cm:failedThumbnail children, the cm:failedThumbnailSource
-     * aspect will be automatically removed by a policy/behaviour in the ThumbnailService.
+     * Delete all cm:failedThumbnail children as they represent a failure to thumbnail the old content. By deleting all cm:failedThumbnail children, the cm:failedThumbnailSource aspect will be automatically removed by a policy/behaviour in the ThumbnailService.
      *
-     * This is necessary so that if a new version of a 'broken' document is uploaded, then
-     * it will be thumbnailed in the normal way.
+     * This is necessary so that if a new version of a 'broken' document is uploaded, then it will be thumbnailed in the normal way.
      */
     private void deleteFailedThumbnailChildren(NodeRef nodeRef)
     {
         Map<String, FailedThumbnailInfo> failedThumbnails = thumbnailService.getFailedThumbnails(nodeRef);
-        
+
         behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
         try
         {

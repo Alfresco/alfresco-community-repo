@@ -40,7 +40,7 @@ public class MissingKeyException extends Exception
         // TODO i18n
         super("Key " + keyAlias + " is missing from keystore " + keyStoreLocation);
     }
-    
+
     public String getKeyAlias()
     {
         return keyAlias;

@@ -26,7 +26,6 @@
 package org.alfresco.repo.web.filter.beans;
 
 import java.io.IOException;
-
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -37,12 +36,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 /**
- * A filter that will use the HttpSession (if it exists) as the monitor for a
- * synchronized block so that only one request per session is processed at any
- * time.
+ * A filter that will use the HttpSession (if it exists) as the monitor for a synchronized block so that only one request per session is processed at any time.
  * 
- * Originally created to avoid having to make 200+ JSF session scoped beans thread
- * safe.
+ * Originally created to avoid having to make 200+ JSF session scoped beans thread safe.
  * 
  * @author Alan Davis
  * @deprecated 5.0 not exposed in web-client web.xml
@@ -51,13 +47,11 @@ public class SessionSynchronizedFilter implements Filter
 {
     @Override
     public void init(FilterConfig arg0) throws ServletException
-    {
-    }
+    {}
 
     @Override
     public void destroy()
-    {
-    }
+    {}
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response,
@@ -66,11 +60,11 @@ public class SessionSynchronizedFilter implements Filter
         HttpSession session = null;
         if (request instanceof HttpServletRequest)
         {
-            session = ((HttpServletRequest)request).getSession(false);
+            session = ((HttpServletRequest) request).getSession(false);
         }
         if (session != null)
         {
-            synchronized(session)
+            synchronized (session)
             {
                 chain.doFilter(request, response);
             }

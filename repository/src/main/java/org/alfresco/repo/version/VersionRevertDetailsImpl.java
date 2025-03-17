@@ -33,35 +33,37 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Implementation of VersionRevertDetails
+ * 
  * @author mrogers
  * @since 4.2
  */
-/*package*/class VersionRevertDetailsImpl implements VersionRevertDetails
+/* package */class VersionRevertDetailsImpl implements VersionRevertDetails
 {
-	private NodeRef nodeRef;
-	private QName nodeType;
-	
-	
-	Map<String, Serializable> revertedProperties;
+    private NodeRef nodeRef;
+    private QName nodeType;
 
-	public void setNodeRef(NodeRef nodeRef) 
-	{
-		this.nodeRef = nodeRef;
-	}
-	
-	@Override
-	public NodeRef getNodeRef() 
-	{
-		return nodeRef;
-	}
+    Map<String, Serializable> revertedProperties;
 
-	public void setNodeType(QName nodeType) {
-		this.nodeType = nodeType;
-	}
+    public void setNodeRef(NodeRef nodeRef)
+    {
+        this.nodeRef = nodeRef;
+    }
 
-	@Override
-	public QName getNodeType() {
-		return nodeType;
-	}
+    @Override
+    public NodeRef getNodeRef()
+    {
+        return nodeRef;
+    }
+
+    public void setNodeType(QName nodeType)
+    {
+        this.nodeType = nodeType;
+    }
+
+    @Override
+    public QName getNodeType()
+    {
+        return nodeType;
+    }
 
 }

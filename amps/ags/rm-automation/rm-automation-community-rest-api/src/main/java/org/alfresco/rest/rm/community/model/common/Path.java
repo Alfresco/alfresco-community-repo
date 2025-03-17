@@ -29,14 +29,13 @@ package org.alfresco.rest.rm.community.model.common;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.alfresco.utility.model.TestModel;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import org.alfresco.utility.model.TestModel;
 
 /**
  * POJO for path parameter
@@ -51,12 +50,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Path extends TestModel
 {
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String name;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private Boolean isComplete;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private List<IdNamePair> elements;
 }

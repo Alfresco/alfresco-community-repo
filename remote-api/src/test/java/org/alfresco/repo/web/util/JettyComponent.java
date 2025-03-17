@@ -29,8 +29,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 public interface JettyComponent
 {
-	int getPort();
-	ConfigurableApplicationContext getApplicationContext();
-	void start();
-	void shutdown();
+    int getPort();
+
+    ConfigurableApplicationContext getApplicationContext();
+
+    void start();
+
+    void shutdown();
 }

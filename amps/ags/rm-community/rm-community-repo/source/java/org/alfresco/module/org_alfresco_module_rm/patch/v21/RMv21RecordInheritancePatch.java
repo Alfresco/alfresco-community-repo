@@ -29,6 +29,8 @@ package org.alfresco.module.org_alfresco_module_rm.patch.v21;
 
 import java.util.List;
 
+import org.springframework.beans.factory.BeanNameAware;
+
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionServiceImpl;
@@ -40,7 +42,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * RM v2.1 patch to change the record inheritance of permissions.
@@ -50,7 +51,7 @@ import org.springframework.beans.factory.BeanNameAware;
  */
 @SuppressWarnings("deprecation")
 public class RMv21RecordInheritancePatch extends RMv21PatchComponent
-                                         implements BeanNameAware, RecordsManagementModel, DOD5015Model
+        implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
     /** file plan permission service */
     private FilePlanPermissionServiceImpl filePlanPermissionServiceImpl;
@@ -68,7 +69,8 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
     private NodeDAO nodeDAO;
 
     /**
-     * @param patchDAO  patch DAO
+     * @param patchDAO
+     *            patch DAO
      */
     public void setPatchDAO(PatchDAO patchDAO)
     {
@@ -76,7 +78,8 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
     }
 
     /**
-     * @param qnameDAO  qname DAO
+     * @param qnameDAO
+     *            qname DAO
      */
     public void setQnameDAO(QNameDAO qnameDAO)
     {
@@ -84,7 +87,8 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
     }
 
     /**
-     * @param nodeDAO   node DAO
+     * @param nodeDAO
+     *            node DAO
      */
     public void setNodeDAO(NodeDAO nodeDAO)
     {
@@ -92,7 +96,8 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
     }
 
     /**
-     * @param filePlanPermissionServiceImpl file plan permission service implementation
+     * @param filePlanPermissionServiceImpl
+     *            file plan permission service implementation
      */
     public void setFilePlanPermissionServiceImpl(FilePlanPermissionServiceImpl filePlanPermissionServiceImpl)
     {
@@ -100,7 +105,8 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
     }
 
     /**
-     * @param nodeService node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {

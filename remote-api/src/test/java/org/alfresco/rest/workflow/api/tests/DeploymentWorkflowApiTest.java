@@ -24,6 +24,7 @@
  * #L%
  */
 package org.alfresco.rest.workflow.api.tests;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -34,6 +35,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
+import org.json.simple.JSONObject;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.http.HttpStatus;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -47,10 +53,6 @@ import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.workflow.api.model.Deployment;
 import org.alfresco.rest.workflow.api.tests.WorkflowApiClient.DeploymentsClient;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.json.simple.JSONObject;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.http.HttpStatus;
 
 /**
  * Rest api tests using http client to communicate with the rest apis in the repository.
@@ -62,38 +64,40 @@ import org.springframework.http.HttpStatus;
  */
 @Category(LuceneTests.class)
 public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
-{   
+{
     protected static HashSet<String> alfrescoPublicDeploymentNames = new HashSet<String>(Arrays.asList(new String[]{
             "review-pooled.bpmn20.xml",
             "review.bpmn20.xml",
             "parallel-review-group.bpmn20.xml",
             "parallel-review.bpmn20.xml",
             "adhoc.bpmn20.xml"}));
-    
+
     protected static HashSet<String> alfrescoPublicProcessDefinitionKeys = new HashSet<String>(Arrays.asList(new String[]{
             "activitiReviewPooled",
             "activitiReview",
             "activitiParallelGroupReview",
             "activitiParallelReview",
             "activitiAdhoc"}));
-    
+
     @Test
     public void testGetDeploymentsWithNonAdminUser() throws Exception
     {
-        // deployments-get#1 
+        // deployments-get#1
         initApiClientWithTestUser();
         DeploymentsClient deploymentsClient = publicApiClient.deploymentsClient();
-        
-        try {
+
+        try
+        {
             deploymentsClient.getDeployments();
             fail("Exception expected");
-        } catch(PublicApiException expected) {
+        }
+        catch (PublicApiException expected)
+        {
             assertEquals(HttpStatus.FORBIDDEN.value(), expected.getHttpResponse().getStatusCode());
             assertErrorSummary("Permission was denied", expected.getHttpResponse());
         }
     }
-    
-    
+
     @Test
     public void testGetDeployments() throws Exception
     {
@@ -111,28 +115,28 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
             deploymentMap.put(deployment.getName(), deployment);
         }
         assertEquals(5, deploymentResponse.getList().size());
-        
+
         assertTrue(deploymentMap.containsKey("review-pooled.bpmn20.xml"));
         assertTrue(deploymentMap.containsKey("review.bpmn20.xml"));
         assertTrue(deploymentMap.containsKey("parallel-review-group.bpmn20.xml"));
         assertTrue(deploymentMap.containsKey("parallel-review.bpmn20.xml"));
         assertTrue(deploymentMap.containsKey("adhoc.bpmn20.xml"));
-        
+
         // testGetDeployments#2: Check all deployment fields in resulting deployment
         org.activiti.engine.repository.Deployment activitiDeployment = activitiProcessEngine.getRepositoryService()
-            .createDeploymentQuery()
-            .deploymentName("adhoc.bpmn20.xml")
-            .processDefinitionKey("@" + requestContext.getNetworkId() + "@activitiAdhoc")
-            .singleResult();
-        
+                .createDeploymentQuery()
+                .deploymentName("adhoc.bpmn20.xml")
+                .processDefinitionKey("@" + requestContext.getNetworkId() + "@activitiAdhoc")
+                .singleResult();
+
         assertNotNull(activitiDeployment);
         Deployment adhocDeployment = deploymentMap.get("adhoc.bpmn20.xml");
-        
+
         assertEquals(activitiDeployment.getId(), adhocDeployment.getId());
         assertEquals(activitiDeployment.getCategory(), WorkflowDeployer.CATEGORY_FULL_ACCESS);
         assertEquals(activitiDeployment.getName(), adhocDeployment.getName());
         assertEquals(activitiDeployment.getDeploymentTime(), adhocDeployment.getDeployedAt());
-        
+
         Map<String, String> params = new HashMap<String, String>();
         params.put("maxItems", "2");
         JSONObject deploymentsListObject = deploymentsClient.getDeploymentsWithRawResponse(params);
@@ -142,7 +146,7 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertEquals(5l, paginationJSON.get("totalItems"));
         assertEquals(0l, paginationJSON.get("skipCount"));
         assertEquals(true, paginationJSON.get("hasMoreItems"));
-        
+
         params = new HashMap<String, String>();
         deploymentsListObject = deploymentsClient.getDeploymentsWithRawResponse(params);
         assertNotNull(deploymentsListObject);
@@ -151,7 +155,7 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertEquals(5l, paginationJSON.get("totalItems"));
         assertEquals(0l, paginationJSON.get("skipCount"));
         assertEquals(false, paginationJSON.get("hasMoreItems"));
-        
+
         params = new HashMap<String, String>();
         params.put("skipCount", "2");
         params.put("maxItems", "2");
@@ -162,7 +166,7 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertEquals(5l, paginationJSON.get("totalItems"));
         assertEquals(2l, paginationJSON.get("skipCount"));
         assertEquals(true, paginationJSON.get("hasMoreItems"));
-        
+
         params = new HashMap<String, String>();
         params.put("skipCount", "2");
         params.put("maxItems", "5");
@@ -173,7 +177,7 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertEquals(5l, paginationJSON.get("totalItems"));
         assertEquals(2l, paginationJSON.get("skipCount"));
         assertEquals(false, paginationJSON.get("hasMoreItems"));
-        
+
         params = new HashMap<String, String>();
         params.put("skipCount", "0");
         params.put("maxItems", "7");
@@ -185,7 +189,7 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertEquals(0l, paginationJSON.get("skipCount"));
         assertEquals(false, paginationJSON.get("hasMoreItems"));
     }
-    
+
     @Test
     public void testGetDeploymentsEmpty() throws Exception
     {
@@ -193,8 +197,7 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
         // in other tests
         String networkName = AbstractTestFixture.TEST_DOMAIN_PREFIX + "999";
         final TestNetwork testNetwork = repoService.createNetworkWithAlias(networkName, true);
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void execute() throws Throwable
             {
@@ -205,18 +208,18 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
                 return null;
             }
         }, false, true);
-        
+
         // Delete all deployments in the network
         List<org.activiti.engine.repository.Deployment> deployments = activitiProcessEngine.getRepositoryService()
-            .createDeploymentQuery()
-            .processDefinitionKeyLike("@" + testNetwork.getId() + "@%")
-            .list();
-        
-        for(org.activiti.engine.repository.Deployment deployment : deployments) 
+                .createDeploymentQuery()
+                .processDefinitionKeyLike("@" + testNetwork.getId() + "@%")
+                .list();
+
+        for (org.activiti.engine.repository.Deployment deployment : deployments)
         {
             activitiProcessEngine.getRepositoryService().deleteDeployment(deployment.getId(), true);
         }
-        
+
         // Fetch deployments using tenant-admin
         String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + testNetwork.getId();
         publicApiClient.setRequestContext(new RequestContext(testNetwork.getId(), tenantAdmin));
@@ -226,36 +229,36 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
         ListResponse<Deployment> deploymentResponse = deploymentsClient.getDeployments();
         assertEquals(0, deploymentResponse.getList().size());
     }
-    
+
     @Test
     public void testGetDeploymentById() throws Exception
     {
         // Use admin-user for tenant
         RequestContext requestContext = initApiClientWithTestUser();
-        
+
         String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
         publicApiClient.setRequestContext(new RequestContext(TenantUtil.DEFAULT_TENANT, tenantAdmin));
-        
+
         // Fetch the actual deployment from activiti
         org.activiti.engine.repository.Deployment activitiDeployment = activitiProcessEngine.getRepositoryService()
-            .createDeploymentQuery()
-            .deploymentName("adhoc.bpmn20.xml")
-            .processDefinitionKey("@" + requestContext.getNetworkId() + "@activitiAdhoc")
-            .singleResult();
-        
+                .createDeploymentQuery()
+                .deploymentName("adhoc.bpmn20.xml")
+                .processDefinitionKey("@" + requestContext.getNetworkId() + "@activitiAdhoc")
+                .singleResult();
+
         assertNotNull(activitiDeployment);
 
         // Do the actual API-call
         DeploymentsClient deploymentsClient = publicApiClient.deploymentsClient();
         Deployment deployment = deploymentsClient.findDeploymentById(activitiDeployment.getId());
-        
+
         assertNotNull(deployment);
-        
+
         assertEquals(activitiDeployment.getId(), deployment.getId());
         assertEquals(activitiDeployment.getCategory(), WorkflowDeployer.CATEGORY_FULL_ACCESS);
         assertEquals(activitiDeployment.getName(), deployment.getName());
         assertEquals(activitiDeployment.getDeploymentTime(), deployment.getDeployedAt());
-        
+
         try
         {
             deploymentsClient.findDeploymentById("fakeid");
@@ -265,7 +268,7 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
         {
             assertEquals(404, e.getHttpResponse().getStatusCode());
         }
-        
+
         // get deployment with default user
         try
         {
@@ -279,7 +282,8 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
         }
     }
 
-    protected String createProcessDefinitionKey(String key, RequestContext requestContext) {
+    protected String createProcessDefinitionKey(String key, RequestContext requestContext)
+    {
         return "@" + requestContext.getNetworkId() + "@" + key;
     }
 }

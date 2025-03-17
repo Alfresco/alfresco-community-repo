@@ -26,8 +26,9 @@
 package org.alfresco.rest.requests;
 
 import java.util.HashMap;
-
 import jakarta.json.JsonArrayBuilder;
+
+import org.springframework.http.HttpMethod;
 
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
@@ -39,7 +40,6 @@ import org.alfresco.rest.model.RestRenditionInfoModelCollection;
 import org.alfresco.rest.model.RestSharedLinksModel;
 import org.alfresco.rest.model.RestSharedLinksModelCollection;
 import org.alfresco.utility.model.FileModel;
-import org.springframework.http.HttpMethod;
 
 /**
  * Declares all Rest API under the /shared-links path
@@ -176,7 +176,8 @@ public class SharedLinks extends ModelRequest<SharedLinks>
     /**
      * Creates SharedLink for all the specified files
      * 
-     * @param file list
+     * @param file
+     *            list
      * @return RestSharedLinksModelCollection
      */
     public RestSharedLinksModelCollection createSharedLinks(FileModel... files)
@@ -196,7 +197,8 @@ public class SharedLinks extends ModelRequest<SharedLinks>
      * Creates SharedLink for the specified file, with the given expiry date
      * 
      * @param file
-     * @param expiryDate: format: "2027-03-23T23:00:00.000+0000";
+     * @param expiryDate:
+     *            format: "2027-03-23T23:00:00.000+0000";
      * @return RestSharedLinksModel
      */
     public RestSharedLinksModel createSharedLinkWithExpiryDate(FileModel file, String expiryDate)

@@ -37,7 +37,7 @@ import org.alfresco.service.namespace.QName;
  */
 public class ParameterDefinitionImpl implements ParameterDefinition, Serializable
 {
-    /** 
+    /**
      * Serial version UID
      */
     private static final long serialVersionUID = 3976741384558751799L;
@@ -46,25 +46,25 @@ public class ParameterDefinitionImpl implements ParameterDefinition, Serializabl
      * The name of the parameter
      */
     private String name;
-    
+
     /**
      * The type of the parameter
      */
     private QName type;
-    
+
     /**
      * Is this a multi-valued parameter?
      */
     private boolean isMultiValued;
-    
+
     /**
      * The display label
      */
     private String displayLabel;
-    
+
     /** Parameter constraint name */
     private String parameterConstraintName;
-    
+
     /**
      * Indicates whether it is mandatory for the parameter to be set
      */
@@ -73,12 +73,15 @@ public class ParameterDefinitionImpl implements ParameterDefinition, Serializabl
     /**
      * Constructor
      * 
-     * @param name          the name of the parameter
-     * @param type          the type of the parameter
-     * @param displayLabel  the display label
+     * @param name
+     *            the name of the parameter
+     * @param type
+     *            the type of the parameter
+     * @param displayLabel
+     *            the display label
      */
     public ParameterDefinitionImpl(
-            String name, 
+            String name,
             QName type,
             boolean isMandatory,
             String displayLabel)
@@ -93,12 +96,15 @@ public class ParameterDefinitionImpl implements ParameterDefinition, Serializabl
     /**
      * Constructor
      * 
-     * @param name          the name of the parameter
-     * @param type          the type of the parameter
-     * @param displayLabel  the display label
+     * @param name
+     *            the name of the parameter
+     * @param type
+     *            the type of the parameter
+     * @param displayLabel
+     *            the display label
      */
     public ParameterDefinitionImpl(
-            String name, 
+            String name,
             QName type,
             boolean isMandatory,
             String displayLabel,
@@ -110,19 +116,25 @@ public class ParameterDefinitionImpl implements ParameterDefinition, Serializabl
         this.isMandatory = isMandatory;
         this.isMultiValued = isMultiValued;
     }
-    
+
     /**
      * Constructor
      * 
-     * @param name String
-     * @param type QName
-     * @param isMandatory boolean
-     * @param displayLabel String
-     * @param isMultiValued boolean
-     * @param parameterConstraintName String
+     * @param name
+     *            String
+     * @param type
+     *            QName
+     * @param isMandatory
+     *            boolean
+     * @param displayLabel
+     *            String
+     * @param isMultiValued
+     *            boolean
+     * @param parameterConstraintName
+     *            String
      */
     public ParameterDefinitionImpl(
-            String name, 
+            String name,
             QName type,
             boolean isMandatory,
             String displayLabel,
@@ -148,11 +160,11 @@ public class ParameterDefinitionImpl implements ParameterDefinition, Serializabl
     {
         return this.type;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterDefinition#isMandatory()
      */
-    public boolean isMandatory() 
+    public boolean isMandatory()
     {
         return this.isMandatory;
     }
@@ -164,7 +176,7 @@ public class ParameterDefinitionImpl implements ParameterDefinition, Serializabl
     {
         return this.isMultiValued;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterDefinition#getDisplayLabel()
      */
@@ -172,7 +184,7 @@ public class ParameterDefinitionImpl implements ParameterDefinition, Serializabl
     {
         return this.displayLabel;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterDefinition#getParameterConstraintName()
      */

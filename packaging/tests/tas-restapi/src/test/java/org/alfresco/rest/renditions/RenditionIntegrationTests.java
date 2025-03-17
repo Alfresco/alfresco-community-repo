@@ -1,7 +1,14 @@
 package org.alfresco.rest.renditions;
 
 import java.time.Duration;
+
 import com.google.common.base.Predicates;
+import org.awaitility.Awaitility;
+import org.awaitility.Durations;
+import org.springframework.http.HttpStatus;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.model.RestNodeModel;
@@ -10,11 +17,6 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.awaitility.Awaitility;
-import org.awaitility.Durations;
-import org.springframework.http.HttpStatus;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
 
 public abstract class RenditionIntegrationTests extends RestTest
 {
@@ -31,6 +33,7 @@ public abstract class RenditionIntegrationTests extends RestTest
 
     /**
      * Check that a rendition can be created for the specified node id
+     * 
      * @param fileName
      * @param nodeId
      * @param renditionId
@@ -56,9 +59,8 @@ public abstract class RenditionIntegrationTests extends RestTest
                 "Failed to produce rendition. [" + fileName + ", " + nodeId + ", " + renditionId + "] [source file, node ID, rendition ID]");
 
         // 4. Check the returned content type
-        Assert.assertEquals(restClient.getResponseHeaders().getValue("Content-Type"), expectedMimeType+";charset=UTF-8",
-                "Rendition was created but it has the wrong Content-Type. [" + fileName+ ", " + nodeId + ", " + renditionId + "] [source file, node ID, rendition ID]");
-
+        Assert.assertEquals(restClient.getResponseHeaders().getValue("Content-Type"), expectedMimeType + ";charset=UTF-8",
+                "Rendition was created but it has the wrong Content-Type. [" + fileName + ", " + nodeId + ", " + renditionId + "] [source file, node ID, rendition ID]");
 
         Assert.assertTrue((restResponse.getResponse().body().asInputStream().available() > 0),
                 "Rendition was created but its content is empty. [" + fileName + ", " + nodeId + ", " + renditionId + "] [source file, node ID, rendition ID]");
@@ -66,6 +68,7 @@ public abstract class RenditionIntegrationTests extends RestTest
 
     /**
      * Upload a file and return its node id
+     * 
      * @param sourceFile
      * @return
      * @throws Exception
@@ -73,20 +76,20 @@ public abstract class RenditionIntegrationTests extends RestTest
     protected RestNodeModel uploadFile(String sourceFile) throws Exception
     {
         FolderModel folder = Awaitility
-            .await()
-            .atMost(Duration.ofSeconds(30))
-            .pollInterval(Durations.ONE_SECOND)
-            .ignoreExceptions()
-            .until(() -> {
-                FolderModel randomFolderModel = FolderModel.getRandomFolderModel();
-                return dataContent.usingUser(user).usingSite(site).createFolder(randomFolderModel);
-            }, Predicates.notNull());
+                .await()
+                .atMost(Duration.ofSeconds(30))
+                .pollInterval(Durations.ONE_SECOND)
+                .ignoreExceptions()
+                .until(() -> {
+                    FolderModel randomFolderModel = FolderModel.getRandomFolderModel();
+                    return dataContent.usingUser(user).usingSite(site).createFolder(randomFolderModel);
+                }, Predicates.notNull());
         restClient.authenticateUser(user).configureRequestSpec()
-            .addMultiPart("filedata", Utility.getResourceTestDataFile(sourceFile));
+                .addMultiPart("filedata", Utility.getResourceTestDataFile(sourceFile));
         RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).createNode();
 
         Assert.assertEquals(Integer.valueOf(restClient.getStatusCode()).intValue(), HttpStatus.CREATED.value(),
-            "Failed to created a node for rendition tests using file " + sourceFile);
+                "Failed to created a node for rendition tests using file " + sourceFile);
 
         return fileNode;
     }

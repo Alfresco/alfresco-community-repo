@@ -32,9 +32,7 @@ import java.util.Collections;
 /**
  * A cache that does nothing - always.
  * <P/>
- * There are conditions under which code that expects to be caching, should not be.  Using this
- * cache, it becomes possible to configure a valid cache in whilst still ensuring that the
- * actual caching is not performed.
+ * There are conditions under which code that expects to be caching, should not be. Using this cache, it becomes possible to configure a valid cache in whilst still ensuring that the actual caching is not performed.
  * 
  * @author Derek Hulley
  */
@@ -42,19 +40,18 @@ public class NullCache<K extends Serializable, V extends Object> implements Simp
 {
     /** Singleton for retrieval via {@link #getInstance() } */
     private static final NullCache<Serializable, Object> INSTANCE = new NullCache<Serializable, Object>();
-    
+
     /**
-     * @return          Returns a singleton that can be used in any way - all operations are stateless
+     * @return Returns a singleton that can be used in any way - all operations are stateless
      */
     @SuppressWarnings("unchecked")
     public static final <K extends Serializable, V extends Object> NullCache<K, V> getInstance()
     {
         return (NullCache<K, V>) INSTANCE;
     }
-    
+
     public NullCache()
-    {
-    }
+    {}
 
     /** NO-OP */
     public boolean contains(K key)
@@ -64,7 +61,7 @@ public class NullCache<K extends Serializable, V extends Object> implements Simp
 
     public Collection<K> getKeys()
     {
-        return Collections.<K>emptyList();
+        return Collections.<K> emptyList();
     }
 
     /** NO-OP */

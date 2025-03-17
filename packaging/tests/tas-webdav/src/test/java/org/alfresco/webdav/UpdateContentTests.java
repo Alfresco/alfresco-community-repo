@@ -1,5 +1,9 @@
 package org.alfresco.webdav;
 
+import org.apache.commons.httpclient.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
@@ -10,10 +14,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.commons.httpclient.HttpStatus;
-import org.testng.SkipException;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class UpdateContentTests extends WebDavTest
 {
@@ -30,9 +30,9 @@ public class UpdateContentTests extends WebDavTest
         testSite = dataSite.usingUser(managerUser).createPublicRandomSite();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY, 
-        description = "Verify that admin user can update the content of a file created by self.")
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
+            description = "Verify that admin user can update the content of a file created by self.")
     public void adminShouldEditContentFile() throws Exception
     {
         FolderModel guestHomeFolder = FolderModel.getGuestHomeFolderModel();
@@ -42,9 +42,9 @@ public class UpdateContentTests extends WebDavTest
                 .update(content + "-update").and().assertThat().hasStatus(HttpStatus.SC_NO_CONTENT).and().assertThat().contentIs(content + "-update");
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION, 
-        description = "Verify that SiteManager user can update the content of a file created by self.")
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
+            description = "Verify that SiteManager user can update the content of a file created by self.")
     public void siteManagerShouldEditContentFile() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -53,9 +53,9 @@ public class UpdateContentTests extends WebDavTest
                 .contentIs(content + "-update " + UserRole.SiteManager);
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION, 
-        description = "Verify that SiteCollaborator user can update the content of a file created by other user.")
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
+            description = "Verify that SiteCollaborator user can update the content of a file created by other user.")
     public void siteCollaboratorShouldEditContentFileCreatedByOtherUser() throws Exception
     {
         UserModel collaborator = dataUser.createRandomTestUser();
@@ -67,9 +67,9 @@ public class UpdateContentTests extends WebDavTest
                 .hasStatus(HttpStatus.SC_NO_CONTENT).and().assertThat().contentIs(content + "-update " + UserRole.SiteCollaborator);
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION, 
-        description = "Verify that SiteCollaborator user can update the content of a file created by self.")
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
+            description = "Verify that SiteCollaborator user can update the content of a file created by self.")
     public void siteCollaboratorShouldEditContentFileCreatedBySelf() throws Exception
     {
         UserModel collaborator = dataUser.createRandomTestUser();
@@ -81,8 +81,8 @@ public class UpdateContentTests extends WebDavTest
                 .contentIs(content + "-update " + UserRole.SiteCollaborator);
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
             description = "Verify that SiteContributor user cannot update inline the content of a file created by other user.")
     public void siteContributorShouldNotEditContentFileCreatedByOtherUser() throws Exception
     {
@@ -95,9 +95,9 @@ public class UpdateContentTests extends WebDavTest
                 .assertThat().contentIs(content);
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION, 
-        description = "Verify that SiteContributor user can update the content of a file created by self.")
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
+            description = "Verify that SiteContributor user can update the content of a file created by self.")
     public void siteContributorShouldEditContentFileCreatedBySelf() throws Exception
     {
         UserModel contributor = dataUser.createRandomTestUser();
@@ -109,9 +109,9 @@ public class UpdateContentTests extends WebDavTest
                 .contentIs(content + "-update " + UserRole.SiteManager);
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION, 
-        description = "Verify that SiteConsumer user cannot update the content of a file created by other user.")
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
+            description = "Verify that SiteConsumer user cannot update the content of a file created by other user.")
     public void siteConsumerShouldNotEditContentFileCreatedByOtherUser() throws Exception
     {
         UserModel consumer = dataUser.createRandomTestUser();
@@ -123,9 +123,9 @@ public class UpdateContentTests extends WebDavTest
                 .hasStatus(HttpStatus.SC_FORBIDDEN).and().assertThat().contentIs(content);
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION, 
-        description = "Verify that unauthenticated user cannot update the content of a file.")
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
+            description = "Verify that unauthenticated user cannot update the content of a file.")
     public void unauthenticatedUserShouldNotEditContentFile() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -133,64 +133,64 @@ public class UpdateContentTests extends WebDavTest
                 .usingResource(testFile).update(content + "-update " + "unauthenticated").and().assertThat().hasStatus(HttpStatus.SC_UNAUTHORIZED);
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION, 
-        description = "Verify that inexistent user cannot update the content of a file.")
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
+            description = "Verify that inexistent user cannot update the content of a file.")
     public void inexistentUserShouldNotEditContentFile() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
         webDavProtocol.authenticateUser(managerUser).usingSite(testSite)
-            .createFile(testFile).and().assertThat().existsInRepo()
+                .createFile(testFile).and().assertThat().existsInRepo()
                 .then().authenticateUser(UserModel.getRandomUserModel())
-                    .update(content + "-update")
-                        .and().assertThat().hasStatus(HttpStatus.SC_UNAUTHORIZED);
+                .update(content + "-update")
+                .and().assertThat().hasStatus(HttpStatus.SC_UNAUTHORIZED);
     }
-    
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION, 
-        description = "Verify that SiteManager user cannot update the content of a folder")
+
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
+            description = "Verify that SiteManager user cannot update the content of a folder")
     public void siteManagerShouldNotEditFolderContent() throws Exception
     {
         FolderModel folder = FolderModel.getRandomFolderModel();
         webDavProtocol.authenticateUser(managerUser)
-            .usingSite(testSite).createFolder(folder).and().assertThat().existsInRepo()
+                .usingSite(testSite).createFolder(folder).and().assertThat().existsInRepo()
                 .then().update(content + "-update ").assertThat().hasStatus(HttpStatus.SC_BAD_REQUEST);
     }
-    
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION, 
-        description = "Verify that SiteManager user cannot update the content of an inexisting file.")
+
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
+            description = "Verify that SiteManager user cannot update the content of an inexisting file.")
     public void editContentFileForNonExistingFile() throws Exception
     {
         nonExistingFile = FileModel.getRandomFileModel(FileType.PDF, content);
         webDavProtocol.authenticateUser(managerUser).usingSite(testSite)
-            .createFile(nonExistingFile).delete()
-            .and().assertThat().doesNotExistInRepo().and().assertThat().doesNotExistInWebdav()
+                .createFile(nonExistingFile).delete()
+                .and().assertThat().doesNotExistInRepo().and().assertThat().doesNotExistInWebdav()
                 .when().update(content + "-update").assertThat().hasStatus(HttpStatus.SC_NOT_FOUND);
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION, 
-        description = "Verify that SiteManager user cannot update the content of a locked file")
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.CORE})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
+            description = "Verify that SiteManager user cannot update the content of a locked file")
     public void siteManagerCannotEditContentOfLockedFile() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
         webDavProtocol.authenticateUser(managerUser)
-            .usingSite(testSite)
+                .usingSite(testSite)
                 .createFile(testFile).and().assertThat().existsInRepo()
                 .then().lock().assertThat().isLocked()
-                    .then().update(content + "-update " ).and().assertThat().hasStatus(HttpStatus.SC_LOCKED)
-                    .and().assertThat().contentIs(content);
+                .then().update(content + "-update ").and().assertThat().hasStatus(HttpStatus.SC_LOCKED)
+                .and().assertThat().contentIs(content);
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
             description = "Verify user can update file with a size smaller than the quota limit")
     public void userCanUpdateFileSmallerThanQuotaLimit() throws Exception
     {
-//        if (!webDavProtocol.withJMX().getSystemUsagesConfigurationStatus())
-//            throw new SkipException("Skipping this test because user quotas are not enabled. Please add " +
-//                    "system.usages.enabled=true to alfresco-global.properties, restart Alfresco and run the test again.");
+        // if (!webDavProtocol.withJMX().getSystemUsagesConfigurationStatus())
+        // throw new SkipException("Skipping this test because user quotas are not enabled. Please add " +
+        // "system.usages.enabled=true to alfresco-global.properties, restart Alfresco and run the test again.");
 
         UserModel quotaUser = dataUser.createRandomTestUser();
         dataUser.addUserToSite(quotaUser, testSite, UserRole.SiteManager);
@@ -202,27 +202,27 @@ public class UpdateContentTests extends WebDavTest
                 .then().update(quotaFile.getContent()).and().assertThat().contentIs(quotaFile.getContent());
     }
 
-//    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL })
-//    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION,
-//            description = "Verify user cannot update file with a size bigger than the quota limit")
-//    public void userCannotUpdateFileBiggerThanQuotaLimit() throws Exception
-//    {
-//        if (!webDavProtocol.withJMX().getSystemUsagesConfigurationStatus())
-//            throw new SkipException("Skipping this test because user quotas are not enabled. Please add " +
-//                    "system.usages.enabled=true to alfresco-global.properties, restart Alfresco and run the test again.");
-//
-//        UserModel quotaUser = dataUser.createRandomTestUser();
-//        dataUser.addUserToSite(quotaUser, testSite, UserRole.SiteManager);
-//        dataUser.usingAdmin().setUserQuota(quotaUser, 1);
-//        FileModel quotaFile = FileModel.getFileModelWithContentSizeOfxMB(2);
-//        testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
-//
-//        webDavProtocol.authenticateUser(quotaUser).usingSite(testSite).createFile(testFile).and().assertThat().existsInRepo()
-//                .then().update(quotaFile.getContent()).and().assertThat().contentIs(content);
-//    }
+    // @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL })
+    // @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION,
+    // description = "Verify user cannot update file with a size bigger than the quota limit")
+    // public void userCannotUpdateFileBiggerThanQuotaLimit() throws Exception
+    // {
+    // if (!webDavProtocol.withJMX().getSystemUsagesConfigurationStatus())
+    // throw new SkipException("Skipping this test because user quotas are not enabled. Please add " +
+    // "system.usages.enabled=true to alfresco-global.properties, restart Alfresco and run the test again.");
+    //
+    // UserModel quotaUser = dataUser.createRandomTestUser();
+    // dataUser.addUserToSite(quotaUser, testSite, UserRole.SiteManager);
+    // dataUser.usingAdmin().setUserQuota(quotaUser, 1);
+    // FileModel quotaFile = FileModel.getFileModelWithContentSizeOfxMB(2);
+    // testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
+    //
+    // webDavProtocol.authenticateUser(quotaUser).usingSite(testSite).createFile(testFile).and().assertThat().existsInRepo()
+    // .then().update(quotaFile.getContent()).and().assertThat().contentIs(content);
+    // }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
             description = "Verify that file version is incremented after file is edited")
     public void verifyFileVersionIsIncrementedAfterEdit() throws Exception
     {

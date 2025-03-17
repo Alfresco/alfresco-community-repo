@@ -27,8 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.admin;
 
-import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import org.alfresco.service.namespace.QName;
 
 /**
  * Custom metadata exception.
@@ -41,7 +42,7 @@ public class InvalidCustomAspectMetadataException extends CustomMetadataExceptio
 {
     private static final long serialVersionUID = -6194867814140009959L;
     public static final String MSG_INVALID_CUSTOM_ASPECT = "rm.admin.invalid-custom-aspect";
-    
+
     public InvalidCustomAspectMetadataException(QName customAspect, String aspectName)
     {
         super(I18NUtil.getMessage(MSG_INVALID_CUSTOM_ASPECT, customAspect, aspectName));

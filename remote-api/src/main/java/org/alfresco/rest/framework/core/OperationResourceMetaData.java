@@ -25,12 +25,12 @@
  */
 package org.alfresco.rest.framework.core;
 
-import org.alfresco.rest.framework.Api;
-import org.alfresco.rest.framework.resource.actions.interfaces.ResourceAction;
-
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
+
+import org.alfresco.rest.framework.Api;
+import org.alfresco.rest.framework.resource.actions.interfaces.ResourceAction;
 
 /**
  * Extends ResourceMetaData to give more information about an Operation
@@ -44,6 +44,7 @@ public class OperationResourceMetaData extends ResourceMetadata
 
     /**
      * Use this constructor to create the resource metadata
+     * 
      * @param uniqueId
      * @param operations
      * @param api
@@ -53,7 +54,7 @@ public class OperationResourceMetaData extends ResourceMetadata
     public OperationResourceMetaData(String uniqueId, List<ResourceOperation> operations, Api api, Method operationMethod, boolean noAuthRequired)
     {
         super(uniqueId, RESOURCE_TYPE.OPERATION, operations, api, null, null, null);
-        if (operations.size()!= 1)
+        if (operations.size() != 1)
         {
             throw new IllegalArgumentException("Only 1 operation per url is supported for an entity");
         }
@@ -63,6 +64,7 @@ public class OperationResourceMetaData extends ResourceMetadata
 
     /**
      * Constructor to use when it has been deleted
+     * 
      * @param uniqueId
      * @param api
      * @param apiDeleted

@@ -23,5 +23,5 @@ package org.alfresco.scripts;
  */
 public interface ScriptResourceLoader
 {
-   public String loadScriptResource(String resource);
+    public String loadScriptResource(String resource);
 }

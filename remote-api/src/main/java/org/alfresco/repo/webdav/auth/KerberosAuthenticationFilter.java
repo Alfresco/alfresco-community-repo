@@ -27,15 +27,15 @@ package org.alfresco.repo.webdav.auth;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-import org.alfresco.repo.web.auth.WebCredentials;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.repo.web.auth.WebCredentials;
 
 /**
  * WebDAV Kerberos Authentication Filter Class
@@ -54,21 +54,20 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#onValidateFailed(jakarta.servlet.ServletContext, jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse, jakarta.servlet.http.HttpSession)
-     */
+     * 
+     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#onValidateFailed(jakarta.servlet.ServletContext, jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse, jakarta.servlet.http.HttpSession) */
     @Override
     protected void onValidateFailed(ServletContext sc, HttpServletRequest req, HttpServletResponse res, HttpSession session, WebCredentials credentials)
-        throws IOException
+            throws IOException
     {
         super.onValidateFailed(sc, req, res, session, credentials);
         // Restart the login challenge process if validation fails
         restartLoginChallenge(sc, req, res);
     }
-    
+
     /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#getLogger()
-     */
+     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#getLogger() */
     @Override
     protected Log getLogger()
     {
@@ -80,14 +79,16 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
     {
         return (req.getRequestURI().endsWith("/jsp/login.jsp"));
     }
-    
+
     /**
-     * Writes link to login page and refresh tag which cause user
-     * to be redirected to the login page.
+     * Writes link to login page and refresh tag which cause user to be redirected to the login page.
      *
-     * @param context ServletContext
-     * @param req HttpServletRequest
-     * @param resp HttpServletResponse
+     * @param context
+     *            ServletContext
+     * @param req
+     *            HttpServletRequest
+     * @param resp
+     *            HttpServletResponse
      * @throws IOException
      */
     @Override

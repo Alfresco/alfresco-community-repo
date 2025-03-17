@@ -35,9 +35,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 
 /**
- * Implementation of the {@link AlfrescoAPIFacet} interface that provides access
- * to "core" Alfresco services, i.e. services in a lower abstraction layer than
- * the ones provided in the Java API, by the {@link ServiceRegistry}.
+ * Implementation of the {@link AlfrescoAPIFacet} interface that provides access to "core" Alfresco services, i.e. services in a lower abstraction layer than the ones provided in the Java API, by the {@link ServiceRegistry}.
  *
  * @author Bogdan Horje
  */

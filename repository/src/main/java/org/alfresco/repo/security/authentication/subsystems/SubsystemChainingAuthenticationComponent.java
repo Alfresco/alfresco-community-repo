@@ -29,16 +29,16 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AbstractChainingAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.context.ApplicationContext;
 
 /**
- * An authentication component that chains across beans in multiple child application contexts corresponding to
- * different 'subsystems' in a chain determined by a {@link ChildApplicationContextManager}.
+ * An authentication component that chains across beans in multiple child application contexts corresponding to different 'subsystems' in a chain determined by a {@link ChildApplicationContextManager}.
  * 
  * @author dward
  */
@@ -67,12 +67,9 @@ public class SubsystemChainingAuthenticationComponent extends AbstractChainingAu
         this.sourceBeanName = sourceBeanName;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.security.authentication.AbstractChainingAuthenticationCompent#getUsableAuthenticationComponents
-     * ()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.authentication.AbstractChainingAuthenticationCompent#getUsableAuthenticationComponents () */
     @Override
     protected Collection<AuthenticationComponent> getUsableAuthenticationComponents()
     {
@@ -104,12 +101,12 @@ public class SubsystemChainingAuthenticationComponent extends AbstractChainingAu
     protected AuthenticationComponent getAuthenticationComponent(String instanceId)
     {
         ApplicationContext context = this.applicationContextManager.getApplicationContext(instanceId);
-        if(context != null)
+        if (context != null)
         {
             try
             {
                 AuthenticationComponent authenticationComponent = (AuthenticationComponent) context
-                    .getBean(sourceBeanName);
+                        .getBean(sourceBeanName);
                 return authenticationComponent;
             }
             catch (NoSuchBeanDefinitionException e)
@@ -117,7 +114,7 @@ public class SubsystemChainingAuthenticationComponent extends AbstractChainingAu
                 return null;
             }
         }
-     
+
         return null;
     }
 }

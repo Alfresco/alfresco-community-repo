@@ -50,7 +50,7 @@ public class ContentCleanser522022M extends ContentCleanser
         {
             throw new ContentIOException("Unable to write to file: " + file);
         }
-        
+
         // Overwite file
         overwrite(file, overwriteOnes);
         overwrite(file, overwriteZeros);

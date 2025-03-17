@@ -44,8 +44,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.web.context.support.ServletContextResourcePatternResolver;
 
 /**
- * Helper class to provide static and common access to the Spring
- * {@link org.springframework.context.ApplicationContext application context}.
+ * Helper class to provide static and common access to the Spring {@link org.springframework.context.ApplicationContext application context}.
  * 
  * @author Derek Hulley
  */
@@ -56,7 +55,7 @@ public abstract class BaseApplicationContextHelper
     private static String[] usedClassLocations;
     private static boolean useLazyLoading = false;
     private static boolean noAutoStart = false;
-    
+
     public synchronized static ApplicationContext getApplicationContext(String[] configLocations)
     {
         if (configLocations == null)
@@ -70,38 +69,41 @@ public abstract class BaseApplicationContextHelper
         }
         // The config has changed so close the current context (if any)
         closeApplicationContext();
-       
-        if(useLazyLoading || noAutoStart) {
-           instance = new VariableFeatureClassPathXmlApplicationContext(configLocations); 
-        } else {
-           instance = new ClassPathXmlApplicationContext(configLocations);
+
+        if (useLazyLoading || noAutoStart)
+        {
+            instance = new VariableFeatureClassPathXmlApplicationContext(configLocations);
         }
-                    
+        else
+        {
+            instance = new ClassPathXmlApplicationContext(configLocations);
+        }
+
         usedConfiguration = configLocations;
-        
+
         return instance;
     }
-    
+
     /**
      * Build a classloader for the given classLocations, using the thread's context class loader as its parent.
      * 
-     * @param classLocations String[]
+     * @param classLocations
+     *            String[]
      * @return ClassLoader
      * @throws IOException
      */
     public static ClassLoader buildClassLoader(String[] classLocations) throws IOException
     {
-    	ResourceFinder resolver = new ResourceFinder();
-    	// Put the test directories at the front of the classpath
-    	Resource[] resources = resolver.getResources(classLocations);
-    	URL[] classpath = new URL[resources.length];
-    	for (int i = 0; i< resources.length; i++)
-    	{
-    		classpath[i] = resources[i].getURL();
-    	}
-    	// Let's give our classloader 'child-first' resource loading qualities!
-        return new URLClassLoader(classpath, Thread.currentThread().getContextClassLoader())
+        ResourceFinder resolver = new ResourceFinder();
+        // Put the test directories at the front of the classpath
+        Resource[] resources = resolver.getResources(classLocations);
+        URL[] classpath = new URL[resources.length];
+        for (int i = 0; i < resources.length; i++)
         {
+            classpath[i] = resources[i].getURL();
+        }
+        // Let's give our classloader 'child-first' resource loading qualities!
+        return new URLClassLoader(classpath, Thread.currentThread().getContextClassLoader()) {
             @Override
             public URL getResource(String name)
             {
@@ -122,11 +124,9 @@ public abstract class BaseApplicationContextHelper
     }
 
     /**
-     * Provides a static, single instance of the application context.  This method can be
-     * called repeatedly.
+     * Provides a static, single instance of the application context. This method can be called repeatedly.
      * <p/>
-     * If the configuration requested differs from one used previously, then the previously-created
-     * context is shut down.
+     * If the configuration requested differs from one used previously, then the previously-created context is shut down.
      * 
      * @return Returns an application context for the given configuration
      */
@@ -143,17 +143,20 @@ public abstract class BaseApplicationContextHelper
         }
         // The config has changed so close the current context (if any)
         closeApplicationContext();
-       
-        if(useLazyLoading || noAutoStart) {
-           instance = new VariableFeatureClassPathXmlApplicationContext(configLocations); 
-        } else {
-           instance = new ClassPathXmlApplicationContext(configLocations, false);
+
+        if (useLazyLoading || noAutoStart)
+        {
+            instance = new VariableFeatureClassPathXmlApplicationContext(configLocations);
+        }
+        else
+        {
+            instance = new ClassPathXmlApplicationContext(configLocations, false);
         }
 
-        if(classLocations != null)
+        if (classLocations != null)
         {
-        	ClassLoader classLoader = buildClassLoader(classLocations);
-	        instance.setClassLoader(classLoader);
+            ClassLoader classLoader = buildClassLoader(classLocations);
+            instance.setClassLoader(classLoader);
         }
 
         instance.refresh();
@@ -163,10 +166,9 @@ public abstract class BaseApplicationContextHelper
 
         return instance;
     }
-    
+
     /**
-     * Closes and releases the application context.  On the next call to
-     * {@link #getApplicationContext(String[])} , a new context will be given.
+     * Closes and releases the application context. On the next call to {@link #getApplicationContext(String[])} , a new context will be given.
      */
     public static synchronized void closeApplicationContext()
     {
@@ -181,10 +183,7 @@ public abstract class BaseApplicationContextHelper
     }
 
     /**
-     * Should the Spring beans be initilised in a lazy manner, or all in one go?
-     * Normally lazy loading/intialising shouldn't be used when running with the
-     * full context, but it may be appropriate to reduce startup times when
-     * using a small, cut down context.
+     * Should the Spring beans be initilised in a lazy manner, or all in one go? Normally lazy loading/intialising shouldn't be used when running with the full context, but it may be appropriate to reduce startup times when using a small, cut down context.
      */
     public static void setUseLazyLoading(boolean lazyLoading)
     {
@@ -192,8 +191,7 @@ public abstract class BaseApplicationContextHelper
     }
 
     /**
-     * Will the Spring beans be initilised in a lazy manner, or all in one go?
-     * The default it to load everything in one go, as spring normally does.
+     * Will the Spring beans be initilised in a lazy manner, or all in one go? The default it to load everything in one go, as spring normally does.
      */
     public static boolean isUsingLazyLoading()
     {
@@ -201,10 +199,7 @@ public abstract class BaseApplicationContextHelper
     }
 
     /**
-     * Should the autoStart=true property on subsystems be honoured, or should
-     * this property be ignored and the auto start prevented? Normally we will
-     * use the spring configuration to decide what to start, but when running
-     * tests, you can use this to prevent the auto start.
+     * Should the autoStart=true property on subsystems be honoured, or should this property be ignored and the auto start prevented? Normally we will use the spring configuration to decide what to start, but when running tests, you can use this to prevent the auto start.
      */
     public static void setNoAutoStart(boolean noAutoStart)
     {
@@ -212,9 +207,7 @@ public abstract class BaseApplicationContextHelper
     }
 
     /**
-     * Will Subsystems with the autoStart=true property set on them be allowed
-     * to auto start? The default is to honour the spring configuration and
-     * allow them to, but they can be prevented if required.
+     * Will Subsystems with the autoStart=true property set on them be allowed to auto start? The default is to honour the spring configuration and allow them to, but they can be prevented if required.
      */
     public static boolean isNoAutoStart()
     {
@@ -230,8 +223,7 @@ public abstract class BaseApplicationContextHelper
     }
 
     /**
-     * A wrapper around {@link ClassPathXmlApplicationContext} which allows us
-     * to enable lazy loading or prevent Subsystem autostart as requested.
+     * A wrapper around {@link ClassPathXmlApplicationContext} which allows us to enable lazy loading or prevent Subsystem autostart as requested.
      */
     protected static class VariableFeatureClassPathXmlApplicationContext extends ClassPathXmlApplicationContext
     {
@@ -301,21 +293,23 @@ public abstract class BaseApplicationContextHelper
     }
 }
 
-/*
- * A utility class that will enumerate over an array of enumerations.
- * was removed in version JDK 1.9
- */
-final class CompoundEnumeration<E> implements Enumeration<E> {
+/* A utility class that will enumerate over an array of enumerations. was removed in version JDK 1.9 */
+final class CompoundEnumeration<E> implements Enumeration<E>
+{
     private final Enumeration<E>[] enums;
     private int index;
 
-    public CompoundEnumeration(Enumeration<E>[] enums) {
+    public CompoundEnumeration(Enumeration<E>[] enums)
+    {
         this.enums = enums;
     }
 
-    private boolean next() {
-        while (index < enums.length) {
-            if (enums[index] != null && enums[index].hasMoreElements()) {
+    private boolean next()
+    {
+        while (index < enums.length)
+        {
+            if (enums[index] != null && enums[index].hasMoreElements())
+            {
                 return true;
             }
             index++;
@@ -323,12 +317,15 @@ final class CompoundEnumeration<E> implements Enumeration<E> {
         return false;
     }
 
-    public boolean hasMoreElements() {
+    public boolean hasMoreElements()
+    {
         return next();
     }
 
-    public E nextElement() {
-        if (!next()) {
+    public E nextElement()
+    {
+        if (!next())
+        {
             throw new NoSuchElementException();
         }
         return enums[index].nextElement();

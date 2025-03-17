@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.servlet.ServletException;
-
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -41,8 +39,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.PropertyCheck;
 
 /**
- * In-memory cache that stores nodeRefs per tenant. 
- * It is initialized using path to node and allows to retrieve nodeRef for current tenant.
+ * In-memory cache that stores nodeRefs per tenant. It is initialized using path to node and allows to retrieve nodeRef for current tenant.
  * 
  * @author Stas Sokolovsky
  * @author Mark Rogers
@@ -58,8 +55,7 @@ public class MTNodesCache2
     private NodeRef defaultNode = null;
     private String storeName;
     private String rootPath;
-    
-    
+
     /**
      * Spring bean init method
      */
@@ -68,16 +64,16 @@ public class MTNodesCache2
         PropertyCheck.mandatory(this, "nodeService", getNodeService());
         PropertyCheck.mandatory(this, "searchService", getSearchService());
         PropertyCheck.mandatory(this, "namespaceService", getNamespaceService());
-        PropertyCheck.mandatory(this, "tenantService", getTenantService());     
+        PropertyCheck.mandatory(this, "tenantService", getTenantService());
         PropertyCheck.mandatory(this, "storeName", storeName);
         PropertyCheck.mandatory(this, "rootPath", rootPath);
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public NodeService getNodeService()
     {
         return nodeService;
@@ -118,14 +114,14 @@ public class MTNodesCache2
         {
             return;
         }
-        
+
         nodesCache.clear();
-        
+
         AuthenticationUtil.setRunAsUserSystem();
         try
         {
             StoreRef storeRef = new StoreRef(storeName);
-    
+
             if (nodeService.exists(storeRef) == false)
             {
                 throw new RuntimeException("No store for path: " + storeName);
@@ -151,7 +147,7 @@ public class MTNodesCache2
             AuthenticationUtil.clearCurrentSecurityContext();
         }
     }
-    
+
     /**
      * @return Returns the name of the store
      */
@@ -159,12 +155,12 @@ public class MTNodesCache2
     {
         return storeName;
     }
-    
+
     public void setStoreName(String storeName)
     {
         this.storeName = storeName;
     }
-    
+
     /**
      * @return Returns the WebDAV root path within the store
      */
@@ -172,7 +168,7 @@ public class MTNodesCache2
     {
         return rootPath;
     }
-    
+
     public void setRootPath(String rootPath)
     {
         this.rootPath = rootPath;
@@ -207,12 +203,12 @@ public class MTNodesCache2
     {
         return tenantService;
     }
-    
+
     public boolean getEnabled()
     {
         return enabled;
     }
-    
+
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;

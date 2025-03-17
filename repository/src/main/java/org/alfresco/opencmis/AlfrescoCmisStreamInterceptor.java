@@ -32,14 +32,15 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.content.filestore.FileContentReader;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.util.TempFileProvider;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.util.TempFileProvider;
 
 /**
  * Interceptor to deal with ContentStreams, determining mime type if appropriate.
@@ -53,7 +54,8 @@ public class AlfrescoCmisStreamInterceptor implements MethodInterceptor
     private MimetypeService mimetypeService;
 
     /**
-     * @param mimetypeService service for helping with mimetypes
+     * @param mimetypeService
+     *            service for helping with mimetypes
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {
@@ -67,7 +69,7 @@ public class AlfrescoCmisStreamInterceptor implements MethodInterceptor
         {
             Class<?>[] parameterTypes = mi.getMethod().getParameterTypes();
             Object[] arguments = mi.getArguments();
-            for (int i=0; i<parameterTypes.length; i++)
+            for (int i = 0; i < parameterTypes.length; i++)
             {
                 if (ContentStream.class.isAssignableFrom(parameterTypes[i]))
                 {
@@ -99,14 +101,13 @@ public class AlfrescoCmisStreamInterceptor implements MethodInterceptor
         {
             if (reusableContentStreams != null)
             {
-                for (ReusableContentStream contentStream: reusableContentStreams)
+                for (ReusableContentStream contentStream : reusableContentStreams)
                 {
                     contentStream.close();
                 }
             }
         }
     }
-
 
     private static class ReusableContentStream extends ContentStreamImpl
     {
@@ -123,14 +124,14 @@ public class AlfrescoCmisStreamInterceptor implements MethodInterceptor
         }
 
         @Override
-        public InputStream getStream() {
+        public InputStream getStream()
+        {
             InputStream stream = super.getStream();
             if (stream == null && file != null)
             {
                 try
                 {
-                    stream = new FileInputStream(file)
-                    {
+                    stream = new FileInputStream(file) {
                         @Override
                         public void close() throws IOException
                         {

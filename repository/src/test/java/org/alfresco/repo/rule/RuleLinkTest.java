@@ -31,6 +31,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
@@ -52,10 +57,6 @@ import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Parameter definition implementation unit test.
@@ -73,13 +74,13 @@ public class RuleLinkTest extends BaseSpringTest
     protected static final String CONDITION_DEF_NAME = ComparePropertyValueEvaluator.NAME;
     protected static final String COND_PROP_NAME_1 = ComparePropertyValueEvaluator.PARAM_VALUE;
     protected static final String COND_PROP_VALUE_1 = ".doc";
-    
+
     private NodeService nodeService;
     private RuleService ruleService;
     private ActionService actionService;
     private AuthenticationComponent authenticationComponent;
     private FileFolderService fileFolderService;
-    
+
     private StoreRef testStoreRef;
     private NodeRef rootNodeRef;
     private NodeRef folderOne;
@@ -96,10 +97,9 @@ public class RuleLinkTest extends BaseSpringTest
         authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
 
-        //authenticationComponent.setSystemUserAsCurrentUser();
+        // authenticationComponent.setSystemUserAsCurrentUser();
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
-        
-        
+
         // Create the store and get the root node
         testStoreRef = nodeService.createStore(
                 StoreRef.PROTOCOL_WORKSPACE, "Test_"
@@ -108,11 +108,11 @@ public class RuleLinkTest extends BaseSpringTest
 
         // Create the node used for tests
         NodeRef folder = nodeService.createNode(
-                  rootNodeRef,
-                  ContentModel.ASSOC_CHILDREN,
-                  QName.createQName("{test}testnode"),
-                  ContentModel.TYPE_FOLDER).getChildRef();
-        
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}testnode"),
+                ContentModel.TYPE_FOLDER).getChildRef();
+
         folderOne = fileFolderService.create(folder, "folderOne", ContentModel.TYPE_FOLDER).getNodeRef();
         folderTwo = fileFolderService.create(folder, "folderTwo", ContentModel.TYPE_FOLDER).getNodeRef();
         folderThree = fileFolderService.create(folder, "folderThree", ContentModel.TYPE_FOLDER).getNodeRef();
@@ -124,39 +124,39 @@ public class RuleLinkTest extends BaseSpringTest
         // Create a rule
         Rule rule = createTestRule(false, "bobs rule");
         this.ruleService.saveRule(folderOne, rule);
-        
+
         assertTrue(this.ruleService.hasRules(folderOne));
         assertEquals(1, ruleService.getRules(folderOne, false).size());
         assertFalse(ruleService.isLinkedToRuleNode(folderOne));
-        
+
         assertFalse(this.ruleService.hasRules(folderTwo));
         assertEquals(0, ruleService.getRules(folderTwo, false).size());
         assertFalse(ruleService.isLinkedToRuleNode(folderTwo));
-        
+
         Action linkAction = actionService.createAction(LinkRules.NAME);
-        linkAction.setParameterValue(LinkRules.PARAM_LINK_FROM_NODE, folderOne);        
+        linkAction.setParameterValue(LinkRules.PARAM_LINK_FROM_NODE, folderOne);
         actionService.executeAction(linkAction, folderTwo);
-        
+
         assertTrue(this.ruleService.hasRules(folderOne));
         assertEquals(1, ruleService.getRules(folderOne, false).size());
         assertFalse(ruleService.isLinkedToRuleNode(folderOne));
-        
+
         assertTrue(this.ruleService.hasRules(folderTwo));
         assertEquals(1, ruleService.getRules(folderTwo, false).size());
         boolean value = ruleService.isLinkedToRuleNode(folderTwo);
         assertTrue(value);
         assertEquals(folderOne, ruleService.getLinkedToRuleNode(folderTwo));
-        
+
         List<NodeRef> linkedFrom = ruleService.getLinkedFromRuleNodes(folderTwo);
         assertNotNull(linkedFrom);
         assertTrue(linkedFrom.isEmpty());
-        
+
         linkedFrom = ruleService.getLinkedFromRuleNodes(folderOne);
         assertNotNull(linkedFrom);
         assertEquals(1, linkedFrom.size());
         assertEquals(folderTwo, linkedFrom.get(0));
-        
-        // Check that you can't modify the rules on a linked rule node        
+
+        // Check that you can't modify the rules on a linked rule node
         try
         {
             rule = createTestRule(false, "bobs rule 2");
@@ -167,56 +167,56 @@ public class RuleLinkTest extends BaseSpringTest
         {
             // Expected
         }
-        
+
         // Add another rule to folder one
         rule = createTestRule(false, "bobs other rule");
         this.ruleService.saveRule(folderOne, rule);
-        
+
         assertTrue(this.ruleService.hasRules(folderOne));
         assertEquals(2, ruleService.getRules(folderOne, false).size());
         assertFalse(ruleService.isLinkedToRuleNode(folderOne));
-        
+
         assertTrue(this.ruleService.hasRules(folderTwo));
         assertEquals(2, ruleService.getRules(folderTwo, false).size());
         value = ruleService.isLinkedToRuleNode(folderTwo);
         assertTrue(value);
         assertEquals(folderOne, ruleService.getLinkedToRuleNode(folderTwo));
-        
+
         linkedFrom = ruleService.getLinkedFromRuleNodes(folderTwo);
         assertNotNull(linkedFrom);
         assertTrue(linkedFrom.isEmpty());
-        
+
         linkedFrom = ruleService.getLinkedFromRuleNodes(folderOne);
         assertNotNull(linkedFrom);
         assertEquals(1, linkedFrom.size());
         assertEquals(folderTwo, linkedFrom.get(0));
-        
+
         // Unlink
         unlink(folderTwo);
-        
+
         assertTrue(this.ruleService.hasRules(folderOne));
         assertEquals(2, ruleService.getRules(folderOne, false).size());
         assertFalse(ruleService.isLinkedToRuleNode(folderOne));
-        
+
         assertFalse(this.ruleService.hasRules(folderTwo));
         assertEquals(0, ruleService.getRules(folderTwo, false).size());
         assertFalse(ruleService.isLinkedToRuleNode(folderTwo));
-        
+
     }
-    
+
     private void link(NodeRef folderFrom, NodeRef folderTo)
     {
         Action linkAction = actionService.createAction(LinkRules.NAME);
-        linkAction.setParameterValue(LinkRules.PARAM_LINK_FROM_NODE, folderFrom);        
+        linkAction.setParameterValue(LinkRules.PARAM_LINK_FROM_NODE, folderFrom);
         actionService.executeAction(linkAction, folderTo);
     }
-    
+
     private void unlink(NodeRef folder)
     {
         Action unlinkAction = actionService.createAction(UnlinkRules.NAME);
         actionService.executeAction(unlinkAction, folder);
-    }   
-    
+    }
+
     @Test
     public void testRelink()
     {
@@ -227,32 +227,32 @@ public class RuleLinkTest extends BaseSpringTest
         this.ruleService.saveRule(folderTwo, rule);
         rule = createTestRule(false, "han");
         this.ruleService.saveRule(folderTwo, rule);
-        
+
         List<Rule> rules = ruleService.getRules(folderThree);
         assertNotNull(rules);
         assertTrue(rules.isEmpty());
-        
+
         link(folderOne, folderThree);
-        
+
         rules = ruleService.getRules(folderThree);
         assertNotNull(rules);
         assertFalse(rules.isEmpty());
         assertEquals(1, rules.size());
-        
+
         link(folderTwo, folderThree);
-        
+
         rules = ruleService.getRules(folderThree);
         assertNotNull(rules);
         assertFalse(rules.isEmpty());
         assertEquals(2, rules.size());
-        
+
         try
         {
             rules = ruleService.getRules(folderTwo);
             assertNotNull(rules);
             assertFalse(rules.isEmpty());
             assertEquals(2, rules.size());
-            
+
             link(folderTwo, folderOne);
             fail("Shouldn't be able to link a folder that already has rules that it owns.");
         }
@@ -260,23 +260,24 @@ public class RuleLinkTest extends BaseSpringTest
         {
             // excepted
         }
-        
+
         unlink(folderThree);
-        
+
         rules = ruleService.getRules(folderThree);
         assertNotNull(rules);
         assertTrue(rules.isEmpty());
-        
+
         link(folderTwo, folderThree);
-        
+
         rules = ruleService.getRules(folderThree);
         assertNotNull(rules);
         assertFalse(rules.isEmpty());
         assertEquals(2, rules.size());
     }
-    
+
     /**
      * ALF-11923
+     * 
      * @since 4.0.2
      * @author Neil Mc Erlean.
      */
@@ -286,35 +287,36 @@ public class RuleLinkTest extends BaseSpringTest
         // Setup test data
         Rule rule = createTestRule(false, "luke");
         this.ruleService.saveRule(folderOne, rule);
-        
+
         link(folderOne, folderTwo);
         link(folderOne, folderThree);
-        
+
         List<Rule> rules1 = ruleService.getRules(folderOne);
         assertNotNull(rules1);
         assertFalse(rules1.isEmpty());
         assertEquals(1, rules1.size());
-        
+
         List<Rule> rules2 = ruleService.getRules(folderTwo);
         assertEquals(rules1, rules2);
-        
+
         List<Rule> rules3 = ruleService.getRules(folderThree);
         assertEquals(rules1, rules3);
-        
+
         // Now delete folder 1.
         nodeService.deleteNode(folderOne);
         rules2 = ruleService.getRules(folderTwo);
         rules3 = ruleService.getRules(folderThree);
-        
+
         assertTrue(rules2.isEmpty());
         assertFalse(nodeService.hasAspect(folderTwo, RuleModel.ASPECT_RULES));
-        
+
         assertTrue(rules3.isEmpty());
         assertFalse(nodeService.hasAspect(folderThree, RuleModel.ASPECT_RULES));
     }
-    
+
     /**
      * ALF-11923
+     * 
      * @since 4.1.1
      * @author Neil Mc Erlean.
      */
@@ -324,36 +326,37 @@ public class RuleLinkTest extends BaseSpringTest
         // Setup test data
         Rule rule = createTestRule(false, "luke");
         this.ruleService.saveRule(folderOne, rule);
-        
+
         link(folderOne, folderTwo);
         link(folderOne, folderThree);
-        
+
         List<Rule> rules1 = ruleService.getRules(folderOne);
         assertNotNull(rules1);
         assertFalse(rules1.isEmpty());
         assertEquals(1, rules1.size());
-        
+
         List<Rule> rules2 = ruleService.getRules(folderTwo);
         assertEquals(rules1, rules2);
-        
+
         List<Rule> rules3 = ruleService.getRules(folderThree);
         assertEquals(rules1, rules3);
-        
+
         // Now delete folder 2.
         nodeService.deleteNode(folderTwo);
         rules1 = ruleService.getRules(folderOne);
         rules3 = ruleService.getRules(folderThree);
-        
+
         assertFalse(rules1.isEmpty());
         assertTrue(nodeService.hasAspect(folderOne, RuleModel.ASPECT_RULES));
-        
+
         assertFalse(rules3.isEmpty());
         assertTrue(nodeService.hasAspect(folderThree, RuleModel.ASPECT_RULES));
         assertEquals(rules1, rules3);
     }
 
     @Test
-    public void testGetRuleSetNode() {
+    public void testGetRuleSetNode()
+    {
         final Rule rule = createTestRule(false, "luke");
         this.ruleService.saveRule(folderOne, rule);
         final NodeRef expectedRuleSetNodeRef = getRuleSetNode(folderOne);
@@ -365,7 +368,8 @@ public class RuleLinkTest extends BaseSpringTest
     }
 
     @Test
-    public void testGetRuleSetNodeForLinkedFolder() {
+    public void testGetRuleSetNodeForLinkedFolder()
+    {
         final Rule rule = createTestRule(false, "luke");
         this.ruleService.saveRule(folderOne, rule);
         link(folderOne, folderTwo);
@@ -394,7 +398,7 @@ public class RuleLinkTest extends BaseSpringTest
     public void testIsRuleSetNotAssociatedWithFolder()
     {
         final Rule rule = createTestRule(false, "luke");
-        this.ruleService.saveRule(folderTwo , rule);
+        this.ruleService.saveRule(folderTwo, rule);
         final NodeRef ruleSetNodeRef = getRuleSetNode(folderTwo);
 
         // when
@@ -473,34 +477,35 @@ public class RuleLinkTest extends BaseSpringTest
 
         Map<String, Serializable> actionProps = new HashMap<String, Serializable>();
         actionProps.put(ACTION_PROP_NAME_1, ACTION_PROP_VALUE_1);
-        
+
         List<String> ruleTypes = new ArrayList<String>(1);
         ruleTypes.add(RULE_TYPE_NAME);
-        
+
         // Create the action
         Action action = this.actionService.createAction(CONDITION_DEF_NAME);
         action.setParameterValues(conditionProps);
-        
+
         ActionCondition actionCondition = this.actionService.createActionCondition(CONDITION_DEF_NAME);
         actionCondition.setParameterValues(conditionProps);
         action.addActionCondition(actionCondition);
-        
+
         // Create the rule
         Rule rule = new Rule();
         rule.setRuleTypes(ruleTypes);
         rule.setTitle(title);
         rule.setDescription("bob");
-        rule.applyToChildren(isAppliedToChildren);        
+        rule.applyToChildren(isAppliedToChildren);
         rule.setAction(action);
 
         return rule;
     }
 
-    private NodeRef getRuleSetNode(final NodeRef folderNodeRef) {
+    private NodeRef getRuleSetNode(final NodeRef folderNodeRef)
+    {
         return nodeService.getChildAssocs(folderNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).stream()
-            .filter(ChildAssociationRef::isPrimary)
-            .map(ChildAssociationRef::getChildRef)
-            .findFirst()
-            .orElse(null);
+                .filter(ChildAssociationRef::isPrimary)
+                .map(ChildAssociationRef::getChildRef)
+                .findFirst()
+                .orElse(null);
     }
 }

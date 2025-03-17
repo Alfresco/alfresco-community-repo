@@ -33,13 +33,13 @@ import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.URLName;
 
-import org.alfresco.util.PropertyCheck;
 import org.apache.commons.pool.KeyedPoolableObjectFactory;
 import org.apache.commons.pool.impl.GenericKeyedObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
+import org.alfresco.util.PropertyCheck;
 
 /**
  * This class extends Spring's {@link JavaMailSenderImpl} to pool the {@link Transport}s used to send emails.
@@ -51,19 +51,19 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 public class AlfrescoJavaMailSender extends JavaMailSenderImpl
 {
     private static final long DEAFULT_TIME_BETWEEN_EVICTION_RUNS = 30000l;
-    
+
     private static final Logger log = LoggerFactory.getLogger(AlfrescoJavaMailSender.class);
 
     /**
-     * {@link KeyedPoolableObjectFactory} which uses the {@link Session} returned by {@link JavaMailSenderImpl#getSession()} to create a new
-     * {@link Transport}. 
+     * {@link KeyedPoolableObjectFactory} which uses the {@link Session} returned by {@link JavaMailSenderImpl#getSession()} to create a new {@link Transport}.
      */
     private final class TransportFactory implements KeyedPoolableObjectFactory
     {
         /**
          * Create a new {@link Transport} using the {@link Session} returned by {@link JavaMailSenderImpl#getSession() getSession()}.
          * 
-         * @param key A {@link URLName} containing the connection details
+         * @param key
+         *            A {@link URLName} containing the connection details
          * @return A new {@link Transport}
          */
         @Override
@@ -75,7 +75,7 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
             }
             log.debug("Creating new Transport");
             URLName urlName = (URLName) key;
-            Transport transport = getSession().getTransport(urlName.getProtocol()); 
+            Transport transport = getSession().getTransport(urlName.getProtocol());
             transport.connect(urlName.getHost(), urlName.getPort(), urlName.getUsername(), urlName.getPassword());
             return transport;
         }
@@ -83,8 +83,10 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
         /**
          * Disconnects the pooled {@link Transport} object.
          * 
-         * @param key {@link URLName} containing the connection details.
-         * @param object Pooled {@link Transport}
+         * @param key
+         *            {@link URLName} containing the connection details.
+         * @param object
+         *            Pooled {@link Transport}
          */
         @Override
         public void destroyObject(Object key, Object object) throws Exception
@@ -94,17 +96,19 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
                 throw new IllegalArgumentException("Unexpected object type");
             }
             log.debug("Destroying Transpaort");
-            Transport transport = (Transport)object;
+            Transport transport = (Transport) object;
             transport.close();
         }
 
         /**
          * Checks to see if the pooled {@link Transport} is still connected.
          * 
-         * @param key {@link URLName} containing the connection details.
-         * @param object Pooled {@link Transport}
+         * @param key
+         *            {@link URLName} containing the connection details.
+         * @param object
+         *            Pooled {@link Transport}
          * 
-         * @return true if the pooled transport is still connected, or false,  otherwise.
+         * @return true if the pooled transport is still connected, or false, otherwise.
          */
         @Override
         public boolean validateObject(Object key, Object object)
@@ -114,7 +118,7 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
                 throw new IllegalArgumentException("Unexpected object type");
             }
             log.debug("Validating transport");
-            Transport transport = (Transport)object;
+            Transport transport = (Transport) object;
             return transport.isConnected();
         }
 
@@ -123,20 +127,18 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
          */
         @Override
         public void activateObject(Object key, Object obj) throws Exception
-        {
-        }
+        {}
 
         /**
          * Do Noting
          */
         @Override
         public void passivateObject(Object key, Object obj) throws Exception
-        {
-        }
+        {}
     }
 
     /**
-     * Wrapper implementation of {@link Transport}, which borrows from a pool on connection, and returns to the pool on close.  
+     * Wrapper implementation of {@link Transport}, which borrows from a pool on connection, and returns to the pool on close.
      * 
      * @see AlfrescoJavaMailSender#getTransport(Session)
      */
@@ -145,13 +147,16 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
         private Transport wrapped = null;
         private String protocol;
         private GenericKeyedObjectPool pool;
-        
+
         /**
          * Default constructor.
          * 
-         * @param transportPool Pool to borrow/return transports to/from.
-         * @param session {@link Session} used to create new transports.
-         * @param protocol Mail protocol for transport.
+         * @param transportPool
+         *            Pool to borrow/return transports to/from.
+         * @param session
+         *            {@link Session} used to create new transports.
+         * @param protocol
+         *            Mail protocol for transport.
          */
         private PooledTransportWrapper(GenericKeyedObjectPool transportPool, Session session, String protocol)
         {
@@ -168,7 +173,7 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
         {
             if (wrapped == null)
             {
-                throw new IllegalStateException ("Not connected!");
+                throw new IllegalStateException("Not connected!");
             }
             wrapped.sendMessage(message, addresses);
         }
@@ -180,7 +185,7 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
         public synchronized void close() throws MessagingException
         {
             if (this.wrapped == null ||
-                isConnected() == false) 
+                    isConnected() == false)
             {
                 throw new IllegalStateException("Already closed");
             }
@@ -223,12 +228,11 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
             }
         }
 
-        
     }
-    
+
     private GenericKeyedObjectPool transportPool = new GenericKeyedObjectPool(new TransportFactory());
 
-    public AlfrescoJavaMailSender() 
+    public AlfrescoJavaMailSender()
     {
         transportPool.setMaxActive(-1);
         transportPool.setTestOnBorrow(true);
@@ -236,10 +240,9 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
         transportPool.setTimeBetweenEvictionRunsMillis(DEAFULT_TIME_BETWEEN_EVICTION_RUNS);
         transportPool.setMinEvictableIdleTimeMillis(DEAFULT_TIME_BETWEEN_EVICTION_RUNS);
     }
-    
+
     /**
-     * @return A new {@code PooledTransportWrapper} which borrows a pooled {@link Transport} on connect, and returns it to
-     *             the pool on close.  
+     * @return A new {@code PooledTransportWrapper} which borrows a pooled {@link Transport} on connect, and returns it to the pool on close.
      */
     @Override
     protected Transport getTransport(Session session) throws NoSuchProviderException
@@ -247,7 +250,6 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
         return new PooledTransportWrapper(transportPool, session, getProtocol());
 
     }
-    
 
     /**
      * Set the maximum number of active transports, managed by the pool. Use a negative value for no limit. Default is -1.
@@ -256,9 +258,9 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
     {
         transportPool.setMaxActive(maxActive);
     }
-    
+
     /**
-     * Set the maximum number of transports that can sit idle in the pool. Use a negative value for no limit. Default is 8. 
+     * Set the maximum number of transports that can sit idle in the pool. Use a negative value for no limit. Default is 8.
      */
     public void setMaxIdle(int maxIdle)
     {
@@ -266,26 +268,23 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
     }
 
     /**
-     * Set the maximum amount of time (in milliseconds) to wait for a transport to be returned from the pool.
-     * Set to 0 or less to block indefinitely. 
+     * Set the maximum amount of time (in milliseconds) to wait for a transport to be returned from the pool. Set to 0 or less to block indefinitely.
      */
     public void setMaxWait(long maxWait)
     {
         transportPool.setMaxWait(maxWait);
     }
-    
+
     /**
-     * Set the time (in milliseconds) between runs of the idle object eviction thread. Set to non-positive for no eviction.
-     * Default value is 30 seconds.
+     * Set the time (in milliseconds) between runs of the idle object eviction thread. Set to non-positive for no eviction. Default value is 30 seconds.
      */
     public void setTimeBetweenEvictionRuns(long time)
     {
         transportPool.setTimeBetweenEvictionRunsMillis(time);
     }
-    
+
     /**
-     * Set the minimum amount of time a transport may sit idle, before it is eligible for eviction. Set to non positive prevent
-     * eviction based on idle time.
+     * Set the minimum amount of time a transport may sit idle, before it is eligible for eviction. Set to non positive prevent eviction based on idle time.
      * 
      * This value has no affect if timeBetweenEvictionRuns is non positive.
      * 

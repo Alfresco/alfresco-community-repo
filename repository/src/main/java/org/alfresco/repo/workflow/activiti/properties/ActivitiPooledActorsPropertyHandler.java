@@ -40,6 +40,7 @@ import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.task.IdentityLink;
 import org.activiti.engine.task.IdentityLinkType;
 import org.activiti.engine.task.Task;
+
 import org.alfresco.repo.workflow.WorkflowAuthorityManager;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.activiti.ActivitiTaskPropertyHandler;
@@ -55,10 +56,10 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
 {
     private TaskService taskService;
     private WorkflowAuthorityManager authorityManager;
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     protected Object handleTaskProperty(Task task, TypeDefinition type, QName key, Serializable value)
     {
@@ -69,12 +70,12 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     protected Object handleDelegateTaskProperty(DelegateTask task, TypeDefinition type, QName key, Serializable value)
     {
-        List<IdentityLinkEntity> links = ((TaskEntity)task).getIdentityLinks();
+        List<IdentityLinkEntity> links = ((TaskEntity) task).getIdentityLinks();
         UserAndGroupUpdates updates = getUserAndGroupUpdates(value, links);
         updateTaskCandidates(task, updates);
         return DO_NOT_ADD;
@@ -89,7 +90,7 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
         }
         if (value instanceof NodeRef)
         {
-            return Collections.singletonList((NodeRef)value);
+            return Collections.singletonList((NodeRef) value);
         }
         throw getInvalidPropertyValueException(WorkflowModel.ASSOC_POOLED_ACTORS, value);
     }
@@ -105,7 +106,6 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
         {
             taskService.addCandidateGroup(taskId, group);
         }
-        
 
         // Remove all candidates which have been removed
         for (IdentityLink link : updates.getLinksToRemove())
@@ -113,28 +113,28 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
             if (link.getUserId() != null)
             {
                 taskService.deleteUserIdentityLink(link.getTaskId(),
-                            link.getUserId(), link.getType());
+                        link.getUserId(), link.getType());
             }
             else
             {
-                taskService.deleteGroupIdentityLink(link.getTaskId(), 
-                            link.getGroupId(), link.getType());
+                taskService.deleteGroupIdentityLink(link.getTaskId(),
+                        link.getGroupId(), link.getType());
             }
         }
     }
-    
+
     private void updateTaskCandidates(DelegateTask task, UserAndGroupUpdates updates)
     {
         // Only new candidates are present in pooledUsers and pooledGroups, create Links for these
         for (String user : updates.getUsers())
         {
-            task.addCandidateUser( user);
+            task.addCandidateUser(user);
         }
         for (String group : updates.getGroups())
         {
-            task.addCandidateGroup( group);
+            task.addCandidateGroup(group);
         }
-        
+
         // Remove all candidates which have been removed
         for (IdentityLink link : updates.linksToRemove)
         {
@@ -152,8 +152,10 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
     /**
      * Returns a DTO containing the users and groups to add and the links to remove.
      * 
-     * @param value Serializable
-     * @param links Collection<? extends IdentityLink>
+     * @param value
+     *            Serializable
+     * @param links
+     *            Collection<? extends IdentityLink>
      * @return UserAndGroupUpdates
      */
     private UserAndGroupUpdates getUserAndGroupUpdates(Serializable value, Collection<? extends IdentityLink> links)
@@ -165,27 +167,27 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
         for (NodeRef actor : actors)
         {
             String authorityName = authorityManager.getAuthorityName(actor);
-            List<String> pooledAuthorities = authorityManager.isUser(authorityName)? users : groups;
+            List<String> pooledAuthorities = authorityManager.isUser(authorityName) ? users : groups;
             pooledAuthorities.add(authorityName);
         }
-        
+
         // Removes all users and groups that are already links.
         // Also records links that are not part of the new set of users and
         // groups, in order to delete them.
         List<IdentityLink> linksToRemove = new LinkedList<IdentityLink>();
         for (IdentityLink link : links)
         {
-            if (IdentityLinkType.CANDIDATE.equals(link.getType())) 
+            if (IdentityLinkType.CANDIDATE.equals(link.getType()))
             {
                 String userId = link.getUserId();
                 if (userId != null)
                 {
-                    if (users.remove(userId)==false)
+                    if (users.remove(userId) == false)
                     {
                         linksToRemove.add(link);
                     }
                 }
-                else 
+                else
                 {
                     String groupId = link.getGroupId();
                     if (groupId != null && groups.remove(groupId) == false)
@@ -199,30 +201,32 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     protected QName getKey()
     {
         return WorkflowModel.ASSOC_POOLED_ACTORS;
     }
-    
+
     /**
-     * @param taskService the taskService to set
+     * @param taskService
+     *            the taskService to set
      */
     public void setTaskService(TaskService taskService)
     {
         this.taskService = taskService;
     }
-    
+
     /**
-     * @param authorityManager the authorityManager to set
+     * @param authorityManager
+     *            the authorityManager to set
      */
     public void setWorkflowAuthorityManager(WorkflowAuthorityManager authorityManager)
     {
         this.authorityManager = authorityManager;
     }
-    
+
     private static class UserAndGroupUpdates
     {
         private final List<String> users;

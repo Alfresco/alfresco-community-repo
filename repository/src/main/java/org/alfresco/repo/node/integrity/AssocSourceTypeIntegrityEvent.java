@@ -28,6 +28,9 @@ package org.alfresco.repo.node.integrity;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -37,8 +40,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Event to check the source type of an association
@@ -50,7 +51,7 @@ import org.apache.commons.logging.LogFactory;
 public class AssocSourceTypeIntegrityEvent extends AbstractIntegrityEvent
 {
     private static Log logger = LogFactory.getLog(AssocSourceTypeIntegrityEvent.class);
-    
+
     public AssocSourceTypeIntegrityEvent(
             NodeService nodeService,
             DictionaryService dictionaryService,
@@ -59,7 +60,7 @@ public class AssocSourceTypeIntegrityEvent extends AbstractIntegrityEvent
     {
         super(nodeService, dictionaryService, sourceNodeRef, assocTypeQName, null);
     }
-    
+
     public void checkIntegrity(List<IntegrityRecord> eventResults)
     {
         QName assocTypeQName = getTypeQName();
@@ -76,7 +77,7 @@ public class AssocSourceTypeIntegrityEvent extends AbstractIntegrityEvent
             }
             return;
         }
-        
+
         // get the association def
         AssociationDefinition assocDef = getAssocDef(eventResults, assocTypeQName);
         // the association definition must exist
@@ -84,19 +85,19 @@ public class AssocSourceTypeIntegrityEvent extends AbstractIntegrityEvent
         {
             IntegrityRecord result = new IntegrityRecord(
                     "Association type does not exist: \n" +
-                    "   Source Node: " + sourceNodeRef + "\n" +
-                    "   Source Node Type: " + sourceNodeTypeQName + "\n" +
-                    "   Association Type: " + assocTypeQName);
+                            "   Source Node: " + sourceNodeRef + "\n" +
+                            "   Source Node Type: " + sourceNodeTypeQName + "\n" +
+                            "   Association Type: " + assocTypeQName);
             eventResults.add(result);
             return;
         }
-        
+
         // perform required checks
         checkSourceType(eventResults, assocDef, sourceNodeRef, sourceNodeTypeQName);
     }
-    
+
     /**
-     * Checks that the source node type is valid for the association. 
+     * Checks that the source node type is valid for the association.
      */
     protected void checkSourceType(
             List<IntegrityRecord> eventResults,
@@ -113,10 +114,10 @@ public class AssocSourceTypeIntegrityEvent extends AbstractIntegrityEvent
             {
                 IntegrityRecord result = new IntegrityRecord(
                         "The association source type is incorrect: \n" +
-                        "   Source Node: " + sourceNodeRef + "\n" +
-                        "   Association: " + assocDef + "\n" +
-                        "   Required Source Type: " + sourceDef.getName() + "\n" +
-                        "   Actual Source Type: " + sourceNodeTypeQName);
+                                "   Source Node: " + sourceNodeRef + "\n" +
+                                "   Association: " + assocDef + "\n" +
+                                "   Required Source Type: " + sourceDef.getName() + "\n" +
+                                "   Actual Source Type: " + sourceNodeTypeQName);
                 eventResults.add(result);
             }
         }
@@ -155,10 +156,10 @@ public class AssocSourceTypeIntegrityEvent extends AbstractIntegrityEvent
                 // The association is still present
                 IntegrityRecord result = new IntegrityRecord(
                         "The association source is missing the aspect required for this association: \n" +
-                        "   Source Node: " + sourceNodeRef + "\n" +
-                        "   Association: " + assocDef + "\n" +
-                        "   Required Source Aspect: " + sourceDef.getName() + "\n" +
-                        "   Actual Source Aspects: " + sourceAspects);
+                                "   Source Node: " + sourceNodeRef + "\n" +
+                                "   Association: " + assocDef + "\n" +
+                                "   Required Source Aspect: " + sourceDef.getName() + "\n" +
+                                "   Actual Source Aspects: " + sourceAspects);
                 eventResults.add(result);
             }
         }
@@ -166,9 +167,9 @@ public class AssocSourceTypeIntegrityEvent extends AbstractIntegrityEvent
         {
             IntegrityRecord result = new IntegrityRecord(
                     "Unknown ClassDefinition subclass on the source definition: \n" +
-                    "   Source Node: " + sourceNodeRef + "\n" +
-                    "   Association: " + assocDef + "\n" +
-                    "   Source Definition: " + sourceDef.getName());
+                            "   Source Node: " + sourceNodeRef + "\n" +
+                            "   Association: " + assocDef + "\n" +
+                            "   Source Definition: " + sourceDef.getName());
             eventResults.add(result);
         }
     }

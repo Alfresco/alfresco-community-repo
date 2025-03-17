@@ -48,18 +48,14 @@ public abstract class AbstractBlogPostsCannedQueryFactory extends AbstractQNameA
     {
         List<Pair<? extends Object, SortOrder>> singlePair = new ArrayList<Pair<? extends Object, SortOrder>>(1);
         singlePair.add(new Pair<QName, SortOrder>(sortProp, sortOrder));
-        
+
         return new CannedQuerySortDetails(singlePair);
     }
-    
+
     /**
-     * Utility class to sort {@link BlogPostInfo}s on the basis of a Comparable property.
-     * Comparisons of two null properties are considered 'equal' by this comparator.
-     * Comparisons involving one null and one non-null property will return the null property as
-     * being 'before' the non-null property.
+     * Utility class to sort {@link BlogPostInfo}s on the basis of a Comparable property. Comparisons of two null properties are considered 'equal' by this comparator. Comparisons involving one null and one non-null property will return the null property as being 'before' the non-null property.
      * 
-     * Note that it is the responsibility of the calling code to ensure that the specified
-     * property values actually implement Comparable themselves.
+     * Note that it is the responsibility of the calling code to ensure that the specified property values actually implement Comparable themselves.
      */
     protected static class BlogEntityComparator extends PropertyBasedComparator<BlogEntity>
     {
@@ -67,26 +63,27 @@ public abstract class AbstractBlogPostsCannedQueryFactory extends AbstractQNameA
         {
             super(comparableProperty);
         }
-        
+
         @SuppressWarnings("unchecked")
         @Override
-        protected Comparable getProperty(BlogEntity entity) {
-           if (comparableProperty.equals(ContentModel.PROP_PUBLISHED))
-           {
-               return entity.getPublishedDate();
-           }
-           else if (comparableProperty.equals(ContentModel.PROP_CREATED))
-           {
-               return entity.getCreatedDate();
-           }
-           else if (comparableProperty.equals(BlogIntegrationModel.PROP_POSTED))
-           {
-               return entity.getPostedDate();
-           }
-           else
-           {
-               throw new IllegalArgumentException("Unsupported blog sort property: "+comparableProperty);
-           }
+        protected Comparable getProperty(BlogEntity entity)
+        {
+            if (comparableProperty.equals(ContentModel.PROP_PUBLISHED))
+            {
+                return entity.getPublishedDate();
+            }
+            else if (comparableProperty.equals(ContentModel.PROP_CREATED))
+            {
+                return entity.getCreatedDate();
+            }
+            else if (comparableProperty.equals(BlogIntegrationModel.PROP_POSTED))
+            {
+                return entity.getPostedDate();
+            }
+            else
+            {
+                throw new IllegalArgumentException("Unsupported blog sort property: " + comparableProperty);
+            }
         }
     }
 }

@@ -30,6 +30,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.session.RowBounds;
+import org.mybatis.spring.SqlSessionTemplate;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -45,8 +48,6 @@ import org.alfresco.service.cmr.subscriptions.SubscriptionItemTypeEnum;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.ibatis.session.RowBounds;
-import org.mybatis.spring.SqlSessionTemplate;
 
 public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
 {

@@ -45,12 +45,12 @@ package org.alfresco.rest.requests.search;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.restassured.RestAssured;
+import org.springframework.http.HttpMethod;
 
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.requests.ModelRequest;
 import org.alfresco.rest.search.RestShardInfoModelCollection;
-import org.springframework.http.HttpMethod;
 
 /**
  * Wrapper for Shard Info API.
@@ -60,9 +60,10 @@ import org.springframework.http.HttpMethod;
 public class ShardInfoAPI extends ModelRequest<ShardInfoAPI>
 {
     /**
-     * Constructor 
+     * Constructor
      * 
-     * @param restWrapper Rest Wrapper
+     * @param restWrapper
+     *            Rest Wrapper
      */
     public ShardInfoAPI(RestWrapper restWrapper)
     {

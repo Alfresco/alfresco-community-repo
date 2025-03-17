@@ -74,17 +74,19 @@ public class FilteredDictionaryComponent extends DictionaryComponent
     @Override
     public TypeDefinition getType(QName name)
     {
-        if (filter.isExcluded(name)) return null;  //Don't return an excluded type
+        if (filter.isExcluded(name))
+            return null; // Don't return an excluded type
         return super.getType(name);
     }
-    
+
     @Override
     public AspectDefinition getAspect(QName name)
     {
-        if (filter.isExcluded(name)) return null;  //Don't return an excluded type
+        if (filter.isExcluded(name))
+            return null; // Don't return an excluded type
         return super.getAspect(name);
     }
-    
+
     public void setFilter(QNameFilter filter)
     {
         this.filter = filter;

@@ -25,25 +25,21 @@
  */
 package org.alfresco.repo.security.authentication;
 
-import net.sf.acegisecurity.providers.dao.UsernameNotFoundException;
-import org.alfresco.error.AlfrescoRuntimeException;
-
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.context.ContextHolder;
 import net.sf.acegisecurity.providers.dao.AuthenticationDao;
+import net.sf.acegisecurity.providers.dao.UsernameNotFoundException;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * This implementation of an AuthenticationComponent can be configured to accept or reject all attempts to login.
  * 
- * This only affects attempts to login using a user name and password.
- * Authentication filters etc. could still support authentication but not via user names and passwords.
- * For example, where they set the current user using the authentication component.
- * Then the current user is set in the security context and asserted to be authenticated.
+ * This only affects attempts to login using a user name and password. Authentication filters etc. could still support authentication but not via user names and passwords. For example, where they set the current user using the authentication component. Then the current user is set in the security context and asserted to be authenticated.
  * 
  * By default, the implementation rejects all authentication attempts.
- *  
+ * 
  * @author Andy Hind
  */
 public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends AbstractAuthenticationComponent
@@ -66,10 +62,10 @@ public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends Abstract
     {
         this.accept = accept;
     }
-            
-   public void authenticateImpl(String userName, char[] password) throws AuthenticationException
+
+    public void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
-        if(accept)
+        if (accept)
         {
             setCurrentUser(userName);
         }
@@ -83,12 +79,12 @@ public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends Abstract
     @Override
     protected boolean implementationAllowsGuestLogin()
     {
-       return accept;
+        return accept;
     }
 
     public String getMD4HashedPassword(String userName)
     {
-        if(accept)
+        if (accept)
         {
             return "0cb6948805f797bf2a82807973b89537";
         }
@@ -161,7 +157,7 @@ public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends Abstract
         {
             // we log this as trace because we expect sometimes this to happen and it is ok
             logger.trace("The user was not created beforehand: " + AuthenticationUtil.maskUsername(userName)
-                + " . This is not a problem, we expect this to happen in some cases");
+                    + " . This is not a problem, we expect this to happen in some cases");
         }
     }
 }

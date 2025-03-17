@@ -42,11 +42,10 @@ public class PropertyMapperUnitTest
     private static final String DEFAULT_REPLACEMENT_TEXT = "SENSITIVE_DATA_REMOVED";
     private static final String USER_CONFIGURED_REPLACEMENT_TEXT = "HIDDEN_BY_SECURITY_CONFIG";
 
-    private final PropertyMapper defaultPropertyMapper = new ReplaceSensitivePropertyWithTextMapper(null,null);
+    private final PropertyMapper defaultPropertyMapper = new ReplaceSensitivePropertyWithTextMapper(null, null);
     private final PropertyMapper userConfiguredpropertyMapper = new ReplaceSensitivePropertyWithTextMapper(
             Set.of(ContentModel.PROP_PASSWORD, TransferModel.PROP_PASSWORD),
-            USER_CONFIGURED_REPLACEMENT_TEXT
-    );
+            USER_CONFIGURED_REPLACEMENT_TEXT);
 
     @Test
     public void shouldReplacePropertyValueWhenItsOneOfTheDefaultSensitivePropertiesWhenUsingDefaultConfig()

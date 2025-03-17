@@ -36,33 +36,35 @@ class PropertyValue
     // if true, enclose the value in double quotes (to represent a JSON string)
     // when converting to a string.
     private boolean isString = true;
-    
+
     private String value;
-    
+
     public PropertyValue(boolean isString, String value)
     {
         super();
         this.isString = isString;
         this.value = value;
     }
+
     public boolean isString()
     {
         return isString;
     }
+
     public String getValue()
     {
         return value;
     }
-    
+
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
-        if(isString)
+        if (isString)
         {
             sb.append("\""); // for json strings
         }
         sb.append(value);
-        if(isString)
+        if (isString)
         {
             sb.append("\""); // for json strings
         }

@@ -28,39 +28,46 @@ package org.alfresco.filesys.repo;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.cache.FileState;
 import org.alfresco.jlan.server.filesys.cache.FileStateCache;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Cache Lookup Search Context Class
  * 
- *  <p>Use the file state cache to check for current timestamp values for file information being returned in
- *  the current search.
+ * <p>
+ * Use the file state cache to check for current timestamp values for file information being returned in the current search.
  * 
  * @author gkspencer
  */
-public class CacheLookupSearchContext extends DotDotContentSearchContext {
+public class CacheLookupSearchContext extends DotDotContentSearchContext
+{
 
-	// Debug logging
-	
+    // Debug logging
+
     private static final Log logger = LogFactory.getLog(CacheLookupSearchContext.class);
-    
-	// File state cache
-	
-	private FileStateCache m_stateCache;
-	
+
+    // File state cache
+
+    private FileStateCache m_stateCache;
+
     /**
      * Class constructor
      * 
-     * @param cifsHelper Filesystem helper class
-     * @param results List of file/folder nodes that match the search pattern
-     * @param searchStr Search path
-     * @param relPath Relative path being searched
-     * @param stateCache File state cache
+     * @param cifsHelper
+     *            Filesystem helper class
+     * @param results
+     *            List of file/folder nodes that match the search pattern
+     * @param searchStr
+     *            Search path
+     * @param relPath
+     *            Relative path being searched
+     * @param stateCache
+     *            File state cache
      */
     protected CacheLookupSearchContext(
             CifsHelper cifsHelper,
@@ -72,61 +79,60 @@ public class CacheLookupSearchContext extends DotDotContentSearchContext {
     {
         super(cifsHelper, results, searchStr, relPath, lockedFilesAsOffline);
         super.setSearchString(searchStr);
-        
+
         m_stateCache = stateCache;
     }
-    
+
     /**
-     * Return file information for the next file in the active search. Returns false if the search
-     * is complete.
+     * Return file information for the next file in the active search. Returns false if the search is complete.
      * 
-     * @param info FileInfo to return the file information.
+     * @param info
+     *            FileInfo to return the file information.
      * @return true if the file information is valid, else false
      */
     public boolean nextFileInfo(FileInfo info)
     {
-    	// Get the file information for the next file
-    	
-    	if ( super.nextFileInfo( info) == false)
-    		return false;
-    	
-    	// We have a real file entry, check if there is a cache entry
-    	
-    	StringBuilder relPath = new StringBuilder( getRelativePath());
-    	relPath.append( info.getFileName());
-    	
-    	FileState fstate = m_stateCache.findFileState( relPath.toString());
-    	
-    	if ( fstate != null)
-    	{
-    		// Check if there are current timestamps that can be used to override the database values
-    		
-    		if ( fstate.hasAccessDateTime())
-    			info.setAccessDateTime( fstate.getAccessDateTime());
-    		
-    		if ( fstate.hasModifyDateTime())
-    			info.setModifyDateTime( fstate.getModifyDateTime());
-    		
+        // Get the file information for the next file
+
+        if (super.nextFileInfo(info) == false)
+            return false;
+
+        // We have a real file entry, check if there is a cache entry
+
+        StringBuilder relPath = new StringBuilder(getRelativePath());
+        relPath.append(info.getFileName());
+
+        FileState fstate = m_stateCache.findFileState(relPath.toString());
+
+        if (fstate != null)
+        {
+            // Check if there are current timestamps that can be used to override the database values
+
+            if (fstate.hasAccessDateTime())
+                info.setAccessDateTime(fstate.getAccessDateTime());
+
+            if (fstate.hasModifyDateTime())
+                info.setModifyDateTime(fstate.getModifyDateTime());
+
             // File used/allocation size
-            
-    		if ( fstate.hasFileSize())
-    			info.setFileSize( fstate.getFileSize());
-    		
-            if ( fstate.hasAllocationSize() && fstate.getAllocationSize() > info.getSize())
-                info.setAllocationSize( fstate.getAllocationSize());
-    		
-    		// DEBUG
-    		
-    		if ( logger.isDebugEnabled())
-    			logger.debug("Search timestamps from cache, path=" + info.getFileName());
-    	}
-    	
-    	// Indicate that the file information is valid
-    	
-    	return true;
+
+            if (fstate.hasFileSize())
+                info.setFileSize(fstate.getFileSize());
+
+            if (fstate.hasAllocationSize() && fstate.getAllocationSize() > info.getSize())
+                info.setAllocationSize(fstate.getAllocationSize());
+
+            // DEBUG
+
+            if (logger.isDebugEnabled())
+                logger.debug("Search timestamps from cache, path=" + info.getFileName());
+        }
+
+        // Indicate that the file information is valid
+
+        return true;
     }
-    
-     
+
     /**
      * Return the search as a string
      * 
@@ -142,14 +148,14 @@ public class CacheLookupSearchContext extends DotDotContentSearchContext {
         sb.append(getResultsSize());
         sb.append(",cache=");
         sb.append(m_stateCache);
-        
-//        if ( super.getDotInfo(finfo)
-//                != null)
-//        	sb.append(",Dot");
-//        if ( m_dotDotInfo != null)
-//        	sb.append(",DotDot");
+
+        // if ( super.getDotInfo(finfo)
+        // != null)
+        // sb.append(",Dot");
+        // if ( m_dotDotInfo != null)
+        // sb.append(",DotDot");
         sb.append("]");
-        
+
         return sb.toString();
     }
 }

@@ -44,12 +44,9 @@ import org.alfresco.util.Pair;
 /**
  * Category Service
  *
- * The service for querying and creating categories.
- * All other management can be carried out using the node service.
+ * The service for querying and creating categories. All other management can be carried out using the node service.
  * 
- * Classification - the groupings of categories. There is a one-to-one mapping with aspects. For example, Region. 
- * Root Category - the top level categories in a classification. For example, Northern Europe
- * Category - any other category below a root category
+ * Classification - the groupings of categories. There is a one-to-one mapping with aspects. For example, Region. Root Category - the top level categories in a classification. For example, Northern Europe Category - any other category below a root category
  * 
  * @author Andy Hind
  *
@@ -60,42 +57,50 @@ public interface CategoryService
     /**
      * Enumeration for navigation control.
      * 
-     * MEMBERS - get only category members (the things that have been classified in a category, not the sub categories)
-     * SUB_CATEGORIES - get sub categories only, not the things that hyave been classified.
-     * ALL - get both of the above
+     * MEMBERS - get only category members (the things that have been classified in a category, not the sub categories) SUB_CATEGORIES - get sub categories only, not the things that hyave been classified. ALL - get both of the above
      */
-    public enum Mode {MEMBERS, SUB_CATEGORIES, ALL};
-    
+    public enum Mode
+    {
+        MEMBERS, SUB_CATEGORIES, ALL
+    };
+
     /**
      * Depth from which to get nodes.
      * 
-     * IMMEDIATE - only immediate sub categories or members
-     * ANY - find subcategories or members at any level 
+     * IMMEDIATE - only immediate sub categories or members ANY - find subcategories or members at any level
      */
-    public enum Depth {IMMEDIATE, ANY};
+    public enum Depth
+    {
+        IMMEDIATE, ANY
+    };
 
     /**
      * Get the children of a given category node
      * 
-     * @param categoryRef - the category node
-     * @param mode - the enumeration mode for what to recover
-     * @param depth - the enumeration depth for what level to recover
+     * @param categoryRef
+     *            - the category node
+     * @param mode
+     *            - the enumeration mode for what to recover
+     * @param depth
+     *            - the enumeration depth for what level to recover
      * @return a collection of all the nodes found identified by their ChildAssocRef's
      */
     @Auditable(parameters = {"categoryRef", "mode", "depth"})
-    public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth );
+    public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth);
 
     /**
-     * Get a list of all the categories appropriate for a given property.
-     * The full list of categories that may be assigned for this aspect.
+     * Get a list of all the categories appropriate for a given property. The full list of categories that may be assigned for this aspect.
      * 
-     * @param storeRef StoreRef
-     * @param aspectQName QName
-     * @param depth - the enumeration depth for what level to recover
+     * @param storeRef
+     *            StoreRef
+     * @param aspectQName
+     *            QName
+     * @param depth
+     *            - the enumeration depth for what level to recover
      * @return a collection of all the nodes found identified by their ChildAssocRef's
      */
     @Auditable(parameters = {"storeRef", "aspectQName", "depth"})
-    public Collection<ChildAssociationRef> getCategories(StoreRef storeRef, QName aspectQName, Depth depth );
+    public Collection<ChildAssociationRef> getCategories(StoreRef storeRef, QName aspectQName, Depth depth);
 
     /**
      * Get all the classification entries
@@ -107,8 +112,10 @@ public interface CategoryService
     /**
      * Get the root categories for an aspect/classification
      * 
-     * @param storeRef StoreRef
-     * @param aspectName QName
+     * @param storeRef
+     *            StoreRef
+     * @param aspectName
+     *            QName
      */
     @Auditable(parameters = {"storeRef", "aspectName"})
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName);
@@ -116,14 +123,18 @@ public interface CategoryService
     /**
      * Get a paged list of the root categories for an aspect/classification
      * 
-     * @param storeRef StoreRef
-     * @param aspectName QName
-     * @param pagingRequest PagingRequest
-     * @param sortByName boolean
+     * @param storeRef
+     *            StoreRef
+     * @param aspectName
+     *            QName
+     * @param pagingRequest
+     *            PagingRequest
+     * @param sortByName
+     *            boolean
      */
     @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName"})
     PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName);
-    
+
     /**
      * Get a paged list of the root categories for an aspect/classification
      * 
@@ -150,7 +161,7 @@ public interface CategoryService
      */
     @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName", "exactNamesFilter", "alikeNamesFilter"})
     default PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName,
-                                                              Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+            Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
     {
         return new EmptyPagingResults<>();
     }
@@ -164,20 +175,21 @@ public interface CategoryService
         return Collections.emptyList();
     }
 
-
     /**
      * Get the root categories for an aspect/classification with names that start with filter
      * 
-     * @param storeRef StoreRef
-     * @param aspectName QName
-     * @param filter String
+     * @param storeRef
+     *            StoreRef
+     * @param aspectName
+     *            QName
+     * @param filter
+     *            String
      */
     @Auditable(parameters = {"storeRef", "aspectName"})
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, String filter);
 
     /**
-     * Looks up a category by name under its immediate parent. Index-independent so can be used for cluster-safe
-     * existence checks.
+     * Looks up a category by name under its immediate parent. Index-independent so can be used for cluster-safe existence checks.
      * 
      * @param parent
      *            the parent
@@ -189,10 +201,9 @@ public interface CategoryService
      */
     @Auditable(parameters = {"storeRef", "aspectName", "name"})
     public ChildAssociationRef getCategory(NodeRef parent, QName aspectName, String name);
-    
+
     /**
-     * Gets root categories by name, optionally creating one if one does not exist. Index-independent so can be used for
-     * cluster-safe existence checks.
+     * Gets root categories by name, optionally creating one if one does not exist. Index-independent so can be used for cluster-safe existence checks.
      * 
      * @param storeRef
      *            the store ref
@@ -218,62 +229,75 @@ public interface CategoryService
     /**
      * Create a new category.
      * 
-     * This will extend the category types in the data dictionary
-     * All it needs is the type name and the attribute in which to store noderefs to categories.
+     * This will extend the category types in the data dictionary All it needs is the type name and the attribute in which to store noderefs to categories.
      * 
-     * @param storeRef StoreRef
-     * @param aspectName QName
-     * @param attributeName String
+     * @param storeRef
+     *            StoreRef
+     * @param aspectName
+     *            QName
+     * @param attributeName
+     *            String
      */
     @Auditable(parameters = {"storeRef", "aspectName", "attributeName"})
     public NodeRef createClassification(StoreRef storeRef, QName aspectName, String attributeName);
-    
+
     /**
      * Create a new root category in the given classification
      * 
-     * @param storeRef StoreRef
-     * @param aspectName QName
-     * @param name String
+     * @param storeRef
+     *            StoreRef
+     * @param aspectName
+     *            QName
+     * @param name
+     *            String
      * @return NodeRef
      */
     @Auditable(parameters = {"storeRef", "aspectName", "name"})
     public NodeRef createRootCategory(StoreRef storeRef, QName aspectName, String name);
-    
+
     /**
-     *  Create a new category.
+     * Create a new category.
      * 
-     * @param parent NodeRef
-     * @param name String
+     * @param parent
+     *            NodeRef
+     * @param name
+     *            String
      * @return NodeRef
      */
     @Auditable(parameters = {"parent", "name"})
     public NodeRef createCategory(NodeRef parent, String name);
-    
+
     /**
      * Delete a classification
      * 
-     * @param storeRef StoreRef
-     * @param aspectName QName
+     * @param storeRef
+     *            StoreRef
+     * @param aspectName
+     *            QName
      */
     @Auditable(parameters = {"storeRef", "aspectName"})
     public void deleteClassification(StoreRef storeRef, QName aspectName);
-    
+
     /**
      * Delete a category
      * 
-     * @param nodeRef NodeRef
+     * @param nodeRef
+     *            NodeRef
      */
     @Auditable(parameters = {"nodeRef"})
     public void deleteCategory(NodeRef nodeRef);
 
-   /**
-    * Get the most polular categories
-    *
-    * @param storeRef StoreRef
-    * @param aspectName QName
-    * @param count int
-    * @return List
-    */
+    /**
+     * Get the most polular categories
+     *
+     * @param storeRef
+     *            StoreRef
+     * @param aspectName
+     *            QName
+     * @param count
+     *            int
+     * @return List
+     */
     @Auditable(parameters = {"storeRef", "aspectName", "count"})
     public List<Pair<NodeRef, Integer>> getTopCategories(StoreRef storeRef, QName aspectName, int count);
 

@@ -32,11 +32,12 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for KeyedAuditDefinition complex type.
+ * <p>
+ * Java class for KeyedAuditDefinition complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="KeyedAuditDefinition">
@@ -53,11 +54,12 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "KeyedAuditDefinition")
 @XmlSeeAlso({
-    RecordValue.class,
-    AuditPath.class,
-    GenerateValue.class
+        RecordValue.class,
+        AuditPath.class,
+        GenerateValue.class
 })
-public class KeyedAuditDefinition {
+public class KeyedAuditDefinition
+{
 
     @XmlAttribute(required = true)
     protected String key;
@@ -65,12 +67,11 @@ public class KeyedAuditDefinition {
     /**
      * Gets the value of the key property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * @return possible object is {@link String }
+     * 
      */
-    public String getKey() {
+    public String getKey()
+    {
         return key;
     }
 
@@ -78,11 +79,11 @@ public class KeyedAuditDefinition {
      * Sets the value of the key property.
      * 
      * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *            allowed object is {@link String }
+     * 
      */
-    public void setKey(String value) {
+    public void setKey(String value)
+    {
         this.key = value;
     }
 

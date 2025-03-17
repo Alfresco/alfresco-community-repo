@@ -29,6 +29,14 @@ package org.alfresco.repo.rendition.executer;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.custommonkey.xmlunit.Diff;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
@@ -49,13 +57,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.custommonkey.xmlunit.Diff;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Brian
@@ -85,7 +86,7 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
         this.xsltProcessor = (TemplateProcessor) this.applicationContext.getBean("xsltProcessor");
         this.templateService = (TemplateService) this.applicationContext.getBean("TemplateService");
         this.renditionService = (RenditionService) this.applicationContext.getBean("RenditionService");
-        
+
         this.companyHome = this.applicationContext.getBean("repositoryHelper", Repository.class).getCompanyHome();
     }
 
@@ -101,13 +102,13 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
             def.setParameterValue(XSLTRenderingEngine.PARAM_TEMPLATE_NODE, xslFile.getNodeRef());
 
             ChildAssociationRef rendition = renditionService.render(file.getNodeRef(), def);
-            
+
             assertNotNull(rendition);
-            
+
             ContentReader reader = contentService.getReader(rendition.getChildRef(), ContentModel.PROP_CONTENT);
             assertNotNull(reader);
             String output = reader.getContentString();
-            
+
             log.debug("XSLT Processor output: " + output);
             assertEquals("Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate", output);
         }
@@ -117,7 +118,6 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
             fail();
         }
     }
-
 
     @Test
     public void testSimplestTemplateWithTargetPath() throws Exception
@@ -134,16 +134,16 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
             RenditionDefinition def = renditionService.createRenditionDefinition(QName.createQName("Test"), XSLTRenderingEngine.NAME);
             def.setParameterValue(XSLTRenderingEngine.PARAM_TEMPLATE_NODE, xslFile.getNodeRef());
             def.setParameterValue(RenditionService.PARAM_DESTINATION_PATH_TEMPLATE, "output/path/for/rendition/output.txt");
-            
+
             ChildAssociationRef rendition = renditionService.render(file.getNodeRef(), def);
-            
+
             assertNotNull(rendition);
             assertEquals(2, nodeService.getParentAssocs(rendition.getChildRef()).size());
-            
+
             ContentReader reader = contentService.getReader(rendition.getChildRef(), ContentModel.PROP_CONTENT);
             assertNotNull(reader);
             String output = reader.getContentString();
-            
+
             log.debug("XSLT Processor output: " + output);
             assertEquals("Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate", output);
         }
@@ -159,7 +159,6 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
 
     }
 
-
     @Test
     public void testParseXMLDocument() throws Exception
     {
@@ -173,13 +172,13 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
             def.setParameterValue(XSLTRenderingEngine.PARAM_TEMPLATE_NODE, xslFile.getNodeRef());
 
             ChildAssociationRef rendition = renditionService.render(file.getNodeRef(), def);
-            
+
             assertNotNull(rendition);
-            
+
             ContentReader reader = contentService.getReader(rendition.getChildRef(), ContentModel.PROP_CONTENT);
             assertNotNull(reader);
             String output = reader.getContentString();
-            
+
             log.debug("XSLT Processor output: " + output);
             assertEquals("Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate", output);
         }
@@ -210,21 +209,21 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
             def.setParameterValue(XSLTRenderingEngine.PARAM_TEMPLATE_NODE, xslFile.getNodeRef());
 
             ChildAssociationRef rendition = renditionService.render(file.getNodeRef(), def);
-            
+
             assertNotNull(rendition);
-            
+
             ContentReader reader = contentService.getReader(rendition.getChildRef(), ContentModel.PROP_CONTENT);
             assertNotNull(reader);
             String output = reader.getContentString();
-            
+
             log.debug("XSLT Processor output: " + output);
             assertEquals(
-                    "Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate"+
-                    "Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate"+
-                    "Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate"+
-                    "Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate"+
-                    "Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate"
-                    , output);
+                    "Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate" +
+                            "Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate" +
+                            "Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate" +
+                            "Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate" +
+                            "Avocado DipBagels, New York StyleBeef Frankfurter, Quarter PoundChicken Pot PieCole SlawEggsHazelnut SpreadPotato ChipsSoy Patties, GrilledTruffles, Dark Chocolate",
+                    output);
         }
         catch (Exception ex)
         {
@@ -246,13 +245,13 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
             def.setParameterValue(XSLTRenderingEngine.PARAM_TEMPLATE_NODE, testImportTable.getNodeRef());
 
             ChildAssociationRef rendition = renditionService.render(file.getNodeRef(), def);
-            
+
             assertNotNull(rendition);
-            
+
             ContentReader reader = contentService.getReader(rendition.getChildRef(), ContentModel.PROP_CONTENT);
             assertNotNull(reader);
             String output = reader.getContentString();
-            
+
             log.debug("XSLT Processor output: " + output);
             Diff myDiff = new Diff("<html>\n<body>\n<h2>My CD Collection</h2>\n<table border=\"1\">\n<tr bgcolor=\"#9acd32\">\n<th>Title</th><th>Artist</th>\n</tr>\n<tr>\n<td></td><td></td>\n</tr>\n</table>\n</body>\n</html>\n", output);
             assertTrue("Pieces of XML are similar " + myDiff, myDiff.similar());
@@ -287,7 +286,7 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
 
     private String sampleXML = "<?xml version=\"1.0\"?>" + "<nutrition>" +
 
-    "<daily-values>" + "<total-fat units=\"g\">65</total-fat>" + "<saturated-fat units=\"g\">20</saturated-fat>"
+            "<daily-values>" + "<total-fat units=\"g\">65</total-fat>" + "<saturated-fat units=\"g\">20</saturated-fat>"
             + "<cholesterol units=\"mg\">300</cholesterol>" + "<sodium units=\"mg\">2400</sodium>"
             + "<carb units=\"g\">300</carb>" + "<fiber units=\"g\">25</fiber>" + "<protein units=\"g\">50</protein>"
             + "</daily-values>" +
@@ -357,62 +356,61 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
 
             "</nutrition>";
 
-    
     private String verySimpleXSLT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<xsl:stylesheet version=\"1.0\"  "
-    + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" "
-    + "xmlns:fn=\"http://www.w3.org/2005/02/xpath-functions\"> " + "<xsl:output method=\"text\" />" +
+            + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" "
+            + "xmlns:fn=\"http://www.w3.org/2005/02/xpath-functions\"> " + "<xsl:output method=\"text\" />" +
 
-    "<xsl:preserve-space elements=\"*\"/>" +
+            "<xsl:preserve-space elements=\"*\"/>" +
 
-    "<xsl:template match=\"/\">" + "<xsl:for-each select=\"/nutrition/food\">"
-    + "<xsl:value-of select=\"name\"/>" + "</xsl:for-each>" + "</xsl:template>" + "</xsl:stylesheet>";
+            "<xsl:template match=\"/\">" + "<xsl:for-each select=\"/nutrition/food\">"
+            + "<xsl:value-of select=\"name\"/>" + "</xsl:for-each>" + "</xsl:template>" + "</xsl:stylesheet>";
 
     private String callParseXmlDocument = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<xsl:stylesheet version=\"1.0\"  "
-    + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" "
-    + "xmlns:fn=\"http://www.w3.org/2005/02/xpath-functions\"> " + "<xsl:output method=\"text\" />" +
+            + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" "
+            + "xmlns:fn=\"http://www.w3.org/2005/02/xpath-functions\"> " + "<xsl:output method=\"text\" />" +
 
-    "<xsl:preserve-space elements=\"*\"/>" +
+            "<xsl:preserve-space elements=\"*\"/>" +
 
-    "<xsl:variable name=\"cf\" select=\"alf:parseXMLDocument('TestXML.xml')\"/>" +
-    "<xsl:template match=\"/\">" + "<xsl:for-each select=\"$cf/food\">"
-    + "<xsl:value-of select=\"name\"/>" + "</xsl:for-each>" + "</xsl:template>" + "</xsl:stylesheet>";
+            "<xsl:variable name=\"cf\" select=\"alf:parseXMLDocument('TestXML.xml')\"/>" +
+            "<xsl:template match=\"/\">" + "<xsl:for-each select=\"$cf/food\">"
+            + "<xsl:value-of select=\"name\"/>" + "</xsl:for-each>" + "</xsl:template>" + "</xsl:stylesheet>";
 
     private String callParseXmlDocuments = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<xsl:stylesheet version=\"1.0\"  "
-    + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" "
-    + "xmlns:fn=\"http://www.w3.org/2005/02/xpath-functions\"> " + "<xsl:output method=\"text\" />" +
+            + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" "
+            + "xmlns:fn=\"http://www.w3.org/2005/02/xpath-functions\"> " + "<xsl:output method=\"text\" />" +
 
-    "<xsl:preserve-space elements=\"*\"/>" +
+            "<xsl:preserve-space elements=\"*\"/>" +
 
-    "<xsl:variable name=\"all_docs\" select=\"alf:parseXMLDocuments('cm:content', 'path/to/xml/files')\"/>" +
-    "<xsl:template match=\"/\">" + "<xsl:for-each select=\"$all_docs//food\">"
-    + "<xsl:value-of select=\"name\"/>" + "</xsl:for-each>" + "</xsl:template>" + "</xsl:stylesheet>";
+            "<xsl:variable name=\"all_docs\" select=\"alf:parseXMLDocuments('cm:content', 'path/to/xml/files')\"/>" +
+            "<xsl:template match=\"/\">" + "<xsl:for-each select=\"$all_docs//food\">"
+            + "<xsl:value-of select=\"name\"/>" + "</xsl:for-each>" + "</xsl:template>" + "</xsl:stylesheet>";
 
     private String testTableXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>" + "<xsl:stylesheet version=\"1.0\"  "
-    + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">"
-    + "<xsl:template match=\"/\">"
-    + "<html>"
-    + "<body>"
-    + "<h2>My CD Collection</h2>"
-    + "<table border=\"1\">"
-    + "<tr bgcolor=\"#9acd32\">"
-    + "<th>Title</th>"
-    + "<th>Artist</th>"
-    + "</tr>"
-    + "<tr>"
-    + "<td><xsl:value-of select=\"catalog/cd/title\"/></td>"
-    + "<td><xsl:value-of select=\"catalog/cd/artist\"/></td>"
-    + "</tr>"
-    + "</table>"
-    + "</body>"
-    + "</html>"
-    + "</xsl:template>"
-    + "</xsl:stylesheet>";
+            + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">"
+            + "<xsl:template match=\"/\">"
+            + "<html>"
+            + "<body>"
+            + "<h2>My CD Collection</h2>"
+            + "<table border=\"1\">"
+            + "<tr bgcolor=\"#9acd32\">"
+            + "<th>Title</th>"
+            + "<th>Artist</th>"
+            + "</tr>"
+            + "<tr>"
+            + "<td><xsl:value-of select=\"catalog/cd/title\"/></td>"
+            + "<td><xsl:value-of select=\"catalog/cd/artist\"/></td>"
+            + "</tr>"
+            + "</table>"
+            + "</body>"
+            + "</html>"
+            + "</xsl:template>"
+            + "</xsl:stylesheet>";
 
     private String testImportTableXml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>" + "<xsl:stylesheet version=\"1.0\"  "
-    + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">"
-    + "<xsl:import href=\"TestTableXML.xml\"/>"
-    + "<xsl:template match=\"/\">"
-    + "<xsl:apply-imports/>"
-    + "</xsl:template>"
-    + "</xsl:stylesheet>";
+            + "xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\">"
+            + "<xsl:import href=\"TestTableXML.xml\"/>"
+            + "<xsl:template match=\"/\">"
+            + "<xsl:apply-imports/>"
+            + "</xsl:template>"
+            + "</xsl:stylesheet>";
 }

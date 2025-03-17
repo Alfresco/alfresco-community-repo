@@ -40,6 +40,16 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import javax.crypto.SealedObject;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.test.annotation.Commit;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
@@ -83,21 +93,11 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.test.annotation.Commit;
-import org.springframework.test.context.transaction.TestTransaction;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Provides a base set of tests of the various {@link org.alfresco.service.cmr.repository.NodeService}
- * implementations.
+ * Provides a base set of tests of the various {@link org.alfresco.service.cmr.repository.NodeService} implementations.
  * <p>
- * To test a specific incarnation of the service, the method
- * {@link #getNodeService()} must be implemented.
+ * To test a specific incarnation of the service, the method {@link #getNodeService()} must be implemented.
  * 
  * @see #nodeService
  * @see #rootNodeRef
@@ -111,10 +111,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
 {
     public static final String NAMESPACE = "http://www.alfresco.org/test/BaseNodeServiceTest";
     public static final String TEST_PREFIX = "test";
-    
+
     public static final String DEFAULT_VALUE = "defaultValue";
     public static final String NOT_DEFAULT_VALUE = "notDefaultValue";
-     
+
     public static final QName TYPE_QNAME_TEST_CONTENT = QName.createQName(NAMESPACE, "content");
     public static final QName TYPE_QNAME_TEST_MANY_PROPERTIES = QName.createQName(NAMESPACE, "many-properties");
     public static final QName TYPE_QNAME_TEST_MAFullNodeServiceTestNY_PROPERTIES_ENCRYPTED = QName.createQName(NAMESPACE, "many-properties-encrypted");
@@ -144,7 +144,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName PROP_QNAME_CATEGORY_VALUE = QName.createQName(NAMESPACE, "categoryValue");
     public static final QName PROP_QNAME_LOCALE_VALUE = QName.createQName(NAMESPACE, "localeValue");
     public static final QName PROP_QNAME_NULL_VALUE = QName.createQName(NAMESPACE, "nullValue");
-    public static final QName PROP_QNAME_MULTI_VALUE = QName.createQName(NAMESPACE, "multiValue");   
+    public static final QName PROP_QNAME_MULTI_VALUE = QName.createQName(NAMESPACE, "multiValue");
     public static final QName PROP_QNAME_PERIOD_VALUE = QName.createQName(NAMESPACE, "periodValue");
     public static final QName PROP_QNAME_MULTI_ML_VALUE = QName.createQName(NAMESPACE, "multiMLValue");
     public static final QName PROP_QNAME_MARKER_PROP = QName.createQName(NAMESPACE, "markerProp");
@@ -157,11 +157,11 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName ASPECT_RESIDUAL = QName.createQName(NAMESPACE, "residual");
     public static final QName PROP_QNAME_RESIDUAL_STRING = QName.createQName(NAMESPACE, "residualString");
     public static final QName PROP_QNAME_RESIDUAL_LONG = QName.createQName(NAMESPACE, "residualLong");
-    
+
     public static final QName ASPECT_WITH_ASSOCIATIONS = QName.createQName(NAMESPACE, "withAssociations");
     public static final QName ASSOC_ASPECT_CHILD_ASSOC = QName.createQName(NAMESPACE, "aspect-child-assoc");
     public static final QName ASSOC_ASPECT_NORMAL_ASSOC = QName.createQName(NAMESPACE, "aspect-normal-assoc");
-    
+
     public static final QName ASPECT_WITH_ASSOCIATIONS_EXTRA = QName.createQName(NAMESPACE, "withAssociationsExtra");
     public static final QName ASSOC_ASPECT_CHILD_ASSOC_01 = QName.createQName(NAMESPACE, "aspect-child-assoc-01");
     public static final QName ASSOC_ASPECT_CHILD_ASSOC_02 = QName.createQName(NAMESPACE, "aspect-child-assoc-02");
@@ -173,7 +173,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName PROP_QNAME_STRING_PROP_MULTIPLE = QName.createQName(NAMESPACE, "stringprop-multiple");
     public static final QName PROP_QNAME_ANY_PROP_SINGLE = QName.createQName(NAMESPACE, "anyprop-single");
     public static final QName PROP_QNAME_ANY_PROP_MULTIPLE = QName.createQName(NAMESPACE, "anyprop-multiple");
-    
+
     public static final QName ASPECT_WITH_ENCRYPTED = QName.createQName(NAMESPACE, "withEncrypted");
     public static final QName PROP_QNAME_ENCRYPTED_VALUE = QName.createQName(NAMESPACE, "encryptedValue");
 
@@ -193,15 +193,15 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public void before()
     {
         metadataEncryptor = (MetadataEncryptor) applicationContext.getBean("metadataEncryptor");
-        
+
         transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
         retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
         policyComponent = (PolicyComponent) applicationContext.getBean("policyComponent");
         authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         contentService = (ContentService) applicationContext.getBean("contentService");
-        
+
         authenticationComponent.setSystemUserAsCurrentUser();
-        
+
         DictionaryDAO dictionaryDao = (DictionaryDAO) applicationContext.getBean("dictionaryDAO");
         // load the system model
         ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
@@ -214,30 +214,30 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertNotNull(modelStream);
         model = M2Model.createModel(modelStream);
         dictionaryDao.putModel(model);
-        
+
         DictionaryComponent dictionary = new DictionaryComponent();
         dictionary.setDictionaryDAO(dictionaryDao);
         dictionaryService = loadModel(applicationContext);
-        
+
         nodeService = getNodeService();
-        
+
         // create a first store directly
         StoreRef storeRef = nodeService.createStore(
                 StoreRef.PROTOCOL_WORKSPACE,
                 "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
-        
+
         StoreRef catStoreRef = nodeService.createStore(
                 StoreRef.PROTOCOL_WORKSPACE,
                 "Test_cat_" + System.currentTimeMillis());
         NodeRef catRootNodeRef = nodeService.getRootNode(catStoreRef);
-        
+
         cat = nodeService.createNode(catRootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
-        
+
         // downgrade integrity checks
         IntegrityChecker.setWarnInTransaction();
     }
-    
+
     @After
     public void after()
     {
@@ -268,24 +268,24 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertNotNull(modelStream);
         model = M2Model.createModel(modelStream);
         dictionaryDao.putModel(model);
-        
+
         DictionaryComponent dictionary = new DictionaryComponent();
         dictionary.setDictionaryDAO(dictionaryDao);
         // done
         return dictionary;
     }
-    
+
     /**
-     * Usually just implemented by fetching the bean directly from the bean factory,
-     * for example:
+     * Usually just implemented by fetching the bean directly from the bean factory, for example:
      * <p>
+     * 
      * <pre>
-     *      return (NodeService) applicationContext.getBean("dbNodeService");
+     * return (NodeService) applicationContext.getBean("dbNodeService");
      * </pre>
+     * 
      * The <tt>NodeService<tt> returned must support cascade deletion.
      * 
-     * @return Returns the implementation of <code>NodeService</code> to be
-     *      used for this test.  It must have transaction demarcation.
+     * @return Returns the implementation of <code>NodeService</code> to be used for this test. It must have transaction demarcation.
      */
     protected abstract NodeService getNodeService();
 
@@ -307,6 +307,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
 
     /**
      * Builds a graph of child associations as follows:
+     * 
      * <pre>
      * Level 0:     root
      * Level 1:     root_p_n1   root_p_n2
@@ -316,17 +317,15 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
      * </pre>
      * <p>
      * <ul>
-     *   <li>Apart from the root node having the root aspect, node 6 (<b>n6</b>) also has the
-     *       root aspect.</li>
-     *   <li><b>n3</b> has properties <code>animal = monkey</code> and
-     *       <code>reference = <b>n2</b>.toString()</code>.</li>
-     *   <li>All nodes are of type {@link ContentModel#TYPE_CONTAINER container}
-     *       with the exception of <b>n8</b>, which is of type {@link #TYPE_QNAME_TEST_CONTENT test:content}</li>
+     * <li>Apart from the root node having the root aspect, node 6 (<b>n6</b>) also has the root aspect.</li>
+     * <li><b>n3</b> has properties <code>animal = monkey</code> and <code>reference = <b>n2</b>.toString()</code>.</li>
+     * <li>All nodes are of type {@link ContentModel#TYPE_CONTAINER container} with the exception of <b>n8</b>, which is of type {@link #TYPE_QNAME_TEST_CONTENT test:content}</li>
      * </ul>
      * <p>
      * The namespace URI for all associations is <b>{@link BaseNodeServiceTest#NAMESPACE}</b>.
      * <p>
      * The naming convention is:
+     * 
      * <pre>
      * n2_p_n5
      * n4_n5
@@ -336,8 +335,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
      *      n4 is any other non-primary parent
      * </pre>
      * <p>
-     * The session is flushed to ensure that persistence occurs correctly.  It is
-     * cleared to ensure that fetches against the created data are correct.
+     * The session is flushed to ensure that persistence occurs correctly. It is cleared to ensure that fetches against the created data are correct.
      * 
      * @return Returns a map <code>ChildAssocRef</code> instances keyed by qualified assoc name
      */
@@ -350,7 +348,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         ChildAssociationRef assoc = null;
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         Map<QName, ChildAssociationRef> ret = new HashMap<QName, ChildAssociationRef>(13);
-        
+
         // LEVEL 0
 
         // LEVEL 1
@@ -365,7 +363,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         NodeRef n2 = assoc.getChildRef();
 
         // LEVEL 2
-        
+
         properties.clear();
         properties.put(QName.createQName(ns, "animal"), "monkey");
         properties.put(QName.createQName(ns, "UPPERANIMAL"), "MONKEY");
@@ -381,16 +379,16 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         slist.add("first");
         slist.add("second");
         slist.add("third");
-       
+
         properties.put(QName.createQName(ns, "mvp"), slist);
-        
+
         ArrayList<Integer> ilist = new ArrayList<Integer>();
         ilist.add(Integer.valueOf(1));
         ilist.add(Integer.valueOf(2));
         ilist.add(Integer.valueOf(3));
-        
+
         properties.put(QName.createQName(ns, "mvi"), ilist);
-        
+
         qname = QName.createQName(ns, "n1_p_n3");
         assoc = nodeService.createNode(n1, ASSOC_TYPE_QNAME_TEST_CHILDREN, qname, ContentModel.TYPE_CONTAINER, properties);
         ret.put(qname, assoc);
@@ -417,7 +415,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         NodeRef n6 = assoc.getChildRef();
         nodeService.addAspect(n6,
                 ContentModel.ASPECT_ROOT,
-                Collections.<QName, Serializable>emptyMap());
+                Collections.<QName, Serializable> emptyMap());
 
         qname = QName.createQName(ns, "n4_n6");
         assoc = nodeService.addChild(n4, n6, ASSOC_TYPE_QNAME_TEST_CHILDREN, qname);
@@ -447,7 +445,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // done
         return ret;
     }
-    
+
     /**
      * @return Returns a reference to the created store
      */
@@ -465,10 +463,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public void testCreateStore() throws Exception
     {
         StoreRef storeRef = createStore();
-        
+
         // check that it exists
         assertTrue("NodeService reports that store doesn't exist", nodeService.exists(storeRef));
-        
+
         // get the root node
         NodeRef storeRootNode = nodeService.getRootNode(storeRef);
         // make sure that it has the root aspect
@@ -483,10 +481,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public void testGetStores() throws Exception
     {
         StoreRef storeRef = createStore();
-        
+
         // get all stores
         List<StoreRef> storeRefs = nodeService.getStores();
-        
+
         // check that the store ref is present
         assertTrue("New store not present is list of stores", storeRefs.contains(storeRef));
     }
@@ -511,12 +509,12 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         policyComponent.bindClassBehaviour(
                 OnDeleteNodePolicy.QNAME,
                 policy,
-                new JavaBehaviour(policy, "onDeleteNode"));   
+                new JavaBehaviour(policy, "onDeleteNode"));
         policyComponent.bindClassBehaviour(
                 BeforeDeleteNodePolicy.QNAME,
                 policy,
-                new JavaBehaviour(policy, "beforeDeleteNode"));   
-        
+                new JavaBehaviour(policy, "beforeDeleteNode"));
+
         // get all stores
         List<StoreRef> storeRefs = nodeService.getStores();
         // check that the store ref is present
@@ -539,7 +537,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // They should not exist as far as external code is concerned
         assertFalse("Store should still exist", nodeService.exists(storeRef));
         assertFalse("Node should still exist", nodeService.exists(rootNodeRef));
-        
+
         // Check that we received callbacks
         assertEquals("Incorrect number of node beforeDelete notifications", 1, beforeDeleteNodeRefs.size());
         assertEquals("Incorrect node for beforeDelete callback", nodeRef, beforeDeleteNodeRefs.get(0));
@@ -605,7 +603,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             // Expected
         }
     }
-    
+
     /**
      * Tests node creation with a pre-determined {@link ContentModel#PROP_NODE_UUID uuid}.
      */
@@ -651,19 +649,19 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 QName.createQName("setTypeTest"),
                 TYPE_QNAME_TEST_CONTENT).getChildRef();
         assertEquals(TYPE_QNAME_TEST_CONTENT, this.nodeService.getType(nodeRef));
-        
+
         assertNull(this.nodeService.getProperty(nodeRef, PROP_QNAME_PROP1));
-        
+
         // Now change the type
         this.nodeService.setType(nodeRef, TYPE_QNAME_EXTENDED_CONTENT);
         assertEquals(TYPE_QNAME_EXTENDED_CONTENT, this.nodeService.getType(nodeRef));
-        
+
         // Check new defaults
         Serializable defaultValue = this.nodeService.getProperty(nodeRef, PROP_QNAME_PROP1);
         assertNotNull("No default property value assigned", defaultValue);
         assertEquals(DEFAULT_VALUE, defaultValue);
     }
-    
+
     /**
      * Fills the given property map with some values according to the property definitions on the given class
      */
@@ -674,7 +672,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         {
             throw new RuntimeException("No such class: " + qname);
         }
-        Map<QName,PropertyDefinition> propertyDefs = classDef.getProperties();
+        Map<QName, PropertyDefinition> propertyDefs = classDef.getProperties();
         // make up a property value for each property
         for (Map.Entry<QName, PropertyDefinition> entry : propertyDefs.entrySet())
         {
@@ -715,10 +713,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             properties.put(propertyQName, value);
         }
     }
-    
+
     /**
-     * Checks that aspects can be added, removed and queried.  Failure to detect
-     * inadequate properties is also checked.
+     * Checks that aspects can be added, removed and queried. Failure to detect inadequate properties is also checked.
      */
     @Test
     public void testAspects() throws Exception
@@ -745,21 +742,21 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertEquals("Aspect properties not added",
                 propertiesBefore.size() + 2,
                 propertiesAfter.size());
-        
+
         // check that we know that the aspect is present
         Set<QName> aspects = nodeService.getAspects(nodeRef);
         assertTrue("Titled aspect not present",
                 aspects.contains(BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED));
-        
+
         // check that hasAspect works
         boolean hasAspect = nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED);
         assertTrue("Aspect not confirmed to be on node", hasAspect);
-        
+
         // remove the aspect
         nodeService.removeAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED);
         hasAspect = nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED);
         assertFalse("Aspect not removed from node", hasAspect);
-        
+
         // check that the associated properties were removed
         propertiesAfter = nodeService.getProperties(nodeRef);
         assertEquals("Aspect properties not removed",
@@ -783,7 +780,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // Ensure that the aspect was automatically added
         assertTrue("Aspect not automatically added during 'createNode'",
                 nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED));
-        
+
         // Remove the aspect and test using setProperties
         nodeService.removeAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED);
         properties = nodeService.getProperties(nodeRef);
@@ -795,7 +792,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         nodeService.setProperties(nodeRef, properties);
         assertTrue("Aspect not automatically added during 'setProperties'",
                 nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED));
-        
+
         // Remove the aspect and test using addProperties
         nodeService.removeAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED);
         properties = new HashMap<QName, Serializable>(5);
@@ -803,20 +800,20 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         nodeService.addProperties(nodeRef, properties);
         assertTrue("Aspect not automatically added during 'addProperties'",
                 nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED));
-        
+
         // Remove the aspect and test using setProperty
         nodeService.removeAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED);
         nodeService.setProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_TEST_DESCRIPTION, "A description");
         assertTrue("Aspect not automatically added during 'setProperty'",
                 nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_TITLED));
-        
+
         // Check that aspects with further mandatory aspects are added properly
         nodeService.setProperty(nodeRef, BaseNodeServiceTest.PROP_QNAME_MARKER_PROP, "Marker value");
         assertTrue("Aspect not automatically added during 'setProperty'",
                 nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_MARKER));
         assertTrue("Aspect not automatically added during 'setProperty' (second-level)",
                 nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_QNAME_TEST_MARKER2));
-        
+
         // Check that child association creation adds the aspect to the parent
         NodeRef childNodeRef = nodeService.createNode(
                 nodeRef,
@@ -826,11 +823,11 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertTrue("Aspect not automatically added by child association during 'createNode'",
                 nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASPECT_WITH_ASSOCIATIONS));
         assertFalse("Unexpected 'aspect' added by child association during 'createNode'",
-               nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASSOC_ASPECT_CHILD_ASSOC));
-        
+                nodeService.hasAspect(nodeRef, BaseNodeServiceTest.ASSOC_ASPECT_CHILD_ASSOC));
+
         nodeService.removeAspect(nodeRef, BaseNodeServiceTest.ASPECT_WITH_ASSOCIATIONS);
         assertFalse("Child node should have been deleted", nodeService.exists(childNodeRef));
-        
+
         // Check that normal association creation adds the aspect to the source
         nodeService.createAssociation(nodeRef, rootNodeRef, BaseNodeServiceTest.ASSOC_ASPECT_NORMAL_ASSOC);
         assertTrue("Aspect not automatically added by peer association during 'createAssociation'",
@@ -848,14 +845,14 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName(BaseNodeServiceTest.NAMESPACE, "testAspectRemoval-source"),
                 ContentModel.TYPE_CONTAINER).getChildRef();
-        
+
         // Create a target for the associations
         NodeRef targetNodeRef = nodeService.createNode(
                 rootNodeRef,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName(BaseNodeServiceTest.NAMESPACE, "testAspectRemoval-target"),
                 ContentModel.TYPE_CONTAINER).getChildRef();
-        
+
         // Add the aspect to the source
         nodeService.addAspect(sourceNodeRef, ASPECT_WITH_ASSOCIATIONS, null);
         // Make the associations
@@ -865,16 +862,16 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ASSOC_ASPECT_CHILD_ASSOC,
                 QName.createQName(NAMESPACE, "aspect-child"));
         nodeService.createAssociation(sourceNodeRef, targetNodeRef, ASSOC_ASPECT_NORMAL_ASSOC);
-        
+
         // Check that the correct associations are present
         assertEquals("Expected exactly one child",
                 1, nodeService.getChildAssocs(sourceNodeRef).size());
         assertEquals("Expected exactly one target",
                 1, nodeService.getTargetAssocs(sourceNodeRef, RegexQNamePattern.MATCH_ALL).size());
-        
+
         // Now remove the aspect
         nodeService.removeAspect(sourceNodeRef, ASPECT_WITH_ASSOCIATIONS);
-        
+
         // Check that the associations were removed
         assertEquals("Expected exactly zero child",
                 0, nodeService.getChildAssocs(sourceNodeRef).size());
@@ -882,7 +879,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 0, nodeService.getTargetAssocs(sourceNodeRef, RegexQNamePattern.MATCH_ALL).size());
 
         // Force different cleanup queries:
-        //    ALF-5308: SQL error when changing name for record / folder with dispostion schedule applied
+        // ALF-5308: SQL error when changing name for record / folder with dispostion schedule applied
         nodeService.addAspect(sourceNodeRef, ASPECT_WITH_ASSOCIATIONS_EXTRA, null);
         // Make the associations
         nodeService.addChild(
@@ -899,10 +896,12 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         nodeService.createAssociation(sourceNodeRef, targetNodeRef, ASSOC_ASPECT_NORMAL_ASSOC_02);
         nodeService.removeAspect(sourceNodeRef, ASPECT_WITH_ASSOCIATIONS_EXTRA);
     }
-    
+
     /**
      * Test <a href="https://issues.alfresco.com/jira/browse/ALFCOM-2299">ALFCOM-2299</a>
-     * <p>Needs to be committed for good measure</p>
+     * <p>
+     * Needs to be committed for good measure
+     * </p>
      */
     @Commit
     @Test
@@ -914,7 +913,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName(BaseNodeServiceTest.NAMESPACE, "testAspectRemovalCascadeDelete"),
                 ContentModel.TYPE_CONTAINER).getChildRef();
-        
+
         // Add the aspect to the source node and add a child using an association defined on the aspect
         nodeService.addAspect(sourceNodeRef, ASPECT_WITH_ASSOCIATIONS, null);
         NodeRef targetNodeRef = nodeService.createNode(
@@ -922,42 +921,43 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ASSOC_ASPECT_CHILD_ASSOC,
                 QName.createQName(BaseNodeServiceTest.NAMESPACE, "testAspectRemovalCascadeDelete"),
                 ContentModel.TYPE_CONTAINER).getChildRef();
-        
+
         assertTrue("Child node must exist", nodeService.exists(targetNodeRef));
         // Now remove the aspect from the source node and check that the target node was cascade-deleted
         nodeService.removeAspect(sourceNodeRef, ASPECT_WITH_ASSOCIATIONS);
         assertFalse("Child node must have been cascade-deleted", nodeService.exists(targetNodeRef));
     }
-    
+
     private static final QName ASPECT_QNAME_TEST_RENDERED = QName.createQName(NAMESPACE, "rendered");
     private static final QName ASSOC_TYPE_QNAME_TEST_RENDITION = QName.createQName(NAMESPACE, "rendition-page");
     private static final QName TYPE_QNAME_TEST_RENDITION_PAGE = QName.createQName(NAMESPACE, "rendition-page");
     private static final QName PROP_QNAME_TEST_RENDITION_PAGE_CONTENT = QName.createQName(NAMESPACE, "rendition-page-content");
+
     @Test
     public void testAspectWithChildAssociationsCreationAndRetrieval() throws Exception
     {
-        // Create a folder.  This is like the user's home folder, say.
+        // Create a folder. This is like the user's home folder, say.
         NodeRef folderNodeRef = nodeService.createNode(
                 rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName(BaseNodeServiceTest.NAMESPACE, "UserX-" + GUID.generate()),
                 ContentModel.TYPE_FOLDER).getChildRef();
-        // Create a document.  This is the actual document uploaded by the user.
+        // Create a document. This is the actual document uploaded by the user.
         NodeRef fileNodeRef = nodeService.createNode(
                 folderNodeRef,
                 ContentModel.ASSOC_CONTAINS,
                 QName.createQName(BaseNodeServiceTest.NAMESPACE, "Uploaded.pdf"),
                 ContentModel.TYPE_FOLDER).getChildRef();
-        // So, thus far, this is exactly what you have.  Now for the bit to add some renditions.
+        // So, thus far, this is exactly what you have. Now for the bit to add some renditions.
         // First, we can make some content data pages - spoofed, of course
         List<ContentData> renditionContentPages = new ArrayList<ContentData>(20);
         // This loop is where you will, outside of the transaction, push the page content into the repo
-        for(int i = 0; i < 100; i++)
+        for (int i = 0; i < 100; i++)
         {
             ContentData contentData = new ContentData(null, MimetypeMap.MIMETYPE_PDF, 10245, "UTF-8");
             renditionContentPages.add(contentData);
         }
-        
+
         nodeService.addAspect(fileNodeRef, ASPECT_QNAME_TEST_RENDERED, null);
         int pageNumber = 0;
         for (int i = 0; i < 100; i++)
@@ -974,8 +974,8 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             writer.setEncoding("UTF-8");
             writer.putContent("Some content");
         }
-        
-        // That's it for uploading.  Now we retrieve them.
+
+        // That's it for uploading. Now we retrieve them.
         if (!nodeService.hasAspect(fileNodeRef, ASPECT_QNAME_TEST_RENDERED))
         {
             // Jump to the original rendition retrieval code
@@ -990,7 +990,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 "We didn't get the correct number of pages back",
                 renditionContentPages.size(),
                 fetchedRenditionChildAssocs.size());
-        // Get page ... 5.  This is to prove that they are ordered.
+        // Get page ... 5. This is to prove that they are ordered.
         ChildAssociationRef fetchedRenditionChildAssoc5 = fetchedRenditionChildAssocs.get(4);
         QName page5QName = makePageAssocName(5);
         assertEquals(
@@ -1007,7 +1007,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 page5QName,
                 fetchedRenditionChildAssocsPage5.get(0).getQName());
     }
+
     private static final int MAX_RENDITION_PAGES = 100;
+
     private static QName makePageAssocName(int pageNumber)
     {
         if (pageNumber > MAX_RENDITION_PAGES)
@@ -1041,12 +1043,12 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         }
         String longString = sb.toString();
         int len = longString.length();
-        
+
         // Create a normal node
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
         // fill properties
         fillProperties(ASPECT_QNAME_TEST_TITLED, properties);
-        
+
         // create node for real
         NodeRef nodeRef = nodeService.createNode(
                 rootNodeRef,
@@ -1060,7 +1062,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // Modify name using the long string
         nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, longString);
     }
-    
+
     /**
      * @see #ASPECT_QNAME_TEST_TITLED
      */
@@ -1070,7 +1072,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
         // fill properties
         fillProperties(ASPECT_QNAME_TEST_TITLED, properties);
-        
+
         // create node for real
         ChildAssociationRef assocRef = nodeService.createNode(
                 rootNodeRef,
@@ -1102,13 +1104,13 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertEquals("n6 primary parent association not present on n3", 1, countChildrenOfNode(n3Ref));
         assertEquals("n6 secondary parent association not present on n4", 1, countChildrenOfNode(n4Ref));
         assertEquals("n8 secondary parent association not present on n7", 1, countChildrenOfNode(n7Ref));
-        
+
         // delete n6
         nodeService.deleteNode(n6Ref);
-        
+
         // ensure that we can't see cascaded nodes in-transaction
         assertFalse("n8 not cascade deleted in-transaction", nodeService.exists(n8Ref));
-        
+
         // commit to check
         TestTransaction.flagForCommit();
         TestTransaction.end();
@@ -1120,7 +1122,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertEquals("n6 secondary parent association not removed from n4", 0, countChildrenOfNode(n4Ref));
         assertEquals("n8 secondary parent association not removed from n7", 0, countChildrenOfNode(n7Ref));
     }
-    
+
     public static class BadOnDeleteNodePolicy implements
             NodeServicePolicies.OnDeleteNodePolicy,
             NodeServicePolicies.BeforeDeleteNodePolicy
@@ -1128,59 +1130,59 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         private NodeService nodeService;
         private List<NodeRef> deletedNodeRefs;
         private List<NodeRef> beforeDeleteNodeRefs;
-        
+
         private boolean onDeleteCreateChild = true;
         private boolean beforeDeleteCreateChild = true;
-        
-        public BadOnDeleteNodePolicy(NodeService nodeService, 
-                List<NodeRef> beforeDeleteNodeRefs, 
+
+        public BadOnDeleteNodePolicy(NodeService nodeService,
+                List<NodeRef> beforeDeleteNodeRefs,
                 List<NodeRef> deletedNodeRefs)
         {
             this.nodeService = nodeService;
             this.beforeDeleteNodeRefs = beforeDeleteNodeRefs;
             this.deletedNodeRefs = deletedNodeRefs;
         }
-        
+
         public void beforeDeleteNode(NodeRef nodeRef)
         {
             // Get the node's properties
             nodeService.getProperties(nodeRef);
             // add the child to the list
             beforeDeleteNodeRefs.add(nodeRef);
-            
-            if(beforeDeleteCreateChild)
+
+            if (beforeDeleteCreateChild)
             {
                 System.out.println("before delete node - add child.");
                 // add a new child to the child, i.e. just before it is deleted
                 ChildAssociationRef assocRef = nodeService.createNode(
-                    nodeRef,
-                    ASSOC_TYPE_QNAME_TEST_CHILDREN,
-                    QName.createQName("pre-delete new child"),
-                    ContentModel.TYPE_CONTAINER);
+                        nodeRef,
+                        ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                        QName.createQName("pre-delete new child"),
+                        ContentModel.TYPE_CONTAINER);
                 // set some child node properties
                 nodeService.setProperty(nodeRef, PROP_QNAME_BOOLEAN_VALUE, "true");
                 // add an aspect to the child
                 nodeService.addAspect(nodeRef, ASPECT_QNAME_TEST_TITLED, null);
             }
-        
+
         }
 
         public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isArchivedNode)
         {
             // add the child to the list
             deletedNodeRefs.add(childAssocRef.getChildRef());
-            
-            if(onDeleteCreateChild)
+
+            if (onDeleteCreateChild)
             {
                 System.out.println("on delete node - add sibling.");
                 // now perform some nasties on the node's parent, i.e. add a new child
                 NodeRef parentRef = childAssocRef.getParentRef();
                 NodeRef childRef = childAssocRef.getChildRef();
                 ChildAssociationRef assocRef = nodeService.createNode(
-                    parentRef,
-                    ASSOC_TYPE_QNAME_TEST_CHILDREN,
-                    QName.createQName("post-delete new child"),
-                    ContentModel.TYPE_CONTAINER);
+                        parentRef,
+                        ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                        QName.createQName("post-delete new child"),
+                        ContentModel.TYPE_CONTAINER);
             }
         }
 
@@ -1193,7 +1195,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         {
             return onDeleteCreateChild;
         }
-        
+
         private void setBeforeDeleteCreateChild(boolean beforeDeleteCreateChild)
         {
             this.beforeDeleteCreateChild = beforeDeleteCreateChild;
@@ -1203,7 +1205,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         {
             return beforeDeleteCreateChild;
         }
-        
+
     }
 
     @Commit
@@ -1212,7 +1214,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     {
         final List<NodeRef> beforeDeleteNodeRefs = new ArrayList<NodeRef>(5);
         final List<NodeRef> deletedNodeRefs = new ArrayList<NodeRef>(5);
-        
+
         BadOnDeleteNodePolicy nasty = new BadOnDeleteNodePolicy(nodeService, beforeDeleteNodeRefs, deletedNodeRefs);
         nasty.setOnDeleteCreateChild(false);
         nasty.setBeforeDeleteCreateChild(false);
@@ -1222,13 +1224,13 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         policyComponent.bindClassBehaviour(
                 OnDeleteNodePolicy.QNAME,
                 policy,
-                new JavaBehaviour(policy, "onDeleteNode"));   
-        
+                new JavaBehaviour(policy, "onDeleteNode"));
+
         policyComponent.bindClassBehaviour(
                 BeforeDeleteNodePolicy.QNAME,
                 policy,
-                new JavaBehaviour(policy, "beforeDeleteNode"));   
-        
+                new JavaBehaviour(policy, "beforeDeleteNode"));
+
         // build the node and commit the node graph
         Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph(nodeService, rootNodeRef);
         NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n1")).getChildRef();
@@ -1236,7 +1238,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         NodeRef n4Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n2_p_n4")).getChildRef();
         NodeRef n6Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n3_p_n6")).getChildRef();
         NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8")).getChildRef();
-        
+
         // delete n1
         nodeService.deleteNode(n1Ref);
         assertFalse("Node not directly deleted", nodeService.exists(n1Ref));
@@ -1244,23 +1246,22 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertTrue("Node incorrectly cascade deleted", nodeService.exists(n4Ref));
         assertFalse("Node not cascade deleted", nodeService.exists(n6Ref));
         assertFalse("Node not cascade deleted", nodeService.exists(n8Ref));
-        
+
         // check before delete delete policy has been called
         assertTrue("n1Ref before delete policy not called", beforeDeleteNodeRefs.contains(n1Ref));
         assertTrue("n3Ref before delete policy not called", beforeDeleteNodeRefs.contains(n3Ref));
         assertTrue("n6Ref before delete policy not called", beforeDeleteNodeRefs.contains(n6Ref));
         assertTrue("n8Ref before delete policy not called", beforeDeleteNodeRefs.contains(n8Ref));
-        
+
         // check delete policy has been called
         assertTrue("n1Ref delete policy not called", deletedNodeRefs.contains(n1Ref));
         assertTrue("n3Ref delete policy not called", deletedNodeRefs.contains(n3Ref));
         assertTrue("n6Ref delete policy not called", deletedNodeRefs.contains(n6Ref));
         assertTrue("n8Ref delete policy not called", deletedNodeRefs.contains(n8Ref));
     }
-    
+
     /**
-     * This test is similar to the test above but onDelete does nasty stuff such as 
-     * creating siblings of the soon to be deleted children.  
+     * This test is similar to the test above but onDelete does nasty stuff such as creating siblings of the soon to be deleted children.
      * 
      * In particular, it verifies that we don't get stuck in an infinite loop.
      */
@@ -1270,24 +1271,24 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         final List<NodeRef> beforeDeleteNodeRefs = new ArrayList<NodeRef>(5);
         final List<NodeRef> deletedNodeRefs = new ArrayList<NodeRef>(5);
         BadOnDeleteNodePolicy nasty = new BadOnDeleteNodePolicy(nodeService, beforeDeleteNodeRefs, deletedNodeRefs);
-        
-        try 
-        {   
+
+        try
+        {
             nasty.setOnDeleteCreateChild(true);
             nasty.setBeforeDeleteCreateChild(false);
             NodeServicePolicies.OnDeleteNodePolicy policy = nasty;
 
             // bind to listen to the deletion of a node
             policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
-                policy,
-                new JavaBehaviour(policy, "onDeleteNode"));  
-            
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
+                    policy,
+                    new JavaBehaviour(policy, "onDeleteNode"));
+
             policyComponent.bindClassBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
                     policy,
-                    new JavaBehaviour(policy, "beforeDeleteNode")); 
-        
+                    new JavaBehaviour(policy, "beforeDeleteNode"));
+
             // build the node and commit the node graph
             Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph(nodeService, rootNodeRef);
             NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n1")).getChildRef();
@@ -1295,19 +1296,19 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             NodeRef n4Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n2_p_n4")).getChildRef();
             NodeRef n6Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n3_p_n6")).getChildRef();
             NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8")).getChildRef();
-        
+
             // delete n1
             nodeService.deleteNode(n1Ref);
-            
+
             fail("test has not detected orphan children");
-              
+
             // commit to check
             TestTransaction.start();
         }
         catch (Exception e)
         {
             // We expect to get here with this test.
-            //e.printStackTrace();
+            // e.printStackTrace();
         }
         finally
         {
@@ -1316,9 +1317,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             nasty.setBeforeDeleteCreateChild(false);
         }
     }
+
     /**
-     * This test is similar to the test above but beforeDelete does nasty stuff such as 
-     * creating children of the soon to be deleted children.  
+     * This test is similar to the test above but beforeDelete does nasty stuff such as creating children of the soon to be deleted children.
      * 
      * In particular, it verifies that we don't get stuck in an infinite loop.
      */
@@ -1328,8 +1329,8 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         final List<NodeRef> beforeDeleteNodeRefs = new ArrayList<NodeRef>(5);
         final List<NodeRef> deletedNodeRefs = new ArrayList<NodeRef>(5);
         BadOnDeleteNodePolicy nasty = new BadOnDeleteNodePolicy(nodeService, beforeDeleteNodeRefs, deletedNodeRefs);
-        
-        try 
+
+        try
         {
             nasty.setOnDeleteCreateChild(false);
             nasty.setBeforeDeleteCreateChild(true);
@@ -1337,15 +1338,15 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
 
             // bind to listen to the deletion of a node
             policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
-                policy,
-                new JavaBehaviour(policy, "onDeleteNode"));  
-            
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
+                    policy,
+                    new JavaBehaviour(policy, "onDeleteNode"));
+
             policyComponent.bindClassBehaviour(
                     QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
                     policy,
-                    new JavaBehaviour(policy, "beforeDeleteNode")); 
-        
+                    new JavaBehaviour(policy, "beforeDeleteNode"));
+
             // build the node and commit the node graph
             Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph(nodeService, rootNodeRef);
             NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n1")).getChildRef();
@@ -1353,17 +1354,17 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             NodeRef n4Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n2_p_n4")).getChildRef();
             NodeRef n6Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n3_p_n6")).getChildRef();
             NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8")).getChildRef();
-        
+
             // delete n1
             nodeService.deleteNode(n1Ref);
-            
+
             fail("test has not detected orphan children");
-            
+
         }
         catch (Exception e)
         {
             // We expect to get here with this test.
-            //e.printStackTrace();
+            // e.printStackTrace();
         }
         finally
         {
@@ -1372,7 +1373,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             nasty.setBeforeDeleteCreateChild(false);
         }
     }
-    
+
     protected int countChildrenOfNode(NodeRef nodeRef)
     {
         List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef);
@@ -1403,15 +1404,15 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("C1"),
                 ContentModel.TYPE_CONTAINER).getChildRef();
-         int count = countChildrenOfNode(rootNodeRef);
-         assertEquals("Root children count incorrect", 1, count);
-         NodeRef childNodeRef2 = nodeService.createNode(
-                 childNodeRef1,
-                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
-                 QName.createQName("C2"),
-                 ContentModel.TYPE_CONTAINER).getChildRef();
-          count = countChildrenOfNode(rootNodeRef);
-          assertEquals("Root children count incorrect", 1, count);
+        int count = countChildrenOfNode(rootNodeRef);
+        assertEquals("Root children count incorrect", 1, count);
+        NodeRef childNodeRef2 = nodeService.createNode(
+                childNodeRef1,
+                ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                QName.createQName("C2"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        count = countChildrenOfNode(rootNodeRef);
+        assertEquals("Root children count incorrect", 1, count);
         // associate the two nodes
         nodeService.addChild(
                 rootNodeRef,
@@ -1419,23 +1420,23 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("pathB"));
         // there should now be 2 child assocs on the root
-         int countAfter = countChildrenOfNode(rootNodeRef);
-         assertEquals("Root children count incorrect", 2, countAfter);
-         
-         // now attempt to create a cyclical relationship
-         try
-         {
-             nodeService.addChild(
-                     childNodeRef1,
-                     rootNodeRef,
-                     ASSOC_TYPE_QNAME_TEST_CHILDREN,
-                     QName.createQName("backToRoot"));
-             fail("Failed to detect cyclic child relationship during addition of child");
-         }
-         catch (CyclicChildRelationshipException e)
-         {
-             // expected
-         }
+        int countAfter = countChildrenOfNode(rootNodeRef);
+        assertEquals("Root children count incorrect", 2, countAfter);
+
+        // now attempt to create a cyclical relationship
+        try
+        {
+            nodeService.addChild(
+                    childNodeRef1,
+                    rootNodeRef,
+                    ASSOC_TYPE_QNAME_TEST_CHILDREN,
+                    QName.createQName("backToRoot"));
+            fail("Failed to detect cyclic child relationship during addition of child");
+        }
+        catch (CyclicChildRelationshipException e)
+        {
+            // expected
+        }
     }
 
     @Test
@@ -1468,13 +1469,13 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertTrue("Association was not removed", removedB);
         removedB = nodeService.removeChildAssociation(pathBRef);
         assertFalse("Non-existent association was apparently removed", removedB);
-        
+
         // remove the path C association
         boolean removedC = nodeService.removeChildAssociation(pathCRef);
         assertTrue("Association was not removed", removedC);
         removedC = nodeService.removeSecondaryChildAssociation(pathCRef);
         assertFalse("Non-existent association was apparently removed", removedC);
-        
+
         // Now verify that primary associations are caught
         try
         {
@@ -1516,11 +1517,11 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         this.policyComponent.bindAssociationBehaviour(
                 NodeServicePolicies.BeforeDeleteChildAssociationPolicy.QNAME,
                 beforeDeletePolicy,
-                new JavaBehaviour(beforeDeletePolicy,  "beforeDeleteChildAssociation"));
+                new JavaBehaviour(beforeDeletePolicy, "beforeDeleteChildAssociation"));
 
         boolean removed = nodeService.removeSecondaryChildAssociation(pathBRef);
         assertTrue("Association was removed", removed);
-        assertEquals("The BeforeDeleteChildAssociationPolicy must fire on removeSecondaryChildAssociation",pathBRef, beforeDeletePolicy.childRef);
+        assertEquals("The BeforeDeleteChildAssociationPolicy must fire on removeSecondaryChildAssociation", pathBRef, beforeDeletePolicy.childRef);
 
         removed = nodeService.removeChildAssociation(pathCRef);
         assertTrue("Association was removed", removed);
@@ -1545,7 +1546,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 parentRef, childARef, ASSOC_TYPE_QNAME_TEST_NEXT);
         // remove the child - this must cascade
         nodeService.removeChild(parentRef, childARef);
-        
+
         assertFalse("Primary child not deleted", nodeService.exists(childARef));
         assertEquals("Child assocs not removed",
                 0, nodeService.getChildAssocs(
@@ -1555,11 +1556,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertEquals("Node assoc not removed",
                 0, nodeService.getTargetAssocs(parentRef, RegexQNamePattern.MATCH_ALL).size());
     }
-    
+
     public enum TestEnum
     {
-        TEST_ONE,
-        TEST_TWO
+        TEST_ONE, TEST_TWO
     }
 
     @Test
@@ -1579,7 +1579,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         String valueProperty2 = "VALUE2";
         QName qnameProperty3 = QName.createQName("PROPERTY3");
         QName qnameProperty4 = QName.createQName("PROPERTY4");
-        
+
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
         properties.put(qnameProperty1, valueProperty1);
         // add some properties to the root node
@@ -1590,7 +1590,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         nodeService.setProperty(nodeRef, qnameProperty3, null);
         // set an enum property
         nodeService.setProperty(nodeRef, qnameProperty4, TestEnum.TEST_ONE);
-        
+
         // now get them back
         Map<QName, Serializable> checkMap = nodeService.getProperties(nodeRef);
         assertNotNull("Properties were not set/retrieved", checkMap);
@@ -1601,21 +1601,21 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertTrue("Null property not persisted", checkMap.containsKey(qnameProperty3));
         assertNull("Null value not persisted correctly", checkMap.get(qnameProperty3));
         assertEquals("Enum property not retrieved", TestEnum.TEST_ONE, checkMap.get(qnameProperty4));
-        
+
         // get a single property direct from the node
         Serializable valueCheck = nodeService.getProperty(nodeRef, qnameProperty2);
         assertNotNull("Property value not set", valueCheck);
         assertEquals("Property value incorrect", "VALUE2", valueCheck);
-        
+
         // Remove a property
         nodeService.removeProperty(nodeRef, qnameProperty2);
         valueCheck = nodeService.getProperty(nodeRef, qnameProperty2);
         assertNull("Property not removed", valueCheck);
-        
+
         // set the property value to null
         try
         {
-            nodeService.setProperty(nodeRef, qnameProperty2, null);            
+            nodeService.setProperty(nodeRef, qnameProperty2, null);
         }
         catch (IllegalArgumentException e)
         {
@@ -1642,13 +1642,13 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         nodeService.addAspect(rootNodeRef, ASPECT_QNAME_TEST_TITLED, null);
         assertNull("Expected null property", nodeService.getProperty(rootNodeRef, PROP_QNAME_TEST_TITLE));
         assertNull("Expected null property", nodeService.getProperty(rootNodeRef, PROP_QNAME_TEST_DESCRIPTION));
-        
+
         // Now add a map of two properties and check
         Map<QName, Serializable> addProperties = new HashMap<QName, Serializable>(11);
         addProperties.put(PROP_QNAME_TEST_TITLE, "Title");
         addProperties.put(PROP_QNAME_TEST_DESCRIPTION, "Description");
         nodeService.addProperties(rootNodeRef, addProperties);
-        
+
         // Check
         Map<QName, Serializable> checkProperties = nodeService.getProperties(rootNodeRef);
         assertEquals("Title", checkProperties.get(PROP_QNAME_TEST_TITLE));
@@ -1660,9 +1660,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     {
         Serializable nullValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
         assertNull("Property should not be present", nullValue);
-        
+
         String valueOverride = "VALUE_OVERRIDE";
-        Map<QName, Serializable> properties = Collections.singletonMap(PROP_QNAME_PROP2, (Serializable)valueOverride);
+        Map<QName, Serializable> properties = Collections.singletonMap(PROP_QNAME_PROP2, (Serializable) valueOverride);
         nodeService.addAspect(rootNodeRef, ASPECT_QNAME_WITH_DEFAULT_VALUE, properties);
 
         Serializable checkValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
@@ -1682,7 +1682,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertEquals("Property should be defaulted", DEFAULT_VALUE, checkValue);
 
         String valueOverride = "VALUE_OVERRIDE";
-        Map<QName, Serializable> properties = Collections.singletonMap(PROP_QNAME_PROP1, (Serializable)valueOverride);
+        Map<QName, Serializable> properties = Collections.singletonMap(PROP_QNAME_PROP1, (Serializable) valueOverride);
         nodeRef = nodeService.createNode(
                 rootNodeRef,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
@@ -1705,7 +1705,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
 
         Serializable checkValue = nodeService.getProperty(nodeRef, PROP_QNAME_PROP1);
         assertNull("Property should not exist", checkValue);
-        
+
         // Specialize the type
         nodeService.setType(nodeRef, TYPE_QNAME_EXTENDED_CONTENT);
 
@@ -1717,7 +1717,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public void testDefaultPropertyOverride_SpecializeWithProperty() throws Exception
     {
         String valueOverride = "VALUE_OVERRIDE";
-        Map<QName, Serializable> properties = Collections.singletonMap(PROP_QNAME_PROP1, (Serializable)valueOverride);
+        Map<QName, Serializable> properties = Collections.singletonMap(PROP_QNAME_PROP1, (Serializable) valueOverride);
         NodeRef nodeRef = nodeService.createNode(
                 rootNodeRef,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
@@ -1727,7 +1727,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
 
         Serializable checkValue = nodeService.getProperty(nodeRef, PROP_QNAME_PROP1);
         assertEquals("Property should not be defaulted", valueOverride, checkValue);
-        
+
         // Specialize the type
         nodeService.setType(nodeRef, TYPE_QNAME_EXTENDED_CONTENT);
 
@@ -1750,12 +1750,12 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // Ensure that it is now null
         Serializable nullValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
         assertNull("Property was not removed", nullValue);
-        
+
         // Remove the property by removing the aspect
         nodeService.removeAspect(rootNodeRef, ASPECT_QNAME_WITH_DEFAULT_VALUE);
         nullValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
         assertNull("Property was not removed", nullValue);
-        
+
         // Do the same, but explicitly set the value to null
         nodeService.addAspect(rootNodeRef, ASPECT_QNAME_WITH_DEFAULT_VALUE, null);
         defaultValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
@@ -1763,7 +1763,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         nodeService.setProperty(rootNodeRef, PROP_QNAME_PROP2, null);
         nullValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
         assertNull("Property was not removed", nullValue);
-        
+
         // Now remove the property directly
         nodeService.removeAspect(rootNodeRef, ASPECT_QNAME_WITH_DEFAULT_VALUE);
         nodeService.addAspect(rootNodeRef, ASPECT_QNAME_WITH_DEFAULT_VALUE, null);
@@ -1773,10 +1773,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         nullValue = nodeService.getProperty(rootNodeRef, PROP_QNAME_PROP2);
         assertNull("Property was not removed", nullValue);
     }
-    
+
     /**
-     * Makes a read-only transaction and then looks for a property using a non-existent QName.
-     * The QName persistence must not lazily create QNameEntity instances for queries.
+     * Makes a read-only transaction and then looks for a property using a non-existent QName. The QName persistence must not lazily create QNameEntity instances for queries.
      */
     @Test
     public void testGetUnknownProperty() throws Exception
@@ -1785,8 +1784,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         TestTransaction.flagForCommit();
         TestTransaction.end();
 
-        RetryingTransactionCallback<NodeRef> createCallback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> createCallback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 NodeRef nodeRef = nodeService.createNode(
@@ -1798,9 +1796,8 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             }
         };
         final NodeRef nodeRef = retryingTransactionHelper.doInTransaction(createCallback, false, true);
-        
-        RetryingTransactionCallback<Object> testCallback = new RetryingTransactionCallback<Object>()
-        {
+
+        RetryingTransactionCallback<Object> testCallback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 QName ficticiousQName = QName.createQName(GUID.generate(), GUID.generate());
@@ -1811,7 +1808,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         };
         retryingTransactionHelper.doInTransaction(testCallback, true, true);
     }
-    
+
     /**
      * Ensures that the type you get out of a <b>d:any</b> property is the type that you put in.
      */
@@ -1830,8 +1827,8 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ContentModel.TYPE_CONTAINER,
                 properties).getChildRef();
         // persist
-//        flushAndClear();
-        
+        // flushAndClear();
+
         // get the properties back
         Map<QName, Serializable> checkProperties = nodeService.getProperties(nodeRef);
         Serializable checkPropertyQname = checkProperties.get(PROP_QNAME_SERIALIZABLE_VALUE);
@@ -1851,7 +1848,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertTrue("Re-encryption not expected", encryptedProperty == encryptedPropertyAgain);
         Serializable decryptedProperty = metadataEncryptor.decrypt(PROP_QNAME_ENCRYPTED_VALUE, encryptedProperty);
         assertEquals("Value not decrypted correctly", valueToEncrypt, decryptedProperty);
-        
+
         // Test mass property encryption/decryption
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
         properties.put(PROP_QNAME_ENCRYPTED_VALUE, valueToEncrypt);
@@ -1868,7 +1865,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         Map<QName, Serializable> decryptedProperties = metadataEncryptor.decrypt(encryptedProperties);
         assertEquals("Values not decrypted correctly", valueToEncrypt, decryptedProperties.get(PROP_QNAME_ENCRYPTED_VALUE));
         assertEquals("Values not decrypted correctly", value, decryptedProperties.get(PROP_QNAME_QNAME_VALUE));
-        
+
         // Check that nulls are handled
         Map<QName, Serializable> propertiesNull = new HashMap<QName, Serializable>(5);
         propertiesNull.put(PROP_QNAME_ENCRYPTED_VALUE, null);
@@ -1880,7 +1877,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertTrue("Map should not change", encryptedPropertiesNull == decryptedPropertiesNull);
         assertNull("Null should remain", decryptedPropertiesNull.get(PROP_QNAME_ENCRYPTED_VALUE));
     }
-    
+
     /**
      * Check that <b>d:encrypted</b> properties work correctly.
      */
@@ -1888,15 +1885,15 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public void testEncryptedProperties() throws Exception
     {
         QName property = PROP_QNAME_CONTENT_VALUE;
-        
+
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(17);
         properties.put(PROP_QNAME_ENCRYPTED_VALUE, property);
-        
+
         // We have encrypted properties, so encrypt them
         properties = metadataEncryptor.encrypt(properties);
         Serializable checkProperty = properties.get(PROP_QNAME_ENCRYPTED_VALUE);
         assertTrue("Properties not encrypted", checkProperty instanceof SealedObject);
-        
+
         // create node
         final NodeRef nodeRef = nodeService.createNode(
                 rootNodeRef,
@@ -1913,19 +1910,18 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         Map<QName, Serializable> checkProperties = nodeService.getProperties(nodeRef);
         checkProperty = checkProperties.get(PROP_QNAME_ENCRYPTED_VALUE);
         assertTrue("Encrypted property not persisted", checkProperty instanceof SealedObject);
-        
+
         // Decrypt individual property
         checkProperty = metadataEncryptor.decrypt(PROP_QNAME_ENCRYPTED_VALUE, checkProperty);
         assertEquals("Bulk property decryption failed", property, checkProperty);
-        
+
         // Now decrypt en-masse
         checkProperties = metadataEncryptor.decrypt(checkProperties);
         checkProperty = checkProperties.get(PROP_QNAME_ENCRYPTED_VALUE);
         assertEquals("Bulk property decryption failed", property, checkProperty);
-        
+
         // Now make sure that the value can be null
-        RetryingTransactionCallback<Void> setNullPropCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> setNullPropCallback = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1934,12 +1930,11 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             }
         };
         retryingTransactionHelper.doInTransaction(setNullPropCallback);
-        
+
         // Finally, make sure that it fails if we don't encrypt
         try
         {
-            RetryingTransactionCallback<Void> setUnencryptedPropCallback = new RetryingTransactionCallback<Void>()
-            {
+            RetryingTransactionCallback<Void> setUnencryptedPropCallback = new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -1948,7 +1943,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 }
             };
             retryingTransactionHelper.doInTransaction(setUnencryptedPropCallback);
-            fail("Failed to detect unencrypted property");      // This behaviour may change
+            fail("Failed to detect unencrypted property"); // This behaviour may change
         }
         catch (RuntimeException e)
         {
@@ -2014,7 +2009,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             assertEquals("Expected 2 MLText values back", 2, checkValues.size());
             assertTrue("Incorrect type in collection", checkValues.get(0) instanceof MLText);
             assertTrue("Incorrect type in collection", checkValues.get(1) instanceof MLText);
-            
+
             // Check that multi-valued d:any properties can be collections of collections (empty)
             // We put ArrayLists and HashSets into the Collection of d:any, so that is exactly what should come out
             values.clear();
@@ -2026,9 +2021,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             checkValues = (List<Serializable>) nodeService.getProperty(
                     nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE);
             assertEquals("Expected 2 Collection values back", 2, checkValues.size());
-            assertTrue("Incorrect type in collection", checkValues.get(0) instanceof ArrayList);  // ArrayList in - ArrayList out
-            assertTrue("Incorrect type in collection", checkValues.get(1) instanceof HashSet);  // HashSet in - HashSet out
-            
+            assertTrue("Incorrect type in collection", checkValues.get(0) instanceof ArrayList); // ArrayList in - ArrayList out
+            assertTrue("Incorrect type in collection", checkValues.get(1) instanceof HashSet); // HashSet in - HashSet out
+
             // Check that multi-valued d:any properties can be collections of collections (with values)
             // We put ArrayLists and HashSets into the Collection of d:any, so that is exactly what should come out
             arrayListVal.add("ONE");
@@ -2042,10 +2037,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             checkValues = (List<Serializable>) nodeService.getProperty(
                     nodeRef, PROP_QNAME_ANY_PROP_MULTIPLE);
             assertEquals("Expected 2 Collection values back", 2, checkValues.size());
-            assertTrue("Incorrect type in collection", checkValues.get(0) instanceof ArrayList);  // ArrayList in - ArrayList out
-            assertTrue("Incorrect type in collection", checkValues.get(1) instanceof HashSet);  // HashSet in - HashSet out
-            assertEquals("First collection incorrect", 2, ((Collection)checkValues.get(0)).size());
-            assertEquals("Second collection incorrect", 2, ((Collection)checkValues.get(1)).size());
+            assertTrue("Incorrect type in collection", checkValues.get(0) instanceof ArrayList); // ArrayList in - ArrayList out
+            assertTrue("Incorrect type in collection", checkValues.get(1) instanceof HashSet); // HashSet in - HashSet out
+            assertEquals("First collection incorrect", 2, ((Collection) checkValues.get(0)).size());
+            assertEquals("Second collection incorrect", 2, ((Collection) checkValues.get(1)).size());
         }
         catch (DictionaryException e)
         {
@@ -2057,34 +2052,35 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             TestTransaction.end();
         }
     }
-    
+
     /**
      * Apply any changes to the PROP_QNAME_XXX_VALUE used for checking the following:
+     * 
      * <pre>
-        properties.put(PROP_QNAME_BOOLEAN_VALUE, true);
-        properties.put(PROP_QNAME_INTEGER_VALUE, 123);
-        properties.put(PROP_QNAME_LONG_VALUE, 123L);
-        properties.put(PROP_QNAME_FLOAT_VALUE, 123.0F);
-        properties.put(PROP_QNAME_DOUBLE_VALUE, 123.0);
-        properties.put(PROP_QNAME_STRING_VALUE, "123.0");
-        properties.put(PROP_QNAME_ML_TEXT_VALUE, new MLText("This is ML text in the default language"));
-        properties.put(PROP_QNAME_DATE_VALUE, new Date());
-        properties.put(PROP_QNAME_SERIALIZABLE_VALUE, "456");
-        properties.put(PROP_QNAME_NODEREF_VALUE, rootNodeRef);
-        properties.put(PROP_QNAME_QNAME_VALUE, TYPE_QNAME_TEST_CONTENT);
-        properties.put(PROP_QNAME_PATH_VALUE, pathProperty);
-        properties.put(PROP_QNAME_CONTENT_VALUE, new ContentData("url", "text/plain", 88L, "UTF-8"));
-        properties.put(PROP_QNAME_CATEGORY_VALUE, cat);
-        properties.put(PROP_QNAME_LOCALE_VALUE, Locale.CHINESE);
-        properties.put(PROP_QNAME_NULL_VALUE, null);
-        properties.put(PROP_QNAME_MULTI_VALUE, listProperty);
-        </pre>
+     * properties.put(PROP_QNAME_BOOLEAN_VALUE, true);
+     * properties.put(PROP_QNAME_INTEGER_VALUE, 123);
+     * properties.put(PROP_QNAME_LONG_VALUE, 123L);
+     * properties.put(PROP_QNAME_FLOAT_VALUE, 123.0F);
+     * properties.put(PROP_QNAME_DOUBLE_VALUE, 123.0);
+     * properties.put(PROP_QNAME_STRING_VALUE, "123.0");
+     * properties.put(PROP_QNAME_ML_TEXT_VALUE, new MLText("This is ML text in the default language"));
+     * properties.put(PROP_QNAME_DATE_VALUE, new Date());
+     * properties.put(PROP_QNAME_SERIALIZABLE_VALUE, "456");
+     * properties.put(PROP_QNAME_NODEREF_VALUE, rootNodeRef);
+     * properties.put(PROP_QNAME_QNAME_VALUE, TYPE_QNAME_TEST_CONTENT);
+     * properties.put(PROP_QNAME_PATH_VALUE, pathProperty);
+     * properties.put(PROP_QNAME_CONTENT_VALUE, new ContentData("url", "text/plain", 88L, "UTF-8"));
+     * properties.put(PROP_QNAME_CATEGORY_VALUE, cat);
+     * properties.put(PROP_QNAME_LOCALE_VALUE, Locale.CHINESE);
+     * properties.put(PROP_QNAME_NULL_VALUE, null);
+     * properties.put(PROP_QNAME_MULTI_VALUE, listProperty);
+     * </pre>
      */
     protected void getExpectedPropertyValues(Map<QName, Serializable> checkProperties)
     {
         // Do nothing with them by default
     }
-    
+
     /**
      * Checks that the 'check' values all match the 'expected' values
      */
@@ -2097,7 +2093,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             assertEquals("Property mismatch - " + qname, value, checkValue);
         }
     }
-    
+
     /**
      * Check that properties go in and come out in the correct format.
      */
@@ -2108,10 +2104,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         ArrayList<String> listProperty = new ArrayList<String>(2);
         listProperty.add("ABC");
         listProperty.add("DEF");
-        
+
         Path pathProperty = new Path();
         pathProperty.append(new Path.SelfElement()).append(new Path.AttributeElement(TYPE_QNAME_TEST_CONTENT));
-        
+
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(17);
         properties.put(PROP_QNAME_BOOLEAN_VALUE, true);
         properties.put(PROP_QNAME_INTEGER_VALUE, 123);
@@ -2132,7 +2128,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // Get the check values
         Map<QName, Serializable> expectedProperties = new HashMap<QName, Serializable>(properties);
         getExpectedPropertyValues(expectedProperties);
-        
+
         // create a new node
         NodeRef nodeRef = nodeService.createNode(
                 rootNodeRef,
@@ -2140,18 +2136,18 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 QName.createQName("pathA"),
                 TYPE_QNAME_TEST_MANY_PROPERTIES,
                 properties).getChildRef();
-        
+
         // get the properties back
         Map<QName, Serializable> checkProperties = nodeService.getProperties(nodeRef);
         // Check
         checkProperties(checkProperties, expectedProperties);
-        
+
         // check multi-valued properties are created where necessary
         nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, "GHI");
         Serializable checkProperty = nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
         assertTrue("Property not converted to a Collection", checkProperty instanceof Collection);
-        assertTrue("Collection doesn't contain value", ((Collection<?>)checkProperty).contains("GHI"));
-        
+        assertTrue("Collection doesn't contain value", ((Collection<?>) checkProperty).contains("GHI"));
+
         // Check special numbers (Double): ALF-16906
         nodeService.setProperty(nodeRef, PROP_QNAME_DOUBLE_VALUE, Double.NaN);
         assertEquals("Double.NaN failed", Double.NaN, nodeService.getProperty(nodeRef, PROP_QNAME_DOUBLE_VALUE));
@@ -2193,7 +2189,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         getExpectedPropertyValues(expectedProperties);
 
         Locale.setDefault(Locale.JAPANESE);
-        
+
         // create a new node
         NodeRef nodeRef = nodeService.createNode(
                 rootNodeRef,
@@ -2201,11 +2197,11 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 QName.createQName("pathA"),
                 TYPE_QNAME_TEST_MANY_PROPERTIES,
                 properties).getChildRef();
-        
+
         // Check the properties again
         Map<QName, Serializable> checkProperties = nodeService.getProperties(nodeRef);
         checkProperties(checkProperties, expectedProperties);
-        
+
         // Change the locale and set the properties again
         I18NUtil.setLocale(Locale.US);
         nodeService.setProperties(nodeRef, properties);
@@ -2213,7 +2209,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // Check the properties again
         checkProperties = nodeService.getProperties(nodeRef);
         checkProperties(checkProperties, expectedProperties);
-        
+
         // Change the locale and set the properties again
         I18NUtil.setLocale(Locale.UK);
         nodeService.setProperties(nodeRef, properties);
@@ -2221,7 +2217,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // Check the properties again
         checkProperties = nodeService.getProperties(nodeRef);
         checkProperties(checkProperties, expectedProperties);
-        
+
         // Change the locale and set the properties again
         I18NUtil.setLocale(Locale.US);
         nodeService.addProperties(nodeRef, properties);
@@ -2229,7 +2225,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // Check the properties again
         checkProperties = nodeService.getProperties(nodeRef);
         checkProperties(checkProperties, expectedProperties);
-        
+
         // Change the locale and set the properties again
         I18NUtil.setLocale(Locale.UK);
         nodeService.addProperties(nodeRef, properties);
@@ -2237,7 +2233,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // Check the properties again
         checkProperties = nodeService.getProperties(nodeRef);
         checkProperties(checkProperties, expectedProperties);
-        
+
         // Change the locale and set the properties again
         I18NUtil.setLocale(Locale.US);
         nodeService.setProperty(nodeRef, PROP_QNAME_DATE_VALUE, properties.get(PROP_QNAME_DATE_VALUE));
@@ -2245,7 +2241,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // Check the properties again
         checkProperties = nodeService.getProperties(nodeRef);
         checkProperties(checkProperties, expectedProperties);
-        
+
         // Change the locale and set the properties again
         I18NUtil.setLocale(Locale.UK);
         nodeService.setProperty(nodeRef, PROP_QNAME_DATE_VALUE, properties.get(PROP_QNAME_DATE_VALUE));
@@ -2254,7 +2250,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         checkProperties = nodeService.getProperties(nodeRef);
         checkProperties(checkProperties, expectedProperties);
     }
-    
+
     /**
      * Checks that empty collections can be persisted
      */
@@ -2272,21 +2268,21 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         filledCollection.add("ABC");
         filledCollection.add("DEF");
         List<String> emptyCollection = Collections.emptyList();
-        
+
         nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, (Serializable) filledCollection);
         List<String> checkFilledCollection = (List<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
         assertEquals("Filled collection didn't come back with correct values", filledCollection, checkFilledCollection);
-        
+
         nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, (Serializable) emptyCollection);
         List<String> checkEmptyCollection = (List<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
         assertEquals("Empty collection didn't come back with correct values", emptyCollection, checkEmptyCollection);
-        
+
         // Check that a null value is returned as null
         nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, null);
         List<String> checkNullCollection = (List<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
         assertNull("Null property should stay null", checkNullCollection);
     }
-    
+
     /**
      * Checks that large collections can be persisted
      */
@@ -2310,42 +2306,42 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 largeCollection.add(String.format("Large-collection-value-%05d", i));
             }
             List<String> emptyCollection = Collections.emptyList();
-            
+
             long t1 = System.nanoTime();
             nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, (Serializable) largeCollection);
-            double tDelta = (double)(System.nanoTime() - t1)/1E6;
+            double tDelta = (double) (System.nanoTime() - t1) / 1E6;
             System.out.println("Setting " + collectionSize + " multi-valued property took: " + tDelta + "ms");
             // Now get it back
             t1 = System.nanoTime();
             List<String> checkLargeCollection = (List<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
-            tDelta = (double)(System.nanoTime() - t1)/1E6;
+            tDelta = (double) (System.nanoTime() - t1) / 1E6;
             System.out.println("First fetch of " + collectionSize + " multi-valued property took: " + tDelta + "ms");
             assertEquals("Large collection didn't come back with correct values", largeCollection, checkLargeCollection);
-            
+
             // Get it back again
             t1 = System.nanoTime();
             checkLargeCollection = (List<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
-            tDelta = (double)(System.nanoTime() - t1)/1E6;
+            tDelta = (double) (System.nanoTime() - t1) / 1E6;
             System.out.println("Second fetch of " + collectionSize + " multi-valued property took: " + tDelta + "ms");
-            
+
             // Add a value
             largeCollection.add("First addition");
             t1 = System.nanoTime();
             nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, (Serializable) largeCollection);
-            tDelta = (double)(System.nanoTime() - t1)/1E6;
+            tDelta = (double) (System.nanoTime() - t1) / 1E6;
             System.out.println("Re-setting " + largeCollection.size() + " multi-valued property took: " + tDelta + "ms");
-            
+
             // Add another value
             largeCollection.add("Second addition");
             t1 = System.nanoTime();
             nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, (Serializable) largeCollection);
-            tDelta = (double)(System.nanoTime() - t1)/1E6;
+            tDelta = (double) (System.nanoTime() - t1) / 1E6;
             System.out.println("Re-setting " + largeCollection.size() + " multi-valued property took: " + tDelta + "ms");
-            
+
             nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, (Serializable) emptyCollection);
             List<String> checkEmptyCollection = (List<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
             assertEquals("Empty collection didn't come back with correct values", emptyCollection, checkEmptyCollection);
-            
+
             // Check that a null value is returned as null
             nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_VALUE, null);
             List<String> checkNullCollection = (List<String>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_VALUE);
@@ -2362,7 +2358,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("pathA"),
                 TYPE_QNAME_TEST_MANY_ML_PROPERTIES).getChildRef();
-        
+
         // Create MLText properties and add to a collection
         List<MLText> mlTextCollection = new ArrayList<MLText>(2);
         MLText mlText0 = new MLText();
@@ -2373,12 +2369,12 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         mlText1.addValue(Locale.ENGLISH, "Bye bye");
         mlText1.addValue(Locale.FRENCH, "Au revoir");
         mlTextCollection.add(mlText1);
-        
+
         nodeService.setProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE, (Serializable) mlTextCollection);
         Collection<MLText> mlTextCollectionCheck = (Collection<MLText>) nodeService.getProperty(nodeRef, PROP_QNAME_MULTI_ML_VALUE);
         assertEquals("MLText collection didn't come back correctly.", mlTextCollection, mlTextCollectionCheck);
     }
-    
+
     /**
      * Ensures that d:any types are handled correctly when adding values
      */
@@ -2389,34 +2385,33 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
 
         listProp.clear();
         nodeService.addProperties(
-                    rootNodeRef,
-                    Collections.singletonMap(PROP_QNAME_ANY_PROP_MULTIPLE, (Serializable) listProp));
+                rootNodeRef,
+                Collections.singletonMap(PROP_QNAME_ANY_PROP_MULTIPLE, (Serializable) listProp));
         listProp.add("ONE");
         nodeService.addProperties(
-                    rootNodeRef,
-                    Collections.singletonMap(PROP_QNAME_ANY_PROP_MULTIPLE, (Serializable) listProp));
+                rootNodeRef,
+                Collections.singletonMap(PROP_QNAME_ANY_PROP_MULTIPLE, (Serializable) listProp));
         listProp.add("TWO");
         nodeService.addProperties(
-                    rootNodeRef,
-                    Collections.singletonMap(PROP_QNAME_ANY_PROP_MULTIPLE, (Serializable) listProp));
+                rootNodeRef,
+                Collections.singletonMap(PROP_QNAME_ANY_PROP_MULTIPLE, (Serializable) listProp));
 
         listProp.clear();
         nodeService.addProperties(
-                    rootNodeRef,
-                    Collections.singletonMap(PROP_QNAME_ANY_PROP_SINGLE, (Serializable) listProp));
+                rootNodeRef,
+                Collections.singletonMap(PROP_QNAME_ANY_PROP_SINGLE, (Serializable) listProp));
         listProp.add("ONE");
         nodeService.addProperties(
-                    rootNodeRef,
-                    Collections.singletonMap(PROP_QNAME_ANY_PROP_SINGLE, (Serializable) listProp));
+                rootNodeRef,
+                Collections.singletonMap(PROP_QNAME_ANY_PROP_SINGLE, (Serializable) listProp));
         listProp.add("TWO");
         nodeService.addProperties(
-                    rootNodeRef,
-                    Collections.singletonMap(PROP_QNAME_ANY_PROP_SINGLE, (Serializable) listProp));
+                rootNodeRef,
+                Collections.singletonMap(PROP_QNAME_ANY_PROP_SINGLE, (Serializable) listProp));
     }
-    
+
     /**
-     * Checks that the {@link ContentModel#ASPECT_REFERENCEABLE referencable} properties
-     * are present
+     * Checks that the {@link ContentModel#ASPECT_REFERENCEABLE referencable} properties are present
      */
     @Test
     public void testGetReferencableProperties() throws Exception
@@ -2426,16 +2421,16 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         Serializable wsIdentifier = nodeService.getProperty(rootNodeRef, ContentModel.PROP_STORE_IDENTIFIER);
         Serializable nodeUuid = nodeService.getProperty(rootNodeRef, ContentModel.PROP_NODE_UUID);
         Serializable nodeDbId = nodeService.getProperty(rootNodeRef, ContentModel.PROP_NODE_DBID);
-        
+
         assertNotNull("Workspace Protocol property not present", wsProtocol);
         assertNotNull("Workspace Identifier property not present", wsIdentifier);
         assertNotNull("Node UUID property not present", nodeUuid);
         assertNotNull("Node DB ID property not present", nodeDbId);
-        
+
         assertEquals("Workspace Protocol property incorrect", rootNodeRef.getStoreRef().getProtocol(), wsProtocol);
         assertEquals("Workspace Identifier property incorrect", rootNodeRef.getStoreRef().getIdentifier(), wsIdentifier);
         assertEquals("Node UUID property incorrect", rootNodeRef.getId(), nodeUuid);
-        
+
         // check mass property retrieval
         Map<QName, Serializable> properties = nodeService.getProperties(rootNodeRef);
         assertTrue("Workspace Protocol property not present in map", properties.containsKey(ContentModel.PROP_STORE_PROTOCOL));
@@ -2469,11 +2464,11 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         {
             // Expected
         }
-//        
-//        // Get the values back
-//        Map<QName, Serializable> propsCheck = nodeService.getProperties(rootNodeRef);
-//        assertEquals("Residual properties not present and equal. ", props, propsCheck);
-//        assertTrue("Expect residual aspect to be present.", nodeService.hasAspect(rootNodeRef, ASPECT_RESIDUAL));
+        //
+        // // Get the values back
+        // Map<QName, Serializable> propsCheck = nodeService.getProperties(rootNodeRef);
+        // assertEquals("Residual properties not present and equal. ", props, propsCheck);
+        // assertTrue("Expect residual aspect to be present.", nodeService.hasAspect(rootNodeRef, ASPECT_RESIDUAL));
     }
 
     @Test
@@ -2490,22 +2485,22 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertEquals("Incorrect number of parents", 3, parentAssocs.size());
         assertTrue("Expected assoc not found", parentAssocs.contains(n6pn8Ref));
         assertTrue("Expected assoc not found", parentAssocs.contains(n7n8Ref));
-        
+
         // check that we can retrieve the primary parent
         ChildAssociationRef primaryParentAssocCheck = nodeService.getPrimaryParent(n8Ref);
         assertEquals("Primary parent assoc not retrieved", n6pn8Ref, primaryParentAssocCheck);
-        
+
         // check that the root node returns a null primary parent
         ChildAssociationRef rootNodePrimaryAssoc = nodeService.getPrimaryParent(rootNodeRef);
         assertNull("Expected null primary parent for root node", rootNodePrimaryAssoc.getParentRef());
-        
+
         // get the parent associations based on pattern
         List<ChildAssociationRef> parentAssocRefsByQName = nodeService.getParentAssocs(
                 n8Ref,
                 RegexQNamePattern.MATCH_ALL,
                 QName.createQName(BaseNodeServiceTest.NAMESPACE, "n7_n8"));
         assertEquals("Expected to get exactly one match", 1, parentAssocRefsByQName.size());
-        
+
         // get the parent association based on type pattern
         List<ChildAssociationRef> childAssocRefsByTypeQName = nodeService.getChildAssocs(
                 n8Ref,
@@ -2517,11 +2512,11 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public void testGetChildAssocs() throws Exception
     {
         Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();
-        NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"root_p_n1")).getChildRef();
-        ChildAssociationRef n1pn3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n1_p_n3"));
-        ChildAssociationRef n1n4Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n1_n4"));
-        ChildAssociationRef n1n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n1_n8"));
-        
+        NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n1")).getChildRef();
+        ChildAssociationRef n1pn3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_p_n3"));
+        ChildAssociationRef n1n4Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_n4"));
+        ChildAssociationRef n1n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_n8"));
+
         // get the parent node's children
         List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(n1Ref);
         assertEquals("Incorrect number of children", 3, childAssocRefs.size());
@@ -2534,27 +2529,27 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         nodeService.setChildAssociationIndex(n1pn3Ref, 2);
         nodeService.setChildAssociationIndex(n1n8Ref, 1);
         nodeService.setChildAssociationIndex(n1n4Ref, 0);
-        
+
         // repeat
         childAssocRefs = nodeService.getChildAssocs(n1Ref);
         assertEquals("Order of refs is wrong", n1pn3Ref, childAssocRefs.get(2));
         assertEquals("Order of refs is wrong", n1n8Ref, childAssocRefs.get(1));
         assertEquals("Order of refs is wrong", n1n4Ref, childAssocRefs.get(0));
-        
+
         // get the child associations based on pattern
         List<ChildAssociationRef> childAssocRefsByQName = nodeService.getChildAssocs(
                 n1Ref,
                 RegexQNamePattern.MATCH_ALL,
                 QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_p_n3"));
         assertEquals("Expected to get exactly one match", 1, childAssocRefsByQName.size());
-        
+
         // get the child association based on type pattern
         List<ChildAssociationRef> childAssocRefsByTypeQName = nodeService.getChildAssocs(
                 n1Ref,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 RegexQNamePattern.MATCH_ALL);
         assertEquals("Incorrect number of children", 3, childAssocRefsByTypeQName.size());
-        
+
         // Get associations based on type pattern but limit the results
         childAssocRefsByTypeQName = nodeService.getChildAssocs(
                 n1Ref,
@@ -2569,8 +2564,8 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public void testDuplicateChildAssocCleanup() throws Exception
     {
         Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();
-        NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"root_p_n1")).getChildRef();
-        ChildAssociationRef n1pn3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n1_p_n3"));
+        NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n1")).getChildRef();
+        ChildAssociationRef n1pn3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_p_n3"));
         // Recreate the association from n1 to n3 i.e. duplicate it
         QName assocQName = QName.createQName(BaseNodeServiceTest.NAMESPACE, "dup");
         ChildAssociationRef dup1 = nodeService.addChild(
@@ -2593,36 +2588,33 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     @Test
     public void testGetChildAssocsByChildType() throws Exception
     {
-        /*
-         * Level 2:     n1_p_n3     n2_p_n4     n1_n4       n2_p_n5     n1_n8
-         * Containers: n1, n3, n4
-         * Files:      n8
-         */
+        /* Level 2: n1_p_n3 n2_p_n4 n1_n4 n2_p_n5 n1_n8 Containers: n1, n3, n4 Files: n8 */
         Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();
-        NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"root_p_n1")).getChildRef();
-        NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n6_p_n8")).getChildRef();
-        ChildAssociationRef n1pn3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n1_p_n3"));
-        ChildAssociationRef n1n4Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n1_n4"));
-        ChildAssociationRef n1n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n1_n8"));
-        
+        NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n1")).getChildRef();
+        NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8")).getChildRef();
+        ChildAssociationRef n1pn3Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_p_n3"));
+        ChildAssociationRef n1n4Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_n4"));
+        ChildAssociationRef n1n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n1_n8"));
+
         // Get N1's container children
-        List<ChildAssociationRef> childAssocRefsContainers =  nodeService.getChildAssocs(
+        List<ChildAssociationRef> childAssocRefsContainers = nodeService.getChildAssocs(
                 n1Ref,
                 Collections.singleton(ContentModel.TYPE_CONTAINER));
         assertEquals("Incorrect number of cm:container children", 2, childAssocRefsContainers.size());
         assertTrue("Expected assoc not found", childAssocRefsContainers.contains(n1pn3Ref));
         assertTrue("Expected assoc not found", childAssocRefsContainers.contains(n1n4Ref));
         // Get N1's container children
-        List<ChildAssociationRef> childAssocRefsFiles =  nodeService.getChildAssocs(
+        List<ChildAssociationRef> childAssocRefsFiles = nodeService.getChildAssocs(
                 n1Ref,
                 Collections.singleton(BaseNodeServiceTest.TYPE_QNAME_TEST_CONTENT));
         assertEquals("Incorrect number of test:content children", 1, childAssocRefsFiles.size());
         assertTrue("Expected assoc not found", childAssocRefsFiles.contains(n1n8Ref));
     }
-    
+
     public static class MovePolicyTester implements NodeServicePolicies.OnMoveNodePolicy
     {
         public List<ChildAssociationRef> policyAssocRefs = new ArrayList<ChildAssociationRef>(2);
+
         public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
         {
             policyAssocRefs.add(oldChildAssocRef);
@@ -2652,24 +2644,24 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         NodeRef n5Ref = n5pn7Ref.getParentRef();
         NodeRef n6Ref = n6pn8Ref.getParentRef();
         NodeRef n8Ref = n6pn8Ref.getChildRef();
-        
+
         MovePolicyTester policy = new MovePolicyTester();
         // bind to listen to the deletion of a node
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onMoveNode"),
                 policy,
-                new JavaBehaviour(policy, "onMoveNode"));   
-        
+                new JavaBehaviour(policy, "onMoveNode"));
+
         // move n8 to n5
         ChildAssociationRef assocRef = nodeService.moveNode(
                 n8Ref,
                 n5Ref,
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName(BaseNodeServiceTest.NAMESPACE, "n5_p_n8"));
-        
+
         // check that the move policy was fired
         assertEquals("Move policy not fired", 2, policy.policyAssocRefs.size());
-        
+
         // check that n6 is no longer the parent
         List<ChildAssociationRef> n6ChildRefs = nodeService.getChildAssocs(
                 n6Ref,
@@ -2678,11 +2670,11 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // check that n5 is the parent
         ChildAssociationRef checkRef = nodeService.getPrimaryParent(n8Ref);
         assertEquals("Primary assoc incorrent", assocRef, checkRef);
-        
+
         // check that cyclic associations are disallowed
         try
         {
-            // n6 is a non-primary child of n4.  Move n4 into n6
+            // n6 is a non-primary child of n4. Move n4 into n6
             nodeService.moveNode(
                     n4Ref,
                     n6Ref,
@@ -2695,7 +2687,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             // expected
         }
     }
-    
+
     /**
      * Creates a named association between two new nodes
      */
@@ -2710,8 +2702,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     private AssociationRef createAssociation(NodeRef sourceRef) throws Exception
     {
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
-        fillProperties(TYPE_QNAME_TEST_CONTENT, properties);        fillProperties(ASPECT_QNAME_TEST_TITLED, properties);
-        
+        fillProperties(TYPE_QNAME_TEST_CONTENT, properties);
+        fillProperties(ASPECT_QNAME_TEST_TITLED, properties);
+
         if (sourceRef == null)
         {
             ChildAssociationRef childAssocRef = nodeService.createNode(
@@ -2729,7 +2722,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 TYPE_QNAME_TEST_CONTENT,
                 properties);
         NodeRef targetRef = childAssocRef.getChildRef();
-        
+
         AssociationRef assocRef = nodeService.createAssociation(
                 sourceRef,
                 targetRef,
@@ -2762,7 +2755,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     {
         AssociationRef assocRef = createAssociation();
         NodeRef sourceRef = assocRef.getSourceRef();
-        
+
         // create another
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(5);
         fillProperties(ASPECT_QNAME_TEST_TITLED, properties);
@@ -2781,7 +2774,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertNotNull("Created association does not have an ID", anotherAssocId);
         AssociationRef anotherAssocRefCheck = nodeService.getAssoc(anotherAssocId);
         assertEquals("Assoc fetched by ID is incorrect.", anotherAssocRef, anotherAssocRefCheck);
-        
+
         // remove assocs
         List<AssociationRef> assocs = nodeService.getTargetAssocs(sourceRef, ASSOC_TYPE_QNAME_TEST_NEXT);
         for (AssociationRef assoc : assocs)
@@ -2804,7 +2797,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         List<AssociationRef> targetAssocs = nodeService.getTargetAssocs(sourceRef, qname);
         assertEquals("Incorrect number of targets", 1, targetAssocs.size());
         assertTrue("Target not found", targetAssocs.contains(assocRef));
-        
+
         // Check that IDs are present
         for (AssociationRef targetAssoc : targetAssocs)
         {
@@ -2824,7 +2817,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         {
             assocRef = createAssociation(sourceRef);
         }
-        
+
         // Now get the associations and ensure that they are in order of ID
         // because they should have been inserted in natural order
         List<AssociationRef> assocs = nodeService.getTargetAssocs(sourceRef, ASSOC_TYPE_QNAME_TEST_NEXT);
@@ -2836,10 +2829,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             assertTrue("Results should be in ID order", id > lastId);
             lastId = id;
         }
-        
+
         // Now invert the association list
-        Comparator<AssociationRef> descendingId = new Comparator<AssociationRef>()
-        {
+        Comparator<AssociationRef> descendingId = new Comparator<AssociationRef>() {
             @Override
             public int compare(AssociationRef assoc1, AssociationRef assoc2)
             {
@@ -2858,11 +2850,11 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         {
             // Reset them
             nodeService.setAssociations(sourceRef, ASSOC_TYPE_QNAME_TEST_NEXT, targetNodeRefs);
-            
+
             // Recheck the order
             assocs = nodeService.getTargetAssocs(sourceRef, ASSOC_TYPE_QNAME_TEST_NEXT);
             assertEquals("Incorrect number of results", i, assocs.size());
-            
+
             lastId = Long.MAX_VALUE;
             for (AssociationRef associationRef : assocs)
             {
@@ -2877,7 +2869,8 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     }
 
     /**
-     * Tests get target associations by property value.</p>
+     * Tests get target associations by property value.
+     * </p>
      * See <b>MNT-14504</b> for more details.
      * 
      * @throws Exception
@@ -2901,7 +2894,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         Map<QName, Serializable> checkProperties = new HashMap<QName, Serializable>();
         checkProperties.put(ContentModel.PROP_ENABLED, Boolean.TRUE);
         checkProperties.put(ContentModel.PROP_COUNTER, 100);
-        checkProperties.put(ContentModel.PROP_LATITUDE, Double.valueOf(51.521)); 
+        checkProperties.put(ContentModel.PROP_LATITUDE, Double.valueOf(51.521));
         checkProperties.put(ContentModel.PROP_SUBJECT, "Hello World");
 
         for (QName propertyQName : checkProperties.keySet())
@@ -2960,22 +2953,22 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         List<AssociationRef> sourceAssocs = nodeService.getSourceAssocs(targetRef, qname);
         assertEquals("Incorrect number of source assocs", 1, sourceAssocs.size());
         assertTrue("Source not found", sourceAssocs.contains(assocRef));
-        
+
         // Check that IDs are present
         for (AssociationRef sourceAssoc : sourceAssocs)
         {
             assertNotNull("Association does not have ID", sourceAssoc.getId());
         }
     }
-    
+
     /**
-     * @see #buildNodeGraph() 
+     * @see #buildNodeGraph()
      */
     @Test
     public void testGetPath() throws Exception
     {
         Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();
-        NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE,"n6_p_n8")).getChildRef();
+        NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8")).getChildRef();
 
         // get the primary node path for n8
         Path path = nodeService.getPath(n8Ref);
@@ -2983,9 +2976,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 "/{" + BaseNodeServiceTest.NAMESPACE + "}root_p_n1/{" + BaseNodeServiceTest.NAMESPACE + "}n1_p_n3/{" + BaseNodeServiceTest.NAMESPACE + "}n3_p_n6/{" + BaseNodeServiceTest.NAMESPACE + "}n6_p_n8",
                 path.toString());
     }
-    
+
     /**
-     * @see #buildNodeGraph() 
+     * @see #buildNodeGraph()
      */
     @Test
     public void testGetPaths() throws Exception
@@ -2994,7 +2987,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n1")).getChildRef();
         NodeRef n6Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n3_p_n6")).getChildRef();
         NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8")).getChildRef();
-        
+
         // get all paths for the root node
         Collection<Path> paths = nodeService.getPaths(rootNodeRef, false);
         assertEquals("Root node must have exactly 1 path", 1, paths.size());
@@ -3004,7 +2997,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
 
         // get all paths for n8
         paths = nodeService.getPaths(n8Ref, false);
-        assertEquals("Incorrect path count", 6, paths.size());  // n6 is a root as well
+        assertEquals("Incorrect path count", 6, paths.size()); // n6 is a root as well
         // check that each path element has parent node ref, qname and child node ref
         for (Path path : paths)
         {
@@ -3028,7 +3021,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // get primary path for n8
         paths = nodeService.getPaths(n8Ref, true);
         assertEquals("Incorrect path count", 1, paths.size());
-        
+
         // check that a cyclic path is detected - make n6_n1
         try
         {
@@ -3053,14 +3046,14 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         NodeRef n1Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "root_p_n1")).getChildRef();
         NodeRef n6Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n3_p_n6")).getChildRef();
         NodeRef n8Ref = assocRefs.get(QName.createQName(BaseNodeServiceTest.NAMESPACE, "n6_p_n8")).getChildRef();
-        
+
         // delete n1
         nodeService.deleteNode(n1Ref);
         // check that the rest disappeared
         assertFalse("n6 not cascade deleted", nodeService.exists(n6Ref));
         assertFalse("n8 not cascade deleted", nodeService.exists(n8Ref));
     }
-    
+
     /**
      * Test that default values are set when nodes are created and aspects applied
      * 
@@ -3077,7 +3070,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         assertEquals(DEFAULT_VALUE, this.nodeService.getProperty(nodeRef, PROP_QNAME_PROP1));
         this.nodeService.addAspect(nodeRef, ASPECT_QNAME_WITH_DEFAULT_VALUE, null);
         assertEquals(DEFAULT_VALUE, this.nodeService.getProperty(nodeRef, PROP_QNAME_PROP2));
-        
+
         // Ensure that default values do not overrite already set values
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
         props.put(PROP_QNAME_PROP1, NOT_DEFAULT_VALUE);
@@ -3086,13 +3079,13 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("testDefaultValues"),
                 TYPE_QNAME_EXTENDED_CONTENT,
-                props).getChildRef();                
+                props).getChildRef();
         assertEquals(NOT_DEFAULT_VALUE, this.nodeService.getProperty(nodeRef2, PROP_QNAME_PROP1));
         Map<QName, Serializable> prop2 = new HashMap<QName, Serializable>(1);
         prop2.put(PROP_QNAME_PROP2, NOT_DEFAULT_VALUE);
         this.nodeService.addAspect(nodeRef2, ASPECT_QNAME_WITH_DEFAULT_VALUE, prop2);
         assertEquals(NOT_DEFAULT_VALUE, this.nodeService.getProperty(nodeRef2, PROP_QNAME_PROP2));
-                
+
     }
 
     @Test
@@ -3103,32 +3096,32 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("testDefaultValues"),
                 TYPE_QNAME_TEST_CONTENT).getChildRef();
-        
+
         // Check that the required mandatory aspects have been applied
         assertTrue(this.nodeService.hasAspect(nodeRef, ASPECT_QNAME_TEST_TITLED));
         assertTrue(this.nodeService.hasAspect(nodeRef, ASPECT_QNAME_MANDATORY));
-        
+
         // Add an aspect with dependacies
         this.nodeService.addAspect(nodeRef, ASPECT_QNAME_TEST_MARKER, null);
-        
+
         // Check that the dependant aspect has been applied
         assertTrue(this.nodeService.hasAspect(nodeRef, ASPECT_QNAME_TEST_MARKER));
-        assertTrue(this.nodeService.hasAspect(nodeRef, ASPECT_QNAME_TEST_MARKER2));        
+        assertTrue(this.nodeService.hasAspect(nodeRef, ASPECT_QNAME_TEST_MARKER2));
     }
-    
+
     private void garbageCollect() throws Exception
     {
         // garbage collect and wait
         for (int i = 0; i < 50; i++)
         {
             Runtime.getRuntime().gc();
-            synchronized(this)
+            synchronized (this)
             {
                 this.wait(20);
             }
         }
     }
-    
+
     private void reportFlushPerformance(
             String msg,
             Map<QName, ChildAssociationRef> lastNodeGraph,
@@ -3137,20 +3130,19 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             long startTime) throws Exception
     {
         long endTime = System.nanoTime();
-        double deltaTime = (double)(endTime - startTime)/1000000000D;
+        double deltaTime = (double) (endTime - startTime) / 1000000000D;
         System.out.println(msg + "\n" +
                 "   Build and flushed " + testCount + " node graphs: \n" +
                 "   total time: " + deltaTime + "s \n" +
-                "   average: " + (double)testCount/deltaTime + " graphs/s");
-        
+                "   average: " + (double) testCount / deltaTime + " graphs/s");
+
         garbageCollect();
         long endBytes = Runtime.getRuntime().freeMemory();
-        double diffBytes = (double)(startBytes - endBytes);
+        double diffBytes = (double) (startBytes - endBytes);
         System.out.println(
-                "   total bytes: " + diffBytes/1024D/1024D + " MB \n" +
-                "   average: " + (double)diffBytes/testCount/1024D + " kb/graph");
-        
-        
+                "   total bytes: " + diffBytes / 1024D / 1024D + " MB \n" +
+                        "   average: " + (double) diffBytes / testCount / 1024D + " kb/graph");
+
         int assocsPerGraph = lastNodeGraph.size();
         int nodesPerGraph = 0;
         for (ChildAssociationRef assoc : lastNodeGraph.values())
@@ -3164,11 +3156,11 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         int totalNodes = nodesPerGraph * testCount;
         System.out.println(
                 "   assocs per graph: " + assocsPerGraph + "\n" +
-                "   nodes per graph: " + nodesPerGraph + "\n" +
-                "   total nodes: " + totalNodes + "\n" +
-                "   total assocs: " + totalAssocs);
+                        "   nodes per graph: " + nodesPerGraph + "\n" +
+                        "   total nodes: " + totalNodes + "\n" +
+                        "   total assocs: " + totalAssocs);
     }
-    
+
     /**
      * Check that the duplicate child name is detected and thrown correctly
      */
@@ -3223,10 +3215,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             // expected
         }
     }
-    
+
     /**
-     * Create some nodes that have the same <b>cm:name</b> but use associations that don't
-     * enforce uniqueness.
+     * Create some nodes that have the same <b>cm:name</b> but use associations that don't enforce uniqueness.
      */
     @Test
     public void testNonDuplicateAssocsWithSuppliedName() throws Throwable
@@ -3250,7 +3241,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ContentModel.TYPE_CONTENT,
                 properties);
     }
-    
+
     /**
      * Create some nodes that have the no <b>cm:name</b> and use associations that enforce uniqueness.
      * <p/>
@@ -3286,10 +3277,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             // Expected
         }
     }
-    
+
     /**
-     * Checks that the unique constraint doesn't break delete and create within the same
-     * transaction.
+     * Checks that the unique constraint doesn't break delete and create within the same transaction.
      */
     @Test
     public void testDeleteAndAddSameName() throws Exception
@@ -3357,7 +3347,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 ContentModel.TYPE_CONTENT,
                 props);
         NodeRef klmRef = pathDefRef.getChildRef();
-        
+
         // now browse down using the node service
         NodeRef checkAbcRef = nodeService.getChildByName(parentRef, ASSOC_TYPE_QNAME_TEST_CONTAINS, "abc");
         assertNotNull("Second level, named node 'ABC' not found", checkAbcRef);
@@ -3368,7 +3358,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // check that we get null where not present
         NodeRef checkHijRef = nodeService.getChildByName(checkAbcRef, ASSOC_TYPE_QNAME_TEST_CONTAINS, "hij");
         assertNull("Third level, named node 'HIJ' should not have been found", checkHijRef);
-        
+
         // Now search for multiple names
         List<String> namesList = Arrays.asList("ABC", "DEF", "HIJ", "KLM");
         List<ChildAssociationRef> childAssocRefs = nodeService.getChildrenByName(checkAbcRef, ASSOC_TYPE_QNAME_TEST_CONTAINS, namesList);
@@ -3384,7 +3374,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         nodeService.addAspect(
                 rootNodeRef,
                 ContentModel.ASPECT_LOCALIZED,
-                Collections.<QName, Serializable>singletonMap(ContentModel.PROP_LOCALE, Locale.CANADA_FRENCH));
+                Collections.<QName, Serializable> singletonMap(ContentModel.PROP_LOCALE, Locale.CANADA_FRENCH));
         // commit to check
     }
 
@@ -3459,7 +3449,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             // Expected
         }
     }
-    
+
     /**
      * Helper test class for {@link BaseNodeServiceTest#testAR1414()}.
      */
@@ -3468,7 +3458,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         private static final long serialVersionUID = 5616094206968290908L;
         int i = 0;
     }
-    
+
     /**
      * Check that Serializable properties do not remain connected to the L1 session
      */
@@ -3476,7 +3466,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public void testAR1414() throws Exception
     {
         AR1414Blob blob = new AR1414Blob();
-        
+
         QName propertyQName = QName.createQName(NAMESPACE, "testAR1414Prop");
         nodeService.setProperty(rootNodeRef, propertyQName, blob);
         // Modify our original blob

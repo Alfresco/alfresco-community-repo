@@ -33,11 +33,16 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.quartz.Scheduler;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.nodelocator.CompanyHomeNodeLocator;
@@ -55,17 +60,9 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.quartz.Scheduler;
-import org.springframework.context.ApplicationContext;
 
 /**
- * Test for {@link CronScheduledQueryBasedTemplateActionDefinition} class. The test assumes that not all test-cases require scheduling. Hence,
- * {@link CronScheduledQueryBasedTemplateActionDefinition} instance is not registered as scheduled job. But in the same time this instance is unregistered as scheduled job after
- * every test-case execution. Also default query template is not set for {@link CronScheduledQueryBasedTemplateActionDefinition} instance
+ * Test for {@link CronScheduledQueryBasedTemplateActionDefinition} class. The test assumes that not all test-cases require scheduling. Hence, {@link CronScheduledQueryBasedTemplateActionDefinition} instance is not registered as scheduled job. But in the same time this instance is unregistered as scheduled job after every test-case execution. Also default query template is not set for {@link CronScheduledQueryBasedTemplateActionDefinition} instance
  * 
  * @author Dmitry Velichkevich
  * @see CronScheduledQueryBasedTemplateActionDefinitionTest#initializeScheduler()
@@ -76,7 +73,6 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
     private static final int AMOUNT_OF_DAYS_BEFORE = -4;
 
     private static final int TEST_DOCUMENTS_AMOUNT = 5;
-
 
     /**
      * {@link SimpleTemplateActionDefinition#setActionName(String)}
@@ -123,7 +119,6 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
      */
     private static final String SCHEDULER_TRIGGER_GROUP = "triggerTestGroup-" + System.currentTimeMillis();
 
-
     private static final String SCHEDULER_FACTORY_BEAN_NAME = "schedulerFactory";
 
     private static final String POLICY_BEHAVIOUR_FILTER_BEAN_NAME = "policyBehaviourFilter";
@@ -137,7 +132,7 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
     private static final String YESTERDAY_TEST_DOCUMENT_NAME_TEMPLATE = "Yesterday" + TEST_DOCUMENT_NAME_TEMPLATE;
 
     private static final String MNT_11598_QUERY_TEMPLATE = "@cm\\:created:\\$\\{luceneDateRange(\"%s\", \"-P10Y\")\\}";
-    
+
     private static final String TEST_FOLDER_NAME = String.format(ROOT_TEST_FOLDER_NAME_TEMPLATE, System.currentTimeMillis());
 
     private ApplicationContext applicationContext;
@@ -145,13 +140,11 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
 
     private UserTransaction transaction;
 
-
     private NodeRef rootTestFolder;
 
     private List<FileInfo> freshNodes = new LinkedList<FileInfo>();
 
     private List<FileInfo> yesterdayNodes = new LinkedList<FileInfo>();
-
 
     private CronScheduledQueryBasedTemplateActionDefinition scheduler;
 
@@ -175,9 +168,7 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
     }
 
     /**
-     * Initializes target {@link CronScheduledQueryBasedTemplateActionDefinition} instance for testing. <b>Default query template is not set!</b> It must be set in test method. No
-     * need to register for every test for scheduling. Hence, {@link CronScheduledQueryBasedTemplateActionDefinition#afterPropertiesSet()} is omitted here and must be invoked for
-     * test which requires scheduling
+     * Initializes target {@link CronScheduledQueryBasedTemplateActionDefinition} instance for testing. <b>Default query template is not set!</b> It must be set in test method. No need to register for every test for scheduling. Hence, {@link CronScheduledQueryBasedTemplateActionDefinition#afterPropertiesSet()} is omitted here and must be invoked for test which requires scheduling
      */
     private void initializeScheduler()
     {
@@ -217,9 +208,7 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
     }
 
     /**
-     * Creates <code>rootTestFolder</code> test folder as start of test content hierarchy. Then it creates
-     * {@link CronScheduledQueryBasedTemplateActionDefinitionTest#TEST_DOCUMENTS_AMOUNT} documents in the root folder with "today" creation date and the same amount of documents
-     * with "yesterday" creation date
+     * Creates <code>rootTestFolder</code> test folder as start of test content hierarchy. Then it creates {@link CronScheduledQueryBasedTemplateActionDefinitionTest#TEST_DOCUMENTS_AMOUNT} documents in the root folder with "today" creation date and the same amount of documents with "yesterday" creation date
      */
     private void createTestContent() throws Exception
     {
@@ -270,7 +259,7 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
     private void checkNodes(List<FileInfo> nodes) throws Exception
     {
         SearchService searchService = registry.getSearchService();
-        
+
         boolean notFound = false;
         for (int i = 1; i <= 40; i++)
         {
@@ -295,7 +284,7 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
         }
         assertFalse("The content was not created or indexed correctly.", notFound);
     }
-    
+
     @After
     @Override
     public void tearDown() throws Exception

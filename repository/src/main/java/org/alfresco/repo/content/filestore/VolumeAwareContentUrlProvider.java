@@ -32,20 +32,18 @@ import org.alfresco.repo.content.ContentStore;
 import org.alfresco.util.GUID;
 
 /**
- * Content URL provider for file stores which allows routing content from a store to a selection of filesystem volumes.
- * Content is randomly distributed on configured volumes.
- * Content URL format is <b>store://volume/year/month/day/hour/minute/GUID.bin</b>,
- * As {@link TimeBasedFileContentUrlProvider TimeBasedFileContentUrlProvider} can be configured to include provision for 
- * splitting data into buckets within <b>minute</b> range
+ * Content URL provider for file stores which allows routing content from a store to a selection of filesystem volumes. Content is randomly distributed on configured volumes. Content URL format is <b>store://volume/year/month/day/hour/minute/GUID.bin</b>, As {@link TimeBasedFileContentUrlProvider TimeBasedFileContentUrlProvider} can be configured to include provision for splitting data into buckets within <b>minute</b> range
+ * 
  * @author Andreea Dragoi
  */
 class VolumeAwareContentUrlProvider extends TimeBasedFileContentUrlProvider
 {
     private String[] volumes;
     private Random random = new Random();
-   
+
     /**
-     * @param volumeNames(name of volumes separated by comma)
+     * @param volumeNames(name
+     *            of volumes separated by comma)
      */
     public VolumeAwareContentUrlProvider(String volumeNames)
     {
@@ -55,7 +53,7 @@ class VolumeAwareContentUrlProvider extends TimeBasedFileContentUrlProvider
         }
         this.volumes = volumeNames.split(",");
     }
-    
+
     @Override
     public String createNewFileStoreUrl()
     {
@@ -68,7 +66,7 @@ class VolumeAwareContentUrlProvider extends TimeBasedFileContentUrlProvider
         String newContentUrl = sb.toString();
         return newContentUrl;
     }
-    
+
     private String chooseVolume()
     {
         int volumesNum = volumes.length;

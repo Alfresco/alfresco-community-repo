@@ -1,5 +1,10 @@
 package org.alfresco.rest.sites.members;
 
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
@@ -12,10 +17,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class AddSiteMemberTests extends RestTest
 {
@@ -25,10 +26,10 @@ public class AddSiteMemberTests extends RestTest
     private String addMemberJson, addMembersJson;
     private RestSiteMemberModel memberModel;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();        
+        adminUserModel = dataUser.getAdminUser();
         publicSiteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         moderatedSiteModel = dataSite.usingUser(adminUserModel).createModeratedRandomSite();
         privateSiteModel = dataSite.usingUser(adminUserModel).createPrivateRandomSite();
@@ -37,22 +38,22 @@ public class AddSiteMemberTests extends RestTest
                 UserRole.SiteCollaborator,
                 UserRole.SiteConsumer,
                 UserRole.SiteContributor);
-        moderatedSiteUsersWithRoles = dataUser.addUsersWithRolesToSite(moderatedSiteModel, 
-                UserRole.SiteManager, 
+        moderatedSiteUsersWithRoles = dataUser.addUsersWithRolesToSite(moderatedSiteModel,
+                UserRole.SiteManager,
                 UserRole.SiteCollaborator,
-                UserRole.SiteConsumer, 
+                UserRole.SiteConsumer,
                 UserRole.SiteContributor);
-        privateSiteUsersWithRoles = dataUser.addUsersWithRolesToSite(privateSiteModel, 
-                UserRole.SiteManager, 
+        privateSiteUsersWithRoles = dataUser.addUsersWithRolesToSite(privateSiteModel,
+                UserRole.SiteManager,
                 UserRole.SiteCollaborator,
-                UserRole.SiteConsumer, 
+                UserRole.SiteConsumer,
                 UserRole.SiteContributor);
         addMemberJson = "{\"role\":\"%s\",\"id\":\"%s\"}";
         addMembersJson = "{\"role\":\"%s\",\"id\":\"%s\"}, {\"role\":\"%s\",\"id\":\"%s\"}";
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.SANITY,
             description = "Verify that manager is able to add site member and gets status code CREATED (201)")
     public void managerIsAbleToAddSiteMember() throws Exception
     {
@@ -60,85 +61,85 @@ public class AddSiteMemberTests extends RestTest
         testUser.setUserRole(UserRole.SiteCollaborator);
         restClient.authenticateUser(publicSiteUsersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         restClient.withCoreAPI().usingSite(publicSiteModel).addPerson(testUser)
-               .assertThat().field("id").is(testUser.getUsername())
-               .and().field("role").is(testUser.getUserRole());
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);       
+                .assertThat().field("id").is(testUser.getUsername())
+                .and().field("role").is(testUser.getUserRole());
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that site collaborator is not able to add site member and gets status code FORBIDDEN (403)")
     public void collaboratorIsNotAbleToAddSiteMember() throws Exception
     {
         UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(publicSiteUsersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                  .withCoreAPI().usingSite(publicSiteModel).addPerson(testUser);
-        
+                .withCoreAPI().usingSite(publicSiteModel).addPerson(testUser);
+
         restClient.assertLastError().containsSummary("Permission was denied");
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);       
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that site contributor is not able to add site member and gets status code FORBIDDEN (403)")
     public void contributorIsNotAbleToAddSiteMember() throws Exception
     {
         UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(publicSiteUsersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                  .withCoreAPI().usingSite(publicSiteModel).addPerson(testUser);        
+                .withCoreAPI().usingSite(publicSiteModel).addPerson(testUser);
         restClient.assertLastError().containsSummary("Permission was denied");
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);       
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that site consumer is not able to add site member and gets status code FORBIDDEN (403)")
     public void consumerIsNotAbleToAddSiteMember() throws Exception
     {
         UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(publicSiteUsersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                  .withCoreAPI().usingSite(publicSiteModel).addPerson(testUser);
+                .withCoreAPI().usingSite(publicSiteModel).addPerson(testUser);
         restClient.assertLastError().containsSummary("Permission was denied");
-        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);       
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.SANITY,
             description = "Verify that admin user is able to add site member and gets status code CREATED (201)")
     public void adminIsAbleToAddSiteMember() throws Exception
     {
         UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
         restClient.authenticateUser(adminUserModel)
-                  .withCoreAPI().usingSite(publicSiteModel).addPerson(testUser)
-                  .and().field("id").is(testUser.getUsername())
-                  .and().field("role").is(testUser.getUserRole());
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);       
+                .withCoreAPI().usingSite(publicSiteModel).addPerson(testUser)
+                .and().field("id").is(testUser.getUsername())
+                .and().field("role").is(testUser.getUserRole());
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
+
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.SANITY,
             description = "Verify that unauthenticated user is not able to add site member")
-//    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
+    // @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void unauthenticatedUserIsNotAuthorizedToAddSiteMmeber() throws Exception
     {
         UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);
-        
+
         UserModel userModel = dataUser.createRandomTestUser();
         userModel.setPassword("user wrong password");
         dataUser.addUserToSite(userModel, publicSiteModel, UserRole.SiteManager);
-        
+
         restClient.authenticateUser(userModel)
-                  .withCoreAPI().usingSite(publicSiteModel).addPerson(testUser);        
+                .withCoreAPI().usingSite(publicSiteModel).addPerson(testUser);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that manager can add another user as manager to a public site and gets status code CREATED (201)")
     public void addManagerToPublicSite() throws Exception
     {
@@ -150,8 +151,8 @@ public class AddSiteMemberTests extends RestTest
                 .and().field("role").is(testUser.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that manager can add another user as manager to a moderated site and gets status code CREATED (201)")
     public void addManagerToModeratedSite() throws Exception
     {
@@ -163,8 +164,8 @@ public class AddSiteMemberTests extends RestTest
                 .and().field("role").is(testUser.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that manager can add another user as manager to a private site and gets status code CREATED (201)")
     public void addManagerToPrivateSite() throws Exception
     {
@@ -176,8 +177,8 @@ public class AddSiteMemberTests extends RestTest
                 .and().field("role").is(testUser.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that consumer role is not able to add another user to a moderated site and gets status code 403")
     public void addUserByConsumerToModeratedSite() throws Exception
     {
@@ -187,8 +188,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that consumer role is not able to add another user to a private site and gets status code 403")
     public void addUserByConsumerToPrivateSite() throws Exception
     {
@@ -198,8 +199,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that collaborator role is not able to add another user to a moderated site and gets status code 403")
     public void addUserByCollaboratorToModeratedSite() throws Exception
     {
@@ -209,8 +210,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that collaborator role is not able to add another user to a private site and gets status code 403")
     public void addUserByCollaboratorToPrivateSite() throws Exception
     {
@@ -220,8 +221,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that contributor role is not able to add another user to a moderated site and gets status code 403")
     public void addUserByContributorToModeratedSite() throws Exception
     {
@@ -231,8 +232,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that contributor role is not able to add another user to a private site and gets status code 403")
     public void addUserByContributorToPrivateSite() throws Exception
     {
@@ -242,8 +243,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that a user without specified role can not be added to a site and gets status code 400")
     public void canNotAddUserWithoutSpecifyingRoleToSite() throws Exception
     {
@@ -255,8 +256,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(RestErrorModel.MUST_PROVIDE_ROLE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that a user with inexistent role can not be added to a site and gets status code 400")
     public void canNotAddUserWithInexistentRoleToSite() throws Exception
     {
@@ -267,8 +268,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.UNKNOWN_ROLE, "inexistentRole"));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that user can not add himself as a manager to a public site and gets status code 403")
     public void userAddHimselfAsManagerToPublicSite() throws Exception
     {
@@ -278,8 +279,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that user can not add himself as a manager to a moderated site and gets status code 403")
     public void userAddHimselfAsManagerToModeratedSite() throws Exception
     {
@@ -289,8 +290,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that user can not add himself as a manager to a private site and gets status code 404")
     public void userAddHimselfAsManagerToPrivateSite() throws Exception
     {
@@ -300,8 +301,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, privateSiteModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that user can not be added to an inexistent site and gets status code 404")
     public void userIsNotAbleToAddUserToAnInexistentSite() throws Exception
     {
@@ -312,8 +313,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, inexistentSite.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that inexistent user can not be added to site and gets status code 404")
     public void userIsNotAbleToAddInexistentUserToSite() throws Exception
     {
@@ -327,8 +328,8 @@ public class AddSiteMemberTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that empty username can not be added to site and gets status code 400")
     public void userIsNotAbleToAddEmptyUserIdToSite() throws Exception
     {
@@ -338,8 +339,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.NO_CONTENT, testUser.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that user can not add another user that is already a memeber and gets status code 409")
     public void userIsNotAbleToAddUserThatIsAlreadyAMember() throws Exception
     {
@@ -348,8 +349,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CONFLICT).assertLastError().containsSummary(String.format(RestErrorModel.ALREADY_Site_MEMBER, collaborator.getUsername(), moderatedSiteModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that several users with different roles can be added once in a row to a site and gets status code 201")
     public void addSeveralUsersWithDifferentRolesToASite() throws Exception
     {
@@ -364,8 +365,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that several users with same roles can be added once in a row to a site and gets status code 201")
     public void addSeveralUsersWithSameRolesToASite() throws Exception
     {
@@ -380,8 +381,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that several users that are already added to the site can not be added once in a row and gets status code 400")
     public void addSeveralUsersThatAreAlreadyAddedToASite() throws Exception
     {
@@ -394,8 +395,8 @@ public class AddSiteMemberTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CONFLICT).assertLastError().containsSummary(String.format(RestErrorModel.ALREADY_Site_MEMBER, collaborator.getUsername(), moderatedSiteModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Add new site member request by providing an empty body")
     public void addSiteMemberUsingEmptyBody() throws Exception
     {
@@ -410,8 +411,8 @@ public class AddSiteMemberTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Check lower and upper case letters for role field")
     public void checkLowerUpperCaseLettersForRole() throws Exception
     {
@@ -438,8 +439,8 @@ public class AddSiteMemberTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Check empty value for user role")
     public void checkEmptyValueForRole() throws Exception
     {
@@ -456,8 +457,8 @@ public class AddSiteMemberTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that contributor role can be added to public site")
     public void addContributorToPublicSite() throws Exception
     {
@@ -469,8 +470,8 @@ public class AddSiteMemberTests extends RestTest
                 .and().field("role").is(testUser.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that collaborator role can be added to moderated site")
     public void addCollaboratorToModeratedSite() throws Exception
     {
@@ -482,8 +483,8 @@ public class AddSiteMemberTests extends RestTest
                 .and().field("role").is(testUser.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that contributor role can be added to moderated site")
     public void addContributorToModeratedSite() throws Exception
     {
@@ -495,8 +496,8 @@ public class AddSiteMemberTests extends RestTest
                 .and().field("role").is(testUser.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that consumer role can be added to moderated site")
     public void addConsumerToModeratedSite() throws Exception
     {
@@ -508,8 +509,8 @@ public class AddSiteMemberTests extends RestTest
                 .and().field("role").is(testUser.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that collaborator role can be added to private site")
     public void addCollaboratorToPrivateSite() throws Exception
     {
@@ -521,8 +522,8 @@ public class AddSiteMemberTests extends RestTest
                 .and().field("role").is(testUser.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that contributor role can be added to private site")
     public void addContributorToPrivateSite() throws Exception
     {
@@ -534,8 +535,8 @@ public class AddSiteMemberTests extends RestTest
                 .and().field("role").is(testUser.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that consumer role can be added to private site")
     public void addConsumerToPrivateSite() throws Exception
     {
@@ -547,8 +548,8 @@ public class AddSiteMemberTests extends RestTest
                 .and().field("role").is(testUser.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin can be added to private site by site manager")
     public void adminCanBeAddedToPrivateSiteBySiteManager() throws Exception
     {
@@ -560,8 +561,8 @@ public class AddSiteMemberTests extends RestTest
         memberModel.assertThat().field("id").is(adminUserModel.getUsername()).and().field("role").is(adminUserModel.getUserRole());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that admin cannot be added to private site by site collaborator")
     public void adminCannotBeAddedToPrivateSiteBySiteCollaborator() throws Exception
     {

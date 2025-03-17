@@ -26,12 +26,13 @@
 
 package org.alfresco.repo.invitation.site;
 
-import static org.alfresco.repo.invitation.activiti.SendModeratedInviteDelegate.ENTERPRISE_EMAIL_TEMPLATE_PATH;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import static org.alfresco.repo.invitation.activiti.SendModeratedInviteDelegate.ENTERPRISE_EMAIL_TEMPLATE_PATH;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
@@ -41,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
+import org.apache.commons.lang3.StringUtils;
+import org.mockito.ArgumentCaptor;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
@@ -57,7 +60,6 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
@@ -65,11 +67,6 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.namespace.NamespacePrefixResolver;
-import org.apache.commons.lang3.StringUtils;
-import org.mockito.ArgumentCaptor;
-
-
 
 /**
  * @author Constantin Popa
@@ -84,16 +81,16 @@ public class InviteModeratedSenderTest extends TestCase
     private static final String requesterRole = "SiteConsumer";
     private static final String requesterMail = "req@mail.alf";
     private static final NodeRef requesterNodeRef = new NodeRef(testStore, requesterUserName);
-    
+
     private static final String SiteManagerGroup = "Group_site_manager";
-    
+
     private static final NodeRef emailTemplateNodeRef = new NodeRef(testStore, "emailTemplate");
 
     private static final String fullSiteName = "Full Site Name";
     private static final String shortSiteName = "site-name";
 
     private static final String packageId = testStore + "/Package";
-    
+
     private final MessageService messageService = mock(MessageService.class);
 
     private Action mailAction;
@@ -103,10 +100,11 @@ public class InviteModeratedSenderTest extends TestCase
     @SuppressWarnings("rawtypes")
     /**
      * Test that the mail action is correctly constructed when sending notifications emails about users requesting access to a specific site
+     * 
      * @throws Exception
      */
     public void testSendModeratedEmail() throws Exception
-    {                  
+    {
         Map<String, String> properties = buildDefaultProperties();
         inviteModeratedSender.sendMail(ENTERPRISE_EMAIL_TEMPLATE_PATH, SendModeratedInviteDelegate.EMAIL_SUBJECT_KEY, properties);
 
@@ -117,10 +115,10 @@ public class InviteModeratedSenderTest extends TestCase
         verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_TEMPLATE), eq(emailTemplateNodeRef));
 
         ArgumentCaptor<Map> modelC = ArgumentCaptor.forClass(Map.class);
-        verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_TEMPLATE_MODEL), (Serializable)modelC.capture());
+        verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_TEMPLATE_MODEL), (Serializable) modelC.capture());
 
         String pendingInvitesLink = StringUtils.stripStart(MessageFormat.format(InviteModeratedSender.SHARE_PENDING_INVITES_LINK, StringUtils.EMPTY, shortSiteName), "/");
-        
+
         // Check the model
         Map model = modelC.getValue();
         assertNotNull(model);
@@ -129,7 +127,7 @@ public class InviteModeratedSenderTest extends TestCase
         assertEquals(model.get("inviteeName"), requesterFirstName + " " + requesterLastName);
         assertEquals(model.get("siteName"), fullSiteName);
         assertEquals(model.get("sharePendingInvitesLink"), pendingInvitesLink);
-     
+
     }
 
     private Map<String, String> buildDefaultProperties()
@@ -141,7 +139,7 @@ public class InviteModeratedSenderTest extends TestCase
         properties.put(WorkflowModelModeratedInvitation.bpmGroupAssignee, SiteManagerGroup);
         properties.put(WorkflowModelModeratedInvitation.wfVarResourceType, "website");
         properties.put(InviteNominatedSender.WF_PACKAGE, packageId);
-        
+
         return properties;
     }
 
@@ -223,8 +221,8 @@ public class InviteModeratedSenderTest extends TestCase
         when(results.getNodeRefs()).thenReturn(nodeRefs);
         when(searchService.query((SearchParameters) any())).thenReturn(results);
         when(searchService.selectNodes(any(), any(String.class),
-                    any(), any(), eq(false)))
-                    .thenReturn(nodeRefs);
+                any(), any(), eq(false)))
+                        .thenReturn(nodeRefs);
         return searchService;
     }
 
@@ -236,7 +234,7 @@ public class InviteModeratedSenderTest extends TestCase
     private PersonService mockPersonService()
     {
         PersonService personService = mock(PersonService.class);
-        
+
         when(personService.getPerson(requesterUserName)).thenReturn(requesterNodeRef);
         when(personService.getPerson(requesterNodeRef)).thenReturn(new PersonInfo(requesterNodeRef, requesterUserName, requesterFirstName, requesterLastName));
         return personService;
@@ -255,15 +253,14 @@ public class InviteModeratedSenderTest extends TestCase
     }
 
     /**
-     * Mocks up an ActionService which returns the mailAction field when
-     * createAction() is called.
+     * Mocks up an ActionService which returns the mailAction field when createAction() is called.
      * 
      * @return ActionService
      */
     private ActionService mockActionService()
     {
         mailAction = mock(Action.class);
-        
+
         ActionService actionService = mock(ActionService.class);
         when(actionService.createAction(MailActionExecuter.NAME)).thenReturn(mailAction);
         return actionService;

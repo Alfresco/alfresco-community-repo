@@ -31,6 +31,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -38,8 +41,6 @@ import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Extended action service implementation.
@@ -65,12 +66,13 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
     }
 
     /**
-     * @param filePlanService	file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
+        this.filePlanService = filePlanService;
+    }
 
     /**
      * @see org.alfresco.repo.action.ActionServiceImpl#getActionConditionDefinition(java.lang.String)
@@ -117,7 +119,7 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
                 {
                     if (kind != null)
                     {
-                        Set<FilePlanComponentKind> applicableKinds = ((RecordsManagementActionDefinition)actionDefinition).getApplicableKinds();
+                        Set<FilePlanComponentKind> applicableKinds = ((RecordsManagementActionDefinition) actionDefinition).getApplicableKinds();
                         if (applicableKinds == null || applicableKinds.size() == 0 || applicableKinds.contains(kind))
                         {
                             // an RM action can only act on a RM artifact

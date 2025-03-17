@@ -30,6 +30,9 @@ package org.alfresco.module.org_alfresco_module_rm.job;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutor;
 import org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutorRegistry;
@@ -42,12 +45,9 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.QueryConsistency;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Job to publish any pending updates on marked node references.
@@ -75,7 +75,8 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
     private BehaviourFilter behaviourFilter;
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -83,7 +84,8 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
     }
 
     /**
-     * @param searchService search service
+     * @param searchService
+     *            search service
      */
     public void setSearchService(SearchService searchService)
     {
@@ -91,7 +93,8 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
     }
 
     /**
-     * @param publishExecutorRegistry   public executor registry
+     * @param publishExecutorRegistry
+     *            public executor registry
      */
     public void setPublishExecutorRegistry(PublishExecutorRegistry publishExecutorRegistry)
     {
@@ -99,7 +102,8 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
     }
 
     /**
-     * @param behaviourFilter   behaviour filter
+     * @param behaviourFilter
+     *            behaviour filter
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
@@ -107,7 +111,8 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
     }
 
     /**
-     * @param dictionaryService dictionary service
+     * @param dictionaryService
+     *            dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -124,8 +129,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
             logger.debug("Job Starting");
         }
 
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork()
             {
                 if (rmLoaded())
@@ -138,7 +142,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     {
                         if (nodeService.exists(nodeRef))
                         {
-                            boolean publishing = ((Boolean)nodeService.getProperty(nodeRef, PROP_PUBLISH_IN_PROGRESS)).booleanValue();
+                            boolean publishing = ((Boolean) nodeService.getProperty(nodeRef, PROP_PUBLISH_IN_PROGRESS)).booleanValue();
                             if (!publishing)
                             {
                                 // Mark the update node as publishing in progress
@@ -155,7 +159,6 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
 
                                     // Publish updates
                                     publishUpdates(nodeRef);
-
 
                                     if (logger.isDebugEnabled())
                                     {
@@ -189,7 +192,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
     /**
      * Helper method to determine whether the RM content model has been loaded yet.
      *
-     * @return  boolean true if RM content model loaded, false otherwise
+     * @return boolean true if RM content model loaded, false otherwise
      */
     private boolean rmLoaded()
     {
@@ -197,7 +200,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
 
         // ensure that the rm content model has been loaded
         if (dictionaryService != null &&
-            dictionaryService.getAspect(ASPECT_UNPUBLISHED_UPDATE) != null)
+                dictionaryService.getAspect(ASPECT_UNPUBLISHED_UPDATE) != null)
         {
             result = true;
         }
@@ -207,37 +210,36 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
 
     /**
      * Get a list of the nodes with updates pending publish
-     * @return  List<NodeRef>   list of node refences with updates pending publication
+     * 
+     * @return List<NodeRef> list of node refences with updates pending publication
      */
     private List<NodeRef> getUpdatedNodes()
     {
-        RetryingTransactionCallback<List<NodeRef>> execution =
-            new RetryingTransactionHelper.RetryingTransactionCallback<List<NodeRef>>()
+        RetryingTransactionCallback<List<NodeRef>> execution = new RetryingTransactionHelper.RetryingTransactionCallback<List<NodeRef>>() {
+            @Override
+            public List<NodeRef> execute()
             {
-                @Override
-                public List<NodeRef> execute()
+                // Build the query string
+                StringBuilder sb = new StringBuilder();
+                sb.append("ASPECT:\"rma:").append(ASPECT_UNPUBLISHED_UPDATE.getLocalName()).append("\"");
+                String query = sb.toString();
+
+                if (logger.isDebugEnabled())
                 {
-                    // Build the query string
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("ASPECT:\"rma:").append(ASPECT_UNPUBLISHED_UPDATE.getLocalName()).append("\"");
-                    String query = sb.toString();
+                    logger.debug("Executing query " + query);
+                }
 
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Executing query " + query);
-                    }
+                // Execute query to find updates awaiting publishing
+                List<NodeRef> resultNodes = null;
 
-                    // Execute query to find updates awaiting publishing
-                    List<NodeRef> resultNodes = null;
+                SearchParameters searchParameters = new SearchParameters();
+                searchParameters.setQuery(query);
+                searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+                searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
 
-                    SearchParameters searchParameters = new SearchParameters();
-                    searchParameters.setQuery(query);
-                    searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-                    searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-
-                    try
-                    {
-                        ResultSet results = searchService.query(searchParameters);
+                try
+                {
+                    ResultSet results = searchService.query(searchParameters);
                     try
                     {
                         resultNodes = results.getNodeRefs();
@@ -246,170 +248,169 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     {
                         results.close();
                     }
-                    }
-                    catch (AlfrescoRuntimeException exception)
-                    {
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Error executing query, " + exception.getMessage());
-                        }
-                        throw exception;
-                    }
-
+                }
+                catch (AlfrescoRuntimeException exception)
+                {
                     if (logger.isDebugEnabled())
                     {
-                        logger.debug("Found " + resultNodes.size() + " disposition action definitions updates awaiting publishing.");
+                        logger.debug("Error executing query, " + exception.getMessage());
                     }
-
-                    return resultNodes;
+                    throw exception;
                 }
-            };
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Found " + resultNodes.size() + " disposition action definitions updates awaiting publishing.");
+                }
+
+                return resultNodes;
+            }
+        };
         return retryingTransactionHelper.doInTransaction(execution, true);
     }
 
     /**
-     * Mark the node as publish in progress.  This is often used as a marker to prevent any further updates
-     * to a node.
-     * @param nodeRef   node reference
+     * Mark the node as publish in progress. This is often used as a marker to prevent any further updates to a node.
+     * 
+     * @param nodeRef
+     *            node reference
      */
     private void markPublishInProgress(final NodeRef nodeRef)
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> execution =
-            new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> execution = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute()
             {
-                @Override
-                public Void execute()
+                if (logger.isDebugEnabled())
                 {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Marking updated node as publish in progress. (node=" + nodeRef.toString() + ")");
-                    }
-
-                    behaviourFilter.disableBehaviour(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION);
-                    try
-                    {
-                        if (nodeService.exists(nodeRef))
-                        {
-                            // Mark the node as publish in progress
-                            nodeService.setProperty(nodeRef, PROP_PUBLISH_IN_PROGRESS, true);
-                        }
-                    }
-                    finally
-                    {
-                        behaviourFilter.enableBehaviour(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION);
-                    }
-                    return null;
+                    logger.debug("Marking updated node as publish in progress. (node=" + nodeRef.toString() + ")");
                 }
-            };
+
+                behaviourFilter.disableBehaviour(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION);
+                try
+                {
+                    if (nodeService.exists(nodeRef))
+                    {
+                        // Mark the node as publish in progress
+                        nodeService.setProperty(nodeRef, PROP_PUBLISH_IN_PROGRESS, true);
+                    }
+                }
+                finally
+                {
+                    behaviourFilter.enableBehaviour(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION);
+                }
+                return null;
+            }
+        };
         retryingTransactionHelper.doInTransaction(execution);
     }
 
     /**
      * Publish the updates made to the node.
-     * @param nodeRef   node reference
+     * 
+     * @param nodeRef
+     *            node reference
      */
     private void publishUpdates(final NodeRef nodeRef)
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> execution =
-            new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> execution = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute()
             {
-                @Override
-                public Void execute()
+                behaviourFilter.disableBehaviour(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION);
+                try
                 {
-                    behaviourFilter.disableBehaviour(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION);
-                    try
+                    // Get the update to value for the node
+                    String updateTo = (String) nodeService.getProperty(nodeRef, PROP_UPDATE_TO);
+
+                    if (updateTo != null)
                     {
-                        // Get the update to value for the node
-                        String updateTo = (String)nodeService.getProperty(nodeRef, PROP_UPDATE_TO);
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Node update to " + updateTo + " (noderef=" + nodeRef.toString() + ")");
+                        }
 
-                        if (updateTo != null)
+                        // Get the publish executor
+                        PublishExecutor executor = publishExecutorRegistry.get(updateTo);
+                        if (executor == null)
                         {
                             if (logger.isDebugEnabled())
                             {
-                                logger.debug("Node update to " +  updateTo + " (noderef=" + nodeRef.toString() + ")");
+                                logger.debug("Unable to find a corresponding publish executor. (noderef=" + nodeRef.toString() + ", updateTo=" + updateTo + ")");
                             }
-
-                            // Get the publish executor
-                            PublishExecutor executor = publishExecutorRegistry.get(updateTo);
-                            if (executor == null)
-                            {
-                                if (logger.isDebugEnabled())
-                                {
-                                    logger.debug("Unable to find a corresponding publish executor. (noderef=" + nodeRef.toString() + ", updateTo=" + updateTo + ")");
-                                }
-                                throw new AlfrescoRuntimeException("Unable to find a corresponding publish executor. (noderef=" + nodeRef.toString() + ", updateTo=" + updateTo + ")");
-                            }
-
-                            if (logger.isDebugEnabled())
-                            {
-                                logger.debug("Attempting to publish updates. (nodeRef=" + nodeRef.toString() + ")");
-                            }
-
-                            // Publish
-                            executor.publish(nodeRef);
+                            throw new AlfrescoRuntimeException("Unable to find a corresponding publish executor. (noderef=" + nodeRef.toString() + ", updateTo=" + updateTo + ")");
                         }
-                        else
-                        {
-                            if (logger.isDebugEnabled())
-                            {
-                                logger.debug("Unable to publish, because publish executor is not set.");
-                            }
-                        }
-
-                        // Remove the unpublished update aspect
-                        nodeService.removeAspect(nodeRef, ASPECT_UNPUBLISHED_UPDATE);
 
                         if (logger.isDebugEnabled())
                         {
-                            logger.debug("Publish updates complete. (nodeRef=" + nodeRef.toString() + ")");
+                            logger.debug("Attempting to publish updates. (nodeRef=" + nodeRef.toString() + ")");
+                        }
+
+                        // Publish
+                        executor.publish(nodeRef);
+                    }
+                    else
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Unable to publish, because publish executor is not set.");
                         }
                     }
-                    finally
-                    {
-                        behaviourFilter.enableBehaviour(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION);
-                    }
 
-                    return null;
+                    // Remove the unpublished update aspect
+                    nodeService.removeAspect(nodeRef, ASPECT_UNPUBLISHED_UPDATE);
+
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Publish updates complete. (nodeRef=" + nodeRef.toString() + ")");
+                    }
                 }
-            };
+                finally
+                {
+                    behaviourFilter.enableBehaviour(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION);
+                }
+
+                return null;
+            }
+        };
         retryingTransactionHelper.doInTransaction(execution);
     }
 
     /**
      * Unmark node as publish in progress, assuming publish failed.
-     * @param nodeRef   node reference
+     * 
+     * @param nodeRef
+     *            node reference
      */
     private void unmarkPublishInProgress(final NodeRef nodeRef)
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> execution =
-            new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> execution = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute()
             {
-                @Override
-                public Void execute()
+                behaviourFilter.disableBehaviour(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION);
+                try
                 {
-                    behaviourFilter.disableBehaviour(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION);
-                    try
-                    {
-                        // Assuming the node still has unpublished information, then unmark it in progress
-                        if (nodeService.exists(nodeRef) &&
+                    // Assuming the node still has unpublished information, then unmark it in progress
+                    if (nodeService.exists(nodeRef) &&
                             nodeService.hasAspect(nodeRef, ASPECT_UNPUBLISHED_UPDATE))
-                        {
-                            if (logger.isDebugEnabled())
-                            {
-                                logger.debug("Removing publish in progress marker from updated node, because update was not successful. (node=" + nodeRef.toString() + ")");
-                            }
-
-                            nodeService.setProperty(nodeRef, PROP_PUBLISH_IN_PROGRESS, false);
-                        }
-                    }
-                    finally
                     {
-                        behaviourFilter.enableBehaviour(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION);
-                    }
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Removing publish in progress marker from updated node, because update was not successful. (node=" + nodeRef.toString() + ")");
+                        }
 
-                    return null;
+                        nodeService.setProperty(nodeRef, PROP_PUBLISH_IN_PROGRESS, false);
+                    }
                 }
-            };
+                finally
+                {
+                    behaviourFilter.enableBehaviour(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION);
+                }
+
+                return null;
+            }
+        };
         retryingTransactionHelper.doInTransaction(execution);
     }
 }

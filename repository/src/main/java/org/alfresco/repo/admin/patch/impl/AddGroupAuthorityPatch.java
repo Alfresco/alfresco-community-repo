@@ -28,12 +28,13 @@ package org.alfresco.repo.admin.patch.impl;
 
 import java.util.Set;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * A patch to add a new group authority.
@@ -44,7 +45,7 @@ public class AddGroupAuthorityPatch extends AbstractPatch
 {
     private static final String MSG_START = "patch.addGroupAuthority.start";
     private static final String MSG_RESULT = "patch.addGroupAuthority.result";
-    private static final String MSG_EXIST ="patch.addGroupAuthority.exist";
+    private static final String MSG_EXIST = "patch.addGroupAuthority.exist";
 
     private AuthorityService authorityService;
     private GroupAuthorityDetails groupAuthorityDetails;
@@ -52,7 +53,8 @@ public class AddGroupAuthorityPatch extends AbstractPatch
     /**
      * Sets the authority service.
      * 
-     * @param authorityService the authority service
+     * @param authorityService
+     *            the authority service
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -62,7 +64,8 @@ public class AddGroupAuthorityPatch extends AbstractPatch
     /**
      * Sets the group authority details.
      * 
-     * @param groupAuthorityDetails the groupAuthorityDetails
+     * @param groupAuthorityDetails
+     *            the groupAuthorityDetails
      */
     public void setGroupAuthorityDetails(GroupAuthorityDetails groupAuthorityDetails)
     {
@@ -85,9 +88,9 @@ public class AddGroupAuthorityPatch extends AbstractPatch
         if (!authorityService.authorityExists(groupAuthorityName))
         {
             groupAuthorityName = authorityService.createAuthority(AuthorityType.GROUP,
-                        this.groupAuthorityDetails.groupName,
-                        this.groupAuthorityDetails.groupDisplayName,
-                        this.groupAuthorityDetails.authorityZones);
+                    this.groupAuthorityDetails.groupName,
+                    this.groupAuthorityDetails.groupDisplayName,
+                    this.groupAuthorityDetails.authorityZones);
 
             authorityService.addAuthority(groupAuthorityName, AuthenticationUtil.getAdminUserName());
 
@@ -112,7 +115,8 @@ public class AddGroupAuthorityPatch extends AbstractPatch
         private Set<String> authorityZones;
 
         /**
-         * @param groupName the groupName to set
+         * @param groupName
+         *            the groupName to set
          */
         public void setGroupName(String groupName)
         {
@@ -120,7 +124,8 @@ public class AddGroupAuthorityPatch extends AbstractPatch
         }
 
         /**
-         * @param groupDisplayName the groupDisplayName to set
+         * @param groupDisplayName
+         *            the groupDisplayName to set
          */
         public void setGroupDisplayName(String groupDisplayName)
         {
@@ -128,7 +133,8 @@ public class AddGroupAuthorityPatch extends AbstractPatch
         }
 
         /**
-         * @param authorityZones the authorityZones to set
+         * @param authorityZones
+         *            the authorityZones to set
          */
         public void setAuthorityZones(Set<String> authorityZones)
         {

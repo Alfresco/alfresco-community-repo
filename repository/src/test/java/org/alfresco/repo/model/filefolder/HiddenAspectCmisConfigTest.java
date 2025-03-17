@@ -41,24 +41,24 @@ import org.junit.Before;
 public class HiddenAspectCmisConfigTest extends HiddenAspectTest
 {
     private static final String FILENAME_LEADING_DOT_PATTERN = "\\..*";
-    
+
     @Before
     public void setup() throws SystemException, NotSupportedException
     {
         super.setup();
-        //change cmisHiddenConfing default value
+        // change cmisHiddenConfing default value
         switchCmisHiddenConfig();
-        
+
     }
-    
+
     @After
     public void tearDown() throws Exception
     {
-        //revert to cmisHiddenConfing default value
+        // revert to cmisHiddenConfing default value
         switchCmisHiddenConfig();
         super.tearDown();
     }
-    
+
     /**
      * switch value for cmisDisableHide in order to tests the configuration in both states
      */

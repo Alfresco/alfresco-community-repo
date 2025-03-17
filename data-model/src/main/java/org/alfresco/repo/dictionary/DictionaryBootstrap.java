@@ -32,13 +32,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.cmr.dictionary.DictionaryException;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.dictionary.DictionaryException;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Bootstrap Dictionary DAO with pre-defined models & message resources (from classpath)
@@ -56,7 +56,7 @@ public class DictionaryBootstrap implements DictionaryListener
 
     // Dictionary DAO
     private DictionaryDAO dictionaryDAO = null;
-    
+
     // Tenant Service
     private TenantService tenantService;
 
@@ -64,28 +64,29 @@ public class DictionaryBootstrap implements DictionaryListener
 
     // Logger
     private static Log logger = LogFactory.getLog(DictionaryBootstrap.class);
-    
-    
+
     /**
      * Sets the Dictionary DAO
      * 
-     * @param dictionaryDAO DictionaryDAO
+     * @param dictionaryDAO
+     *            DictionaryDAO
      */
     public void setDictionaryDAO(DictionaryDAO dictionaryDAO)
     {
         this.dictionaryDAO = dictionaryDAO;
     }
-    
+
     /**
      * Sets the Tenant Service
      * 
-     * @param tenantService TenantService
+     * @param tenantService
+     *            TenantService
      */
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     /**
      * Sets the global properties
      * 
@@ -95,27 +96,29 @@ public class DictionaryBootstrap implements DictionaryListener
     {
         this.globalProperties = globalProperties;
     }
-    
+
     /**
      * Sets the initial list of models to bootstrap with
      * 
-     * @param modelResources the model names
+     * @param modelResources
+     *            the model names
      */
     public void setModels(List<String> modelResources)
     {
         this.models = modelResources;
     }
-    
+
     /**
      * Sets the initial list of models to bootstrap with
      * 
-     * @param labels the labels
+     * @param labels
+     *            the labels
      */
     public void setLabels(List<String> labels)
     {
         this.resourceBundles = labels;
     }
-    
+
     /**
      * Bootstrap the Dictionary - register and populate
      * 
@@ -124,10 +127,10 @@ public class DictionaryBootstrap implements DictionaryListener
     {
         onDictionaryInit();
         initStaticMessages();
-        
+
         register();
     }
-    
+
     /**
      * Register with the Dictionary
      */
@@ -136,24 +139,23 @@ public class DictionaryBootstrap implements DictionaryListener
         dictionaryDAO.registerListener(this);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.DictionaryListener#onInit()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.dictionary.DictionaryListener#onInit() */
     public void onDictionaryInit()
     {
         long startTime = System.currentTimeMillis();
-        
+
         if (logger.isTraceEnabled())
         {
-            logger.trace("onDictionaryInit: ["+Thread.currentThread()+"]");
+            logger.trace("onDictionaryInit: [" + Thread.currentThread() + "]");
         }
 
         // note: on first bootstrap will init empty dictionary
         Collection<QName> modelsBefore = dictionaryDAO.getModels(true); // note: on first bootstrap will init empty dictionary
         int modelsBeforeCnt = (modelsBefore != null ? modelsBefore.size() : 0);
-        
-        if ((tenantService == null) || (! tenantService.isTenantUser()))
+
+        if ((tenantService == null) || (!tenantService.isTenantUser()))
         {
             // register models
             for (String bootstrapModel : models)
@@ -167,15 +169,15 @@ public class DictionaryBootstrap implements DictionaryListener
                 {
                     M2Model model = M2Model.createModel(modelStream);
                     model.setConfigProperties(globalProperties);
-                    
+
                     if (logger.isDebugEnabled())
                     {
-                        logger.debug("Loading model: "+model.getName()+" (from "+bootstrapModel+")");
+                        logger.debug("Loading model: " + model.getName() + " (from " + bootstrapModel + ")");
                     }
 
                     dictionaryDAO.putModel(model);
                 }
-                catch(DictionaryException e)
+                catch (DictionaryException e)
                 {
                     throw new DictionaryException("d_dictionary.bootstrap.model_not_imported", e, bootstrapModel);
                 }
@@ -184,40 +186,36 @@ public class DictionaryBootstrap implements DictionaryListener
                     try
                     {
                         modelStream.close();
-                    } 
+                    }
                     catch (IOException ioe)
                     {
-                        logger.warn("Failed to close model input stream for '"+bootstrapModel+"': "+ioe);
+                        logger.warn("Failed to close model input stream for '" + bootstrapModel + "': " + ioe);
                     }
                 }
             }
-            
+
             Collection<QName> modelsAfter = dictionaryDAO.getModels(true);
             int modelsAfterCnt = (modelsAfter != null ? modelsAfter.size() : 0);
-            
+
             if (logger.isDebugEnabled())
             {
-                logger.debug("Model count: before="+modelsBeforeCnt+", load="+models.size()+", after="+modelsAfterCnt+" in "+(System.currentTimeMillis()-startTime)+" msecs ["+Thread.currentThread()+"]");
+                logger.debug("Model count: before=" + modelsBeforeCnt + ", load=" + models.size() + ", after=" + modelsAfterCnt + " in " + (System.currentTimeMillis() - startTime) + " msecs [" + Thread.currentThread() + "]");
             }
         }
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.DictionaryListener#afterInit()
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.dictionary.DictionaryListener#afterInit() */
     public void afterDictionaryInit()
-    {
-    }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.DictionaryListener#onDictionaryDestroy()
-     */
+    {}
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.dictionary.DictionaryListener#onDictionaryDestroy() */
     public void afterDictionaryDestroy()
-    {
-    }
-    
+    {}
+
     /**
      * Register the static resource bundles
      */

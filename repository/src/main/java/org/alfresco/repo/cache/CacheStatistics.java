@@ -30,10 +30,7 @@ import java.util.Map;
 import org.alfresco.repo.cache.TransactionStats.OpType;
 
 /**
- * Centralised cache statistics service. Transactional caches participating
- * in statistical collection will provide their data to this service using the
- * {@link #add(String, TransactionStats)} method. The data is then aggregated
- * so that, for example, the hit ratio for a particular cache may be retrieved.
+ * Centralised cache statistics service. Transactional caches participating in statistical collection will provide their data to this service using the {@link #add(String, TransactionStats)} method. The data is then aggregated so that, for example, the hit ratio for a particular cache may be retrieved.
  * 
  * @since 5.0
  * @author Matt Ward
@@ -44,52 +41,52 @@ public interface CacheStatistics
      * Add new details to the system wide cache statistics.
      */
     void add(String cacheName, TransactionStats stats);
-    
+
     /**
-     * Get the number of occurrences of the given operation type,
-     * retrieve the number of cache hits that have happened to the cache.
+     * Get the number of occurrences of the given operation type, retrieve the number of cache hits that have happened to the cache.
      * 
-     * @param cacheName Name of the cache.
-     * @param opType    Type of cache operation.
+     * @param cacheName
+     *            Name of the cache.
+     * @param opType
+     *            Type of cache operation.
      * @return long count
      */
     long count(String cacheName, OpType opType);
-    
+
     /**
      * The mean time in nanoseconds for all operations of the given type.
      * 
-     * @param cacheName  The cache name.
-     * @param opType     Type of operation, e.g. cache hits.
+     * @param cacheName
+     *            The cache name.
+     * @param opType
+     *            Type of operation, e.g. cache hits.
      * @return Time in nanos (double) or NaN if not available yet.
      */
     double meanTime(String cacheName, OpType opType);
-    
+
     /**
-     * The hit ratio for the given cache, where 1.0 is the maximum possible
-     * value and 0.0 represents a cache that has never successfully
-     * returned a previously cached value. 
+     * The hit ratio for the given cache, where 1.0 is the maximum possible value and 0.0 represents a cache that has never successfully returned a previously cached value.
      * 
-     * @param cacheName  The cache name.
+     * @param cacheName
+     *            The cache name.
      * @return ratio (double)
      */
     double hitMissRatio(String cacheName);
-    
+
     /**
-     * Retrieve the total number of get operations invoked on the
-     * cache (i.e. sum of hits and misses).
+     * Retrieve the total number of get operations invoked on the cache (i.e. sum of hits and misses).
      * 
-     * @param cacheName  The cache name. 
+     * @param cacheName
+     *            The cache name.
      * @return Count of get operations.
      */
     long numGets(String cacheName);
-    
+
     /**
-     * Retrieve a map containing a snapshot of all of the raw stats
-     * (e.g. counts, mean operation times etc.). Since this is a snapshot
-     * it is unaffected by future modifications to the statistics - by
-     * using {@link CacheStatistics#add(String, TransactionStats)} for example.
+     * Retrieve a map containing a snapshot of all of the raw stats (e.g. counts, mean operation times etc.). Since this is a snapshot it is unaffected by future modifications to the statistics - by using {@link CacheStatistics#add(String, TransactionStats)} for example.
      * 
-     * @param cacheName  The cache name.
+     * @param cacheName
+     *            The cache name.
      * @return Map of OpType to OperationStats
      */
     Map<OpType, OperationStats> allStats(String cacheName);

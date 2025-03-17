@@ -26,6 +26,11 @@
 
 package org.alfresco.rest.api.impl;
 
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.surf.util.Base64;
+
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -45,10 +50,6 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.surf.util.Base64;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * @author Jamal Kaabi-Mofrad
@@ -126,12 +127,12 @@ public class AuthenticationsImpl implements Authentications
             // or the user is not fully authenticated
             if (currentUser == null || !currentUser.equals(ticketUser))
             {
-                throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[] { ticket });
+                throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[]{ticket});
             }
         }
         catch (AuthenticationException e)
         {
-            throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[] { ticket });
+            throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[]{ticket});
         }
         LoginTicketResponse response = new LoginTicketResponse();
         response.setId(ticket);
@@ -156,7 +157,7 @@ public class AuthenticationsImpl implements Authentications
             // or the user is not fully authenticated
             if (currentUser == null || !currentUser.equals(ticketUser))
             {
-                throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[] { ticket });
+                throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[]{ticket});
             }
             else
             {
@@ -166,7 +167,7 @@ public class AuthenticationsImpl implements Authentications
         }
         catch (AuthenticationException e)
         {
-            throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[] { ticket });
+            throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[]{ticket});
         }
     }
 
@@ -251,7 +252,7 @@ public class AuthenticationsImpl implements Authentications
         // Parameters object is clearly not designed to give us access to the HttpServletRequest object,
         // but we know that remoteUserMapper.getRemoteUser will use this in a safe way
         if (parameters.getRequest() instanceof BufferedRequest &&
-            ((BufferedRequest) parameters.getRequest()).getNext() instanceof PublicApiTenantWebScriptServletRequest)
+                ((BufferedRequest) parameters.getRequest()).getNext() instanceof PublicApiTenantWebScriptServletRequest)
         {
             return ((PublicApiTenantWebScriptServletRequest) ((BufferedRequest) parameters.getRequest()).getNext()).getHttpServletRequest();
         }

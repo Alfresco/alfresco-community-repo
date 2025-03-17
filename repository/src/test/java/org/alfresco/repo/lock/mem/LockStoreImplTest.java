@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.lock.mem;
 
-
 /**
  * Tests for the {@link LockStoreImpl} class.
  * 

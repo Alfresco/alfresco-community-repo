@@ -47,10 +47,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
 
 /**
- * A {@link BeanFactoryPostProcessor} that upgrades old-style Spring overrides that add location paths to the
- * <code>repository-properties</code> or <code>hibernateConfigProperties</code> beans to instead add these paths to the
- * <code>global-properties</code> bean. To avoid the warning messages output by this class, new property overrides
- * should be added to alfresco-global.properties without overriding any bean definitions.
+ * A {@link BeanFactoryPostProcessor} that upgrades old-style Spring overrides that add location paths to the <code>repository-properties</code> or <code>hibernateConfigProperties</code> beans to instead add these paths to the <code>global-properties</code> bean. To avoid the warning messages output by this class, new property overrides should be added to alfresco-global.properties without overriding any bean definitions.
  * 
  * @author dward
  */
@@ -74,12 +71,9 @@ public class LegacyConfigPostProcessor implements BeanFactoryPostProcessor, Prio
     /** The logger. */
     private static Log logger = LogFactory.getLog(LegacyConfigPostProcessor.class);
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.springframework.beans.factory.config.BeanFactoryPostProcessor#postProcessBeanFactory(org.springframework.
-     * beans.factory.config.ConfigurableListableBeanFactory)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor#postProcessBeanFactory(org.springframework. beans.factory.config.ConfigurableListableBeanFactory) */
     @SuppressWarnings("unchecked")
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException
     {
@@ -106,9 +100,8 @@ public class LegacyConfigPostProcessor implements BeanFactoryPostProcessor, Prio
 
             // Move location paths added to repository-properties
             MutablePropertyValues repositoryProperties = processLocations(beanFactory, globalPropertyLocations,
-                    LegacyConfigPostProcessor.BEAN_NAME_REPOSITORY_PROPERTIES, new String[]
-                    {
-                        "classpath:alfresco/version.properties"
+                    LegacyConfigPostProcessor.BEAN_NAME_REPOSITORY_PROPERTIES, new String[]{
+                            "classpath:alfresco/version.properties"
                     });
             // Fix up additional properties to enforce correct order of precedence
             repositoryProperties.addPropertyValue("ignoreUnresolvablePlaceholders", Boolean.TRUE);
@@ -118,10 +111,9 @@ public class LegacyConfigPostProcessor implements BeanFactoryPostProcessor, Prio
 
             // Move location paths added to hibernateConfigProperties
             MutablePropertyValues hibernateProperties = processLocations(beanFactory, globalPropertyLocations,
-                    LegacyConfigPostProcessor.BEAN_NAME_HIBERNATE_PROPERTIES, new String[]
-                    {
-                        "classpath:alfresco/domain/hibernate-cfg.properties",
-                        "classpath*:alfresco/enterprise/cache/hibernate-cfg.properties"
+                    LegacyConfigPostProcessor.BEAN_NAME_HIBERNATE_PROPERTIES, new String[]{
+                            "classpath:alfresco/domain/hibernate-cfg.properties",
+                            "classpath*:alfresco/enterprise/cache/hibernate-cfg.properties"
                     });
             // Fix up additional properties to enforce correct order of precedence
             hibernateProperties.addPropertyValue("localOverride", Boolean.TRUE);
@@ -152,12 +144,7 @@ public class LegacyConfigPostProcessor implements BeanFactoryPostProcessor, Prio
     }
 
     /**
-     * Given a bean name (assumed to implement {@link org.springframework.core.io.support.PropertiesLoaderSupport})
-     * checks whether it already references the <code>global-properties</code> bean. If not, 'upgrades' the bean by
-     * appending all additional resources it mentions in its <code>locations</code> property to
-     * <code>globalPropertyLocations</code>, except for those resources mentioned in <code>newLocations</code>. A
-     * reference to <code>global-properties</code> will then be added and the resource list in
-     * <code>newLocations<code> will then become the new <code>locations</code> list for the bean.
+     * Given a bean name (assumed to implement {@link org.springframework.core.io.support.PropertiesLoaderSupport}) checks whether it already references the <code>global-properties</code> bean. If not, 'upgrades' the bean by appending all additional resources it mentions in its <code>locations</code> property to <code>globalPropertyLocations</code>, except for those resources mentioned in <code>newLocations</code>. A reference to <code>global-properties</code> will then be added and the resource list in <code>newLocations<code> will then become the new <code>locations</code> list for the bean.
      * 
      * @param beanFactory
      *            the bean factory
@@ -210,7 +197,8 @@ public class LegacyConfigPostProcessor implements BeanFactoryPostProcessor, Prio
                 {
                     LegacyConfigPostProcessor.logger.warn("Legacy configuration detected: adding "
                             + (location instanceof TypedStringValue ? ((TypedStringValue) location).getValue()
-                                    : location.toString()) + " to global-properties definition");
+                                    : location.toString())
+                            + " to global-properties definition");
                     globalPropertyLocations.add(location);
                 }
 

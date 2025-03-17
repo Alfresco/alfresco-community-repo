@@ -31,6 +31,8 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.content.ContentDestructionComponent;
@@ -43,7 +45,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Destroy action.
@@ -71,7 +72,8 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     private boolean ghostingEnabled = true;
 
     /**
-     * @param contentDestructionComponent   content destruction component
+     * @param contentDestructionComponent
+     *            content destruction component
      */
     public void setContentDestructionComponent(ContentDestructionComponent contentDestructionComponent)
     {
@@ -79,7 +81,8 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     }
 
     /**
-     * @param capabilityService capability service
+     * @param capabilityService
+     *            capability service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -87,7 +90,8 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     }
 
     /**
-     * @param recordableVersionService  recordable version service
+     * @param recordableVersionService
+     *            recordable version service
      */
     public void setRecordableVersionService(RecordableVersionService recordableVersionService)
     {
@@ -95,7 +99,8 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     }
 
     /**
-     * @param inplaceRecordService  inplace record service
+     * @param inplaceRecordService
+     *            inplace record service
      */
     public void setInplaceRecordService(InplaceRecordService inplaceRecordService)
     {
@@ -103,7 +108,8 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     }
 
     /**
-     * @param ghostingEnabled   true if ghosting is enabled, false otherwise
+     * @param ghostingEnabled
+     *            true if ghosting is enabled, false otherwise
      */
     public void setGhostingEnabled(boolean ghostingEnabled)
     {
@@ -198,8 +204,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     }
 
     /**
-     * Return true if the ghost on destroy property is set against the
-     * definition for the passed action on the specified node
+     * Return true if the ghost on destroy property is set against the definition for the passed action on the specified node
      *
      * @param action
      * @param nodeRef

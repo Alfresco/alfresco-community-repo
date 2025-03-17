@@ -25,13 +25,14 @@
  */
 package org.alfresco.repo.security.authentication;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.quartz.StatefulJob;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.StatefulJob;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * @author Andy
@@ -40,9 +41,9 @@ import org.quartz.JobExecutionException;
 public class TicketCleanupJob implements StatefulJob
 {
     private Log logger = LogFactory.getLog(AuthenticationServiceImpl.class);
+
     public TicketCleanupJob()
-    {
-    }
+    {}
 
     /**
      * Calls the cleaner to do its work
@@ -59,7 +60,7 @@ public class TicketCleanupJob implements StatefulJob
         }
         AbstractAuthenticationService abstractAuthenticationService = (AbstractAuthenticationService) abstractAuthenticationServiceRef;
         abstractAuthenticationService.invalidateTickets(true);
-        if(logger.isTraceEnabled())
+        if (logger.isTraceEnabled())
         {
             logger.trace("Cleaned up all invalid tickets");
         }

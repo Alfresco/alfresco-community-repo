@@ -55,7 +55,8 @@ public class CreatePersonAuditEvent extends AuditEvent implements OnCreateNodePo
     /**
      * Sets the node service
      *
-     * @param nodeService nodeService to set
+     * @param nodeService
+     *            nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -71,7 +72,7 @@ public class CreatePersonAuditEvent extends AuditEvent implements OnCreateNodePo
     {
         Map<QName, Serializable> auditProperties = new HashMap<>();
         auditProperties.put(ContentModel.PROP_USERNAME,
-                    nodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_USERNAME));
+                nodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_USERNAME));
 
         recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName(), null, auditProperties);
     }

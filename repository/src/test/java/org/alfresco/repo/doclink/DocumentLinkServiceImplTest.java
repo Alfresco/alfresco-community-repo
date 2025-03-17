@@ -28,9 +28,12 @@ package org.alfresco.repo.doclink;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
+
+import junit.framework.TestCase;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
@@ -53,10 +56,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.surf.util.I18NUtil;
-
-import junit.framework.TestCase;
 
 /**
  * Test cases for {@link DocumentLinkServiceImpl}.
@@ -70,9 +69,9 @@ public class DocumentLinkServiceImplTest extends TestCase
 
     private ApplicationContext ctx;
     private static final String TEST_USER = DocumentLinkServiceImplTest.class.getSimpleName() + "_testuser";
-    
+
     private UserTransaction txn;
-    
+
     private TransactionService transactionService;
     private DocumentLinkService documentLinkService;
     private PermissionService permissionService;
@@ -95,7 +94,7 @@ public class DocumentLinkServiceImplTest extends TestCase
     private NodeRef site2Folder1;
     private NodeRef site2Folder2;
     private NodeRef linkOfFile1Site2;
-    
+
     private String site1File1Name = GUID.generate();
     private String site1Folder1Name = GUID.generate();;
 
@@ -126,10 +125,7 @@ public class DocumentLinkServiceImplTest extends TestCase
         props.put(ContentModel.PROP_USERNAME, TEST_USER);
         personService.createPerson(props);
 
-        /*
-         * Create the working test root 1 to which the user has read/write
-         * permission
-         */
+        /* Create the working test root 1 to which the user has read/write permission */
         site1 = siteService.createSite("site1", GUID.generate(), "myTitle", "myDescription", SiteVisibility.PUBLIC).getNodeRef();
         permissionService.setPermission(site1, TEST_USER, PermissionService.ALL_PERMISSIONS, true);
         site1Folder1 = fileFolderService.create(site1, site1Folder1Name, ContentModel.TYPE_FOLDER).getNodeRef();
@@ -138,7 +134,7 @@ public class DocumentLinkServiceImplTest extends TestCase
         site1Folder2 = fileFolderService.create(site1, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
         site1Folder3 = fileFolderService.create(site1, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
         // create a link of site1File1 in site1Folder3 to test regular deletion
-         documentLinkService.createDocumentLink(site1File2, site1Folder3);
+        documentLinkService.createDocumentLink(site1File2, site1Folder3);
 
         /* Create the working test root 2 to which the user has no permission */
         NodeRef site2 = siteService.createSite("site2", GUID.generate(), "myTitle", "myDescription", SiteVisibility.PRIVATE).getNodeRef();
@@ -179,7 +175,7 @@ public class DocumentLinkServiceImplTest extends TestCase
         assertNotNull(linkNodeRef);
 
         // test if the link node is listed as a child of site1Folder2
-        String site1File1LinkName =  I18NUtil.getMessage("doclink_service.link_to_label", (site1File1Name + ".url"));
+        String site1File1LinkName = I18NUtil.getMessage("doclink_service.link_to_label", (site1File1Name + ".url"));
         NodeRef linkNodeRef2 = fileFolderService.searchSimple(site1Folder2, site1File1LinkName);
         assertNotNull(linkNodeRef2);
         assertEquals(linkNodeRef, linkNodeRef2);
@@ -205,7 +201,7 @@ public class DocumentLinkServiceImplTest extends TestCase
         assertNotNull(linkNodeRef);
 
         // test if the link node is listed as a child of site1Folder2
-        String site1Folder1LinkName =  I18NUtil.getMessage("doclink_service.link_to_label", (site1Folder1Name + ".url"));
+        String site1Folder1LinkName = I18NUtil.getMessage("doclink_service.link_to_label", (site1Folder1Name + ".url"));
         NodeRef linkNodeRef2 = fileFolderService.searchSimple(site1Folder2, site1Folder1LinkName);
         assertNotNull(linkNodeRef2);
         assertEquals(linkNodeRef, linkNodeRef2);
@@ -238,8 +234,7 @@ public class DocumentLinkServiceImplTest extends TestCase
     }
 
     /**
-     * Test the behavior of createDocumentLink when provided a file as a
-     * destination
+     * Test the behavior of createDocumentLink when provided a file as a destination
      * 
      * @throws Exception
      */
@@ -257,8 +252,7 @@ public class DocumentLinkServiceImplTest extends TestCase
     }
 
     /**
-     * Tests the creation of a document link when the user doesn't have read
-     * permission on the source node
+     * Tests the creation of a document link when the user doesn't have read permission on the source node
      * 
      * @throws Exception
      */
@@ -266,8 +260,7 @@ public class DocumentLinkServiceImplTest extends TestCase
     {
         try
         {
-            AuthenticationUtil.runAs(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAs(new RunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -285,8 +278,7 @@ public class DocumentLinkServiceImplTest extends TestCase
     }
 
     /**
-     * Tests the creation of a document link when the user doesn't have write
-     * permission on the destination node
+     * Tests the creation of a document link when the user doesn't have write permission on the destination node
      * 
      * @throws Exception
      */
@@ -294,8 +286,7 @@ public class DocumentLinkServiceImplTest extends TestCase
     {
         try
         {
-            AuthenticationUtil.runAs(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAs(new RunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -313,15 +304,13 @@ public class DocumentLinkServiceImplTest extends TestCase
     }
 
     /**
-     * Tests the deletion of a document's links, with and without write
-     * permissions
+     * Tests the deletion of a document's links, with and without write permissions
      * 
      * @throws Exception
      */
     public void testDeleteLinks() throws Exception
     {
-        DeleteLinksStatusReport report = AuthenticationUtil.runAs(new RunAsWork<DeleteLinksStatusReport>()
-        {
+        DeleteLinksStatusReport report = AuthenticationUtil.runAs(new RunAsWork<DeleteLinksStatusReport>() {
             @Override
             public DeleteLinksStatusReport doWork() throws Exception
             {

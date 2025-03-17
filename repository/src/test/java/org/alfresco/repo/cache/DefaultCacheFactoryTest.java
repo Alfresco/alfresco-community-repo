@@ -42,7 +42,7 @@ public class DefaultCacheFactoryTest
     private DefaultCacheFactory<String, String> cacheFactory;
     private Properties properties;
     private DefaultSimpleCache<String, String> cache;
-    
+
     @Before
     public void setUp() throws Exception
     {
@@ -62,7 +62,7 @@ public class DefaultCacheFactoryTest
         properties.setProperty("cache.withMaxIdle.maxItems", "0");
         properties.setProperty("cache.withMaxIdle.eviction-policy", "NONE");
         properties.setProperty("cache.withMaxIdle.maxIdleSeconds", "7");
-        
+
         cacheFactory.setProperties(properties);
     }
 
@@ -74,30 +74,30 @@ public class DefaultCacheFactoryTest
         assertEquals("cache.someCache", cache.getCacheName());
         assertTrue(cache.isUseMaxItems());
     }
-    
+
     @Test
     public void canCreateUnboundedCache()
     {
         cache = (DefaultSimpleCache<String, String>) cacheFactory.createCache("cache.noSizeLimit");
         assertEquals(2, cache.getMaxItems());
         assertEquals("cache.noSizeLimit", cache.getCacheName());
-        assertFalse(cache.isUseMaxItems());        
+        assertFalse(cache.isUseMaxItems());
     }
-    
+
     @Test
     public void canCreateCacheWithTTL()
     {
         cache = (DefaultSimpleCache<String, String>) cacheFactory.createCache("cache.withTTL");
         assertEquals("cache.withTTL", cache.getCacheName());
-        assertEquals(6, cache.getTTLSecs());        
+        assertEquals(6, cache.getTTLSecs());
     }
-    
+
     @Test
     public void canCreateCacheWithMaxIdle()
     {
         cache = (DefaultSimpleCache<String, String>) cacheFactory.createCache("cache.withMaxIdle");
         assertEquals("cache.withMaxIdle", cache.getCacheName());
-        assertEquals(0, cache.getTTLSecs());        
-        assertEquals(7, cache.getMaxIdleSecs());        
+        assertEquals(0, cache.getTTLSecs());
+        assertEquals(7, cache.getMaxIdleSecs());
     }
 }

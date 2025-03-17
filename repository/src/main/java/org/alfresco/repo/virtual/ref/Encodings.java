@@ -37,8 +37,7 @@ import java.util.Map;
 public enum Encodings
 {
     /**
-     * {@link Reference} string encoding that parses and produces reference
-     * string representations that conform to the following grammar :
+     * {@link Reference} string encoding that parses and produces reference string representations that conform to the following grammar :
      * 
      * <pre>
      *  reference            := protocol':'resource[':'parameters]
@@ -64,25 +63,25 @@ public enum Encodings
      * </pre>
      */
     PLAIN(new Encoding('p',
-                       new PlainReferenceParser(),
-                       new PlainStringifier(),
-                       false)),
+            new PlainReferenceParser(),
+            new PlainStringifier(),
+            false)),
 
     /**
      * A condensed {@link Reference} string representation.
      */
     ZERO(new Encoding('0',
-                      new ZeroReferenceParser(),
-                      new ZeroStringifier(),
-                      false)),
+            new ZeroReferenceParser(),
+            new ZeroStringifier(),
+            false)),
 
     /**
      * A hash based condensed {@link Reference} string representation.
      */
     HASH(new Encoding('H',
-                      new HashReferenceParser(),
-                      new HashStringifier(),
-                      true));
+            new HashReferenceParser(),
+            new HashStringifier(),
+            true));
 
     private static volatile Map<Character, Encoding> tokenMap;
 
@@ -98,7 +97,7 @@ public enum Encodings
             tokenMap = new HashMap<>();
         }
         tokenMap.put(encoding.token,
-                     encoding);
+                encoding);
     }
 
     public final Encoding encoding;

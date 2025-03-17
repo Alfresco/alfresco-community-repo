@@ -41,20 +41,21 @@ public class TempFileProviderTest extends TestCase
         File tempDir = TempFileProvider.getTempDir();
         assertTrue("Not a directory", tempDir.isDirectory());
         File tempDirParent = tempDir.getParentFile();
-        
+
         // create a temp file
         File tempFile = File.createTempFile("AAAA", ".tmp");
         File tempFileParent = tempFile.getParentFile();
-        
+
         // they should be equal
         assertEquals("Our temp dir not subdirectory system temp directory",
                 tempFileParent, tempDirParent);
     }
-    
+
     /**
-     * test create a temporary file 
+     * test create a temporary file
      * 
      * create another file with the same prefix and suffix.
+     * 
      * @throws Exception
      */
     public void testTempFile() throws Exception
@@ -64,18 +65,19 @@ public class TempFileProviderTest extends TestCase
         File tempDir = TempFileProvider.getTempDir();
         assertEquals("Temp file not located in our temp directory",
                 tempDir, tempFileParent);
-        
+
         /**
          * Create another temp file and then delete it.
          */
         File tempFile2 = TempFileProvider.createTempFile("AAAA", ".tmp");
         tempFile2.delete();
     }
-    
+
     /**
-     * test create a temporary file with a directory 
+     * test create a temporary file with a directory
      * 
      * create another file with the same prefix and suffix.
+     * 
      * @throws Exception
      */
     public void testTempFileWithDir() throws Exception
@@ -85,7 +87,7 @@ public class TempFileProviderTest extends TestCase
         File tempFileParent = tempFile.getParentFile();
         assertEquals("Temp file not located in our temp directory",
                 tempDir, tempFileParent);
-        
+
         /**
          * Create another temp file and then delete it.
          */

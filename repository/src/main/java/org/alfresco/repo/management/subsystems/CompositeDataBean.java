@@ -40,9 +40,7 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.context.ApplicationContext;
 
 /**
- * A class that wraps an instance of a Java Bean class declared as a composite property type on
- * {@link ChildApplicationContextFactory} making it configurable, either through alfresco-global.properties or a JMX
- * console.
+ * A class that wraps an instance of a Java Bean class declared as a composite property type on {@link ChildApplicationContextFactory} making it configurable, either through alfresco-global.properties or a JMX console.
  * 
  * @see ChildApplicationContextFactory
  * @author dward
@@ -133,10 +131,9 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#afterPropertiesSet()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#afterPropertiesSet() */
     @Override
     public void afterPropertiesSet() throws Exception
     {
@@ -160,10 +157,9 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
         super.afterPropertiesSet();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#resolveDefault(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#resolveDefault(java.lang.String) */
     @Override
     protected String resolveDefault(String name)
     {
@@ -173,20 +169,18 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
         return value == null ? super.resolveDefault(this.defaultKeyPrefix + name) : value;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#createInitialState()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#createInitialState() */
     @Override
     protected PropertyBackedBeanState createInitialState() throws IOException
     {
         return new CompositeDataBeanState();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#isUpdateable(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#isUpdateable(java.lang.String) */
     @Override
     public boolean isUpdateable(String name)
     {
@@ -211,10 +205,9 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#stop(boolean)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#stop(boolean) */
     @Override
     protected void stop(boolean broadcast)
     {
@@ -288,30 +281,26 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
             }
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getProperty(java.lang.String)
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getProperty(java.lang.String) */
         public String getProperty(String name)
         {
             Object value = this.wrappedBean.getPropertyValue(name);
             return value == null ? null : value.toString();
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getPropertyNames()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getPropertyNames() */
         public Set<String> getPropertyNames()
         {
             return CompositeDataBean.this.propertyNames;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#setProperty(java.lang.String,
-         * java.lang.String)
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#setProperty(java.lang.String, java.lang.String) */
         public void setProperty(String name, String value)
         {
             this.wrappedBean.setPropertyValue(name, value);
@@ -323,21 +312,17 @@ public class CompositeDataBean extends AbstractPropertyBackedBean
             throw new UnsupportedOperationException();
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#start()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#start() */
         public void start()
-        {
-        }
+        {}
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#stop()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#stop() */
         public void stop()
-        {
-        }
+        {}
 
         /**
          * Gets the wrapped Java bean.

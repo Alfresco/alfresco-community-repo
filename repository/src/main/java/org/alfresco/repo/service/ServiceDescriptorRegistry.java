@@ -27,6 +27,10 @@ package org.alfresco.repo.service;
 
 import java.util.Collection;
 
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.repo.admin.SysAdminParams;
@@ -88,19 +92,14 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-
 
 /**
- * Implementation of a Service Registry based on the definition of
- * Services contained within a Spring Bean Factory.
+ * Implementation of a Service Registry based on the definition of Services contained within a Spring Bean Factory.
  *
  * @author David Caruana
  */
 public class ServiceDescriptorRegistry
-    implements BeanFactoryAware, ServiceRegistry
+        implements BeanFactoryAware, ServiceRegistry
 {
     // Bean Factory within which the registry lives
     private BeanFactory beanFactory = null;
@@ -113,7 +112,8 @@ public class ServiceDescriptorRegistry
     }
 
     /**
-     * @throws UnsupportedOperationException always
+     * @throws UnsupportedOperationException
+     *             always
      */
     @Override
     public Collection<QName> getServices()
@@ -123,7 +123,8 @@ public class ServiceDescriptorRegistry
     }
 
     /**
-     * @throws UnsupportedOperationException always
+     * @throws UnsupportedOperationException
+     *             always
      */
     @Override
     public boolean isServiceProvided(QName service)
@@ -141,71 +142,72 @@ public class ServiceDescriptorRegistry
     @Override
     public DescriptorService getDescriptorService()
     {
-        return (DescriptorService)getService(DESCRIPTOR_SERVICE);
+        return (DescriptorService) getService(DESCRIPTOR_SERVICE);
     }
 
     @Override
     public NodeService getNodeService()
     {
-        return (NodeService)getService(NODE_SERVICE);
+        return (NodeService) getService(NODE_SERVICE);
     }
 
     @Override
     public MutableAuthenticationService getAuthenticationService()
     {
-        return (MutableAuthenticationService)getService(AUTHENTICATION_SERVICE);
+        return (MutableAuthenticationService) getService(AUTHENTICATION_SERVICE);
     }
 
     @Override
     public ContentService getContentService()
     {
-        return (ContentService)getService(CONTENT_SERVICE);
+        return (ContentService) getService(CONTENT_SERVICE);
     }
 
     public SynchronousTransformClient getSynchronousTransformClient()
     {
-        return (SynchronousTransformClient)getService(SYNCHRONOUS_TRANSFORM_CLIENT);
+        return (SynchronousTransformClient) getService(SYNCHRONOUS_TRANSFORM_CLIENT);
     }
 
     @Override
     public MimetypeService getMimetypeService()
     {
-        return (MimetypeService)getService(MIMETYPE_SERVICE);
+        return (MimetypeService) getService(MIMETYPE_SERVICE);
     }
 
     @Override
     public VersionService getVersionService()
     {
-        return (VersionService)getService(VERSION_SERVICE);
+        return (VersionService) getService(VERSION_SERVICE);
     }
 
     @Override
     public LockService getLockService()
     {
-        return (LockService)getService(LOCK_SERVICE);
+        return (LockService) getService(LOCK_SERVICE);
     }
 
     public JobLockService getJobLockService()
     {
-        return (JobLockService)getService(JOB_LOCK_SERVICE);
+        return (JobLockService) getService(JOB_LOCK_SERVICE);
     }
 
     @Override
     public DictionaryService getDictionaryService()
     {
-        return (DictionaryService)getService(DICTIONARY_SERVICE);
+        return (DictionaryService) getService(DICTIONARY_SERVICE);
     }
 
     @Override
     public SearchService getSearchService()
     {
-        return mockSearchService == null ? (SearchService)getService(SEARCH_SERVICE) : mockSearchService;
+        return mockSearchService == null ? (SearchService) getService(SEARCH_SERVICE) : mockSearchService;
     }
 
     /**
      * For use in test classes only that need to mock the searchServices.
-     * @param mockSearchService to be set. If {@code null} the next call to {@link #getSearchService()} will return
-     *                      the real search service from the context.
+     * 
+     * @param mockSearchService
+     *            to be set. If {@code null} the next call to {@link #getSearchService()} will return the real search service from the context.
      */
     public void setMockSearchService(SearchService mockSearchService)
     {
@@ -215,7 +217,7 @@ public class ServiceDescriptorRegistry
     @Override
     public TransactionService getTransactionService()
     {
-        return (TransactionService)getService(TRANSACTION_SERVICE);
+        return (TransactionService) getService(TRANSACTION_SERVICE);
     }
 
     @Override
@@ -228,109 +230,109 @@ public class ServiceDescriptorRegistry
     @Override
     public CopyService getCopyService()
     {
-        return (CopyService)getService(COPY_SERVICE);
+        return (CopyService) getService(COPY_SERVICE);
     }
 
     @Override
     public CheckOutCheckInService getCheckOutCheckInService()
     {
-        return (CheckOutCheckInService)getService(COCI_SERVICE);
+        return (CheckOutCheckInService) getService(COCI_SERVICE);
     }
 
     @Override
     public CategoryService getCategoryService()
     {
-        return (CategoryService)getService(CATEGORY_SERVICE);
+        return (CategoryService) getService(CATEGORY_SERVICE);
     }
 
     @Override
     public NamespaceService getNamespaceService()
     {
-        return (NamespaceService)getService(NAMESPACE_SERVICE);
+        return (NamespaceService) getService(NAMESPACE_SERVICE);
     }
 
     @Override
     public ImporterService getImporterService()
     {
-        return (ImporterService)getService(IMPORTER_SERVICE);
+        return (ImporterService) getService(IMPORTER_SERVICE);
     }
 
     @Override
     public ExporterService getExporterService()
     {
-        return (ExporterService)getService(EXPORTER_SERVICE);
+        return (ExporterService) getService(EXPORTER_SERVICE);
     }
 
     @Override
     public RuleService getRuleService()
     {
-        return (RuleService)getService(RULE_SERVICE);
+        return (RuleService) getService(RULE_SERVICE);
     }
 
     @Override
     public ActionService getActionService()
     {
-        return (ActionService)getService(ACTION_SERVICE);
+        return (ActionService) getService(ACTION_SERVICE);
     }
 
     @Override
     public PermissionService getPermissionService()
     {
-        return (PermissionService)getService(PERMISSIONS_SERVICE);
+        return (PermissionService) getService(PERMISSIONS_SERVICE);
     }
 
     @Override
     public AuthorityService getAuthorityService()
     {
-        return (AuthorityService)getService(AUTHORITY_SERVICE);
+        return (AuthorityService) getService(AUTHORITY_SERVICE);
     }
 
     @Override
     public TemplateService getTemplateService()
     {
-        return (TemplateService)getService(TEMPLATE_SERVICE);
+        return (TemplateService) getService(TEMPLATE_SERVICE);
     }
 
     @Override
     public FileFolderService getFileFolderService()
     {
-        return (FileFolderService)getService(FILE_FOLDER_SERVICE);
+        return (FileFolderService) getService(FILE_FOLDER_SERVICE);
     }
 
     @Override
     public ScriptService getScriptService()
     {
-        return (ScriptService)getService(SCRIPT_SERVICE);
+        return (ScriptService) getService(SCRIPT_SERVICE);
     }
 
     @Override
     public WorkflowService getWorkflowService()
     {
-        return (WorkflowService)getService(WORKFLOW_SERVICE);
+        return (WorkflowService) getService(WORKFLOW_SERVICE);
     }
-    
+
     @Override
     public NotificationService getNotificationService()
     {
-        return (NotificationService)getService(NOTIFICATION_SERVICE);
+        return (NotificationService) getService(NOTIFICATION_SERVICE);
     }
 
     @Override
     public AuditService getAuditService()
     {
-        return (AuditService)getService(AUDIT_SERVICE);
+        return (AuditService) getService(AUDIT_SERVICE);
     }
 
     @Override
     public OwnableService getOwnableService()
     {
-        return (OwnableService)getService(OWNABLE_SERVICE);
+        return (OwnableService) getService(OWNABLE_SERVICE);
     }
 
     @Override
     public PersonService getPersonService()
     {
-        return (PersonService)getService(PERSON_SERVICE);
+        return (PersonService) getService(PERSON_SERVICE);
     }
 
     @Override
@@ -342,7 +344,7 @@ public class ServiceDescriptorRegistry
     @Override
     public AttributeService getAttributeService()
     {
-        return (AttributeService)getService(ATTRIBUTE_SERVICE);
+        return (AttributeService) getService(ATTRIBUTE_SERVICE);
     }
 
     @Override
@@ -365,26 +367,25 @@ public class ServiceDescriptorRegistry
 
     /**
      *
-     * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2
-     * or other external libraries.
+     * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
      */
     @Deprecated
     @Override
     public ThumbnailService getThumbnailService()
     {
-        return (ThumbnailService)getService(THUMBNAIL_SERVICE);
+        return (ThumbnailService) getService(THUMBNAIL_SERVICE);
     }
 
     @Override
     public TaggingService getTaggingService()
     {
-        return (TaggingService)getService(TAGGING_SERVICE);
+        return (TaggingService) getService(TAGGING_SERVICE);
     }
-    
+
     @Override
-    public FormService getFormService() 
+    public FormService getFormService()
     {
-        return (FormService)getService(FORM_SERVICE);
+        return (FormService) getService(FORM_SERVICE);
     }
 
     /**
@@ -393,109 +394,109 @@ public class ServiceDescriptorRegistry
      */
     @Deprecated
     @Override
-    public RenditionService getRenditionService() 
+    public RenditionService getRenditionService()
     {
-        return (RenditionService)getService(RENDITION_SERVICE);
-    }
-    
-    @Override
-    public RatingService getRatingService() 
-    {
-        return (RatingService)getService(RATING_SERVICE);
-    }
-    
-    @Override
-    public NodeLocatorService getNodeLocatorService() 
-    {
-        return (NodeLocatorService)getService(NODE_LOCATOR_SERVICE);
-    }
-    
-    @Override
-    public BlogService getBlogService() 
-    {
-        return (BlogService)getService(BLOG_SERVICE);
-    }
-    
-    @Override
-    public CalendarService getCalendarService() 
-    {
-        return (CalendarService)getService(CALENDAR_SERVICE);
-    }
-    
-    @Override
-    public InvitationService getInvitationService() 
-    {
-         return (InvitationService)getService(INVITATION_SERVICE);
+        return (RenditionService) getService(RENDITION_SERVICE);
     }
 
     @Override
-    public CMISDictionaryService getCMISDictionaryService() 
+    public RatingService getRatingService()
     {
-         return (CMISDictionaryService)getService(CMIS_DICTIONARY_SERVICE);
+        return (RatingService) getService(RATING_SERVICE);
     }
 
     @Override
-    public CMISQueryService getCMISQueryService() 
+    public NodeLocatorService getNodeLocatorService()
     {
-         return (CMISQueryService)getService(CMIS_QUERY_SERVICE);
+        return (NodeLocatorService) getService(NODE_LOCATOR_SERVICE);
     }
 
     @Override
-    public ImapService getImapService() 
+    public BlogService getBlogService()
     {
-        return (ImapService)getService(IMAP_SERVICE);
+        return (BlogService) getService(BLOG_SERVICE);
+    }
+
+    @Override
+    public CalendarService getCalendarService()
+    {
+        return (CalendarService) getService(CALENDAR_SERVICE);
+    }
+
+    @Override
+    public InvitationService getInvitationService()
+    {
+        return (InvitationService) getService(INVITATION_SERVICE);
+    }
+
+    @Override
+    public CMISDictionaryService getCMISDictionaryService()
+    {
+        return (CMISDictionaryService) getService(CMIS_DICTIONARY_SERVICE);
+    }
+
+    @Override
+    public CMISQueryService getCMISQueryService()
+    {
+        return (CMISQueryService) getService(CMIS_QUERY_SERVICE);
+    }
+
+    @Override
+    public ImapService getImapService()
+    {
+        return (ImapService) getService(IMAP_SERVICE);
     }
 
     @Override
     public PublicServiceAccessService getPublicServiceAccessService()
     {
-        return (PublicServiceAccessService)getService(PUBLIC_SERVICE_ACCESS_SERVICE);
+        return (PublicServiceAccessService) getService(PUBLIC_SERVICE_ACCESS_SERVICE);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getRepoAdminService()
-     */
+     * 
+     * @see org.alfresco.service.ServiceRegistry#getRepoAdminService() */
     @Override
     public RepoAdminService getRepoAdminService()
     {
-        return (RepoAdminService)getService(REPO_ADMIN_SERVICE);
+        return (RepoAdminService) getService(REPO_ADMIN_SERVICE);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getSysAdminParams()
-     */
+     * 
+     * @see org.alfresco.service.ServiceRegistry#getSysAdminParams() */
     @Override
     public SysAdminParams getSysAdminParams()
     {
         final String beanName = "sysAdminParams";
         return (SysAdminParams) beanFactory.getBean(beanName);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getWebDavService()
-     */
+     * 
+     * @see org.alfresco.service.ServiceRegistry#getWebDavService() */
     @Override
     public WebDavService getWebDavService()
     {
-        return (WebDavService)getService(WEBDAV_SERVICE);
+        return (WebDavService) getService(WEBDAV_SERVICE);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.ServiceRegistry#getModelService()
-     */
+     * 
+     * @see org.alfresco.service.ServiceRegistry#getModelService() */
     @Override
     public ModuleService getModuleService()
     {
         return (ModuleService) getService(MODULE_SERVICE);
     }
-    
+
     @Override
     public SolrFacetHelper getSolrFacetHelper()
     {
         final String beanName = "facet.solrFacetHelper";
         return (SolrFacetHelper) beanFactory.getBean(beanName);
     }
-    
+
     @Override
     public FacetLabelDisplayHandlerRegistry getFacetLabelDisplayHandlerRegistry()
     {
@@ -504,26 +505,26 @@ public class ServiceDescriptorRegistry
     }
 
     @Override
-    public MessageService getMessageService() 
+    public MessageService getMessageService()
     {
-        return (MessageService)getService(MESSAGE_SERVICE);
+        return (MessageService) getService(MESSAGE_SERVICE);
     }
-    
+
     @Override
-    public DocumentLinkService getDocumentLinkService() 
+    public DocumentLinkService getDocumentLinkService()
     {
-        return (DocumentLinkService)getService(DOCUMENT_LINK_SERVICE);
+        return (DocumentLinkService) getService(DOCUMENT_LINK_SERVICE);
     }
 
     @Override
     public PolicyComponent getPolicyComponent()
     {
-        return (PolicyComponent)beanFactory.getBean(POLICY_COMPONENT.getLocalName());
+        return (PolicyComponent) beanFactory.getBean(POLICY_COMPONENT.getLocalName());
     }
 
     @Override
     public RenditionService2 getRenditionService2()
     {
-        return (RenditionService2)getService(RENDITION_SERVICE_2);
+        return (RenditionService2) getService(RENDITION_SERVICE_2);
     }
 }

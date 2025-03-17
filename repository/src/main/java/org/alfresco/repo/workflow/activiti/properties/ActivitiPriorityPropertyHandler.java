@@ -30,6 +30,7 @@ import java.io.Serializable;
 
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.task.Task;
+
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.activiti.ActivitiTaskPropertyHandler;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -42,9 +43,9 @@ import org.alfresco.service.namespace.QName;
 public class ActivitiPriorityPropertyHandler extends ActivitiTaskPropertyHandler
 {
     /**
-    * {@inheritDoc}
-    */
-    
+     * {@inheritDoc}
+     */
+
     @Override
     protected Object handleTaskProperty(Task task, TypeDefinition type, QName key, Serializable value)
     {
@@ -75,9 +76,9 @@ public class ActivitiPriorityPropertyHandler extends ActivitiTaskPropertyHandler
     }
 
     /**
-    * {@inheritDoc}
-    */
-    
+     * {@inheritDoc}
+     */
+
     @Override
     protected Object handleDelegateTaskProperty(DelegateTask task, TypeDefinition type, QName key, Serializable value)
     {
@@ -87,9 +88,9 @@ public class ActivitiPriorityPropertyHandler extends ActivitiTaskPropertyHandler
     }
 
     /**
-    * {@inheritDoc}
-    */
-    
+     * {@inheritDoc}
+     */
+
     @Override
     protected QName getKey()
     {

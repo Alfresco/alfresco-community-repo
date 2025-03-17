@@ -22,13 +22,13 @@ import java.io.File;
 import java.util.Arrays;
 
 import junit.framework.TestCase;
-
-import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
 
 /**
  * @see org.alfresco.util.exec.RuntimeExecBootstrapBean
@@ -38,11 +38,10 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class RuntimeExecBeansTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(RuntimeExecBeansTest.class);
-    
-    private static final String APP_CONTEXT_XML =
-            "classpath:org/alfresco/util/exec/RuntimeExecBeansTest-context.xml";
+
+    private static final String APP_CONTEXT_XML = "classpath:org/alfresco/util/exec/RuntimeExecBeansTest-context.xml";
     private static final String DIR = "dir RuntimeExecBootstrapBeanTest";
-    
+
     private File dir;
 
     public void setUp() throws Exception
@@ -51,26 +50,26 @@ public class RuntimeExecBeansTest extends TestCase
         dir.mkdir();
         assertTrue("Directory not created", dir.exists());
     }
-    
+
     public void testBootstrapAndShutdown() throws Exception
     {
         // now bring up the bootstrap
         ApplicationContext ctx = new ClassPathXmlApplicationContext(APP_CONTEXT_XML);
-        
+
         // the folder should be gone
         assertFalse("Folder was not deleted by bootstrap", dir.exists());
-        
+
         // now create the folder again
         dir.mkdir();
         assertTrue("Directory not created", dir.exists());
-        
+
         // announce that the context is closing
         ctx.publishEvent(new ContextClosedEvent(ctx));
-        
+
         // the folder should be gone
         assertFalse("Folder was not deleted by shutdown", dir.exists());
     }
-    
+
     public void testSimpleSuccess() throws Exception
     {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(APP_CONTEXT_XML);
@@ -86,7 +85,7 @@ public class RuntimeExecBeansTest extends TestCase
             ctx.close();
         }
     }
-    
+
     public void testDeprecatedSetCommandMap() throws Exception
     {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(APP_CONTEXT_XML);
@@ -104,7 +103,7 @@ public class RuntimeExecBeansTest extends TestCase
         // The best we can do is look at the log manually
         logger.warn("There should be a warning re. the use of deprecated 'setCommandMap'.");
     }
-    
+
     public void testSplitArguments() throws Exception
     {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(APP_CONTEXT_XML);
@@ -115,14 +114,14 @@ public class RuntimeExecBeansTest extends TestCase
             String[] splitCommand = splitExec.getCommand();
             assertTrue(
                     "Command arguments not split into 'dir', '.' and '..' :" + Arrays.deepToString(splitCommand),
-                    Arrays.deepEquals(new String[] {"dir", ".", ".."}, splitCommand));
+                    Arrays.deepEquals(new String[]{"dir", ".", ".."}, splitCommand));
         }
         finally
         {
             ctx.close();
         }
     }
-    
+
     public void testSplitArgumentsAsSingleValue() throws Exception
     {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(APP_CONTEXT_XML);
@@ -133,20 +132,20 @@ public class RuntimeExecBeansTest extends TestCase
             String[] splitCommand = splitExec.getCommand();
             assertTrue(
                     "Command arguments not split into 'dir', '.' and '..' : " + Arrays.deepToString(splitCommand),
-                    Arrays.deepEquals(new String[] {"dir", ".", ".."}, splitCommand));
+                    Arrays.deepEquals(new String[]{"dir", ".", ".."}, splitCommand));
         }
         finally
         {
             ctx.close();
         }
     }
-    
+
     public void testFailureModeOfMissingCommand()
     {
         File dir = new File(DIR);
         dir.mkdir();
         assertTrue("Directory not created", dir.exists());
-        
+
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(APP_CONTEXT_XML);
         try
         {
@@ -161,55 +160,55 @@ public class RuntimeExecBeansTest extends TestCase
             ctx.close();
         }
     }
-    
-//    /**
-//     * Checks that the encoding setting feeds through to the streams.
-//     */
-//    public void testStreamReading() throws Exception
-//    {
-//        String manglingCharsetName = "UTF-16";
-//
-//        File dir = new File(DIR);
-//        dir.mkdir();
-//        assertTrue("Directory not created", dir.exists());
-//        
-//        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(APP_CONTEXT_XML);
-//        try
-//        {
-//            RuntimeExec dirRootExec = (RuntimeExec) ctx.getBean("commandListRootDir");
-//            assertNotNull(dirRootExec);
-//            // Execute it
-//            ExecutionResult result = dirRootExec.execute();
-//            
-//            // Get the error stream
-//            String defaultStdOut = result.getStdOut();
-//            
-//            // Change the encoding
-//            dirRootExec.setCharset(manglingCharsetName);
-//            result = dirRootExec.execute();
-//            String mangledStdOut = result.getStdOut();
-//            // The two error strings must not be the same
-//            assertNotSame("Differently encoded strings should differ", defaultStdOut, mangledStdOut);
-//            
-//            // Now convert the Shift-JIS string and ensure it's the same as originally expected
-//            Charset defaultCharset = Charset.defaultCharset();
-//            byte[] mangledBytes = mangledStdOut.getBytes(manglingCharsetName);
-//            String convertedStrOut = new String(mangledBytes, defaultCharset.name());
-//            // Check, catering for any mangled characters
-//            assertTrue("Expected to be able to convert value back to default charset.", convertedStrOut.contains(defaultStdOut));
-//        }
-//        finally
-//        {
-//            ctx.close();
-//        }
-//    }
-//    
+
+    // /**
+    // * Checks that the encoding setting feeds through to the streams.
+    // */
+    // public void testStreamReading() throws Exception
+    // {
+    // String manglingCharsetName = "UTF-16";
+    //
+    // File dir = new File(DIR);
+    // dir.mkdir();
+    // assertTrue("Directory not created", dir.exists());
+    //
+    // ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(APP_CONTEXT_XML);
+    // try
+    // {
+    // RuntimeExec dirRootExec = (RuntimeExec) ctx.getBean("commandListRootDir");
+    // assertNotNull(dirRootExec);
+    // // Execute it
+    // ExecutionResult result = dirRootExec.execute();
+    //
+    // // Get the error stream
+    // String defaultStdOut = result.getStdOut();
+    //
+    // // Change the encoding
+    // dirRootExec.setCharset(manglingCharsetName);
+    // result = dirRootExec.execute();
+    // String mangledStdOut = result.getStdOut();
+    // // The two error strings must not be the same
+    // assertNotSame("Differently encoded strings should differ", defaultStdOut, mangledStdOut);
+    //
+    // // Now convert the Shift-JIS string and ensure it's the same as originally expected
+    // Charset defaultCharset = Charset.defaultCharset();
+    // byte[] mangledBytes = mangledStdOut.getBytes(manglingCharsetName);
+    // String convertedStrOut = new String(mangledBytes, defaultCharset.name());
+    // // Check, catering for any mangled characters
+    // assertTrue("Expected to be able to convert value back to default charset.", convertedStrOut.contains(defaultStdOut));
+    // }
+    // finally
+    // {
+    // ctx.close();
+    // }
+    // }
+    //
     public void testExecOfNeverEndingProcess()
     {
         File dir = new File(DIR);
         dir.mkdir();
         assertTrue("Directory not created", dir.exists());
-        
+
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(APP_CONTEXT_XML);
         try
         {

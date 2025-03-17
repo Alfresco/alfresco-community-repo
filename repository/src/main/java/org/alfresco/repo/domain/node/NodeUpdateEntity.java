@@ -26,8 +26,7 @@
 package org.alfresco.repo.domain.node;
 
 /**
- * Bean to convey <b>alf_node</b> update data.  It uses the basic node data, but adds
- * information to identify the properties that need updating.
+ * Bean to convey <b>alf_node</b> update data. It uses the basic node data, but adds information to identify the properties that need updating.
  * 
  * @author Derek Hulley
  * @since 3.4
@@ -40,21 +39,20 @@ public class NodeUpdateEntity extends NodeEntity
     private boolean updateAclId;
     private boolean updateTransaction;
     private boolean updateAuditableProperties;
-    
+
     /**
      * Required default constructor
      */
     public NodeUpdateEntity()
-    {
-    }
-    
+    {}
+
     /**
      * Determine if this update represents anything new at all
      */
     public boolean isUpdateAnything()
     {
         return updateAuditableProperties || updateTransaction
-               || updateLocaleId || updateAclId || updateTypeQNameId;
+                || updateLocaleId || updateAclId || updateTypeQNameId;
     }
 
     public boolean isUpdateTypeQNameId()

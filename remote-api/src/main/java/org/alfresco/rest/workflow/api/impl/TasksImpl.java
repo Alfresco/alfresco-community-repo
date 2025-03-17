@@ -46,6 +46,7 @@ import org.activiti.engine.task.IdentityLinkType;
 import org.activiti.engine.task.TaskInfo;
 import org.activiti.engine.task.TaskInfoQuery;
 import org.activiti.engine.task.TaskQuery;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -95,43 +96,34 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
      * All properties that are read-only and cannot be updated on a single task-resource.
      */
     private static final List<String> TASK_READ_ONLY_PROPERTIES = Arrays.asList(
-        "id", "processId", "processDefinitionId", "activityDefinitionId", "startedAt", "endedAt", "durationInMs", "formResourceKey"
-    );
-    
+            "id", "processId", "processDefinitionId", "activityDefinitionId", "startedAt", "endedAt", "durationInMs", "formResourceKey");
+
     private static final Set<String> TASK_COLLECTION_EQUALS_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "status", "assignee", "owner", "candidateUser", "candidateGroup", "name", "description", "priority", "processId",
-        "processBusinessKey", "activityDefinitionId", "processDefinitionId", "processDefinitionKey", "processDefinitionName", "startedAt", 
-        "endedAt", "dueAt", "includeTaskVariables", "includeProcessVariables"
-    ));
-    
+            "status", "assignee", "owner", "candidateUser", "candidateGroup", "name", "description", "priority", "processId",
+            "processBusinessKey", "activityDefinitionId", "processDefinitionId", "processDefinitionKey", "processDefinitionName", "startedAt",
+            "endedAt", "dueAt", "includeTaskVariables", "includeProcessVariables"));
+
     private static final Set<String> TASK_COLLECTION_MATCHES_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "assignee", "owner", "name", "description", "processBusinessKey", "activityDefinitionId", "processDefinitionKey", "processDefinitionName"
-    ));
-    
+            "assignee", "owner", "name", "description", "processBusinessKey", "activityDefinitionId", "processDefinitionKey", "processDefinitionName"));
+
     private static final Set<String> TASK_COLLECTION_GREATERTHAN_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "startedAt", "endedAt", "dueAt"
-    ));
-    
+            "startedAt", "endedAt", "dueAt"));
+
     private static final Set<String> TASK_COLLECTION_GREATERTHANOREQUAL_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "priority"
-    ));
-    
+            "priority"));
+
     private static final Set<String> TASK_COLLECTION_LESSTHAN_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "startedAt", "endedAt", "dueAt"
-    ));
-    
+            "startedAt", "endedAt", "dueAt"));
+
     private static final Set<String> TASK_COLLECTION_LESSTHANOREQUAL_QUERY_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "priority"
-    ));
-    
+            "priority"));
+
     private static final Set<String> TASK_COLLECTION_RUNNING_SORT_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "id", "name", "description", "priority", "processId", "assignee", "startedAt", "dueAt"
-    ));
-    
+            "id", "name", "description", "priority", "processId", "assignee", "startedAt", "dueAt"));
+
     private static final Set<String> TASK_COLLECTION_HISTORY_SORT_PROPERTIES = new HashSet<String>(Arrays.asList(
-        "id", "name", "description", "priority", "processId", "processDefinitionId", "assignee", "owner", "startedAt", "endedAt", "durationInMs", "dueAt"
-    ));
-    
+            "id", "name", "description", "priority", "processId", "processDefinitionId", "assignee", "owner", "startedAt", "endedAt", "durationInMs", "dueAt"));
+
     private RestVariableHelper restVariableHelper;
     private WorkflowObjectFactory workflowFactory;
     private WorkflowQNameConverter qNameConverter;
@@ -139,7 +131,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     private PersonService personService;
     private ActivitiPropertyConverter propertyConverter;
     private int taskVariablesLimit = 20000;
-    
+
     public void setPropertyConverter(ActivitiPropertyConverter propertyConverter)
     {
         this.propertyConverter = propertyConverter;
@@ -149,45 +141,45 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     {
         this.restVariableHelper = restVariableHelper;
     }
-    
+
     public void setMessageService(MessageService messageService)
     {
         this.messageService = messageService;
     }
-    
+
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-    
+
     public int getTaskVariablesLimit()
     {
         return taskVariablesLimit;
     }
-    
+
     public void setTaskVariablesLimit(int taskVariablesLimit)
     {
         this.taskVariablesLimit = taskVariablesLimit;
     }
-    
+
     @Override
     public CollectionWithPagingInfo<Task> getTasks(Parameters parameters)
     {
         Paging paging = parameters.getPaging();
-        MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(TASK_COLLECTION_EQUALS_QUERY_PROPERTIES, 
+        MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(TASK_COLLECTION_EQUALS_QUERY_PROPERTIES,
                 TASK_COLLECTION_MATCHES_QUERY_PROPERTIES);
-        
+
         propertyWalker.setSupportedGreaterThanParameters(TASK_COLLECTION_GREATERTHAN_QUERY_PROPERTIES);
         propertyWalker.setSupportedGreaterThanOrEqualParameters(TASK_COLLECTION_GREATERTHANOREQUAL_QUERY_PROPERTIES);
         propertyWalker.setSupportedLessThanParameters(TASK_COLLECTION_LESSTHAN_QUERY_PROPERTIES);
         propertyWalker.setSupportedLessThanOrEqualParameters(TASK_COLLECTION_LESSTHANOREQUAL_QUERY_PROPERTIES);
         propertyWalker.enableVariablesSupport(namespaceService, dictionaryService);
-        
+
         if (parameters.getQuery() != null)
         {
             QueryHelper.walk(parameters.getQuery(), propertyWalker);
         }
-        
+
         String status = propertyWalker.getProperty("status", WhereClauseParser.EQUALS);
         String assignee = propertyWalker.getProperty("assignee", WhereClauseParser.EQUALS);
         String assigneeLike = propertyWalker.getProperty("assignee", WhereClauseParser.MATCHES);
@@ -234,7 +226,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             }
             sortColumn = sortList.get(0);
         }
-        
+
         List<Task> page = null;
         int totalCount = 0;
         if (status == null || STATUS_ACTIVE.equals(status))
@@ -242,100 +234,131 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             TaskQuery query = activitiProcessEngine
                     .getTaskService()
                     .createTaskQuery();
-            
-            if (assignee != null) query.taskAssignee(assignee);
-            if (assigneeLike != null) query.taskAssigneeLike(assigneeLike);
-            if (owner != null) query.taskOwner(owner);
-            if (ownerLike != null) query.taskOwner(ownerLike);
+
+            if (assignee != null)
+                query.taskAssignee(assignee);
+            if (assigneeLike != null)
+                query.taskAssigneeLike(assigneeLike);
+            if (owner != null)
+                query.taskOwner(owner);
+            if (ownerLike != null)
+                query.taskOwner(ownerLike);
             if (candidateUser != null)
             {
-            	Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, candidateUser, false);
-            	if (parents != null)
-            	{
-            		List<String> authorities = new ArrayList<String>();
-            		authorities.addAll(parents);
-            		
-            		// there's a limitation in at least Oracle for using an IN statement with more than 1000 items
-            		if (parents.size() > 1000)
-            		{
-            			authorities = authorities.subList(0, 1000);
-            		}
-            		
-            		if (authorities.size() > 0)
-            		{
-            		    query.taskCandidateGroupIn(authorities);
-            		}
-            		else
-            		{
-            		    query.taskCandidateUser(candidateUser);
-            		}
-            	}
+                Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, candidateUser, false);
+                if (parents != null)
+                {
+                    List<String> authorities = new ArrayList<String>();
+                    authorities.addAll(parents);
+
+                    // there's a limitation in at least Oracle for using an IN statement with more than 1000 items
+                    if (parents.size() > 1000)
+                    {
+                        authorities = authorities.subList(0, 1000);
+                    }
+
+                    if (authorities.size() > 0)
+                    {
+                        query.taskCandidateGroupIn(authorities);
+                    }
+                    else
+                    {
+                        query.taskCandidateUser(candidateUser);
+                    }
+                }
             }
-            if (candidateGroup != null) query.taskCandidateGroup(candidateGroup);
-            if (name != null) query.taskName(name);
-            if (nameLike != null) query.taskNameLike(nameLike);
-            if (description != null) query.taskDescription(description);
-            if (descriptionLike != null) query.taskDescriptionLike(descriptionLike);
-            if (priority != null) query.taskPriority(priority);
-            if (priorityGreaterThanOrEquals != null) query.taskMinPriority(priorityGreaterThanOrEquals);
-            if (priorityLessThanOrEquals != null) query.taskMaxPriority(priorityLessThanOrEquals);
-            if (processInstanceId != null) query.processInstanceId(processInstanceId);
-            if (processInstanceBusinessKey != null) query.processInstanceBusinessKey(processInstanceBusinessKey);
-            if (processInstanceBusinessKeyLike != null) query.processInstanceBusinessKeyLike(processInstanceBusinessKeyLike);
-            if (activityDefinitionId != null) query.taskDefinitionKey(activityDefinitionId);
-            if (activityDefinitionIdLike != null) query.taskDefinitionKey(activityDefinitionIdLike);
-            if (processDefinitionId != null) query.processDefinitionId(processDefinitionId);
-            if (processDefinitionKey != null) query.processDefinitionKey(processDefinitionKey);
-            if (processDefinitionKeyLike != null) query.processDefinitionKeyLike(processDefinitionKeyLike);
-            if (processDefinitionName != null) query.processDefinitionName(processDefinitionName);
-            if (processDefinitionNameLike != null) query.processDefinitionNameLike(processDefinitionNameLike);
-            if (dueAt != null) query.dueDate(dueAt);
-            if (dueAtGreaterThan != null) query.dueAfter(dueAtGreaterThan);
-            if (dueAtLessThan != null) query.dueBefore(dueAtLessThan);
-            if (startedAt != null) query.taskCreatedOn(startedAt);
-            if (startedAtGreaterThan != null) query.taskCreatedAfter(startedAtGreaterThan);
-            if (startedAtLessThan != null) query.taskCreatedBefore(startedAtLessThan);
-            
-            if (includeProcessVariables != null && includeProcessVariables) {
+            if (candidateGroup != null)
+                query.taskCandidateGroup(candidateGroup);
+            if (name != null)
+                query.taskName(name);
+            if (nameLike != null)
+                query.taskNameLike(nameLike);
+            if (description != null)
+                query.taskDescription(description);
+            if (descriptionLike != null)
+                query.taskDescriptionLike(descriptionLike);
+            if (priority != null)
+                query.taskPriority(priority);
+            if (priorityGreaterThanOrEquals != null)
+                query.taskMinPriority(priorityGreaterThanOrEquals);
+            if (priorityLessThanOrEquals != null)
+                query.taskMaxPriority(priorityLessThanOrEquals);
+            if (processInstanceId != null)
+                query.processInstanceId(processInstanceId);
+            if (processInstanceBusinessKey != null)
+                query.processInstanceBusinessKey(processInstanceBusinessKey);
+            if (processInstanceBusinessKeyLike != null)
+                query.processInstanceBusinessKeyLike(processInstanceBusinessKeyLike);
+            if (activityDefinitionId != null)
+                query.taskDefinitionKey(activityDefinitionId);
+            if (activityDefinitionIdLike != null)
+                query.taskDefinitionKey(activityDefinitionIdLike);
+            if (processDefinitionId != null)
+                query.processDefinitionId(processDefinitionId);
+            if (processDefinitionKey != null)
+                query.processDefinitionKey(processDefinitionKey);
+            if (processDefinitionKeyLike != null)
+                query.processDefinitionKeyLike(processDefinitionKeyLike);
+            if (processDefinitionName != null)
+                query.processDefinitionName(processDefinitionName);
+            if (processDefinitionNameLike != null)
+                query.processDefinitionNameLike(processDefinitionNameLike);
+            if (dueAt != null)
+                query.dueDate(dueAt);
+            if (dueAtGreaterThan != null)
+                query.dueAfter(dueAtGreaterThan);
+            if (dueAtLessThan != null)
+                query.dueBefore(dueAtLessThan);
+            if (startedAt != null)
+                query.taskCreatedOn(startedAt);
+            if (startedAtGreaterThan != null)
+                query.taskCreatedAfter(startedAtGreaterThan);
+            if (startedAtLessThan != null)
+                query.taskCreatedBefore(startedAtLessThan);
+
+            if (includeProcessVariables != null && includeProcessVariables)
+            {
                 query.includeProcessVariables();
             }
-            
-            if (includeTaskVariables != null && includeTaskVariables) {
+
+            if (includeTaskVariables != null && includeTaskVariables)
+            {
                 query.includeTaskLocalVariables();
             }
-            
+
             // use the limit set in alfresco-global.properties
             query.limitTaskVariables(taskVariablesLimit);
-            
+
             List<QueryVariableHolder> variableProperties = propertyWalker.getVariableProperties();
             setQueryUsingVariables(query, variableProperties);
 
             // Add tenant-filtering
-            if(tenantService.isEnabled()) {
+            if (tenantService.isEnabled())
+            {
                 query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
             }
 
             // Add involvement filtering if user is not admin
-            if(processInstanceId == null && !authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser()) &&
+            if (processInstanceId == null && !authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser()) &&
                     candidateUser == null && candidateGroup == null)
             {
                 query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
             }
-            
+
             setSorting(query, sortColumn);
-            
+
             List<org.activiti.engine.task.Task> tasks = query.listPage(paging.getSkipCount(), paging.getMaxItems());
             totalCount = (int) query.count();
-            
+
             page = new ArrayList<Task>(tasks.size());
             Map<String, TypeDefinition> definitionTypeMap = new HashMap<String, TypeDefinition>();
-            for (org.activiti.engine.task.Task taskInstance: tasks) 
+            for (org.activiti.engine.task.Task taskInstance : tasks)
             {
                 Task task = new Task(taskInstance);
                 task.setFormResourceKey(getFormResourceKey(taskInstance));
                 if ((includeProcessVariables != null && includeProcessVariables) || (includeTaskVariables != null && includeTaskVariables))
                 {
-                    addVariables(task, includeProcessVariables, includeTaskVariables, taskInstance.getProcessVariables(), 
+                    addVariables(task, includeProcessVariables, includeTaskVariables, taskInstance.getProcessVariables(),
                             taskInstance.getTaskLocalVariables(), definitionTypeMap);
                 }
                 page.add(task);
@@ -352,89 +375,122 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             {
                 throw new InvalidArgumentException("Filtering on candidateGroup is only allowed in combination with status-parameter 'active'");
             }
-            
+
             HistoricTaskInstanceQuery query = activitiProcessEngine
                     .getHistoryService()
                     .createHistoricTaskInstanceQuery();
-            
-            if (STATUS_COMPLETED.equals(status)) query.finished();
-            if (assignee != null) query.taskAssignee(assignee);
-            if (assigneeLike != null) query.taskAssigneeLike(assigneeLike);
-            if (owner != null) query.taskOwner(owner);
-            if (ownerLike != null) query.taskOwnerLike(ownerLike);
-            if (name != null) query.taskName(name);
-            if (nameLike != null) query.taskNameLike(nameLike);
-            if (description != null) query.taskDescription(description);
-            if (descriptionLike != null) query.taskDescriptionLike(descriptionLike);
-            if (priority != null) query.taskPriority(priority);
-            if (priorityGreaterThanOrEquals != null) query.taskMinPriority(priorityGreaterThanOrEquals);
-            if (priorityLessThanOrEquals != null) query.taskMaxPriority(priorityLessThanOrEquals);
-            if (processInstanceId != null) query.processInstanceId(processInstanceId);
-            if (processInstanceBusinessKey != null) query.processInstanceBusinessKey(processInstanceBusinessKey);
-            if (processInstanceBusinessKeyLike != null) query.processInstanceBusinessKeyLike(processInstanceBusinessKeyLike);
-            if (activityDefinitionId != null) query.taskDefinitionKey(activityDefinitionId);
-            if (activityDefinitionIdLike != null) query.taskDefinitionKey(activityDefinitionIdLike);
-            if (processDefinitionId != null) query.processDefinitionId(processDefinitionId);
-            if (processDefinitionKey != null) query.processDefinitionKey(processDefinitionKey);
-            if (processDefinitionKeyLike != null) query.processDefinitionKeyLike(processDefinitionKeyLike);
-            if (processDefinitionName != null) query.processDefinitionName(processDefinitionName);
-            if (processDefinitionNameLike != null) query.processDefinitionNameLike(processDefinitionNameLike);
-            if (dueAt != null) query.taskDueDate(dueAt);
-            if (dueAtGreaterThan != null) query.taskDueAfter(dueAtGreaterThan);
-            if (dueAtLessThan != null) query.taskDueBefore(dueAtLessThan);
-            if (startedAt != null) query.taskCreatedOn(startedAt);
-            if (startedAtGreaterThan != null) query.taskCreatedAfter(startedAtGreaterThan);
-            if (startedAtLessThan != null) query.taskCreatedBefore(startedAtLessThan);
-            if (endedAt != null) query.taskCompletedOn(endedAt);
-            if (endedAtGreaterThan != null) query.taskCompletedAfter(endedAtGreaterThan);
-            if (endedAtLessThan != null) query.taskCompletedBefore(endedAtLessThan);
-            
-            if (includeProcessVariables != null && includeProcessVariables) {
+
+            if (STATUS_COMPLETED.equals(status))
+                query.finished();
+            if (assignee != null)
+                query.taskAssignee(assignee);
+            if (assigneeLike != null)
+                query.taskAssigneeLike(assigneeLike);
+            if (owner != null)
+                query.taskOwner(owner);
+            if (ownerLike != null)
+                query.taskOwnerLike(ownerLike);
+            if (name != null)
+                query.taskName(name);
+            if (nameLike != null)
+                query.taskNameLike(nameLike);
+            if (description != null)
+                query.taskDescription(description);
+            if (descriptionLike != null)
+                query.taskDescriptionLike(descriptionLike);
+            if (priority != null)
+                query.taskPriority(priority);
+            if (priorityGreaterThanOrEquals != null)
+                query.taskMinPriority(priorityGreaterThanOrEquals);
+            if (priorityLessThanOrEquals != null)
+                query.taskMaxPriority(priorityLessThanOrEquals);
+            if (processInstanceId != null)
+                query.processInstanceId(processInstanceId);
+            if (processInstanceBusinessKey != null)
+                query.processInstanceBusinessKey(processInstanceBusinessKey);
+            if (processInstanceBusinessKeyLike != null)
+                query.processInstanceBusinessKeyLike(processInstanceBusinessKeyLike);
+            if (activityDefinitionId != null)
+                query.taskDefinitionKey(activityDefinitionId);
+            if (activityDefinitionIdLike != null)
+                query.taskDefinitionKey(activityDefinitionIdLike);
+            if (processDefinitionId != null)
+                query.processDefinitionId(processDefinitionId);
+            if (processDefinitionKey != null)
+                query.processDefinitionKey(processDefinitionKey);
+            if (processDefinitionKeyLike != null)
+                query.processDefinitionKeyLike(processDefinitionKeyLike);
+            if (processDefinitionName != null)
+                query.processDefinitionName(processDefinitionName);
+            if (processDefinitionNameLike != null)
+                query.processDefinitionNameLike(processDefinitionNameLike);
+            if (dueAt != null)
+                query.taskDueDate(dueAt);
+            if (dueAtGreaterThan != null)
+                query.taskDueAfter(dueAtGreaterThan);
+            if (dueAtLessThan != null)
+                query.taskDueBefore(dueAtLessThan);
+            if (startedAt != null)
+                query.taskCreatedOn(startedAt);
+            if (startedAtGreaterThan != null)
+                query.taskCreatedAfter(startedAtGreaterThan);
+            if (startedAtLessThan != null)
+                query.taskCreatedBefore(startedAtLessThan);
+            if (endedAt != null)
+                query.taskCompletedOn(endedAt);
+            if (endedAtGreaterThan != null)
+                query.taskCompletedAfter(endedAtGreaterThan);
+            if (endedAtLessThan != null)
+                query.taskCompletedBefore(endedAtLessThan);
+
+            if (includeProcessVariables != null && includeProcessVariables)
+            {
                 query.includeProcessVariables();
             }
-            
-            if (includeTaskVariables != null && includeTaskVariables) {
+
+            if (includeTaskVariables != null && includeTaskVariables)
+            {
                 query.includeTaskLocalVariables();
             }
-            
+
             List<QueryVariableHolder> variableProperties = propertyWalker.getVariableProperties();
             setQueryUsingVariables(query, variableProperties);
 
             // Add tenant filtering
-            if (tenantService.isEnabled()) 
+            if (tenantService.isEnabled())
             {
                 query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
             }
-            
+
             // Add involvement filtering if user is not admin
-            if(processInstanceId == null && !authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser()))
+            if (processInstanceId == null && !authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser()))
             {
                 query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
             }
-            
+
             setSorting(query, sortColumn);
-            
+
             List<HistoricTaskInstance> tasks = query.listPage(paging.getSkipCount(), paging.getMaxItems());
             totalCount = (int) query.count();
 
             page = new ArrayList<Task>(tasks.size());
             Map<String, TypeDefinition> definitionTypeMap = new HashMap<String, TypeDefinition>();
-            for (HistoricTaskInstance taskInstance: tasks) 
+            for (HistoricTaskInstance taskInstance : tasks)
             {
                 Task task = new Task(taskInstance);
                 if ((includeProcessVariables != null && includeProcessVariables) || (includeTaskVariables != null && includeTaskVariables))
                 {
-                    addVariables(task, includeProcessVariables, includeTaskVariables, taskInstance.getProcessVariables(), 
+                    addVariables(task, includeProcessVariables, includeTaskVariables, taskInstance.getProcessVariables(),
                             taskInstance.getTaskLocalVariables(), definitionTypeMap);
                 }
                 page.add(task);
             }
-        } 
-        else 
+        }
+        else
         {
             throw new InvalidArgumentException("Invalid status parameter: " + status);
         }
-        
+
         return CollectionWithPagingInfo.asPaged(paging, page, (page.size() + paging.getSkipCount()) < totalCount, totalCount);
     }
 
@@ -535,11 +591,11 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         }
     }
 
-    protected void addVariables(Task task, Boolean includeProcessVariables, Boolean includeTaskVariables, 
+    protected void addVariables(Task task, Boolean includeProcessVariables, Boolean includeTaskVariables,
             Map<String, Object> processVariables, Map<String, Object> taskVariables, Map<String, TypeDefinition> definitionTypeMap)
     {
         TypeDefinition startFormTypeDefinition = null;
-        if (includeProcessVariables != null && includeProcessVariables) 
+        if (includeProcessVariables != null && includeProcessVariables)
         {
             if (definitionTypeMap.containsKey(task.getProcessDefinitionId()) == false)
             {
@@ -550,30 +606,30 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                     definitionTypeMap.put(task.getProcessDefinitionId(), getWorkflowFactory().getTaskFullTypeDefinition(formKey, true));
                 }
             }
-            
+
             if (definitionTypeMap.containsKey(task.getProcessDefinitionId()))
             {
                 startFormTypeDefinition = definitionTypeMap.get(task.getProcessDefinitionId());
             }
         }
-        
+
         TypeDefinition taskTypeDefinition = null;
-        if (includeTaskVariables != null && includeTaskVariables) 
+        if (includeTaskVariables != null && includeTaskVariables)
         {
             taskTypeDefinition = getWorkflowFactory().getTaskFullTypeDefinition(task.getFormResourceKey(), false);
         }
-        
-        List<TaskVariable> variables = restVariableHelper.getTaskVariables(taskVariables, processVariables, 
+
+        List<TaskVariable> variables = restVariableHelper.getTaskVariables(taskVariables, processVariables,
                 startFormTypeDefinition, taskTypeDefinition);
         task.setVariables(variables);
     }
-    
+
     @Override
     public CollectionWithPagingInfo<Task> getTasks(String processId, Parameters parameters)
     {
         Paging paging = parameters.getPaging();
         String status = parameters.getParameter("status");
-        
+
         List<SortColumn> sortList = parameters.getSorting();
         SortColumn sortColumn = null;
         if (sortList != null && sortList.size() > 0)
@@ -584,7 +640,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             }
             sortColumn = sortList.get(0);
         }
-        
+
         validateIfUserAllowedToWorkWithProcess(processId);
 
         List<Task> page = null;
@@ -594,15 +650,15 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             TaskQuery query = activitiProcessEngine
                     .getTaskService()
                     .createTaskQuery();
-            
+
             query.processInstanceId(processId);
             setSorting(query, sortColumn);
-            
+
             List<org.activiti.engine.task.Task> tasks = query.listPage(paging.getSkipCount(), paging.getMaxItems());
             totalCount = (int) query.count();
 
             page = new ArrayList<Task>(tasks.size());
-            for (org.activiti.engine.task.Task taskInstance: tasks) 
+            for (org.activiti.engine.task.Task taskInstance : tasks)
             {
                 Task task = new Task(taskInstance);
                 task.setFormResourceKey(getFormResourceKey(taskInstance));
@@ -614,72 +670,74 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             HistoricTaskInstanceQuery query = activitiProcessEngine
                     .getHistoryService()
                     .createHistoricTaskInstanceQuery();
-            
-            if (STATUS_COMPLETED.equals(status)) query.finished();
-            
+
+            if (STATUS_COMPLETED.equals(status))
+                query.finished();
+
             query.processInstanceId(processId);
-            
+
             // Add tenant filtering
-            if(tenantService.isEnabled()) {
+            if (tenantService.isEnabled())
+            {
                 query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
             }
-            
+
             setSorting(query, sortColumn);
-            
+
             List<HistoricTaskInstance> tasks = query.listPage(paging.getSkipCount(), paging.getMaxItems());
             totalCount = (int) query.count();
 
             page = new ArrayList<Task>(tasks.size());
-            for (HistoricTaskInstance taskInstance: tasks) 
+            for (HistoricTaskInstance taskInstance : tasks)
             {
                 Task task = new Task(taskInstance);
                 page.add(task);
             }
-        } 
-        else 
+        }
+        else
         {
             throw new InvalidArgumentException("Invalid status parameter: " + status);
         }
-        
+
         return CollectionWithPagingInfo.asPaged(paging, page, (page.size() + paging.getSkipCount()) < totalCount, totalCount);
     }
 
     @Override
     public Task getTask(String taskId)
     {
-        if(taskId == null) 
+        if (taskId == null)
         {
-            throw new InvalidArgumentException("Task id is required"); 
+            throw new InvalidArgumentException("Task id is required");
         }
 
         HistoricTaskInstance taskInstance = getValidHistoricTask(taskId);
 
         return new Task(taskInstance);
     }
-    
+
     @Override
     public Task update(String taskId, Task task, Parameters parameters)
     {
         TaskStateTransition taskAction = null;
-        
+
         List<String> selectedProperties = parameters.getSelectedProperties();
-        if (selectedProperties.contains("state")) 
+        if (selectedProperties.contains("state"))
         {
             taskAction = TaskStateTransition.getTaskActionFromString(task.getState());
         }
-        
+
         // Fetch the task unfiltered, we check authorization below
         TaskQuery query = activitiProcessEngine.getTaskService().createTaskQuery().taskId(taskId);
         org.activiti.engine.task.Task taskInstance = query.singleResult();
-        
-        if (taskInstance == null) 
+
+        if (taskInstance == null)
         {
             // Check if task exists in history, to be able to return appropriate error when trying to update an
             // existing completed task vs. an unexisting task vs. unauthorized
             boolean taskHasExisted = activitiProcessEngine.getHistoryService().createHistoricTaskInstanceQuery()
-                .taskId(taskId)
-                .count() > 0;
-            
+                    .taskId(taskId)
+                    .count() > 0;
+
             if (taskHasExisted)
             {
                 throw new UnsupportedResourceOperationException("Task with id: " + taskId + " cannot be updated, it's completed");
@@ -692,22 +750,22 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         else
         {
             String user = AuthenticationUtil.getRunAsUser();
-            
+
             // Check if user is either assignee, owner or admin
             boolean authorized = authorityService.isAdminAuthority(user)
-                || user.equals(taskInstance.getOwner())
-                || user.equals(taskInstance.getAssignee());
-            
+                    || user.equals(taskInstance.getOwner())
+                    || user.equals(taskInstance.getAssignee());
+
             Set<String> candidateGroups = new HashSet<String>();
-            
-            if (!authorized) 
+
+            if (!authorized)
             {
                 // Check if user is initiator of the process this task is involved with
                 List<IdentityLink> linksForTask = activitiProcessEngine.getTaskService().getIdentityLinksForTask(taskId);
-                
+
                 // In case the action is claim, we gather all candidate groups for this tasks, since we already have
                 // the identity-links, there is no reason why we should check candidate using a DB-query
-                for (IdentityLink link : linksForTask) 
+                for (IdentityLink link : linksForTask)
                 {
                     if (user.equals(link.getUserId()) && IdentityLinkType.STARTER.equals(link.getType()))
                     {
@@ -724,13 +782,13 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                             break;
                         }
                     }
-                    if (taskAction == TaskStateTransition.CLAIMED && link.getGroupId() != null && link.getType().equals(IdentityLinkType.CANDIDATE)) 
+                    if (taskAction == TaskStateTransition.CLAIMED && link.getGroupId() != null && link.getType().equals(IdentityLinkType.CANDIDATE))
                     {
                         candidateGroups.add(link.getGroupId());
                     }
-                    if (taskAction == TaskStateTransition.CLAIMED && 
+                    if (taskAction == TaskStateTransition.CLAIMED &&
                             link.getUserId() != null && link.getType().equals(IdentityLinkType.CANDIDATE) &&
-                            user.equals(link.getUserId())) 
+                            user.equals(link.getUserId()))
                     {
                         // User is a direct candidate for the task, authorized to claim
                         authorized = true;
@@ -738,28 +796,28 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                     }
                 }
             }
-            
+
             // When claiming, a limited update (set assignee through claim) is allowed
             if (!authorized && taskAction == TaskStateTransition.CLAIMED)
             {
                 Set<String> userGroups = authorityService.getAuthoritiesForUser(user);
-                for(String group : candidateGroups)
+                for (String group : candidateGroups)
                 {
-                    if(userGroups.contains(group)) 
+                    if (userGroups.contains(group))
                     {
                         authorized = true;
                         break;
                     }
                 }
             }
-            
-            if (!authorized) 
+
+            if (!authorized)
             {
                 // None of the above conditions are met, not authorized to update task
                 throw new PermissionDeniedException();
             }
         }
-        
+
         // Update fields if no action is required
         if (taskAction == null)
         {
@@ -771,13 +829,13 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         }
         else
         {
-            // Perform actions associated to state transition 
-            if (taskAction != null) 
+            // Perform actions associated to state transition
+            if (taskAction != null)
             {
                 // look for variables submitted with task action
                 Map<String, Object> globalVariables = new HashMap<String, Object>();
                 Map<String, Object> localVariables = new HashMap<String, Object>();
-                if (selectedProperties.contains("variables") && task.getVariables() != null && task.getVariables().size() > 0) 
+                if (selectedProperties.contains("variables") && task.getVariables() != null && task.getVariables().size() > 0)
                 {
                     for (TaskVariable taskVariable : task.getVariables())
                     {
@@ -792,80 +850,80 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                         }
                     }
                 }
-                switch (taskAction) 
+                switch (taskAction)
                 {
-                    case CLAIMED:
-                        try
+                case CLAIMED:
+                    try
+                    {
+                        activitiProcessEngine.getTaskService().claim(taskId, AuthenticationUtil.getRunAsUser());
+                    }
+                    catch (ActivitiTaskAlreadyClaimedException atace)
+                    {
+                        throw new ConstraintViolatedException("The task is already claimed by another user.");
+                    }
+                    break;
+                case COMPLETED:
+                    if (localVariables.size() > 0)
+                    {
+                        activitiProcessEngine.getTaskService().setVariablesLocal(taskId, localVariables);
+                    }
+
+                    setOutcome(taskId);
+
+                    if (globalVariables.size() > 0)
+                    {
+                        activitiProcessEngine.getTaskService().complete(taskId, globalVariables);
+                    }
+                    else
+                    {
+                        activitiProcessEngine.getTaskService().complete(taskId);
+                    }
+
+                    break;
+                case DELEGATED:
+                    if (selectedProperties.contains("assignee") && task.getAssignee() != null)
+                    {
+                        if (taskInstance.getAssignee() == null || !taskInstance.getAssignee().equals(AuthenticationUtil.getRunAsUser()))
                         {
-                            activitiProcessEngine.getTaskService().claim(taskId, AuthenticationUtil.getRunAsUser());
+                            // Alter assignee before delegating to preserve trail of who actually delegated
+                            activitiProcessEngine.getTaskService().setAssignee(taskId, AuthenticationUtil.getRunAsUser());
                         }
-                        catch(ActivitiTaskAlreadyClaimedException atace)
-                        {
-                            throw new ConstraintViolatedException("The task is already claimed by another user.");
-                        }
-                        break;
-                    case COMPLETED:
-                        if (localVariables.size() > 0)
-                        {
-                            activitiProcessEngine.getTaskService().setVariablesLocal(taskId, localVariables);
-                        }
-                        
-                        setOutcome(taskId);
-                        
-                        if (globalVariables.size() > 0)
-                        {
-                            activitiProcessEngine.getTaskService().complete(taskId, globalVariables);
-                        }
-                        else
-                        {    
-                            activitiProcessEngine.getTaskService().complete(taskId);
-                        }
-                        
-                        break;
-                    case DELEGATED:
-                        if(selectedProperties.contains("assignee") && task.getAssignee() != null)
-                        {
-                            if(taskInstance.getAssignee() == null || !taskInstance.getAssignee().equals(AuthenticationUtil.getRunAsUser()))
-                            {
-                                // Alter assignee before delegating to preserve trail of who actually delegated
-                                activitiProcessEngine.getTaskService().setAssignee(taskId, AuthenticationUtil.getRunAsUser());
-                            }
-                            activitiProcessEngine.getTaskService().delegateTask(taskId, task.getAssignee());
-                        }
-                        else
-                        {
-                            throw new InvalidArgumentException("When delegating a task, assignee should be selected and provided in the request.");
-                        }
-                        break;
-                    case RESOLVED:
-                        if (localVariables.size() > 0)
-                        {
-                            activitiProcessEngine.getTaskService().setVariablesLocal(taskId, localVariables);
-                        }
-                        
-                        setOutcome(taskId);
-                        
-                        if (globalVariables.size() > 0)
-                        {
-                            activitiProcessEngine.getTaskService().resolveTask(taskId, globalVariables);
-                        }
-                        else
-                        {    
-                            activitiProcessEngine.getTaskService().resolveTask(taskId);
-                        }
-                        break;
-                        
-                    case UNCLAIMED:
-                        activitiProcessEngine.getTaskService().setAssignee(taskId, null);
-                        break;
+                        activitiProcessEngine.getTaskService().delegateTask(taskId, task.getAssignee());
+                    }
+                    else
+                    {
+                        throw new InvalidArgumentException("When delegating a task, assignee should be selected and provided in the request.");
+                    }
+                    break;
+                case RESOLVED:
+                    if (localVariables.size() > 0)
+                    {
+                        activitiProcessEngine.getTaskService().setVariablesLocal(taskId, localVariables);
+                    }
+
+                    setOutcome(taskId);
+
+                    if (globalVariables.size() > 0)
+                    {
+                        activitiProcessEngine.getTaskService().resolveTask(taskId, globalVariables);
+                    }
+                    else
+                    {
+                        activitiProcessEngine.getTaskService().resolveTask(taskId);
+                    }
+                    break;
+
+                case UNCLAIMED:
+                    activitiProcessEngine.getTaskService().setAssignee(taskId, null);
+                    break;
                 }
             }
         }
-        
+
         Task responseTask = new Task(activitiProcessEngine.getHistoryService()
-                    .createHistoricTaskInstanceQuery()
-                    .taskId(taskId).singleResult());
-        
+                .createHistoricTaskInstanceQuery()
+                .taskId(taskId).singleResult());
+
         // if the task is not ended the task state might be pending or resolved
         if (responseTask.getEndedAt() == null)
         {
@@ -889,49 +947,49 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                 // ignore the exception
             }
         }
-        
+
         return responseTask;
     }
-    
+
     @Override
     public CollectionWithPagingInfo<FormModelElement> getTaskFormModel(String taskId, Paging paging)
     {
         // Check if task can be accessed by the current user
         HistoricTaskInstance task = getValidHistoricTask(taskId);
         String formKey = task.getFormKey();
-        
+
         // Lookup type definition for the task
         TypeDefinition taskType = getWorkflowFactory().getTaskFullTypeDefinition(formKey, true);
         return getFormModelElements(taskType, paging);
     }
-    
+
     @Override
-    public CollectionWithPagingInfo<TaskVariable> getTaskVariables(String taskId, Paging paging, VariableScope scope) 
+    public CollectionWithPagingInfo<TaskVariable> getTaskVariables(String taskId, Paging paging, VariableScope scope)
     {
-        // Ensure the user is allowed to get variables for the task involved. 
+        // Ensure the user is allowed to get variables for the task involved.
         HistoricTaskInstance taskInstance = getValidHistoricTask(taskId);
         String formKey = taskInstance.getFormKey();
 
         // Based on the scope, right variables are queried
         Map<String, Object> taskvariables = new HashMap<String, Object>();
         Map<String, Object> processVariables = new HashMap<String, Object>();
-        
+
         if (scope == VariableScope.ANY || scope == VariableScope.LOCAL)
         {
-             List<HistoricVariableInstance> variables = activitiProcessEngine.getHistoryService()
-                     .createHistoricVariableInstanceQuery()
-                     .taskId(taskId)
-                     .list();
-             
-             if (variables != null)
-             {
-                 for (HistoricVariableInstance variable : variables)
-                 {
-                     taskvariables.put(variable.getVariableName(), variable.getValue());
-                 }
-             }
+            List<HistoricVariableInstance> variables = activitiProcessEngine.getHistoryService()
+                    .createHistoricVariableInstanceQuery()
+                    .taskId(taskId)
+                    .list();
+
+            if (variables != null)
+            {
+                for (HistoricVariableInstance variable : variables)
+                {
+                    taskvariables.put(variable.getVariableName(), variable.getValue());
+                }
+            }
         }
-        
+
         if ((scope == VariableScope.ANY || scope == VariableScope.GLOBAL) && taskInstance.getProcessInstanceId() != null)
         {
             List<HistoricVariableInstance> variables = activitiProcessEngine.getHistoryService()
@@ -939,7 +997,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                     .processInstanceId(taskInstance.getProcessInstanceId())
                     .excludeTaskVariables()
                     .list();
-            
+
             if (variables != null)
             {
                 for (HistoricVariableInstance variable : variables)
@@ -948,7 +1006,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                 }
             }
         }
-        
+
         // Convert raw variables to TaskVariables
         TypeDefinition taskTypeDefinition = getWorkflowFactory().getTaskFullTypeDefinition(formKey, false);
         TypeDefinition startFormTypeDefinition = null;
@@ -962,18 +1020,18 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             // fall back
             startFormTypeDefinition = taskTypeDefinition;
         }
-        List<TaskVariable> page = restVariableHelper.getTaskVariables(taskvariables, processVariables, 
+        List<TaskVariable> page = restVariableHelper.getTaskVariables(taskvariables, processVariables,
                 startFormTypeDefinition, taskTypeDefinition);
         return CollectionWithPagingInfo.asPaged(paging, page, false, page.size());
     }
-    
+
     @Override
-    public TaskVariable updateTaskVariable(String taskId, TaskVariable taskVariable) 
+    public TaskVariable updateTaskVariable(String taskId, TaskVariable taskVariable)
     {
         org.activiti.engine.task.Task taskInstance = getValidTask(taskId);
         return updateVariableInTask(taskInstance, taskVariable);
     }
-    
+
     public List<TaskVariable> updateTaskVariables(String taskId, List<TaskVariable> variables)
     {
         org.activiti.engine.task.Task taskInstance = getValidTask(taskId);
@@ -987,18 +1045,18 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         }
         return updatedVariables;
     }
-    
+
     protected TaskVariable updateVariableInTask(org.activiti.engine.task.Task taskInstance, TaskVariable taskVariable)
     {
         taskVariable = convertToTypedVariable(taskVariable, taskInstance);
-        
+
         if (VariableScope.LOCAL.equals(taskVariable.getVariableScope()))
         {
             activitiProcessEngine.getTaskService().setVariableLocal(taskInstance.getId(), taskVariable.getName(), taskVariable.getValue());
         }
-        else if(VariableScope.GLOBAL.equals(taskVariable.getVariableScope()))
+        else if (VariableScope.GLOBAL.equals(taskVariable.getVariableScope()))
         {
-            if(taskInstance.getExecutionId() != null)
+            if (taskInstance.getExecutionId() != null)
             {
                 activitiProcessEngine.getRuntimeService().setVariable(taskInstance.getExecutionId(), taskVariable.getName(), taskVariable.getValue());
             }
@@ -1007,23 +1065,23 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                 throw new InvalidArgumentException("Cannot set global variables on a task that is not part of a process.");
             }
         }
-        
+
         return taskVariable;
     }
-    
+
     protected TaskVariable convertToTypedVariable(TaskVariable taskVariable, org.activiti.engine.task.Task taskInstance)
     {
         if (taskVariable.getName() == null)
         {
             throw new InvalidArgumentException("Variable name is required.");
         }
-        
-        if (taskVariable.getVariableScope() == null || (taskVariable.getVariableScope() != VariableScope.GLOBAL && 
+
+        if (taskVariable.getVariableScope() == null || (taskVariable.getVariableScope() != VariableScope.GLOBAL &&
                 taskVariable.getVariableScope() != VariableScope.LOCAL))
         {
             throw new InvalidArgumentException("Variable scope is required and can only be 'local' or 'global'.");
         }
-        
+
         DataTypeDefinition dataTypeDefinition = null;
         TypeDefinitionContext context = null;
         if (taskVariable.getVariableScope() == VariableScope.GLOBAL)
@@ -1035,39 +1093,41 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             {
                 formKey = startFormData.getFormKey();
             }
-            
+
             TypeDefinition startTaskTypeDefinition = getWorkflowFactory().getTaskFullTypeDefinition(formKey, true);
             context = new TypeDefinitionContext(startTaskTypeDefinition, getQNameConverter());
-            if (context.getPropertyDefinition(taskVariable.getName()) != null) 
+            if (context.getPropertyDefinition(taskVariable.getName()) != null)
             {
                 dataTypeDefinition = context.getPropertyDefinition(taskVariable.getName()).getDataType();
-                if (taskVariable.getType() != null && dataTypeDefinition.getName().toPrefixString(namespaceService).equals(taskVariable.getType()) == false) {
-                    throw new InvalidArgumentException("type of variable " + taskVariable.getName() + " should be " + 
+                if (taskVariable.getType() != null && dataTypeDefinition.getName().toPrefixString(namespaceService).equals(taskVariable.getType()) == false)
+                {
+                    throw new InvalidArgumentException("type of variable " + taskVariable.getName() + " should be " +
                             dataTypeDefinition.getName().toPrefixString(namespaceService));
                 }
             }
-            else if (context.getAssociationDefinition(taskVariable.getName()) != null) 
+            else if (context.getAssociationDefinition(taskVariable.getName()) != null)
             {
                 dataTypeDefinition = dictionaryService.getDataType(DataTypeDefinition.NODE_REF);
             }
-        } 
+        }
         else
         {
             // Revert to either the content-model type or the raw type provided by the request
-            try 
+            try
             {
                 String formKey = activitiProcessEngine.getFormService().getTaskFormKey(taskInstance.getProcessDefinitionId(), taskInstance.getTaskDefinitionKey());
                 TypeDefinition typeDefinition = getWorkflowFactory().getTaskFullTypeDefinition(formKey, false);
                 context = new TypeDefinitionContext(typeDefinition, getQNameConverter());
-                if (context.getPropertyDefinition(taskVariable.getName()) != null) 
+                if (context.getPropertyDefinition(taskVariable.getName()) != null)
                 {
                     dataTypeDefinition = context.getPropertyDefinition(taskVariable.getName()).getDataType();
-                    if (taskVariable.getType() != null && dataTypeDefinition.getName().toPrefixString(namespaceService).equals(taskVariable.getType()) == false) {
-                        throw new InvalidArgumentException("type of variable " + taskVariable.getName() + " should be " + 
+                    if (taskVariable.getType() != null && dataTypeDefinition.getName().toPrefixString(namespaceService).equals(taskVariable.getType()) == false)
+                    {
+                        throw new InvalidArgumentException("type of variable " + taskVariable.getName() + " should be " +
                                 dataTypeDefinition.getName().toPrefixString(namespaceService));
                     }
                 }
-                else if (context.getAssociationDefinition(taskVariable.getName()) != null) 
+                else if (context.getAssociationDefinition(taskVariable.getName()) != null)
                 {
                     dataTypeDefinition = dictionaryService.getDataType(DataTypeDefinition.NODE_REF);
                 }
@@ -1078,7 +1138,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                 // This can be ignored safeley as it falls back to the raw type
             }
         }
-        
+
         if (dataTypeDefinition == null && taskVariable.getType() != null)
         {
             try
@@ -1088,7 +1148,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             }
             catch (InvalidQNameException iqne)
             {
-                throw new InvalidArgumentException("Unsupported type of variable: '" + taskVariable.getType() +"'.");
+                throw new InvalidArgumentException("Unsupported type of variable: '" + taskVariable.getType() + "'.");
             }
         }
         else if (dataTypeDefinition == null)
@@ -1096,12 +1156,12 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             // Final fallback to raw value when no type has been passed and not present in model
             dataTypeDefinition = dictionaryService.getDataType(restVariableHelper.extractTypeFromValue(taskVariable.getValue()));
         }
-        
+
         if (dataTypeDefinition == null)
         {
-            throw new InvalidArgumentException("Unsupported type of variable: '" + taskVariable.getType() +"'.");
+            throw new InvalidArgumentException("Unsupported type of variable: '" + taskVariable.getType() + "'.");
         }
-        
+
         Object actualValue = null;
         if ("java.util.Date".equalsIgnoreCase(dataTypeDefinition.getJavaClassName()))
         {
@@ -1112,7 +1172,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         {
             if (context != null && context.getAssociationDefinition(taskVariable.getName()) != null)
             {
-                actualValue = convertAssociationDefinitionValue(context.getAssociationDefinition(taskVariable.getName()), 
+                actualValue = convertAssociationDefinitionValue(context.getAssociationDefinition(taskVariable.getName()),
                         taskVariable.getName(), taskVariable.getValue());
             }
             else
@@ -1120,25 +1180,25 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                 actualValue = DefaultTypeConverter.INSTANCE.convert(dataTypeDefinition, taskVariable.getValue());
             }
         }
-        
+
         taskVariable.setValue(actualValue);
-        
+
         // Set type so it's returned in case it was left empty
         taskVariable.setType(dataTypeDefinition.getName().toPrefixString(namespaceService));
-        
+
         return taskVariable;
     }
-    
+
     public void deleteTaskVariable(String taskId, String variableName)
     {
-        if(variableName == null)
+        if (variableName == null)
         {
             throw new InvalidArgumentException("Variable name is required.");
         }
-        
+
         // Fetch task to check if user is authorized to perform the delete
         getValidTask(taskId);
-        
+
         // Check if variable is present on the scope
         if (activitiProcessEngine.getTaskService().hasVariableLocal(taskId, variableName) == false)
         {
@@ -1146,70 +1206,70 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         }
         activitiProcessEngine.getTaskService().removeVariableLocal(taskId, variableName);
     }
-    
+
     @Override
-    public CollectionWithPagingInfo<TaskCandidate> getTaskCandidates(String taskId, Paging paging) 
+    public CollectionWithPagingInfo<TaskCandidate> getTaskCandidates(String taskId, Paging paging)
     {
         // Fetch task to check if user is authorized to perform the delete
         getValidTask(taskId);
-        
+
         List<IdentityLink> links = activitiProcessEngine.getTaskService().getIdentityLinksForTask(taskId);
         List<TaskCandidate> page = new ArrayList<TaskCandidate>();
-        if (links != null) 
+        if (links != null)
         {
             for (IdentityLink identityLink : links)
             {
-                if (IdentityLinkType.CANDIDATE.equals(identityLink.getType())) 
+                if (IdentityLinkType.CANDIDATE.equals(identityLink.getType()))
                 {
                     page.add(new TaskCandidate(identityLink));
                 }
             }
         }
-        
+
         return CollectionWithPagingInfo.asPaged(paging, page, false, page.size());
     }
-    
+
     @Override
     public Item createItem(String taskId, Item item)
     {
         org.activiti.engine.task.Task task = getValidTask(taskId);
-      
+
         if (task.getProcessInstanceId() == null)
         {
             throw new UnsupportedResourceOperationException("Task is not part of process, no items available.");
         }
         return createItemInProcess(item.getId(), task.getProcessInstanceId());
     }
-    
+
     @Override
     public void deleteItem(String taskId, String itemId)
     {
         org.activiti.engine.task.Task task = getValidTask(taskId);
-        
+
         if (task.getProcessInstanceId() == null)
         {
             throw new UnsupportedResourceOperationException("Task is not part of process, no items available.");
         }
         deleteItemFromProcess(itemId, task.getProcessInstanceId());
     }
-    
+
     @Override
     public Item getItem(String taskId, String itemId)
     {
         HistoricTaskInstance task = getValidHistoricTask(taskId);
-        
+
         if (task.getProcessInstanceId() == null)
         {
             throw new UnsupportedResourceOperationException("Task is not part of process, no items available.");
         }
         return getItemFromProcess(itemId, task.getProcessInstanceId());
     }
-    
+
     @Override
     public CollectionWithPagingInfo<Item> getItems(String taskId, Paging paging)
     {
         HistoricTaskInstance task = getValidHistoricTask(taskId);
-        
+
         if (task.getProcessInstanceId() == null)
         {
             throw new UnsupportedResourceOperationException("Task is not part of process, no items available.");
@@ -1217,60 +1277,60 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         return getItemsFromProcess(task.getProcessInstanceId(), paging);
     }
 
-    protected String getFormResourceKey(final org.activiti.engine.task.Task task) 
+    protected String getFormResourceKey(final org.activiti.engine.task.Task task)
     {
         if (task.getProcessDefinitionId() != null)
         {
             String formKey = activitiProcessEngine.getFormService().getTaskFormKey(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
             return formKey;
-        } 
-        else 
+        }
+        else
         {
             // Standalone task, no form key available
             return null;
         }
     }
-    
+
     /**
      * @return true, if at least one task property has been changed based on the given parameters.
      */
-    protected boolean updateTaskProperties(List<String> selectedProperties, Task task, 
-                org.activiti.engine.task.Task taskInstance)
+    protected boolean updateTaskProperties(List<String> selectedProperties, Task task,
+            org.activiti.engine.task.Task taskInstance)
     {
         boolean taskNeedsUpdate = false;
-        for(String selected : selectedProperties) 
+        for (String selected : selectedProperties)
         {
-            if(!"state".equals(selected))
+            if (!"state".equals(selected))
             {
                 // "name", "description", "dueAt", "priority", "assignee", "owner"
                 taskNeedsUpdate = true;
-                if("name".equals(selected))
+                if ("name".equals(selected))
                 {
                     taskInstance.setName(task.getName());
                 }
-                else if("description".equals(selected))
+                else if ("description".equals(selected))
                 {
                     taskInstance.setDescription(task.getDescription());
                 }
-                else if("dueAt".equals(selected))
+                else if ("dueAt".equals(selected))
                 {
                     taskInstance.setDueDate(task.getDueAt());
                 }
-                else if("priority".equals(selected))
+                else if ("priority".equals(selected))
                 {
-                    taskInstance.setPriority(task.getPriority());   
+                    taskInstance.setPriority(task.getPriority());
                 }
-                else if("assignee".equals(selected))
+                else if ("assignee".equals(selected))
                 {
                     taskInstance.setAssignee(task.getAssignee());
                 }
-                else if("owner".equals(selected))
+                else if ("owner".equals(selected))
                 {
                     taskInstance.setOwner(task.getOwner());
                 }
                 else
                 {
-                    if(TASK_READ_ONLY_PROPERTIES.contains(selected))
+                    if (TASK_READ_ONLY_PROPERTIES.contains(selected))
                     {
                         // Trying to update a read-only -but existing- property
                         throw new InvalidArgumentException("The property selected for update is read-only: " + selected);
@@ -1285,25 +1345,25 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         }
         return taskNeedsUpdate;
     }
-    
+
     /**
-     * Get a valid {@link HistoricTaskInstance} based on the given task id. Checks if current logged
-     * in user is assignee/owner/involved with the task. In case true was passed for "validIfClaimable", 
-     * the task is also valid if the current logged in user is a candidate for claiming the task.
-     *  
-     * @throws EntityNotFoundException when the task was not found
-     * @throws PermissionDeniedException when the current logged in user isn't allowed to access task.
+     * Get a valid {@link HistoricTaskInstance} based on the given task id. Checks if current logged in user is assignee/owner/involved with the task. In case true was passed for "validIfClaimable", the task is also valid if the current logged in user is a candidate for claiming the task.
+     * 
+     * @throws EntityNotFoundException
+     *             when the task was not found
+     * @throws PermissionDeniedException
+     *             when the current logged in user isn't allowed to access task.
      */
     protected HistoricTaskInstance getValidHistoricTask(String taskId)
     {
         HistoricTaskInstanceQuery query = activitiProcessEngine.getHistoryService()
-            .createHistoricTaskInstanceQuery()
-            .taskId(taskId);
-        
-        if (authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) 
+                .createHistoricTaskInstanceQuery()
+                .taskId(taskId);
+
+        if (authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser()))
         {
             // Admin is allowed to read all tasks in the current tenant
-            if (tenantService.isEnabled()) 
+            if (tenantService.isEnabled())
             {
                 query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
             }
@@ -1313,27 +1373,27 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             // If non-admin user, involvement in the task is required (either owner, assignee or externally involved).
             query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
         }
-        
+
         HistoricTaskInstance taskInstance = query.singleResult();
-        
-        if (taskInstance == null) 
+
+        if (taskInstance == null)
         {
             // Either the task doesn't exist or the user is not involved directly. We can differentiate by
             // checking if the task exists without applying the additional filtering
-            taskInstance =  activitiProcessEngine.getHistoryService()
-                .createHistoricTaskInstanceQuery()
-                .taskId(taskId)
-                .singleResult();
-            
-            if (taskInstance == null) 
+            taskInstance = activitiProcessEngine.getHistoryService()
+                    .createHistoricTaskInstanceQuery()
+                    .taskId(taskId)
+                    .singleResult();
+
+            if (taskInstance == null)
             {
-                // Full error message will be "Task with id: 'id' was not found" 
-                throw new EntityNotFoundException(taskId); 
+                // Full error message will be "Task with id: 'id' was not found"
+                throw new EntityNotFoundException(taskId);
             }
             else
             {
                 boolean isTaskClaimable = false;
-                if (taskInstance.getEndTime() == null) 
+                if (taskInstance.getEndTime() == null)
                 {
                     // Task is not yet finished, so potentially claimable. If user is part of a "candidateGroup", the task is accessible to the
                     // user regardless of not being involved/owner/assignee
@@ -1343,7 +1403,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                             .taskId(taskId)
                             .count() == 1;
                 }
-                
+
                 if (isTaskClaimable == false)
                 {
                     throw new PermissionDeniedException();
@@ -1352,14 +1412,14 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         }
         return taskInstance;
     }
-    
+
     /**
-     * Get a valid {@link org.activiti.engine.task.Task} based on the given task id. Checks if current logged
-     * in user is assignee/owner/involved with the task. In case true was passed for "validIfClaimable", 
-     * the task is also valid if the current logged in user is a candidate for claiming the task.
-     *  
-     * @throws EntityNotFoundException when the task was not found
-     * @throws PermissionDeniedException when the current logged in user isn't allowed to access task.
+     * Get a valid {@link org.activiti.engine.task.Task} based on the given task id. Checks if current logged in user is assignee/owner/involved with the task. In case true was passed for "validIfClaimable", the task is also valid if the current logged in user is a candidate for claiming the task.
+     * 
+     * @throws EntityNotFoundException
+     *             when the task was not found
+     * @throws PermissionDeniedException
+     *             when the current logged in user isn't allowed to access task.
      */
     protected org.activiti.engine.task.Task getValidTask(String taskId)
     {
@@ -1367,15 +1427,15 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         {
             throw new InvalidArgumentException("Task id is required.");
         }
-        
+
         TaskQuery query = activitiProcessEngine.getTaskService()
-            .createTaskQuery()
-            .taskId(taskId);
-        
-        if (authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) 
+                .createTaskQuery()
+                .taskId(taskId);
+
+        if (authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser()))
         {
             // Admin is allowed to read all tasks in the current tenant
-            if (tenantService.isEnabled()) 
+            if (tenantService.isEnabled())
             {
                 query.processVariableValueEquals(ActivitiConstants.VAR_TENANT_DOMAIN, TenantUtil.getCurrentDomain());
             }
@@ -1385,22 +1445,22 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             // If non-admin user, involvement in the task is required (either owner, assignee or externally involved).
             query.taskInvolvedUser(AuthenticationUtil.getRunAsUser());
         }
-        
-        org.activiti.engine.task.Task taskInstance =  query.singleResult();
-        
-        if (taskInstance == null) 
+
+        org.activiti.engine.task.Task taskInstance = query.singleResult();
+
+        if (taskInstance == null)
         {
             // Either the task doesn't exist or the user is not involved directly. We can differentiate by
             // checking if the task exists without applying the additional filtering
-            taskInstance =  activitiProcessEngine.getTaskService()
-                .createTaskQuery()
-                .taskId(taskId)
-                .singleResult();
-            
-            if (taskInstance == null) 
+            taskInstance = activitiProcessEngine.getTaskService()
+                    .createTaskQuery()
+                    .taskId(taskId)
+                    .singleResult();
+
+            if (taskInstance == null)
             {
-                // Full error message will be "Task with id: 'id' was not found" 
-                throw new EntityNotFoundException(taskId); 
+                // Full error message will be "Task with id: 'id' was not found"
+                throw new EntityNotFoundException(taskId);
             }
             else
             {
@@ -1411,7 +1471,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                         .taskCandidateGroupIn(new ArrayList<String>(authorityService.getAuthoritiesForUser(AuthenticationUtil.getRunAsUser())))
                         .taskId(taskId)
                         .count() == 1;
-                
+
                 if (isTaskClaimable == false)
                 {
                     throw new PermissionDeniedException();
@@ -1420,7 +1480,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         }
         return taskInstance;
     }
-    
+
     protected void setSorting(TaskQuery query, SortColumn sortColumn)
     {
         if (sortColumn != null)
@@ -1462,10 +1522,10 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             }
             else
             {
-                throw new InvalidArgumentException("sort " + sortColumn.column + 
+                throw new InvalidArgumentException("sort " + sortColumn.column +
                         " is not supported, supported items are " + Arrays.toString(TASK_COLLECTION_RUNNING_SORT_PROPERTIES.toArray()));
             }
-            
+
             if (sortColumn.asc)
             {
                 query.asc();
@@ -1480,7 +1540,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             query.orderByDueDate().asc();
         }
     }
-    
+
     protected void setSorting(HistoricTaskInstanceQuery query, SortColumn sortColumn)
     {
         if (sortColumn != null)
@@ -1538,10 +1598,10 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             }
             else
             {
-                throw new InvalidArgumentException("sort " + sortColumn.column + 
+                throw new InvalidArgumentException("sort " + sortColumn.column +
                         " is not supported, supported items are " + Arrays.toString(TASK_COLLECTION_HISTORY_SORT_PROPERTIES.toArray()));
             }
-            
+
             if (sortColumn.asc)
             {
                 query.asc();
@@ -1556,8 +1616,8 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             query.orderByTaskDueDate().asc();
         }
     }
-    
-    protected Object convertAssociationDefinitionValue(AssociationDefinition associationDef, String variableName, Object variableValue) 
+
+    protected Object convertAssociationDefinitionValue(AssociationDefinition associationDef, String variableName, Object variableValue)
     {
         if (variableValue != null && ContentModel.TYPE_PERSON.equals(associationDef.getTargetClass().getName()))
         {
@@ -1629,7 +1689,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         }
         return variableValue;
     }
-    
+
     protected NodeRef getPersonNodeRef(String name)
     {
         NodeRef authority = null;
@@ -1642,7 +1702,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         }
         return authority;
     }
-    
+
     protected WorkflowQNameConverter getQNameConverter()
     {
         if (qNameConverter == null)
@@ -1651,22 +1711,25 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         }
         return qNameConverter;
     }
-    
+
     protected WorkflowObjectFactory getWorkflowFactory()
     {
-        if (workflowFactory == null) 
+        if (workflowFactory == null)
         {
-            workflowFactory = new WorkflowObjectFactory(getQNameConverter(), tenantService, messageService, dictionaryService, 
-                        ActivitiConstants.ENGINE_ID, WorkflowModel.TYPE_ACTIVTI_START_TASK);
+            workflowFactory = new WorkflowObjectFactory(getQNameConverter(), tenantService, messageService, dictionaryService,
+                    ActivitiConstants.ENGINE_ID, WorkflowModel.TYPE_ACTIVTI_START_TASK);
         }
         return workflowFactory;
     }
 
     /**
-     * Set bpm:outcome variable to the local variables of the specified task.
-     * <br>The variables should be set separately via {@link org.activiti.engine.TaskService}
-     * @param localVariables The variable, that will be set to the task
-     * @param taskId The id of the task
+     * Set bpm:outcome variable to the local variables of the specified task. <br>
+     * The variables should be set separately via {@link org.activiti.engine.TaskService}
+     * 
+     * @param localVariables
+     *            The variable, that will be set to the task
+     * @param taskId
+     *            The id of the task
      */
     private void setOutcome(String taskId)
     {

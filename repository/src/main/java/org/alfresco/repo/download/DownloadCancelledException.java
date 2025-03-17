@@ -28,7 +28,7 @@ package org.alfresco.repo.download;
 import org.alfresco.service.cmr.view.ExporterException;
 
 /**
- * Exception thrown by ZipDownloadExporter, if a download is cancelled mid flow. 
+ * Exception thrown by ZipDownloadExporter, if a download is cancelled mid flow.
  *
  * @author Alex Miller
  */

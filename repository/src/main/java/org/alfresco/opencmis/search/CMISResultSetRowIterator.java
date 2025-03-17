@@ -48,10 +48,10 @@ public class CMISResultSetRowIterator implements ListIterator<CMISResultSetRow>
     private int max;
 
     /**
-     * Create an iterator over the result set. Follows stadard ListIterator
-     * conventions
+     * Create an iterator over the result set. Follows stadard ListIterator conventions
      * 
-     * @param resultSet CMISResultSet
+     * @param resultSet
+     *            CMISResultSet
      */
     public CMISResultSetRowIterator(CMISResultSet resultSet)
     {
@@ -64,9 +64,7 @@ public class CMISResultSetRowIterator implements ListIterator<CMISResultSetRow>
         return resultSet;
     }
 
-    /*
-     * ListIterator implementation
-     */
+    /* ListIterator implementation */
     public boolean hasNext()
     {
         return position < (max - 1);
@@ -112,9 +110,7 @@ public class CMISResultSetRowIterator implements ListIterator<CMISResultSetRow>
         return position - 1;
     }
 
-    /*
-     * Mutation is not supported
-     */
+    /* Mutation is not supported */
 
     public void remove()
     {

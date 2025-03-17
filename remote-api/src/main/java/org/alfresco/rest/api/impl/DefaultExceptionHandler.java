@@ -37,14 +37,14 @@ import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
  */
 public class DefaultExceptionHandler implements ExceptionHandler
 {
-	@Override
-	public boolean handle(Throwable t)
-	{
-		if(t instanceof AccessDeniedException || t instanceof PermissionDeniedException)
-		{
-			// Note: security, no message to indicate why
-			throw new NotFoundException();
-		}
-		return false;
-	}
+    @Override
+    public boolean handle(Throwable t)
+    {
+        if (t instanceof AccessDeniedException || t instanceof PermissionDeniedException)
+        {
+            // Note: security, no message to indicate why
+            throw new NotFoundException();
+        }
+        return false;
+    }
 }

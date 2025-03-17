@@ -41,7 +41,7 @@ public abstract class NetworkDataPrep extends RestTest
 
     public void init()
     {
-        if(!isInitialized)
+        if (!isInitialized)
         {
             isInitialized = true;
             initialization();
@@ -51,16 +51,16 @@ public abstract class NetworkDataPrep extends RestTest
     public void initialization()
     {
         adminUserModel = dataUser.getAdminUser();
-        //create first tenant Admin User.
+        // create first tenant Admin User.
         adminTenantUser = UserModel.getAdminTenantUser();
         restClient.authenticateUser(adminUserModel);
-            restClient.usingTenant().createTenant(adminTenantUser);
+        restClient.usingTenant().createTenant(adminTenantUser);
 
         tenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("uTenant");
         secondTenantUser = dataUser.usingUser(adminTenantUser).createUserWithTenant("sTenant");
-        //create second tenant Admin User.
+        // create second tenant Admin User.
         secondAdminTenantUser = UserModel.getAdminTenantUser();
-            restClient.usingTenant().createTenant(secondAdminTenantUser);
+        restClient.usingTenant().createTenant(secondAdminTenantUser);
 
         tenantDomain = tenantUser.getDomain();
         differentNetworkTenantUser = dataUser.usingUser(secondAdminTenantUser).createUserWithTenant("dTenant");

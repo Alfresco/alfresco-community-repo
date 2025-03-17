@@ -42,8 +42,7 @@ public class PasswordReset
     private String key;
 
     public PasswordReset()
-    {
-    }
+    {}
 
     public String getPassword()
     {
@@ -84,8 +83,8 @@ public class PasswordReset
         // we don't return the password for the obvious reason
         final StringBuilder sb = new StringBuilder(100);
         sb.append("PasswordReset [id=").append(id)
-                    .append(", key=").append(key)
-                    .append(']');
+                .append(", key=").append(key)
+                .append(']');
         return sb.toString();
     }
 }

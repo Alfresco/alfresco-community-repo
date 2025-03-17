@@ -33,12 +33,7 @@ import org.alfresco.utility.model.TestModel;
 /**
  * Handles Pagination JSON
  *
- * Example:
- *    {
-        "entry": {
-          "id": "org.alfresco.share.sites.favourites.site-lwdxYDQFIi",
-          "value": true
-      }
+ * Example: { "entry": { "id": "org.alfresco.share.sites.favourites.site-lwdxYDQFIi", "value": true }
  *
  * @author Cristina Axinte
  */
@@ -52,7 +47,7 @@ public class RestPreferenceModel extends TestModel implements IRestModel<RestPre
     {
         return model;
     }
-    
+
     @JsonProperty(required = true)
     String id;
     String value;
@@ -61,14 +56,17 @@ public class RestPreferenceModel extends TestModel implements IRestModel<RestPre
     {
         return value;
     }
+
     public void setValue(String value)
     {
         this.value = value;
     }
+
     public String getId()
     {
         return id;
     }
+
     public void setId(String id)
     {
         this.id = id;

@@ -1,5 +1,9 @@
 package org.alfresco.rest.tags.nodes;
 
+import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.tags.TagsDataPrep;
@@ -11,30 +15,27 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.Test;
 
 @Test(groups = {TestGroup.REQUIRE_SOLR})
 public class GetNodeTagsTests extends TagsDataPrep
 {
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
-                executionType = ExecutionType.SANITY, description = "Verify site Manager is able to get node tags")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS},
+            executionType = ExecutionType.SANITY, description = "Verify site Manager is able to get node tags")
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY})
     public void siteManagerIsAbleToRetrieveNodeTags() throws Exception
-    {        
+    {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
 
         returnedCollection = restClient.withCoreAPI().usingResource(document).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListContains("tag", documentTagValue.toLowerCase())
-            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
+                .entriesListContains("tag", documentTagValue.toLowerCase())
+                .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS},
             executionType = ExecutionType.REGRESSION, description = "Verify site Collaborator is able to get node tags")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void siteCollaboratorIsAbleToRetrieveNodeTags() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -42,13 +43,13 @@ public class GetNodeTagsTests extends TagsDataPrep
         returnedCollection = restClient.withCoreAPI().usingResource(document).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListContains("tag", documentTagValue.toLowerCase())
-            .and().entriesListContains("tag", documentTagValue2.toLowerCase()); 
+                .entriesListContains("tag", documentTagValue.toLowerCase())
+                .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS},
             executionType = ExecutionType.REGRESSION, description = "Verify site Contributor is able to get node tags")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void siteContributorIsAbleToRetrieveNodeTags() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
@@ -56,13 +57,13 @@ public class GetNodeTagsTests extends TagsDataPrep
         returnedCollection = restClient.withCoreAPI().usingResource(document).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListContains("tag", documentTagValue.toLowerCase())
-            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
+                .entriesListContains("tag", documentTagValue.toLowerCase())
+                .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS},
             executionType = ExecutionType.REGRESSION, description = "Verify site Consumer is able to get node tags")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void siteConsumerIsAbleToRetrieveNodeTags() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
@@ -70,27 +71,27 @@ public class GetNodeTagsTests extends TagsDataPrep
         returnedCollection = restClient.withCoreAPI().usingResource(document).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListContains("tag", documentTagValue.toLowerCase())
-            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
+                .entriesListContains("tag", documentTagValue.toLowerCase())
+                .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS},
             executionType = ExecutionType.REGRESSION, description = "Verify admin is able to get node tags")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void adminIsAbleToRetrieveNodeTags() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         returnedCollection = restClient.withCoreAPI().usingResource(document).getNodeTags();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListContains("tag", documentTagValue.toLowerCase())
-            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
+                .entriesListContains("tag", documentTagValue.toLowerCase())
+                .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, 
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS},
             executionType = ExecutionType.SANITY, description = "Verify unauthenticated user is not able to get node tags")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
-//    @Bug(id = "MNT-16904", description = "fails only on environment with tenants")
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY})
+    // @Bug(id = "MNT-16904", description = "fails only on environment with tenants")
     public void unauthenticatedUserIsNotAbleToRetrieveNodeTags() throws Exception
     {
         restClient.authenticateUser(new UserModel("random user", "random password"));
@@ -98,9 +99,9 @@ public class GetNodeTagsTests extends TagsDataPrep
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that using invalid value for skipCount parameter returns status code 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void invalidSkipCountTest() throws Exception
     {
         restClient.withParams("skipCount=abc").withCoreAPI().usingResource(document).getNodeTags();
@@ -110,9 +111,9 @@ public class GetNodeTagsTests extends TagsDataPrep
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(RestErrorModel.NEGATIVE_VALUES_SKIPCOUNT);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that using invalid value for maxItems parameter returns status code 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void invalidMaxItemsTest() throws Exception
     {
         restClient.withParams("maxItems=abc").withCoreAPI().usingResource(document).getNodeTags();
@@ -122,9 +123,9 @@ public class GetNodeTagsTests extends TagsDataPrep
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that user without permissions returns status code 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void userWithoutPermissionsTest() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(adminUserModel).createModeratedRandomSite();
@@ -137,9 +138,9 @@ public class GetNodeTagsTests extends TagsDataPrep
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that if node does not exist returns status code 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void nonexistentNodeTest() throws Exception
     {
         FileModel badDocument = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -150,9 +151,9 @@ public class GetNodeTagsTests extends TagsDataPrep
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, nodeRef));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify folder tags")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void folderTagsTest() throws Exception
     {
         FolderModel folder = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
@@ -166,9 +167,9 @@ public class GetNodeTagsTests extends TagsDataPrep
                 .and().entriesListContains("tag", documentTagValue2.toLowerCase());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify site Manager is able to get node tags using properties parameter")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void siteManagerIsAbleToRetrieveNodeTagsWithPropertiesParameter() throws Exception
     {
         returnedCollection = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
@@ -179,9 +180,9 @@ public class GetNodeTagsTests extends TagsDataPrep
                 .and().entriesListDoesNotContain("id");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that Collaborator user is not able to get node tags using site id instead of node id")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void collaboratorGetNodeTagsUseSiteIdInsteadOfNodeId() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -193,9 +194,9 @@ public class GetNodeTagsTests extends TagsDataPrep
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, file.getNodeRef()));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "With admin get node tags and use skipCount parameter. Check pagination and maxItems")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void useSkipCountCheckPaginationAndMaxItems() throws Exception
     {
         returnedCollection = restClient.authenticateUser(adminUserModel)
@@ -206,9 +207,9 @@ public class GetNodeTagsTests extends TagsDataPrep
                 .and().field("count").isGreaterThan(1);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "With admin get node tags and use maxItems parameter. Check pagination")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void useMaxItemsParameterCheckPagination() throws Exception
     {
         returnedCollection = restClient.authenticateUser(adminUserModel)
@@ -220,9 +221,9 @@ public class GetNodeTagsTests extends TagsDataPrep
                 .and().field("skipCount").is("0");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Using manager user get only one tag.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void usingManagerGetOnlyOneTag() throws Exception
     {
         FileModel file = dataContent.usingAdmin().usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -239,9 +240,9 @@ public class GetNodeTagsTests extends TagsDataPrep
                 .and().field("skipCount").is("0");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Using admin get last 2 tags and skip first 2 tags")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void adminUserGetLast2TagsAndSkipFirst2Tags() throws Exception
     {
         String firstTag = "1st tag";
@@ -267,9 +268,9 @@ public class GetNodeTagsTests extends TagsDataPrep
                 .and().field("skipCount").is("2");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "With admin get node tags and use maxItems=0.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void getTagsWithZeroMaxItems() throws Exception
     {
         returnedCollection = restClient.authenticateUser(adminUserModel)
@@ -277,9 +278,9 @@ public class GetNodeTagsTests extends TagsDataPrep
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.TAGS}, executionType = ExecutionType.REGRESSION,
             description = "Verify that using high skipCount parameter returns status code 200.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void getTagsWithHighSkipCount() throws Exception
     {
         returnedCollection = restClient.authenticateUser(adminUserModel).withParams("skipCount=10000")

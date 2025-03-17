@@ -33,10 +33,10 @@ package org.alfresco.repo.domain.node;
  */
 public class NodeRangeEntity
 {
-    
+
     private Long fromNodeId;
     private Long toNodeId;
-    
+
     /**
      * @return the fromNodeId
      */
@@ -44,13 +44,16 @@ public class NodeRangeEntity
     {
         return fromNodeId;
     }
+
     /**
-     * @param fromNodeId the fromNodeId to set
+     * @param fromNodeId
+     *            the fromNodeId to set
      */
     public void setFromNodeId(Long fromNodeId)
     {
         this.fromNodeId = fromNodeId;
     }
+
     /**
      * @return the toNodeId
      */
@@ -58,8 +61,10 @@ public class NodeRangeEntity
     {
         return toNodeId;
     }
+
     /**
-     * @param toNodeId the toNodeId to set
+     * @param toNodeId
+     *            the toNodeId to set
      */
     public void setToNodeId(Long toNodeId)
     {

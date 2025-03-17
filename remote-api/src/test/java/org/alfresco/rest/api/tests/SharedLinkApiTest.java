@@ -25,6 +25,38 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import org.joda.time.DateTime;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.quickshare.QuickShareLinkExpiryActionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -66,43 +98,13 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
-import org.joda.time.DateTime;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * V1 REST API tests for Shared Links (aka public "quick shares")
  *
  * <ul>
- * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links} </li>
- * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>} </li>
+ * <li>{@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links}</li>
+ * <li>{@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>}</li>
  * </ul>
  *
  * @author janv
@@ -128,19 +130,20 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
     /**
      * Tests shared links to file (content)
      *
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links}
      *
-     * <p>DELETE:</p>
+     * <p>
+     * DELETE:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>}
      *
-     * <p>GET:</p>
-     * The following do not require authentication
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/content}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/renditions}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/renditions/<renditionId>}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/renditions/<renditionId>/content}
+     * <p>
+     * GET:
+     * </p>
+     * The following do not require authentication {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/content} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/renditions} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/renditions/<renditionId>} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/renditions/<renditionId>/content}
      *
      */
     @Test
@@ -152,7 +155,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         // create doc d1 - pdf
         String sharedFolderNodeId = getSharedNodeId();
 
-        String fileName1 = "quick"+RUNID+"_1.pdf";
+        String fileName1 = "quick" + RUNID + "_1.pdf";
         File file1 = getResourceFile("quick.pdf");
 
         byte[] file1_originalBytes = Files.readAllBytes(Paths.get(file1.getAbsolutePath()));
@@ -212,7 +215,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(Long.valueOf(file1_originalBytes.length), resp.getContent().getSizeInBytes());
         assertEquals("UTF-8", resp.getContent().getEncoding());
 
-       // assertEquals(docModifiedAt.getTime(), resp.getModifiedAt().getTime()); // not changed
+        // assertEquals(docModifiedAt.getTime(), resp.getModifiedAt().getTime()); // not changed
         assertEquals(docModifiedBy, resp.getModifiedByUser().getId()); // not changed (ie. not user2)
         assertEquals(UserInfo.getTestDisplayName(docModifiedBy), resp.getModifiedByUser().getDisplayName());
 
@@ -221,7 +224,6 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         // -ve test - try to create again (same user) - already exists
         post(URL_SHARED_LINKS, toJsonAsStringNonNull(body), 409);
-
 
         // As user 1 ...
         setRequestContext(user1);
@@ -233,7 +235,6 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         response = post(URL_SHARED_LINKS, toJsonAsStringNonNull(body), 201);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
         String shared2Id = resp.getId();
-
 
         // currently passing auth should make no difference (irrespective of MT vs non-MY enb)
 
@@ -266,12 +267,10 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertNull(resp.getAllowableOperations()); // include is ignored
         assertNull(resp.getAllowableOperationsOnTarget()); // include is ignored
 
-
         assertNull(resp.getModifiedByUser().getId()); // userId not returned
         assertEquals(UserInfo.getTestDisplayName(user1), resp.getModifiedByUser().getDisplayName());
         assertNull(resp.getSharedByUser().getId()); // userId not returned
         assertEquals(UserInfo.getTestDisplayName(user2), resp.getSharedByUser().getDisplayName());
-
 
         // allowable operations not included - no params
         response = getSingle(QuickShareLinkEntityResource.class, shared1Id, null, 200);
@@ -292,7 +291,6 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertNull(resp.getAllowableOperations()); // include is ignored
         assertNull(resp.getAllowableOperationsOnTarget()); // include is ignored
 
-
         assertNull(resp.getModifiedByUser().getId()); // userId not returned
         assertEquals(UserInfo.getTestDisplayName(user1), resp.getModifiedByUser().getDisplayName());
         assertNull(resp.getSharedByUser().getId()); // userId not returned
@@ -303,7 +301,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertArrayEquals(file1_originalBytes, response.getResponseAsBytes());
         Map<String, String> responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(file1_MimeType+";charset=utf-8", responseHeaders.get("Content-Type"));
+        assertEquals(file1_MimeType + ";charset=utf-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get("Expires"));
         assertEquals("attachment; filename=\"" + fileName1 + "\"; filename*=UTF-8''" + fileName1 + "", responseHeaders.get("Content-Disposition"));
         String lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
@@ -319,18 +317,17 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertArrayEquals(file1_originalBytes, response.getResponseAsBytes());
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(file1_MimeType+";charset=utf-8", responseHeaders.get("Content-Type"));
+        assertEquals(file1_MimeType + ";charset=utf-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
         assertNotNull(responseHeaders.get("Expires"));
         assertNull(responseHeaders.get("Content-Disposition"));
-
 
         // unauth access to file 2 content (via shared link)
         response = getSingle(QuickShareLinkEntityResource.class, shared2Id + "/content", null, 200);
         assertArrayEquals(content2Text.getBytes(), response.getResponseAsBytes());
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(file2_MimeType+";charset=iso-8859-1", responseHeaders.get("Content-Type"));
+        assertEquals(file2_MimeType + ";charset=iso-8859-1", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get("Expires"));
         assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
         assertEquals("attachment; filename=\"" + fileName2 + "\"; filename*=UTF-8''" + fileName2 + "", responseHeaders.get("Content-Disposition"));
@@ -374,7 +371,6 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         setRequestContext(null);
 
-
         // unauth access to get shared link renditions info (available => CREATED renditions only)
         response = getAll(URL_SHARED_LINKS + "/" + shared1Id + "/renditions", null, 200);
         renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
@@ -392,7 +388,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertTrue(response.getResponseAsBytes().length > 0);
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG+";charset=utf-8", responseHeaders.get("Content-Type"));
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG + ";charset=utf-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
         assertNotNull(responseHeaders.get("Expires"));
         String docName = "doclib";
@@ -405,7 +401,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertTrue(response.getResponseAsBytes().length > 0);
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG+";charset=utf-8", responseHeaders.get("Content-Type"));
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG + ";charset=utf-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get("Expires"));
         assertNull(responseHeaders.get("Content-Disposition"));
         lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
@@ -413,7 +409,6 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         // Test 304 response
         headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
         getSingle(URL_SHARED_LINKS, shared1Id + "/renditions/doclib/content", null, headers, 304);
-
 
         // -ve delete tests
         {
@@ -429,7 +424,6 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
             // -ve test - delete - cannot delete non-existent link
             deleteSharedLink("dummy", 404);
         }
-
 
         // -ve create tests
         {
@@ -468,7 +462,6 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
             post(URL_SHARED_LINKS, toJsonAsStringNonNull(body), 401);
         }
 
-
         // delete shared link
         setRequestContext(user2);
         deleteSharedLink(shared1Id);
@@ -482,9 +475,8 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         response = getSingle(NodesEntityResource.class, d1Id, null, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
 
-//        assertEquals(docModifiedAt.getTime(), nodeResp.getModifiedAt().getTime()); // not changed - now can be as metadata extract is async
+        // assertEquals(docModifiedAt.getTime(), nodeResp.getModifiedAt().getTime()); // not changed - now can be as metadata extract is async
         assertEquals(docModifiedBy, nodeResp.getModifiedByUser().getId()); // not changed (ie. not user2)
-
 
         // -ve get tests
         {
@@ -529,7 +521,9 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
      *
      * Note: relies on search service
      *
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links}
      */
     @Test
@@ -538,14 +532,14 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
     {
         // As user 1 ...
         setRequestContext(user1);
-        
+
         Paging paging = getPaging(0, 100);
 
         // Get all shared links visible to user 1 (note: for now assumes clean repo)
         HttpResponse response = getAll(URL_SHARED_LINKS, paging, 200);
         List<QuickShareLink> sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
         assertEquals(0, sharedLinks.size());
-        
+
         // create doc d1 - in "My" folder
         String myFolderNodeId = getMyNodeId();
         String content1Text = "The quick brown fox jumps over the lazy dog 1.";
@@ -576,7 +570,6 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
         String shared2Id = resp.getId();
 
-
         //
         // find links
         //
@@ -603,7 +596,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         // find my links
         Map<String, String> params = new HashMap<>();
-        params.put("where", "("+ QuickShareLinks.PARAM_SHAREDBY+"='"+People.DEFAULT_USER+"')");
+        params.put("where", "(" + QuickShareLinks.PARAM_SHAREDBY + "='" + People.DEFAULT_USER + "')");
 
         response = getAll(URL_SHARED_LINKS, paging, params, 200);
         sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
@@ -613,7 +606,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         // find links shared by a given user
         params = new HashMap<>();
-        params.put("where", "("+ QuickShareLinks.PARAM_SHAREDBY+"='"+user2+"')");
+        params.put("where", "(" + QuickShareLinks.PARAM_SHAREDBY + "='" + user2 + "')");
 
         response = getAll(URL_SHARED_LINKS, paging, params, 200);
         sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
@@ -626,14 +619,12 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         // -ve test - unauthenticated
         getAll(URL_SHARED_LINKS, paging, params, 401);
 
-
         // delete the shared links
         setRequestContext(user1);
         deleteSharedLink(shared1Id);
 
         setRequestContext(user2);
         deleteSharedLink(shared2Id);
-
 
         // TODO if and when these tests are optionally runnable via remote env then we could skip this part of the test
         // (else need to verify test mechanism for enterprise admin via jmx ... etc)
@@ -656,14 +647,16 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
     /**
      * Tests emailing shared links.
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/email}
      */
     @Test
     public void testEmailSharedLink() throws Exception
     {
         setRequestContext(user1);
-        
+
         // Create plain text document
         String myFolderNodeId = getMyNodeId();
         String contentText = "The quick brown fox jumps over the lazy dog.";
@@ -736,7 +729,9 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
     /**
      * Tests shared links to file with expiry date.
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links}
      */
     @Test
@@ -834,7 +829,9 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
     /**
      * Tests for get /shared-links?include=path
      *
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links?include=path}
      */
     @Test
@@ -842,24 +839,24 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
     public void testGetSharedLinksIncludePath() throws Exception
     {
         String contentText = "includePathTest" + RUNID;
-        
+
         Paging paging = getPaging(0, 100);
-        
+
         Map<String, String> queryParams = new HashMap<>();
         queryParams.put("include", "path");
-        
+
         // As user 1: Test the backward compatibility by checking response with and without path is consistent when no shared-links
         setRequestContext(user1);
 
         // Get all shared links visible to user 1
         HttpResponse response = getAll(URL_SHARED_LINKS, paging, 200);
         List<QuickShareLink> sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
-        
+
         // Check that the same no of items is returned with include=path
         response = getAll(URL_SHARED_LINKS, paging, queryParams, 200);
         List<QuickShareLink> sharedLinksWithPath = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
         assertEquals("get /shared-links/ API returns same no of shared-links with or without include=path, when there are no shared-links", sharedLinks, sharedLinksWithPath);
-        
+
         // Create Files in various locations: My Files, SharedFiles, Sites with different visibility
 
         // Create doc in "My Files"
@@ -867,33 +864,33 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         // Create doc in "Shared" folder
         Document sharedFile = createTextFile(getSharedNodeId(), "SharedFile" + RUNID + ".txt", contentText);
-        
+
         // Create Sites
-        Site publicSite = createSite ("TestSite-Public-" + RUNID, SiteVisibility.PUBLIC);
-        Site modSite = createSite ("TestSite-Moderate-" + RUNID, SiteVisibility.MODERATED);
-        Site privateSite = createSite ("TestSite-Private-" + RUNID, SiteVisibility.PRIVATE);
-        
+        Site publicSite = createSite("TestSite-Public-" + RUNID, SiteVisibility.PUBLIC);
+        Site modSite = createSite("TestSite-Moderate-" + RUNID, SiteVisibility.MODERATED);
+        Site privateSite = createSite("TestSite-Private-" + RUNID, SiteVisibility.PRIVATE);
+
         // Create file in Site Public > DocumentLibrary
         String docLibPub = getSiteContainerNodeId(publicSite.getId(), "documentLibrary");
         Document filePublic = createTextFile(docLibPub, "filePublic.txt", contentText);
-        
+
         // Create files in Site Moderated > DocumentLibrary > Folder 1 and Folder 2
         String docLibMod = getSiteContainerNodeId(modSite.getId(), "documentLibrary");
         Folder folder1 = createFolder(docLibMod, "1");
         Folder folder2 = createFolder(docLibMod, "2");
         Document fileMod = createTextFile(folder1.getId(), "fileMod.txt", contentText);
         Document fileMod2 = createTextFile(folder2.getId(), "fileMod2.txt", contentText);
-        
+
         // Create file in Site Private > DocumentLibrary
         String docLibPvt = getSiteContainerNodeId(privateSite.getId(), "documentLibrary");
         Document filePrivate = createTextFile(docLibPvt, "filePrivate.txt", contentText);
-        
+
         // Share the files above in: My Files, SharedFiles, Sites with different visibility
 
         String myFileLinkId = postSharedLink(myFile);
 
         String sharedLinkId = postSharedLink(sharedFile);
-  
+
         String filePublicLinkId = postSharedLink(filePublic);
 
         String fileModLinkId = postSharedLink(fileMod);
@@ -901,48 +898,48 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         String fileMod2LinkId = postSharedLink(fileMod2);
 
         String filePrivateLinkId = postSharedLink(filePrivate);
-        
+
         // Grant user2: Consumer Permission for Moderated Site > File1
         List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
         locallySetPermissions.add(new NodePermissions.NodePermission(user2, PermissionService.CONSUMER, AccessStatus.ALLOWED.toString()));
-        
+
         NodePermissions nodePermissions = new NodePermissions();
         nodePermissions.setIsInheritanceEnabled(false);
         nodePermissions.setLocallySet(locallySetPermissions);
-        
+
         Document docPermissions = new Document();
         docPermissions.setPermissions(nodePermissions);
 
         put(URL_NODES, fileMod.getId(), toJsonAsStringNonNull(docPermissions), null, 200);
-        
+
         // Grant user2: Consumer Permission for Moderated Site > Folder 2, File2
         put(URL_NODES, fileMod2.getId(), toJsonAsStringNonNull(docPermissions), null, 200);
-        
+
         Folder folderPermissions = new Folder();
         folderPermissions.setPermissions(nodePermissions);
         put(URL_NODES, folder2.getId(), toJsonAsStringNonNull(folderPermissions), null, 200);
-        
+
         // Get links For User1
         setRequestContext(user1);
-        
+
         response = getSingle(QuickShareLinkEntityResource.class, myFileLinkId, null, 200);
         QuickShareLink link = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
         assertNull("get /shared-links/<id> API does not return Path info by default", link.getPath());
-        
+
         // Path info is not included for get shared-links/<id>
         response = getSingle(QuickShareLinkEntityResource.class, myFileLinkId, queryParams, 200);
         link = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
         assertNull("get /shared-links/<id> API ignores Path info when requested as it is a noAuth API.", link.getPath());
-        
+
         response = getAll(URL_SHARED_LINKS, paging, 200);
         sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
         assertEquals("API returns correct shared-links as expected: without path info", 6, sharedLinks.size());
         sharedLinks.forEach(sharedLink -> assertNull("API does not return Path info for any shared-links by default", sharedLink.getPath()));
-        
+
         // Path info is included for get shared-links when requested
         response = getAll(URL_SHARED_LINKS, paging, queryParams, 200);
         sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
-        
+
         // Complete path info is retrieved for the user with access to the complete path
         assertEquals("API returns correct shared-links as expected: with path info", 6, sharedLinks.size());
         sharedLinks.forEach(sharedLink -> assertTrue("API returns Complete Path info for each link when requested by content owner", sharedLink.getPath().getIsComplete()));
@@ -952,56 +949,56 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         response = getAll(URL_SHARED_LINKS, paging, 200);
         sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
-        
+
         // Path info is not included when not requested
         assertEquals("API returns correct shared-links as expected for user2: without path info", 4, sharedLinks.size());
         sharedLinks.forEach(sharedLink -> assertNull("get /shared-links/ API does not return Path info for any shared-links by default", sharedLink.getPath()));
-        
+
         response = getAll(URL_SHARED_LINKS, paging, queryParams, 200);
         sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
-        
+
         // Path info is retrieved for the user with access to the complete path: Sorted as LIFO
         assertEquals("API returns correct shared-links as expected for user2: with path info", 4, sharedLinks.size());
         sharedLinks.forEach(sharedLink -> assertNotNull("API returns Path info for each link when requested by user2", sharedLink.getPath()));
-        
+
         // Moderated Site > fileMod2: Path only includes elements where user2 has access
         QuickShareLink sharedLink = sharedLinks.get(0);
         assertEquals("Incorrect sort order or SharedLink ID for fileMod2: " + sharedLink, fileMod2LinkId, sharedLink.getId());
-        
+
         PathInfo path = sharedLink.getPath();
         assertEquals("Complete Path is returned even when user2 does not have appropriate permissions. SharedLink Path: " + path, false, path.getIsComplete());
         assertEquals("Path omits immediate Parent folder Name when user has access to it. SharedLink Path: " + path, "/" + folder2.getName(), path.getName());
         assertEquals("Path omits immediate Parent folder ID when user has access to it. SharedLink Path: " + path, folder2.getId(), path.getElements().get(0).getId());
-        
+
         // Moderated Site > fileMod: Path empty when user2 does not have access to the immediate parent
         sharedLink = sharedLinks.get(1);
         assertEquals("Incorrect sort order or SharedLink ID for fileMod: " + sharedLink, fileModLinkId, sharedLink.getId());
         path = sharedLink.getPath();
-        
+
         assertNotNull("Path info is not included in the response when user does not have right permissions. SharedLink Path: " + path, path);
         assertNull("Path Name is returned when user does not have right permissions. SharedLink Path: " + path, path.getName());
         assertNull("Path info is returned when user does not have right permissions. SharedLink Path: " + path, path.getIsComplete());
         assertNull("Path Elements are returned when user does not have right permissions. SharedLink Path: " + path, path.getElements());
-       
+
         // Public Site > filePublic: Path includes all the elements when user2 has appropriate access
         sharedLink = sharedLinks.get(2);
         assertEquals("Incorrect sort order or SharedLink ID for filePublic: " + sharedLink, filePublicLinkId, sharedLink.getId());
-        
+
         path = sharedLink.getPath();
-        
+
         assertEquals("Complete Path is not returned for user2 for public files. SharedLink Path: " + path, true, path.getIsComplete());
         assertEquals("Incorrect Path Name for Public Site Files. SharedLink Path: " + path, "/Company Home/Sites/" + publicSite.getId() + "/documentLibrary", path.getName());
         assertEquals("Incorrect Path Elements for Public Site Files. SharedLink Path: " + path, 4, path.getElements().size());
         assertEquals("Incorrect ID in the Path for Company Home. SharedLink Path: " + path, getRootNodeId(), path.getElements().get(0).getId());
         assertEquals("Incorrect ID in the Path for Public Site. SharedLink Path: " + path, publicSite.getGuid(), path.getElements().get(2).getId());
         assertEquals("Incorrect ID in the Path for Public Site DocLib. SharedLink Path: " + path, docLibPub, path.getElements().get(3).getId());
-        
+
         // Shared Files > shared: Path includes all the elements when user2 has appropriate access
         sharedLink = sharedLinks.get(3);
         assertEquals("Incorrect sort order or SharedLink ID for sharedFiles: " + sharedLink, sharedLinkId, sharedLink.getId());
-        
+
         path = sharedLink.getPath();
-        
+
         assertEquals("Complete Path is not returned for user2 for shared files. SharedLink Path: " + path, true, path.getIsComplete());
         assertEquals("Incorrect Path Name for Shared Files. SharedLink Path: " + path, "/Company Home/Shared", path.getName());
         assertEquals("Incorrect Path Elements for Shared Files. SharedLink Path: " + path, 2, path.getElements().size());
@@ -1030,10 +1027,10 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
     /**
      * Tests create shared-links with 'include' parameter.
      *
-     * <p>POST:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links?include=path}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links?include=allowableOperations}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links?include=path,allowableOperations}
+     * <p>
+     * POST:
+     * </p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links?include=path} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links?include=allowableOperations} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links?include=path,allowableOperations}
      */
     @Test
     @Category({LuceneTests.class, RedundantTests.class})
@@ -1092,7 +1089,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertNotNull("'allowableOperations' should have been returned.", allowableOperations);
         assertEquals("allowableOperations should only have 'Delete' as allowable operation.", 1, allowableOperations.size());
         assertEquals("Incorrect allowable operation.", "delete", allowableOperations.get(0));
-        
+
         // Check allowableOperationsOnTarget (i.e. for the actual file being shared)
         allowableOperations = quickShareLinkResponse.getAllowableOperationsOnTarget();
         assertNotNull("'allowableOperationsOnTarget' should have been returned.", allowableOperations);
@@ -1106,8 +1103,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         response = getAll(URL_SHARED_LINKS, paging, Collections.singletonMap("include", "path,allowableOperations"), 200);
         List<QuickShareLink> sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
         assertEquals("Incorrect number of shared-links returned.", 3, sharedLinks.size());
-        sharedLinks.forEach(sharedLink ->
-        {
+        sharedLinks.forEach(sharedLink -> {
             // Check Path info
             PathInfo path = sharedLink.getPath();
             assertNotNull("'path' should have been returned.", path);
@@ -1128,12 +1124,11 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
             assertEquals(expectedOps.size(), operations.size());
             assertEquals("Incorrect allowable operation.", "delete", operations.get(0));
 
-            // Quick check that some extended info is present. 
+            // Quick check that some extended info is present.
             assertEquals("The quick brown fox jumps over the lazy dog", sharedLink.getTitle());
             assertEquals("Pangram, fox, dog, Gym class featuring a brown fox and lazy dog", sharedLink.getDescription());
         });
     }
-
 
     @Test
     public void testSharedLinkFindIncludeNodeProperties() throws Exception
@@ -1157,13 +1152,13 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         Map<String, String> file1Props = new HashMap<>();
         file1Props.put("cm:title", "File one title");
         file1Props.put("cm:lastThumbnailModification", "doclib:1549351708998");
-        String file1Id = createTextFile(getMyNodeId(), fileName1, content,"UTF-8", file1Props).getId();
+        String file1Id = createTextFile(getMyNodeId(), fileName1, content, "UTF-8", file1Props).getId();
         String file2Id = createTextFile(getMyNodeId(), fileName2, content).getId();
 
         // Create shared links to file 1 and 2
         QuickShareLink body = new QuickShareLink();
         body.setNodeId(file1Id);
-        HttpResponse  response = post(URL_SHARED_LINKS, toJsonAsStringNonNull(body), 201);
+        HttpResponse response = post(URL_SHARED_LINKS, toJsonAsStringNonNull(body), 201);
         QuickShareLink resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
         String shared1Id = resp.getId();
 
@@ -1207,7 +1202,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         // Check the 1st shared link and properties (properties should include a title, lastThumbnailModification and lock info)
         assertEquals(shared1Id, resQuickShareLink1.getId());
         assertEquals(file1Id, resQuickShareLink1.getNodeId());
-        Map<String, Object> resQuickShareLink1Props =  resQuickShareLink1.getProperties();
+        Map<String, Object> resQuickShareLink1Props = resQuickShareLink1.getProperties();
         assertNotNull("Properties were requested to be included but are null.", resQuickShareLink1Props);
         assertNotNull("Properties should include cm:lockType", resQuickShareLink1Props.get("cm:lockType"));
         assertNotNull("Properties should include cm:lockOwner", resQuickShareLink1Props.get("cm:lockOwner"));
@@ -1229,7 +1224,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertNull("Properties should NOT include cm:initialVersion", resQuickShareLink1Props.get("cm:initialVersion"));
         assertNull("Properties should NOT include cm:autoVersionOnUpdateProps", resQuickShareLink1Props.get("cm:autoVersionOnUpdateProps"));
         // System properties should be excluded
-        boolean foundSysProp = resQuickShareLink1Props.keySet().stream().anyMatch( (s) -> s.startsWith("sys:"));
+        boolean foundSysProp = resQuickShareLink1Props.keySet().stream().anyMatch((s) -> s.startsWith("sys:"));
         assertFalse("System properties should be excluded", foundSysProp);
 
         serviceRegistry.setMockSearchService(null);
@@ -1272,13 +1267,12 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         Favourite file1Favourite = makeFileFavourite(file1Id);
         favouritesProxy.createFavourite(user1, file1Favourite, null);
 
-
         // Find shared links without include=isFavorite
         ResultSet mockResultSet = mockResultSet(Arrays.asList(file1Id, file2Id));
         when(mockSearchService.query(any())).thenReturn(mockResultSet);
         quickShareLinks.afterPropertiesSet();
 
-        HttpResponse  response = response = getAll(URL_SHARED_LINKS, paging, null, 200);
+        HttpResponse response = response = getAll(URL_SHARED_LINKS, paging, null, 200);
         List<QuickShareLink> sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
         assertEquals(2, sharedLinks.size());
         QuickShareLink resQuickShareLink1 = sharedLinks.get(0);
@@ -1300,7 +1294,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         resQuickShareLink1 = sharedLinks.get(0);
         resQuickShareLink2 = sharedLinks.get(1);
 
-        assertTrue("Document should be marked as favorite.",resQuickShareLink1.getIsFavorite());
+        assertTrue("Document should be marked as favorite.", resQuickShareLink1.getIsFavorite());
         assertFalse("Document should not be marked as favorite.", resQuickShareLink2.getIsFavorite());
 
         serviceRegistry.setMockSearchService(null);
@@ -1343,13 +1337,12 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         Favourite file1Favourite = makeFileFavourite(file1Id);
         favouritesProxy.createFavourite(user1, file1Favourite, null);
 
-
         // Find shared links without include=isFavorite
         ResultSet mockResultSet = mockResultSet(Arrays.asList(file1Id, file2Id));
         when(mockSearchService.query(any())).thenReturn(mockResultSet);
         quickShareLinks.afterPropertiesSet();
 
-        HttpResponse  response = getAll(URL_SHARED_LINKS, paging, null, 200);
+        HttpResponse response = getAll(URL_SHARED_LINKS, paging, null, 200);
         List<QuickShareLink> sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
         assertEquals(2, sharedLinks.size());
         QuickShareLink resQuickShareLink1 = sharedLinks.get(0);
@@ -1385,7 +1378,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         for (String nodeId : nodeIds)
         {
             ResultSetRow mockResultSetRow1 = mock(ResultSetRow.class);
-            when(mockResultSetRow1.getNodeRef()).thenReturn(new NodeRef("workspace","SpacesStore" ,nodeId));
+            when(mockResultSetRow1.getNodeRef()).thenReturn(new NodeRef("workspace", "SpacesStore", nodeId));
             resultSetRows.add(mockResultSetRow1);
         }
 
@@ -1410,7 +1403,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
     {
         return URL_SHARED_LINKS + '/' + sharedId + "/email";
     }
-    
+
     private String postSharedLink(Document file)
     {
         Map<String, String> body = new HashMap<>();
@@ -1443,7 +1436,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         TenantUtil.runAsSystemTenant(() -> {
             // Load the expiry action and attach the schedule
             QuickShareLinkExpiryAction linkExpiryAction = quickShareLinkExpiryActionPersister
-                        .loadQuickShareLinkExpiryAction(QuickShareLinkExpiryActionImpl.createQName(sharedId));
+                    .loadQuickShareLinkExpiryAction(QuickShareLinkExpiryActionImpl.createQName(sharedId));
             linkExpiryAction.setSchedule(scheduledPersistedActionService.getSchedule(linkExpiryAction));
             linkExpiryAction.setScheduleStart(date);
 

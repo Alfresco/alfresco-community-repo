@@ -32,6 +32,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
+import org.mybatis.spring.SqlSessionTemplate;
+
 import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
@@ -45,11 +51,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
-import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * iBatis-specific implementation of the PatchDAO.
@@ -61,21 +62,21 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
 {
     @SuppressWarnings("unused")
     private static Log logger = LogFactory.getLog(PatchDAOImpl.class);
-    
+
     private static final String SELECT_ADM_MAX_NODE_ID = "alfresco.patch.select_admMaxNodeId";
     private static final String SELECT_NODES_BY_TYPE_AND_NAME_PATTERN = "alfresco.patch.select_nodesByTypeAndNamePattern";
-    
+
     private static final String UPDATE_CONTENT_MIMETYPE_ID = "alfresco.patch.update_contentMimetypeId";
     private static final String UPDATE_PERSON_SIZECURRENT_TYPE = "alfresco.patch.update_fixSizeCurrentType";
-    
+
     private static final String SELECT_COUNT_NODES_WITH_ASPECTS = "alfresco.patch.select_CountNodesWithAspectIds";
-    
+
     private static final String SELECT_NODES_BY_TYPE_QNAME = "alfresco.patch.select_NodesByTypeQName";
     private static final String SELECT_NODES_BY_TYPE_URI = "alfresco.patch.select_NodesByTypeUriId";
     private static final String SELECT_NODES_BY_ASPECT_QNAME = "alfresco.patch.select_NodesByAspectQName";
     private static final String SELECT_NODES_BY_TYPE_AND_ASPECT_QNAME = "alfresco.patch.select_NodesByTypeAndAspectQNameQName";
     private static final String SELECT_NODES_BY_CONTENT_MIMETYPE = "alfresco.patch.select_NodesByContentMimetype";
-    
+
     private static final String SELECT_COUNT_NODES_WITH_TYPE_ID = "alfresco.patch.select_CountNodesWithTypeId";
     private static final String SELECT_CHILDREN_OF_THE_SHARED_SURFCONFIG_FOLDER = "alfresco.patch.select_ChildrenOfTheSharedSurfConfigFolder";
 
@@ -84,57 +85,41 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private LocaleDAO localeDAO;
     @SuppressWarnings("unused")
     private ContentDataDAO contentDataDAO;
-    
+
     protected SqlSessionTemplate template;
-    
-    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate)
     {
         this.template = sqlSessionTemplate;
     }
-    
+
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
     }
+
     public void setLocaleDAO(LocaleDAO localeDAO)
     {
         this.localeDAO = localeDAO;
     }
+
     public void setContentDataDAO(ContentDataDAO contentDataDAO)
     {
         this.contentDataDAO = contentDataDAO;
     }
-    
+
     @Override
     public void startBatch()
     {
         // TODO
-        /*
-        try
-        {
-            template.getSqlMapClient().startBatch();
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException("Failed to start batch", e);
-        }
-        */
+        /* try { template.getSqlMapClient().startBatch(); } catch (SQLException e) { throw new RuntimeException("Failed to start batch", e); } */
     }
 
     @Override
     public void executeBatch()
     {
         // TODO
-        /*
-        try
-        {
-            template.getSqlMapClient().executeBatch();
-        }
-        catch (SQLException e)
-        {
-            throw new RuntimeException("Failed to start batch", e);
-        }
-        */
+        /* try { template.getSqlMapClient().executeBatch(); } catch (SQLException e) { throw new RuntimeException("Failed to start batch", e); } */
     }
 
     @Override
@@ -152,7 +137,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         params.put("oldMimetypeId", oldMimetypeId);
         return template.update(UPDATE_CONTENT_MIMETYPE_ID, params);
     }
-    
+
     @Override
     public int updatePersonSizeCurrentType()
     {
@@ -161,7 +146,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         params.put("sizeCurrentQNameId", sizeCurrentPropQNameId);
         return template.update(UPDATE_PERSON_SIZECURRENT_TYPE, params);
     }
-    
+
     @Override
     public List<Pair<NodeRef, String>> getNodesOfTypeWithNamePattern(QName typeQName, String namePattern)
     {
@@ -172,22 +157,21 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
             return Collections.emptyList();
         }
         Long typeQNameId = typeQNamePair.getFirst();
-        
+
         Pair<Long, QName> propQNamePair = qnameDAO.getQName(ContentModel.PROP_NAME);
         if (propQNamePair == null)
         {
             return Collections.emptyList();
         }
         Long propQNameId = propQNamePair.getFirst();
-        
+
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("typeQNameId", typeQNameId);
         params.put("propQNameId", propQNameId);
         params.put("namePattern", namePattern);
-        
+
         final List<Pair<NodeRef, String>> results = new ArrayList<Pair<NodeRef, String>>(500);
-        ResultHandler resultHandler = new ResultHandler()
-        {
+        ResultHandler resultHandler = new ResultHandler() {
             @SuppressWarnings("unchecked")
             public void handleResult(ResultContext context)
             {
@@ -204,7 +188,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         template.select(SELECT_NODES_BY_TYPE_AND_NAME_PATTERN, params, resultHandler);
         return results;
     }
-    
+
     @Override
     public long getCountNodesWithAspects(Set<QName> qnames)
     {
@@ -236,7 +220,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         params.put("maxNodeId", maxNodeId);
         return template.selectList(SELECT_NODES_BY_TYPE_QNAME, params);
     }
-  
+
     @Override
     public List<Long> getNodesByTypeUriId(Long nsId, Long minNodeId, Long maxNodeId)
     {
@@ -246,7 +230,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         params.put("maxNodeId", maxNodeId);
         return template.selectList(SELECT_NODES_BY_TYPE_URI, params);
     }
-  
+
     @Override
     public List<Long> getNodesByAspectQNameId(Long aspectQNameId, Long minNodeId, Long maxNodeId)
     {
@@ -309,15 +293,15 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         {
             return Collections.emptyList();
         }
-        
+
         Map<String, Object> params = new HashMap<String, Object>(7);
-        
+
         // Get qname CRC
         Long qnameCrcSites = ChildAssocEntity.getQNameCrc(QName.createQName(SiteModel.SITE_MODEL_URL, "sites"));
         Long qnameCrcSurfConfig = ChildAssocEntity.getQNameCrc(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "surf-config"));
         Long qnameCrcPages = ChildAssocEntity.getQNameCrc(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "pages"));
         Long qnameCrcUser = ChildAssocEntity.getQNameCrc(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "user"));
-        
+
         params.put("qnameCrcSites", qnameCrcSites);
         params.put("qnameCrcSurfConfig", qnameCrcSurfConfig);
         params.put("qnameCrcPages", qnameCrcPages);
@@ -327,8 +311,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         params.put("maxNodeId", maxNodeId);
 
         final List<NodeRef> results = new ArrayList<NodeRef>(1000);
-        ResultHandler resultHandler = new ResultHandler()
-        {
+        ResultHandler resultHandler = new ResultHandler() {
             @SuppressWarnings("unchecked")
             public void handleResult(ResultContext context)
             {
@@ -351,9 +334,8 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
      * @since 4.0
      */
     public static class PostgreSQL extends PatchDAOImpl
-    {
-    }
-    
+    {}
+
     /**
      * Oracle-specific DAO
      * 
@@ -361,6 +343,5 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
      * @since 4.0
      */
     public static class Oracle extends PatchDAOImpl
-    {
-    }
+    {}
 }

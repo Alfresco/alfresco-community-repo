@@ -31,10 +31,11 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.module.org_alfresco_module_rm.report.Report;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Report implementation.
@@ -42,32 +43,36 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * @author Roy Wetherall
  * @since 2.1
  */
-/*package*/ class ReportInfo implements Report
+/* package */ class ReportInfo implements Report
 {
     /** report type */
     private QName reportType;
-    
+
     private String reportName;
-    
+
     private Map<QName, Serializable> reportProperties = new HashMap<>(21);
-    
+
     /** content reader */
     private ContentReader reportContent;
-    
+
     /**
      * Default constructor.
      * 
-     * @param reportType        report type
-     * @param reportName        report name
-     * @param reportProperties  report properties
-     * @param reportContent     report content reader
+     * @param reportType
+     *            report type
+     * @param reportName
+     *            report name
+     * @param reportProperties
+     *            report properties
+     * @param reportContent
+     *            report content reader
      */
     public ReportInfo(QName reportType, String reportName, Map<QName, Serializable> reportProperties, ContentReader reportContent)
     {
         ParameterCheck.mandatory("reportType", reportType);
         ParameterCheck.mandatory("reportName", reportName);
         ParameterCheck.mandatory("reportContent", reportContent);
-        
+
         this.reportType = reportType;
         this.reportName = reportName;
         this.reportProperties = reportProperties;
@@ -81,7 +86,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
     {
         return reportType;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.report.Report#getReportName()
      */
@@ -90,7 +95,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
     {
         return reportName;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.report.Report#getReportProperties()
      */
@@ -99,7 +104,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
     {
         return reportProperties;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.report.Report#getReportContent()
      */
@@ -108,5 +113,5 @@ import org.springframework.extensions.surf.util.ParameterCheck;
     {
         return reportContent;
     }
-   
+
 }

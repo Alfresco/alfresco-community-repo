@@ -36,19 +36,19 @@ public interface NetworkFileLegacyReferenceCount
      * @return the current open count
      */
     public int incrementLegacyOpenCount();
-    
+
     /**
      * Decrement the file open count
      * 
      * @return the current open count
      */
     public int decrementLagacyOpenCount();
-    
+
     /**
      * Return the open file count
      * 
      * @return the current open count
      */
-    public int getLegacyOpenCount(); 
+    public int getLegacyOpenCount();
 
 }

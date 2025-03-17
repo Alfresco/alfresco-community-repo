@@ -43,7 +43,7 @@ public class AlfrescoTransactionSupport
     {
         org.alfresco.repo.transaction.AlfrescoTransactionSupport.bindResource(key, resource);
     }
-    
+
     /**
      * @see org.alfresco.repo.transaction.AlfrescoTransactionSupport#unbindResource(Object)
      */

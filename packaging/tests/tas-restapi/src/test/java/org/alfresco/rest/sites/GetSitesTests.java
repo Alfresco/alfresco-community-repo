@@ -1,5 +1,12 @@
 package org.alfresco.rest.sites;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.SiteService;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.*;
@@ -12,12 +19,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import java.util.List;
 
 /**
  * @author iulia.cojocea
@@ -34,7 +35,7 @@ public class GetSitesTests extends RestTest
     private RestSiteModelsCollection sites;
     private String name;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         regularUser = dataUser.createRandomTestUser();
@@ -59,79 +60,79 @@ public class GetSitesTests extends RestTest
 
         adminUser = dataUser.getAdminUser();
         siteModel = dataSite.usingAdmin().createPublicRandomSite();
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel,UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
+        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
         dataUser.addUserToSite(lastPrivateSiteManager, lastPrivateSite, UserRole.SiteManager);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.SANITY,
             description = "Verify user with Manager role gets sites information and gets status code OK (200)")
     public void managerIsAbleToRetrieveSites() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withParams("maxItems=10000")
-                  .withCoreAPI().getSites()             
-                	.assertThat().entriesListIsNotEmpty()
-                	.assertThat().entriesListContains("id", siteModel.getId())
-                	.and().paginationExist();
+                .withCoreAPI().getSites()
+                .assertThat().entriesListIsNotEmpty()
+                .assertThat().entriesListContains("id", siteModel.getId())
+                .and().paginationExist();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Collaborator role gets sites information and gets status code OK (200)")
     public void collaboratorIsAbleToRetrieveSites() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withParams("maxItems=10000")
-                  .withCoreAPI().getSites().assertThat().entriesListIsNotEmpty()
-                  .assertThat().entriesListContains("id", siteModel.getId())
-                  .and().paginationExist();
-                  
+                .withCoreAPI().getSites().assertThat().entriesListIsNotEmpty()
+                .assertThat().entriesListContains("id", siteModel.getId())
+                .and().paginationExist();
+
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Contributor role gets sites information and gets status code OK (200)")
     public void contributorIsAbleToRetrieveSites() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withParams("maxItems=10000")
-                  .withCoreAPI().getSites()	
-                	.assertThat().entriesListIsNotEmpty()
-                	.assertThat().entriesListContains("id", siteModel.getId())
-                	.and().paginationExist();
+                .withCoreAPI().getSites()
+                .assertThat().entriesListIsNotEmpty()
+                .assertThat().entriesListContains("id", siteModel.getId())
+                .and().paginationExist();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Consumer role gets sites information and gets status code OK (200)")
     public void consumerIsAbleToRetrieveSites() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withParams("maxItems=10000")
-                  .withCoreAPI().getSites()
-                  .assertThat().entriesListIsNotEmpty()
-              	  .assertThat().entriesListContains("id", siteModel.getId())
-              	  .and().paginationExist();
+                .withCoreAPI().getSites()
+                .assertThat().entriesListIsNotEmpty()
+                .assertThat().entriesListContains("id", siteModel.getId())
+                .and().paginationExist();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Admin user gets sites information and gets status code OK (200)")
     public void adminUserIsAbleToRetrieveSites() throws Exception
     {
         restClient.authenticateUser(adminUser).withParams("maxItems=10000")
-                  .withCoreAPI().getSites()
-                	.assertThat().entriesListIsNotEmpty()
-                	.assertThat().entriesListContains("id", siteModel.getId())
-                	.and().paginationExist();
+                .withCoreAPI().getSites()
+                .assertThat().entriesListIsNotEmpty()
+                .assertThat().entriesListContains("id", siteModel.getId())
+                .and().paginationExist();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.SANITY,
             description = "Failed authentication get sites call returns status code 401")
-//    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
+    // @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSites() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
@@ -139,13 +140,13 @@ public class GetSitesTests extends RestTest
         userModel.setPassword("user wrong password");
         dataUser.addUserToSite(userModel, siteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel).withParams("maxItems=1")
-                  .withCoreAPI().getSites();
+                .withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get sites request returns status code 400 when invalid maxItems parameter is used")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get sites request returns status code 400 when invalid maxItems parameter is used")
     public void getSitesWithInvalidMaxItems() throws Exception
     {
         restClient.authenticateUser(regularUser).withParams("maxItems=0=09")
@@ -164,9 +165,9 @@ public class GetSitesTests extends RestTest
                 .assertLastError().containsSummary(RestErrorModel.ONLY_POSITIVE_VALUES_MAXITEMS);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get sites request returns status code 400 when invalid skipCount parameter is used")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get sites request returns status code 400 when invalid skipCount parameter is used")
     public void getSitesWithInvalidSkipCount() throws Exception
     {
         restClient.authenticateUser(regularUser).withParams("skipCount=A")
@@ -180,9 +181,9 @@ public class GetSitesTests extends RestTest
                 .assertLastError().containsSummary(RestErrorModel.NEGATIVE_VALUES_SKIPCOUNT);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if User gets sites ordered by title ascending and status code is 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if User gets sites ordered by title ascending and status code is 200")
     public void getSitesOrderedByTitleASC() throws Exception
     {
         sites = restClient.authenticateUser(privateSiteManager).withParams("orderBy=title ASC")
@@ -195,9 +196,9 @@ public class GetSitesTests extends RestTest
         sitesList.get(2).onModel().assertThat().field("title").is(firstPublicSite.getTitle());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if a regular user gets all public and moderated sites and status code is 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if a regular user gets all public and moderated sites and status code is 200")
     public void regularUserGetsOnlyPublicAndModeratedSites() throws Exception
     {
         sites = restClient.authenticateUser(regularUser).withParams("maxItems=5000")
@@ -208,9 +209,9 @@ public class GetSitesTests extends RestTest
                 .and().entriesListDoesNotContain("title", firstPrivateSite.getTitle());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if a member of a private site gets the private site, all public sites and all moderated sites. Verify if status code is 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if a member of a private site gets the private site, all public sites and all moderated sites. Verify if status code is 200")
     public void privateSiteMemberGetsSitesVisibleForHim() throws Exception
     {
         sites = restClient.authenticateUser(privateSiteConsumer).withParams("maxItems=5000")
@@ -221,9 +222,9 @@ public class GetSitesTests extends RestTest
                 .and().entriesListContains("title", firstPrivateSite.getTitle());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if a site is not retrieved anymore after deletion and status code is 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if a site is not retrieved anymore after deletion and status code is 200")
     public void checkDeletedSiteIsNotRetrieved() throws Exception
     {
         sites = restClient.authenticateUser(regularUser).withParams("maxItems=5000").withCoreAPI().getSites();
@@ -237,9 +238,9 @@ public class GetSitesTests extends RestTest
         sites.assertThat().entriesListDoesNotContain("title", deletedSite.getTitle());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if User gets sites ordered by title descending and status code is 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if User gets sites ordered by title descending and status code is 200")
     public void getSitesOrderedByTitleDESC() throws Exception
     {
         int totalItems = restClient.authenticateUser(lastPrivateSiteManager).withCoreAPI().getSites().getPagination().getTotalItems();
@@ -251,13 +252,12 @@ public class GetSitesTests extends RestTest
         sitesList.get(0).onModel().assertThat().field("title").is(lastPublicSite.getTitle());
         sitesList.get(1).onModel().assertThat().field("title").is(lastPrivateSite.getTitle());
         sitesList.get(2).onModel().assertThat().field("title").is(lastModeratedSite.getTitle());
-        sitesList.get(sitesList.size()-1).onModel().assertThat().field("title").is(firstModeratedSite.getTitle());
+        sitesList.get(sitesList.size() - 1).onModel().assertThat().field("title").is(firstModeratedSite.getTitle());
     }
 
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if User gets sites ordered by id ascending and status code is 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if User gets sites ordered by id ascending and status code is 200")
     public void getSitesOrderedByIdASC() throws Exception
     {
         int totalItems = restClient.authenticateUser(lastPrivateSiteManager).withCoreAPI().getSites().getPagination().getTotalItems();
@@ -266,15 +266,15 @@ public class GetSitesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         sites.assertThat().entriesListIsNotEmpty();
         List<RestSiteModel> sitesList = sites.getEntries();
-        sitesList.get(sitesList.size()-1).onModel().assertThat().field("id").is(lastPublicSite.getId());
-        sitesList.get(sitesList.size()-2).onModel().assertThat().field("id").is(lastPrivateSite.getId());
-        sitesList.get(sitesList.size()-3).onModel().assertThat().field("id").is(lastModeratedSite.getId());
+        sitesList.get(sitesList.size() - 1).onModel().assertThat().field("id").is(lastPublicSite.getId());
+        sitesList.get(sitesList.size() - 2).onModel().assertThat().field("id").is(lastPrivateSite.getId());
+        sitesList.get(sitesList.size() - 3).onModel().assertThat().field("id").is(lastModeratedSite.getId());
         sitesList.get(0).onModel().assertThat().field("id").is(firstModeratedSite.getId());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify pagination")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify pagination")
     public void checkPagination() throws Exception
     {
         sites = restClient.authenticateUser(regularUser).withCoreAPI().getSites();
@@ -286,9 +286,9 @@ public class GetSitesTests extends RestTest
                 .field("count").is((sites.getPagination().isHasMoreItems()) ? sites.getPagination().getMaxItems() : sites.getPagination().getTotalItems());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify user can get only first two sites and status code is 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify user can get only first two sites and status code is 200")
     public void getFirstTwoSites() throws Exception
     {
         sites = restClient.authenticateUser(regularUser).withParams(String.format("maxItems=%s&orderBy=title ASC", 2))
@@ -298,24 +298,24 @@ public class GetSitesTests extends RestTest
         sites.assertThat().entriesListCountIs(2).and().entriesListDoesNotContain(firstPublicSite.getId());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify user can get sites using high skipCount parameter and status code is 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify user can get sites using high skipCount parameter and status code is 200")
     public void getSitesUsingHighSkipCount() throws Exception
     {
         RestSiteModelsCollection allSites = restClient.authenticateUser(regularUser).withCoreAPI().getSites();
         sites = restClient.withParams("skipCount=100").withCoreAPI().getSites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         sites.assertThat().paginationField("skipCount").is("100");
-        if(allSites.getPagination().getTotalItems() > 100)
+        if (allSites.getPagination().getTotalItems() > 100)
             sites.assertThat().entriesListIsNotEmpty();
         else
             sites.assertThat().entriesListIsEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify user can not get sites using zero maxItems parameter and status code is 400")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify user can not get sites using zero maxItems parameter and status code is 400")
     public void userCanNotGetSitesUsingZeroMaxItems() throws Exception
     {
         sites = restClient.authenticateUser(regularUser).withParams("maxItems=0").withCoreAPI().getSites();
@@ -327,9 +327,9 @@ public class GetSitesTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify that getSites request applies valid properties param and status code is 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify that getSites request applies valid properties param and status code is 200")
     public void getSitesRequestWithValidPropertiesParam() throws Exception
     {
         sites = restClient.authenticateUser(regularUser).withParams("properties=id").withCoreAPI().getSites();
@@ -341,9 +341,9 @@ public class GetSitesTests extends RestTest
                 .assertThat().entriesListContains("id");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify pagination when skipCount and MaxItems are used")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify pagination when skipCount and MaxItems are used")
     public void checkPaginationWithSkipCountAndMaxItems() throws Exception
     {
         sites = restClient.authenticateUser(regularUser).withParams("skipCount=10&maxItems=110").withCoreAPI().getSites();
@@ -368,20 +368,20 @@ public class GetSitesTests extends RestTest
         sites.getPagination().assertThat()
                 .field("totalItems").isNotEmpty().and()
                 .field("maxItems").is("110").and()
-                .field("hasMoreItems").is((sites.getPagination().getTotalItems() - sites.getPagination().getSkipCount() > sites.getPagination().getMaxItems())?"true":"false").and()
+                .field("hasMoreItems").is((sites.getPagination().getTotalItems() - sites.getPagination().getSkipCount() > sites.getPagination().getMaxItems()) ? "true" : "false").and()
                 .field("skipCount").is("10").and()
                 .field("count").is(expectedCount);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if User gets sites ordered by id ascending and status code is 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if User gets sites ordered by id ascending and status code is 200")
     public void getSitesOrderedByTitleASCAndVisibilityASC() throws Exception
     {
         SiteModel secondPublicSite = dataSite.usingAdmin().createSite(
-                new SiteModel(SiteService.Visibility.PUBLIC, "guid", name+"A", name+"A", name));
+                new SiteModel(SiteService.Visibility.PUBLIC, "guid", name + "A", name + "A", name));
         SiteModel thirdPublicSite = dataSite.usingAdmin().createSite(
-                new SiteModel(SiteService.Visibility.PUBLIC, "guid", name+"B", name+"B", name));
+                new SiteModel(SiteService.Visibility.PUBLIC, "guid", name + "B", name + "B", name));
 
         int totalItems = restClient.authenticateUser(regularUser).withCoreAPI().getSites().getPagination().getTotalItems();
         sites = restClient.authenticateUser(regularUser).withParams(String.format("maxItems=%s&orderBy=title ASC&orderBy=description ASC", totalItems))
@@ -389,16 +389,16 @@ public class GetSitesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         sites.assertThat().entriesListIsNotEmpty();
         List<RestSiteModel> sitesList = sites.getEntries();
-        sitesList.get(sitesList.size()-1).onModel().assertThat().field("title").is(thirdPublicSite.getTitle());
-        sitesList.get(sitesList.size()-2).onModel().assertThat().field("title").is(secondPublicSite.getTitle());
+        sitesList.get(sitesList.size() - 1).onModel().assertThat().field("title").is(thirdPublicSite.getTitle());
+        sitesList.get(sitesList.size() - 2).onModel().assertThat().field("title").is(secondPublicSite.getTitle());
 
         dataSite.usingAdmin().deleteSite(secondPublicSite);
         dataSite.usingAdmin().deleteSite(thirdPublicSite);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION} )
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Check that relations parameter is applied for containers")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Check that relations parameter is applied for containers")
     public void checkThatRelationsParameterIsAppliedForContainers() throws Exception
     {
         List<List<Object>> jsonObjects = restClient.authenticateUser(adminUser)
@@ -423,9 +423,9 @@ public class GetSitesTests extends RestTest
         }
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION} )
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Check that relations parameter is applied for members")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Check that relations parameter is applied for members")
     public void checkThatRelationsParameterIsAppliedForMembers() throws Exception
     {
         List<List<Object>> jsonObjects = restClient.authenticateUser(adminUser)
@@ -451,9 +451,9 @@ public class GetSitesTests extends RestTest
         }
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION} )
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Check that relations parameter is applied for members and containers")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Check that relations parameter is applied for members and containers")
     public void checkThatRelationsParameterIsAppliedForMembersAndContainers() throws Exception
     {
         List<List<Object>> jsonObjects = restClient.authenticateUser(adminUser)
@@ -486,7 +486,7 @@ public class GetSitesTests extends RestTest
         }
     }
 
-    @AfterClass(alwaysRun=true)
+    @AfterClass(alwaysRun = true)
     public void cleanup() throws Exception
     {
         dataSite.usingAdmin().deleteSite(firstModeratedSite);

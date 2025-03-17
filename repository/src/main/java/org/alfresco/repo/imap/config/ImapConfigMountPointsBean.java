@@ -49,7 +49,8 @@ public class ImapConfigMountPointsBean extends RepositoryFolderConfigBean
     }
 
     /**
-     * @param folderName        the name of the IMAP folder
+     * @param folderName
+     *            the name of the IMAP folder
      */
     public void setMountPointName(String folderName)
     {
@@ -67,7 +68,7 @@ public class ImapConfigMountPointsBean extends RepositoryFolderConfigBean
     }
 
     /**
-     * @return          Returns the string value of the mode
+     * @return Returns the string value of the mode
      */
     public String getModeName()
     {

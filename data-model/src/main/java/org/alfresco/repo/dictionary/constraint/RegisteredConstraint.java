@@ -25,15 +25,13 @@
  */
 package org.alfresco.repo.dictionary.constraint;
 
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 
 /**
- * Constraint implementation that defers to constraints registered with the
- * static instance of the {@link ConstraintRegistry}.
+ * Constraint implementation that defers to constraints registered with the static instance of the {@link ConstraintRegistry}.
  * 
  * @author Derek Hulley
  */
@@ -43,19 +41,18 @@ public final class RegisteredConstraint implements Constraint
 
     private String shortName;
     private String registeredName;
-    
+
     public RegisteredConstraint()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(80);
         sb.append("RegisteredConstraint")
-          .append("[ registeredName=").append(registeredName)
-          .append(", constraint=").append(ConstraintRegistry.getInstance().getConstraint(registeredName))
-          .append("]");
+                .append("[ registeredName=").append(registeredName)
+                .append(", constraint=").append(ConstraintRegistry.getInstance().getConstraint(registeredName))
+                .append("]");
         return sb.toString();
     }
 
@@ -70,8 +67,7 @@ public final class RegisteredConstraint implements Constraint
     }
 
     /**
-     * Set the name of the constraint that will be used to look up the constraint
-     * that will be delegated to.
+     * Set the name of the constraint that will be used to look up the constraint that will be delegated to.
      */
     public void setRegisteredName(String registeredName)
     {
@@ -87,7 +83,7 @@ public final class RegisteredConstraint implements Constraint
     }
 
     /**
-     * @return      the constraint that matches the registered name
+     * @return the constraint that matches the registered name
      */
     public Constraint getRegisteredConstraint()
     {
@@ -98,7 +94,7 @@ public final class RegisteredConstraint implements Constraint
         }
         return constraint;
     }
-    
+
     /**
      * Defers to the registered constraint
      */
@@ -106,7 +102,7 @@ public final class RegisteredConstraint implements Constraint
     {
         return getRegisteredConstraint().getType();
     }
-    
+
     /**
      * Defers to the registered constraint
      */
@@ -114,7 +110,7 @@ public final class RegisteredConstraint implements Constraint
     {
         return getRegisteredConstraint().getTitle();
     }
-    
+
     /**
      * Defers to the registered constraint
      */

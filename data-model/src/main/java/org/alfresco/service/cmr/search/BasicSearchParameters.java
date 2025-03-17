@@ -39,11 +39,15 @@ import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
  */
 public interface BasicSearchParameters
 {
-    
+
     public String getLanguage();
+
     public String getQuery();
+
     public List<StoreRef> getStores();
+
     public List<Locale> getLocales();
+
     public List<SortDefinition> getSortDefinitions();
 
 }

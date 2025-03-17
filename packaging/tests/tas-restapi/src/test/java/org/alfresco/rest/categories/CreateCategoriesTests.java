@@ -26,24 +26,26 @@
 
 package org.alfresco.rest.categories;
 
-import static org.alfresco.utility.data.RandomData.getRandomName;
-import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import org.apache.commons.lang3.StringUtils;
+import org.testng.annotations.Test;
 
 import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.rest.model.RestCategoryModelsCollection;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
-import org.apache.commons.lang3.StringUtils;
-import org.testng.annotations.Test;
 
 public class CreateCategoriesTests extends CategoriesRestTest
 {
@@ -117,11 +119,10 @@ public class CreateCategoriesTests extends CategoriesRestTest
                 .entriesListCountIs(categoriesToCreate.size());
         IntStream.range(0, categoriesNumber)
                 .forEach(i -> createdSubCategories.getEntries().get(i).onModel()
-                    .assertThat().field(FIELD_NAME).is(categoriesToCreate.get(i).getName())
-                    .assertThat().field(FIELD_PARENT_ID).is(createdCategory.getId())
-                    .assertThat().field(FIELD_HAS_CHILDREN).is(false)
-                    .assertThat().field(FIELD_ID).isNotEmpty()
-                );
+                        .assertThat().field(FIELD_NAME).is(categoriesToCreate.get(i).getName())
+                        .assertThat().field(FIELD_PARENT_ID).is(createdCategory.getId())
+                        .assertThat().field(FIELD_HAS_CHILDREN).is(false)
+                        .assertThat().field(FIELD_ID).isNotEmpty());
 
         STEP("Get the parent category and check if it now has children (as regular user)");
         final RestCategoryModel parentCategoryFromGet = restClient.authenticateUser(user)
@@ -168,13 +169,12 @@ public class CreateCategoriesTests extends CategoriesRestTest
                         .assertThat().field(FIELD_NAME).is(categoriesToCreate.get(i).getName())
                         .assertThat().field(FIELD_PARENT_ID).is(createdCategory.getId())
                         .assertThat().field(FIELD_HAS_CHILDREN).is(false)
-                        .assertThat().field(FIELD_ID).isNotEmpty()
-                );
+                        .assertThat().field(FIELD_ID).isNotEmpty());
         createdSubCategories.getPagination().assertThat().field("count").is(categoriesNumber)
-            .assertThat().field("totalItems").is(categoriesNumber)
-            .assertThat().field("maxItems").is(categoriesNumber)
-            .assertThat().field("skipCount").is(0)
-            .assertThat().field("hasMoreItems").is(false);
+                .assertThat().field("totalItems").is(categoriesNumber)
+                .assertThat().field("maxItems").is(categoriesNumber)
+                .assertThat().field("skipCount").is(0)
+                .assertThat().field("hasMoreItems").is(false);
 
     }
 
@@ -234,7 +234,7 @@ public class CreateCategoriesTests extends CategoriesRestTest
     /**
      * Check weather count present in create category request will be ignored.
      */
-    @Test(groups = { TestGroup.REST_API })
+    @Test(groups = {TestGroup.REST_API})
     public void testCreateCategoryUnderRoot_verifyIfCountInRequestIsIgnored()
     {
         STEP("Try to create a category with filled count under root");
@@ -242,10 +242,10 @@ public class CreateCategoriesTests extends CategoriesRestTest
         final RestCategoryModel aCategory = createCategoryModelWithName(getRandomName("Category"));
         aCategory.setCount(2);
         final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
-            .withCoreAPI()
-            .usingCategory(rootCategory)
-            .include(INCLUDE_COUNT_PARAM)
-            .createSingleCategory(aCategory);
+                .withCoreAPI()
+                .usingCategory(rootCategory)
+                .include(INCLUDE_COUNT_PARAM)
+                .createSingleCategory(aCategory);
 
         restClient.assertStatusCodeIs(CREATED);
         createdCategory.assertThat().field(FIELD_NAME).is(aCategory.getName());
@@ -255,7 +255,7 @@ public class CreateCategoriesTests extends CategoriesRestTest
     static List<RestCategoryModel> getCategoriesToCreate(final int count)
     {
         return IntStream.range(0, count)
-            .mapToObj(i -> RestCategoryModel.builder().name(getRandomName("SubCategory")).create())
-            .collect(Collectors.toList());
+                .mapToObj(i -> RestCategoryModel.builder().name(getRandomName("SubCategory")).create())
+                .collect(Collectors.toList());
     }
 }

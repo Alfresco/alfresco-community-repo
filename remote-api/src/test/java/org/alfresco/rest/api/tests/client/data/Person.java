@@ -32,16 +32,17 @@ import java.io.Serializable;
 import java.text.Collator;
 import java.util.*;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.rest.api.tests.QueriesPeopleApiTest;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 public class Person
-    extends org.alfresco.rest.api.model.Person
+        extends org.alfresco.rest.api.model.Person
         implements Serializable, Comparable<Person>, ExpectedComparison
 {
     private static final long serialVersionUID = 3185698391792389751L;
@@ -54,7 +55,7 @@ public class Person
     {
         super();
     }
-    
+
     public Person(String id, String username, Boolean enabled, String firstName, String lastName,
             Company company, String skype, String location, String tel,
             String mob, String instantmsg, String google, String description)
@@ -64,28 +65,28 @@ public class Person
     }
 
     public Person(String userName,
-                  Boolean enabled,
-                  NodeRef avatarId,
-                  String firstName,
-                  String lastName,
-                  String jobTitle,
-                  String location,
-                  String telephone,
-                  String mobile,
-                  String email,
-                  String skypeId,
-                  String instantMessageId,
-                  String userStatus,
-                  Date statusUpdatedAt,
-                  String googleId,
-                  Long quota,
-                  Long quotaUsed,
-                  Boolean emailNotificationsEnabled,
-                  String description,
-                  org.alfresco.rest.api.model.Company company,
-                  Map<String, Object> properties,
-                  List<String> aspectNames,
-                  Map<String, Boolean> capabilities)
+            Boolean enabled,
+            NodeRef avatarId,
+            String firstName,
+            String lastName,
+            String jobTitle,
+            String location,
+            String telephone,
+            String mobile,
+            String email,
+            String skypeId,
+            String instantMessageId,
+            String userStatus,
+            Date statusUpdatedAt,
+            String googleId,
+            Long quota,
+            Long quotaUsed,
+            Boolean emailNotificationsEnabled,
+            String description,
+            org.alfresco.rest.api.model.Company company,
+            Map<String, Object> properties,
+            List<String> aspectNames,
+            Map<String, Boolean> capabilities)
     {
         super(userName,
                 enabled,
@@ -158,7 +159,7 @@ public class Person
         personJson.put("firstName", getFirstName());
         personJson.put("lastName", getLastName());
 
-        if(fullVisibility)
+        if (fullVisibility)
         {
             personJson.put("description", getDescription());
             personJson.put("email", getEmail());
@@ -182,33 +183,33 @@ public class Person
         }
         return personJson;
     }
-    
+
     public static Person parsePerson(JSONObject jsonObject)
     {
-        String userId = (String)jsonObject.get("id");
-        String firstName = (String)jsonObject.get("firstName");
-        String lastName = (String)jsonObject.get("lastName");
+        String userId = (String) jsonObject.get("id");
+        String firstName = (String) jsonObject.get("firstName");
+        String lastName = (String) jsonObject.get("lastName");
 
-        String description = (String)jsonObject.get("description");
+        String description = (String) jsonObject.get("description");
         String email = (String) jsonObject.get("email");
-        String skypeId = (String)jsonObject.get("skypeId");
-        String googleId = (String)jsonObject.get("googleId");
-        String instantMessageId = (String)jsonObject.get("instantMessageId");
+        String skypeId = (String) jsonObject.get("skypeId");
+        String googleId = (String) jsonObject.get("googleId");
+        String instantMessageId = (String) jsonObject.get("instantMessageId");
         String jobTitle = (String) jsonObject.get("jobTitle");
-        String location = (String)jsonObject.get("location");
+        String location = (String) jsonObject.get("location");
 
         Company company = null;
-        JSONObject companyJSON = (JSONObject)jsonObject.get("company");
-        if(companyJSON != null)
+        JSONObject companyJSON = (JSONObject) jsonObject.get("company");
+        if (companyJSON != null)
         {
-            String organization = (String)companyJSON.get("organization");
-            String address1 = (String)companyJSON.get("address1");
-            String address2 = (String)companyJSON.get("address2");
-            String address3 = (String)companyJSON.get("address3");
-            String postcode = (String)companyJSON.get("postcode");
-            String companyTelephone = (String)companyJSON.get("telephone");
-            String fax = (String)companyJSON.get("fax");
-            String companyEmail = (String)companyJSON.get("email");
+            String organization = (String) companyJSON.get("organization");
+            String address1 = (String) companyJSON.get("address1");
+            String address2 = (String) companyJSON.get("address2");
+            String address3 = (String) companyJSON.get("address3");
+            String postcode = (String) companyJSON.get("postcode");
+            String companyTelephone = (String) companyJSON.get("telephone");
+            String fax = (String) companyJSON.get("fax");
+            String companyEmail = (String) companyJSON.get("email");
             if (organization != null ||
                     address2 != null ||
                     address3 != null ||
@@ -225,15 +226,15 @@ public class Person
             }
         }
 
-        String mobile = (String)jsonObject.get("mobile");
-        String telephone = (String)jsonObject.get("telephone");
+        String mobile = (String) jsonObject.get("mobile");
+        String telephone = (String) jsonObject.get("telephone");
         String userStatus = (String) jsonObject.get("userStatus");
-        Boolean enabled = (Boolean)jsonObject.get("enabled");
+        Boolean enabled = (Boolean) jsonObject.get("enabled");
         Boolean emailNotificationsEnabled = (Boolean) jsonObject.get("emailNotificationsEnabled");
         List<String> aspectNames = (List<String>) jsonObject.get("aspectNames");
         Map<String, Object> properties = (Map<String, Object>) jsonObject.get("properties");
         Map<String, Boolean> capabilities = (Map<String, Boolean>) jsonObject.get("capabilities");
-        
+
         Person person = new Person(
                 userId,
                 enabled,
@@ -257,11 +258,9 @@ public class Person
                 company,
                 properties,
                 aspectNames,
-                capabilities
-        );
+                capabilities);
         return person;
     }
-
 
     private static class UserContext
     {
@@ -287,42 +286,43 @@ public class Person
     }
 
     private static ThreadLocal<UserContext> userContext = new ThreadLocal<UserContext>();
+
     public static void setUserContext(String personId)
     {
         String networkId = Person.getNetworkId(personId);
         userContext.set(new UserContext(networkId, personId));
     }
-    
+
     public static void clearUserContext()
     {
         userContext.set(null);
     }
-    
+
     public static UserContext gettUserContext()
     {
         return userContext.get();
     }
-    
+
     public static String getNetworkId(String personId)
     {
         int idx = personId.indexOf("@");
-        return(idx == -1 ? TenantService.DEFAULT_DOMAIN : personId.substring(idx + 1));
+        return (idx == -1 ? TenantService.DEFAULT_DOMAIN : personId.substring(idx + 1));
     }
 
     private String getNetworkId()
     {
         return Person.getNetworkId(id);
     }
-    
+
     public boolean isVisible()
     {
         boolean ret = true;
 
         UserContext uc = gettUserContext();
         String networkId = getNetworkId();
-        if(uc != null)
+        if (uc != null)
         {
-            if(!networkId.equals(uc.getNetworkId()))
+            if (!networkId.equals(uc.getNetworkId()))
             {
                 ret = false;
             }
@@ -330,20 +330,20 @@ public class Person
 
         return ret;
     }
-    
+
     @Override
     public void expected(Object o)
     {
         assertTrue("o is an instance of " + o.getClass(), o instanceof Person);
 
-        Person other = (Person)o;
-        
+        Person other = (Person) o;
+
         AssertUtil.assertEquals("userId", getId(), other.getId());
         AssertUtil.assertEquals("firstName", firstName, other.getFirstName());
         AssertUtil.assertEquals("lastName", lastName, other.getLastName());
         AssertUtil.assertEquals("enabled", enabled, other.isEnabled());
 
-        if(isVisible())
+        if (isVisible())
         {
             AssertUtil.assertEquals("skype", getSkypeId(), other.getSkypeId());
             AssertUtil.assertEquals("location", getLocation(), other.getLocation());
@@ -351,7 +351,7 @@ public class Person
             AssertUtil.assertEquals("mobile", getMobile(), other.getMobile());
             AssertUtil.assertEquals("instanceMessageId", getInstantMessageId(), other.getInstantMessageId());
             AssertUtil.assertEquals("googleId", getGoogleId(), other.getGoogleId());
-            if(company != null)
+            if (company != null)
             {
                 new Company(company).expected(getCompany());
             }
@@ -362,7 +362,7 @@ public class Person
     public int compareTo(Person o)
     {
         int ret = Person.collator.compare(lastName, o.getLastName());
-        if(ret == 0)
+        if (ret == 0)
         {
             ret = Person.collator.compare(firstName, o.getFirstName());
         }
@@ -373,16 +373,16 @@ public class Person
     {
         List<Person> people = new ArrayList<Person>();
 
-        JSONObject jsonList = (JSONObject)jsonObject.get("list");
+        JSONObject jsonList = (JSONObject) jsonObject.get("list");
         assertNotNull(jsonList);
 
-        JSONArray jsonEntries = (JSONArray)jsonList.get("entries");
+        JSONArray jsonEntries = (JSONArray) jsonList.get("entries");
         assertNotNull(jsonEntries);
 
-        for(int i = 0; i < jsonEntries.size(); i++)
+        for (int i = 0; i < jsonEntries.size(); i++)
         {
-            JSONObject jsonEntry = (JSONObject)jsonEntries.get(i);
-            JSONObject entry = (JSONObject)jsonEntry.get("entry");
+            JSONObject jsonEntry = (JSONObject) jsonEntries.get(i);
+            JSONObject entry = (JSONObject) jsonEntry.get("entry");
             people.add(parsePerson(entry));
         }
 
@@ -390,5 +390,5 @@ public class Person
         ListResponse<Person> resp = new ListResponse<Person>(paging, people);
         return resp;
     }
-    
+
 }

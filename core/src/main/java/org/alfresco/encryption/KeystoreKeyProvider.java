@@ -25,8 +25,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * 
- * Provides system-wide secret keys for symmetric database encryption from a key store
- * in the filesystem. Just wraps a key store.
+ * Provides system-wide secret keys for symmetric database encryption from a key store in the filesystem. Just wraps a key store.
  * 
  * @author Derek Hulley
  * @since 4.0
@@ -42,8 +41,7 @@ public class KeystoreKeyProvider extends AbstractKeyProvider
      * Constructs the provider with required defaults
      */
     public KeystoreKeyProvider()
-    {
-    }
+    {}
 
     public KeystoreKeyProvider(KeyStoreParameters keyStoreParameters, KeyResourceLoader keyResourceLoader)
     {
@@ -51,7 +49,7 @@ public class KeystoreKeyProvider extends AbstractKeyProvider
         this.keyStore = new AlfrescoKeyStoreImpl(keyStoreParameters, keyResourceLoader);
         init();
     }
-    
+
     public void setUseBackupKeys(boolean useBackupKeys)
     {
         this.useBackupKeys = useBackupKeys;
@@ -67,15 +65,14 @@ public class KeystoreKeyProvider extends AbstractKeyProvider
         this.keyStore = keyStore;
         init();
     }
-    
+
     public void setKeyStore(AlfrescoKeyStore keyStore)
     {
         this.keyStore = keyStore;
     }
 
     public void init()
-    {
-    }
+    {}
 
     /**
      * {@inheritDoc}
@@ -83,9 +80,9 @@ public class KeystoreKeyProvider extends AbstractKeyProvider
     @Override
     public Key getKey(String keyAlias)
     {
-        if(useBackupKeys)
+        if (useBackupKeys)
         {
-            return keyStore.getBackupKey(keyAlias);            
+            return keyStore.getBackupKey(keyAlias);
         }
         else
         {

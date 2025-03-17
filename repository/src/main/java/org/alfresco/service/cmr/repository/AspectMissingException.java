@@ -39,7 +39,7 @@ import org.alfresco.service.namespace.QName;
 public class AspectMissingException extends RuntimeException
 {
     private static final long serialVersionUID = 3257852099244210228L;
-    
+
     private QName missingAspect;
     private NodeRef nodeRef;
 
@@ -48,7 +48,7 @@ public class AspectMissingException extends RuntimeException
      */
     private static final String ERROR_MESSAGE = "The {0} aspect is missing from this node (id: {1}).  " +
             "It is required for this operation.";
-    
+
     /**
      * Constructor
      */
@@ -63,7 +63,7 @@ public class AspectMissingException extends RuntimeException
     {
         return missingAspect;
     }
-    
+
     public NodeRef getNodeRef()
     {
         return nodeRef;

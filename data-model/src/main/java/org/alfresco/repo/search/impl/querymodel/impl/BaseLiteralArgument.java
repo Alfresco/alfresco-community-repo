@@ -38,33 +38,32 @@ import org.alfresco.service.namespace.QName;
 public class BaseLiteralArgument extends BaseStaticArgument implements LiteralArgument
 {
     private QName type;
-    
+
     private Serializable value;
-    
+
     public BaseLiteralArgument(String name, QName type, Serializable value)
     {
         super(name, true, false);
         this.type = type;
         this.value = value;
     }
-    
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.LiteralArgument#getValue()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.LiteralArgument#getValue() */
     public Serializable getValue(FunctionEvaluationContext context)
     {
         return value;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.LiteralArgument#getType()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.LiteralArgument#getType() */
     public QName getType()
     {
         return type;
     }
-    
+
     public String toString()
     {
         StringBuilder builder = new StringBuilder();

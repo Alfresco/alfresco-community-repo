@@ -35,9 +35,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.util.PropertyCheck;
 
 /**
  * A helper class for facet queries.
@@ -50,7 +51,6 @@ public class SolrFacetHelper
     private static Log logger = LogFactory.getLog(SolrFacetHelper.class);
 
     private final Map<String, List<String>> facetQueries;
-
 
     /** These facet IDs are recognised by SOLR and can be used directly within faceted searches. */
     private Set<String> specialFacetIds = Collections.emptySet();
@@ -79,9 +79,10 @@ public class SolrFacetHelper
     }
 
     /**
-     * Gets the predefined set of facet queries. Currently the facet queries
-     * are: <li>Created date buckets</li> <li>Modified date buckets</li> <li>
-     * Content size buckets</li>
+     * Gets the predefined set of facet queries. Currently the facet queries are:
+     * <li>Created date buckets</li>
+     * <li>Modified date buckets</li>
+     * <li>Content size buckets</li>
      * 
      * @return list of facet queries
      */
@@ -99,7 +100,8 @@ public class SolrFacetHelper
     /**
      * Whether the specified field is defined as a <i>facet.query</i> or not
      * 
-     * @param facetField String
+     * @param facetField
+     *            String
      * @return true if the facet is <i>facet.query</i>, false otherwise
      */
     public boolean hasFacetQueries(String facetField)
@@ -109,8 +111,10 @@ public class SolrFacetHelper
 
     /**
      * Gets all the defined facet queries for the specified field
-     * @param facetField the requested field
-     * @return  an unmodifiable list of facet queries, or null if none found
+     * 
+     * @param facetField
+     *            the requested field
+     * @return an unmodifiable list of facet queries, or null if none found
      */
     public List<String> getFacetQueries(String facetField)
     {
@@ -133,8 +137,7 @@ public class SolrFacetHelper
     }
 
     /**
-     * Creates a facet query by trying to extract the date range from the the
-     * search query.
+     * Creates a facet query by trying to extract the date range from the the search query.
      * 
      * @return the facet query, or null if the date range cannot be extracted
      */
@@ -171,11 +174,9 @@ public class SolrFacetHelper
             return null;
         }
     }
-    
 
     /**
-     * Is the specified facet ID part of the list of "specials" which are
-     * handled by our SOLR service as is?
+     * Is the specified facet ID part of the list of "specials" which are handled by our SOLR service as is?
      */
     public boolean isSpecialFacetId(String facetId)
     {

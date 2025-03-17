@@ -27,13 +27,8 @@
 package org.alfresco.traitextender;
 
 /**
- * Defines a two-way interfacing mechanism between a {@link Trait} exposing
- * object and an extension of that object.<br>
- * The extended object can call methods of the {@link #extensionAPI} which will
- * be able to interact with the extended object through the {@link #traitAPI}
- * interface it was paired with in the extension point. The actual circumstances
- * in which the extension methods are invoked are not defined by the extension
- * point.
+ * Defines a two-way interfacing mechanism between a {@link Trait} exposing object and an extension of that object.<br>
+ * The extended object can call methods of the {@link #extensionAPI} which will be able to interact with the extended object through the {@link #traitAPI} interface it was paired with in the extension point. The actual circumstances in which the extension methods are invoked are not defined by the extension point.
  *
  * @author Bogdan Horje
  */

@@ -25,26 +25,27 @@
  */
 package org.alfresco.rest.framework.tools;
 
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.*;
+
 import org.alfresco.metrics.rest.RestMetricsReporter;
 import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.exceptions.DefaultExceptionResolver;
 import org.alfresco.rest.framework.core.exceptions.ErrorResponse;
 import org.alfresco.rest.framework.core.exceptions.ExceptionResolver;
-import org.alfresco.rest.framework.core.exceptions.QueryParserExceptionResolver;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.*;
-
-import java.util.Map;
 
 /**
  * Assists you in creating a great Rest API.
  *
  * @author Gethin James
  */
-public class ApiAssistant {
+public class ApiAssistant
+{
 
     private static Log logger = LogFactory.getLog(ApiAssistant.class);
 
@@ -57,6 +58,7 @@ public class ApiAssistant {
 
     /**
      * Determines the api being used from the templateVars
+     * 
      * @param templateVars
      * @return Api
      */
@@ -65,11 +67,12 @@ public class ApiAssistant {
         String apiScope = templateVars.get("apiScope");
         String apiVersion = templateVars.get("apiVersion");
         String apiName = templateVars.get("apiName");
-        return Api.valueOf(apiName,apiScope,apiVersion);
+        return Api.valueOf(apiName, apiScope, apiVersion);
     }
 
     /**
      * Resolves an exception as a json error.
+     * 
      * @param exception
      * @return ErrorResponse
      */
@@ -95,15 +98,18 @@ public class ApiAssistant {
         return error;
     }
 
-    public JacksonHelper getJsonHelper() {
+    public JacksonHelper getJsonHelper()
+    {
         return jsonHelper;
     }
 
-    public void setDefaultResolver(ExceptionResolver<Exception> defaultResolver) {
+    public void setDefaultResolver(ExceptionResolver<Exception> defaultResolver)
+    {
         this.defaultResolver = defaultResolver;
     }
 
-    public void setWebScriptExceptionResolver(ExceptionResolver<WebScriptException> webScriptExceptionResolver) {
+    public void setWebScriptExceptionResolver(ExceptionResolver<WebScriptException> webScriptExceptionResolver)
+    {
         this.webScriptExceptionResolver = webScriptExceptionResolver;
     }
 
@@ -112,11 +118,13 @@ public class ApiAssistant {
         this.queryParserExceptionResolver = queryParserExceptionResolver;
     }
 
-    public void setResolver(ExceptionResolver<Exception> resolver) {
+    public void setResolver(ExceptionResolver<Exception> resolver)
+    {
         this.resolver = resolver;
     }
 
-    public void setJsonHelper(JacksonHelper jsonHelper) {
+    public void setJsonHelper(JacksonHelper jsonHelper)
+    {
         this.jsonHelper = jsonHelper;
     }
 

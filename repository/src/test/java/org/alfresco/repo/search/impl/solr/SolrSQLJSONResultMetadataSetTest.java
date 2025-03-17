@@ -30,8 +30,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
+
 /**
  * Validates that the SolrSQLJSONResultSet is accurately parsing the solr stream response.
+ * 
  * @author Michael Suzuki
  *
  */
@@ -52,8 +54,9 @@ public class SolrSQLJSONResultMetadataSetTest
         JSONArray docs = ssjr.getDocs();
         Assert.assertNotNull(docs);
         Assert.assertNotNull(ssjr.getResultSetMetaData());
-        
+
     }
+
     @Test
     public void parseSQLErrorResponse() throws JSONException
     {
@@ -70,10 +73,10 @@ public class SolrSQLJSONResultMetadataSetTest
             Assert.assertEquals("Unable to execute the query, error caused by: Column 'SIT1E' not found in any table", e.getMessage());
         }
     }
-    
+
     /**
-     * Validates that when a query is done against SearchService then it should state that it works only with
-     * Insight Engine.
+     * Validates that when a query is done against SearchService then it should state that it works only with Insight Engine.
+     * 
      * @throws JSONException
      */
     @Test

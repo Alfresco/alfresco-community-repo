@@ -79,14 +79,14 @@ public class ChainingAuthenticationServiceTest extends TestCase
         {
             throw new AlfrescoRuntimeException(
                     "A previous tests did not clean up transaction: " +
-                    AlfrescoTransactionSupport.getTransactionId());
+                            AlfrescoTransactionSupport.getTransactionId());
         }
-        
+
         AuthenticationUtil authUtil = new AuthenticationUtil();
         authUtil.setDefaultAdminUserName("admin");
         authUtil.setDefaultGuestUserName("guest");
         authUtil.afterPropertiesSet();
-        
+
         service1 = new TestAuthenticationServiceImpl(ALFRESCO, true, true, true, false);
         service1.createAuthentication("andy", "andy".toCharArray());
 
@@ -599,26 +599,26 @@ public class ChainingAuthenticationServiceTest extends TestCase
         as.clearCurrentSecurityContext();
         assertNull(as.getCurrentUserName());
     }
-    
+
     public void testService_NoGuestConfigured() throws Exception
     {
-        
+
         ChainingAuthenticationServiceImpl as = new ChainingAuthenticationServiceImpl();
         ArrayList<AuthenticationService> ases = new ArrayList<AuthenticationService>();
         ases.add(service2);
         as.setAuthenticationServices(ases);
-        
+
         assertNotNull(AuthenticationUtil.getGuestUserName());
         as.authenticateAsGuest();
         assertEquals(as.getCurrentUserName(), AuthenticationUtil.getGuestUserName());
         as.clearCurrentSecurityContext();
         assertNull(as.getCurrentUserName());
-        
+
         AuthenticationUtil authUtil = new AuthenticationUtil();
         authUtil.setDefaultAdminUserName("admin");
         authUtil.setDefaultGuestUserName(null);
         authUtil.afterPropertiesSet();
-        
+
         try
         {
             as.authenticateAsGuest();
@@ -631,7 +631,7 @@ public class ChainingAuthenticationServiceTest extends TestCase
         }
         assertNull(as.getCurrentUserName());
     }
-    
+
     public void testService_Domains()
     {
         ChainingAuthenticationServiceImpl as = new ChainingAuthenticationServiceImpl();

@@ -30,13 +30,14 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
-import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.integrity.IntegrityException;
@@ -49,7 +50,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:recordComponentIdentifier behaviour bean
@@ -57,13 +57,11 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:recordComponentIdentifier"
-)
-public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
-                                             implements NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                                        NodeServicePolicies.BeforeDeleteNodePolicy
+@BehaviourBean(
+        defaultType = "rma:recordComponentIdentifier")
+public class RecordComponentIdentifierAspect extends BaseBehaviourBean
+        implements NodeServicePolicies.OnUpdatePropertiesPolicy,
+        NodeServicePolicies.BeforeDeleteNodePolicy
 {
     /** I18N */
     private static final String MSG_SET_ID = "rm.service.set-id";
@@ -81,7 +79,8 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
     private IdentifierService identifierService;
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -89,7 +88,8 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
     }
 
     /**
-     * @param attributeService  attribute service
+     * @param attributeService
+     *            attribute service
      */
     public void setAttributeService(AttributeService attributeService)
     {
@@ -97,7 +97,8 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
     }
 
     /**
-     * @param identifierService identifier service
+     * @param identifierService
+     *            identifier service
      */
     public void setIdentifierService(IdentifierService identifierService)
     {
@@ -105,27 +106,23 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
     }
 
     /**
-     * Ensures that the {@link RecordsManagementModel#PROP_IDENTIFIER rma:identifier} property remains
-     * unique within the context of the parent node.
+     * Ensures that the {@link RecordsManagementModel#PROP_IDENTIFIER rma:identifier} property remains unique within the context of the parent node.
      *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.EVERY_EVENT
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.EVERY_EVENT)
     public void onUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork()
             {
-                String newIdValue = (String)after.get(PROP_IDENTIFIER);
+                String newIdValue = (String) after.get(PROP_IDENTIFIER);
                 if (newIdValue != null)
                 {
-                    String oldIdValue = (String)before.get(PROP_IDENTIFIER);
+                    String oldIdValue = (String) before.get(PROP_IDENTIFIER);
                     if (oldIdValue != null && !oldIdValue.equals(newIdValue))
                     {
                         throw new IntegrityException(I18NUtil.getMessage(MSG_SET_ID, nodeRef.toString()), null);
@@ -145,15 +142,12 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.EVERY_EVENT
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.EVERY_EVENT)
     public void beforeDeleteNode(final NodeRef nodeRef)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork()
             {
                 String beforeId = (String) nodeService.getProperty(nodeRef, PROP_IDENTIFIER);
@@ -166,24 +160,23 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
     /**
      * Record component identifier aspect copy callback
      */
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       policy = "alf:getCopyCallback"
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            policy = "alf:getCopyCallback")
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
         return new DoNothingCopyBehaviourCallback();
     }
 
-
     /**
-     * Updates the uniqueness check using the values provided.  If the after value is <tt>null</tt>
-     * then this is considered to be a removal.
+     * Updates the uniqueness check using the values provided. If the after value is <tt>null</tt> then this is considered to be a removal.
      *
-     * @param nodeRef   node reference
-     * @param beforeId  id before
-     * @param afterId   id after
+     * @param nodeRef
+     *            node reference
+     * @param beforeId
+     *            id before
+     * @param afterId
+     *            id after
      */
     private void updateUniqueness(NodeRef nodeRef, String beforeId, String afterId)
     {
@@ -204,7 +197,7 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
             // Do a blanket removal in case this is a contextual nodes
             attributeService.removeAttributes(CONTEXT_VALUE, nodeRef);
         }
-        else if(!beforeId.equals(afterId))
+        else if (!beforeId.equals(afterId))
         {
             // This is a full update
             attributeService.updateOrCreateAttribute(

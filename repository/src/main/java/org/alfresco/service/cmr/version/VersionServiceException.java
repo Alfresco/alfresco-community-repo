@@ -33,9 +33,9 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * @author Roy Wetherall
  */
 public class VersionServiceException extends AlfrescoRuntimeException
-{   
+{
     private static final long serialVersionUID = 3544671772030349881L;
-    
+
     public VersionServiceException(String msgId, Throwable cause)
     {
         super(msgId, cause);

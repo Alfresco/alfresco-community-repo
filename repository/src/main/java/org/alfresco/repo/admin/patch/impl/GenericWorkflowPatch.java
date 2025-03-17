@@ -29,15 +29,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.workflow.BPMEngineRegistry;
 import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.service.cmr.admin.PatchException;
 import org.alfresco.service.cmr.workflow.WorkflowAdminService;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Generic patch that re-deploys a workflow definition
@@ -50,21 +51,20 @@ public class GenericWorkflowPatch extends AbstractPatch implements ApplicationCo
     private static final String MSG_UNDEPLOYED = "patch.genericWorkflow.result.undeployed";
     private static final String ERR_PROPERTY_REQUIRED = "patch.genericWorkflow.property_required";
     private static final String MSG_ERROR_ENGINE_DEACTIVATED = "patch.genericWorkflow.error_engine_deactivated";
-    
+
     private ApplicationContext applicationContext;
     private List<Properties> workflowDefinitions;
     private List<String> undeployWorkflowNames;
 
-    
     /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
+     * 
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext) */
     public void setApplicationContext(ApplicationContext applicationContext)
-        throws BeansException
+            throws BeansException
     {
         this.applicationContext = applicationContext;
     }
-    
+
     /**
      * Sets the Workflow Definitions
      * 
@@ -73,11 +73,12 @@ public class GenericWorkflowPatch extends AbstractPatch implements ApplicationCo
     {
         this.workflowDefinitions = workflowDefinitions;
     }
-    
+
     /**
      * Sets the Workflow Names to be undeployed
      * 
-     * @param undeployWorkflowNames list with names
+     * @param undeployWorkflowNames
+     *            list with names
      */
     public void setUndeployWorkflowNames(List<String> undeployWorkflowNames)
     {
@@ -87,20 +88,20 @@ public class GenericWorkflowPatch extends AbstractPatch implements ApplicationCo
     @Override
     protected void checkProperties()
     {
-        if ( (workflowDefinitions == null) && (undeployWorkflowNames == null) )
+        if ((workflowDefinitions == null) && (undeployWorkflowNames == null))
         {
             throw new PatchException(ERR_PROPERTY_REQUIRED, "workflowDefinitions", "undeployWorkflowNames", this);
         }
         super.checkProperties();
     }
-    
+
     @Override
     protected String applyInternal() throws Exception
     {
-        WorkflowDeployer deployer = (WorkflowDeployer)applicationContext.getBean("workflowPatchDeployer");
-        WorkflowAdminService workflowAdminService = (WorkflowAdminService)applicationContext.getBean("workflowAdminService");
-        
-        if(workflowDefinitions != null)
+        WorkflowDeployer deployer = (WorkflowDeployer) applicationContext.getBean("workflowPatchDeployer");
+        WorkflowAdminService workflowAdminService = (WorkflowAdminService) applicationContext.getBean("workflowAdminService");
+
+        if (workflowDefinitions != null)
         {
             for (Properties props : workflowDefinitions)
             {
@@ -109,13 +110,13 @@ public class GenericWorkflowPatch extends AbstractPatch implements ApplicationCo
             deployer.setWorkflowDefinitions(workflowDefinitions);
             deployer.init();
         }
-        
+
         int undeployed = 0;
         StringBuilder errorMessages = new StringBuilder();
-        if(undeployWorkflowNames != null)
+        if (undeployWorkflowNames != null)
         {
             List<String> undeployableWorkflows = new ArrayList<String>(undeployWorkflowNames);
-            for(String workflowName : undeployWorkflowNames)
+            for (String workflowName : undeployWorkflowNames)
             {
                 String engineId = BPMEngineRegistry.getEngineId(workflowName);
                 if (workflowAdminService.isEngineEnabled(engineId))
@@ -129,22 +130,22 @@ public class GenericWorkflowPatch extends AbstractPatch implements ApplicationCo
             }
             undeployed = deployer.undeploy(undeployableWorkflows);
         }
-        
+
         // done
         StringBuilder msg = new StringBuilder();
-        if(workflowDefinitions != null)
+        if (workflowDefinitions != null)
         {
             msg.append(I18NUtil.getMessage(MSG_DEPLOYED, workflowDefinitions.size()));
         }
-        if(undeployWorkflowNames != null)
+        if (undeployWorkflowNames != null)
         {
-            if(msg.length() > 0)
+            if (msg.length() > 0)
             {
                 msg.append(' ');
             }
             msg.append(I18NUtil.getMessage(MSG_UNDEPLOYED, undeployed));
         }
-        if(errorMessages.length() > 0)
+        if (errorMessages.length() > 0)
         {
             msg.append(errorMessages);
         }

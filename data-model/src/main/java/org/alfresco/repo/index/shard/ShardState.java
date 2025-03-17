@@ -27,12 +27,9 @@ package org.alfresco.repo.index.shard;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
-
-import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
- * Store shard state for auto discovery 
+ * Store shard state for auto discovery
  * 
  * @author Andy
  *
@@ -42,11 +39,11 @@ public class ShardState implements Serializable
     private static final long serialVersionUID = -5961621567026938963L;
 
     ShardInstance shardInstance;
-        
+
     private boolean isMaster;
-    
+
     private long lastUpdated;
-    
+
     private long lastIndexedChangeSetId;
 
     private long lastIndexedTxCommitTime = 0;
@@ -54,14 +51,12 @@ public class ShardState implements Serializable
     private long lastIndexedTxId = 0;
 
     private long lastIndexedChangeSetCommitTime = 0;
-    
-    
+
     private HashMap<String, String> propertyBag = new HashMap<String, String>();
 
     public ShardState()
-    {
-    }
-    
+    {}
+
     /**
      * @return the shardInstance
      */
@@ -71,7 +66,8 @@ public class ShardState implements Serializable
     }
 
     /**
-     * @param shardInstance the shardInstance to set
+     * @param shardInstance
+     *            the shardInstance to set
      */
     public void setShardInstance(ShardInstance shardInstance)
     {
@@ -87,7 +83,8 @@ public class ShardState implements Serializable
     }
 
     /**
-     * @param isMaster the isMaster to set
+     * @param isMaster
+     *            the isMaster to set
      */
     public void setMaster(boolean isMaster)
     {
@@ -103,13 +100,13 @@ public class ShardState implements Serializable
     }
 
     /**
-     * @param propertyBag the propertyBag to set
+     * @param propertyBag
+     *            the propertyBag to set
      */
     public void setPropertyBag(HashMap<String, String> propertyBag)
     {
         this.propertyBag = propertyBag;
     }
-    
 
     /**
      * @return the lastUpdated
@@ -120,7 +117,8 @@ public class ShardState implements Serializable
     }
 
     /**
-     * @param lastUpdated the lastUpdated to set
+     * @param lastUpdated
+     *            the lastUpdated to set
      */
     public void setLastUpdated(long lastUpdated)
     {
@@ -136,7 +134,8 @@ public class ShardState implements Serializable
     }
 
     /**
-     * @param lastIndexedChangeSetId the lastIndexedChangeSetId to set
+     * @param lastIndexedChangeSetId
+     *            the lastIndexedChangeSetId to set
      */
     public void setLastIndexedChangeSetId(long lastIndexedChangeSetId)
     {
@@ -152,7 +151,8 @@ public class ShardState implements Serializable
     }
 
     /**
-     * @param lastIndexedTxCommitTime the lastIndexedTxCommitTime to set
+     * @param lastIndexedTxCommitTime
+     *            the lastIndexedTxCommitTime to set
      */
     public void setLastIndexedTxCommitTime(long lastIndexedTxCommitTime)
     {
@@ -168,7 +168,8 @@ public class ShardState implements Serializable
     }
 
     /**
-     * @param lastIndexedTxId the lastIndexedTxId to set
+     * @param lastIndexedTxId
+     *            the lastIndexedTxId to set
      */
     public void setLastIndexedTxId(long lastIndexedTxId)
     {
@@ -184,7 +185,8 @@ public class ShardState implements Serializable
     }
 
     /**
-     * @param lastIndexedChangeSetCommitTime the lastIndexedChangeSetCommitTime to set
+     * @param lastIndexedChangeSetCommitTime
+     *            the lastIndexedChangeSetCommitTime to set
      */
     public void setLastIndexedChangeSetCommitTime(long lastIndexedChangeSetCommitTime)
     {
@@ -192,8 +194,8 @@ public class ShardState implements Serializable
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+     * 
+     * @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
@@ -203,7 +205,4 @@ public class ShardState implements Serializable
                 + propertyBag + "]";
     }
 
-  
-
-    
 }

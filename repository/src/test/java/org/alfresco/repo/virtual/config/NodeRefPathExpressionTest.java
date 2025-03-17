@@ -32,12 +32,13 @@ import static org.junit.Assert.assertNotSame;
 
 import java.io.Serializable;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.repo.virtual.VirtualizationTest;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.junit.Before;
-import org.junit.Test;
 
 public class NodeRefPathExpressionTest extends VirtualizationIntegrationTest implements VirtualizationTest
 {
@@ -61,34 +62,34 @@ public class NodeRefPathExpressionTest extends VirtualizationIntegrationTest imp
         NodeRef nodeRef = pathExpression.resolve();
         assertNotNull(nodeRef);
         Serializable theName = nodeService.getProperty(nodeRef,
-                                                       ContentModel.PROP_NAME);
+                ContentModel.PROP_NAME);
         assertEquals("Unexpected name for path " + pathExpression,
-                     toName,
-                     theName);
+                toName,
+                theName);
     }
 
     @Test
     public void testResolveNamePath() throws Exception
     {
         assertResolvablePath("/Data Dictionary",
-                             "Data Dictionary");
+                "Data Dictionary");
         assertResolvablePath("/Data Dictionary//Messages",
-                             "Messages");
+                "Messages");
         assertResolvablePath("",
-                             "Company Home");
+                "Company Home");
         assertResolvablePath("//",
-                             "Company Home");
+                "Company Home");
     }
 
     @Test
     public void testResolveQNamePath() throws Exception
     {
         assertResolvablePath("",
-                             "Company Home");
+                "Company Home");
         assertResolvablePath("app:dictionary",
-                             "Data Dictionary");
+                "Data Dictionary");
         assertResolvablePath("/app:dictionary/app:messages",
-                             "Messages");
+                "Messages");
     }
 
     @Test
@@ -97,13 +98,13 @@ public class NodeRefPathExpressionTest extends VirtualizationIntegrationTest imp
         NodeRefPathExpression spe1 = nodeRefPathExpressionFactory.createInstance();
         NodeRefPathExpression spe2 = nodeRefPathExpressionFactory.createInstance();
         assertNotSame(spe1,
-                      spe2);
+                spe2);
         spe1.setPath("Data Dictionary");
         spe2.setPath("/Data Dictionary//Messages");
         NodeRef nr = spe1.resolve();
         Serializable theName = nodeService.getProperty(nr,
-                                                       ContentModel.PROP_NAME);
+                ContentModel.PROP_NAME);
         assertEquals("Data Dictionary",
-                     theName);
+                theName);
     }
 }

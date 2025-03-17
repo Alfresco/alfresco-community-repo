@@ -41,24 +41,24 @@ import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Java Script Transfer Service.   Adapts the Java Transfer Service to
- * Java Script.
+ * Java Script Transfer Service. Adapts the Java Transfer Service to Java Script.
  *
  * @author Mark Rogers
  */
 public class ScriptTransferService extends BaseScopableProcessorExtension
 {
     private TransferService transferService;
-    
+
     private ServiceRegistry serviceRegistry;
-    
+
     ValueConverter valueConverter = new ValueConverter();
-    
+
     // Which aspects to exclude
     private List<QName> excludedAspects = new ArrayList<QName>();
 
     /**
-     * @param transferService TransferService
+     * @param transferService
+     *            TransferService
      */
     public void setTransferService(TransferService transferService)
     {
@@ -73,224 +73,230 @@ public class ScriptTransferService extends BaseScopableProcessorExtension
     {
         return transferService;
     }
-    
+
     /**
      * create a transfer target
      */
-    
+
     /**
      * Get the transfer targets for the specified group
      */
     public ScriptTransferTarget[] getTransferTargetsByGroup(String groupName)
     {
-        
+
         Set<TransferTarget> values = transferService.getTransferTargets(groupName);
-        
+
         ScriptTransferTarget[] retVal = new ScriptTransferTarget[values.size()];
-        
+
         int i = 0;
-        for(TransferTarget value : values)
+        for (TransferTarget value : values)
         {
             retVal[i++] = new ScriptTransferTarget(value);
         }
         return retVal;
     }
-    
+
     public ScriptTransferTarget[] getAllTransferTargets()
     {
         Set<TransferTarget> values = transferService.getTransferTargets();
-        
+
         ScriptTransferTarget[] retVal = new ScriptTransferTarget[values.size()];
-        
+
         int i = 0;
-        for(TransferTarget value : values)
+        for (TransferTarget value : values)
         {
             retVal[i++] = new ScriptTransferTarget(value);
         }
-        
+
         return retVal;
     }
-    
+
     public ScriptTransferTarget getTransferTarget(String name)
     {
         TransferTarget value = transferService.getTransferTarget(name);
-        
-        if(value != null)
+
+        if (value != null)
         {
             return new ScriptTransferTarget(value);
         }
         return null;
     }
-    
+
     /**
      * Transfer a set of nodes, with no callback.
      * <p>
      * Nodes are to be locked read only on target.
      * 
-     * @param targetName the name of the target to transfer to
-     * @param nodesToTransfer the nodes to transfer - Java Script Array of either ScriptNodes, NodeRef or String
-     * @return node ref of transfer report.  
+     * @param targetName
+     *            the name of the target to transfer to
+     * @param nodesToTransfer
+     *            the nodes to transfer - Java Script Array of either ScriptNodes, NodeRef or String
+     * @return node ref of transfer report.
      */
     @SuppressWarnings("unchecked")
     public ScriptNode transferReadOnly(String targetName, Object nodesToTransfer)
     {
         Object nodesObject = valueConverter.convertValueForJava(nodesToTransfer);
-        
+
         TransferDefinition toTransfer = new TransferDefinition();
         toTransfer.setReadOnly(true);
         toTransfer.setExcludedAspects(excludedAspects);
-        
+
         Collection<NodeRef> nodeCollection = new ArrayList<NodeRef>();
-        
-        if(nodesObject instanceof Collection)
+
+        if (nodesObject instanceof Collection)
         {
-            for(Object value : (Collection)nodesObject)
+            for (Object value : (Collection) nodesObject)
             {
-                if(value instanceof NodeRef)
+                if (value instanceof NodeRef)
                 {
-                    nodeCollection.add((NodeRef)value);
+                    nodeCollection.add((NodeRef) value);
                 }
                 else if (value instanceof String)
                 {
-                    nodeCollection.add(new NodeRef((String)value));
+                    nodeCollection.add(new NodeRef((String) value));
                 }
                 else
-                {        
+                {
                     throw new IllegalArgumentException("transfer: unknown type in collection: " + value.getClass().getName());
-                } 
+                }
             }
-           
+
         }
-        else if(nodesObject instanceof NodeRef)
+        else if (nodesObject instanceof NodeRef)
         {
-            nodeCollection.add((NodeRef)nodesObject);
+            nodeCollection.add((NodeRef) nodesObject);
         }
         else if (nodesObject instanceof String)
         {
-            nodeCollection.add(new NodeRef((String)nodesObject));
+            nodeCollection.add(new NodeRef((String) nodesObject));
         }
         else
-        {   
+        {
             throw new IllegalArgumentException("transfer: unexpected type for nodes :" + nodesObject.getClass().getName());
         }
-        
+
         toTransfer.setNodes(nodeCollection);
         NodeRef reportNode = transferService.transfer(targetName, toTransfer);
-        
+
         return new ScriptNode(reportNode, serviceRegistry, getScope());
     }
+
     /**
      * Transfer a set of nodes, with no callback
      * <p>
      * Nodes are not locked on the target.
      * 
-     * @param targetName the name of the target to transfer to
-     * @param nodesToTransfer the nodes to transfer - Java Script Array of either ScriptNodes, NodeRef or String
-     * @return node ref of transfer report.  
+     * @param targetName
+     *            the name of the target to transfer to
+     * @param nodesToTransfer
+     *            the nodes to transfer - Java Script Array of either ScriptNodes, NodeRef or String
+     * @return node ref of transfer report.
      */
     @SuppressWarnings("unchecked")
     public ScriptNode transfer(String targetName, Object nodesToTransfer)
     {
         Object nodesObject = valueConverter.convertValueForJava(nodesToTransfer);
-        
+
         TransferDefinition toTransfer = new TransferDefinition();
         toTransfer.setExcludedAspects(excludedAspects);
         Collection<NodeRef> nodeCollection = new ArrayList<NodeRef>();
-        
-        if(nodesObject instanceof Collection)
+
+        if (nodesObject instanceof Collection)
         {
-            for(Object value : (Collection)nodesObject)
+            for (Object value : (Collection) nodesObject)
             {
-                if(value instanceof NodeRef)
+                if (value instanceof NodeRef)
                 {
-                    nodeCollection.add((NodeRef)value);
+                    nodeCollection.add((NodeRef) value);
                 }
                 else if (value instanceof String)
                 {
-                    nodeCollection.add(new NodeRef((String)value));
+                    nodeCollection.add(new NodeRef((String) value));
                 }
                 else
-                {        
+                {
                     throw new IllegalArgumentException("transfer: unknown type in collection: " + value.getClass().getName());
-                } 
+                }
             }
-           
+
         }
-        else if(nodesObject instanceof NodeRef)
+        else if (nodesObject instanceof NodeRef)
         {
-            nodeCollection.add((NodeRef)nodesObject);
+            nodeCollection.add((NodeRef) nodesObject);
         }
         else if (nodesObject instanceof String)
         {
-            nodeCollection.add(new NodeRef((String)nodesObject));
+            nodeCollection.add(new NodeRef((String) nodesObject));
         }
         else
-        {   
+        {
             throw new IllegalArgumentException("transfer: unexpected type for nodes :" + nodesObject.getClass().getName());
         }
-        
+
         toTransfer.setNodes(nodeCollection);
         NodeRef reportNode = transferService.transfer(targetName, toTransfer);
-        
+
         return new ScriptNode(reportNode, serviceRegistry, getScope());
     }
-    
+
     /**
      * Remove a set of nodes, with no callback
      * <p>
      * Nodes are not locked on the target.
      * 
-     * @param targetName the name of the target to transfer to
-     * @param nodesToRemove the nodes to transfer - Java Script Array of either ScriptNodes, NodeRef or String
-     * @return node ref of transfer report.  
+     * @param targetName
+     *            the name of the target to transfer to
+     * @param nodesToRemove
+     *            the nodes to transfer - Java Script Array of either ScriptNodes, NodeRef or String
+     * @return node ref of transfer report.
      */
     @SuppressWarnings("unchecked")
     public ScriptNode remove(String targetName, Object nodesToRemove)
     {
         Object nodesObject = valueConverter.convertValueForJava(nodesToRemove);
-        
+
         TransferDefinition toTransfer = new TransferDefinition();
         toTransfer.setExcludedAspects(excludedAspects);
         Collection<NodeRef> nodeCollection = new ArrayList<NodeRef>();
-        
-        if(nodesObject instanceof Collection)
+
+        if (nodesObject instanceof Collection)
         {
-            for(Object value : (Collection)nodesObject)
+            for (Object value : (Collection) nodesObject)
             {
-                if(value instanceof NodeRef)
+                if (value instanceof NodeRef)
                 {
-                    nodeCollection.add((NodeRef)value);
+                    nodeCollection.add((NodeRef) value);
                 }
                 else if (value instanceof String)
                 {
-                    nodeCollection.add(new NodeRef((String)value));
+                    nodeCollection.add(new NodeRef((String) value));
                 }
                 else
-                {        
+                {
                     throw new IllegalArgumentException("transfer: unknown type in collection: " + value.getClass().getName());
-                } 
+                }
             }
-           
+
         }
-        else if(nodesObject instanceof NodeRef)
+        else if (nodesObject instanceof NodeRef)
         {
-            nodeCollection.add((NodeRef)nodesObject);
+            nodeCollection.add((NodeRef) nodesObject);
         }
         else if (nodesObject instanceof String)
         {
-            nodeCollection.add(new NodeRef((String)nodesObject));
+            nodeCollection.add(new NodeRef((String) nodesObject));
         }
         else
-        {   
+        {
             throw new IllegalArgumentException("transfer: unexpected type for nodes :" + nodesObject.getClass().getName());
         }
-        
+
         toTransfer.setNodesToRemove(nodeCollection);
         NodeRef reportNode = transferService.transfer(targetName, toTransfer);
-        
+
         return new ScriptNode(reportNode, serviceRegistry, getScope());
     }
-
 
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {

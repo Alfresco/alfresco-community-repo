@@ -38,7 +38,8 @@ public enum InclusionType
     /**
      * Load an InclusionType from a given string (case insensitively).
      *
-     * @param inclusionType The given string.
+     * @param inclusionType
+     *            The given string.
      * @return The inclusion type.
      */
     public static InclusionType from(String inclusionType)

@@ -35,7 +35,7 @@ public class SoftRenameFileCommand extends RenameFileCommand
     {
         super(from, to, rootNode, fromPath, toPath);
     }
-    
+
     public boolean isSoft()
     {
         return true;

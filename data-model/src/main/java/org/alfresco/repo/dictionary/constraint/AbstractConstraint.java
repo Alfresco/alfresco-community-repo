@@ -43,19 +43,18 @@ public abstract class AbstractConstraint implements Constraint
 {
     public static final String ERR_PROP_NOT_SET = "d_dictionary.constraint.err.property_not_set";
     public static final String ERR_EVALUATE_EXCEPTION = "d_dictionary.constraint.err.evaluate_exception";
-    
-    
+
     /** The constraint name. May be useful in error messages */
     private String shortName;
     private String title;
-    
+
     private ConstraintRegistry registry;
 
     /**
-     * Sets the constraint name. Automatically called after construction. Please excuse the strange method name as we
-     * want the property name to begin with an underscore to avoid property name clashes.
+     * Sets the constraint name. Automatically called after construction. Please excuse the strange method name as we want the property name to begin with an underscore to avoid property name clashes.
      * 
-     * @param shortName String
+     * @param shortName
+     *            String
      * @deprecated
      */
     public void set_shortName(String shortName)
@@ -65,7 +64,9 @@ public abstract class AbstractConstraint implements Constraint
 
     /**
      * Sets the constraint name
-     * @param name String
+     * 
+     * @param name
+     *            String
      */
     public void setShortName(String name)
     {
@@ -83,31 +84,31 @@ public abstract class AbstractConstraint implements Constraint
     }
 
     /**
-     * Optionally specify the registry that will be used to register the constraint.
-     * This is used when instantiating constraints outside the dictionary.
+     * Optionally specify the registry that will be used to register the constraint. This is used when instantiating constraints outside the dictionary.
      * 
-     * @param registry          the constraint registry
+     * @param registry
+     *            the constraint registry
      */
     public void setRegistry(ConstraintRegistry registry)
     {
         this.registry = registry;
     }
-    
+
     public String getType()
     {
         return this.getClass().getName();
     }
-    
+
     public void setTitle(String title)
     {
         this.title = title;
     }
-    
+
     public String getTitle()
     {
         return title;
     }
-    
+
     public Map<String, Object> getParameters()
     {
         return new HashMap<String, Object>(3);
@@ -116,8 +117,7 @@ public abstract class AbstractConstraint implements Constraint
     /**
      * {@inheritDoc}
      * <p>
-     * Registers the constraint with the registry, if present.  Call this method if
-     * you want the constraint to be auto-registered.
+     * Registers the constraint with the registry, if present. Call this method if you want the constraint to be auto-registered.
      */
     public void initialize()
     {
@@ -130,10 +130,13 @@ public abstract class AbstractConstraint implements Constraint
     /**
      * Check that the given value is not <tt>null</tt>.
      * 
-     * @param name the name of the property
-     * @param value the value to check for <tt>null</tt>
+     * @param name
+     *            the name of the property
+     * @param value
+     *            the value to check for <tt>null</tt>
      * 
-     * @throws DictionaryException if the the property is null
+     * @throws DictionaryException
+     *             if the the property is null
      */
     protected void checkPropertyNotNull(String name, Object value)
     {
@@ -178,12 +181,12 @@ public abstract class AbstractConstraint implements Constraint
             throw new DictionaryException(AbstractConstraint.ERR_EVALUATE_EXCEPTION, this, e.getMessage());
         }
     }
-    
+
     /**
-     * Only override if there is some specific evaluation that needs to be performed on the
-     * collection as a whole.
+     * Only override if there is some specific evaluation that needs to be performed on the collection as a whole.
      * 
-     * @param collection the collection of values to evaluate
+     * @param collection
+     *            the collection of values to evaluate
      * 
      * @see #evaluateSingleValue(Object)
      */
@@ -199,12 +202,12 @@ public abstract class AbstractConstraint implements Constraint
             evaluateSingleValue(value);
         }
     }
-    
+
     /**
-     * Support for evaluation of properties.  The value passed in will never be a
-     * <tt>Collection</tt> and will never be <tt>null</tt>.
+     * Support for evaluation of properties. The value passed in will never be a <tt>Collection</tt> and will never be <tt>null</tt>.
      * 
-     * @throws ConstraintException throw this when the evaluation fails
+     * @throws ConstraintException
+     *             throw this when the evaluation fails
      */
     protected abstract void evaluateSingleValue(Object value);
 }

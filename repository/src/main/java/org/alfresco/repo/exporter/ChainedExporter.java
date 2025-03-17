@@ -37,24 +37,23 @@ import org.alfresco.service.cmr.view.Exporter;
 import org.alfresco.service.cmr.view.ExporterContext;
 import org.alfresco.service.namespace.QName;
 
-
 /**
  * Exporter that wraps one or more other exporters and invokes them in the provided order.
  * 
  * @author David Caruana
  */
-/*package*/ class ChainedExporter
-    implements Exporter
+/* package */ class ChainedExporter
+        implements Exporter
 {
     private Exporter[] exporters;
 
-    
     /**
      * Construct
      * 
-     * @param exporters  array of exporters to invoke
+     * @param exporters
+     *            array of exporters to invoke
      */
-    /*package*/ ChainedExporter(Exporter[] exporters)
+    /* package */ ChainedExporter(Exporter[] exporters)
     {
         List<Exporter> exporterList = new ArrayList<Exporter>();
         for (Exporter exporter : exporters)
@@ -66,10 +65,10 @@ import org.alfresco.service.namespace.QName;
         }
         this.exporters = exporterList.toArray(new Exporter[exporterList.size()]);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#start()
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#start() */
     public void start(ExporterContext context)
     {
         for (Exporter exporter : exporters)
@@ -77,10 +76,10 @@ import org.alfresco.service.namespace.QName;
             exporter.start(context);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#startNamespace(java.lang.String, java.lang.String)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#startNamespace(java.lang.String, java.lang.String) */
     public void startNamespace(String prefix, String uri)
     {
         for (Exporter exporter : exporters)
@@ -88,10 +87,10 @@ import org.alfresco.service.namespace.QName;
             exporter.startNamespace(prefix, uri);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#endNamespace(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#endNamespace(java.lang.String) */
     public void endNamespace(String prefix)
     {
         for (Exporter exporter : exporters)
@@ -101,8 +100,8 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#startNode(org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#startNode(org.alfresco.service.cmr.repository.NodeRef) */
     public void startNode(NodeRef nodeRef)
     {
         for (Exporter exporter : exporters)
@@ -110,10 +109,10 @@ import org.alfresco.service.namespace.QName;
             exporter.startNode(nodeRef);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#endNode(org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#endNode(org.alfresco.service.cmr.repository.NodeRef) */
     public void endNode(NodeRef nodeRef)
     {
         for (Exporter exporter : exporters)
@@ -121,10 +120,10 @@ import org.alfresco.service.namespace.QName;
             exporter.endNode(nodeRef);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#startAspects(org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#startAspects(org.alfresco.service.cmr.repository.NodeRef) */
     public void startAspects(NodeRef nodeRef)
     {
         for (Exporter exporter : exporters)
@@ -134,8 +133,8 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#endAspects(org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#endAspects(org.alfresco.service.cmr.repository.NodeRef) */
     public void endAspects(NodeRef nodeRef)
     {
         for (Exporter exporter : exporters)
@@ -143,10 +142,10 @@ import org.alfresco.service.namespace.QName;
             exporter.endAspects(nodeRef);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#startAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#startAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
     public void startAspect(NodeRef nodeRef, QName aspect)
     {
         for (Exporter exporter : exporters)
@@ -156,8 +155,8 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#endAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#endAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
     public void endAspect(NodeRef nodeRef, QName aspect)
     {
         for (Exporter exporter : exporters)
@@ -167,8 +166,8 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#startACL(org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#startACL(org.alfresco.service.cmr.repository.NodeRef) */
     public void startACL(NodeRef nodeRef)
     {
         for (Exporter exporter : exporters)
@@ -178,8 +177,8 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#permission(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.security.AccessPermission)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#permission(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.security.AccessPermission) */
     public void permission(NodeRef nodeRef, AccessPermission permission)
     {
         for (Exporter exporter : exporters)
@@ -189,8 +188,8 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#endACL(org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#endACL(org.alfresco.service.cmr.repository.NodeRef) */
     public void endACL(NodeRef nodeRef)
     {
         for (Exporter exporter : exporters)
@@ -200,8 +199,8 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#startProperties(org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#startProperties(org.alfresco.service.cmr.repository.NodeRef) */
     public void startProperties(NodeRef nodeRef)
     {
         for (Exporter exporter : exporters)
@@ -211,8 +210,8 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#endProperties(org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#endProperties(org.alfresco.service.cmr.repository.NodeRef) */
     public void endProperties(NodeRef nodeRef)
     {
         for (Exporter exporter : exporters)
@@ -220,10 +219,10 @@ import org.alfresco.service.namespace.QName;
             exporter.endProperties(nodeRef);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#startProperty(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#startProperty(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
     public void startProperty(NodeRef nodeRef, QName property)
     {
         for (Exporter exporter : exporters)
@@ -231,10 +230,10 @@ import org.alfresco.service.namespace.QName;
             exporter.startProperty(nodeRef, property);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#endProperty(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#endProperty(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
     public void endProperty(NodeRef nodeRef, QName property)
     {
         for (Exporter exporter : exporters)
@@ -242,10 +241,10 @@ import org.alfresco.service.namespace.QName;
             exporter.endProperty(nodeRef, property);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#startValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#startValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
     public void startValueCollection(NodeRef nodeRef, QName property)
     {
         for (Exporter exporter : exporters)
@@ -255,8 +254,8 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#endValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#endValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
     public void endValueCollection(NodeRef nodeRef, QName property)
     {
         for (Exporter exporter : exporters)
@@ -264,10 +263,10 @@ import org.alfresco.service.namespace.QName;
             exporter.endValueCollection(nodeRef, property);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable) */
     public void value(NodeRef nodeRef, QName property, Object value, int index)
     {
         for (Exporter exporter : exporters)
@@ -275,10 +274,10 @@ import org.alfresco.service.namespace.QName;
             exporter.value(nodeRef, property, value, index);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#content(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.InputStream)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#content(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.InputStream) */
     public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData, int index)
     {
         for (Exporter exporter : exporters)
@@ -286,10 +285,10 @@ import org.alfresco.service.namespace.QName;
             exporter.content(nodeRef, property, content, contentData, index);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#startAssoc(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#startAssoc(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
     public void startAssoc(NodeRef nodeRef, QName assoc)
     {
         for (Exporter exporter : exporters)
@@ -297,10 +296,10 @@ import org.alfresco.service.namespace.QName;
             exporter.startAssoc(nodeRef, assoc);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#endAssoc(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#endAssoc(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
     public void endAssoc(NodeRef nodeRef, QName assoc)
     {
         for (Exporter exporter : exporters)
@@ -308,10 +307,10 @@ import org.alfresco.service.namespace.QName;
             exporter.endAssoc(nodeRef, assoc);
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#startAssocs(org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#startAssocs(org.alfresco.service.cmr.repository.NodeRef) */
     public void startAssocs(NodeRef nodeRef)
     {
         for (Exporter exporter : exporters)
@@ -321,8 +320,8 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#endAssocs(org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#endAssocs(org.alfresco.service.cmr.repository.NodeRef) */
     public void endAssocs(NodeRef nodeRef)
     {
         for (Exporter exporter : exporters)
@@ -332,8 +331,8 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#startReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#startReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
     public void startReference(NodeRef nodeRef, QName childName)
     {
         for (Exporter exporter : exporters)
@@ -343,8 +342,8 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#endReference(org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#endReference(org.alfresco.service.cmr.repository.NodeRef) */
     public void endReference(NodeRef nodeRef)
     {
         for (Exporter exporter : exporters)
@@ -370,8 +369,8 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#warning(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#warning(java.lang.String) */
     public void warning(String warning)
     {
         for (Exporter exporter : exporters)
@@ -381,8 +380,8 @@ import org.alfresco.service.namespace.QName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.Exporter#end()
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.Exporter#end() */
     public void end()
     {
         for (Exporter exporter : exporters)

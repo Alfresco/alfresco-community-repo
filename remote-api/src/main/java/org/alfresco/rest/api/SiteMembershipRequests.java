@@ -43,56 +43,72 @@ public interface SiteMembershipRequests
     String PARAM_SITE_ID = "siteId";
     String PARAM_PERSON_ID = "personId";
 
-	/**
-	 * Create a site membership request for the user 'inviteeId'
-	 * @param inviteeId the site invite id
-	 * @param siteInvite the site invite
-	 * @return SiteMembershipRequest
-	 */
-	SiteMembershipRequest createSiteMembershipRequest(String inviteeId, final SiteMembershipRequest siteInvite);
+    /**
+     * Create a site membership request for the user 'inviteeId'
+     * 
+     * @param inviteeId
+     *            the site invite id
+     * @param siteInvite
+     *            the site invite
+     * @return SiteMembershipRequest
+     */
+    SiteMembershipRequest createSiteMembershipRequest(String inviteeId, final SiteMembershipRequest siteInvite);
 
-	/**
-	 * Create a site membership request for the user 'inviteeId'
-	 * @param inviteeId the site invitee id
-	 * @param siteInvite the site invite
-	 * @param client the client name which is registered to send emails
-	 * @return SiteMembershipRequest
-	 */
-	SiteMembershipRequest createSiteMembershipRequest(String inviteeId, final SiteMembershipRequest siteInvite, final String client);
-	
-	/**
-	 * Update the site membership request for inviteeId and site
-	 * @param inviteeId the site invite id
-	 * @param siteInvite the site invite
-	 * @return the updated siteMembershipRequest
-	 */
-	SiteMembershipRequest updateSiteMembershipRequest(String inviteeId, final SiteMembershipRequest siteInvite);
-	
-	/**
-	 * Cancel site membership request for invitee and site.
-	 * 
-	 * @param inviteeId the site invite id
-	 * @param siteId the site id
-	 */
-	void cancelSiteMembershipRequest(String inviteeId, String siteId);
-	
-	/**
-	 * Get the site membership request for inviteeId and siteId, if it exists.
-	 * 
-	 * @param inviteeId the site invite id
-	 * @param siteId the site id
-	 * @return the site membership request
-	 */
-	SiteMembershipRequest getSiteMembershipRequest(String inviteeId, String siteId);
-	
-	/**
-	 * Get a paged list of site membership requests for inviteeId.
-	 * 
-	 * @param inviteeId the site invite id
-	 * @param paging paging information
-	 * @return a paged list of site membership requests
-	 */
-	CollectionWithPagingInfo<SiteMembershipRequest> getPagedSiteMembershipRequests(String inviteeId, Paging paging);
+    /**
+     * Create a site membership request for the user 'inviteeId'
+     * 
+     * @param inviteeId
+     *            the site invitee id
+     * @param siteInvite
+     *            the site invite
+     * @param client
+     *            the client name which is registered to send emails
+     * @return SiteMembershipRequest
+     */
+    SiteMembershipRequest createSiteMembershipRequest(String inviteeId, final SiteMembershipRequest siteInvite, final String client);
+
+    /**
+     * Update the site membership request for inviteeId and site
+     * 
+     * @param inviteeId
+     *            the site invite id
+     * @param siteInvite
+     *            the site invite
+     * @return the updated siteMembershipRequest
+     */
+    SiteMembershipRequest updateSiteMembershipRequest(String inviteeId, final SiteMembershipRequest siteInvite);
+
+    /**
+     * Cancel site membership request for invitee and site.
+     * 
+     * @param inviteeId
+     *            the site invite id
+     * @param siteId
+     *            the site id
+     */
+    void cancelSiteMembershipRequest(String inviteeId, String siteId);
+
+    /**
+     * Get the site membership request for inviteeId and siteId, if it exists.
+     * 
+     * @param inviteeId
+     *            the site invite id
+     * @param siteId
+     *            the site id
+     * @return the site membership request
+     */
+    SiteMembershipRequest getSiteMembershipRequest(String inviteeId, String siteId);
+
+    /**
+     * Get a paged list of site membership requests for inviteeId.
+     * 
+     * @param inviteeId
+     *            the site invite id
+     * @param paging
+     *            paging information
+     * @return a paged list of site membership requests
+     */
+    CollectionWithPagingInfo<SiteMembershipRequest> getPagedSiteMembershipRequests(String inviteeId, Paging paging);
 
     CollectionWithPagingInfo<SiteMembershipRequest> getPagedSiteMembershipRequests(final Parameters parameters);
 

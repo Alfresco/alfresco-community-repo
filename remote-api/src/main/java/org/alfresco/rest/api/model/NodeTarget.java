@@ -36,8 +36,7 @@ public class NodeTarget
     String name;
 
     public NodeTarget()
-    {
-    }
+    {}
 
     public String getTargetParentId()
     {

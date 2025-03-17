@@ -33,6 +33,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
@@ -41,16 +47,9 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.Pair;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * An interceptor that replaces files nodes with their equivalent
- * translations according to the locale.  It is to be used with the
- * {@link FileFolderService}.
+ * An interceptor that replaces files nodes with their equivalent translations according to the locale. It is to be used with the {@link FileFolderService}.
  * 
  * @since 2.1
  * @author Derek Hulley
@@ -66,8 +65,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
      */
     private static final Set<String> METHOD_NAMES_SINGLE;
     /**
-     * Names of methods that don't need interception.  This is used to catch any new methods
-     * added to the interface.
+     * Names of methods that don't need interception. This is used to catch any new methods added to the interface.
      */
     private static final Set<String> METHOD_NAMES_OTHER;
     static
@@ -79,7 +77,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
         METHOD_NAMES_LIST.add("listDeepFolders");
         METHOD_NAMES_LIST.add("search");
         METHOD_NAMES_LIST.add("getNamePath");
-        
+
         METHOD_NAMES_SINGLE = new HashSet<String>(13);
         METHOD_NAMES_SINGLE.add("getLocalizedSibling");
         METHOD_NAMES_SINGLE.add("searchSimple");
@@ -92,7 +90,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
         METHOD_NAMES_SINGLE.add("getNamePath");
         METHOD_NAMES_SINGLE.add("resolveNamePath");
         METHOD_NAMES_SINGLE.add("getFileInfo");
-        
+
         METHOD_NAMES_OTHER = new HashSet<String>(13);
         METHOD_NAMES_OTHER.add("delete");
         METHOD_NAMES_OTHER.add("getReader");
@@ -101,20 +99,19 @@ public class MLTranslationInterceptor implements MethodInterceptor
         METHOD_NAMES_OTHER.add("exists");
         METHOD_NAMES_OTHER.add("getNameOnlyPath");
     }
-    
+
     private static Log logger = LogFactory.getLog(MLTranslationInterceptor.class);
 
     private NodeService nodeService;
     private MultilingualContentService multilingualContentService;
     private FileFolderService fileFolderService;
-    
+
     /**
      * Constructor.
      */
     public MLTranslationInterceptor()
-    {
-    }
-    
+    {}
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -133,8 +130,9 @@ public class MLTranslationInterceptor implements MethodInterceptor
     /**
      * Converts the node referenice where an alternative translation should be used.
      * 
-     * @param nodeRef       the basic nodeRef
-     * @return              Returns the replacement if required
+     * @param nodeRef
+     *            the basic nodeRef
+     * @return Returns the replacement if required
      */
     private NodeRef getTranslatedNodeRef(NodeRef nodeRef)
     {
@@ -154,7 +152,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
             // We aren't doing any filtering
             return nodeRef;
         }
-        // Find the best translation.  This won't return null.
+        // Find the best translation. This won't return null.
         NodeRef translatedNodeRef = multilingualContentService.getTranslationForLocale(nodeRef, filterLocale);
         // Done
         if (logger.isDebugEnabled())
@@ -170,12 +168,13 @@ public class MLTranslationInterceptor implements MethodInterceptor
         }
         return translatedNodeRef;
     }
-    
+
     /**
      * Converts the file info where an alternative translation should be used.
      * 
-     * @param fileInfo      the basic file or folder info
-     * @return              Returns a replacement if required
+     * @param fileInfo
+     *            the basic file or folder info
+     * @return Returns a replacement if required
      */
     private FileInfo getTranslatedFileInfo(FileInfo fileInfo)
     {
@@ -206,7 +205,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
         }
         return translatedFileInfo;
     }
-    
+
     private List<FileInfo> processList(List<FileInfo> fileInfos)
     {
         // Compile a set to ensure we don't get duplicates
@@ -231,29 +230,31 @@ public class MLTranslationInterceptor implements MethodInterceptor
             alreadyPresent.add(translatedFileInfo);
             orderedResults.add(translatedFileInfo);
         }
-        return orderedResults;  	
+        return orderedResults;
     }
-    
+
     private PagingResults<FileInfo> processPagingResults(final PagingResults<FileInfo> fileInfos)
     {
         final List<FileInfo> orderedResults = processList(fileInfos.getPage());
-        PagingResults<FileInfo> orderedPagingResults = new PagingResults<FileInfo>()
-        {
+        PagingResults<FileInfo> orderedPagingResults = new PagingResults<FileInfo>() {
             @Override
             public String getQueryExecutionId()
             {
                 return fileInfos.getQueryExecutionId();
             }
+
             @Override
             public List<FileInfo> getPage()
             {
                 return orderedResults;
             }
+
             @Override
             public boolean hasMoreItems()
             {
                 return fileInfos.hasMoreItems();
             }
+
             @Override
             public Pair<Integer, Integer> getTotalResultCount()
             {
@@ -268,7 +269,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
     {
         Object ret = null;
         String methodName = invocation.getMethod().getName();
-        
+
         if (I18NUtil.getContentLocaleOrNull() == null)
         {
             // This can shortcut anything as there is no filtering going on
@@ -276,19 +277,19 @@ public class MLTranslationInterceptor implements MethodInterceptor
         }
         else if (METHOD_NAMES_LIST.contains(methodName))
         {
-        	Object result = invocation.proceed();
-        	if(result instanceof List)
-        	{
-        		return processList((List<FileInfo>)result);
-        	}
-        	else if(result instanceof PagingResults)
-        	{
-        		return processPagingResults((PagingResults<FileInfo>)result);
-        	}
-        	else
-        	{
-        		throw new ClassCastException("Unexpected return type from method " + methodName + " in " + this);
-        	}
+            Object result = invocation.proceed();
+            if (result instanceof List)
+            {
+                return processList((List<FileInfo>) result);
+            }
+            else if (result instanceof PagingResults)
+            {
+                return processPagingResults((PagingResults<FileInfo>) result);
+            }
+            else
+            {
+                throw new ClassCastException("Unexpected return type from method " + methodName + " in " + this);
+            }
         }
         else if (METHOD_NAMES_SINGLE.contains(methodName))
         {
@@ -313,7 +314,7 @@ public class MLTranslationInterceptor implements MethodInterceptor
         {
             throw new RuntimeException("Method not handled by interceptor: " + methodName);
         }
-        
+
         // Done
         return ret;
     }

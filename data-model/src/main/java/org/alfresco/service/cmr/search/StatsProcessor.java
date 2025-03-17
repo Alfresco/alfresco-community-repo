@@ -26,8 +26,7 @@
 package org.alfresco.service.cmr.search;
 
 /**
- * Post-Processors the results of a Stats query
- * ie. for internationalization / transformation.
+ * Post-Processors the results of a Stats query ie. for internationalization / transformation.
  *
  * @author Gethin James
  * @since 5.0

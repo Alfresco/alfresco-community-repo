@@ -26,6 +26,11 @@
 
 package org.alfresco.rest.api.authentications;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Authentications;
 import org.alfresco.rest.api.model.LoginTicket;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -36,19 +41,15 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Jamal Kaabi-Mofrad
  */
 @EntityResource(name = "tickets", title = "Authentication tickets")
 public class AuthenticationTicketsEntityResource implements EntityResourceAction.Create<LoginTicket>,
-            EntityResourceAction.ReadByIdWithResponse<LoginTicket>,
-            EntityResourceAction.DeleteWithResponse,
-            InitializingBean
+        EntityResourceAction.ReadByIdWithResponse<LoginTicket>,
+        EntityResourceAction.DeleteWithResponse,
+        InitializingBean
 {
     // tickets => @EntityResource(name = "tickets" ...
     public static final String COLLECTION_RESOURCE_NAME = "tickets";

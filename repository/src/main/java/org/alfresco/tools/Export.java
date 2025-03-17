@@ -45,7 +45,6 @@ import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
 
-
 /**
  * Alfresco Repository Export Tool
  * 
@@ -68,22 +67,22 @@ public final class Export extends Tool
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.tools.Tool#getToolName()
-     */
-    protected @Override
-    String getToolName()
+     * 
+     * @see org.alfresco.tools.Tool#getToolName() */
+    protected @Override String getToolName()
     {
         return "Alfresco Repository Exporter";
     }
-    
+
     /**
      * Process Export Tool command line arguments
      * 
-     * @param args  the arguments
-     * @return  the export context
+     * @param args
+     *            the arguments
+     * @return the export context
      */
     protected @Override
-    /*package*/ ToolContext processArgs(String[] args)
+    /* package */ ToolContext processArgs(String[] args)
     {
         context = new ExportContext();
         context.setLogin(true);
@@ -191,10 +190,10 @@ public final class Export extends Tool
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.tools.Tool#displayHelp()
-     */
+     * 
+     * @see org.alfresco.tools.Tool#displayHelp() */
     protected @Override
-    /*package*/ void displayHelp()
+    /* package */ void displayHelp()
     {
         logError("Usage: export -user username -s[tore] store [options] packagename");
         logError("");
@@ -215,13 +214,13 @@ public final class Export extends Tool
         logError(" -verbose report export progress");
         logError(" -zip export in zip format");
     }
-        
+
     /* (non-Javadoc)
-     * @see org.alfresco.tools.Tool#execute()
-     */
+     * 
+     * @see org.alfresco.tools.Tool#execute() */
     protected @Override
-    /*package*/ int execute()
-    	throws ToolException
+    /* package */ int execute()
+            throws ToolException
     {
         ExporterService exporter = getServiceRegistry().getExporterService();
         MimetypeService mimetypeService = getServiceRegistry().getMimetypeService();
@@ -242,16 +241,16 @@ public final class Export extends Tool
         parameters.setExportFrom(context.getLocation());
         parameters.setCrawlSelf(context.self);
         parameters.setCrawlChildNodes(context.children);
-        
+
         try
         {
             exporter.exportView(exportHandler, parameters, new ExportProgress());
         }
-        catch(ExporterException e)
+        catch (ExporterException e)
         {
             throw new ToolException("Failed to export", e);
         }
-        
+
         return 0;
     }
 
@@ -278,14 +277,15 @@ public final class Export extends Tool
         /**
          * Log Export Message
          * 
-         * @param message  message to log
+         * @param message
+         *            message to log
          */
         protected void log(String message)
         {
             Export.this.logInfo(message);
         }
     }
-    
+
     /**
      * Handler for exporting Repository content streams to zip file
      * 
@@ -309,7 +309,8 @@ public final class Export extends Tool
         /**
          * Log Export Message
          * 
-         * @param message  message to log
+         * @param message
+         *            message to log
          */
         protected void log(String message)
         {
@@ -344,13 +345,13 @@ public final class Export extends Tool
         private boolean zipped = false;
 
         /* (non-Javadoc)
-         * @see org.alfresco.tools.ToolContext#validate()
-         */
+         * 
+         * @see org.alfresco.tools.ToolContext#validate() */
         @Override
-        /*package*/ void validate()
+        /* package */ void validate()
         {
             super.validate();
-            
+
             if (storeRef == null)
             {
                 throw new ToolArgumentException("Store to export from has not been specified.");
@@ -388,7 +389,7 @@ public final class Export extends Tool
          */
         private File getDestDir()
         {
-            File dir = (destDir == null) ? null : new File(destDir); 
+            File dir = (destDir == null) ? null : new File(destDir);
             return dir;
         }
 
@@ -410,7 +411,7 @@ public final class Export extends Tool
             }
             else
             {
-                dir = new File(packageName); 
+                dir = new File(packageName);
             }
             return dir;
         }
@@ -423,7 +424,7 @@ public final class Export extends Tool
         private File getPackageFile()
         {
             String packageFile = (packageName.indexOf('.') != -1) ? packageName : packageName + ".xml";
-            File file = new File(packageFile); 
+            File file = new File(packageFile);
             return file;
         }
 
@@ -440,221 +441,193 @@ public final class Export extends Tool
         }
     }
 
-    
     /**
      * Report Export Progress
      * 
      * @author David Caruana
      */
     private class ExportProgress
-        implements Exporter
+            implements Exporter
     {
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#start()
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#start() */
         public void start(ExporterContext exportNodeRef)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#startNamespace(java.lang.String, java.lang.String)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#startNamespace(java.lang.String, java.lang.String) */
         public void startNamespace(String prefix, String uri)
         {
             logVerbose("Exporting namespace " + uri + " (prefix: " + prefix + ")");
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#endNamespace(java.lang.String)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#endNamespace(java.lang.String) */
         public void endNamespace(String prefix)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#startNode(org.alfresco.service.cmr.repository.NodeRef)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#startNode(org.alfresco.service.cmr.repository.NodeRef) */
         public void startNode(NodeRef nodeRef)
         {
             logVerbose("Exporting node " + nodeRef.toString());
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#endNode(org.alfresco.service.cmr.repository.NodeRef)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#endNode(org.alfresco.service.cmr.repository.NodeRef) */
         public void endNode(NodeRef nodeRef)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#startAspects(org.alfresco.service.cmr.repository.NodeRef)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#startAspects(org.alfresco.service.cmr.repository.NodeRef) */
         public void startAspects(NodeRef nodeRef)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#endAspects(org.alfresco.service.cmr.repository.NodeRef)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#endAspects(org.alfresco.service.cmr.repository.NodeRef) */
         public void endAspects(NodeRef nodeRef)
-        {
-        }
-        
+        {}
+
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#startAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#startAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
         public void startAspect(NodeRef nodeRef, QName aspect)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#endAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#endAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
         public void endAspect(NodeRef nodeRef, QName aspect)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#startACL(org.alfresco.service.cmr.repository.NodeRef)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#startACL(org.alfresco.service.cmr.repository.NodeRef) */
         public void startACL(NodeRef nodeRef)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#permission(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.security.AccessPermission)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#permission(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.security.AccessPermission) */
         public void permission(NodeRef nodeRef, AccessPermission permission)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#endACL(org.alfresco.service.cmr.repository.NodeRef)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#endACL(org.alfresco.service.cmr.repository.NodeRef) */
         public void endACL(NodeRef nodeRef)
-        {
-        }
-        
+        {}
+
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#startProperties(org.alfresco.service.cmr.repository.NodeRef)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#startProperties(org.alfresco.service.cmr.repository.NodeRef) */
         public void startProperties(NodeRef nodeRef)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#endProperties(org.alfresco.service.cmr.repository.NodeRef)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#endProperties(org.alfresco.service.cmr.repository.NodeRef) */
         public void endProperties(NodeRef nodeRef)
-        {
-        }
-        
+        {}
+
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#startProperty(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#startProperty(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
         public void startProperty(NodeRef nodeRef, QName property)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#endProperty(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#endProperty(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
         public void endProperty(NodeRef nodeRef, QName property)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#startValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#startValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
         public void startValueCollection(NodeRef nodeRef, QName property)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#endValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#endValueCollection(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
         public void endValueCollection(NodeRef nodeRef, QName property)
-        {
-        }
-        
+        {}
+
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable) */
         public void value(NodeRef nodeRef, QName property, Object value, int index)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#content(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.InputStream)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#content(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.InputStream) */
         public void content(NodeRef nodeRef, QName property, InputStream content, ContentData contentData, int index)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#startAssoc(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#startAssoc(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
         public void startAssoc(NodeRef nodeRef, QName assoc)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#endAssoc(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#endAssoc(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
         public void endAssoc(NodeRef nodeRef, QName assoc)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#startAssocs(org.alfresco.service.cmr.repository.NodeRef)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#startAssocs(org.alfresco.service.cmr.repository.NodeRef) */
         public void startAssocs(NodeRef nodeRef)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#endAssocs(org.alfresco.service.cmr.repository.NodeRef)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#endAssocs(org.alfresco.service.cmr.repository.NodeRef) */
         public void endAssocs(NodeRef nodeRef)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#warning(java.lang.String)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#warning(java.lang.String) */
         public void warning(String warning)
         {
-            logInfo("Warning: " + warning);            
+            logInfo("Warning: " + warning);
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#end()
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#end() */
         public void end()
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#startReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#startReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
         public void startReference(NodeRef nodeRef, QName childName)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.Exporter#endReference(org.alfresco.service.cmr.repository.NodeRef)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.Exporter#endReference(org.alfresco.service.cmr.repository.NodeRef) */
         public void endReference(NodeRef nodeRef)
-        {
-        }
+        {}
 
         public void endValueMLText(NodeRef nodeRef)
-        {
-        }
+        {}
 
         public void startValueMLText(NodeRef nodeRef, Locale locale, boolean isNull)
-        {
-        }
+        {}
     }
 
 }

@@ -43,15 +43,15 @@ public class BlogPostsNewGet extends AbstractGetBlogWebScript
 {
     @Override
     protected PagingResults<BlogPostInfo> getBlogResultsImpl(
-          SiteInfo site, NodeRef node, Date fromDate, Date toDate, PagingRequest pagingReq)
+            SiteInfo site, NodeRef node, Date fromDate, Date toDate, PagingRequest pagingReq)
     {
-       if(site != null)
-       {
-          return blogService.getPublished(site.getShortName(), fromDate, toDate, null, pagingReq);
-       }
-       else
-       {
-          return blogService.getPublished(node, fromDate, toDate, null, pagingReq);
-       }
+        if (site != null)
+        {
+            return blogService.getPublished(site.getShortName(), fromDate, toDate, null, pagingReq);
+        }
+        else
+        {
+            return blogService.getPublished(node, fromDate, toDate, null, pagingReq);
+        }
     }
 }

@@ -30,5 +30,5 @@ import org.alfresco.util.Pair;
  */
 public interface EntryTransformer<FK, FV, TK, TV> extends Function<Entry<FK, FV>, Pair<TK, TV>>
 {
-    //NOOP
+    // NOOP
 }

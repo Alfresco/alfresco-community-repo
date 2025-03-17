@@ -35,14 +35,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Creates singleton extension sub classes that are extension API implementors.
- * The singleton extensions continue to exist after the extensible has been
- * collected.
+ * Creates singleton extension sub classes that are extension API implementors. The singleton extensions continue to exist after the extensible has been collected.
  *
  * @author Bogdan Horje
  */
 public class SingletonExtensionFactory<E, S extends SingletonExtension<E, T>, T extends Trait> implements
-            ExtensionFactory<E>
+        ExtensionFactory<E>
 {
     private Log logger = LogFactory.getLog(SingletonExtensionFactory.class);
 
@@ -72,7 +70,7 @@ public class SingletonExtensionFactory<E, S extends SingletonExtension<E, T>, T 
             try
             {
                 return method.invoke(this.singleton,
-                                     args);
+                        args);
             }
             catch (IllegalAccessException error)
             {
@@ -120,7 +118,7 @@ public class SingletonExtensionFactory<E, S extends SingletonExtension<E, T>, T 
         if (!singleton.acceptsTrait(traitObject))
         {
             throw new InvalidExtension("Extension factory error : " + singleton.getClass() + " does not support trait "
-                        + traitObject);
+                    + traitObject);
         }
 
         if (logger.isDebugEnabled())
@@ -134,16 +132,16 @@ public class SingletonExtensionFactory<E, S extends SingletonExtension<E, T>, T 
         }
 
         return (E) Proxy.newProxyInstance(getClass().getClassLoader(),
-                                          new Class[] { extensionAPI },
-                                          new TraiSingletontHandler(singleton,
-                                                                    tTrait));
+                new Class[]{extensionAPI},
+                new TraiSingletontHandler(singleton,
+                        tTrait));
     }
 
     @Override
     public boolean canCreateExtensionFor(ExtensionPoint<?, ?> point)
     {
         return point.getExtensionAPI().isAssignableFrom(singleton.getClass())
-                    && singleton.acceptsTraitClass(point.getTraitAPI());
+                && singleton.acceptsTraitClass(point.getTraitAPI());
     }
 
 }

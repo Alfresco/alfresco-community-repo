@@ -37,6 +37,13 @@ import java.util.Set;
 
 import net.sf.acegisecurity.ConfigAttribute;
 import net.sf.acegisecurity.ConfigAttributeDefinition;
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+import org.junit.experimental.categories.Category;
+import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.aop.framework.adapter.AdvisorAdapterRegistry;
+import org.springframework.aop.framework.adapter.GlobalAdvisorAdapterRegistry;
+import org.springframework.aop.target.SingletonTargetSource;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.results.ChildAssocRefResultSet;
@@ -53,13 +60,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.Pair;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
-import org.junit.experimental.categories.Category;
-import org.springframework.aop.framework.ProxyFactory;
-import org.springframework.aop.framework.adapter.AdvisorAdapterRegistry;
-import org.springframework.aop.framework.adapter.GlobalAdvisorAdapterRegistry;
-import org.springframework.aop.target.SingletonTargetSource;
 
 @Category(OwnJVMTestsCategory.class)
 public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
@@ -75,7 +75,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoNodeRef", new Class[] { NodeRef.class });
+        Method method = o.getClass().getMethod("echoNodeRef", new Class[]{NodeRef.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -84,16 +84,16 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         proxyFactory.setTargetSource(new SingletonTargetSource(o));
         Object proxy = proxyFactory.getProxy();
 
-        Object answer = method.invoke(proxy, new Object[] { null });
+        Object answer = method.invoke(proxy, new Object[]{null});
         assertNull(answer);
     }
-    
+
     public void testBasicAllowNullStore() throws Exception
     {
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoStoreRef", new Class[] { StoreRef.class });
+        Method method = o.getClass().getMethod("echoStoreRef", new Class[]{StoreRef.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -102,7 +102,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         proxyFactory.setTargetSource(new SingletonTargetSource(o));
         Object proxy = proxyFactory.getProxy();
 
-        Object answer = method.invoke(proxy, new Object[] { null });
+        Object answer = method.invoke(proxy, new Object[]{null});
         assertNull(answer);
     }
 
@@ -111,7 +111,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoObject", new Class[] { Object.class });
+        Method method = o.getClass().getMethod("echoObject", new Class[]{Object.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -120,7 +120,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         proxyFactory.setTargetSource(new SingletonTargetSource(o));
         Object proxy = proxyFactory.getProxy();
 
-        Object answer = method.invoke(proxy, new Object[] { "noodle" });
+        Object answer = method.invoke(proxy, new Object[]{"noodle"});
         assertNotNull(answer);
     }
 
@@ -129,7 +129,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoNodeRef", new Class[] { NodeRef.class });
+        Method method = o.getClass().getMethod("echoNodeRef", new Class[]{NodeRef.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -137,20 +137,20 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         proxyFactory.addAdvisor(advisorAdapterRegistry.wrap(new Interceptor("AFTER_ACL_NODE.sys:base.Read")));
         proxyFactory.setTargetSource(new SingletonTargetSource(o));
         Object proxy = proxyFactory.getProxy();
-        
+
         permissionService.setPermission(
                 new SimplePermissionEntry(
                         rootNodeRef,
                         getPermission(PermissionService.READ),
                         "andy",
                         AccessStatus.ALLOWED));
-        
-        Object answer = method.invoke(proxy, new Object[] { rootNodeRef });
+
+        Object answer = method.invoke(proxy, new Object[]{rootNodeRef});
         assertEquals("Value passed out must be valid", rootNodeRef, answer);
 
         NodeRef invalidNodeRef = new NodeRef("workspace://SpacesStore/noodle");
-        answer = method.invoke(proxy, new Object[] { invalidNodeRef });
-        method.invoke(proxy, new Object[] { invalidNodeRef });
+        answer = method.invoke(proxy, new Object[]{invalidNodeRef});
+        method.invoke(proxy, new Object[]{invalidNodeRef});
         assertEquals("Value passed out must be equal", invalidNodeRef, answer);
     }
 
@@ -160,7 +160,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoCollection", new Class[] { Collection.class });
+        Method method = o.getClass().getMethod("echoCollection", new Class[]{Collection.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -175,12 +175,12 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
                         getPermission(PermissionService.READ),
                         "andy",
                         AccessStatus.ALLOWED));
-        
-        List<Object> answer = (List<Object>) method.invoke(proxy, new Object[] { Collections.singletonList(rootNodeRef) });
+
+        List<Object> answer = (List<Object>) method.invoke(proxy, new Object[]{Collections.singletonList(rootNodeRef)});
         assertEquals("Collection must be intact", 1, answer.size());
 
         NodeRef invalidNodeRef = new NodeRef("workspace://SpacesStore/noodle");
-        answer = (List<Object>) method.invoke(proxy, new Object[] { Collections.singletonList(invalidNodeRef) });
+        answer = (List<Object>) method.invoke(proxy, new Object[]{Collections.singletonList(invalidNodeRef)});
         assertEquals("Invalid NodeRef should not have been filtered out", 1, answer.size());
     }
 
@@ -189,7 +189,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoStoreRef", new Class[] { StoreRef.class });
+        Method method = o.getClass().getMethod("echoStoreRef", new Class[]{StoreRef.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -200,7 +200,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
         try
         {
-            Object answer = method.invoke(proxy, new Object[] { rootNodeRef.getStoreRef() });
+            Object answer = method.invoke(proxy, new Object[]{rootNodeRef.getStoreRef()});
             assertNotNull(answer);
         }
         catch (InvocationTargetException e)
@@ -208,13 +208,13 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
         }
     }
-    
+
     public void testBasicDenyNode() throws Exception
     {
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoNodeRef", new Class[] { NodeRef.class });
+        Method method = o.getClass().getMethod("echoNodeRef", new Class[]{NodeRef.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -225,7 +225,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
         try
         {
-            Object answer = method.invoke(proxy, new Object[] { rootNodeRef });
+            Object answer = method.invoke(proxy, new Object[]{rootNodeRef});
             assertNotNull(answer);
         }
         catch (InvocationTargetException e)
@@ -240,7 +240,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoNodeRef", new Class[] { NodeRef.class });
+        Method method = o.getClass().getMethod("echoNodeRef", new Class[]{NodeRef.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -251,17 +251,17 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
 
-        Object answer = method.invoke(proxy, new Object[] { rootNodeRef });
+        Object answer = method.invoke(proxy, new Object[]{rootNodeRef});
         assertEquals(answer, rootNodeRef);
 
     }
-    
+
     public void testBasicAllowNodePair() throws Exception
     {
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoNodePair", new Class[] { NodeRef.class });
+        Method method = o.getClass().getMethod("echoNodePair", new Class[]{NodeRef.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -273,16 +273,16 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
 
         Pair<Long, NodeRef> rootNodePair = new Pair<Long, NodeRef>(Long.valueOf(1), rootNodeRef);
-        Object answer = method.invoke(proxy, new Object[] { rootNodeRef });
+        Object answer = method.invoke(proxy, new Object[]{rootNodeRef});
         assertEquals(rootNodePair, answer);
     }
-    
+
     public void testBasicAllowStore() throws Exception
     {
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoStoreRef", new Class[] { StoreRef.class });
+        Method method = o.getClass().getMethod("echoStoreRef", new Class[]{StoreRef.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -293,7 +293,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
 
-        Object answer = method.invoke(proxy, new Object[] { rootNodeRef.getStoreRef() });
+        Object answer = method.invoke(proxy, new Object[]{rootNodeRef.getStoreRef()});
         assertEquals(answer, rootNodeRef.getStoreRef());
 
     }
@@ -303,7 +303,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoNodeRef", new Class[] { NodeRef.class });
+        Method method = o.getClass().getMethod("echoNodeRef", new Class[]{NodeRef.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -312,12 +312,12 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         proxyFactory.setTargetSource(new SingletonTargetSource(o));
         Object proxy = proxyFactory.getProxy();
 
-        Object answer = method.invoke(proxy, new Object[] { rootNodeRef });
+        Object answer = method.invoke(proxy, new Object[]{rootNodeRef});
         assertEquals(answer, rootNodeRef);
 
         try
         {
-            answer = method.invoke(proxy, new Object[] { systemNodeRef });
+            answer = method.invoke(proxy, new Object[]{systemNodeRef});
             assertNotNull(answer);
         }
         catch (InvocationTargetException e)
@@ -327,7 +327,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
 
-        answer = method.invoke(proxy, new Object[] { systemNodeRef });
+        answer = method.invoke(proxy, new Object[]{systemNodeRef});
         assertEquals(answer, systemNodeRef);
     }
 
@@ -336,7 +336,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoChildAssocRef", new Class[] { ChildAssociationRef.class });
+        Method method = o.getClass().getMethod("echoChildAssocRef", new Class[]{ChildAssociationRef.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -345,7 +345,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         proxyFactory.setTargetSource(new SingletonTargetSource(o));
         Object proxy = proxyFactory.getProxy();
 
-        Object answer = method.invoke(proxy, new Object[] { null });
+        Object answer = method.invoke(proxy, new Object[]{null});
         assertNull(answer);
     }
 
@@ -354,7 +354,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoChildAssocRef", new Class[] { ChildAssociationRef.class });
+        Method method = o.getClass().getMethod("echoChildAssocRef", new Class[]{ChildAssociationRef.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -363,7 +363,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         proxyFactory.setTargetSource(new SingletonTargetSource(o));
         Object proxy = proxyFactory.getProxy();
 
-        Object answer = method.invoke(proxy, new Object[] { null });
+        Object answer = method.invoke(proxy, new Object[]{null});
         assertNull(answer);
     }
 
@@ -372,7 +372,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoChildAssocRef", new Class[] { ChildAssociationRef.class });
+        Method method = o.getClass().getMethod("echoChildAssocRef", new Class[]{ChildAssociationRef.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -383,7 +383,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
         try
         {
-            Object answer = method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(rootNodeRef) });
+            Object answer = method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(rootNodeRef)});
             assertNotNull(answer);
         }
         catch (InvocationTargetException e)
@@ -393,7 +393,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
         try
         {
-            Object answer = method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(systemNodeRef) });
+            Object answer = method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(systemNodeRef)});
             assertNotNull(answer);
         }
         catch (InvocationTargetException e)
@@ -408,7 +408,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoChildAssocRef", new Class[] { ChildAssociationRef.class });
+        Method method = o.getClass().getMethod("echoChildAssocRef", new Class[]{ChildAssociationRef.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -417,12 +417,12 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         proxyFactory.setTargetSource(new SingletonTargetSource(o));
         Object proxy = proxyFactory.getProxy();
 
-        Object answer = method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(rootNodeRef) });
+        Object answer = method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(rootNodeRef)});
         assertNotNull(answer);
 
         try
         {
-            answer = method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(systemNodeRef) });
+            answer = method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(systemNodeRef)});
             assertNotNull(answer);
         }
         catch (InvocationTargetException e)
@@ -437,7 +437,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoChildAssocRef", new Class[] { ChildAssociationRef.class });
+        Method method = o.getClass().getMethod("echoChildAssocRef", new Class[]{ChildAssociationRef.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -448,10 +448,10 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
 
-        Object answer = method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(rootNodeRef) });
+        Object answer = method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(rootNodeRef)});
         assertEquals(answer, nodeService.getPrimaryParent(rootNodeRef));
 
-        answer = method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(systemNodeRef) });
+        answer = method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(systemNodeRef)});
         assertEquals(answer, nodeService.getPrimaryParent(systemNodeRef));
 
     }
@@ -461,7 +461,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method method = o.getClass().getMethod("echoChildAssocRef", new Class[] { ChildAssociationRef.class });
+        Method method = o.getClass().getMethod("echoChildAssocRef", new Class[]{ChildAssociationRef.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -472,21 +472,21 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
 
-        Object answer = method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(rootNodeRef) });
+        Object answer = method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(rootNodeRef)});
         assertEquals(answer, nodeService.getPrimaryParent(rootNodeRef));
 
-        answer = method.invoke(proxy, new Object[] { nodeService.getPrimaryParent(systemNodeRef) });
+        answer = method.invoke(proxy, new Object[]{nodeService.getPrimaryParent(systemNodeRef)});
         assertEquals(answer, nodeService.getPrimaryParent(systemNodeRef));
     }
-    
+
     public void testBasicAllowNullResultSet() throws Exception
     {
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method methodResultSet = o.getClass().getMethod("echoResultSet", new Class[] { ResultSet.class });
-        Method methodCollection = o.getClass().getMethod("echoCollection", new Class[] { Collection.class });
-        Method methodArray = o.getClass().getMethod("echoArray", new Class[] { Object[].class });
+        Method methodResultSet = o.getClass().getMethod("echoResultSet", new Class[]{ResultSet.class});
+        Method methodCollection = o.getClass().getMethod("echoCollection", new Class[]{Collection.class});
+        Method methodArray = o.getClass().getMethod("echoArray", new Class[]{Object[].class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -499,53 +499,53 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         NodeRef[] nodeRefArray = new NodeRef[0];
 
         Set<NodeRef> nodeRefSet = new HashSet<NodeRef>();
-        
+
         List<ChildAssociationRef> carList = new ArrayList<ChildAssociationRef>();
 
         ChildAssociationRef[] carArray = new ChildAssociationRef[0];
 
         Set<ChildAssociationRef> carSet = new HashSet<ChildAssociationRef>();
-       
+
         ChildAssocRefResultSet rsIn = new ChildAssocRefResultSet(nodeService, nodeRefList, false);
 
         assertEquals(0, rsIn.length());
-        ResultSet answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[] { rsIn });
+        ResultSet answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[]{rsIn});
         assertEquals(0, answerResultSet.length());
-        Collection answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefList });
+        Collection answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefList});
         assertEquals(0, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefSet});
         assertEquals(0, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carList});
         assertEquals(0, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carSet});
         assertEquals(0, answerCollection.size());
-        Object[] answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { nodeRefArray });
+        Object[] answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{nodeRefArray});
         assertEquals(0, answerArray.length);
-        answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { carArray });
+        answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{carArray});
         assertEquals(0, answerArray.length);
-        
+
         assertEquals(0, rsIn.length());
-        answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[] { null });
+        answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[]{null});
         assertNull(answerResultSet);
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { null });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{null});
         assertNull(answerCollection);
-        answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { null });
+        answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{null});
         assertNull(answerArray);
     }
 
     public void testResultSetFilterAll() throws Exception
     {
         runAs(AuthenticationUtil.getAdminUserName());
-        
+
         NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
 
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method methodResultSet = o.getClass().getMethod("echoResultSet", new Class[] { ResultSet.class });
-        Method methodCollection = o.getClass().getMethod("echoCollection", new Class[] { Collection.class });
-        Method methodArray = o.getClass().getMethod("echoArray", new Class[] { Object[].class });
+        Method methodResultSet = o.getClass().getMethod("echoResultSet", new Class[]{ResultSet.class});
+        Method methodCollection = o.getClass().getMethod("echoCollection", new Class[]{Collection.class});
+        Method methodArray = o.getClass().getMethod("echoArray", new Class[]{Object[].class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -560,7 +560,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         nodeRefList.add(n1);
         nodeRefList.add(n1);
 
-        NodeRef[] nodeRefArray = nodeRefList.toArray(new NodeRef[] {});
+        NodeRef[] nodeRefArray = nodeRefList.toArray(new NodeRef[]{});
 
         Set<NodeRef> nodeRefSet = new HashSet<NodeRef>();
         nodeRefSet.addAll(nodeRefList);
@@ -571,7 +571,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         carList.add(nodeService.getPrimaryParent(n1));
         carList.add(nodeService.getPrimaryParent(n1));
 
-        ChildAssociationRef[] carArray = carList.toArray(new ChildAssociationRef[] {});
+        ChildAssociationRef[] carArray = carList.toArray(new ChildAssociationRef[]{});
 
         Set<ChildAssociationRef> carSet = new HashSet<ChildAssociationRef>();
         carSet.addAll(carList);
@@ -579,19 +579,19 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         ChildAssocRefResultSet rsIn = new ChildAssocRefResultSet(nodeService, nodeRefList, false);
 
         assertEquals(4, rsIn.length());
-        ResultSet answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[] { rsIn });
+        ResultSet answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[]{rsIn});
         assertEquals(0, answerResultSet.length());
-        Collection answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefList });
+        Collection answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefList});
         assertEquals(0, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefSet});
         assertEquals(0, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carList});
         assertEquals(0, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carSet});
         assertEquals(0, answerCollection.size());
-        Object[] answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { nodeRefArray });
+        Object[] answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{nodeRefArray});
         assertEquals(0, answerArray.length);
-        answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { carArray });
+        answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{carArray});
         assertEquals(0, answerArray.length);
     }
 
@@ -606,50 +606,47 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         // folder - then if targetResultCount is only 1000, user_9999 will not see any folders in User Homes
         // however, they should see one folder - their own.
         runAs(AuthenticationUtil.getAdminUserName());
-        
+
         NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
-        
+
         NodeRef n2 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
-                    QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
-        
+                QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+
         NodeRef n3 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
-                    QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+                QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
 
         NodeRef n4 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
-                    QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+                QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
 
-        
         // Set nodes n1..n3 to be unviewable by "andy" (using inherited permissions)
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.ALL_PERMISSIONS), "andy", AccessStatus.DENIED));
         // The last node n4 can be seen (override the inherited permissions)
         permissionService.setPermission(new SimplePermissionEntry(n4, getPermission(PermissionService.ALL_PERMISSIONS), "andy", AccessStatus.ALLOWED));
-        
+
         runAs("andy");
-    
-        
+
         Object o = new ClassWithMethods();
-        Method methodCollection = o.getClass().getMethod("echoCollection", new Class[] { Collection.class });
+        Method methodCollection = o.getClass().getMethod("echoCollection", new Class[]{Collection.class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
-        
+
         ProxyFactory proxyFactory = new ProxyFactory();
         proxyFactory.addAdvisor(advisorAdapterRegistry.wrap(new Interceptor("AFTER_ACL_NODE.sys:base.Read")));
         proxyFactory.setTargetSource(new SingletonTargetSource(o));
         Object proxy = proxyFactory.getProxy();
 
         List<NodeRef> nodeRefList = new ArrayList<NodeRef>(Arrays.asList(n1, n2, n3, n4));
-        
+
         // targetResultCount = 3. The first three nodes are not visible by the user, so the logic
         // must not count those towards the targetResultCount cutoff.
         Collection<?> answerCollection = (Collection<?>) methodCollection.invoke(
-                    proxy, new Object[] { PermissionCheckCollectionMixin.create(nodeRefList, 3, 0, 0) });
-        
+                proxy, new Object[]{PermissionCheckCollectionMixin.create(nodeRefList, 3, 0, 0)});
+
         assertEquals(1, answerCollection.size());
         assertEquals(n4, answerCollection.iterator().next());
     }
-    
-    
+
     public void testResultSetFilterForNullParentOnly() throws Exception
     {
         runAs(AuthenticationUtil.getAdminUserName());
@@ -659,9 +656,9 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method methodResultSet = o.getClass().getMethod("echoResultSet", new Class[] { ResultSet.class });
-        Method methodCollection = o.getClass().getMethod("echoCollection", new Class[] { Collection.class });
-        Method methodArray = o.getClass().getMethod("echoArray", new Class[] { Object[].class });
+        Method methodResultSet = o.getClass().getMethod("echoResultSet", new Class[]{ResultSet.class});
+        Method methodCollection = o.getClass().getMethod("echoCollection", new Class[]{Collection.class});
+        Method methodArray = o.getClass().getMethod("echoArray", new Class[]{Object[].class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -676,7 +673,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         nodeRefList.add(n1);
         nodeRefList.add(n1);
 
-        NodeRef[] nodeRefArray = nodeRefList.toArray(new NodeRef[] {});
+        NodeRef[] nodeRefArray = nodeRefList.toArray(new NodeRef[]{});
 
         Set<NodeRef> nodeRefSet = new HashSet<NodeRef>();
         nodeRefSet.addAll(nodeRefList);
@@ -687,28 +684,27 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         carList.add(nodeService.getPrimaryParent(n1));
         carList.add(nodeService.getPrimaryParent(n1));
 
-        ChildAssociationRef[] carArray = carList.toArray(new ChildAssociationRef[] {});
+        ChildAssociationRef[] carArray = carList.toArray(new ChildAssociationRef[]{});
 
         Set<ChildAssociationRef> carSet = new HashSet<ChildAssociationRef>();
         carSet.addAll(carList);
 
         ChildAssocRefResultSet rsIn = new ChildAssocRefResultSet(nodeService, nodeRefList, false);
 
-
         assertEquals(4, rsIn.length());
-        ResultSet answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[] { rsIn });
+        ResultSet answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[]{rsIn});
         assertEquals(1, answerResultSet.length());
-        Collection answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefList });
+        Collection answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefList});
         assertEquals(1, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefSet});
         assertEquals(1, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carList});
         assertEquals(1, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carSet});
         assertEquals(1, answerCollection.size());
-        Object[] answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { nodeRefArray });
+        Object[] answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{nodeRefArray});
         assertEquals(1, answerArray.length);
-        answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { carArray });
+        answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{carArray});
         assertEquals(1, answerArray.length);
     }
 
@@ -721,9 +717,9 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method methodResultSet = o.getClass().getMethod("echoResultSet", new Class[] { ResultSet.class });
-        Method methodCollection = o.getClass().getMethod("echoCollection", new Class[] { Collection.class });
-        Method methodArray = o.getClass().getMethod("echoArray", new Class[] { Object[].class });
+        Method methodResultSet = o.getClass().getMethod("echoResultSet", new Class[]{ResultSet.class});
+        Method methodCollection = o.getClass().getMethod("echoCollection", new Class[]{Collection.class});
+        Method methodArray = o.getClass().getMethod("echoArray", new Class[]{Object[].class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -737,7 +733,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         nodeRefList.add(systemNodeRef);
         nodeRefList.add(n1);
         nodeRefList.add(n1);
-        
+
         List<Object> mixedRefList = new ArrayList<Object>();
         mixedRefList.add(rootNodeRef);
         mixedRefList.add(systemNodeRef);
@@ -745,12 +741,11 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         mixedRefList.add(n1);
         mixedRefList.add(rootNodeRef.getStoreRef());
 
-        NodeRef[] nodeRefArray = nodeRefList.toArray(new NodeRef[] {});
-
+        NodeRef[] nodeRefArray = nodeRefList.toArray(new NodeRef[]{});
 
         Set<NodeRef> nodeRefSet = new HashSet<NodeRef>();
         nodeRefSet.addAll(nodeRefList);
-        
+
         Set<Object> mixedRefSet = new HashSet<Object>();
         mixedRefSet.addAll(mixedRefList);
 
@@ -760,7 +755,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         carList.add(nodeService.getPrimaryParent(n1));
         carList.add(nodeService.getPrimaryParent(n1));
 
-        ChildAssociationRef[] carArray = carList.toArray(new ChildAssociationRef[] {});
+        ChildAssociationRef[] carArray = carList.toArray(new ChildAssociationRef[]{});
 
         Set<ChildAssociationRef> carSet = new HashSet<ChildAssociationRef>();
         carSet.addAll(carList);
@@ -770,79 +765,78 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
 
         assertEquals(4, rsIn.length());
-        ResultSet answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[] { rsIn });
+        ResultSet answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[]{rsIn});
         assertEquals(4, answerResultSet.length());
-        Collection answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefList });
+        Collection answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefList});
         assertEquals(4, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { mixedRefList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{mixedRefList});
         assertEquals(5, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefSet});
         assertEquals(3, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { mixedRefSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{mixedRefSet});
         assertEquals(4, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carList});
         assertEquals(4, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carSet});
         assertEquals(3, answerCollection.size());
-        Object[] answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { nodeRefArray });
+        Object[] answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{nodeRefArray});
         assertEquals(4, answerArray.length);
-        answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { carArray });
+        answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{carArray});
         assertEquals(4, answerArray.length);
-        
+
         // Check cut-offs
         answerCollection = (Collection<?>) methodCollection.invoke(
-                proxy, new Object[] { PermissionCheckCollectionMixin.create(new ArrayList<NodeRef>(nodeRefList), 1, 0, 0) });
+                proxy, new Object[]{PermissionCheckCollectionMixin.create(new ArrayList<NodeRef>(nodeRefList), 1, 0, 0)});
         assertEquals(1, answerCollection.size());
         answerCollection = (Collection<?>) methodCollection.invoke(
-                proxy, new Object[] { PermissionCheckCollectionMixin.create(new ArrayList<NodeRef>(nodeRefList), 5, 0, 2) });
+                proxy, new Object[]{PermissionCheckCollectionMixin.create(new ArrayList<NodeRef>(nodeRefList), 5, 0, 2)});
         assertEquals(2, answerCollection.size());
         answerCollection = (Collection<?>) methodCollection.invoke(
-                proxy, new Object[] { PermissionCheckCollectionMixin.create(new ArrayList<NodeRef>(nodeRefList), 5, 1, 0) });
-        assertTrue("Too many results: " + answerCollection.size(), answerCollection.size() < 5);        // Only 1ms to do the check
+                proxy, new Object[]{PermissionCheckCollectionMixin.create(new ArrayList<NodeRef>(nodeRefList), 5, 1, 0)});
+        assertTrue("Too many results: " + answerCollection.size(), answerCollection.size() < 5); // Only 1ms to do the check
 
         permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "andy", AccessStatus.DENIED));
 
         assertEquals(4, rsIn.length());
-        answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[] { rsIn });
+        answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[]{rsIn});
         assertEquals(2, answerResultSet.length());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefList});
         assertEquals(2, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { mixedRefList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{mixedRefList});
         assertEquals(3, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefSet});
         assertEquals(2, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { mixedRefSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{mixedRefSet});
         assertEquals(3, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carList});
         assertEquals(2, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carSet});
         assertEquals(2, answerCollection.size());
-        answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { nodeRefArray });
+        answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{nodeRefArray});
         assertEquals(2, answerArray.length);
-        answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { carArray });
+        answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{carArray});
         assertEquals(2, answerArray.length);
-        
-        
+
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.DENIED));
 
         assertEquals(4, rsIn.length());
-        answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[] { rsIn });
+        answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[]{rsIn});
         assertEquals(0, answerResultSet.length());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefList});
         assertEquals(0, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { mixedRefList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{mixedRefList});
         assertEquals(0, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefSet});
         assertEquals(0, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { mixedRefSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{mixedRefSet});
         assertEquals(0, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carList});
         assertEquals(0, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carSet});
         assertEquals(0, answerCollection.size());
-        answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { nodeRefArray });
+        answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{nodeRefArray});
         assertEquals(0, answerArray.length);
-        answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { carArray });
+        answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{carArray});
         assertEquals(0, answerArray.length);
 
     }
@@ -857,9 +851,9 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         runAs("andy");
 
         Object o = new ClassWithMethods();
-        Method methodResultSet = o.getClass().getMethod("echoResultSet", new Class[] { ResultSet.class });
-        Method methodCollection = o.getClass().getMethod("echoCollection", new Class[] { Collection.class });
-        Method methodArray = o.getClass().getMethod("echoArray", new Class[] { Object[].class });
+        Method methodResultSet = o.getClass().getMethod("echoResultSet", new Class[]{ResultSet.class});
+        Method methodCollection = o.getClass().getMethod("echoCollection", new Class[]{Collection.class});
+        Method methodArray = o.getClass().getMethod("echoArray", new Class[]{Object[].class});
 
         AdvisorAdapterRegistry advisorAdapterRegistry = GlobalAdvisorAdapterRegistry.getInstance();
 
@@ -873,7 +867,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         nodeRefList.add(systemNodeRef);
         nodeRefList.add(n1);
         nodeRefList.add(n1);
-        
+
         List<Object> mixedRefList = new ArrayList<Object>();
         mixedRefList.add(rootNodeRef);
         mixedRefList.add(systemNodeRef);
@@ -881,11 +875,11 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         mixedRefList.add(n1);
         mixedRefList.add(rootNodeRef.getStoreRef());
 
-        NodeRef[] nodeRefArray = nodeRefList.toArray(new NodeRef[] {});
+        NodeRef[] nodeRefArray = nodeRefList.toArray(new NodeRef[]{});
 
         Set<NodeRef> nodeRefSet = new HashSet<NodeRef>();
         nodeRefSet.addAll(nodeRefList);
-        
+
         Set<Object> mixedRefSet = new HashSet<Object>();
         mixedRefSet.addAll(mixedRefList);
 
@@ -895,7 +889,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         carList.add(nodeService.getPrimaryParent(n1));
         carList.add(nodeService.getPrimaryParent(n1));
 
-        ChildAssociationRef[] carArray = carList.toArray(new ChildAssociationRef[] {});
+        ChildAssociationRef[] carArray = carList.toArray(new ChildAssociationRef[]{});
 
         Set<ChildAssociationRef> carSet = new HashSet<ChildAssociationRef>();
         carSet.addAll(carList);
@@ -905,67 +899,67 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.ALLOWED));
 
         assertEquals(4, rsIn.length());
-        ResultSet answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[] { rsIn });
+        ResultSet answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[]{rsIn});
         assertEquals(4, answerResultSet.length());
-        Collection answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefList });
+        Collection answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefList});
         assertEquals(4, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { mixedRefList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{mixedRefList});
         assertEquals(5, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefSet});
         assertEquals(3, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { mixedRefSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{mixedRefSet});
         assertEquals(4, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carList});
         assertEquals(4, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carSet});
         assertEquals(3, answerCollection.size());
-        Object[] answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { nodeRefArray });
+        Object[] answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{nodeRefArray});
         assertEquals(4, answerArray.length);
-        answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { carArray });
+        answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{carArray});
         assertEquals(4, answerArray.length);
 
         permissionService.setPermission(new SimplePermissionEntry(n1, getPermission(PermissionService.READ), "andy", AccessStatus.DENIED));
 
         assertEquals(4, rsIn.length());
-        answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[] { rsIn });
+        answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[]{rsIn});
         assertEquals(4, answerResultSet.length());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefList});
         assertEquals(4, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { mixedRefList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{mixedRefList});
         assertEquals(5, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefSet});
         assertEquals(3, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { mixedRefSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{mixedRefSet});
         assertEquals(4, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carList});
         assertEquals(4, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carSet});
         assertEquals(3, answerCollection.size());
-        answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { nodeRefArray });
+        answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{nodeRefArray});
         assertEquals(4, answerArray.length);
-        answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { carArray });
+        answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{carArray});
         assertEquals(4, answerArray.length);
-        
+
         permissionService.setPermission(new SimplePermissionEntry(rootNodeRef, getPermission(PermissionService.READ), "andy", AccessStatus.DENIED));
 
         assertEquals(4, rsIn.length());
-        answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[] { rsIn });
+        answerResultSet = (ResultSet) methodResultSet.invoke(proxy, new Object[]{rsIn});
         assertEquals(1, answerResultSet.length());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefList});
         assertEquals(1, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { mixedRefList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{mixedRefList});
         assertEquals(2, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { nodeRefSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{nodeRefSet});
         assertEquals(1, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { mixedRefSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{mixedRefSet});
         assertEquals(2, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carList });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carList});
         assertEquals(1, answerCollection.size());
-        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[] { carSet });
+        answerCollection = (Collection) methodCollection.invoke(proxy, new Object[]{carSet});
         assertEquals(1, answerCollection.size());
-        answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { nodeRefArray });
+        answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{nodeRefArray});
         assertEquals(1, answerArray.length);
-        answerArray = (Object[]) methodArray.invoke(proxy, new Object[] { carArray });
+        answerArray = (Object[]) methodArray.invoke(proxy, new Object[]{carArray});
         assertEquals(1, answerArray.length);
 
     }
@@ -982,7 +976,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
         {
             return storeRef;
         }
-        
+
         public NodeRef echoNodeRef(NodeRef nodeRef)
         {
             return nodeRef;
@@ -1021,8 +1015,7 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
 
         Interceptor(final String config)
         {
-            cad.addConfigAttribute(new ConfigAttribute()
-            {
+            cad.addConfigAttribute(new ConfigAttribute() {
 
                 /**
                  * Comment for <code>serialVersionUID</code>

@@ -29,12 +29,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.repo.search.impl.AbstractJSONAPIResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.alfresco.repo.search.impl.AbstractJSONAPIResult;
 
 /**
  * The results of executing a SOLR REPORT action
@@ -45,44 +46,46 @@ import org.slf4j.LoggerFactory;
 public class SolrActionReportResult extends AbstractJSONAPIResult
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(SolrActionReportResult.class);
-    
+
     /**
      * Parses the JSON to set this Java Object values
-     * @param json JSONObject returned by SOLR API
+     * 
+     * @param json
+     *            JSONObject returned by SOLR API
      */
     public SolrActionReportResult(JSONObject json)
     {
-        try 
+        try
         {
             processJson(json);
         }
         catch (NullPointerException | JSONException e)
         {
-           LOGGER.info(e.getMessage());
+            LOGGER.info(e.getMessage());
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.lucene.AbstractSolrActionAPIResult#processCoresInfoJson(org.json.JSONObject)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.lucene.AbstractSolrActionAPIResult#processCoresInfoJson(org.json.JSONObject) */
     @Override
     protected void processCoresInfoJson(JSONObject json) throws JSONException
     {
 
         cores = new ArrayList<>();
         coresInfo = new HashMap<>();
-        
-        if (json.has("report")) 
+
+        if (json.has("report"))
         {
-        
+
             JSONObject coreList = json.getJSONObject("report");
             JSONArray coreNameList = coreList.names();
-            for(int i = 0; i < coreNameList.length(); i++)
+            for (int i = 0; i < coreNameList.length(); i++)
             {
-                
+
                 String coreName = String.valueOf(coreNameList.get(i));
                 cores.add(coreName);
-                
+
                 Map<String, Object> coreInfo = new HashMap<>();
                 JSONObject coreProperties = coreList.getJSONObject(coreName);
                 JSONArray propertyNameList = coreProperties.names();
@@ -91,14 +94,13 @@ public class SolrActionReportResult extends AbstractJSONAPIResult
                     String propertyName = String.valueOf(propertyNameList.get(j));
                     coreInfo.put(propertyName, coreProperties.get(propertyName));
                 }
-                
+
                 coresInfo.put(coreName, coreInfo);
 
             }
 
         }
-        
-    }
-    
-}
 
+    }
+
+}

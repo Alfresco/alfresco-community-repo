@@ -28,18 +28,15 @@ package org.alfresco.service.cmr.rendition;
 
 import java.io.Serializable;
 
-import org.alfresco.api.AlfrescoPublicApi;    
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * This class is used to fully specify a type of rendition. It specifies which
- * rendering engine will be used as well as the parameters that will be given to
- * that engine.
+ * This class is used to fully specify a type of rendition. It specifies which rendering engine will be used as well as the parameters that will be given to that engine.
  * <P/>
- * Every RenditionDefinition has a <code>renditionName</code> attribute which
- * uniquely identifies it.
+ * Every RenditionDefinition has a <code>renditionName</code> attribute which uniquely identifies it.
  * 
  * @author Nick Smith
  * @author Neil McErlean
@@ -56,57 +53,45 @@ public interface RenditionDefinition extends Action, Serializable
     QName getRenditionName();
 
     /**
-     * Returns the node to which the rendition is linked when it is first
-     * created. Typically this location is only temporary temporary as the
-     * rendition will be moved to a different location by the
-     * {@link RenditionService} shortly after its creation.
+     * Returns the node to which the rendition is linked when it is first created. Typically this location is only temporary temporary as the rendition will be moved to a different location by the {@link RenditionService} shortly after its creation.
      * 
      * @return the renditionParent
      */
     NodeRef getRenditionParent();
 
     /**
-     * Sets the node to which the rendition is linked when it is first created.
-     * Typically this location is only temporary temporary as the rendition will
-     * be moved to a different location by the {@link RenditionService} shortly
-     * after its creation.
+     * Sets the node to which the rendition is linked when it is first created. Typically this location is only temporary temporary as the rendition will be moved to a different location by the {@link RenditionService} shortly after its creation.
      * 
-     * @param renditionParent the renditionParent to set
+     * @param renditionParent
+     *            the renditionParent to set
      */
     void setRenditionParent(NodeRef renditionParent);
 
     /**
-     * Returns the association type used to link the rendition to its parent
-     * node after it has been newly created. Typically this association is only
-     * temporary as the rendition will be moved to a different location by the
-     * {@link RenditionService} shortly after its creation.
+     * Returns the association type used to link the rendition to its parent node after it has been newly created. Typically this association is only temporary as the rendition will be moved to a different location by the {@link RenditionService} shortly after its creation.
      * 
      * @return the renditionAssociationType
      */
     QName getRenditionAssociationType();
 
     /**
-     * Sets the association type used to link the rendition to its parent node
-     * after it has been newly created. Typically this association is only
-     * temporary as the rendition will be moved to a different location by the
-     * {@link RenditionService} shortly after its creation.
+     * Sets the association type used to link the rendition to its parent node after it has been newly created. Typically this association is only temporary as the rendition will be moved to a different location by the {@link RenditionService} shortly after its creation.
      * 
-     * @param renditionAssociationType the renditionAssociationType to set
+     * @param renditionAssociationType
+     *            the renditionAssociationType to set
      */
     void setRenditionAssociationType(QName renditionAssociationType);
-    
+
     /**
-     * This method sets a callback object for use in asynchronous renditions. It is
-     * this object that will be notified of the successful or unsuccessful completion
-     * of these renditions.
+     * This method sets a callback object for use in asynchronous renditions. It is this object that will be notified of the successful or unsuccessful completion of these renditions.
      * 
-     * @param callback a callback object, which may be null.
+     * @param callback
+     *            a callback object, which may be null.
      */
     void setCallback(RenderCallback callback);
-    
+
     /**
-     * This method gets the registered callback object for use with asynchronous
-     * renditions.
+     * This method gets the registered callback object for use with asynchronous renditions.
      * 
      * @return the callback object
      */

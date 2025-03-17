@@ -54,7 +54,9 @@ public class DispositionActionDefinitionPublishExecutor extends BasePublishExecu
 
     /**
      * Set node service
-     * @param nodeService   node service
+     * 
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -63,7 +65,9 @@ public class DispositionActionDefinitionPublishExecutor extends BasePublishExecu
 
     /**
      * Set records management service
-     * @param rmActionService   records management service
+     * 
+     * @param rmActionService
+     *            records management service
      */
     public void setRmActionService(RecordsManagementActionService rmActionService)
     {
@@ -86,11 +90,11 @@ public class DispositionActionDefinitionPublishExecutor extends BasePublishExecu
     @Override
     public void publish(NodeRef nodeRef)
     {
-        List<QName> updatedProps = (List<QName>)nodeService.getProperty(nodeRef, RecordsManagementModel.PROP_UPDATED_PROPERTIES);
+        List<QName> updatedProps = (List<QName>) nodeService.getProperty(nodeRef, RecordsManagementModel.PROP_UPDATED_PROPERTIES);
         if (updatedProps != null)
         {
             Map<String, Serializable> params = new HashMap<>();
-            params.put(BroadcastDispositionActionDefinitionUpdateAction.CHANGED_PROPERTIES, (Serializable)updatedProps);
+            params.put(BroadcastDispositionActionDefinitionUpdateAction.CHANGED_PROPERTIES, (Serializable) updatedProps);
             rmActionService.executeRecordsManagementAction(nodeRef, BroadcastDispositionActionDefinitionUpdateAction.NAME, params);
         }
     }

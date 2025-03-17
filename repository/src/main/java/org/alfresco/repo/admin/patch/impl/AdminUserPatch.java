@@ -25,6 +25,16 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
+import java.io.Serializable;
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
@@ -33,15 +43,6 @@ import org.alfresco.repo.security.authentication.RepositoryAuthenticationDao;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.surf.util.I18NUtil;
-
-import java.io.Serializable;
-import java.util.Map;
 
 /**
  * Patch to reset the admin user's default password to favour md4 instead of sha254
@@ -50,11 +51,12 @@ import java.util.Map;
  *
  * @author Gethin James
  */
-public class AdminUserPatch extends AbstractPatch implements InitializingBean {
+public class AdminUserPatch extends AbstractPatch implements InitializingBean
+{
 
     private static final String MSG_START = "patch.updateAdminUserWhenDefault.start";
     private static final String MSG_RESULT = "patch.updateAdminUserWhenDefault.result";
-    private static final String MSG_NO_ACTION ="patch.updateAdminUserWhenDefault.noaction";
+    private static final String MSG_NO_ACTION = "patch.updateAdminUserWhenDefault.noaction";
     private static final Log logger = LogFactory.getLog(AdminUserPatch.class);
 
     public static String DEFAULT_SHA = "f378d5d7b947d5c26f478e21819e7ec3a6668c8149b050d086c64447bc40173b";
@@ -62,22 +64,24 @@ public class AdminUserPatch extends AbstractPatch implements InitializingBean {
     private ChildApplicationContextManager authenticationContextManager;
     private RepositoryAuthenticationDao authenticationDao;
 
-    public void setAuthenticationContextManager(ChildApplicationContextManager authenticationContextManager) {
+    public void setAuthenticationContextManager(ChildApplicationContextManager authenticationContextManager)
+    {
         this.authenticationContextManager = authenticationContextManager;
     }
 
     @Override
-    protected String applyInternal() throws Exception {
+    protected String applyInternal() throws Exception
+    {
 
         StringBuilder result = new StringBuilder(I18NUtil.getMessage(MSG_START));
 
-        //If there's no RepositoryAuthenticationDao then there's no need for this patch to run
+        // If there's no RepositoryAuthenticationDao then there's no need for this patch to run
         if (authenticationDao != null)
         {
             final String adminUsername = AuthenticationUtil.getAdminUserName();
-            final NodeRef userNodeRef  = authenticationDao.getUserOrNull(adminUsername);
+            final NodeRef userNodeRef = authenticationDao.getUserOrNull(adminUsername);
 
-            if (userNodeRef!= null)
+            if (userNodeRef != null)
             {
                 Map<QName, Serializable> userProperties = nodeService.getProperties(userNodeRef);
                 String sha256 = (String) userProperties.get(ContentModel.PROP_PASSWORD_SHA256);
@@ -94,7 +98,7 @@ public class AdminUserPatch extends AbstractPatch implements InitializingBean {
                     // The SHA256 is set to the default (i.e. admin) so i will remove it
                     nodeService.removeProperty(userNodeRef, ContentModel.PROP_PASSWORD_SHA256);
 
-                    result.append(I18NUtil.getMessage(MSG_RESULT,adminUsername));
+                    result.append(I18NUtil.getMessage(MSG_RESULT, adminUsername));
 
                 }
             }
@@ -104,18 +108,20 @@ public class AdminUserPatch extends AbstractPatch implements InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() throws Exception
+    {
         ParameterCheck.mandatory("authenticationContextManager", authenticationContextManager);
 
-        //Attempt to get RepositoryAuthenticationDao from the subsystem
-        for(String contextName : authenticationContextManager.getInstanceIds())
+        // Attempt to get RepositoryAuthenticationDao from the subsystem
+        for (String contextName : authenticationContextManager.getInstanceIds())
         {
             ApplicationContext ctx = authenticationContextManager.getApplicationContext(contextName);
             try
             {
-                authenticationDao = (RepositoryAuthenticationDao)
-                        ctx.getBean(RepositoryAuthenticationDao.class);
-            } catch(NoSuchBeanDefinitionException e) {}
+                authenticationDao = (RepositoryAuthenticationDao) ctx.getBean(RepositoryAuthenticationDao.class);
+            }
+            catch (NoSuchBeanDefinitionException e)
+            {}
         }
 
     }

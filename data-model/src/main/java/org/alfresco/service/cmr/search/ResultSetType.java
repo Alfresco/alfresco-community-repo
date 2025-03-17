@@ -27,6 +27,7 @@ package org.alfresco.service.cmr.search;
 
 /**
  * The two types of result set - column based and Node Ref based.
+ * 
  * @author andyh
  *
  */

@@ -36,7 +36,7 @@ public class ConstraintException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = -3925105163386197586L;
 
-    public ConstraintException(String msgId, Object ... args)
+    public ConstraintException(String msgId, Object... args)
     {
         super(msgId, args);
     }

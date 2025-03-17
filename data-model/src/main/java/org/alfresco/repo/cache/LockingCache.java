@@ -38,24 +38,25 @@ public interface LockingCache<K extends Serializable, V extends Object> extends 
     /**
      * Determine if a value (addition, removal or update) has been locked for the remainer of the transaction
      * 
-     * @param key           the cache key to check up on
-     * @return              <tt>true</tt> if the value will not change for the remaineder of the transaction
+     * @param key
+     *            the cache key to check up on
+     * @return <tt>true</tt> if the value will not change for the remaineder of the transaction
      */
     boolean isValueLocked(K key);
-    
+
     /**
-     * Prevent a key's value from being changed for the duriation of the transaction.
-     * By default, further attempts to modify the associated value will be ignored;
-     * this includes add a value back after removal.
+     * Prevent a key's value from being changed for the duriation of the transaction. By default, further attempts to modify the associated value will be ignored; this includes add a value back after removal.
      * 
-     * @param key           the cache key that will be locked against change
+     * @param key
+     *            the cache key that will be locked against change
      */
     void lockValue(K key);
-    
+
     /**
      * Cancel any previous lock applied to a key's value.
      * 
-     * @param key           the cache key that will be unlocked, allowing changes
+     * @param key
+     *            the cache key that will be unlocked, allowing changes
      */
     void unlockValue(K key);
 }

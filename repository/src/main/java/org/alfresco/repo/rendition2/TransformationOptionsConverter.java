@@ -25,31 +25,7 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerOptions;
-import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
-import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
-import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
-import org.alfresco.service.cmr.repository.CropSourceOptions;
-import org.alfresco.service.cmr.repository.PagedSourceOptions;
-import org.alfresco.service.cmr.repository.TemporalSourceOptions;
-import org.alfresco.service.cmr.repository.TransformationOptionLimits;
-import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.alfresco.service.cmr.repository.TransformationSourceOptions;
-import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringJoiner;
+import static org.springframework.util.CollectionUtils.containsAny;
 
 import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_PDF;
 import static org.alfresco.repo.content.transform.magick.ImageTransformationOptions.OPT_COMMAND_OPTIONS;
@@ -80,7 +56,33 @@ import static org.alfresco.repo.rendition2.RenditionDefinition2.START_PAGE;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.THUMBNAIL;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.TIMEOUT;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.WIDTH;
-import static org.springframework.util.CollectionUtils.containsAny;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringJoiner;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerOptions;
+import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
+import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
+import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
+import org.alfresco.service.cmr.repository.CropSourceOptions;
+import org.alfresco.service.cmr.repository.PagedSourceOptions;
+import org.alfresco.service.cmr.repository.TemporalSourceOptions;
+import org.alfresco.service.cmr.repository.TransformationOptionLimits;
+import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.cmr.repository.TransformationSourceOptions;
+import org.alfresco.util.PropertyCheck;
 
 /**
  * @deprecated converts the new flat name value pair transformer options to the deprecated TransformationOptions.
@@ -91,28 +93,24 @@ import static org.springframework.util.CollectionUtils.containsAny;
 public class TransformationOptionsConverter implements InitializingBean
 {
     public static final String FALSE_STRING = Boolean.FALSE.toString();
-    private static Set<String> PAGED_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-            {
-                    PAGE, START_PAGE, END_PAGE
-            }));
+    private static Set<String> PAGED_OPTIONS = new HashSet<>(Arrays.asList(new String[]{
+            PAGE, START_PAGE, END_PAGE
+    }));
 
-    private static Set<String> CROP_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-            {
-                    CROP_GRAVITY, CROP_WIDTH, CROP_HEIGHT, CROP_PERCENTAGE, CROP_X_OFFSET, CROP_Y_OFFSET
-            }));
+    private static Set<String> CROP_OPTIONS = new HashSet<>(Arrays.asList(new String[]{
+            CROP_GRAVITY, CROP_WIDTH, CROP_HEIGHT, CROP_PERCENTAGE, CROP_X_OFFSET, CROP_Y_OFFSET
+    }));
 
-    private static Set<String> TEMPORAL_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-            {
-                    OFFSET, DURATION
-            }));
+    private static Set<String> TEMPORAL_OPTIONS = new HashSet<>(Arrays.asList(new String[]{
+            OFFSET, DURATION
+    }));
 
-    private static Set<String> RESIZE_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-            {
-                    WIDTH, HEIGHT, ALLOW_PDF_ENLARGEMENT, MAINTAIN_PDF_ASPECT_RATIO,
+    private static Set<String> RESIZE_OPTIONS = new HashSet<>(Arrays.asList(new String[]{
+            WIDTH, HEIGHT, ALLOW_PDF_ENLARGEMENT, MAINTAIN_PDF_ASPECT_RATIO,
 
-                    THUMBNAIL, RESIZE_WIDTH, RESIZE_HEIGHT, RESIZE_PERCENTAGE,
-                    ALLOW_ENLARGEMENT, MAINTAIN_ASPECT_RATIO
-            }));
+            THUMBNAIL, RESIZE_WIDTH, RESIZE_HEIGHT, RESIZE_PERCENTAGE,
+            ALLOW_ENLARGEMENT, MAINTAIN_ASPECT_RATIO
+    }));
 
     protected static Set<String> IMAGE_OPTIONS = new HashSet<>();
     static
@@ -126,20 +124,17 @@ public class TransformationOptionsConverter implements InitializingBean
         IMAGE_OPTIONS.add(OPT_COMMAND_OPTIONS);
     }
 
-    private static Set<String> PDF_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-            {
-                    PAGE, WIDTH, HEIGHT, ALLOW_PDF_ENLARGEMENT, MAINTAIN_PDF_ASPECT_RATIO
-            }));
+    private static Set<String> PDF_OPTIONS = new HashSet<>(Arrays.asList(new String[]{
+            PAGE, WIDTH, HEIGHT, ALLOW_PDF_ENLARGEMENT, MAINTAIN_PDF_ASPECT_RATIO
+    }));
 
-    private static Set<String> FLASH_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-            {
-                    FLASH_VERSION
-            }));
+    private static Set<String> FLASH_OPTIONS = new HashSet<>(Arrays.asList(new String[]{
+            FLASH_VERSION
+    }));
 
-    private static Set<String> LIMIT_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-            {
-                    TIMEOUT, MAX_SOURCE_SIZE_K_BYTES
-            }));
+    private static Set<String> LIMIT_OPTIONS = new HashSet<>(Arrays.asList(new String[]{
+            TIMEOUT, MAX_SOURCE_SIZE_K_BYTES
+    }));
 
     private interface Setter
     {
@@ -157,7 +152,8 @@ public class TransformationOptionsConverter implements InitializingBean
 
     public void setMaxSourceSizeKBytes(String maxSourceSizeKBytes)
     {
-        this.maxSourceSizeKBytes = Long.parseLong(maxSourceSizeKBytes);;
+        this.maxSourceSizeKBytes = Long.parseLong(maxSourceSizeKBytes);
+        ;
     }
 
     public void setReadLimitTimeMs(String readLimitTimeMs)
@@ -191,8 +187,7 @@ public class TransformationOptionsConverter implements InitializingBean
     }
 
     /**
-     * @deprecated as we do not plan to use TransformationOptions moving forwards as local transformations will also
-     * use the same options as the Transform Service.
+     * @deprecated as we do not plan to use TransformationOptions moving forwards as local transformations will also use the same options as the Transform Service.
      */
     @Deprecated
     TransformationOptions getTransformationOptions(String renditionName, Map<String, String> options)
@@ -234,14 +229,14 @@ public class TransformationOptionsConverter implements InitializingBean
                     // ImageMagick
                     ifSet(options, RESIZE_WIDTH, (v) -> imageResizeOptions.setWidth(Integer.parseInt(v)));
                     ifSet(options, RESIZE_HEIGHT, (v) -> imageResizeOptions.setHeight(Integer.parseInt(v)));
-                    ifSet(options, THUMBNAIL, (v) ->imageResizeOptions.setResizeToThumbnail(Boolean.parseBoolean(v)));
-                    ifSet(options, RESIZE_PERCENTAGE, (v) ->imageResizeOptions.setPercentResize(Boolean.parseBoolean(v)));
-                    set(options, ALLOW_ENLARGEMENT, (v) ->imageResizeOptions.setAllowEnlargement(Boolean.parseBoolean(v == null ? "true" : v)));
-                    set(options, MAINTAIN_ASPECT_RATIO, (v) ->imageResizeOptions.setMaintainAspectRatio(Boolean.parseBoolean(v == null ? "true" : v)));
+                    ifSet(options, THUMBNAIL, (v) -> imageResizeOptions.setResizeToThumbnail(Boolean.parseBoolean(v)));
+                    ifSet(options, RESIZE_PERCENTAGE, (v) -> imageResizeOptions.setPercentResize(Boolean.parseBoolean(v)));
+                    set(options, ALLOW_ENLARGEMENT, (v) -> imageResizeOptions.setAllowEnlargement(Boolean.parseBoolean(v == null ? "true" : v)));
+                    set(options, MAINTAIN_ASPECT_RATIO, (v) -> imageResizeOptions.setMaintainAspectRatio(Boolean.parseBoolean(v == null ? "true" : v)));
                 }
 
                 // ALPHA_REMOVE can be ignored as it is automatically added in the legacy code if the sourceMimetype is jpeg
-                set(options, AUTO_ORIENT, (v) ->opts.setAutoOrient(Boolean.parseBoolean(v == null ? "true" : v)));
+                set(options, AUTO_ORIENT, (v) -> opts.setAutoOrient(Boolean.parseBoolean(v == null ? "true" : v)));
 
                 boolean containsPaged = containsAny(subclassOptionNames, PAGED_OPTIONS);
                 boolean containsCrop = containsAny(subclassOptionNames, CROP_OPTIONS);
@@ -257,8 +252,7 @@ public class TransformationOptionsConverter implements InitializingBean
                         sourceOptionsList.add(pagedSourceOptions);
                         ifSet(options, START_PAGE, (v) -> pagedSourceOptions.setStartPageNumber(Integer.parseInt(v) + 1));
                         ifSet(options, END_PAGE, (v) -> pagedSourceOptions.setEndPageNumber(Integer.parseInt(v) + 1));
-                        ifSet(options, PAGE, (v) ->
-                        {
+                        ifSet(options, PAGE, (v) -> {
                             int i = Integer.parseInt(v) + 1;
                             pagedSourceOptions.setStartPageNumber(i);
                             pagedSourceOptions.setEndPageNumber(i);
@@ -300,8 +294,8 @@ public class TransformationOptionsConverter implements InitializingBean
         if (transformationOptions == null)
         {
             StringJoiner sj = new StringJoiner("\n    ");
-            sj.add("The RenditionDefinition2 "+renditionName +
-                    " contains options that cannot be mapped to TransformationOptions used by local transformers. "+
+            sj.add("The RenditionDefinition2 " + renditionName +
+                    " contains options that cannot be mapped to TransformationOptions used by local transformers. " +
                     " The TransformOptionConverter may need to be sub classed to support this conversion.");
             HashSet<String> otherNames = new HashSet<>(optionNames);
             otherNames.removeAll(FLASH_OPTIONS);
@@ -315,7 +309,7 @@ public class TransformationOptionsConverter implements InitializingBean
         }
 
         final TransformationOptions opts = transformationOptions;
-        ifSet(options, INCLUDE_CONTENTS, (v) ->opts.setIncludeEmbedded(Boolean.parseBoolean(v)));
+        ifSet(options, INCLUDE_CONTENTS, (v) -> opts.setIncludeEmbedded(Boolean.parseBoolean(v)));
 
         if (containsAny(optionNames, LIMIT_OPTIONS))
         {

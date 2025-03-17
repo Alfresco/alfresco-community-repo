@@ -31,14 +31,14 @@ import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.context.Context;
 import net.sf.acegisecurity.context.ContextHolder;
 import net.sf.acegisecurity.context.security.SecureContext;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.query.AbstractCannedQuery;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.repo.security.authentication.AlfrescoSecureContext;
 import org.alfresco.repo.security.permissions.PermissionCheckedCollection;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Basic support for canned query implementations - permission check
@@ -51,20 +51,19 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
     private Log logger = LogFactory.getLog(AbstractCannedQueryPermissions.class);
 
     private MethodSecurityBean<R> methodSecurity;
-    
+
     protected AbstractCannedQueryPermissions(CannedQueryParameters parameters, MethodSecurityBean<R> methodSecurity)
     {
         super(parameters);
         this.methodSecurity = methodSecurity;
     }
-    
+
     /**
      * {@inheritDoc}
      * <p/>
-     * By default, the is a permission checking class.  Override the method if you wish to
-     * switch the behaviour at runtime.
+     * By default, the is a permission checking class. Override the method if you wish to switch the behaviour at runtime.
      * 
-     * @return      <tt>true</tt> always
+     * @return <tt>true</tt> always
      */
     @Override
     protected boolean isApplyPostQueryPermissions()
@@ -76,7 +75,7 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
     protected List<R> applyPostQueryPermissions(List<R> results, int requestedCount)
     {
         Context context = ContextHolder.getContext();
-        if ((context == null) || (! (context instanceof AlfrescoSecureContext)))
+        if ((context == null) || (!(context instanceof AlfrescoSecureContext)))
         {
             // This indicates that we have come via the internal service methods
             if (logger.isDebugEnabled())
@@ -86,16 +85,14 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
             return results;
         }
         Authentication authentication = (((SecureContext) context).getAuthentication());
-        
+
         List<R> resultsOut = (List<R>) methodSecurity.applyPermissions(results, authentication, requestedCount);
         // Done
         return resultsOut;
     }
 
     /**
-     * Overrides the default implementation to check for the permission data
-     * that will allow a good guess as to the maximum number of results in
-     * the event of a permission-based cut-off.
+     * Overrides the default implementation to check for the permission data that will allow a good guess as to the maximum number of results in the event of a permission-based cut-off.
      */
     @Override
     protected Pair<Integer, Integer> getTotalResultCount(List<R> results)
@@ -103,7 +100,7 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
         // Start with the simplest
         int size = results.size();
         int possibleSize = size;
-        
+
         if (results instanceof PermissionCheckedCollection)
         {
             @SuppressWarnings("unchecked")
@@ -111,7 +108,7 @@ public abstract class AbstractCannedQueryPermissions<R> extends AbstractCannedQu
             if (pcc.isCutOff())
             {
                 // We didn't get all the results processed, so make a guess
-                double successRatio = (double)size/(double)pcc.sizeOriginal();
+                double successRatio = (double) size / (double) pcc.sizeOriginal();
                 int possiblyMissed = (int) (pcc.sizeUnchecked() * successRatio);
                 possibleSize = size + possiblyMissed;
             }

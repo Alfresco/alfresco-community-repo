@@ -30,8 +30,10 @@ import java.io.FileReader;
 import java.io.Reader;
 import java.util.List;
 import java.util.Set;
-
 import jakarta.transaction.UserTransaction;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
@@ -47,13 +49,11 @@ import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class FileSourceImporter implements ImporterJobSPI
 {
     private static Log s_logger = LogFactory.getLog(FileSourceImporter.class);
-    
+
     private ImporterService importerService;
 
     private String fileLocation;
@@ -186,7 +186,7 @@ public class FileSourceImporter implements ImporterJobSPI
 
             userTransaction.commit();
             long end = System.nanoTime();
-            s_logger.info("Imported "+fileLocation+ " in "+((end-start)/1e9f) + " seconds");
+            s_logger.info("Imported " + fileLocation + " in " + ((end - start) / 1e9f) + " seconds");
         }
         catch (Throwable t)
         {
@@ -198,15 +198,13 @@ public class FileSourceImporter implements ImporterJobSPI
                 }
             }
             catch (Exception ex)
-            {
-            }
+            {}
             try
             {
                 authenticationContext.clearCurrentSecurityContext();
             }
             catch (Exception ex)
-            {
-            }
+            {}
             throw new ExportSourceImporterException("Failed to import", t);
         }
         finally
@@ -215,8 +213,7 @@ public class FileSourceImporter implements ImporterJobSPI
         }
     }
 
-    private static ImporterBinding REPLACE_BINDING = new ImporterBinding()
-    {
+    private static ImporterBinding REPLACE_BINDING = new ImporterBinding() {
         @Override
         public UUID_BINDING getUUIDBinding()
         {
@@ -240,7 +237,7 @@ public class FileSourceImporter implements ImporterJobSPI
         {
             return null;
         }
-        
+
         @Override
         public ImporterContentCache getImportConentCache()
         {

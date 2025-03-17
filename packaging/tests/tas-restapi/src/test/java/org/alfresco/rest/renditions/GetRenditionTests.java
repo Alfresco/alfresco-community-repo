@@ -2,6 +2,11 @@ package org.alfresco.rest.renditions;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
+import org.springframework.http.HttpStatus;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestResponse;
@@ -17,13 +22,10 @@ import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.report.Bug.Status;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Handles tests related to GET api-explorer/#!/renditions
+ * 
  * @author Cristina Axinte
  *
  */
@@ -43,9 +45,9 @@ public class GetRenditionTests extends RestTest
     }
 
     @Bug(id = "REPO-2449", status = Status.FIXED)
-    @Test(groups = { TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY, TestGroup.NOT_SUPPORTED_BY_ATS })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY, 
-        description = "Verify that ZIP document preview is rendered")
+    @Test(groups = {TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY, TestGroup.NOT_SUPPORTED_BY_ATS})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RENDITIONS}, executionType = ExecutionType.SANITY,
+            description = "Verify that ZIP document preview is rendered")
     public void verifyPreviewOfZipFile() throws Exception
     {
         STEP("1. Create a folder in existing site");
@@ -70,11 +72,11 @@ public class GetRenditionTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         renditionInfo.assertThat().field("status").is("CREATED");
     }
-    
+
     @Bug(id = "REPO-2485", status = Status.FIXED)
-    @Test(groups = { TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY, TestGroup.NOT_SUPPORTED_BY_ATS })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY, 
-        description = "Verify that ZIP document thumbnail is rendered")
+    @Test(groups = {TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY, TestGroup.NOT_SUPPORTED_BY_ATS})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RENDITIONS}, executionType = ExecutionType.SANITY,
+            description = "Verify that ZIP document thumbnail is rendered")
     public void verifyThumbnailOfZipFile() throws Exception
     {
         STEP("1. Create a folder in existing site");
@@ -102,13 +104,13 @@ public class GetRenditionTests extends RestTest
     }
 
     /**
-     * Sanity test for the following endpoint:
-     * GET /nodes/{nodeId}/renditions/{renditionId}/content
+     * Sanity test for the following endpoint: GET /nodes/{nodeId}/renditions/{renditionId}/content
+     * 
      * @throws Exception
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY, TestGroup.NOT_SUPPORTED_BY_ATS })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY,
-        description = "Verify that the rendition content can be downloaded using GET /nodes/{nodeId}/renditions/{renditionId}/content")
+    @Test(groups = {TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY, TestGroup.NOT_SUPPORTED_BY_ATS})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RENDITIONS}, executionType = ExecutionType.SANITY,
+            description = "Verify that the rendition content can be downloaded using GET /nodes/{nodeId}/renditions/{renditionId}/content")
     public void getRenditionContent() throws Exception
     {
         STEP("1. Create a folder in existing site");
@@ -131,7 +133,7 @@ public class GetRenditionTests extends RestTest
         STEP("4. Verify thumbnail of txt file is created and has content using RESTAPI");
         RestResponse restResponse = restClient.withCoreAPI().usingNode(file).getNodeRenditionContentUntilIsCreated("doclib");
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restClient.assertHeaderValueContains("Content-Type","image/png;charset=UTF-8");
+        restClient.assertHeaderValueContains("Content-Type", "image/png;charset=UTF-8");
         Assert.assertTrue(restResponse.getResponse().body().asInputStream().available() > 0);
     }
 
@@ -154,4 +156,3 @@ public class GetRenditionTests extends RestTest
         });
     }
 }
-

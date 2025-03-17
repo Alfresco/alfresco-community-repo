@@ -25,17 +25,16 @@
  */
 package org.alfresco.repo.transaction;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.beans.factory.InitializingBean;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+
 /**
- * Utility class that ensures that a <tt>NodeDaoService</tt> has been registered
- * with the current transaction.
+ * Utility class that ensures that a <tt>NodeDaoService</tt> has been registered with the current transaction.
  * <p>
- * It is designed to act as a <b>postInterceptor</b> on the <tt>NodeDaoService</tt>'s
- * {@link org.springframework.transaction.interceptor.TransactionProxyFactoryBean}. 
+ * It is designed to act as a <b>postInterceptor</b> on the <tt>NodeDaoService</tt>'s {@link org.springframework.transaction.interceptor.TransactionProxyFactoryBean}.
  * 
  * @author Derek Hulley
  */
@@ -44,7 +43,8 @@ public class TransactionalDaoInterceptor implements MethodInterceptor, Initializ
     private TransactionalDao daoService;
 
     /**
-     * @param daoService the <tt>NodeDaoService</tt> to register
+     * @param daoService
+     *            the <tt>NodeDaoService</tt> to register
      */
     public void setDaoService(TransactionalDao daoService)
     {

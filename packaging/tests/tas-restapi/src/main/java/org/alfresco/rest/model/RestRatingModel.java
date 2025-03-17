@@ -37,7 +37,7 @@ public class RestRatingModel extends TestModel implements IRestModel<RestRatingM
 
     @JsonProperty(required = true)
     private String id;
-    
+
     private String ratedAt;
     private String myRating;
     private RestAggregateModel aggregate;
@@ -47,7 +47,7 @@ public class RestRatingModel extends TestModel implements IRestModel<RestRatingM
     {
         return model;
     }
-    
+
     public RestAggregateModel getAggregate()
     {
         return aggregate;

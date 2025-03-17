@@ -33,6 +33,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.patch.AppliedPatchDAO;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -46,16 +50,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
-
 
 /**
  * Manages patches applied against the repository.
  * <p>
- * Patches are injected into this class and any attempted applications are recorded
- * for later auditing.
+ * Patches are injected into this class and any attempted applications are recorded for later auditing.
  * 
  * @since 1.2
  * @author Derek Hulley
@@ -66,12 +65,12 @@ public class PatchServiceImpl implements PatchService
     private static final String MSG_PRECEEDED_BY_ALTERNATIVE = "patch.service.preceeded_by_alternative";
     private static final String MSG_APPLYING_PATCH = "patch.service.applying_patch";
     private static final String MSG_VALIDATION_FAILED = "patch.validation.failed";
-    
+
     private static final Date ZERO_DATE = new Date(0L);
     private static final Date INFINITE_DATE = new Date(Long.MAX_VALUE);
-    
+
     private static Log logger = LogFactory.getLog(PatchExecuter.class);
-    
+
     private DescriptorService descriptorService;
     private TransactionServiceImpl transactionService;
     private RuleService ruleService;
@@ -82,7 +81,7 @@ public class PatchServiceImpl implements PatchService
     {
         this.patches = new ArrayList<Patch>(10);
     }
-    
+
     public void setDescriptorService(DescriptorService descriptorService)
     {
         this.descriptorService = descriptorService;
@@ -97,7 +96,7 @@ public class PatchServiceImpl implements PatchService
     {
         this.appliedPatchDAO = appliedPatchDAO;
     }
-    
+
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
@@ -107,7 +106,7 @@ public class PatchServiceImpl implements PatchService
     {
         patches.add(patch);
     }
-    
+
     private final QName vetoName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "PatchServiceImpl");
 
     /**
@@ -117,16 +116,16 @@ public class PatchServiceImpl implements PatchService
     {
         return validatePatchImpl(patches);
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public boolean validatePatch(Patch patch)
     {
         ParameterCheck.mandatory("patch", patch);
-        return validatePatchImpl(Collections.singletonList(patch));        
+        return validatePatchImpl(Collections.singletonList(patch));
     }
-    
+
     private boolean validatePatchImpl(List<Patch> patches)
     {
         boolean success = true;
@@ -146,11 +145,11 @@ public class PatchServiceImpl implements PatchService
         }
         return success;
     }
-    
+
     public boolean applyOutstandingPatches()
     {
         boolean success = true;
-        
+
         try
         {
             // Disable rules whilst processing the patches
@@ -161,20 +160,19 @@ public class PatchServiceImpl implements PatchService
                 List<Patch> sortedPatches = new ArrayList<Patch>(patches);
                 Comparator<Patch> comparator = new PatchTargetSchemaComparator();
                 Collections.sort(sortedPatches, comparator);
-                
+
                 // construct a list of executed patches by ID (also check the date)
                 Map<String, AppliedPatch> appliedPatchesById = new HashMap<String, AppliedPatch>(250);
                 List<AppliedPatch> appliedPatches = appliedPatchDAO.getAppliedPatches();
                 for (final AppliedPatch appliedPatch : appliedPatches)
                 {
                     appliedPatchesById.put(appliedPatch.getId(), appliedPatch);
-                    // Update the time of execution if it is null.  This is to deal with
+                    // Update the time of execution if it is null. This is to deal with
                     // patches that get executed prior to server startup and need to have
                     // an execution time assigned
                     if (appliedPatch.getAppliedOnDate() == null)
                     {
-                        RetryingTransactionCallback<Date> callback = new RetryingTransactionCallback<Date>()
-                        {
+                        RetryingTransactionCallback<Date> callback = new RetryingTransactionCallback<Date>() {
                             public Date execute() throws Throwable
                             {
                                 Date now = new Date();
@@ -186,11 +184,11 @@ public class PatchServiceImpl implements PatchService
                         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
                     }
                 }
-            
-                // go through all the patches and apply them where necessary        
+
+                // go through all the patches and apply them where necessary
                 for (Patch patch : sortedPatches)
                 {
-                    if(patch.isDeferred())
+                    if (patch.isDeferred())
                     {
                         continue;
                     }
@@ -201,7 +199,7 @@ public class PatchServiceImpl implements PatchService
                         // we failed to apply a patch or one of its dependencies - terminate
                         break;
                     }
-                }        
+                }
             }
             finally
             {
@@ -213,11 +211,11 @@ public class PatchServiceImpl implements PatchService
             exception.printStackTrace();
             success = false;
         }
-        
+
         // done
         return success;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -266,19 +264,20 @@ public class PatchServiceImpl implements PatchService
         // done
         return success;
     }
-    
+
     /**
-     * Reentrant method that ensures that a patch and all its dependencies get applied.
-     * The process terminates on the first failure.
+     * Reentrant method that ensures that a patch and all its dependencies get applied. The process terminates on the first failure.
      * 
-     * @param patch the patch (containing dependencies) to apply
-     * @param appliedPatchesById already applied patches keyed by their ID
+     * @param patch
+     *            the patch (containing dependencies) to apply
+     * @param appliedPatchesById
+     *            already applied patches keyed by their ID
      * @return Returns true if the patch and all its dependencies were successfully applied.
      */
     private boolean applyPatchAndDependencies(final Patch patch, Map<String, AppliedPatch> appliedPatchesById)
     {
         String id = patch.getId();
-        
+
         // ensure that dependencies have been done
         List<Patch> dependencies = patch.getDependsOn();
         for (Patch dependencyPatch : dependencies)
@@ -292,7 +291,7 @@ public class PatchServiceImpl implements PatchService
         }
 
         // check if it has already been done
-        AppliedPatch appliedPatch = appliedPatchesById.get(id); 
+        AppliedPatch appliedPatch = appliedPatchesById.get(id);
         if (appliedPatch != null && appliedPatch.getSucceeded())
         {
             if (appliedPatch.getWasExecuted())
@@ -303,9 +302,8 @@ public class PatchServiceImpl implements PatchService
             // We give the patch another chance
         }
 
-        
         // all the dependencies were successful
-        
+
         appliedPatch = applyPatch(patch);
 
         if (!appliedPatch.getSucceeded())
@@ -320,7 +318,7 @@ public class PatchServiceImpl implements PatchService
             return true;
         }
     }
-    
+
     private AppliedPatch applyPatch(Patch patch)
     {
         PatchWork work = new PatchWork(patch);
@@ -351,11 +349,9 @@ public class PatchServiceImpl implements PatchService
     }
 
     /**
-     * Executes a patch, ensuring that pre-conditions are met and patch information is saved.
-     * Introduced with fix for ALF-5621. 
+     * Executes a patch, ensuring that pre-conditions are met and patch information is saved. Introduced with fix for ALF-5621.
      * 
-     * This has been split out from applyPatch because it's easier to perform
-     * the transaction wrapping required when requiresTransaction == false
+     * This has been split out from applyPatch because it's easier to perform the transaction wrapping required when requiresTransaction == false
      */
     private static class PatchWork
     {
@@ -363,14 +359,14 @@ public class PatchServiceImpl implements PatchService
         {
             START, PRECEEDED, ALREADY_APPLIED, DOES_NOT_APPLY, APPLYING, NOT_APPLIED, APPLIED, FAILED;
         };
-        
+
         private Log logger;
         private AppliedPatchDAO appliedPatchDAO;
         private DescriptorService descriptorService;
         private TransactionService transactionService;
 
         private STATE state = STATE.START;
-        
+
         private Patch patch;
 
         private AppliedPatch appliedPatch;
@@ -378,22 +374,23 @@ public class PatchServiceImpl implements PatchService
         private String preceededByAlternative;
         private boolean applies = false;
         private String report = null;
-        
-        public PatchWork(Patch patch) {
+
+        public PatchWork(Patch patch)
+        {
             super();
             this.patch = patch;
         }
-        
+
         public void setLogger(Log logger)
         {
             this.logger = logger;
         }
-        
+
         public void setAppliedPatchDAO(AppliedPatchDAO appliedPatchDAO)
         {
             this.appliedPatchDAO = appliedPatchDAO;
         }
-        
+
         public void setDescriptorService(DescriptorService descriptorService)
         {
             this.descriptorService = descriptorService;
@@ -403,12 +400,13 @@ public class PatchServiceImpl implements PatchService
         {
             this.transactionService = transactionService;
         }
-        
+
         /**
          * Identifies if one of the alternative patches has already been executed.
          * 
-         * @param patch             the patch to check
-         * @return                  Returns the ID of any successfully executed alternative patch
+         * @param patch
+         *            the patch to check
+         * @return Returns the ID of any successfully executed alternative patch
          */
         private String preceededByAlternative(Patch patch)
         {
@@ -425,12 +423,14 @@ public class PatchServiceImpl implements PatchService
             }
             return null;
         }
-        
+
         /**
-         * Check whether the patch is applicable to the particular version of the repository. 
+         * Check whether the patch is applicable to the particular version of the repository.
          * 
-         * @param repoDescriptor contains the version details of the repository
-         * @param patch the patch whos version must be checked
+         * @param repoDescriptor
+         *            contains the version details of the repository
+         * @param patch
+         *            the patch whos version must be checked
          * @return Returns true if the patch should be applied to the repository
          */
         private boolean applies(Descriptor repoDescriptor, Patch patch)
@@ -438,7 +438,7 @@ public class PatchServiceImpl implements PatchService
             int repoSchema = repoDescriptor.getSchema();
             // does the patch apply?
             boolean apply = patch.applies(repoSchema);
-            
+
             // done
             if (logger.isDebugEnabled())
             {
@@ -453,7 +453,7 @@ public class PatchServiceImpl implements PatchService
         {
             return state == STATE.ALREADY_APPLIED || state == STATE.DOES_NOT_APPLY || state == STATE.APPLIED || state == STATE.PRECEEDED;
         }
-        
+
         private boolean savePatch()
         {
             return state == STATE.DOES_NOT_APPLY || state == STATE.APPLIED || state == STATE.PRECEEDED || state == STATE.FAILED;
@@ -461,12 +461,12 @@ public class PatchServiceImpl implements PatchService
 
         public void execute()
         {
-            if(state != STATE.START)
+            if (state != STATE.START)
             {
                 throw new IllegalStateException("Patch is already being applied");
             }
 
-            if(!patch.requiresTransaction() && AlfrescoTransactionSupport.isActualTransactionActive())
+            if (!patch.requiresTransaction() && AlfrescoTransactionSupport.isActualTransactionActive())
             {
                 throw new AlfrescoRuntimeException("Patch " +
                         patch.getId() +
@@ -477,14 +477,13 @@ public class PatchServiceImpl implements PatchService
             applyPatch();
             save();
         }
-        
+
         /**
          * Perform some setup before applying the patch e.g. check whether the patch needs to be applied.
          */
         private void setup()
         {
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() {
                 @Override
                 public Object execute() throws Throwable
                 {
@@ -493,9 +492,9 @@ public class PatchServiceImpl implements PatchService
                     {
                         logger.warn(
                                 "Patch will be forcefully executed: \n" +
-                                "   Patch: " + patch);
+                                        "   Patch: " + patch);
                     }
-                    
+
                     // Check whether patch has been applied already
                     // get the patch from the DAO
                     appliedPatch = appliedPatchDAO.getAppliedPatch(patch.getId());
@@ -510,13 +509,13 @@ public class PatchServiceImpl implements PatchService
                             {
                                 logger.debug(
                                         "Patch was already successfully applied: \n" +
-                                        "   Patch: " + appliedPatch);
+                                                "   Patch: " + appliedPatch);
                             }
                             state = STATE.ALREADY_APPLIED;
                             return null;
                         }
                     }
-                    
+
                     // first check whether the patch is relevant to the repo
                     repoDescriptor = descriptorService.getInstalledRepositoryDescriptor();
                     applies = forcePatch || applies(repoDescriptor, patch);
@@ -528,7 +527,7 @@ public class PatchServiceImpl implements PatchService
                     }
                     else
                     {
-                        if(applies)
+                        if (applies)
                         {
                             state = STATE.APPLYING;
                         }
@@ -573,27 +572,27 @@ public class PatchServiceImpl implements PatchService
                 logger.error(report);
             }
         }
-        
+
         private void save()
         {
-            if(!savePatch())
+            if (!savePatch())
             {
                 return;
             }
 
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() {
                 @Override
-                public Object execute() throws Throwable {
+                public Object execute() throws Throwable
+                {
                     Descriptor serverDescriptor = descriptorService.getServerDescriptor();
                     String server = (serverDescriptor.getVersion() + " - " + serverDescriptor.getEdition());
 
                     if (server.length() > 64)
                     {
-                        logger.error("Server version '" + server + "' is too long for the 'applied_to_server' column therefore patch '" + 
-                                    patch.getId() + "' will not be registered.");
+                        logger.error("Server version '" + server + "' is too long for the 'applied_to_server' column therefore patch '" +
+                                patch.getId() + "' will not be registered.");
                     }
-                    
+
                     // create or update the record of execution
                     boolean create = true;
                     if (appliedPatch == null)
@@ -617,13 +616,13 @@ public class PatchServiceImpl implements PatchService
                     appliedPatch.setDescription(patchDescription);
                     appliedPatch.setFixesFromSchema(patch.getFixesFromSchema());
                     appliedPatch.setFixesToSchema(patch.getFixesToSchema());
-                    appliedPatch.setTargetSchema(patch.getTargetSchema());       // the schema the server is expecting
+                    appliedPatch.setTargetSchema(patch.getTargetSchema()); // the schema the server is expecting
                     appliedPatch.setAppliedToSchema(repoDescriptor.getSchema()); // the old schema of the repo
-                    appliedPatch.setAppliedToServer(server);                     // the current version and label of the server
-                    appliedPatch.setAppliedOnDate(new Date());                   // the date applied
-                    appliedPatch.setSucceeded(patchSucceeded());                 // whether or not the patch succeeded
-                    appliedPatch.setWasExecuted(applies);                        // whether or not the patch was executed
-                    appliedPatch.setReport(report);                              // additional, human-readable, status
+                    appliedPatch.setAppliedToServer(server); // the current version and label of the server
+                    appliedPatch.setAppliedOnDate(new Date()); // the date applied
+                    appliedPatch.setSucceeded(patchSucceeded()); // whether or not the patch succeeded
+                    appliedPatch.setWasExecuted(applies); // whether or not the patch was executed
+                    appliedPatch.setReport(report); // additional, human-readable, status
                     // Update or create the entry
                     if (create)
                     {
@@ -644,13 +643,13 @@ public class PatchServiceImpl implements PatchService
                 }
             }, false, true);
         }
-        
+
         public AppliedPatch getAppliedPatch()
         {
             return appliedPatch;
         }
     }
-    
+
     /**
      * Compares patch target schemas.
      * 
@@ -668,11 +667,11 @@ public class PatchServiceImpl implements PatchService
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.admin.patch.PatchService#getAppliedPatch(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.repo.admin.patch.PatchService#getAppliedPatch(java.lang.String) */
     @Override
     public AppliedPatch getPatch(String id)
     {
-       return appliedPatchDAO.getAppliedPatch(id);
+        return appliedPatchDAO.getAppliedPatch(id);
     }
 }

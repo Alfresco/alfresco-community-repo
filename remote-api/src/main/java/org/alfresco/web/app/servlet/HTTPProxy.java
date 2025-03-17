@@ -32,9 +32,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-
 import jakarta.servlet.http.HttpServletResponse;
-
 
 /**
  * Simple server-side HTTP Request / Response
@@ -46,16 +44,17 @@ public class HTTPProxy
     protected URL url;
     protected HttpServletResponse response;
 
-    
     /**
      * Construct
      * 
-     * @param requestUrl  url to request
-     * @param response  response to write request back to
+     * @param requestUrl
+     *            url to request
+     * @param response
+     *            response to write request back to
      * @throws MalformedURLException
      */
     public HTTPProxy(String requestUrl, HttpServletResponse response)
-        throws MalformedURLException
+            throws MalformedURLException
     {
         this.url = new URL(requestUrl);
         this.response = response;
@@ -63,13 +62,13 @@ public class HTTPProxy
 
     /**
      * Perform request
-     *  
+     * 
      * @throws IOException
      */
     public void service()
-        throws IOException
+            throws IOException
     {
-        HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         setRequestHeaders(connection);
         initialiseResponse(connection);
         InputStream input = connection.getInputStream();
@@ -94,17 +93,18 @@ public class HTTPProxy
                 // TODO: required?
                 connection.disconnect();
             }
-            catch(IOException e)
+            catch (IOException e)
             {
-               // TODO: log io exceptions?
+                // TODO: log io exceptions?
             }
         }
     }
-    
+
     /**
      * Initialise response
      * 
-     * @param urlConnection  url connection
+     * @param urlConnection
+     *            url connection
      */
     protected void initialiseResponse(URLConnection urlConnection)
     {
@@ -120,29 +120,31 @@ public class HTTPProxy
                     type += ";charset=" + encoding;
                 }
             }
-            
+
             response.setContentType(type);
         }
     }
-    
+
     /**
      * Set request headers
      *
-     * @param urlConnection  url connection
+     * @param urlConnection
+     *            url connection
      */
     protected void setRequestHeaders(URLConnection urlConnection)
-    {
-    }
+    {}
 
     /**
      * Write response
      * 
-     * @param input  input stream of request
-     * @param output  output stream of response
+     * @param input
+     *            input stream of request
+     * @param output
+     *            output stream of response
      * @throws IOException
      */
     protected void writeResponse(InputStream input, OutputStream output)
-        throws IOException
+            throws IOException
     {
         byte[] buffer = new byte[4096];
         int read = input.read(buffer);

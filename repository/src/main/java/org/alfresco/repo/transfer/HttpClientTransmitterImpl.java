@@ -42,17 +42,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.transfer.TransferException;
-import org.alfresco.service.cmr.transfer.TransferProgress;
-import org.alfresco.service.cmr.transfer.TransferTarget;
-import org.alfresco.service.cmr.transfer.TransferVersion;
-import org.alfresco.util.HttpClientHelper;
-import org.alfresco.util.PropertyCheck;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
@@ -77,6 +66,18 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.transfer.TransferException;
+import org.alfresco.service.cmr.transfer.TransferProgress;
+import org.alfresco.service.cmr.transfer.TransferTarget;
+import org.alfresco.service.cmr.transfer.TransferVersion;
+import org.alfresco.util.HttpClientHelper;
+import org.alfresco.util.PropertyCheck;
+
 /**
  * HTTP implementation of TransferTransmitter.
  *
@@ -94,13 +95,13 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
 
     private static final int DEFAULT_HTTP_PORT = 80;
     private static final int DEFAULT_HTTPS_PORT = 443;
-    private static final String HTTP_SCHEME_NAME = "http";    // lowercase is important
-    private static final String HTTPS_SCHEME_NAME = "https";  // lowercase is important
+    private static final String HTTP_SCHEME_NAME = "http"; // lowercase is important
+    private static final String HTTPS_SCHEME_NAME = "https"; // lowercase is important
 
     private HttpClient httpClient = null;
     private Protocol httpProtocol = new Protocol(HTTP_SCHEME_NAME, new DefaultProtocolSocketFactory(), DEFAULT_HTTP_PORT);
     private Protocol httpsProtocol = new Protocol(HTTPS_SCHEME_NAME, (ProtocolSocketFactory) new SSLProtocolSocketFactory(), DEFAULT_HTTPS_PORT);
-    private Map<String,Protocol> protocolMap = null;
+    private Map<String, Protocol> protocolMap = null;
     private HttpMethodFactory httpMethodFactory = null;
 
     private ContentService contentService;
@@ -117,7 +118,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
 
     public HttpClientTransmitterImpl()
     {
-        protocolMap = new TreeMap<String,Protocol>();
+        protocolMap = new TreeMap<String, Protocol>();
         protocolMap.put(HTTP_SCHEME_NAME, httpProtocol);
         protocolMap.put(HTTPS_SCHEME_NAME, httpsProtocol);
 
@@ -141,11 +142,12 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         PropertyCheck.mandatory(this, "contentService", contentService);
         httpClient.getParams().setAuthenticationPreemptive(isAuthenticationPreemptive);
     }
-    
+
     /**
-     * By default this class uses the standard SSLProtocolSocketFactory, but this method allows this to be overridden.
-     * Useful if, for example, one wishes to permit support of self-signed certificates on the target.
-     * @param socketFactory ProtocolSocketFactory
+     * By default this class uses the standard SSLProtocolSocketFactory, but this method allows this to be overridden. Useful if, for example, one wishes to permit support of self-signed certificates on the target.
+     * 
+     * @param socketFactory
+     *            ProtocolSocketFactory
      */
     public void setHttpsSocketFactory(ProtocolSocketFactory socketFactory)
     {
@@ -153,10 +155,10 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     }
 
     /**
-     * By default, this class uses a plain HttpClient instance with the only non-default
-     * option being the multi-threaded connection manager.
-     * Use this method to replace this with your own HttpClient instance configured how you wish
-     * @param httpClient HttpClient
+     * By default, this class uses a plain HttpClient instance with the only non-default option being the multi-threaded connection manager. Use this method to replace this with your own HttpClient instance configured how you wish
+     * 
+     * @param httpClient
+     *            HttpClient
      */
     public void setHttpClient(HttpClient httpClient)
     {
@@ -165,16 +167,18 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
 
     /**
      * Whether httpClient will use preemptive authentication or not.
-     * @param isAuthenticationPreemptive boolean
+     * 
+     * @param isAuthenticationPreemptive
+     *            boolean
      */
     public void setIsAuthenticationPreemptive(boolean isAuthenticationPreemptive)
     {
         this.isAuthenticationPreemptive = isAuthenticationPreemptive;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.transfer.Transmitter#verifyTarget(org.alfresco.service.cmr.transfer.TransferTarget)
-     */
+     * 
+     * @see org.alfresco.repo.transfer.Transmitter#verifyTarget(org.alfresco.service.cmr.transfer.TransferTarget) */
     public void verifyTarget(TransferTarget target) throws TransferException
     {
         HttpMethod verifyRequest = getPostMethod();
@@ -208,9 +212,12 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
 
     /**
      *
-     * @param methodName String
-     * @param response int
-     * @param method HttpMethod
+     * @param methodName
+     *            String
+     * @param response
+     *            int
+     * @param method
+     *            HttpMethod
      */
     private void checkResponseStatus(String methodName, int response, HttpMethod method)
     {
@@ -226,42 +233,44 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             }
             catch (Exception ex)
             {
-                throw new TransferException(MSG_UNSUCCESSFUL_RESPONSE, new Object[] {methodName, response});
+                throw new TransferException(MSG_UNSUCCESSFUL_RESPONSE, new Object[]{methodName, response});
             }
             if ((error != null) && TransferException.class.isAssignableFrom(error.getClass()))
             {
-                throw (TransferException)error;
+                throw (TransferException) error;
             }
             else
             {
-                throw new TransferException(MSG_UNSUCCESSFUL_RESPONSE, new Object[] {methodName, response});
+                throw new TransferException(MSG_UNSUCCESSFUL_RESPONSE, new Object[]{methodName, response});
             }
         }
     }
 
     /**
      * Get the HTTPState for a transfer target
-     * @param target TransferTarget
+     * 
+     * @param target
+     *            TransferTarget
      * @return HttpState
      */
     private HttpState getHttpState(TransferTarget target)
     {
         HttpState httpState = new HttpState();
         httpState.setCredentials(new AuthScope(target.getEndpointHost(), target.getEndpointPort(),
-                                 AuthScope.ANY_REALM),
-                                 new UsernamePasswordCredentials(target.getUsername(), new String(target.getPassword())));
+                AuthScope.ANY_REALM),
+                new UsernamePasswordCredentials(target.getUsername(), new String(target.getPassword())));
 
         String requiredProtocol = target.getEndpointProtocol();
         if (requiredProtocol == null)
         {
-            throw new TransferException(MSG_UNSUPPORTED_PROTOCOL, new Object[] {requiredProtocol});
+            throw new TransferException(MSG_UNSUPPORTED_PROTOCOL, new Object[]{requiredProtocol});
         }
 
         Protocol protocol = protocolMap.get(requiredProtocol.toLowerCase().trim());
-        if (protocol == null) 
+        if (protocol == null)
         {
             log.error("Unsupported protocol: " + requiredProtocol);
-            throw new TransferException(MSG_UNSUPPORTED_PROTOCOL, new Object[] {requiredProtocol});
+            throw new TransferException(MSG_UNSUPPORTED_PROTOCOL, new Object[]{requiredProtocol});
         }
 
         // Use the appropriate Proxy credentials if required
@@ -288,13 +297,14 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
                     log.debug("Using HTTPS proxy credentials for proxy: " + httpsProxyHost.getHostName());
                 }
             }
-        } 
+        }
 
         return httpState;
     }
 
     /**
-     * @param target TransferTarget
+     * @param target
+     *            TransferTarget
      * @return HostConfiguration
      */
     private HostConfiguration getHostConfig(TransferTarget target)
@@ -302,19 +312,19 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         String requiredProtocol = target.getEndpointProtocol();
         if (requiredProtocol == null)
         {
-            throw new TransferException(MSG_UNSUPPORTED_PROTOCOL, new Object[] {requiredProtocol});
+            throw new TransferException(MSG_UNSUPPORTED_PROTOCOL, new Object[]{requiredProtocol});
         }
 
         Protocol protocol = protocolMap.get(requiredProtocol.toLowerCase().trim());
-        if (protocol == null) 
+        if (protocol == null)
         {
             log.error("Unsupported protocol: " + target.getEndpointProtocol());
-            throw new TransferException(MSG_UNSUPPORTED_PROTOCOL, new Object[] {requiredProtocol});
+            throw new TransferException(MSG_UNSUPPORTED_PROTOCOL, new Object[]{requiredProtocol});
         }
 
         HostConfiguration hostConfig = new HostConfiguration();
         hostConfig.setHost(target.getEndpointHost(), target.getEndpointPort(), protocol);
-        
+
         // Use the appropriate Proxy Host if required
         if (httpProxyHost != null && HTTP_SCHEME_NAME.equals(protocol.getScheme()) && HttpClientHelper.requiresProxy(target.getEndpointHost()))
         {
@@ -333,19 +343,21 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             {
                 log.debug("Using HTTPS proxy host for: " + target.getEndpointHost());
             }
-        } 
+        }
         return hostConfig;
     }
-    
+
     /**
      * Create suitable AuthScope for ProxyHost. If the ProxyHost is null, no AuthsScope will be created.
-     * @param proxyHost ProxyHost
+     * 
+     * @param proxyHost
+     *            ProxyHost
      * @return AuthScope for provided ProxyHost, null otherwise.
      */
     private AuthScope createProxyAuthScope(final ProxyHost proxyHost)
     {
         AuthScope authScope = null;
-        if (proxyHost !=  null) 
+        if (proxyHost != null)
         {
             authScope = new AuthScope(proxyHost.getHostName(), proxyHost.getPort());
         }
@@ -363,7 +375,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             beginRequest.setPath(target.getEndpointPath() + "/begin");
             try
             {
-                NameValuePair[] nameValuePair = new NameValuePair[] {
+                NameValuePair[] nameValuePair = new NameValuePair[]{
                         new NameValuePair(TransferCommons.PARAM_FROM_REPOSITORYID, fromRepositoryId),
                         new NameValuePair(TransferCommons.PARAM_ALLOW_TRANSFER_TO_SELF, "false"),
                         new NameValuePair(TransferCommons.PARAM_VERSION_EDITION, fromVersion.getEdition()),
@@ -372,14 +384,14 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
                         new NameValuePair(TransferCommons.PARAM_VERSION_REVISION, fromVersion.getVersionRevision())
                 };
 
-                //add the parameter defining the root of the transfer on the file system if exist
+                // add the parameter defining the root of the transfer on the file system if exist
                 NodeRef transferRootNode = this.getFileTransferRootNodeRef(target.getNodeRef());
                 if (transferRootNode != null)
                 {
-                    //add the parameter
-                    ArrayList<NameValuePair> nameValuePairArrayList= new ArrayList<NameValuePair>(nameValuePair.length + 1);
-                    Collections.addAll(nameValuePairArrayList,nameValuePair);
-                    nameValuePairArrayList.add(new NameValuePair(TransferCommons.PARAM_ROOT_FILE_TRANSFER,  transferRootNode.toString()));
+                    // add the parameter
+                    ArrayList<NameValuePair> nameValuePairArrayList = new ArrayList<NameValuePair>(nameValuePair.length + 1);
+                    Collections.addAll(nameValuePairArrayList, nameValuePair);
+                    nameValuePairArrayList.add(new NameValuePair(TransferCommons.PARAM_ROOT_FILE_TRANSFER, transferRootNode.toString()));
                     nameValuePair = nameValuePairArrayList.toArray(new NameValuePair[0]);
                 }
 
@@ -388,8 +400,8 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
                 int responseStatus = httpClient.executeMethod(hostConfig, beginRequest, httpState);
 
                 checkResponseStatus("begin", responseStatus, beginRequest);
-                //If we get here then we've received a 200 response
-                //We're expecting the transfer id encoded in a JSON object...
+                // If we get here then we've received a 200 response
+                // We're expecting the transfer id encoded in a JSON object...
                 JSONObject response = new JSONObject(beginRequest.getResponseBodyAsString());
 
                 Transfer transfer = new Transfer();
@@ -398,7 +410,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
                 String transferId = response.getString(TransferCommons.PARAM_TRANSFER_ID);
                 transfer.setTransferId(transferId);
 
-                if(response.has(TransferCommons.PARAM_VERSION_MAJOR))
+                if (response.has(TransferCommons.PARAM_VERSION_MAJOR))
                 {
                     String versionMajor = response.getString(TransferCommons.PARAM_VERSION_MAJOR);
                     String versionMinor = response.getString(TransferCommons.PARAM_VERSION_MINOR);
@@ -413,9 +425,9 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
                     transfer.setToVersion(version);
                 }
 
-                if(log.isDebugEnabled())
+                if (log.isDebugEnabled())
                 {
-                    log.debug("begin transfer transferId:" + transferId +", target:" + target);
+                    log.debug("begin transfer transferId:" + transferId + ", target:" + target);
                 }
 
                 return transfer;
@@ -429,7 +441,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             {
                 String error = "Failed to execute HTTP request to target";
                 log.debug(error, e);
-                throw new TransferException(MSG_HTTP_REQUEST_FAILED, new Object[] {"begin", target.toString(), e.toString()}, e);
+                throw new TransferException(MSG_HTTP_REQUEST_FAILED, new Object[]{"begin", target.toString(), e.toString()}, e);
             }
         }
         finally
@@ -445,12 +457,11 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         PostMethod postSnapshotRequest = getPostMethod();
         MultipartRequestEntity requestEntity;
 
-        if(log.isDebugEnabled())
+        if (log.isDebugEnabled())
         {
             log.debug("does manifest exist? " + manifest.exists());
             log.debug("sendManifest file : " + manifest.getAbsoluteFile());
         }
-
 
         try
         {
@@ -461,14 +472,14 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             {
                 postSnapshotRequest.setPath(target.getEndpointPath() + "/post-snapshot");
 
-                //Put the transferId on the query string
+                // Put the transferId on the query string
                 postSnapshotRequest.setQueryString(
-                        new NameValuePair[] {new NameValuePair("transferId", transfer.getTransferId())});
+                        new NameValuePair[]{new NameValuePair("transferId", transfer.getTransferId())});
 
-                //TODO encapsulate the name of the manifest part
-                //And add the manifest file as a "part"
+                // TODO encapsulate the name of the manifest part
+                // And add the manifest file as a "part"
                 Part file = new FilePart(TransferCommons.PART_NAME_MANIFEST, manifest);
-                requestEntity = new MultipartRequestEntity(new Part[] {file}, postSnapshotRequest.getParams());
+                requestEntity = new MultipartRequestEntity(new Part[]{file}, postSnapshotRequest.getParams());
                 postSnapshotRequest.setRequestEntity(requestEntity);
 
                 int responseStatus = httpClient.executeMethod(hostConfig, postSnapshotRequest, httpState);
@@ -518,16 +529,16 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             HttpState httpState = getHttpState(target);
 
             abortRequest.setPath(target.getEndpointPath() + "/abort");
-            //Put the transferId on the query string
+            // Put the transferId on the query string
             abortRequest.setQueryString(
-                    new NameValuePair[] {new NameValuePair("transferId", transfer.getTransferId())});
+                    new NameValuePair[]{new NameValuePair("transferId", transfer.getTransferId())});
 
             try
             {
                 int responseStatus = httpClient.executeMethod(hostConfig, abortRequest, httpState);
                 checkResponseStatus("abort", responseStatus, abortRequest);
-                //If we get here then we've received a 200 response
-                //We're expecting the transfer id encoded in a JSON object...
+                // If we get here then we've received a 200 response
+                // We're expecting the transfer id encoded in a JSON object...
             }
             catch (RuntimeException e)
             {
@@ -556,15 +567,15 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             HttpState httpState = getHttpState(target);
 
             commitRequest.setPath(target.getEndpointPath() + "/commit");
-            //Put the transferId on the query string
+            // Put the transferId on the query string
             commitRequest.setQueryString(
-                    new NameValuePair[] {new NameValuePair("transferId", transfer.getTransferId())});
+                    new NameValuePair[]{new NameValuePair("transferId", transfer.getTransferId())});
             try
             {
                 int responseStatus = httpClient.executeMethod(hostConfig, commitRequest, httpState);
                 checkResponseStatus("commit", responseStatus, commitRequest);
-                //If we get here then we've received a 200 response
-                //We're expecting the transfer id encoded in a JSON object...
+                // If we get here then we've received a 200 response
+                // We're expecting the transfer id encoded in a JSON object...
             }
             catch (RuntimeException e)
             {
@@ -593,15 +604,15 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             HttpState httpState = getHttpState(target);
 
             prepareRequest.setPath(target.getEndpointPath() + "/prepare");
-            //Put the transferId on the query string
+            // Put the transferId on the query string
             prepareRequest.setQueryString(
-                    new NameValuePair[] {new NameValuePair("transferId", transfer.getTransferId())});
+                    new NameValuePair[]{new NameValuePair("transferId", transfer.getTransferId())});
             try
             {
                 int responseStatus = httpClient.executeMethod(hostConfig, prepareRequest, httpState);
                 checkResponseStatus("prepare", responseStatus, prepareRequest);
-                //If we get here then we've received a 200 response
-                //We're expecting the transfer id encoded in a JSON object...
+                // If we get here then we've received a 200 response
+                // We're expecting the transfer id encoded in a JSON object...
             }
             catch (RuntimeException e)
             {
@@ -625,7 +636,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
      */
     public void sendContent(Transfer transfer, Set<ContentData> data) throws TransferException
     {
-        if(log.isDebugEnabled())
+        if (log.isDebugEnabled())
         {
             log.debug("send content to transfer:" + transfer);
         }
@@ -641,18 +652,18 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             try
             {
                 postContentRequest.setPath(target.getEndpointPath() + "/post-content");
-                //Put the transferId on the query string
+                // Put the transferId on the query string
                 postContentRequest.setQueryString(
-                        new NameValuePair[] {new NameValuePair("transferId", transfer.getTransferId())});
+                        new NameValuePair[]{new NameValuePair("transferId", transfer.getTransferId())});
 
-                //Put the transferId on the query string
+                // Put the transferId on the query string
                 postContentRequest.setQueryString(
-                            new NameValuePair[] {new NameValuePair("transferId", transfer.getTransferId())});
+                        new NameValuePair[]{new NameValuePair("transferId", transfer.getTransferId())});
 
                 Part[] parts = new Part[data.size()];
 
                 int index = 0;
-                for(ContentData content : data)
+                for (ContentData content : data)
                 {
                     String contentUrl = content.getContentUrl();
                     String fileName = TransferCommons.URLToPartName(contentUrl);
@@ -667,7 +678,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
                 int responseStatus = httpClient.executeMethod(hostConfig, postContentRequest, httpState);
                 checkResponseStatus("sendContent", responseStatus, postContentRequest);
 
-                if(log.isDebugEnabled())
+                if (log.isDebugEnabled())
                 {
                     log.debug("sent content");
                 }
@@ -703,25 +714,25 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             HttpState httpState = getHttpState(target);
 
             statusRequest.setPath(target.getEndpointPath() + "/status");
-            //Put the transferId on the query string
+            // Put the transferId on the query string
             statusRequest.setQueryString(
-                    new NameValuePair[] {new NameValuePair("transferId", transfer.getTransferId())});
+                    new NameValuePair[]{new NameValuePair("transferId", transfer.getTransferId())});
 
             try
             {
                 int responseStatus = httpClient.executeMethod(hostConfig, statusRequest, httpState);
                 checkResponseStatus("status", responseStatus, statusRequest);
-                //If we get here then we've received a 200 response
+                // If we get here then we've received a 200 response
                 String statusPayload = statusRequest.getResponseBodyAsString();
                 JSONObject statusObj = new JSONObject(statusPayload);
-                //We're expecting the transfer progress encoded in a JSON object...
-                int currentPosition  = statusObj.getInt("currentPosition");
-                int endPosition  = statusObj.getInt("endPosition");
-                String statusStr= statusObj.getString("status");
+                // We're expecting the transfer progress encoded in a JSON object...
+                int currentPosition = statusObj.getInt("currentPosition");
+                int endPosition = statusObj.getInt("endPosition");
+                String statusStr = statusObj.getString("status");
 
                 TransferProgress p = new TransferProgress();
 
-                if(statusObj.has("error"))
+                if (statusObj.has("error"))
                 {
                     JSONObject errorJSON = statusObj.getJSONObject("error");
                     Throwable throwable = rehydrateError(errorJSON);
@@ -767,9 +778,9 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             {
                 getReportRequest.setPath(target.getEndpointPath() + "/report");
 
-                //Put the transferId on the query string
+                // Put the transferId on the query string
                 getReportRequest.setQueryString(
-                        new NameValuePair[] {new NameValuePair("transferId", transfer.getTransferId())});
+                        new NameValuePair[]{new NameValuePair("transferId", transfer.getTransferId())});
 
                 int responseStatus = httpClient.executeMethod(hostConfig, getReportRequest, httpState);
                 checkResponseStatus("getReport", responseStatus, getReportRequest);
@@ -818,7 +829,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             // prepare the buffer to be drained
             ((Buffer) buffer).flip();
             // write to the channel, may block
-             dest.write(buffer);
+            dest.write(buffer);
 
             // If partial transfer, shift remainder down
             // If buffer is empty, same as doing clear()
@@ -842,11 +853,9 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
 
     /**
      *
-     * @param errorJSON A JSON object expected to hold the name of the error class ("errorType"),
-     * the error message ("errorMessage"), and, optionally, the Alfresco message id ("alfrescoErrorId")
-     * and Alfresco message parameters ("alfrescoErrorParams").
-     * @return The rehydrated error object, or null if errorJSON is null.
-     * Throws {@code JSONException} if an error occurs while parsing the supplied JSON object
+     * @param errorJSON
+     *            A JSON object expected to hold the name of the error class ("errorType"), the error message ("errorMessage"), and, optionally, the Alfresco message id ("alfrescoErrorId") and Alfresco message parameters ("alfrescoErrorParams").
+     * @return The rehydrated error object, or null if errorJSON is null. Throws {@code JSONException} if an error occurs while parsing the supplied JSON object
      */
     private Throwable rehydrateError(JSONObject errorJSON)
     {
@@ -895,17 +904,16 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
 
     private NodeRef getFileTransferRootNodeRef(NodeRef transferNodeRef)
     {
-        //testing if transferring to file system
-        if(!TransferModel.TYPE_FILE_TRANSFER_TARGET.equals(nodeService.getType(transferNodeRef)))
+        // testing if transferring to file system
+        if (!TransferModel.TYPE_FILE_TRANSFER_TARGET.equals(nodeService.getType(transferNodeRef)))
             return null;
 
-        //get association
+        // get association
         List<AssociationRef> assocs = nodeService.getTargetAssocs(transferNodeRef, TransferModel.ASSOC_ROOT_FILE_TRANSFER);
-        if(assocs.size() == 0 || assocs.size() > 1)
+        if (assocs.size() == 0 || assocs.size() > 1)
             return null;
 
         return assocs.get(0).getTargetRef();
     }
-
 
 }

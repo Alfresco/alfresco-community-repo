@@ -44,15 +44,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.admin.RepositoryState;
-import org.alfresco.repo.search.QueryParserException;
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.util.Pair;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -67,6 +58,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.admin.RepositoryState;
+import org.alfresco.repo.search.QueryParserException;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.Pair;
+
 /** Tests for the {@link org.alfresco.repo.search.impl.solr.SolrSQLHttpClient}. */
 public class SolrSQLHttpClientTest
 {
@@ -78,8 +79,7 @@ public class SolrSQLHttpClientTest
     /**
      * The class under test.
      *
-     * We use a spy to allow stubbing {@link SolrSQLHttpClient#postQuery}, which
-     * relies on manipulation of a {@link PostMethod} object.
+     * We use a spy to allow stubbing {@link SolrSQLHttpClient#postQuery}, which relies on manipulation of a {@link PostMethod} object.
      */
     @Spy
     @InjectMocks
@@ -112,8 +112,8 @@ public class SolrSQLHttpClientTest
 
         // Set up the mock HTTP call method on the class under test.
         doReturn(mockResultSet).when(solrSQLHttpClient).postSolrQuery(any(HttpClient.class), anyString(),
-                    bodyCaptor.capture(), // Capture the supplied HTTP request body.
-                    any(SolrJsonProcessor.class));
+                bodyCaptor.capture(), // Capture the supplied HTTP request body.
+                any(SolrJsonProcessor.class));
         // Set up the store configuration.
         when(mockSearchParameters.getStores()).thenReturn(new ArrayList(asList(STORE_REF)));
         HashMap<StoreRef, SolrStoreMappingWrapper> mappingLookup = new HashMap<>();
@@ -167,8 +167,8 @@ public class SolrSQLHttpClientTest
     {
         // Replace the mock HTTP call method so it throws a ConnectException.
         doThrow(new ConnectException()).when(solrSQLHttpClient).postSolrQuery(any(HttpClient.class), anyString(),
-                    any(JSONObject.class),
-                    any(SolrJsonProcessor.class));
+                any(JSONObject.class),
+                any(SolrJsonProcessor.class));
 
         // Call the method under test.
         try
@@ -194,15 +194,17 @@ public class SolrSQLHttpClientTest
         assertEquals("Expected result to come back from HTTP call.", mockResultSet, resultSet);
         List<String> actual = stringJsonArrayToList(bodyCaptor.getValue().getJSONArray("filterQueries"));
         assertEquals("Unexpected filter queries in HTTP request.",
-                    actual, asList("FQ1", "FQ2"));
+                actual, asList("FQ1", "FQ2"));
     }
 
     /**
      * Convert a JSONArray of strings to a list of strings.
      *
-     * @param jsonArray The JSON array.
+     * @param jsonArray
+     *            The JSON array.
      * @return A list of strings.
-     * @throws JSONException Unexpected.
+     * @throws JSONException
+     *             Unexpected.
      */
     private List<String> stringJsonArrayToList(JSONArray jsonArray) throws JSONException
     {

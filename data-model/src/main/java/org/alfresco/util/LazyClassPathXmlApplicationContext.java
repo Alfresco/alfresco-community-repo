@@ -34,45 +34,45 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.w3c.dom.Element;
 
 /**
- * A wrapper around {@link ClassPathXmlApplicationContext} which forces
- *  all beans to be loaded lazily.
- * You shouldn't do this in production, but it can be handy with
- *  unit tests, as it allows a quicker startup when you don't touch
- *  much of the application.
- *  
+ * A wrapper around {@link ClassPathXmlApplicationContext} which forces all beans to be loaded lazily. You shouldn't do this in production, but it can be handy with unit tests, as it allows a quicker startup when you don't touch much of the application.
+ * 
  * @author Nick Burch
  */
 public class LazyClassPathXmlApplicationContext extends
-      ClassPathXmlApplicationContext {
-   
-   public LazyClassPathXmlApplicationContext(String[] configLocations)
-         throws BeansException {
-      super(configLocations);
-   }
+        ClassPathXmlApplicationContext
+{
 
-   protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader) {
-      super.initBeanDefinitionReader(reader);
-      
-      postInitBeanDefinitionReader(reader);
-   }
-    
-   /**
-    * Does the work of enabling Lazy Init on the xml bean reader
-    */
-   protected static void postInitBeanDefinitionReader(XmlBeanDefinitionReader reader) {
-      reader.setDocumentReaderClass(AlwaysLazyInitBeanDefinitionDocumentReader.class);
-   }
+    public LazyClassPathXmlApplicationContext(String[] configLocations)
+            throws BeansException
+    {
+        super(configLocations);
+    }
 
-   protected static class AlwaysLazyInitBeanDefinitionDocumentReader extends DefaultBeanDefinitionDocumentReader
-   {
+    protected void initBeanDefinitionReader(XmlBeanDefinitionReader reader)
+    {
+        super.initBeanDefinitionReader(reader);
 
-       @Override
-       protected BeanDefinitionParserDelegate createDelegate(
-               XmlReaderContext readerContext, Element root, BeanDefinitionParserDelegate parentDelegate)
-       {
-           BeanDefinitionParserDelegate delegate = super.createDelegate(readerContext, root, parentDelegate);
-           delegate.getDefaults().setLazyInit("true");
-           return delegate;
-       }
-   }
+        postInitBeanDefinitionReader(reader);
+    }
+
+    /**
+     * Does the work of enabling Lazy Init on the xml bean reader
+     */
+    protected static void postInitBeanDefinitionReader(XmlBeanDefinitionReader reader)
+    {
+        reader.setDocumentReaderClass(AlwaysLazyInitBeanDefinitionDocumentReader.class);
+    }
+
+    protected static class AlwaysLazyInitBeanDefinitionDocumentReader extends DefaultBeanDefinitionDocumentReader
+    {
+
+        @Override
+        protected BeanDefinitionParserDelegate createDelegate(
+                XmlReaderContext readerContext, Element root, BeanDefinitionParserDelegate parentDelegate)
+        {
+            BeanDefinitionParserDelegate delegate = super.createDelegate(readerContext, root, parentDelegate);
+            delegate.getDefaults().setLazyInit("true");
+            return delegate;
+        }
+    }
 }

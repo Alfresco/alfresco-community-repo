@@ -33,6 +33,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.quartz.JobExecutionException;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.activities.ActivitiesDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
@@ -56,9 +60,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.quartz.JobExecutionException;
 
 /**
  * The feed cleaner component is responsible for purging 'obsolete' activity feed entries
@@ -69,36 +70,36 @@ import org.quartz.JobExecutionException;
 public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
 {
     private static Log logger = LogFactory.getLog(FeedCleaner.class);
-    
+
     private static String KEY_DELETED_SITE_IDS = "feedCleaner.deletedSites";
     private static String KEY_DELETED_USER_IDS = "feedCleaner.deletedUsers";
-    
+
     private int maxIdRange = 1000000;
     private int maxAgeMins = 0;
     private int maxFeedSize = 100;
     private boolean userNamesAreCaseSensitive = false;
-    
+
     private ActivityFeedDAO feedDAO;
-    
+
     private JobLockService jobLockService;
     private NodeService nodeService;
     private TenantService tenantService;
     private PolicyComponent policyComponent;
     private TransactionService transactionService;
-    
+
     private FeedCleanerDeleteSiteTransactionListener deleteSiteTransactionListener;
     private FeedCleanerDeletePersonTransactionListener deletePersonTransactionListener;
-    
+
     public void setUserNamesAreCaseSensitive(boolean userNamesAreCaseSensitive)
     {
         this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
     }
-    
+
     public void setFeedDAO(ActivityFeedDAO feedDAO)
     {
         this.feedDAO = feedDAO;
     }
-    
+
     public void setJobLockService(JobLockService jobLockService)
     {
         this.jobLockService = jobLockService;
@@ -108,12 +109,12 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
@@ -121,35 +122,35 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
 
     /**
      * 
-     * @param maxIdRange            maximum difference between lowest and highest ID
+     * @param maxIdRange
+     *            maximum difference between lowest and highest ID
      */
     public void setMaxIdRange(int maxIdRange)
     {
         this.maxIdRange = maxIdRange;
     }
-    
+
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
     }
-    
+
     public void setMaxAgeMins(int mins)
     {
         this.maxAgeMins = mins;
     }
-    
+
     // note: this relates to user feed size (across all sites) or site feed size - for each format
     public void setMaxFeedSize(int size)
     {
         this.maxFeedSize = size;
     }
-    
+
     public int getMaxFeedSize()
     {
         return this.maxFeedSize;
     }
-    
-    
+
     /**
      * Perform basic checks to ensure that the necessary dependencies were injected.
      */
@@ -159,35 +160,36 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "jobLockService", jobLockService);
-        
+
         // check the max age and max feed size
         if ((maxAgeMins <= 0) && (maxFeedSize <= 0))
         {
             logger.warn("Neither maxAgeMins or maxFeedSize set - feeds will not be cleaned");
         }
     }
-    
+
     public void init()
     {
         policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME,
-                                           ContentModel.TYPE_PERSON,
-                                           new JavaBehaviour(this, "beforeDeleteNodePerson"));
-        
+                ContentModel.TYPE_PERSON,
+                new JavaBehaviour(this, "beforeDeleteNodePerson"));
+
         deletePersonTransactionListener = new FeedCleanerDeletePersonTransactionListener();
-        
+
         policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME,
-                                           SiteModel.TYPE_SITE,
-                                           new JavaBehaviour(this, "beforeDeleteNodeSite"));
-        
+                SiteModel.TYPE_SITE,
+                new JavaBehaviour(this, "beforeDeleteNodeSite"));
+
         deleteSiteTransactionListener = new FeedCleanerDeleteSiteTransactionListener();
     }
 
-    private static final long LOCK_TTL = 60000L;        // 1 minute
+    private static final long LOCK_TTL = 60000L; // 1 minute
     private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "org.alfresco.repo.activities.feed.cleanup.FeedCleaner");
+
     public int execute() throws JobExecutionException
     {
         checkProperties();
-        
+
         final AtomicBoolean keepGoing = new AtomicBoolean(true);
         String lockToken = null;
         try
@@ -195,14 +197,13 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
             // Lock
             lockToken = jobLockService.getLock(LOCK_QNAME, LOCK_TTL);
             // Refresh to get callbacks
-            JobLockRefreshCallback callback = new JobLockRefreshCallback()
-            {
+            JobLockRefreshCallback callback = new JobLockRefreshCallback() {
                 @Override
                 public void lockReleased()
                 {
                     keepGoing.set(false);
                 }
-                
+
                 @Override
                 public boolean isActive()
                 {
@@ -225,7 +226,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
         }
         finally
         {
-            keepGoing.set(false);           // Notify the refresh callback that we are done
+            keepGoing.set(false); // Notify the refresh callback that we are done
             if (lockToken != null)
             {
                 jobLockService.releaseLock(lockToken, LOCK_QNAME);
@@ -233,36 +234,24 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
         }
         return 0;
     }
-    
+
     /**
      * Does the actual cleanup, expecting the lock to be maintained
      * 
-     * @param keepGoing <tt>true</tt> to continue but will switch to <tt>false</tt> to stop
-     * @return          number of entries deleted through whatever means
+     * @param keepGoing
+     *            <tt>true</tt> to continue but will switch to <tt>false</tt> to stop
+     * @return number of entries deleted through whatever means
      */
     private int executeWithLock(final AtomicBoolean keepGoing) throws JobExecutionException
     {
         int maxIdRangeDeletedCount = 0;
         int maxAgeDeletedCount = 0;
         int maxSizeDeletedCount = 0;
-        
+
         try
         {
-            /*
-             * ALF-15383 (DH 15/08/2012)
-             * Previously, we allowed maxFeedSize entries per user per site per format.
-             * This scaled badly because some users (especially under test conditions)
-             * were able to perform actions across many thousands of sites.  If the size
-             * limit was 100 and the user belonged to 50K sites, we allowed 5M feed entries
-             * for that user.  This may have been OK but for the fact that the queries
-             * doing the work are not covered by appropriate indexes to support the where
-             * and sort by clauses.
-             * In fact, give the current state of indexes, it is necessary to limit the absolute
-             * number of feed entries.  We can't use count() queries (they are poor) and cannot
-             * reasonably sort by date and trim by count.  Therefore I have introduced an
-             * absolute ID range trim that runs before everything else.
-             */
-            
+            /* ALF-15383 (DH 15/08/2012) Previously, we allowed maxFeedSize entries per user per site per format. This scaled badly because some users (especially under test conditions) were able to perform actions across many thousands of sites. If the size limit was 100 and the user belonged to 50K sites, we allowed 5M feed entries for that user. This may have been OK but for the fact that the queries doing the work are not covered by appropriate indexes to support the where and sort by clauses. In fact, give the current state of indexes, it is necessary to limit the absolute number of feed entries. We can't use count() queries (they are poor) and cannot reasonably sort by date and trim by count. Therefore I have introduced an absolute ID range trim that runs before everything else. */
+
             if (maxIdRange > 0 && keepGoing.get())
             {
                 maxIdRangeDeletedCount = feedDAO.deleteFeedEntries(maxIdRange);
@@ -275,19 +264,19 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
             if (maxAgeMins > 0 && keepGoing.get())
             {
                 // clean old entries based on maxAgeMins
-                
+
                 long nowTimeOffset = new Date().getTime();
-                long keepTimeOffset = nowTimeOffset - ((long)maxAgeMins*60000L); // millsecs = mins * 60 secs * 1000 msecs
+                long keepTimeOffset = nowTimeOffset - ((long) maxAgeMins * 60000L); // millsecs = mins * 60 secs * 1000 msecs
                 Date keepDate = new Date(keepTimeOffset);
-                
+
                 maxAgeDeletedCount = feedDAO.deleteFeedEntries(keepDate);
                 if (logger.isTraceEnabled())
                 {
                     logger.trace("Cleaned " + maxAgeDeletedCount + " entries (upto " + keepDate + ", max age " + maxAgeMins + " mins)");
                 }
             }
-            
-            // TODO:    ALF-15511
+
+            // TODO: ALF-15511
             if (maxFeedSize > 0 && keepGoing.get())
             {
                 // Get user+format feeds exceeding the required maximum
@@ -329,7 +318,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                     List<ActivityFeedEntity> feedsToKeep = feedDAO.selectUserFeedEntries(feedUserId, null, false, false, -1L, maxFeedSize);
                     if (logger.isTraceEnabled())
                     {
-                        for(ActivityFeedEntity feedToKeep : feedsToKeep)
+                        for (ActivityFeedEntity feedToKeep : feedsToKeep)
                         {
                             logger.trace("Found user activity feed entity to keep: " + feedToKeep.toString());
                         }
@@ -344,8 +333,8 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                         continue;
                     }
                     // Get the last one
-                    Date oldestFeedEntry = feedsToKeep.get(maxFeedSize-1).getPostDate();
-                    
+                    Date oldestFeedEntry = feedsToKeep.get(maxFeedSize - 1).getPostDate();
+
                     if (logger.isTraceEnabled())
                     {
                         logger.trace("Deleting the oldest feed entry: " + oldestFeedEntry.toString());
@@ -357,7 +346,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                     }
                     maxSizeDeletedCount += deletedCount;
                 }
-                
+
                 // Get site+format feeds exceeding the required maximum
                 if (logger.isTraceEnabled())
                 {
@@ -387,7 +376,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                     List<ActivityFeedEntity> feedsToKeep = feedDAO.selectSiteFeedEntries(siteId, maxFeedSize);
                     if (logger.isTraceEnabled())
                     {
-                        for(ActivityFeedEntity feedToKeep : feedsToKeep)
+                        for (ActivityFeedEntity feedToKeep : feedsToKeep)
                         {
                             logger.trace("Found site activity feed entity to keep: " + feedToKeep.toString());
                         }
@@ -398,7 +387,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                         continue;
                     }
                     // Get the last one
-                    Date oldestFeedEntry = feedsToKeep.get(maxFeedSize-1).getPostDate();
+                    Date oldestFeedEntry = feedsToKeep.get(maxFeedSize - 1).getPostDate();
                     if (logger.isTraceEnabled())
                     {
                         logger.trace("Deleting the oldest feed entry: " + oldestFeedEntry.toString());
@@ -429,53 +418,53 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                 logger.error("Exception during cleanup of feeds", e);
             }
         }
-        
+
         return (maxIdRangeDeletedCount + maxAgeDeletedCount + maxSizeDeletedCount);
     }
-    
+
     // behaviours
-    
+
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         // dummy
     }
-    
+
     public void beforeDeleteNodePerson(NodeRef personNodeRef)
     {
-        String userId = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
-        //MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities" 
-        if (! userNamesAreCaseSensitive)
+        String userId = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
+        // MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities"
+        if (!userNamesAreCaseSensitive)
         {
             userId = userId.toLowerCase();
         }
-        Set<String> deletedUserIds = (Set<String>)AlfrescoTransactionSupport.getResource(KEY_DELETED_USER_IDS);
+        Set<String> deletedUserIds = (Set<String>) AlfrescoTransactionSupport.getResource(KEY_DELETED_USER_IDS);
         if (deletedUserIds == null)
         {
             deletedUserIds = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>()); // Java 6
             AlfrescoTransactionSupport.bindResource(KEY_DELETED_USER_IDS, deletedUserIds);
         }
-        
+
         deletedUserIds.add(userId);
-        
+
         AlfrescoTransactionSupport.bindListener(deletePersonTransactionListener);
     }
-    
+
     public void beforeDeleteNodeSite(NodeRef siteNodeRef)
     {
-        String siteId = (String)nodeService.getProperty(siteNodeRef, ContentModel.PROP_NAME);
-        
-        Set<String> deletedSiteIds = (Set<String>)AlfrescoTransactionSupport.getResource(KEY_DELETED_SITE_IDS);
+        String siteId = (String) nodeService.getProperty(siteNodeRef, ContentModel.PROP_NAME);
+
+        Set<String> deletedSiteIds = (Set<String>) AlfrescoTransactionSupport.getResource(KEY_DELETED_SITE_IDS);
         if (deletedSiteIds == null)
         {
             deletedSiteIds = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>()); // Java 6
             AlfrescoTransactionSupport.bindResource(KEY_DELETED_SITE_IDS, deletedSiteIds);
         }
-        
+
         deletedSiteIds.add(siteId);
-        
+
         AlfrescoTransactionSupport.bindListener(deleteSiteTransactionListener);
     }
-    
+
     class FeedCleanerDeleteSiteTransactionListener extends TransactionListenerAdapter
     {
         @Override
@@ -486,23 +475,22 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
             {
                 for (final String siteId : deletedSiteIds)
                 {
-                    transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-                    {
+                    transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                         public Void execute() throws Throwable
                         {
                             try
                             {
                                 // Since we are in post-commit, we do best-effort
                                 int deletedCnt = feedDAO.deleteSiteFeedEntries(tenantService.getName(siteId));
-                                
+
                                 if (logger.isDebugEnabled())
                                 {
-                                    logger.debug("afterCommit: deleted "+deletedCnt+" site feed entries for site '"+siteId+"'");
+                                    logger.debug("afterCommit: deleted " + deletedCnt + " site feed entries for site '" + siteId + "'");
                                 }
                             }
                             catch (SQLException e)
                             {
-                                logger.error("Activities feed cleanup for site '"+siteId+"' failed: ", e);
+                                logger.error("Activities feed cleanup for site '" + siteId + "' failed: ", e);
                             }
                             return null;
                         }
@@ -511,7 +499,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
             }
         }
     }
-    
+
     class FeedCleanerDeletePersonTransactionListener extends TransactionListenerAdapter
     {
         @Override
@@ -522,9 +510,9 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
             {
                 for (String user : deletedUserIds)
                 {
-                    //MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities" 
+                    // MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities"
                     final String userId;
-                    if (! userNamesAreCaseSensitive)
+                    if (!userNamesAreCaseSensitive)
                     {
                         userId = user.toLowerCase();
                     }
@@ -532,9 +520,8 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                     {
                         userId = user;
                     }
-                    
-                    transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-                    {
+
+                    transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                         public Void execute() throws Throwable
                         {
                             try
@@ -544,9 +531,9 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                             }
                             catch (SQLException e)
                             {
-                                logger.error("Activities feed cleanup for user '"+userId+"' failed: ", e);
+                                logger.error("Activities feed cleanup for user '" + userId + "' failed: ", e);
                             }
-                            
+
                             return null;
                         }
                     }, false, true);

@@ -25,18 +25,18 @@
  */
 package org.alfresco.ibatis;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+
 /**
- * A helper that runs a unit of work, transparently retrying the unit of work if
- * an error occurs.
+ * A helper that runs a unit of work, transparently retrying the unit of work if an error occurs.
  * <p>
  * Defaults:
  * <ul>
- *   <li><b>maxRetries: 5</b></li>
- *   <li><b>retryWaitMs: 10</b></li>
+ * <li><b>maxRetries: 5</b></li>
+ * <li><b>retryWaitMs: 10</b></li>
  * </ul>
  *
  * @author Derek Hulley
@@ -45,14 +45,15 @@ import org.apache.commons.logging.LogFactory;
 public class RetryingCallbackHelper
 {
     private static final Log logger = LogFactory.getLog(RetryingCallbackHelper.class);
-    
+
     /** The maximum number of retries. -1 for infinity. */
     private int maxRetries;
     /** How much time to wait with each retry. */
     private int retryWaitMs;
-    
+
     /**
      * Callback interface
+     * 
      * @author Derek Hulley
      */
     public interface RetryingCallback<Result>
@@ -60,8 +61,9 @@ public class RetryingCallbackHelper
         /**
          * Perform a unit of work.
          *
-         * @return              Return the result of the unit of work
-         * @throws Throwable    This can be anything and will guarantee either a retry or a rollback
+         * @return Return the result of the unit of work
+         * @throws Throwable
+         *             This can be anything and will guarantee either a retry or a rollback
          */
         public Result execute() throws Throwable;
     };
@@ -89,12 +91,13 @@ public class RetryingCallbackHelper
     }
 
     /**
-     * Execute a callback until it succeeds, fails or until a maximum number of retries have
-     * been attempted.
+     * Execute a callback until it succeeds, fails or until a maximum number of retries have been attempted.
      *
-     * @param callback          The callback containing the unit of work.
-     * @return                  Returns the result of the unit of work.
-     * @throws                  RuntimeException  all checked exceptions are converted
+     * @param callback
+     *            The callback containing the unit of work.
+     * @return Returns the result of the unit of work.
+     * @throws RuntimeException
+     *             all checked exceptions are converted
      */
     public <R> R doWithRetry(RetryingCallback<R> callback)
     {
@@ -120,9 +123,7 @@ public class RetryingCallbackHelper
             }
             catch (Throwable e)
             {
-                lastException = (e instanceof RuntimeException) ?
-                     (RuntimeException) e :
-                         new AlfrescoRuntimeException("Exception in Transaction.", e);
+                lastException = (e instanceof RuntimeException) ? (RuntimeException) e : new AlfrescoRuntimeException("Exception in Transaction.", e);
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("\n" +

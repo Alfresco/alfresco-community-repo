@@ -25,9 +25,32 @@
  */
 package org.alfresco.repo.content.metadata;
 
+import static org.alfresco.repo.rendition2.RenditionDefinition2.TIMEOUT;
+import static org.alfresco.repo.rendition2.TransformDefinition.getTransformName;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.concurrent.ExecutorService;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import org.springframework.dao.ConcurrencyFailureException;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.content.transform.TransformerDebug;
@@ -52,39 +75,11 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.transform.registry.TransformServiceRegistry;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-import org.springframework.dao.ConcurrencyFailureException;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.StringJoiner;
-import java.util.concurrent.ExecutorService;
-
-import static org.alfresco.repo.rendition2.RenditionDefinition2.TIMEOUT;
-import static org.alfresco.repo.rendition2.TransformDefinition.getTransformName;
 
 /**
- * Requests an extract of metadata via a remote async transform using
- * {@link RenditionService2#transform(NodeRef, TransformDefinition)}. The properties that will extracted are defined
- * by the transform. This allows out of process metadata extracts to be defined without the need to apply an AMP.
- * The actual transform is a request to go from the source mimetype to {@code "alfresco-metadata-extract"}. The
- * resulting transform is a Map in json of properties and values to be set on the source node.
+ * Requests an extract of metadata via a remote async transform using {@link RenditionService2#transform(NodeRef, TransformDefinition)}. The properties that will extracted are defined by the transform. This allows out of process metadata extracts to be defined without the need to apply an AMP. The actual transform is a request to go from the source mimetype to {@code "alfresco-metadata-extract"}. The resulting transform is a Map in json of properties and values to be set on the source node.
  * <p>
- * As with other sub-classes of {@link AbstractMappingMetadataExtracter} it also supports embedding of metadata in
- * a source node. In this case the remote async transform states that it supports a transform from a source mimetype
- * to  {@code "alfresco-metadata-embed"}. The resulting transform is a replacement for the content of the node.
+ * As with other sub-classes of {@link AbstractMappingMetadataExtracter} it also supports embedding of metadata in a source node. In this case the remote async transform states that it supports a transform from a source mimetype to {@code "alfresco-metadata-embed"}. The resulting transform is a replacement for the content of the node.
  *
  * @author adavis
  */
@@ -196,25 +191,27 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     {
         return transformName == null ? null
                 : transformName.startsWith(MIMETYPE_METADATA_EXTRACT) ? MIMETYPE_METADATA_EXTRACT
-                : transformName.startsWith(MIMETYPE_METADATA_EMBED)   ? MIMETYPE_METADATA_EMBED
-                : null;
+                        : transformName.startsWith(MIMETYPE_METADATA_EMBED) ? MIMETYPE_METADATA_EMBED
+                                : null;
     }
 
     public static String getSourceMimetypeFromTransformName(String transformName)
     {
         return transformName == null ? null
-                : transformName.startsWith(MIMETYPE_METADATA_EXTRACT) ? transformName.substring(MIMETYPE_METADATA_EXTRACT.length()+1)
-                : transformName.startsWith(MIMETYPE_METADATA_EMBED)   ? transformName.substring(MIMETYPE_METADATA_EMBED.length()+1)
-                : null;
+                : transformName.startsWith(MIMETYPE_METADATA_EXTRACT) ? transformName.substring(MIMETYPE_METADATA_EXTRACT.length() + 1)
+                        : transformName.startsWith(MIMETYPE_METADATA_EMBED) ? transformName.substring(MIMETYPE_METADATA_EMBED.length() + 1)
+                                : null;
     }
 
     /**
-     * Returns a file extension used as the target in a transform. The normal extension is changed if the
-     * {@code targetMimetype} is an extraction or embedding type.
+     * Returns a file extension used as the target in a transform. The normal extension is changed if the {@code targetMimetype} is an extraction or embedding type.
      *
-     * @param targetMimetype the target mimetype
-     * @param sourceExtension normal source extension
-     * @param targetExtension current target extension (normally {@code "bin" for embedding and extraction})
+     * @param targetMimetype
+     *            the target mimetype
+     * @param sourceExtension
+     *            normal source extension
+     * @param targetExtension
+     *            current target extension (normally {@code "bin" for embedding and extraction})
      * @return the extension to be used.
      */
     public static String getExtension(String targetMimetype, String sourceExtension, String targetExtension)
@@ -222,26 +219,25 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
         return isMetadataExtractMimetype(targetMimetype)
                 ? "json"
                 : isMetadataEmbedMimetype(targetMimetype)
-                ? sourceExtension
-                : targetExtension;
+                        ? sourceExtension
+                        : targetExtension;
     }
 
     /**
-     * Returns a rendition name used in {@link TransformerDebug}. The normal name is changed if it is a metadata
-     * extract or embed. The name in this case is actually the {@code "alfresco-metadata-extract/"}
-     * {@code "alfresco-metadata-embed/"} followed by the source mimetype.
+     * Returns a rendition name used in {@link TransformerDebug}. The normal name is changed if it is a metadata extract or embed. The name in this case is actually the {@code "alfresco-metadata-extract/"} {@code "alfresco-metadata-embed/"} followed by the source mimetype.
      *
-     * @param renditionName the normal name, or a special one based on the source mimetype and a prefixed.
+     * @param renditionName
+     *            the normal name, or a special one based on the source mimetype and a prefixed.
      * @return the renditionName to be used.
      */
     public static String getRenditionName(String renditionName)
     {
         String transformName = getTransformName(renditionName);
-        return    transformName != null && transformName.startsWith(MIMETYPE_METADATA_EXTRACT)
+        return transformName != null && transformName.startsWith(MIMETYPE_METADATA_EXTRACT)
                 ? "metadataExtract"
                 : transformName != null && transformName.startsWith(MIMETYPE_METADATA_EMBED)
-                ? "metadataEmbed"
-                : renditionName;
+                        ? "metadataEmbed"
+                        : renditionName;
     }
 
     @Override
@@ -310,9 +306,10 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     }
 
     /**
-     * As T-Engines do the mapping, all this method can do is convert QNames to fully qualified Strings and the
-     * values to Strings or a Collection of Strings.
-     * @param systemMetadata   Metadata keyed by system properties
+     * As T-Engines do the mapping, all this method can do is convert QNames to fully qualified Strings and the values to Strings or a Collection of Strings.
+     * 
+     * @param systemMetadata
+     *            Metadata keyed by system properties
      * @return the original map but with QNames turned into Strings.
      */
     @Override
@@ -376,7 +373,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     }
 
     private void transformInBackground(NodeRef nodeRef, ContentReader reader, String targetMimetype,
-                                       String embedOrExtract, Map<String, String> options)
+            String embedOrExtract, Map<String, String> options)
     {
         final String domain = TenantUtil.getCurrentDomain();
         final String runAsUser = AuthenticationUtil.getRunAsUser();
@@ -386,17 +383,17 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
 
             TenantUtil.runAsUserTenant((TenantRunAsWork<Void>) () -> {
                 transactionService.getRetryingTransactionHelper()
-                            .doInTransaction((RetryingTransactionCallback<Void>) () -> {
-                                try
-                                {
-                                    transform(nodeRef, reader, targetMimetype, embedOrExtract, options);
-                                }
-                                finally
-                                {
-                                    extractRawThreadFinished();
-                                }
-                                return null;
-                            }, false);
+                        .doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                            try
+                            {
+                                transform(nodeRef, reader, targetMimetype, embedOrExtract, options);
+                            }
+                            finally
+                            {
+                                extractRawThreadFinished();
+                            }
+                            return null;
+                        }, false);
 
                 return null;
             }, runAsUser, domain);
@@ -404,7 +401,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
     }
 
     private void transform(NodeRef nodeRef, ContentReader reader, String targetMimetype,
-                           String embedOrExtract, Map<String, String> options)
+            String embedOrExtract, Map<String, String> options)
     {
         String sourceMimetype = reader.getMimetype();
 
@@ -432,7 +429,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
         {
             StringJoiner sj = new StringJoiner("\n");
             sj.add("Request " + embedOrExtract + " transform on " + nodeRef);
-            options.forEach((k,v)->sj.add("  "+k+"="+v));
+            options.forEach((k, v) -> sj.add("  " + k + "=" + v));
             logger.trace(sj);
         }
 
@@ -445,7 +442,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
             if (e.getMessage().endsWith("The supplied sourceNodeRef " + nodeRef + " does not exist."))
             {
                 throw new ConcurrencyFailureException(
-                            "The original transaction may not have finished. " + e.getMessage());
+                        "The original transaction may not have finished. " + e.getMessage());
             }
         }
     }
@@ -470,63 +467,61 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
         List<String> stringTaggingSeparators = removeTaggingSeparators(metadata, "sys:stringTaggingSeparators",
                 ContentMetadataExtracter.DEFAULT_STRING_TAGGING_SEPARATORS);
         if (overwritePolicy == null ||
-            enableStringTagging == null ||
-            carryAspectProperties == null ||
-            stringTaggingSeparators == null)
+                enableStringTagging == null ||
+                carryAspectProperties == null ||
+                stringTaggingSeparators == null)
         {
             return; // Error state.
         }
 
-        AuthenticationUtil.runAsSystem((AuthenticationUtil.RunAsWork<Void>) () ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+        AuthenticationUtil.runAsSystem((AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            // Based on: AbstractMappingMetadataExtracter.extract
+            Map<QName, Serializable> nodeProperties = nodeService.getProperties(nodeRef);
+            // Convert to system properties (standalone)
+            Map<QName, Serializable> systemProperties = convertKeysToQNames(metadata);
+            // Convert the properties according to the dictionary types
+            systemProperties = convertSystemPropertyValues(systemProperties);
+            // There is no last filter in the AsynchronousExtractor.
+            // Now use the proper overwrite policy
+            Map<QName, Serializable> changedProperties = overwritePolicy.applyProperties(systemProperties, nodeProperties);
+
+            // Based on: ContentMetadataExtracter.executeImpl
+            // If none of the properties where changed, then there is nothing more to do
+            if (changedProperties.size() == 0)
+            {
+                return null;
+            }
+            boolean transformerDebugEnabled = transformerDebug.isEnabled();
+            boolean debugEnabled = logger.isDebugEnabled();
+            if (transformerDebugEnabled || debugEnabled)
+            {
+                for (Map.Entry<QName, Serializable> entry : changedProperties.entrySet())
                 {
-                    // Based on: AbstractMappingMetadataExtracter.extract
-                    Map<QName, Serializable> nodeProperties = nodeService.getProperties(nodeRef);
-                    // Convert to system properties (standalone)
-                    Map<QName, Serializable> systemProperties = convertKeysToQNames(metadata);
-                    // Convert the properties according to the dictionary types
-                    systemProperties = convertSystemPropertyValues(systemProperties);
-                    // There is no last filter in the AsynchronousExtractor.
-                    // Now use the proper overwrite policy
-                    Map<QName, Serializable> changedProperties = overwritePolicy.applyProperties(systemProperties, nodeProperties);
-
-                    // Based on: ContentMetadataExtracter.executeImpl
-                    // If none of the properties where changed, then there is nothing more to do
-                    if (changedProperties.size() == 0)
+                    QName qname = entry.getKey();
+                    Serializable value = entry.getValue();
+                    String prefixString = qname.toPrefixString(namespacePrefixResolver);
+                    String debugMessage = prefixString + "=" + (value == null ? "" : value);
+                    if (transformerDebugEnabled)
                     {
-                        return null;
+                        transformerDebug.debugUsingPreviousReference("  " + debugMessage);
                     }
-                    boolean transformerDebugEnabled = transformerDebug.isEnabled();
-                    boolean debugEnabled = logger.isDebugEnabled();
-                    if (transformerDebugEnabled || debugEnabled)
+                    if (debugEnabled)
                     {
-                        for (Map.Entry<QName, Serializable> entry : changedProperties.entrySet())
-                        {
-                            QName qname = entry.getKey();
-                            Serializable value = entry.getValue();
-                            String prefixString = qname.toPrefixString(namespacePrefixResolver);
-                            String debugMessage = prefixString + "=" + (value == null ? "" : value);
-                            if (transformerDebugEnabled)
-                            {
-                                transformerDebug.debugUsingPreviousReference("  "+debugMessage);
-                            }
-                            if (debugEnabled)
-                            {
-                                logger.debug(debugMessage);
-                            }
-                        }
+                        logger.debug(debugMessage);
                     }
-                    ContentMetadataExtracter.addExtractedMetadataToNode(nodeRef, nodeProperties, changedProperties,
-                            nodeService, dictionaryService, taggingService,
-                            enableStringTagging, carryAspectProperties, stringTaggingSeparators);
+                }
+            }
+            ContentMetadataExtracter.addExtractedMetadataToNode(nodeRef, nodeProperties, changedProperties,
+                    nodeService, dictionaryService, taggingService,
+                    enableStringTagging, carryAspectProperties, stringTaggingSeparators);
 
-                    if (logger.isTraceEnabled())
-                    {
-                        logger.trace("Extraction of Metadata from " + nodeRef + " complete " + changedProperties);
-                    }
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("Extraction of Metadata from " + nodeRef + " complete " + changedProperties);
+            }
 
-                    return null;
-                }, false, true));
+            return null;
+        }, false, true));
     }
 
     private Map<String, Serializable> readMetadata(InputStream transformInputStream)
@@ -565,9 +560,9 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
         }
         try
         {
-            return OverwritePolicy.valueOf((String)value);
+            return OverwritePolicy.valueOf((String) value);
         }
-        catch (IllegalArgumentException|ClassCastException e)
+        catch (IllegalArgumentException | ClassCastException e)
         {
             logger.error(key + "=" + value + " is invalid");
             return null;
@@ -576,15 +571,16 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
 
     private Boolean removeBoolean(Map<String, Serializable> map, Serializable key, boolean defaultValue)
     {
-        @SuppressWarnings("SuspiciousMethodCalls") Serializable value = map.remove(key);
+        @SuppressWarnings("SuspiciousMethodCalls")
+        Serializable value = map.remove(key);
         if (value != null &&
-            (!(value instanceof String) ||
-             (!(Boolean.FALSE.toString().equals(value) || Boolean.TRUE.toString().equals(value)))))
+                (!(value instanceof String) ||
+                        (!(Boolean.FALSE.toString().equals(value) || Boolean.TRUE.toString().equals(value)))))
         {
             logger.error(key + "=" + value + " is invalid. Must be " + Boolean.TRUE + " or " + Boolean.FALSE);
             return null; // no flexibility of parseBoolean(...). It is just invalid
         }
-        return value == null ? defaultValue : Boolean.parseBoolean((String)value);
+        return value == null ? defaultValue : Boolean.parseBoolean((String) value);
     }
 
     private List<String> removeTaggingSeparators(Map<String, Serializable> map, String key, List<String> defaultValue)
@@ -601,7 +597,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
         }
 
         List<String> list = new ArrayList<>();
-        try (CSVParser parser = CSVParser.parse((String)value, CSVFormat.RFC4180))
+        try (CSVParser parser = CSVParser.parse((String) value, CSVFormat.RFC4180))
         {
             Iterator<CSVRecord> iterator = parser.iterator();
             CSVRecord record = iterator.next();
@@ -612,7 +608,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
             }
             record.forEach(list::add);
         }
-        catch (IOException|NoSuchElementException e)
+        catch (IOException | NoSuchElementException e)
         {
             logger.error(key + "=" + value + " is invalid. Must be a CSV using CSVFormat.RFC4180");
             return null;
@@ -642,7 +638,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
             }
             catch (NamespaceException e)
             {
-                logger.error("Error creating qName from "+key);
+                logger.error("Error creating qName from " + key);
             }
         }
         return properties;
@@ -654,32 +650,30 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
         {
             logger.debug("Update of content to include metadata on " + nodeRef);
         }
-        AuthenticationUtil.runAsSystem(() ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+        AuthenticationUtil.runAsSystem(() -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            try
+            {
+                // Set or replace content
+                ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
+                String mimetype = reader.getMimetype();
+                String encoding = reader.getEncoding();
+                ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype(mimetype);
+                writer.setEncoding(encoding);
+                writer.putContent(transformInputStream);
+
+                if (logger.isTraceEnabled())
                 {
-                    try
-                    {
-                        // Set or replace content
-                        ContentReader reader = contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
-                        String mimetype = reader.getMimetype();
-                        String encoding = reader.getEncoding();
-                        ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-                        writer.setMimetype(mimetype);
-                        writer.setEncoding(encoding);
-                        writer.putContent(transformInputStream);
+                    logger.trace("Embedded Metadata on " + nodeRef + " complete");
+                }
+            }
+            catch (Exception e)
+            {
+                logger.error("Failed to copy embedded metadata transform InputStream into " + nodeRef);
+                throw e;
+            }
 
-                        if (logger.isTraceEnabled())
-                        {
-                            logger.trace("Embedded Metadata on " + nodeRef + " complete");
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        logger.error("Failed to copy embedded metadata transform InputStream into " + nodeRef);
-                        throw e;
-                    }
-
-                    return null;
-                }, false, true));
+            return null;
+        }, false, true));
     }
 }

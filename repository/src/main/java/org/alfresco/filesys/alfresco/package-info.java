@@ -36,5 +36,5 @@
  */
 @PackageMarker
 package org.alfresco.filesys.alfresco;
-import org.alfresco.util.PackageMarker;
 
+import org.alfresco.util.PackageMarker;

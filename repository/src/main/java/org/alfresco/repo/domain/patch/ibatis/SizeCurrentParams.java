@@ -38,27 +38,32 @@ public class SizeCurrentParams
     {
         return false;
     }
-    
+
     public Long getSizeCurrentQNameId()
     {
         return sizeCurrentQNameId;
     }
+
     public void setSizeCurrentQNameId(Long sizeCurrentQNameId)
     {
         this.sizeCurrentQNameId = sizeCurrentQNameId;
     }
+
     public Long getPersonTypeQNameId()
     {
         return personTypeQNameId;
     }
+
     public void setPersonTypeQNameId(Long personTypeQNameId)
     {
         this.personTypeQNameId = personTypeQNameId;
     }
+
     public Long getDefaultLocaleId()
     {
         return defaultLocaleId;
     }
+
     public void setDefaultLocaleId(Long defaultLocaleId)
     {
         this.defaultLocaleId = defaultLocaleId;

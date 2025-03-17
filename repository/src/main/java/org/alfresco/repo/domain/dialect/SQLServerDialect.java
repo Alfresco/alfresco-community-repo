@@ -35,28 +35,28 @@ public class SQLServerDialect extends Dialect
     public SQLServerDialect()
     {
         super();
-        registerColumnType( Types.BIT, "tinyint" ); //Sybase BIT type does not support null values
-        registerColumnType( Types.BIGINT, "numeric(19,0)" );
-        registerColumnType( Types.SMALLINT, "smallint" );
-        registerColumnType( Types.TINYINT, "tinyint" );
-        registerColumnType( Types.INTEGER, "int" );
-        registerColumnType( Types.CHAR, "char(1)" );
-        registerColumnType( Types.VARCHAR, "varchar($l)" );
-        registerColumnType( Types.FLOAT, "float" );
-        registerColumnType( Types.DOUBLE, "double precision" );
-        registerColumnType( Types.DATE, "datetime" );
-        registerColumnType( Types.TIME, "datetime" );
-        registerColumnType( Types.TIMESTAMP, "datetime" );
-        registerColumnType( Types.VARBINARY, "varbinary($l)" );
-        registerColumnType( Types.NUMERIC, "numeric($p,$s)" );
-        registerColumnType( Types.BLOB, "image" );
-        registerColumnType( Types.CLOB, "text" );
+        registerColumnType(Types.BIT, "tinyint"); // Sybase BIT type does not support null values
+        registerColumnType(Types.BIGINT, "numeric(19,0)");
+        registerColumnType(Types.SMALLINT, "smallint");
+        registerColumnType(Types.TINYINT, "tinyint");
+        registerColumnType(Types.INTEGER, "int");
+        registerColumnType(Types.CHAR, "char(1)");
+        registerColumnType(Types.VARCHAR, "varchar($l)");
+        registerColumnType(Types.FLOAT, "float");
+        registerColumnType(Types.DOUBLE, "double precision");
+        registerColumnType(Types.DATE, "datetime");
+        registerColumnType(Types.TIME, "datetime");
+        registerColumnType(Types.TIMESTAMP, "datetime");
+        registerColumnType(Types.VARBINARY, "varbinary($l)");
+        registerColumnType(Types.NUMERIC, "numeric($p,$s)");
+        registerColumnType(Types.BLOB, "image");
+        registerColumnType(Types.CLOB, "text");
 
-        registerColumnType( Types.VARBINARY, "image" );
-        registerColumnType( Types.VARBINARY, 8000, "varbinary($l)" );
+        registerColumnType(Types.VARBINARY, "image");
+        registerColumnType(Types.VARBINARY, 8000, "varbinary($l)");
 
-        registerColumnType( Types.VARCHAR, "nvarchar($l)" );
-        registerColumnType( Types.CLOB, "nvarchar(max)");
+        registerColumnType(Types.VARCHAR, "nvarchar($l)");
+        registerColumnType(Types.CLOB, "nvarchar(max)");
     }
 
 }

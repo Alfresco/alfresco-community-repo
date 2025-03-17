@@ -26,26 +26,26 @@
 
 package org.alfresco.rest;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.After;
+import org.junit.Before;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 import org.alfresco.repo.service.ServiceDescriptorRegistry;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.rest.api.tests.AbstractBaseApiTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.junit.After;
-import org.junit.Before;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 /**
- * Overrides AbstractBaseApiTest so that only a single network & site is created per test 
- * (instead of pre-creating multiple networks & sites)
+ * Overrides AbstractBaseApiTest so that only a single network & site is created per test (instead of pre-creating multiple networks & sites)
  * 
  * Can also be optionally tweaked locally to:
  * 
@@ -53,8 +53,7 @@ import static org.mockito.Mockito.when;
  * 
  * - re-use a single setup across test methods => although this does mean that each individual test method must either rely on uniquely created test data and/or cleanup
  * 
- * Note: For now, these can be explicitly tweaked by a dev (do not commit) 
- * but in the future we could consider making these runtime options.
+ * Note: For now, these can be explicitly tweaked by a dev (do not commit) but in the future we could consider making these runtime options.
  * 
  * @author Gethin James
  * @author janv
@@ -67,7 +66,7 @@ public class AbstractSingleNetworkSiteTest extends AbstractBaseApiTest
     // - if useDefaultNetwork=true then no tenant will be created (ie. will use default/super tenant)
     protected static boolean singleSetupNoTearDown = false;
     protected static boolean useDefaultNetwork = false;
-    
+
     private static boolean isSetup = false;
 
     // Mock up search service query calls
@@ -85,14 +84,14 @@ public class AbstractSingleNetworkSiteTest extends AbstractBaseApiTest
     {
         return "public";
     }
-    
+
     @Override
     @Before
     public void setup() throws Exception
     {
-        if ((! isSetup) || (! singleSetupNoTearDown))
+        if ((!isSetup) || (!singleSetupNoTearDown))
         {
-            if (! useDefaultNetwork)
+            if (!useDefaultNetwork)
             {
                 networkOne = getRepoService().createNetwork(this.getClass().getName().toLowerCase(), true);
                 networkOne.create();
@@ -101,16 +100,16 @@ public class AbstractSingleNetworkSiteTest extends AbstractBaseApiTest
             {
                 networkOne = getRepoService().getSystemNetwork();
             }
-            
+
             super.setup();
             isSetup = true;
         }
 
         MockitoAnnotations.initMocks(this);
 
-    	tenantService = (TenantService)applicationContext.getBean("tenantService");
-    	serviceRegistry = (ServiceDescriptorRegistry) applicationContext.getBean("ServiceRegistry");
-    	serviceRegistry.setMockSearchService(mockSearchService);
+        tenantService = (TenantService) applicationContext.getBean("tenantService");
+        serviceRegistry = (ServiceDescriptorRegistry) applicationContext.getBean("ServiceRegistry");
+        serviceRegistry.setMockSearchService(mockSearchService);
         when(mockSearchService.query(any())).thenReturn(mockSearchServiceQueryResultSet);
         when(mockSearchServiceQueryResultSet.getNodeRefs()).thenReturn(dummySearchServiceQueryNodeRefs);
     }
@@ -119,7 +118,7 @@ public class AbstractSingleNetworkSiteTest extends AbstractBaseApiTest
     @After
     public void tearDown() throws Exception
     {
-        if (! singleSetupNoTearDown)
+        if (!singleSetupNoTearDown)
         {
             super.tearDown();
         }
@@ -127,7 +126,7 @@ public class AbstractSingleNetworkSiteTest extends AbstractBaseApiTest
         // Should be safe not to do the following as we don't have a search service, but it is cleaner to remove the mock.
         if (serviceRegistry != null)
         {
-        	serviceRegistry.setMockSearchService(null);
+            serviceRegistry.setMockSearchService(null);
         }
     }
 }

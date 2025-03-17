@@ -37,21 +37,21 @@ public class PropertyIdSearchRow
 {
     private final PropertyLinkEntity linkEntity;
     private final PropertyValueEntity valueEntity;
-    
+
     public PropertyIdSearchRow()
     {
         linkEntity = new PropertyLinkEntity();
         valueEntity = new PropertyValueEntity();
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("PropertyIdSearchRow")
-          .append("[ ").append(linkEntity)
-          .append(", ").append(valueEntity)
-          .append("]");
+                .append("[ ").append(linkEntity)
+                .append(", ").append(valueEntity)
+                .append("]");
         return sb.toString();
     }
 
@@ -84,7 +84,7 @@ public class PropertyIdSearchRow
     {
         linkEntity.setKeyPropId(keyPropId);
     }
-    
+
     public void setValuePropId(Long valuePropId)
     {
         linkEntity.setValuePropId(valuePropId);

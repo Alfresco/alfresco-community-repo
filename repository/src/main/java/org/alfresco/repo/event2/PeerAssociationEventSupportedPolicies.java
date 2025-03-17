@@ -34,6 +34,5 @@ import org.alfresco.repo.node.NodeServicePolicies;
  * @author Sara Aspery
  */
 public interface PeerAssociationEventSupportedPolicies extends NodeServicePolicies.OnCreateAssociationPolicy,
-                                                               NodeServicePolicies.BeforeDeleteAssociationPolicy
-{
-}
+        NodeServicePolicies.BeforeDeleteAssociationPolicy
+{}

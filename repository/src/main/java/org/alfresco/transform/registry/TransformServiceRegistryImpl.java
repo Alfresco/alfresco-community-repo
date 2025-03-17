@@ -25,23 +25,21 @@
  */
 package org.alfresco.transform.registry;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.alfresco.transform.registry.AbstractTransformRegistry;
-import org.alfresco.transform.registry.SupportedTransform;
-import org.alfresco.transform.registry.TransformCache;
-import org.alfresco.util.ConfigScheduler;
-import org.alfresco.util.PropertyCheck;
-import org.alfresco.util.ShutdownIndicator;
-import org.apache.commons.logging.Log;
-import org.quartz.CronExpression;
-import org.springframework.beans.factory.InitializingBean;
+import static org.alfresco.transform.registry.TransformRegistryHelper.retrieveTransformListBySize;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.alfresco.transform.registry.TransformRegistryHelper.retrieveTransformListBySize;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.logging.Log;
+import org.quartz.CronExpression;
+import org.springframework.beans.factory.InitializingBean;
+
+import org.alfresco.util.ConfigScheduler;
+import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.ShutdownIndicator;
 
 /**
  * Used by clients to work out if a transformation is supported by the Transform Service.
@@ -59,7 +57,7 @@ public abstract class TransformServiceRegistryImpl extends AbstractTransformRegi
         {
             return transformerCount == 0 && transformCount == 0 && tEngineCount == 0 && fileCount == 0
                     ? ""
-                    : "(transformers: "+transformerCount+" transforms: "+transformCount+" t-engines: "+tEngineCount+" files: "+fileCount+")";
+                    : "(transformers: " + transformerCount + " transforms: " + transformCount + " t-engines: " + tEngineCount + " files: " + fileCount + ")";
         }
 
         public void setTEngineCount(int tEngineCount)
@@ -186,42 +184,41 @@ public abstract class TransformServiceRegistryImpl extends AbstractTransformRegi
 
     @Override
     public String findTransformerName(final String sourceMimetype, final long sourceSizeInBytes,
-                                      final String targetMimetype, final Map<String, String> actualOptions,
-                                      final String renditionName)
+            final String targetMimetype, final Map<String, String> actualOptions,
+            final String renditionName)
     {
         return enabled
-            ? super.findTransformerName(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName)
-            : null;
+                ? super.findTransformerName(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName)
+                : null;
     }
 
     @Override
     public long findMaxSize(final String sourceMimetype, final String targetMimetype,
-                            final Map<String, String> actualOptions, final String renditionName)
+            final Map<String, String> actualOptions, final String renditionName)
     {
         return enabled
-            ? super.findMaxSize(sourceMimetype, targetMimetype, actualOptions, renditionName)
-            : 0;
+                ? super.findMaxSize(sourceMimetype, targetMimetype, actualOptions, renditionName)
+                : 0;
     }
 
     /**
-     * Works out an ordered list of transformer that will be used to transform content of a given source mimetype
-     * into a target mimetype given a list of actual transform option names and values (Strings) plus the data contained
-     * in the Transform objects registered with this class. These are ordered by size and priority.
+     * Works out an ordered list of transformer that will be used to transform content of a given source mimetype into a target mimetype given a list of actual transform option names and values (Strings) plus the data contained in the Transform objects registered with this class. These are ordered by size and priority.
      *
-     * @param sourceMimetype    the mimetype of the source content
-     * @param targetMimetype    the mimetype of the target
-     * @param actualOptions     the actual name value pairs available that could be passed to the Transform Service.
-     * @param renditionName     (optional) name for the set of options and target mimetype. If supplied is used to cache
-     *                          results to avoid having to work out if a given transformation is supported a second time.
-     *                          The sourceMimetype and sourceSizeInBytes may still change. In the case of ACS this is the
-     *                          rendition name.
+     * @param sourceMimetype
+     *            the mimetype of the source content
+     * @param targetMimetype
+     *            the mimetype of the target
+     * @param actualOptions
+     *            the actual name value pairs available that could be passed to the Transform Service.
+     * @param renditionName
+     *            (optional) name for the set of options and target mimetype. If supplied is used to cache results to avoid having to work out if a given transformation is supported a second time. The sourceMimetype and sourceSizeInBytes may still change. In the case of ACS this is the rendition name.
      */
     public List<SupportedTransform> findTransformers(final String sourceMimetype, final String targetMimetype,
-                                                     final Map<String, String> actualOptions,
-                                                     final String renditionName)
+            final Map<String, String> actualOptions,
+            final String renditionName)
     {
         return enabled
-            ? retrieveTransformListBySize(getData(), sourceMimetype, targetMimetype, actualOptions, renditionName)
-            : Collections.emptyList();
+                ? retrieveTransformListBySize(getData(), sourceMimetype, targetMimetype, actualOptions, renditionName)
+                : Collections.emptyList();
     }
 }

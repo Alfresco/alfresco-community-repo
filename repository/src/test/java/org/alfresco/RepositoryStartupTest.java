@@ -25,6 +25,9 @@
  */
 package org.alfresco;
 
+import junit.framework.TestCase;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -34,22 +37,16 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.springframework.context.ApplicationContext;
-
-import junit.framework.TestCase;
 
 /**
- * A unit test that provides a first-pass check on whether the Alfresco
- * repository is starting.  This test can be run in hard-failure mode
- * to elicit quick failures if there are build-box or other fundamental
- * problems with the repository.
+ * A unit test that provides a first-pass check on whether the Alfresco repository is starting. This test can be run in hard-failure mode to elicit quick failures if there are build-box or other fundamental problems with the repository.
  * 
  * @author Derek Hulley
  */
 public class RepositoryStartupTest extends TestCase
 {
-    private ApplicationContext ctx; 
-    
+    private ApplicationContext ctx;
+
     private ServiceRegistry serviceRegistry;
     private TransactionService transactionService;
 
@@ -60,21 +57,20 @@ public class RepositoryStartupTest extends TestCase
         transactionService = serviceRegistry.getTransactionService();
         AuthenticationUtil.setRunAsUserSystem();
     }
-    
+
     public void tearDown() throws Exception
     {
         AuthenticationUtil.clearCurrentSecurityContext();
     }
-    
+
     public void testRepoReadWrite() throws Exception
     {
         assertFalse("The transaction is read-only - further unit tests are pointless.", transactionService.isReadOnly());
     }
-    
+
     public void testBasicWriteOperations() throws Exception
     {
-        RetryingTransactionCallback<Void> addPropertyCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> addPropertyCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 NodeService nodeService = serviceRegistry.getNodeService();

@@ -60,7 +60,7 @@ public abstract class AbstractCustomClass extends AbstractCommonDetails
         this.properties = properties;
     }
 
-    /* package */<T> List<T> setList(List<T> sourceList)
+    /* package */ <T> List<T> setList(List<T> sourceList)
     {
         if (sourceList == null)
         {

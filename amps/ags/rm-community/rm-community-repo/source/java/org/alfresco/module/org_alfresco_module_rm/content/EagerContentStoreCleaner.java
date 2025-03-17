@@ -30,17 +30,17 @@ package org.alfresco.module.org_alfresco_module_rm.content;
 import java.io.File;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.module.org_alfresco_module_rm.content.cleanser.ContentCleanser;
 import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Eager content store cleaner that allows content to be registered for cleansing before
- * destruction.
+ * Eager content store cleaner that allows content to be registered for cleansing before destruction.
  * 
  * @author Roy Wetherall
  * @since 2.4.a
@@ -52,44 +52,47 @@ public class EagerContentStoreCleaner extends org.alfresco.repo.content.cleanup.
 
     /** logger */
     private static Log logger = LogFactory.getLog(EagerContentStoreCleaner.class);
-    
+
     /** transactional resource helper */
     private TransactionalResourceHelper transactionalResourceHelper;
-    
+
     /** content cleanser */
     private ContentCleanser contentCleanser;
-    
+
     /**
-     * @param transactionalResourceHelper transactional resource helper
+     * @param transactionalResourceHelper
+     *            transactional resource helper
      */
     public void setTransactionalResourceHelper(TransactionalResourceHelper transactionalResourceHelper)
     {
         this.transactionalResourceHelper = transactionalResourceHelper;
     }
-    
+
     /**
-     * @param contentCleanser   content cleanser
+     * @param contentCleanser
+     *            content cleanser
      */
     public void setContentCleanser(ContentCleanser contentCleanser)
     {
         this.contentCleanser = contentCleanser;
     }
-    
+
     /**
      * Registers orphaned content URLs for cleansing
      * 
-     * @param contentUrl    content url
+     * @param contentUrl
+     *            content url
      */
     public void registerOrphanedContentUrlForCleansing(String contentUrl)
     {
         // make note of content that needs cleansing
         Set<String> cleansingUrls = transactionalResourceHelper.getSet(KEY_POST_COMMIT_CLEANSING_URLS);
         cleansingUrls.add(contentUrl);
-        
+
         // register as usual
         registerOrphanedContentUrl(contentUrl, true);
     }
-    
+
     /**
      * @see org.alfresco.repo.content.cleanup.EagerContentStoreCleaner#deleteFromStore(java.lang.String, org.alfresco.repo.content.ContentStore)
      */
@@ -103,25 +106,27 @@ public class EagerContentStoreCleaner extends org.alfresco.repo.content.cleanup.
             // cleanse content before delete
             cleanseContent(contentUrl, store);
         }
-        
+
         // delete from store
         return super.deleteFromStore(contentUrl, store);
     }
-    
+
     /**
      * Cleanse content
      * 
-     * @param contentUrl    content url
-     * @param store         content store
+     * @param contentUrl
+     *            content url
+     * @param store
+     *            content store
      */
     private void cleanseContent(String contentUrl, ContentStore store)
     {
         if (contentCleanser == null)
         {
             logger.error(
-                        "No content cleanser specified.  Unable to cleanse: \n" +
-                        "   URL:    " + contentUrl + "\n" +
-                        "   Source: " + store);
+                    "No content cleanser specified.  Unable to cleanse: \n" +
+                            "   URL:    " + contentUrl + "\n" +
+                            "   Source: " + store);
         }
         else
         {
@@ -134,8 +139,8 @@ public class EagerContentStoreCleaner extends org.alfresco.repo.content.cleanup.
                 {
                     logger.debug(
                             "About to cleanse: \n" +
-                            "   URL:    " + contentUrl + "\n" +
-                            "   Source: " + store);
+                                    "   URL:    " + contentUrl + "\n" +
+                                    "   Source: " + store);
                 }
                 try
                 {
@@ -144,7 +149,7 @@ public class EagerContentStoreCleaner extends org.alfresco.repo.content.cleanup.
                         // get file content
                         FileContentReader fileReader = (FileContentReader) reader;
                         File file = fileReader.getFile();
-                        
+
                         // cleanse content
                         contentCleanser.cleanse(file);
                     }
@@ -153,9 +158,9 @@ public class EagerContentStoreCleaner extends org.alfresco.repo.content.cleanup.
                 {
                     logger.error(
                             "Content cleansing failed: \n" +
-                            "   URL:    " + contentUrl + "\n" +
-                            "   Source: " + store + "\n" +
-                            "   Reader: " + reader,
+                                    "   URL:    " + contentUrl + "\n" +
+                                    "   Source: " + store + "\n" +
+                                    "   Reader: " + reader,
                             e);
                 }
             }
@@ -163,8 +168,8 @@ public class EagerContentStoreCleaner extends org.alfresco.repo.content.cleanup.
             {
                 logger.error(
                         "Content no longer exists.  Unable to cleanse: \n" +
-                        "   URL:    " + contentUrl + "\n" +
-                        "   Source: " + store);
+                                "   URL:    " + contentUrl + "\n" +
+                                "   Source: " + store);
             }
         }
     }

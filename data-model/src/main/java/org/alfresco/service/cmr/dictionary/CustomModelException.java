@@ -38,7 +38,8 @@ public class CustomModelException extends AlfrescoRuntimeException
     /**
      * Constructor
      * 
-     * @param msgId message id
+     * @param msgId
+     *            message id
      */
     public CustomModelException(String msgId)
     {
@@ -48,8 +49,10 @@ public class CustomModelException extends AlfrescoRuntimeException
     /**
      * Constructor
      * 
-     * @param msgId message id
-     * @param msgParams message params
+     * @param msgId
+     *            message id
+     * @param msgParams
+     *            message params
      */
     public CustomModelException(String msgId, Object[] msgParams)
     {
@@ -59,8 +62,10 @@ public class CustomModelException extends AlfrescoRuntimeException
     /**
      * Constructor
      * 
-     * @param msgId message id
-     * @param cause causing exception
+     * @param msgId
+     *            message id
+     * @param cause
+     *            causing exception
      */
     public CustomModelException(String msgId, Throwable cause)
     {
@@ -70,9 +75,12 @@ public class CustomModelException extends AlfrescoRuntimeException
     /**
      * Constructor
      * 
-     * @param msgId message id
-     * @param msgParams message params
-     * @param cause causing exception
+     * @param msgId
+     *            message id
+     * @param msgParams
+     *            message params
+     * @param cause
+     *            causing exception
      */
     public CustomModelException(String msgId, Object[] msgParams, Throwable cause)
     {

@@ -31,6 +31,7 @@ import org.alfresco.filesys.repo.rules.Command;
 
 /**
  * The post commit command is executed after a successful completion of a command.
+ * 
  * @author mrogers
  *
  */

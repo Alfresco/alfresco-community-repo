@@ -113,10 +113,7 @@ public interface PropertyDefinition extends ClassAttributeDefinition
     public boolean isMandatory();
 
     /**
-     * @return Returns true if the system enforces the presence of
-     *         {@link #isMandatory() mandatory} properties, or false if the
-     *         system just marks objects that don't have all mandatory
-     *         properties present.
+     * @return Returns true if the system enforces the presence of {@link #isMandatory() mandatory} properties, or false if the system just marks objects that don't have all mandatory properties present.
      */
     public boolean isMandatoryEnforced();
 
@@ -136,11 +133,10 @@ public interface PropertyDefinition extends ClassAttributeDefinition
     public boolean isStoredInIndex();
 
     /**
-     * @return IndexTokenisationMode.TREU => tokenised when it is indexed (the
-     *         stored value will not be tokenised)
+     * @return IndexTokenisationMode.TREU => tokenised when it is indexed (the stored value will not be tokenised)
      */
     public IndexTokenisationMode getIndexTokenisationMode();
-    
+
     /**
      * @return if this field shoul be faceted
      */
@@ -149,9 +145,7 @@ public interface PropertyDefinition extends ClassAttributeDefinition
     /**
      * All non atomic properties will be indexed at the same time.
      * 
-     * @return true => The attribute must be indexed in the commit of the
-     *         transaction. false => the indexing will be done in the background
-     *         and may be out of date.
+     * @return true => The attribute must be indexed in the commit of the transaction. false => the indexing will be done in the background and may be out of date.
      */
     public boolean isIndexedAtomically();
 

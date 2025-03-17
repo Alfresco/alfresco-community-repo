@@ -27,23 +27,22 @@ package org.alfresco.filesys.repo;
 
 import java.io.IOException;
 
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+
 import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.IOControlNotImplementedException;
 import org.alfresco.jlan.smb.SMBException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
 
 /**
- * An advice wrapper for an AlfrescoDiskDriver.   Wraps the method call with a 
- * RetryingTransactionHandler.
+ * An advice wrapper for an AlfrescoDiskDriver. Wraps the method call with a RetryingTransactionHandler.
  * <p>
- * Needs to let the checked exceptions that are specified on the JLAN interfaces through.  
- * In particular must avoid wrapping JLAN's checked exceptions with an AlfrescoRuntimeException 
- * (so must throw IOException etc)
+ * Needs to let the checked exceptions that are specified on the JLAN interfaces through. In particular must avoid wrapping JLAN's checked exceptions with an AlfrescoRuntimeException (so must throw IOException etc)
  * <p>
+ * 
  * @see org.alfresco.jlan.server.filesys.DiskInterface
  * @see org.alfresco.filesys.alfresco.IOControlHandler
  * 
@@ -51,14 +50,14 @@ import org.aopalliance.intercept.MethodInvocation;
 public class FilesystemTransactionAdvice implements MethodInterceptor
 {
     private boolean readOnly;
-    
+
     private TransactionService transactionService;
 
     public FilesystemTransactionAdvice()
     {
         readOnly = false;
     }
-    
+
     public void setReadOnly(boolean readOnly)
     {
         this.readOnly = readOnly;
@@ -66,11 +65,10 @@ public class FilesystemTransactionAdvice implements MethodInterceptor
 
     public Object invoke(final MethodInvocation methodInvocation) throws IOException, SMBException, Throwable
     {
-        
+
         RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
-        
-        RetryingTransactionCallback<Object> callback = new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
-        {
+
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 try
@@ -101,24 +99,24 @@ public class FilesystemTransactionAdvice implements MethodInterceptor
         {
             return tran.doInTransaction(callback, readOnly);
         }
-        catch(PropagatingException pe)
+        catch (PropagatingException pe)
         {
             Throwable t = pe.getCause();
-            if(t != null)
+            if (t != null)
             {
-                if(t instanceof IOException)
+                if (t instanceof IOException)
                 {
                     throw (IOException) t;
                 }
-                if(t instanceof IOControlNotImplementedException)
+                if (t instanceof IOControlNotImplementedException)
                 {
                     throw (IOControlNotImplementedException) t;
                 }
-                if(t instanceof SMBException)
+                if (t instanceof SMBException)
                 {
-                    throw (SMBException)t;
+                    throw (SMBException) t;
                 }
-                if(t instanceof DeviceContextException)
+                if (t instanceof DeviceContextException)
                 {
                     throw t;
                 }
@@ -137,7 +135,7 @@ public class FilesystemTransactionAdvice implements MethodInterceptor
     {
         return transactionService;
     }
-    
+
     /**
      * A wrapper for checked exceptions to be passed through the retrying transaction handler.
      */
@@ -151,6 +149,6 @@ public class FilesystemTransactionAdvice implements MethodInterceptor
         public PropagatingException(Throwable cause)
         {
             super(cause);
-        }        
+        }
     }
 }

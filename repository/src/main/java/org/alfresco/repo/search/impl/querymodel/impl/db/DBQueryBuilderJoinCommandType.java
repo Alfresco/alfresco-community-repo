@@ -36,7 +36,7 @@ public enum DBQueryBuilderJoinCommandType
         @Override
         public boolean isMultiValued()
         {
-           return false;
+            return false;
         }
 
     },
@@ -46,7 +46,7 @@ public enum DBQueryBuilderJoinCommandType
         @Override
         public boolean isMultiValued()
         {
-           return true;
+            return true;
         }
 
     },

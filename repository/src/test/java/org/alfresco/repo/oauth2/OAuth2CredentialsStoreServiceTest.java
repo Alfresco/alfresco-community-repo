@@ -32,6 +32,10 @@ import static org.junit.Assert.assertTrue;
 import java.util.Date;
 import java.util.List;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -41,19 +45,9 @@ import org.alfresco.service.cmr.oauth2.OAuth2CredentialsStoreService;
 import org.alfresco.service.cmr.remotecredentials.OAuth2CredentialsInfo;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 public class OAuth2CredentialsStoreServiceTest extends BaseSpringTest
 {
@@ -65,21 +59,21 @@ public class OAuth2CredentialsStoreServiceTest extends BaseSpringTest
 
     private static String RemoteSystemId = "Test-OAuth2RemoteSystem";
 
-    //New
+    // New
     private static String AccessToken = "123456789ABC";
     private static String RefreshToken = "CBA987654321";
     private static long dec291999 = 946450800L;
     private static Date ExpiresAt = new Date(dec291999);
     private static Date IssuedAt = new Date(dec291999);
 
-    //Updated
+    // Updated
     private static String UpdatedAccessToken = "abcdefghi123";
     private static String UpdatedRefreshToken = "321ihgfedcba";
     private static long dec292012 = 1356764400L;
     private static Date UpdatedExpiresAt = new Date(dec292012);
     private static Date UpdatedIssuedAt = new Date(dec292012);
 
-    //Users
+    // Users
     private static String TEST_USER_ONE = OAuth2CredentialsStoreService.class.getSimpleName() + GUID.generate();
     private static String TEST_USER_TWO = OAuth2CredentialsStoreService.class.getSimpleName() + GUID.generate();
     private static final String ADMIN_USER = AuthenticationUtil.getAdminUserName();
@@ -108,7 +102,7 @@ public class OAuth2CredentialsStoreServiceTest extends BaseSpringTest
     public void testStorePersonalOAuth2Credentials()
     {
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
-        //Store new credentials
+        // Store new credentials
         oauth2CredentialsStoreService.storePersonalOAuth2Credentials(RemoteSystemId, AccessToken, RefreshToken, ExpiresAt, IssuedAt);
         OAuth2CredentialsInfo oAuth2CredentialsInfo = oauth2CredentialsStoreService.getPersonalOAuth2Credentials(RemoteSystemId);
 
@@ -117,7 +111,7 @@ public class OAuth2CredentialsStoreServiceTest extends BaseSpringTest
         assertEquals("Expect that the expiration date will match", ExpiresAt, oAuth2CredentialsInfo.getOAuthTicketExpiresAt());
         assertEquals("Expect that the issued date will match", IssuedAt, oAuth2CredentialsInfo.getOAuthTicketIssuedAt());
 
-        //Update credentials
+        // Update credentials
         oauth2CredentialsStoreService.storePersonalOAuth2Credentials(RemoteSystemId, UpdatedAccessToken, UpdatedRefreshToken, UpdatedExpiresAt, UpdatedIssuedAt);
         OAuth2CredentialsInfo _oAuth2CredentialsInfo = oauth2CredentialsStoreService.getPersonalOAuth2Credentials(RemoteSystemId);
 
@@ -131,7 +125,7 @@ public class OAuth2CredentialsStoreServiceTest extends BaseSpringTest
     public void testStoreSharedOAuth2Credentials()
     {
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
-        //Store new credentials
+        // Store new credentials
         oauth2CredentialsStoreService.storeSharedOAuth2Credentials(RemoteSystemId, AccessToken, RefreshToken, ExpiresAt, IssuedAt);
 
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_TWO);
@@ -144,11 +138,11 @@ public class OAuth2CredentialsStoreServiceTest extends BaseSpringTest
         assertEquals("Expect that the issued date will match", IssuedAt, oAuth2CredentialsInfo.getOAuthTicketIssuedAt());
     }
 
-    @Test (expected=AccessDeniedException.class)
+    @Test(expected = AccessDeniedException.class)
     public void testSecureUpdateSharedOAuth2Credentials()
     {
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_TWO);
-        //Update credentials
+        // Update credentials
         List<OAuth2CredentialsInfo> sharedCredentials = oauth2CredentialsStoreService.listSharedOAuth2Credentials(RemoteSystemId);
         OAuth2CredentialsInfo oAuth2CredentialsInfo = sharedCredentials.get(0);
         oauth2CredentialsStoreService.updateSharedOAuth2Credentials(oAuth2CredentialsInfo, RemoteSystemId, UpdatedAccessToken, UpdatedRefreshToken, UpdatedExpiresAt, UpdatedIssuedAt);
@@ -159,7 +153,7 @@ public class OAuth2CredentialsStoreServiceTest extends BaseSpringTest
     {
         {
             AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
-            //Update credentials
+            // Update credentials
             List<OAuth2CredentialsInfo> sharedCredentials = oauth2CredentialsStoreService.listSharedOAuth2Credentials(RemoteSystemId);
             OAuth2CredentialsInfo oAuth2CredentialsInfo = sharedCredentials.get(0);
             OAuth2CredentialsInfo _oAuth2CredentialsInfo = oauth2CredentialsStoreService.updateSharedOAuth2Credentials(oAuth2CredentialsInfo, RemoteSystemId, UpdatedAccessToken, UpdatedRefreshToken, UpdatedExpiresAt, UpdatedIssuedAt);
@@ -170,7 +164,7 @@ public class OAuth2CredentialsStoreServiceTest extends BaseSpringTest
             assertEquals("Expect that the issued date will match", UpdatedIssuedAt, _oAuth2CredentialsInfo.getOAuthTicketIssuedAt());
         }
 
-        //public void testDeletePesonalOAuth2Credentials()
+        // public void testDeletePesonalOAuth2Credentials()
         {
             AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
             boolean deleted = oauth2CredentialsStoreService.deletePersonalOAuth2Credentials(RemoteSystemId);
@@ -184,7 +178,7 @@ public class OAuth2CredentialsStoreServiceTest extends BaseSpringTest
         }
     }
 
-    @Test(expected=AccessDeniedException.class)
+    @Test(expected = AccessDeniedException.class)
     public void testSecureDeleteSharedOAuth2CredentialsTestDeleteSharedOAuth2Credentials()
     {
         {
@@ -194,7 +188,7 @@ public class OAuth2CredentialsStoreServiceTest extends BaseSpringTest
             oauth2CredentialsStoreService.deleteSharedOAuth2Credentials(RemoteSystemId, oAuth2CredentialsInfo);
         }
 
-        //public void testDeleteSharedOAuth2Credentials()
+        // public void testDeleteSharedOAuth2Credentials()
         {
             AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER_ONE);
             List<OAuth2CredentialsInfo> sharedCredentials = oauth2CredentialsStoreService.listSharedOAuth2Credentials(RemoteSystemId);
@@ -205,14 +199,11 @@ public class OAuth2CredentialsStoreServiceTest extends BaseSpringTest
         }
     }
 
-
     // --------------------------------------------------------------------------------
-
 
     private static void createUser(final String userName)
     {
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {

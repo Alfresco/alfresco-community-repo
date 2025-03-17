@@ -40,8 +40,17 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.util.FileCopyUtils;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -50,25 +59,17 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.view.ImporterBinding;
+import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.cmr.view.ImporterContentCache;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
-import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.util.FileCopyUtils;
 
 /**
  * Bootstrap Repository store.
@@ -84,10 +85,10 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     public static final String VIEW_LOCATION_VIEW = "location";
     public static final String VIEW_ENCODING = "encoding";
     public static final String VIEW_UUID_BINDING = "uuidBinding";
-    
+
     // Logger
     private static final Log logger = LogFactory.getLog(ImporterBootstrap.class);
-//    private boolean logEnabled = false;
+    // private boolean logEnabled = false;
 
     private boolean allowWrite = true;
     private boolean useExistingStore = false;
@@ -106,15 +107,15 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     private String strLocale = null;
     private Locale locale = null;
     private AuthenticationContext authenticationContext;
-    
+
     // Bootstrap performed?
     private boolean bootstrapPerformed = false;
-    
-    
+
     /**
      * Set whether we write or not
      * 
-     * @param write true (default) if the import must go ahead, otherwise no import will occur
+     * @param write
+     *            true (default) if the import must go ahead, otherwise no import will occur
      */
     public void setAllowWrite(boolean write)
     {
@@ -122,11 +123,10 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     }
 
     /**
-     * Set whether the importer bootstrap should only perform an import if the store
-     * being referenced doesn't already exist.
+     * Set whether the importer bootstrap should only perform an import if the store being referenced doesn't already exist.
      * 
-     * @param useExistingStore true to allow imports into an existing store,
-     *      otherwise false (default) to only import if the store doesn't exist.
+     * @param useExistingStore
+     *            true to allow imports into an existing store, otherwise false (default) to only import if the store doesn't exist.
      */
     public void setUseExistingStore(boolean useExistingStore)
     {
@@ -134,22 +134,23 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     }
 
     /**
-     * Set the behaviour for generating UUIDs in the import.  Values are set by the
-     * {@link UUID_BINDING} enum and default to {@link UUID_BINDING#CREATE_NEW_WITH_UUID}.
+     * Set the behaviour for generating UUIDs in the import. Values are set by the {@link UUID_BINDING} enum and default to {@link UUID_BINDING#CREATE_NEW_WITH_UUID}.
      * <p/>
      * This setting overrides the UUID binding behaviour specified in the view properties.
      * 
-     * @param uuidBinding       the UUID generation behaviour
+     * @param uuidBinding
+     *            the UUID generation behaviour
      */
     public void setUuidBinding(UUID_BINDING uuidBinding)
     {
         this.uuidBinding = uuidBinding;
-    }    
-    
+    }
+
     /**
      * Sets the Transaction Service
      * 
-     * @param transactionService the transaction service
+     * @param transactionService
+     *            the transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -157,8 +158,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     }
 
     /**
-     * Sets the retrying transaction helper specific to the importer bootstrap. This transaction helper's parameters are
-     * tuned to the longer-running import transaction.
+     * Sets the retrying transaction helper specific to the importer bootstrap. This transaction helper's parameters are tuned to the longer-running import transaction.
      * 
      * @param retryingTransactionHelper
      *            the retrying transaction helper
@@ -171,7 +171,8 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Sets the namespace service
      * 
-     * @param namespaceService the namespace service
+     * @param namespaceService
+     *            the namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -181,7 +182,8 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Sets the node service
      * 
-     * @param nodeService the node service
+     * @param nodeService
+     *            the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -191,17 +193,19 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Sets the importer service
      * 
-     * @param importerService the importer service
+     * @param importerService
+     *            the importer service
      */
     public void setImporterService(ImporterService importerService)
     {
         this.importerService = importerService;
     }
-        
+
     /**
      * Set the authentication component
      * 
-     * @param authenticationContext AuthenticationContext
+     * @param authenticationContext
+     *            AuthenticationContext
      */
     public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
@@ -233,7 +237,8 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Sets the Store Ref to bootstrap into
      * 
-     * @param storeUrl String
+     * @param storeUrl
+     *            String
      */
     public void setStoreUrl(String storeUrl)
     {
@@ -243,13 +248,14 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * If any of the store urls exist, the bootstrap does not take place
      * 
-     * @param storeUrls  the list of store urls to check
+     * @param storeUrls
+     *            the list of store urls to check
      */
     public void setMustNotExistStoreUrls(List<String> storeUrls)
     {
         this.mustNotExistStoreUrls = storeUrls;
     }
-    
+
     /**
      * Gets the Store Reference
      * 
@@ -259,11 +265,12 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     {
         return this.storeRef;
     }
-    
+
     /**
      * Sets the Configuration values for binding place holders
      * 
-     * @param configuration Properties
+     * @param configuration
+     *            Properties
      */
     public void setConfiguration(Properties configuration)
     {
@@ -279,17 +286,18 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     {
         return configuration;
     }
-    
+
     /**
      * Sets the Locale
      * 
-     * @param locale  (language_country_variant)
+     * @param locale
+     *            (language_country_variant)
      */
     public void setLocale(String locale)
     {
         // construct locale
         this.locale = I18NUtil.parseLocale(locale);
-        
+
         // store original
         strLocale = locale;
     }
@@ -297,15 +305,15 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Get Locale
      * 
-     * @return  locale
+     * @return locale
      */
     public String getLocale()
     {
-        return strLocale; 
+        return strLocale;
     }
-    
+
     /**
-     * @deprecated          Was never used
+     * @deprecated Was never used
      */
     public void setLog(boolean logEnabled)
     {
@@ -315,13 +323,13 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Determine if bootstrap was performed?
      * 
-     * @return  true => bootstrap was performed
+     * @return true => bootstrap was performed
      */
     public boolean hasPerformedBootstrap()
     {
         return bootstrapPerformed;
     }
-    
+
     /**
      * Bootstrap the Repository
      */
@@ -332,7 +340,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "importerService", importerService);
-       
+
         if (storeRef == null)
         {
             if (logger.isDebugEnabled())
@@ -341,18 +349,16 @@ public class ImporterBootstrap extends AbstractLifecycleBean
             }
             return;
         }
-        
+
         try
         {
             // import the content - note: in MT case, this will run in System context of tenant domain
-            RunAsWork<Object> importRunAs = new RunAsWork<Object>()
-            {
+            RunAsWork<Object> importRunAs = new RunAsWork<Object>() {
                 public Object doWork() throws Exception
                 {
-                    RetryingTransactionCallback<Object> doImportCallback = new RetryingTransactionCallback<Object>()
-                    {
+                    RetryingTransactionCallback<Object> doImportCallback = new RetryingTransactionCallback<Object>() {
                         public Object execute() throws Throwable
-                        {   
+                        {
                             doImport();
                             return null;
                         }
@@ -362,14 +368,14 @@ public class ImporterBootstrap extends AbstractLifecycleBean
             };
             AuthenticationUtil.runAs(importRunAs, authenticationContext.getSystemUserName());
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             throw new AlfrescoRuntimeException("Bootstrap failed", e);
         }
     }
-    
+
     /**
-     * Perform the actual import work.  This is just separated to allow for simpler TXN demarcation.
+     * Perform the actual import work. This is just separated to allow for simpler TXN demarcation.
      */
     private void doImport() throws Throwable
     {
@@ -402,7 +408,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
                 {
                     bootstrapViews.addAll(extensionBootstrapViews);
                 }
-                
+
                 for (Properties bootstrapView : bootstrapViews)
                 {
                     String view = bootstrapView.getProperty(VIEW_LOCATION_VIEW);
@@ -411,10 +417,10 @@ public class ImporterBootstrap extends AbstractLifecycleBean
                         throw new ImporterException("View file location must be provided");
                     }
                     String encoding = bootstrapView.getProperty(VIEW_ENCODING);
-                    
+
                     // Create appropriate view reader
                     Reader viewReader = null;
-                    ACPImportPackageHandler acpHandler = null; 
+                    ACPImportPackageHandler acpHandler = null;
                     if (view.endsWith(".acp"))
                     {
                         File viewFile = getFile(view);
@@ -424,7 +430,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
                     {
                         viewReader = getReader(view, encoding);
                     }
-                    
+
                     // Create import location
                     Location importLocation = new Location(storeRef);
                     String path = bootstrapView.getProperty(VIEW_PATH_PROPERTY);
@@ -437,7 +443,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
                     {
                         importLocation.setChildAssocType(QName.createQName(childAssocType, namespaceService));
                     }
-                    
+
                     // Create import binding
                     BootstrapBinding binding = new BootstrapBinding();
                     binding.setConfiguration(configuration);
@@ -449,15 +455,15 @@ public class ImporterBootstrap extends AbstractLifecycleBean
                         ResourceBundle bundle = ResourceBundle.getBundle(messages, bindingLocale);
                         binding.setResourceBundle(bundle);
                     }
-                        
+
                     String viewUuidBinding = bootstrapView.getProperty(VIEW_UUID_BINDING);
                     if (viewUuidBinding != null && viewUuidBinding.length() > 0)
                     {
                         try
                         {
-                        	binding.setUUIDBinding(UUID_BINDING.valueOf(UUID_BINDING.class, viewUuidBinding));
+                            binding.setUUIDBinding(UUID_BINDING.valueOf(UUID_BINDING.class, viewUuidBinding));
                         }
-                        catch(IllegalArgumentException e)
+                        catch (IllegalArgumentException e)
                         {
                             throw new ImporterException("The value " + viewUuidBinding + " is an invalid uuidBinding");
                         }
@@ -475,7 +481,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
                         importProgress = new ImportTimerProgress(logger);
                         logger.debug("Importing " + view);
                     }
-                    
+
                     if (viewReader != null)
                     {
                         importerService.importView(viewReader, importLocation, binding, importProgress);
@@ -486,18 +492,20 @@ public class ImporterBootstrap extends AbstractLifecycleBean
                     }
                 }
             }
-            
+
             // a bootstrap was performed
             bootstrapPerformed = !useExistingStore;
         }
     }
-    
+
     /**
      * Get a Reader onto an XML view
      * 
-     * @param view  the view location
-     * @param encoding  the encoding of the view
-     * @return  the reader
+     * @param view
+     *            the view location
+     * @param encoding
+     *            the encoding of the view
+     * @return the reader
      */
     private Reader getReader(String view, String encoding)
     {
@@ -526,52 +534,52 @@ public class ImporterBootstrap extends AbstractLifecycleBean
             throw new ImporterException("Could not open resource for view " + view);
         }
     }
-    
+
     /**
      * Get a File representation of an XML view
      * 
-     * @param view  the view location
-     * @return  the file
+     * @param view
+     *            the view location
+     * @return the file
      */
     public static File getFile(String view)
     {
-    	// Try as a file location
+        // Try as a file location
         File file = new File(view);
         if ((file != null) && (file.exists()))
         {
-        	return file;
+            return file;
         }
         else
         {
             // Try as a classpath location
-        	
-	        // Get input stream
-	        InputStream viewStream = ImporterBootstrap.class.getClassLoader().getResourceAsStream(view);
-	        if (viewStream == null)
-	        {
-	            throw new ImporterException("Could not find view file " + view);
-	        }
-	        
-	        // Create output stream
-	        File tempFile = TempFileProvider.createTempFile("acpImport", ".tmp");
-	        try
-	        {
-	            FileOutputStream os = new FileOutputStream(tempFile);
-	            FileCopyUtils.copy(viewStream, os);
-	        }
-	        catch (FileNotFoundException e)
-	        {
-	            throw new ImporterException("Could not import view " + view, e);
-	        }
-	        catch (IOException e)
-	        {
-	            throw new ImporterException("Could not import view " + view, e);
-	        }
-	        return tempFile;
+
+            // Get input stream
+            InputStream viewStream = ImporterBootstrap.class.getClassLoader().getResourceAsStream(view);
+            if (viewStream == null)
+            {
+                throw new ImporterException("Could not find view file " + view);
+            }
+
+            // Create output stream
+            File tempFile = TempFileProvider.createTempFile("acpImport", ".tmp");
+            try
+            {
+                FileOutputStream os = new FileOutputStream(tempFile);
+                FileCopyUtils.copy(viewStream, os);
+            }
+            catch (FileNotFoundException e)
+            {
+                throw new ImporterException("Could not import view " + view, e);
+            }
+            catch (IOException e)
+            {
+                throw new ImporterException("Could not import view " + view, e);
+            }
+            return tempFile;
         }
     }
-    
-    
+
     /**
      * Bootstrap Binding
      */
@@ -582,15 +590,16 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         private Location bootstrapLocation = null;
         /** by default, use create new strategy for bootstrap import */
         private UUID_BINDING uuidBinding = UUID_BINDING.CREATE_NEW_WITH_UUID;
-        
+
         private static final String IMPORT_LOCATION_UUID = "bootstrap.location.uuid";
         private static final String IMPORT_LOCATION_NODEREF = "bootstrap.location.noderef";
         private static final String IMPORT_LOCATION_PATH = "bootstrap.location.path";
-        
+
         /**
          * Set Import Configuration
          * 
-         * @param configuration Properties
+         * @param configuration
+         *            Properties
          */
         public void setConfiguration(Properties configuration)
         {
@@ -600,36 +609,38 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         /**
          * Get Import Configuration
          * 
-         * @return  configuration
+         * @return configuration
          */
         public Properties getConfiguration()
         {
             return this.configuration;
         }
-        
+
         /**
          * Set Resource Bundle
          * 
-         * @param resourceBundle ResourceBundle
+         * @param resourceBundle
+         *            ResourceBundle
          */
         public void setResourceBundle(ResourceBundle resourceBundle)
         {
             this.resourceBundle = resourceBundle;
         }
-        
+
         /**
          * Set Location
          * 
-         * @param location Location
+         * @param location
+         *            Location
          */
         public void setLocation(Location location)
         {
             this.bootstrapLocation = location;
         }
-        
+
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterBinding#getValue(java.lang.String)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.ImporterBinding#getValue(java.lang.String) */
         public String getValue(String key)
         {
             String value = null;
@@ -656,19 +667,19 @@ public class ImporterBootstrap extends AbstractLifecycleBean
                     value = bootstrapLocation.getPath();
                 }
             }
-            
+
             return value;
         }
 
         @Override
         public UUID_BINDING getUUIDBinding()
         {
-        	return uuidBinding;
+            return uuidBinding;
         }
 
         private void setUUIDBinding(UUID_BINDING uuidBinding)
         {
-        	this.uuidBinding = uuidBinding;
+            this.uuidBinding = uuidBinding;
         }
 
         @Override
@@ -681,9 +692,9 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         public QName[] getExcludedClasses()
         {
             // Note: Do not exclude any classes, we want to import all
-            return new QName[] {};
+            return new QName[]{};
         }
-        
+
         @Override
         public ImporterContentCache getImportConentCache()
         {
@@ -694,7 +705,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Determine if bootstrap should take place
      * 
-     * @return  true => yes, it should
+     * @return true => yes, it should
      */
     private boolean performBootstrap()
     {
@@ -718,7 +729,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
                 }
             }
         }
-        
+
         return true;
     }
 
@@ -733,5 +744,5 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     {
         // NOOP
     }
-    
+
 }

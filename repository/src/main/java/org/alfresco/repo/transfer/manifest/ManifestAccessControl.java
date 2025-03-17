@@ -36,30 +36,30 @@ public class ManifestAccessControl
 {
     private boolean isInherited;
     private List<ManifestPermission> permissions;
-    
+
     public void setInherited(boolean isInherited)
     {
         this.isInherited = isInherited;
     }
-    
+
     public boolean isInherited()
     {
         return isInherited;
     }
-    
+
     public void setPermissions(List<ManifestPermission> permissions)
     {
         this.permissions = permissions;
     }
-    
+
     public List<ManifestPermission> getPermissions()
     {
         return permissions;
-    } 
-    
+    }
+
     public void addPermission(ManifestPermission permission)
     {
-        if(permissions == null)
+        if (permissions == null)
         {
             permissions = new ArrayList<ManifestPermission>(20);
         }

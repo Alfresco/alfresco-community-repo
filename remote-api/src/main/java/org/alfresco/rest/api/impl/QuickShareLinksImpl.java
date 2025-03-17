@@ -25,6 +25,25 @@
  */
 package org.alfresco.rest.api.impl;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.query.PagingRequest;
@@ -82,24 +101,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.SearchLanguageConversion;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.surf.util.I18NUtil;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Centralises access to shared link (public "quick share") services and maps between representations.
@@ -133,12 +134,10 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             QuickShareModel.PROP_QSHARE_SHAREDBY,
             QuickShareModel.PROP_QSHARE_SHAREDID);
 
-
     public void setServiceRegistry(ServiceRegistry sr)
     {
         this.sr = sr;
     }
-
 
     public void setQuickShareService(QuickShareService quickShareService)
     {
@@ -189,8 +188,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             Pair<String, NodeRef> pair = quickShareService.getTenantNodeRefFromSharedId(sharedId);
             String networkTenantDomain = pair.getFirst();
 
-            return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<QuickShareLink>()
-            {
+            return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<QuickShareLink>() {
                 public QuickShareLink doWork() throws Exception
                 {
                     // note: assume noAuth here (rather than rely on getRunAsUser which will be null in non-MT)
@@ -211,8 +209,10 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
      * Note: does *not* require authenticated access for (public) shared link.
      *
      * @param sharedId
-     * @param renditionId - optional
-     * @param parameters {@link Parameters}
+     * @param renditionId
+     *            - optional
+     * @param parameters
+     *            {@link Parameters}
      * @return
      * @throws EntityNotFoundException
      */
@@ -260,12 +260,12 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
     /**
      * Delete the shared link.
      * <p>
-     * Once deleted, the shared link will no longer exist hence get/download will no longer work (ie. return 404).
-     * If the link is later re-created then a new unique shared id will be generated.
+     * Once deleted, the shared link will no longer exist hence get/download will no longer work (ie. return 404). If the link is later re-created then a new unique shared id will be generated.
      * <p>
      * Requires authenticated access.
      *
-     * @param sharedId String id of the quick share
+     * @param sharedId
+     *            String id of the quick share
      */
     public void delete(String sharedId, Parameters parameters)
     {
@@ -277,8 +277,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             Pair<String, NodeRef> pair = quickShareService.getTenantNodeRefFromSharedId(sharedId);
             String networkTenantDomain = pair.getFirst();
 
-            TenantUtil.runAsSystemTenant(() ->
-            {
+            TenantUtil.runAsSystemTenant(() -> {
                 checkIfCanDeleteSharedLink(sharedId);
                 quickShareService.unshareContent(sharedId);
                 return null;
@@ -330,7 +329,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
                 String sharedId = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
                 if (sharedId != null)
                 {
-                    throw new ConstraintViolatedException("sharedId already exists: "+nodeId+" ["+sharedId+"]");
+                    throw new ConstraintViolatedException("sharedId already exists: " + nodeId + " [" + sharedId + "]");
                 }
 
                 // Note: will throw AccessDeniedException (=> 403) via QuickShareService (when NodeService tries to getAspects)
@@ -416,8 +415,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             String networkTenantDomain = pair.getFirst();
             final NodeRef nodeRef = pair.getSecond();
 
-            return TenantUtil.runAsSystemTenant(() ->
-            {
+            return TenantUtil.runAsSystemTenant(() -> {
                 Parameters params = getParamsWithCreatedStatus();
                 return renditions.getRendition(nodeRef, renditionId, params);
 
@@ -448,8 +446,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             String networkTenantDomain = pair.getFirst();
             final NodeRef nodeRef = pair.getSecond();
 
-            return TenantUtil.runAsSystemTenant(() ->
-            {
+            return TenantUtil.runAsSystemTenant(() -> {
                 Parameters params = getParamsWithCreatedStatus();
                 return renditions.getRenditions(nodeRef, params);
 
@@ -469,15 +466,13 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
 
     // Helper find (search) method
 
-    private final static Set<String> FIND_SHARED_LINKS_QUERY_PROPERTIES =
-            new HashSet<>(Arrays.asList(new String[] {PARAM_SHAREDBY}));
+    private final static Set<String> FIND_SHARED_LINKS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[]{PARAM_SHAREDBY}));
 
     public CollectionWithPagingInfo<QuickShareLink> findLinks(Parameters parameters)
     {
         checkEnabled();
 
-        String queryString =
-                "ASPECT:\"" + QuickShareModel.ASPECT_QSHARE.toString() + "\"";
+        String queryString = "ASPECT:\"" + QuickShareModel.ASPECT_QSHARE.toString() + "\"";
 
         SearchParameters sp = new SearchParameters();
 
@@ -495,7 +490,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             {
                 if (People.DEFAULT_USER.equalsIgnoreCase(sharedByUserId))
                 {
-                    sharedByUserId =  AuthenticationUtil.getFullyAuthenticatedUser();
+                    sharedByUserId = AuthenticationUtil.getFullyAuthenticatedUser();
                 }
 
                 QueryParameterDefinition qpd = new QueryParameterDefImpl(QuickShareModel.PROP_QSHARE_SHAREDBY, dictionaryService.getDataType(DataTypeDefinition.TEXT),
@@ -503,7 +498,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
                 sp.addQueryParameterDefinition(qpd);
 
                 String qsharedBy = QuickShareModel.PROP_QSHARE_SHAREDBY.toPrefixString(namespaceService);
-                queryString += " +@"+SearchLanguageConversion.escapeLuceneQuery(qsharedBy)+":\"${"+qsharedBy+"}\"";
+                queryString += " +@" + SearchLanguageConversion.escapeLuceneQuery(qsharedBy) + ":\"${" + qsharedBy + "}\"";
             }
         }
 
@@ -539,7 +534,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
     private QuickShareLink getQuickShareInfo(String sharedId, boolean noAuth, List<String> includeParam)
     {
         checkValidShareId(sharedId);
-        
+
         Map<String, Object> map = (Map<String, Object>) quickShareService.getMetaData(sharedId).get("item");
         NodeRef nodeRef = new NodeRef((String) map.get("nodeRef"));
 
@@ -549,17 +544,17 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
     private QuickShareLink getQuickShareInfo(NodeRef nodeRef, boolean noAuth, List<String> includeParam)
     {
         Map<String, Object> map = (Map<String, Object>) quickShareService.getMetaData(nodeRef).get("item");
-        return getQuickShareInfo(nodeRef, map , noAuth, includeParam);
+        return getQuickShareInfo(nodeRef, map, noAuth, includeParam);
     }
 
     private QuickShareLink getQuickShareInfo(NodeRef nodeRef, Map<String, Object> map, boolean noAuth, List<String> includeParam)
     {
-        String sharedId = (String)map.get("sharedId");
+        String sharedId = (String) map.get("sharedId");
 
         try
         {
             Map<QName, Serializable> nodeProps = nodeService.getProperties(nodeRef);
-            ContentData cd = (ContentData)nodeProps.get(ContentModel.PROP_CONTENT);
+            ContentData cd = (ContentData) nodeProps.get(ContentModel.PROP_CONTENT);
 
             String mimeType = cd.getMimetype();
             String mimeTypeName = mimeTypeService.getDisplaysByMimetype().get(mimeType);
@@ -570,10 +565,10 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             // note: if noAuth mode then don't return userids (to limit disclosure and be consistent with v0 internal)
             boolean displayNameOnly = noAuth;
 
-            UserInfo modifiedByUser = Node.lookupUserInfo((String)nodeProps.get(ContentModel.PROP_MODIFIER), mapUserInfo, personService, displayNameOnly);
+            UserInfo modifiedByUser = Node.lookupUserInfo((String) nodeProps.get(ContentModel.PROP_MODIFIER), mapUserInfo, personService, displayNameOnly);
 
             // TODO review - should we return sharedByUser for authenticated users only ?? (not exposed by V0 but needed for "find")
-            String sharedByUserId = (String)nodeProps.get(QuickShareModel.PROP_QSHARE_SHAREDBY);
+            String sharedByUserId = (String) nodeProps.get(QuickShareModel.PROP_QSHARE_SHAREDBY);
             UserInfo sharedByUser = Node.lookupUserInfo(sharedByUserId, mapUserInfo, personService, displayNameOnly);
 
             QuickShareLink qs = new QuickShareLink(sharedId, nodeRef.getId());
@@ -681,7 +676,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
 
     private void checkValidShareId(String sharedId)
     {
-        if (sharedId==null)
+        if (sharedId == null)
         {
             throw new InvalidArgumentException("A valid sharedId must be specified !");
         }
@@ -699,10 +694,11 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
         }
     }
 
-    private void checkIfCanDeleteSharedLink(String sharedId) {
+    private void checkIfCanDeleteSharedLink(String sharedId)
+    {
         NodeRef nodeRef = quickShareService.getTenantNodeRefFromSharedId(sharedId).getSecond();
 
-        String sharedByUserId = (String)nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDBY);
+        String sharedByUserId = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDBY);
         if (!quickShareService.canDeleteSharedLink(nodeRef, sharedByUserId))
         {
             throw new PermissionDeniedException("Can't perform unshare action: " + sharedId);

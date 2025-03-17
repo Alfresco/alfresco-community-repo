@@ -62,11 +62,9 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
     private FileFolderService fileFolderService;
     private NamespaceService namespaceService;
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.transfer.ManifestProcessorFactory#getPrimaryCommitProcessor()
-     */
+     * @see org.alfresco.repo.transfer.ManifestProcessorFactory#getPrimaryCommitProcessor() */
     public List<TransferManifestProcessor> getCommitProcessors(TransferReceiver receiver, String transferId)
     {
         TransferSummaryReport transferSummaryReport = null;
@@ -84,7 +82,7 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
         }
         List<TransferManifestProcessor> processors = new ArrayList<TransferManifestProcessor>();
         CorrespondingNodeResolver nodeResolver = nodeResolverFactory.getResolver();
-        
+
         RepoPrimaryManifestProcessorImpl primaryProcessor = new RepoPrimaryManifestProcessorImpl(receiver, transferId);
         primaryProcessor.setContentService(contentService);
         primaryProcessor.setNodeResolver(nodeResolver);
@@ -96,25 +94,26 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
         primaryProcessor.setTaggingService(getTaggingService());
         primaryProcessor.setTransferSummaryReport(transferSummaryReport);
         processors.add(primaryProcessor);
-        
+
         RepoSecondaryManifestProcessorImpl secondaryProcessor = new RepoSecondaryManifestProcessorImpl(receiver, transferId);
         secondaryProcessor.setNodeResolver(nodeResolver);
         secondaryProcessor.setNodeService(nodeService);
         secondaryProcessor.setTransferSummaryReport(transferSummaryReport);
         processors.add(secondaryProcessor);
-        
+
         RepoTertiaryManifestProcessorImpl tertiaryProcessor = new RepoTertiaryManifestProcessorImpl(receiver, transferId);
         tertiaryProcessor.setNodeService(nodeService);
         tertiaryProcessor.setAlienProcessor(getAlienProcessor());
         tertiaryProcessor.setNodeResolver(nodeResolver);
         tertiaryProcessor.setTransferSummaryReport(transferSummaryReport);
         processors.add(tertiaryProcessor);
-        
+
         return processors;
     }
 
     /**
-     * @param nodeService the nodeService to set
+     * @param nodeService
+     *            the nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -122,13 +121,14 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
     }
 
     /**
-     * @param contentService the contentService to set
+     * @param contentService
+     *            the contentService to set
      */
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
     }
-    
+
     /**
      * @param dictionaryService
      *            the dictionaryService to set
@@ -139,7 +139,8 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
     }
 
     /**
-     * @param nodeResolverFactory the nodeResolverFactory to set
+     * @param nodeResolverFactory
+     *            the nodeResolverFactory to set
      */
     public void setNodeResolverFactory(CorrespondingNodeResolverFactory nodeResolverFactory)
     {
@@ -153,11 +154,11 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
             TransferReceiver receiver, String transferId, TransferRequsiteWriter out)
     {
         RepoRequisiteManifestProcessorImpl processor = new RepoRequisiteManifestProcessorImpl(receiver, transferId, out);
-       
-        CorrespondingNodeResolver nodeResolver = nodeResolverFactory.getResolver();       
+
+        CorrespondingNodeResolver nodeResolver = nodeResolverFactory.getResolver();
         processor.setNodeResolver(nodeResolver);
         processor.setNodeService(nodeService);
-       
+
         return processor;
     }
 
@@ -201,24 +202,24 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
         this.searchService = searchService;
     }
 
-	public CategoryService getCategoryService()
+    public CategoryService getCategoryService()
     {
-	    return categoryService;
+        return categoryService;
     }
 
-	public void setCategoryService(CategoryService categoryService)
+    public void setCategoryService(CategoryService categoryService)
     {
-	    this.categoryService = categoryService;
+        this.categoryService = categoryService;
     }
 
-	public TaggingService getTaggingService()
+    public TaggingService getTaggingService()
     {
-	    return taggingService;
+        return taggingService;
     }
 
-	public void setTaggingService(TaggingService taggingService)
+    public void setTaggingService(TaggingService taggingService)
     {
-	    this.taggingService = taggingService;
+        this.taggingService = taggingService;
     }
 
     public void setNamespaceService(NamespaceService namespaceService)
@@ -227,11 +228,9 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
     }
 
     /**
-     * If this returns true, then the transfer service reports should only
-     * contain entries about: Create, Update, Delete items ; see MNT-14059
+     * If this returns true, then the transfer service reports should only contain entries about: Create, Update, Delete items ; see MNT-14059
      * 
-     * @return true if the property to use a simple report is set in the
-     *         alfresco-globla.properties
+     * @return true if the property to use a simple report is set in the alfresco-globla.properties
      */
     protected boolean isSimpleReportActive()
     {

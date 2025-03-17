@@ -27,13 +27,14 @@ package org.alfresco.repo.search.impl.solr;
 
 import static org.junit.Assert.*;
 
-import org.alfresco.util.testing.category.LuceneTests;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.util.StringUtils;
+
+import org.alfresco.util.testing.category.LuceneTests;
 
 /**
  * The results of executing a solr stats query, parsing the json
@@ -60,18 +61,18 @@ public class SolrStatsResultTest
         SolrStatsResult resultMod = testProcessing(TEST_MODIFIER, 9, 4, 188);
         SolrStatsResult resultV = testProcessing(TEST_VERSIONLABEL_DOT, 6, 0, 190);
     }
-    
+
     @Test
     public void testSolrStatsResultDateFormat() throws JSONException
     {
         String date = SolrStatsResult.formatAsDate(null);
         assertNotNull(date);
         assertTrue(!StringUtils.hasText(date));
-        
+
         assertEquals("2011-03-03", SolrStatsResult.formatAsDate("2011-03-03T10:34:53.551Z"));
         assertEquals("2014-05-12", SolrStatsResult.formatAsDate("2014-05-12T16:26:53.292Z"));
     }
-    
+
     private SolrStatsResult testProcessing(String testData, long queryTime, int statsSize, long numberFound) throws JSONException
     {
         JSONObject json = new JSONObject(new JSONTokener(testData));
@@ -79,11 +80,11 @@ public class SolrStatsResultTest
 
         assertNotNull(result);
         assertEquals(numberFound, result.getNumberFound());
-        assertTrue(result.getStatus()==0);
-        assertTrue(result.getQueryTime()==queryTime);
-        assertTrue(result.getSum()==14742886);
-        assertTrue(result.getMax()==3737049);
-        assertTrue(result.getMean()==82362);
+        assertTrue(result.getStatus() == 0);
+        assertTrue(result.getQueryTime() == queryTime);
+        assertTrue(result.getSum() == 14742886);
+        assertTrue(result.getMax() == 3737049);
+        assertTrue(result.getMean() == 82362);
         assertEquals(statsSize, result.getStats().size());
         return result;
     }

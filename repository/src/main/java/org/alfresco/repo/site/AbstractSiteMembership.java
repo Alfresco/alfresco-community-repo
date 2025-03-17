@@ -31,7 +31,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 public class AbstractSiteMembership
 {
     protected final SiteInfo siteInfo;
-    protected final String id;  // contains both userId and authority Id
+    protected final String id; // contains both userId and authority Id
     protected final String role;
 
     public AbstractSiteMembership(SiteInfo siteInfo, String id, String role)

@@ -25,12 +25,10 @@
  */
 package org.alfresco.repo.content.metadata;
 
-import org.alfresco.api.AlfrescoPublicApi;    
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
- * Represents maximum values (that result in exceptions if exceeded) or
- * limits on values (that result in EOF (End Of File) being returned early).
- * The current options are elapsed time, document size and concurrent extractions limit.
+ * Represents maximum values (that result in exceptions if exceeded) or limits on values (that result in EOF (End Of File) being returned early). The current options are elapsed time, document size and concurrent extractions limit.
  * 
  * @author Ray Gauss II
  */
@@ -40,7 +38,7 @@ public class MetadataExtracterLimits
     private long timeoutMs = Long.MAX_VALUE;
     private double maxDocumentSizeMB = Double.MAX_VALUE;
     private int maxConcurrentExtractionsCount = Integer.MAX_VALUE;
-    
+
     /**
      * Gets the time in milliseconds after which the metadata extracter will be stopped.
      * 
@@ -54,12 +52,14 @@ public class MetadataExtracterLimits
     /**
      * Sets the time in milliseconds after which the metadata extracter will be stopped.
      * 
-     * @param timeoutMs the timeout
+     * @param timeoutMs
+     *            the timeout
      */
     public void setTimeoutMs(long timeoutMs)
     {
         this.timeoutMs = timeoutMs;
     }
+
     /**
      * Gets the maximum size(MB) allowed for a transformation
      * 

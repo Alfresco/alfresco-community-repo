@@ -45,8 +45,7 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 
 /**
- * Patch to update the template for generating the hold report
- * See: https://issues.alfresco.com/jira/browse/RM-7003
+ * Patch to update the template for generating the hold report See: https://issues.alfresco.com/jira/browse/RM-7003
  *
  * @author Ramona Popa
  * @since 3.2
@@ -79,7 +78,8 @@ public class RMv32HoldReportUpdatePatch extends AbstractModulePatch
     private VersionService versionService;
 
     /**
-     * @param nodeService node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -87,7 +87,8 @@ public class RMv32HoldReportUpdatePatch extends AbstractModulePatch
     }
 
     /**
-     * @param contentService content service
+     * @param contentService
+     *            content service
      */
     public void setContentService(ContentService contentService)
     {
@@ -95,7 +96,8 @@ public class RMv32HoldReportUpdatePatch extends AbstractModulePatch
     }
 
     /**
-     * @param versionService version service
+     * @param versionService
+     *            version service
      */
     public void setVersionService(VersionService versionService)
     {

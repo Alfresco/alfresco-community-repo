@@ -26,14 +26,22 @@
 package org.alfresco.repo.webdav;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.io.Serializable;
 import java.util.Collections;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.context.ApplicationContext;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -52,14 +60,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TestWithUserUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.context.ApplicationContext;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UnlockMethodTest
@@ -68,9 +68,9 @@ public class UnlockMethodTest
     private LockMethod lockMethod;
     private MockHttpServletRequest request;
     private MockHttpServletResponse response;
-    private @Mock WebDAVHelper davHelper;    
+    private @Mock WebDAVHelper davHelper;
     ApplicationContext appContext;
-    
+
     /**
      * Services used by the tests
      */
@@ -100,11 +100,11 @@ public class UnlockMethodTest
     private static final String TEST_FILE_NAME = "file";
 
     /**
-     * User details 
+     * User details
      */
     private String userName;
     private static final String PWD = "password";
-    
+
     @Before
     public void setUp() throws Exception
     {
@@ -121,10 +121,9 @@ public class UnlockMethodTest
      */
     protected void setUpPreconditionForCheckedOutTest() throws Exception
     {
-        appContext = ApplicationContextHelper.getApplicationContext(new String[]
-        {
-            "classpath:alfresco/application-context.xml", "classpath:alfresco/web-scripts-application-context.xml",
-            "classpath:alfresco/remote-api-context.xml"
+        appContext = ApplicationContextHelper.getApplicationContext(new String[]{
+                "classpath:alfresco/application-context.xml", "classpath:alfresco/web-scripts-application-context.xml",
+                "classpath:alfresco/remote-api-context.xml"
         });
 
         // Set the services
@@ -138,8 +137,7 @@ public class UnlockMethodTest
         this.authenticationComponent = (AuthenticationComponent) appContext.getBean("authenticationComponent");
         this.authenticationComponent.setSystemUserAsCurrentUser();
 
-        RetryingTransactionCallback<Void> createTestFileCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> createTestFileCallback = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -187,13 +185,13 @@ public class UnlockMethodTest
         String lockHeaderValue = "<" + WebDAV.OPAQUE_LOCK_TOKEN + lockToken + ">";
         request.addHeader(WebDAV.HEADER_LOCK_TOKEN, lockHeaderValue);
         unlockMethod.parseRequestHeaders();
-        
+
         assertEquals(lockToken, unlockMethod.getLockToken());
     }
-    
+
     @Test
     public void parseInvalidLockTokenHeader()
-    {        
+    {
         String lockToken = "976e2f82-40ab-4852-a867-986e9ce11f82:admin";
         String lockHeaderValue = "<wrongprefix:" + lockToken + ">";
         request.addHeader(WebDAV.HEADER_LOCK_TOKEN, lockHeaderValue);
@@ -207,10 +205,10 @@ public class UnlockMethodTest
             assertEquals(HttpServletResponse.SC_BAD_REQUEST, e.getHttpStatusCode());
         }
     }
-    
+
     @Test
     public void parseMissingLockTokenHeader()
-    {        
+    {
         // Note: we're not adding the lock token header
         try
         {
@@ -222,7 +220,7 @@ public class UnlockMethodTest
             assertEquals(HttpServletResponse.SC_BAD_REQUEST, e.getHttpStatusCode());
         }
     }
-    
+
     /**
      * Test MNT-9680: Working copies are open in read-only mode when using Webdav online edit
      *
@@ -242,9 +240,9 @@ public class UnlockMethodTest
             request.addHeader(WebDAV.HEADER_LOCK_TOKEN, lockHeaderValue);
             request.setRequestURI("/" + workingCopyName);
             String content = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>"
-                + "<d:lockinfo xmlns:d=\"DAV:\">"
-                + "<d:lockscope><d:exclusive/></d:lockscope>"
-                + "</d:lockinfo>";
+                    + "<d:lockinfo xmlns:d=\"DAV:\">"
+                    + "<d:lockscope><d:exclusive/></d:lockscope>"
+                    + "</d:lockinfo>";
 
             request.setContent(content.getBytes("UTF-8"));
 
@@ -252,8 +250,7 @@ public class UnlockMethodTest
             lockMethod.parseRequestHeaders();
             lockMethod.parseRequestBody();
 
-            RetryingTransactionCallback<Void> lockExecuteImplCallBack = new RetryingTransactionCallback<Void>()
-            {
+            RetryingTransactionCallback<Void> lockExecuteImplCallBack = new RetryingTransactionCallback<Void>() {
 
                 @Override
                 public Void execute() throws Throwable
@@ -268,8 +265,7 @@ public class UnlockMethodTest
             unlockMethod.setDetails(request, new MockHttpServletResponse(), davHelper, folderNodeRef);
             unlockMethod.parseRequestHeaders();
 
-            RetryingTransactionCallback<Void> unlockExecuteImplCallBack = new RetryingTransactionCallback<Void>()
-            {
+            RetryingTransactionCallback<Void> unlockExecuteImplCallBack = new RetryingTransactionCallback<Void>() {
 
                 @Override
                 public Void execute() throws Throwable
@@ -292,8 +288,7 @@ public class UnlockMethodTest
 
             // delete test store as system user
             this.authenticationComponent.setSystemUserAsCurrentUser();
-            RetryingTransactionCallback<Void> deleteStoreCallback = new RetryingTransactionCallback<Void>()
-            {
+            RetryingTransactionCallback<Void> deleteStoreCallback = new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -327,8 +322,7 @@ public class UnlockMethodTest
             WebDAVHelper davHelper = (WebDAVHelper) appContext.getBean("webDAVHelper");
             unlockMethod.setDetails(request, new MockHttpServletResponse(), davHelper, folderNodeRef);
             unlockMethod.parseRequestHeaders();
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -362,8 +356,7 @@ public class UnlockMethodTest
 
             // delete test store as system user
             this.authenticationComponent.setSystemUserAsCurrentUser();
-            RetryingTransactionCallback<Void> deleteStoreCallback = new RetryingTransactionCallback<Void>()
-            {
+            RetryingTransactionCallback<Void> deleteStoreCallback = new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {

@@ -25,10 +25,6 @@
  */
 package org.alfresco.repo.web.scripts.bulkimport;
 
-import static org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript.PARAMETER_BATCH_SIZE;
-import static org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript.PARAMETER_DISABLE_RULES;
-import static org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript.PARAMETER_NUM_THREADS;
-import static org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript.PARAMETER_TARGET_NODEREF;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -37,15 +33,21 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import static org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript.PARAMETER_BATCH_SIZE;
+import static org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript.PARAMETER_DISABLE_RULES;
+import static org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript.PARAMETER_NUM_THREADS;
+import static org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript.PARAMETER_TARGET_NODEREF;
+
 import java.util.Map;
+
+import org.junit.Test;
+import org.springframework.extensions.webscripts.WebScriptException;
 
 import org.alfresco.repo.bulkimport.BulkImportParameters;
 import org.alfresco.repo.bulkimport.BulkImportParameters.ExistingFileMode;
 import org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript.BulkImportParametersExtractor;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.junit.Test;
-import org.springframework.extensions.webscripts.WebScriptException;
 
 public class BulkImportParametersExtractorTest
 {
@@ -87,8 +89,7 @@ public class BulkImportParametersExtractorTest
     {
         final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
                 PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
-                PARAMETER_DISABLE_RULES, "true"
-                                                                             ));
+                PARAMETER_DISABLE_RULES, "true"));
 
         final BulkImportParameters params = extractor.extract();
 
@@ -100,8 +101,7 @@ public class BulkImportParametersExtractorTest
     {
         final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
                 PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
-                PARAMETER_DISABLE_RULES, "false"
-                                                                             ));
+                PARAMETER_DISABLE_RULES, "false"));
 
         final BulkImportParameters params = extractor.extract();
 
@@ -113,8 +113,7 @@ public class BulkImportParametersExtractorTest
     {
         final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
                 PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
-                PARAMETER_DISABLE_RULES, "unknown"
-                                                                             ));
+                PARAMETER_DISABLE_RULES, "unknown"));
 
         final BulkImportParameters params = extractor.extract();
 
@@ -152,7 +151,8 @@ public class BulkImportParametersExtractorTest
         try
         {
             extractor.extract();
-        } catch (WebScriptException e)
+        }
+        catch (WebScriptException e)
         {
             assertNotNull(e.getMessage());
             assertTrue(e.getMessage().contains(PARAMETER_BATCH_SIZE));
@@ -172,7 +172,8 @@ public class BulkImportParametersExtractorTest
         try
         {
             extractor.extract();
-        } catch (WebScriptException e)
+        }
+        catch (WebScriptException e)
         {
             assertNotNull(e.getMessage());
             assertTrue(e.getMessage().contains(PARAMETER_BATCH_SIZE));
@@ -204,7 +205,8 @@ public class BulkImportParametersExtractorTest
         try
         {
             extractor.extract();
-        } catch (WebScriptException e)
+        }
+        catch (WebScriptException e)
         {
             assertNotNull(e.getMessage());
             assertTrue(e.getMessage().contains(PARAMETER_NUM_THREADS));
@@ -224,7 +226,8 @@ public class BulkImportParametersExtractorTest
         try
         {
             extractor.extract();
-        } catch (WebScriptException e)
+        }
+        catch (WebScriptException e)
         {
             assertNotNull(e.getMessage());
             assertTrue(e.getMessage().contains(PARAMETER_NUM_THREADS));

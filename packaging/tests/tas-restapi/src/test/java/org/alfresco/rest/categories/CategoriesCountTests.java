@@ -26,11 +26,15 @@
 
 package org.alfresco.rest.categories;
 
-import static org.alfresco.utility.data.RandomData.getRandomName;
-import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertTrue;
+
+import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
+
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.model.RestCategoryModel;
@@ -40,8 +44,6 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class CategoriesCountTests extends CategoriesRestTest
 {
@@ -72,27 +74,27 @@ public class CategoriesCountTests extends CategoriesRestTest
 
         STEP("Wait for indexing to complete");
         Utility.sleep(1000, 60000, () -> restClient.authenticateUser(user)
-            .withCoreAPI()
-            .usingCategory(categoryLinkedWithFolder)
-            .include(INCLUDE_COUNT_PARAM)
-            .getCategory()
-            .assertThat()
-            .field(FIELD_COUNT)
-            .isNot(0));
+                .withCoreAPI()
+                .usingCategory(categoryLinkedWithFolder)
+                .include(INCLUDE_COUNT_PARAM)
+                .getCategory()
+                .assertThat()
+                .field(FIELD_COUNT)
+                .isNot(0));
     }
 
     /**
      * Verify count for a category linked with file and folder.
      */
-    @Test(groups = { TestGroup.REST_API })
+    @Test(groups = {TestGroup.REST_API})
     public void testGetCategoryById_includeCount()
     {
         STEP("Get linked category and verify if count is higher than 0");
         final RestCategoryModel actualCategory = restClient.authenticateUser(user)
-            .withCoreAPI()
-            .usingCategory(categoryLinkedWithBoth)
-            .include(INCLUDE_COUNT_PARAM)
-            .getCategory();
+                .withCoreAPI()
+                .usingCategory(categoryLinkedWithBoth)
+                .include(INCLUDE_COUNT_PARAM)
+                .getCategory();
 
         restClient.assertStatusCodeIs(OK);
         actualCategory.assertThat().field(FIELD_ID).is(categoryLinkedWithBoth.getId());
@@ -102,15 +104,15 @@ public class CategoriesCountTests extends CategoriesRestTest
     /**
      * Verify count for a category not linked with any content.
      */
-    @Test(groups = { TestGroup.REST_API })
+    @Test(groups = {TestGroup.REST_API})
     public void testGetCategoryById_includeCountForNonLinkedCategory()
     {
         STEP("Get non-linked category and verify if count is 0");
         final RestCategoryModel actualCategory = restClient.authenticateUser(user)
-            .withCoreAPI()
-            .usingCategory(notLinkedCategory)
-            .include(INCLUDE_COUNT_PARAM)
-            .getCategory();
+                .withCoreAPI()
+                .usingCategory(notLinkedCategory)
+                .include(INCLUDE_COUNT_PARAM)
+                .getCategory();
 
         restClient.assertStatusCodeIs(OK);
         actualCategory.assertThat().field(FIELD_ID).is(notLinkedCategory.getId());
@@ -120,33 +122,33 @@ public class CategoriesCountTests extends CategoriesRestTest
     /**
      * Verify count for three categories: linked with file, linked with folder and third not linked to any content.
      */
-    @Test(groups = { TestGroup.REST_API })
+    @Test(groups = {TestGroup.REST_API})
     public void testGetCategories_includeCount()
     {
         STEP("Get few categories and verify its counts");
         final RestCategoryModel parentCategory = createCategoryModelWithId(ROOT_CATEGORY_ID);
         final RestCategoryModelsCollection actualCategories = restClient.authenticateUser(user)
-            .withCoreAPI()
-            .usingCategory(parentCategory)
-            .include(INCLUDE_COUNT_PARAM)
-            .getCategoryChildren();
+                .withCoreAPI()
+                .usingCategory(parentCategory)
+                .include(INCLUDE_COUNT_PARAM)
+                .getCategoryChildren();
 
         restClient.assertStatusCodeIs(OK);
         assertTrue(actualCategories.getEntries().stream()
-            .map(RestCategoryModel::onModel)
-            .anyMatch(category -> category.getId().equals(categoryLinkedWithFolder.getId()) && category.getCount() == 1));
+                .map(RestCategoryModel::onModel)
+                .anyMatch(category -> category.getId().equals(categoryLinkedWithFolder.getId()) && category.getCount() == 1));
         assertTrue(actualCategories.getEntries().stream()
-            .map(RestCategoryModel::onModel)
-            .anyMatch(category -> category.getId().equals(categoryLinkedWithFile.getId()) && category.getCount() == 1));
+                .map(RestCategoryModel::onModel)
+                .anyMatch(category -> category.getId().equals(categoryLinkedWithFile.getId()) && category.getCount() == 1));
         assertTrue(actualCategories.getEntries().stream()
-            .map(RestCategoryModel::onModel)
-            .anyMatch(category -> category.getId().equals(notLinkedCategory.getId()) && category.getCount() == 0));
+                .map(RestCategoryModel::onModel)
+                .anyMatch(category -> category.getId().equals(notLinkedCategory.getId()) && category.getCount() == 0));
     }
 
     /**
      * Create category and verify that its count is 0.
      */
-    @Test(groups = { TestGroup.REST_API })
+    @Test(groups = {TestGroup.REST_API})
     public void testCreateCategory_includingCount()
     {
         STEP("Create a category under root and verify if count is 0");
@@ -154,10 +156,10 @@ public class CategoriesCountTests extends CategoriesRestTest
         final RestCategoryModel rootCategory = createCategoryModelWithId(ROOT_CATEGORY_ID);
         final RestCategoryModel aCategory = createCategoryModelWithName(categoryName);
         final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
-            .withCoreAPI()
-            .include(INCLUDE_COUNT_PARAM)
-            .usingCategory(rootCategory)
-            .createSingleCategory(aCategory);
+                .withCoreAPI()
+                .include(INCLUDE_COUNT_PARAM)
+                .usingCategory(rootCategory)
+                .createSingleCategory(aCategory);
 
         STEP("Create a category under root category (as admin)");
         restClient.assertStatusCodeIs(CREATED);
@@ -168,17 +170,17 @@ public class CategoriesCountTests extends CategoriesRestTest
     /**
      * Update category linked to file and folder and verify that its count is 2.
      */
-    @Test(groups = { TestGroup.REST_API })
+    @Test(groups = {TestGroup.REST_API})
     public void testUpdateCategory_includeCount()
     {
         STEP("Update linked category and verify if count is higher than 0");
         final String categoryNewName = getRandomName("NewCategoryName");
         final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(categoryNewName);
         final RestCategoryModel updatedCategory = restClient.authenticateUser(dataUser.getAdminUser())
-            .withCoreAPI()
-            .usingCategory(categoryLinkedWithBoth)
-            .include(INCLUDE_COUNT_PARAM)
-            .updateCategory(fixedCategoryModel);
+                .withCoreAPI()
+                .usingCategory(categoryLinkedWithBoth)
+                .include(INCLUDE_COUNT_PARAM)
+                .updateCategory(fixedCategoryModel);
 
         restClient.assertStatusCodeIs(OK);
         updatedCategory.assertThat().field(FIELD_ID).is(categoryLinkedWithBoth.getId());
@@ -188,17 +190,17 @@ public class CategoriesCountTests extends CategoriesRestTest
     /**
      * Update category not linked to any content and verify that its count is 0.
      */
-    @Test(groups = { TestGroup.REST_API })
+    @Test(groups = {TestGroup.REST_API})
     public void testUpdateCategory_includeCountForNonLinkedCategory()
     {
         STEP("Update non-linked category and verify if count is 0");
         final String categoryNewName = getRandomName("NewCategoryName");
         final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(categoryNewName);
         final RestCategoryModel updatedCategory = restClient.authenticateUser(dataUser.getAdminUser())
-            .withCoreAPI()
-            .usingCategory(notLinkedCategory)
-            .include(INCLUDE_COUNT_PARAM)
-            .updateCategory(fixedCategoryModel);
+                .withCoreAPI()
+                .usingCategory(notLinkedCategory)
+                .include(INCLUDE_COUNT_PARAM)
+                .updateCategory(fixedCategoryModel);
 
         restClient.assertStatusCodeIs(OK);
         updatedCategory.assertThat().field(FIELD_ID).is(notLinkedCategory.getId());

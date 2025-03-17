@@ -37,7 +37,7 @@ public abstract class AbstractPermissionReference implements PermissionReference
 {
     private int hashcode = 0;
     private String str = null;
-    
+
     protected AbstractPermissionReference()
     {
         super();
@@ -46,16 +46,16 @@ public abstract class AbstractPermissionReference implements PermissionReference
     @Override
     public final boolean equals(Object o)
     {
-        if(this == o)
+        if (this == o)
         {
             return true;
         }
-        if(!(o instanceof AbstractPermissionReference))
+        if (!(o instanceof AbstractPermissionReference))
         {
             return false;
         }
-        AbstractPermissionReference other = (AbstractPermissionReference)o;
-        if(other.hashCode() != this.hashCode())
+        AbstractPermissionReference other = (AbstractPermissionReference) o;
+        if (other.hashCode() != this.hashCode())
         {
             return false;
         }
@@ -67,7 +67,7 @@ public abstract class AbstractPermissionReference implements PermissionReference
     {
         if (hashcode == 0)
         {
-           hashcode = (getName().hashCode() * 1000003) + getQName().hashCode();
+            hashcode = (getName().hashCode() * 1000003) + getQName().hashCode();
         }
         return hashcode;
     }

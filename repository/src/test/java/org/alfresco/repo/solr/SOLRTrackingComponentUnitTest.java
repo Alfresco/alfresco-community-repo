@@ -35,14 +35,15 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.alfresco.repo.domain.node.NodeDAO;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+
+import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.namespace.QName;
 
 /** Unit tests for {@link org.alfresco.repo.solr.SOLRTrackingComponent}. */
 public class SOLRTrackingComponentUnitTest

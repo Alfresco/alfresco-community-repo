@@ -26,7 +26,6 @@
 
 package org.alfresco.repo.nodelocator;
 
-
 import java.io.Serializable;
 import java.util.Map;
 
@@ -42,28 +41,29 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class CompanyHomeNodeLocator extends AbstractNodeLocator
 {
     public static final String NAME = "companyhome";
-    
+
     private Repository repoHelper;
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public NodeRef getNode(NodeRef source, Map<String, Serializable> params)
     {
         return repoHelper.getCompanyHome();
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public String getName()
     {
         return NAME;
     }
-    
+
     /**
-     * @param repoHelper the repoHelper to set
+     * @param repoHelper
+     *            the repoHelper to set
      */
     public void setRepositoryHelper(Repository repoHelper)
     {

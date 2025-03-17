@@ -42,7 +42,8 @@ public class BaseListArgument extends BaseStaticArgument implements ListArgument
     private List<Argument> arguments;
 
     /**
-     * @param name String
+     * @param name
+     *            String
      */
     public BaseListArgument(String name, List<Argument> arguments)
     {
@@ -51,26 +52,26 @@ public class BaseListArgument extends BaseStaticArgument implements ListArgument
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.ListArgument#getArguments()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.ListArgument#getArguments() */
     public List<Argument> getArguments()
     {
         return arguments;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Argument#getValue()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.Argument#getValue() */
     public Serializable getValue(FunctionEvaluationContext context)
     {
         ArrayList<Serializable> answer = new ArrayList<Serializable>(arguments.size());
-        for(Argument argument : arguments)
+        for (Argument argument : arguments)
         {
             Serializable value = argument.getValue(context);
             answer.add(value);
         }
         return answer;
-        
+
     }
 
     public String toString()
@@ -82,12 +83,12 @@ public class BaseListArgument extends BaseStaticArgument implements ListArgument
         builder.append("]");
         return builder.toString();
     }
-    
+
     public boolean isQueryable()
     {
-        for(Argument arg : arguments)
+        for (Argument arg : arguments)
         {
-            if(!arg.isQueryable())
+            if (!arg.isQueryable())
             {
                 return false;
             }

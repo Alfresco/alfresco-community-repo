@@ -25,8 +25,20 @@
  */
 package org.alfresco.repo.web.scripts.servlet;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
+import net.sf.acegisecurity.DisabledException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.Authenticator;
+import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
+import org.springframework.extensions.webscripts.WebScript;
+import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
+import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
 
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.SessionUser;
@@ -40,28 +52,14 @@ import org.alfresco.repo.web.auth.AuthenticationListener;
 import org.alfresco.repo.web.auth.TicketCredentials;
 import org.alfresco.repo.web.auth.WebCredentials;
 import org.alfresco.repo.webdav.auth.AuthenticationDriver;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.Authenticator;
-import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
-import org.springframework.extensions.webscripts.WebScript;
-import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
-import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
-
-import net.sf.acegisecurity.DisabledException;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
- * Authenticator to provide Remote User based Header authentication dropping back to Basic Auth otherwise. 
- * Statelessly authenticating via a secure header now does not require a Session so can be used with
- * request-level load balancers which was not previously possible.
+ * Authenticator to provide Remote User based Header authentication dropping back to Basic Auth otherwise. Statelessly authenticating via a secure header now does not require a Session so can be used with request-level load balancers which was not previously possible.
  * <p>
+ * 
  * @see web-scripts-application-context.xml and web.xml - bean id 'webscripts.authenticator.remoteuser'
- * <p>
- * This authenticator can be bound to /service and does not require /wcservice (Session) mapping.
+ *      <p>
+ *      This authenticator can be bound to /service and does not require /wcservice (Session) mapping.
  * 
  * @since 5.1
  * @author Kevin Roast
@@ -79,12 +77,11 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
     List<String> adminConsoleScriptFamilies;
     long getRemoteUserTimeoutMilliseconds = GET_REMOTE_USER_TIMEOUT_MILLISECONDS_DEFAULT;
 
-
     public void setRemoteUserMapper(RemoteUserMapper remoteUserMapper)
     {
         this.remoteUserMapper = remoteUserMapper;
     }
-    
+
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
     {
         this.authenticationComponent = authenticationComponent;
@@ -121,7 +118,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
     }
 
     public void setAdminConsoleAuthenticator(
-        AdminConsoleAuthenticator adminConsoleAuthenticator)
+            AdminConsoleAuthenticator adminConsoleAuthenticator)
     {
         this.adminConsoleAuthenticator = adminConsoleAuthenticator;
     }
@@ -143,7 +140,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
         {
             super(req, res, listener);
         }
-        
+
         @Override
         public boolean authenticate(RequiredAuthentication required, boolean isGuest)
         {
@@ -159,7 +156,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             {
 
                 if (servletReq.getServiceMatch() != null &&
-                    isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript()) && isAdminConsoleAuthenticatorActive())
+                        isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript()) && isAdminConsoleAuthenticatorActive())
                 {
                     userId = getAdminConsoleUser();
                 }
@@ -180,7 +177,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                         }
                         catch (AuthenticationTimeoutException e)
                         {
-                            //return basic auth challenge
+                            // return basic auth challenge
                             return false;
                         }
                     }
@@ -204,9 +201,9 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                 {
                     // don't propagate if the user is disabled
                     Throwable disabledCause = ExceptionStackUtil.getCause(authErr, DisabledException.class);
-                    if(disabledCause != null)
+                    if (disabledCause != null)
                     {
-                    	listener.authenticationFailed(new WebCredentials() {});
+                        listener.authenticationFailed(new WebCredentials() {});
                     }
                     else
                     {
@@ -222,7 +219,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                 {
                     try
                     {
-                        SessionUser user = (SessionUser)session.getAttribute(AuthenticationDriver.AUTHENTICATION_USER);
+                        SessionUser user = (SessionUser) session.getAttribute(AuthenticationDriver.AUTHENTICATION_USER);
                         if (user != null)
                         {
                             // Validate the ticket for the current SessionUser
@@ -255,8 +252,8 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                     authenticated = super.authenticate(required, isGuest);
                 }
             }
-            if(!authenticated && servletReq.getServiceMatch() != null &&
-                isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript()) && isAdminConsoleAuthenticatorActive())
+            if (!authenticated && servletReq.getServiceMatch() != null &&
+                    isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript()) && isAdminConsoleAuthenticatorActive())
             {
                 adminConsoleAuthenticator.requestAuthentication(this.servletReq.getHttpServletRequest(), this.servletRes.getHttpServletResponse());
             }
@@ -280,7 +277,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
         private boolean shouldUseTimeoutForAdminAccessingAdminConsole(RequiredAuthentication required, boolean isGuest)
         {
             boolean useTimeoutForAdminAccessingAdminConsole = RequiredAuthentication.admin.equals(required) && !isGuest &&
-                servletReq.getServiceMatch() != null && isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript());
+                    servletReq.getServiceMatch() != null && isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript());
 
             if (LOGGER.isTraceEnabled())
             {
@@ -302,7 +299,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
         protected boolean isAdminConsoleWebScript(WebScript webScript)
         {
             if (webScript == null || adminConsoleScriptFamilies == null || webScript.getDescription() == null
-                || webScript.getDescription().getFamilys() == null)
+                    || webScript.getDescription().getFamilys() == null)
             {
                 return false;
             }
@@ -357,7 +354,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                 cleanupThread(workerGettingTheRemoteUser);
 
                 final String message = "Could not get the remote user in a reasonable time: " + getRemoteUserTimeoutMilliseconds + " milliseconds. "
-                    + "Adjust the timeout property 'authentication.getRemoteUserTimeoutMilliseconds' if required.";
+                        + "Adjust the timeout property 'authentication.getRemoteUserTimeoutMilliseconds' if required.";
 
                 if (LOGGER.isWarnEnabled())
                 {
@@ -386,15 +383,14 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
         }
 
         /**
-         * Retrieve the remote user from servlet request header when using a secure connection.
-         * The RemoteUserMapper bean must be active and configured.
+         * Retrieve the remote user from servlet request header when using a secure connection. The RemoteUserMapper bean must be active and configured.
          * 
          * @return remote user ID or null if not active or found
          */
         protected String getRemoteUser()
         {
             String userId = null;
-            
+
             // If the remote user mapper is configured, we may be able to map in an externally authenticated user
             if (isRemoteUserMapperActive())
             {
@@ -410,9 +406,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
         {
             if (LOGGER.isDebugEnabled())
             {
-                String message = (userId == null) ?
-                    "No external user ID in request." :
-                    "Extracted external user ID from request: " + AuthenticationUtil.maskUsername(userId);
+                String message = (userId == null) ? "No external user ID in request." : "Extracted external user ID from request: " + AuthenticationUtil.maskUsername(userId);
                 LOGGER.debug(message);
             }
         }

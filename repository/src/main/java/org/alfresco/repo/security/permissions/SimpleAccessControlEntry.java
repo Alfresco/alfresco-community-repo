@@ -29,7 +29,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
 
 /**
- * A basic access control entry 
+ * A basic access control entry
  * 
  * @author andyh
  *
@@ -42,19 +42,19 @@ public class SimpleAccessControlEntry implements AccessControlEntry
     private static final long serialVersionUID = -3099789485179796034L;
 
     private AccessStatus accessStatus;
-    
+
     private ACEType aceType;
-    
+
     private String authority;
-    
+
     private AuthorityType authorityType;
-    
+
     private AccessControlEntryContext context;
-    
+
     private PermissionReference permission;
-    
+
     private Integer position;
-    
+
     public AccessStatus getAccessStatus()
     {
         return accessStatus;
@@ -62,14 +62,14 @@ public class SimpleAccessControlEntry implements AccessControlEntry
 
     public ACEType getAceType()
     {
-       return aceType;
+        return aceType;
     }
 
     public String getAuthority()
     {
         return authority;
     }
-    
+
     public AuthorityType getAuthorityType()
     {
         return authorityType;
@@ -77,7 +77,7 @@ public class SimpleAccessControlEntry implements AccessControlEntry
 
     public AccessControlEntryContext getContext()
     {
-       return context;
+        return context;
     }
 
     public PermissionReference getPermission()
@@ -92,17 +92,20 @@ public class SimpleAccessControlEntry implements AccessControlEntry
 
     /**
      * Set the status
-     * @param accessStatus AccessStatus
+     * 
+     * @param accessStatus
+     *            AccessStatus
      */
     public void setAccessStatus(AccessStatus accessStatus)
     {
         this.accessStatus = accessStatus;
     }
 
-    
     /**
      * Set the type
-     * @param aceType ACEType
+     * 
+     * @param aceType
+     *            ACEType
      */
     public void setAceType(ACEType aceType)
     {
@@ -111,7 +114,9 @@ public class SimpleAccessControlEntry implements AccessControlEntry
 
     /**
      * Set the authority
-     * @param authority String
+     * 
+     * @param authority
+     *            String
      */
     public void setAuthority(String authority)
     {
@@ -121,7 +126,9 @@ public class SimpleAccessControlEntry implements AccessControlEntry
 
     /**
      * Set the context
-     * @param context AccessControlEntryContext
+     * 
+     * @param context
+     *            AccessControlEntryContext
      */
     public void setContext(AccessControlEntryContext context)
     {
@@ -130,16 +137,20 @@ public class SimpleAccessControlEntry implements AccessControlEntry
 
     /**
      * Set the permission
-     * @param permission PermissionReference
+     * 
+     * @param permission
+     *            PermissionReference
      */
     public void setPermission(PermissionReference permission)
     {
         this.permission = permission;
     }
 
-    /** 
+    /**
      * Set the position
-     * @param position Integer
+     * 
+     * @param position
+     *            Integer
      */
     public void setPosition(Integer position)
     {
@@ -149,12 +160,12 @@ public class SimpleAccessControlEntry implements AccessControlEntry
     public int compareTo(AccessControlEntry other)
     {
         int diff = this.getPosition() - other.getPosition();
-        if(diff == 0)
+        if (diff == 0)
         {
-            diff = (this.getAccessStatus()== AccessStatus.DENIED ? 0 : 1) - (other.getAccessStatus()== AccessStatus.DENIED ? 0 : 1); 
-            if(diff == 0)
+            diff = (this.getAccessStatus() == AccessStatus.DENIED ? 0 : 1) - (other.getAccessStatus() == AccessStatus.DENIED ? 0 : 1);
+            if (diff == 0)
             {
-                return getAuthorityType().getOrderPosition()  -   other.getAuthorityType().getOrderPosition();
+                return getAuthorityType().getOrderPosition() - other.getAuthorityType().getOrderPosition();
             }
             else
             {
@@ -170,17 +181,16 @@ public class SimpleAccessControlEntry implements AccessControlEntry
     @Override
     public String toString()
     {
-       StringBuilder builder = new StringBuilder();
-       builder.append("[");
-       builder.append(getPermission()).append(", ");
-       builder.append(getAuthority()).append(", ");
-       builder.append(getAccessStatus()).append(", ");
-       builder.append(getAceType()).append(", ");
-       builder.append(getPosition()).append(", ");
-       builder.append(getContext());
-       builder.append("]");
-       return builder.toString();
+        StringBuilder builder = new StringBuilder();
+        builder.append("[");
+        builder.append(getPermission()).append(", ");
+        builder.append(getAuthority()).append(", ");
+        builder.append(getAccessStatus()).append(", ");
+        builder.append(getAceType()).append(", ");
+        builder.append(getPosition()).append(", ");
+        builder.append(getContext());
+        builder.append("]");
+        return builder.toString();
     }
 
-    
 }

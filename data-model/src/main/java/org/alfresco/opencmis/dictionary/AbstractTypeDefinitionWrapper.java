@@ -38,20 +38,6 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.opencmis.mapping.CMISMapping;
-import org.alfresco.repo.dictionary.IndexTokenisationMode;
-import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
-import org.alfresco.repo.dictionary.constraint.NumericRangeConstraint;
-import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
-import org.alfresco.service.cmr.dictionary.Constraint;
-import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ISO8601DateFormat;
-import org.alfresco.util.ISO9075;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.definitions.Choice;
 import org.apache.chemistry.opencmis.commons.definitions.PropertyDefinition;
@@ -76,6 +62,21 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyUriDefinit
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.opencmis.mapping.CMISMapping;
+import org.alfresco.repo.dictionary.IndexTokenisationMode;
+import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
+import org.alfresco.repo.dictionary.constraint.NumericRangeConstraint;
+import org.alfresco.repo.dictionary.constraint.StringLengthConstraint;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.Constraint;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.util.ISO9075;
+
 /**
  * Base class for type definition wrappers.
  * 
@@ -85,23 +86,23 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
 {
     private static final long serialVersionUID = 1L;
     private Log logger = LogFactory.getLog(AbstractTypeDefinitionWrapper.class);
-    
+
     protected AbstractTypeDefinition typeDef;
     protected AbstractTypeDefinition typeDefInclProperties;
 
     protected TypeDefinitionWrapper parent;
-//    protected List<TypeDefinitionWrapper> children;
+    // protected List<TypeDefinitionWrapper> children;
 
     private String tenantId;
     private ReadWriteLock lock = new ReentrantReadWriteLock();
-    
+
     @Override
     public String getTenantId()
     {
-		return tenantId;
-	}
+        return tenantId;
+    }
 
-	protected QName alfrescoName = null;
+    protected QName alfrescoName = null;
     protected QName alfrescoClass = null;
     protected Map<Action, CMISActionEvaluator> actionEvaluators;
 
@@ -173,11 +174,11 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
         return parent;
     }
 
-//    @Override
-//    public List<TypeDefinitionWrapper> getChildren()
-//    {
-//        return children;
-//    }
+    // @Override
+    // public List<TypeDefinitionWrapper> getChildren()
+    // {
+    // return children;
+    // }
 
     @Override
     public Map<Action, CMISActionEvaluator> getActionEvaluators()
@@ -232,7 +233,7 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
             updateProperty(dictionaryService, propertyDefWrap);
         }
     }
-    
+
     public void updateProperty(DictionaryService dictionaryService, PropertyDefinitionWrapper propertyDefWrap)
     {
         if (propertyDefWrap != null && propertyDefWrap.getPropertyDefinition().getDisplayName() == null)
@@ -249,7 +250,7 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
             }
         }
     }
-    
+
     public void updateTypeDefInclProperties()
     {
         for (PropertyDefinition<?> property : typeDefInclProperties.getPropertyDefinitions().values())
@@ -288,7 +289,7 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
             lock.writeLock().unlock();
         }
     }
-    
+
     // create
 
     public abstract List<TypeDefinitionWrapper> connectParentAndSubTypes(CMISMapping cmisMapping, CMISDictionaryRegistry registry,
@@ -313,8 +314,8 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
             throw new IllegalStateException("propertiesByQueryName is not set");
         if (propertiesByQName == null)
             throw new IllegalStateException("propertiesByQName is not set");
-//        if (propertiesById.size() == 0)
-//            throw new IllegalStateException("property map empty");
+        // if (propertiesById.size() == 0)
+        // throw new IllegalStateException("property map empty");
         if (propertiesById.size() != propertiesByQueryName.size())
             throw new IllegalStateException("property map mismatch");
         if (propertiesById.size() != propertiesByQName.size())
@@ -344,9 +345,9 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
             // compile property id
             String propertyId = cmisMapping.buildPrefixEncodedString(alfrescoPropDef.getName());
 
-            if(propertyId.equals("cmis:secondaryObjectTypeIds") && cmisMapping.getCmisVersion() == CmisVersion.CMIS_1_0)
+            if (propertyId.equals("cmis:secondaryObjectTypeIds") && cmisMapping.getCmisVersion() == CmisVersion.CMIS_1_0)
             {
-            	continue;
+                continue;
             }
 
             // create property definition
@@ -456,7 +457,8 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
         {
             // the CMIS spec requirement
             result.setUpdatability(Updatability.ONCREATE);
-        } else
+        }
+        else
         {
             result.setUpdatability(propDef.isProtected() ? Updatability.READONLY : Updatability.READWRITE);
         }
@@ -502,11 +504,10 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
                             || propDef.getDataType().getName().equals(DataTypeDefinition.FLOAT)
                             || propDef.getDataType().getName().equals(DataTypeDefinition.INT)
                             || propDef.getDataType().getName().equals(DataTypeDefinition.LONG)
-                            || propDef.getDataType().getName().equals(DataTypeDefinition.PATH)
-                            )
+                            || propDef.getDataType().getName().equals(DataTypeDefinition.PATH))
                     {
                         result.setIsOrderable(true);
-                    } 
+                    }
                 }
             }
         }
@@ -527,7 +528,7 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
             }
         }
         // end MNT-9089
-        
+
         // constraints and choices
         for (ConstraintDefinition constraintDef : propDef.getConstraints())
         {
@@ -569,7 +570,8 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
         if (propertyAccessorMapping != null)
         {
             actionEvaluators = propertyAccessorMapping.getActionEvaluators(baseTypeId);
-        } else
+        }
+        else
         {
             actionEvaluators = Collections.emptyMap();
         }
@@ -605,7 +607,8 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
                 return (T) value;
             case URI:
                 return (T) value;
-            default: ;
+            default:
+                ;
             }
         }
         catch (Exception e)
@@ -613,7 +616,7 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
             logger.error("Failed to convert value " + value + " to " + datatype, e);
             return null;
         }
-        
+
         throw new RuntimeException("Unknown datatype! Spec change?");
     }
 
@@ -632,37 +635,44 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
             PropertyBooleanDefinitionImpl propDefImpl = (PropertyBooleanDefinitionImpl) propDef;
             propDefImpl.setDefaultValue(Collections.singletonList((Boolean) convertValueFromString(value,
                     PropertyType.BOOLEAN)));
-        } else if (propDef instanceof PropertyDateTimeDefinitionImpl)
+        }
+        else if (propDef instanceof PropertyDateTimeDefinitionImpl)
         {
             PropertyDateTimeDefinitionImpl propDefImpl = (PropertyDateTimeDefinitionImpl) propDef;
             propDefImpl.setDefaultValue(Collections.singletonList((GregorianCalendar) convertValueFromString(value,
                     PropertyType.DATETIME)));
-        } else if (propDef instanceof PropertyDecimalDefinitionImpl)
+        }
+        else if (propDef instanceof PropertyDecimalDefinitionImpl)
         {
             PropertyDecimalDefinitionImpl propDefImpl = (PropertyDecimalDefinitionImpl) propDef;
             propDefImpl.setDefaultValue(Collections.singletonList((BigDecimal) convertValueFromString(value,
                     PropertyType.DECIMAL)));
-        } else if (propDef instanceof PropertyHtmlDefinitionImpl)
+        }
+        else if (propDef instanceof PropertyHtmlDefinitionImpl)
         {
             PropertyHtmlDefinitionImpl propDefImpl = (PropertyHtmlDefinitionImpl) propDef;
             propDefImpl.setDefaultValue(Collections.singletonList((String) convertValueFromString(value,
                     PropertyType.HTML)));
-        } else if (propDef instanceof PropertyIdDefinitionImpl)
+        }
+        else if (propDef instanceof PropertyIdDefinitionImpl)
         {
             PropertyIdDefinitionImpl propDefImpl = (PropertyIdDefinitionImpl) propDef;
             propDefImpl.setDefaultValue(Collections.singletonList((String) convertValueFromString(value,
                     PropertyType.ID)));
-        } else if (propDef instanceof PropertyIntegerDefinitionImpl)
+        }
+        else if (propDef instanceof PropertyIntegerDefinitionImpl)
         {
             PropertyIntegerDefinitionImpl propDefImpl = (PropertyIntegerDefinitionImpl) propDef;
             propDefImpl.setDefaultValue(Collections.singletonList((BigInteger) convertValueFromString(value,
                     PropertyType.INTEGER)));
-        } else if (propDef instanceof PropertyStringDefinitionImpl)
+        }
+        else if (propDef instanceof PropertyStringDefinitionImpl)
         {
             PropertyStringDefinitionImpl propDefImpl = (PropertyStringDefinitionImpl) propDef;
             propDefImpl.setDefaultValue(Collections.singletonList((String) convertValueFromString(value,
                     PropertyType.STRING)));
-        } else if (propDef instanceof PropertyUriDefinitionImpl)
+        }
+        else if (propDef instanceof PropertyUriDefinitionImpl)
         {
             PropertyUriDefinitionImpl propDefImpl = (PropertyUriDefinitionImpl) propDef;
             propDefImpl.setDefaultValue(Collections.singletonList((String) convertValueFromString(value,
@@ -692,7 +702,8 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
             }
 
             propDefImpl.setChoices(choiceList);
-        } else if (propDef instanceof PropertyDateTimeDefinitionImpl)
+        }
+        else if (propDef instanceof PropertyDateTimeDefinitionImpl)
         {
             PropertyDateTimeDefinitionImpl propDefImpl = (PropertyDateTimeDefinitionImpl) propDef;
             propDefImpl.setIsOpenChoice(false);
@@ -709,7 +720,8 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
             }
 
             propDefImpl.setChoices(choiceList);
-        } else if (propDef instanceof PropertyDecimalDefinitionImpl)
+        }
+        else if (propDef instanceof PropertyDecimalDefinitionImpl)
         {
             PropertyDecimalDefinitionImpl propDefImpl = (PropertyDecimalDefinitionImpl) propDef;
             propDefImpl.setIsOpenChoice(false);
@@ -726,7 +738,8 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
             }
 
             propDefImpl.setChoices(choiceList);
-        } else if (propDef instanceof PropertyHtmlDefinitionImpl)
+        }
+        else if (propDef instanceof PropertyHtmlDefinitionImpl)
         {
             PropertyHtmlDefinitionImpl propDefImpl = (PropertyHtmlDefinitionImpl) propDef;
             propDefImpl.setIsOpenChoice(false);
@@ -742,7 +755,8 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
             }
 
             propDefImpl.setChoices(choiceList);
-        } else if (propDef instanceof PropertyIdDefinitionImpl)
+        }
+        else if (propDef instanceof PropertyIdDefinitionImpl)
         {
             PropertyIdDefinitionImpl propDefImpl = (PropertyIdDefinitionImpl) propDef;
             propDefImpl.setIsOpenChoice(false);
@@ -758,7 +772,8 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
             }
 
             propDefImpl.setChoices(choiceList);
-        } else if (propDef instanceof PropertyIntegerDefinitionImpl)
+        }
+        else if (propDef instanceof PropertyIntegerDefinitionImpl)
         {
             PropertyIntegerDefinitionImpl propDefImpl = (PropertyIntegerDefinitionImpl) propDef;
             propDefImpl.setIsOpenChoice(false);
@@ -775,7 +790,8 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
             }
 
             propDefImpl.setChoices(choiceList);
-        } else if (propDef instanceof PropertyStringDefinitionImpl)
+        }
+        else if (propDef instanceof PropertyStringDefinitionImpl)
         {
             PropertyStringDefinitionImpl propDefImpl = (PropertyStringDefinitionImpl) propDef;
             propDefImpl.setIsOpenChoice(false);
@@ -792,7 +808,8 @@ public abstract class AbstractTypeDefinitionWrapper implements TypeDefinitionWra
             }
 
             propDefImpl.setChoices(choiceList);
-        } else if (propDef instanceof PropertyUriDefinitionImpl)
+        }
+        else if (propDef instanceof PropertyUriDefinitionImpl)
         {
             PropertyUriDefinitionImpl propDefImpl = (PropertyUriDefinitionImpl) propDef;
             propDefImpl.setIsOpenChoice(false);

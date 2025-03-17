@@ -48,7 +48,6 @@ public class CascadeUpdateAspect implements OnCreateChildAssociationPolicy, OnDe
     private NodeService nodeService;
     private SearchTrackingComponent searchTrackingComponent;
 
-  
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
@@ -58,7 +57,7 @@ public class CascadeUpdateAspect implements OnCreateChildAssociationPolicy, OnDe
     {
         this.nodeService = nodeService;
     }
- 
+
     public void setSearchTrackingComponent(SearchTrackingComponent searchTrackingComponent)
     {
         this.searchTrackingComponent = searchTrackingComponent;
@@ -72,10 +71,10 @@ public class CascadeUpdateAspect implements OnCreateChildAssociationPolicy, OnDe
         // need to listen to:
         // invokeOnCreateChildAssociation(newParentAssocRef, false);
         // invokeOnDeleteChildAssociation(oldParentAssocRef);
-        // invokeOnMoveNode(oldParentAssocRef, newParentAssocRef); 
-        // categories affect paths via membership (not paths beneath nodes that are categories) 
+        // invokeOnMoveNode(oldParentAssocRef, newParentAssocRef);
+        // categories affect paths via membership (not paths beneath nodes that are categories)
         // - only changing category structure requires a cascade not changing a node's on a categories
-        
+
         this.policyComponent.bindAssociationBehaviour(OnCreateChildAssociationPolicy.QNAME,
                 ContentModel.TYPE_BASE,
                 new JavaBehaviour(this, "onCreateChildAssociation", Behaviour.NotificationFrequency.EVERY_EVENT));
@@ -103,16 +102,16 @@ public class CascadeUpdateAspect implements OnCreateChildAssociationPolicy, OnDe
     @Override
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
-        if(!isNewNode)
+        if (!isNewNode)
         {
             markCascadeUpdate(childAssocRef.getChildRef());
         }
     }
-    
+
     private void markCascadeUpdate(NodeRef nodeRef)
     {
         Status status = nodeService.getNodeStatus(nodeRef);
         nodeService.setProperty(status.getNodeRef(), ContentModel.PROP_CASCADE_CRC, searchTrackingComponent.getCRC(status.getDbId()));
-        nodeService.setProperty(status.getNodeRef(), ContentModel.PROP_CASCADE_TX, status.getDbTxnId());   
+        nodeService.setProperty(status.getNodeRef(), ContentModel.PROP_CASCADE_TX, status.getDbTxnId());
     }
 }

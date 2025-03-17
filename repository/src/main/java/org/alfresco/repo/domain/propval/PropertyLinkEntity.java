@@ -38,22 +38,21 @@ public class PropertyLinkEntity
     private Long containedIn;
     private Long keyPropId;
     private Long valuePropId;
-    
+
     public PropertyLinkEntity()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("PropertyLinkEntity")
-          .append("[ rootPropId=").append(rootPropId)
-          .append(", propIndex=").append(propIndex)
-          .append(", containedIn=").append(containedIn)
-          .append(", keyPropId=").append(keyPropId)
-          .append(", valuePropId=").append(valuePropId)
-          .append("]");
+                .append("[ rootPropId=").append(rootPropId)
+                .append(", propIndex=").append(propIndex)
+                .append(", containedIn=").append(containedIn)
+                .append(", keyPropId=").append(keyPropId)
+                .append(", valuePropId=").append(valuePropId)
+                .append("]");
         return sb.toString();
     }
 

@@ -25,14 +25,14 @@
  */
 package org.alfresco.rest.api.impl;
 
-import org.alfresco.service.cmr.view.ImportPackageHandler;
-import org.alfresco.service.cmr.view.ImporterException;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+
+import org.alfresco.service.cmr.view.ImportPackageHandler;
+import org.alfresco.service.cmr.view.ImporterException;
 
 // note: based on HomeSiteImportPackageHandler in Cloud/Thor module
 public class SiteImportPackageHandler implements ImportPackageHandler
@@ -50,8 +50,7 @@ public class SiteImportPackageHandler implements ImportPackageHandler
 
     @Override
     public void startImport()
-    {
-    }
+    {}
 
     @Override
     public Reader getDataStream()
@@ -73,7 +72,7 @@ public class SiteImportPackageHandler implements ImportPackageHandler
         {
             return new ByteArrayInputStream(siteContent.getBytes("UTF-8"));
         }
-        catch(UnsupportedEncodingException e)
+        catch (UnsupportedEncodingException e)
         {
             throw new ImporterException("Failed to read content " + contentPath, e);
         }
@@ -81,6 +80,5 @@ public class SiteImportPackageHandler implements ImportPackageHandler
 
     @Override
     public void endImport()
-    {
-    }
+    {}
 }

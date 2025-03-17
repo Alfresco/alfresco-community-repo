@@ -30,5 +30,4 @@ package org.alfresco.module.org_alfresco_module_rm.bulk;
  * An immutable POJO to represent a bulk cancellation request
  */
 public record BulkCancellationRequest(String reason)
-{
-}
+{}

@@ -35,8 +35,8 @@ import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQuerySortDetails;
-import org.alfresco.query.PagingRequest;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.calendar.CalendarModel;
 import org.alfresco.repo.query.AbstractQNameAwareCannedQueryFactory;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
@@ -66,77 +66,75 @@ public class GetCalendarEntriesCannedQueryFactory extends AbstractQNameAwareCann
 
     public void setNodeService(NodeService nodeService)
     {
-       this.nodeService = nodeService;
+        this.nodeService = nodeService;
     }
 
     public void setTaggingService(TaggingService taggingService)
     {
-       this.taggingService = taggingService;
+        this.taggingService = taggingService;
     }
 
     @Override
     public void afterPropertiesSet() throws Exception
     {
         super.afterPropertiesSet();
-        
+
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "taggingService", taggingService);
     }
-    
+
     @Override
     public CannedQuery<CalendarEntry> getCannedQuery(CannedQueryParameters parameters)
     {
         final GetCalendarEntriesCannedQuery cq = new GetCalendarEntriesCannedQuery(
-              cannedQueryDAO, nodeService, taggingService, methodSecurity, parameters
-        );
-        
+                cannedQueryDAO, nodeService, taggingService, methodSecurity, parameters);
+
         return (CannedQuery<CalendarEntry>) cq;
     }
-    
+
     public CannedQuery<CalendarEntry> getCannedQuery(NodeRef[] containerNodes, Date fromDate, Date toDate, PagingRequest pagingReq)
     {
         ParameterCheck.mandatory("containerNodes", containerNodes);
         ParameterCheck.mandatory("pagingReq", pagingReq);
-        
+
         int requestTotalCountMax = pagingReq.getRequestTotalCountMax();
-        
+
         Long[] containerIds = new Long[containerNodes.length];
-        for(int i=0; i<containerIds.length; i++)
+        for (int i = 0; i < containerIds.length; i++)
         {
-           containerIds[i] = getNodeId(containerNodes[i]);
+            containerIds[i] = getNodeId(containerNodes[i]);
         }
-        
-        //FIXME Need tenant service like for GetChildren?
+
+        // FIXME Need tenant service like for GetChildren?
         GetCalendarEntriesCannedQueryParams paramBean = new GetCalendarEntriesCannedQueryParams(
-              containerIds, 
-              getQNameId(ContentModel.PROP_NAME),
-              getQNameId(CalendarModel.TYPE_EVENT),
-              getQNameId(CalendarModel.PROP_FROM_DATE),
-              getQNameId(CalendarModel.PROP_TO_DATE),
-              getQNameId(CalendarModel.PROP_RECURRENCE_RULE),
-              getQNameId(CalendarModel.PROP_RECURRENCE_LAST_MEETING),
-              fromDate, 
-              toDate
-        );
-        
+                containerIds,
+                getQNameId(ContentModel.PROP_NAME),
+                getQNameId(CalendarModel.TYPE_EVENT),
+                getQNameId(CalendarModel.PROP_FROM_DATE),
+                getQNameId(CalendarModel.PROP_TO_DATE),
+                getQNameId(CalendarModel.PROP_RECURRENCE_RULE),
+                getQNameId(CalendarModel.PROP_RECURRENCE_LAST_MEETING),
+                fromDate,
+                toDate);
+
         CannedQueryPageDetails cqpd = createCQPageDetails(pagingReq);
         CannedQuerySortDetails cqsd = createCQSortDetails();
-        
+
         // create query params holder
         CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, requestTotalCountMax, pagingReq.getQueryExecutionId());
-        
+
         // return canned query instance
         return getCannedQuery(params);
     }
-    
+
     protected CannedQuerySortDetails createCQSortDetails()
     {
-        // Sort by start date, then end date, then created at for two events with matching times 
-        List<Pair<? extends Object,SortOrder>> sort = new ArrayList<Pair<? extends Object, SortOrder>>();
-        sort.add(new Pair<QName, SortOrder>(CalendarModel.PROP_FROM_DATE, SortOrder.ASCENDING)); 
+        // Sort by start date, then end date, then created at for two events with matching times
+        List<Pair<? extends Object, SortOrder>> sort = new ArrayList<Pair<? extends Object, SortOrder>>();
+        sort.add(new Pair<QName, SortOrder>(CalendarModel.PROP_FROM_DATE, SortOrder.ASCENDING));
         sort.add(new Pair<QName, SortOrder>(CalendarModel.PROP_TO_DATE, SortOrder.ASCENDING));
         sort.add(new Pair<QName, SortOrder>(ContentModel.PROP_CREATED, SortOrder.ASCENDING));
-        
+
         return new CannedQuerySortDetails(sort);
     }
 }

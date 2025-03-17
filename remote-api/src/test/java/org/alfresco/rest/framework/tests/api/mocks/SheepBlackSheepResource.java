@@ -29,6 +29,8 @@ package org.alfresco.rest.framework.tests.api.mocks;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.extensions.webscripts.Status;
+
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.ResourceParameter;
@@ -36,37 +38,33 @@ import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.springframework.extensions.webscripts.Status;
 
 /**
  * Implements Get
  * 
  * @author Gethin James
  */
-@RelationshipResource(name = "blacksheep",entityResource=SheepEntityResource.class, title = "BlackSheep")
+@RelationshipResource(name = "blacksheep", entityResource = SheepEntityResource.class, title = "BlackSheep")
 public class SheepBlackSheepResource implements RelationshipResourceAction.Read<Sheep>,
-            RelationshipResourceAction.Update<Sheep>, RelationshipResourceAction.Delete,
-            RelationshipResourceAction.Create<Sheep>, RelationshipResourceAction.DeleteSet
+        RelationshipResourceAction.Update<Sheep>, RelationshipResourceAction.Delete,
+        RelationshipResourceAction.Create<Sheep>, RelationshipResourceAction.DeleteSet
 {
-
 
     @Override
     public CollectionWithPagingInfo<Sheep> readAll(String entityResourceId, Parameters params)
     {
-        return CollectionWithPagingInfo.asPaged(params.getPaging(),Arrays.asList(new Sheep("D1"), new Sheep("Z2"), new Sheep("4X"), new Sheep("S4")));
+        return CollectionWithPagingInfo.asPaged(params.getPaging(), Arrays.asList(new Sheep("D1"), new Sheep("Z2"), new Sheep("4X"), new Sheep("S4")));
     }
 
     @Override
     @WebApiDescription(title = "Deletes only black Sheep", successStatus = Status.STATUS_CONFLICT)
     public void delete(String entityResourceId, String id, Parameters parameters)
-    {
-    }
+    {}
 
     @Override
     @WebApiDescription(title = "Deletes only black Sheep", successStatus = Status.STATUS_CONFLICT)
     public void deleteSet(String entityResourceId, Parameters parameters)
-    {
-    }
+    {}
 
     @Override
     public Sheep update(String entityResourceId, Sheep entity, Parameters parameters)
@@ -75,8 +73,8 @@ public class SheepBlackSheepResource implements RelationshipResourceAction.Read<
     }
 
     @Override
-    @WebApiParam(name="entity", title="A single sheep", description="A single sheep, multiples are not supported.", 
-    kind=ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false)
+    @WebApiParam(name = "entity", title = "A single sheep", description = "A single sheep, multiples are not supported.",
+            kind = ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple = false)
     public List<Sheep> create(String entityResourceId, List<Sheep> entity, Parameters parameters)
     {
         return entity;

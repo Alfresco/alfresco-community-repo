@@ -36,6 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -49,15 +52,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * This class is responsible for placing a rendition node in the correct
- * location given a temporary rendition, a source node, a rendition location and
- * optionally an old rendition. This manages the complex logic of deciding
- * whether to move an old rendition or orphan it and create a new one amongst
- * other things.
+ * This class is responsible for placing a rendition node in the correct location given a temporary rendition, a source node, a rendition location and optionally an old rendition. This manages the complex logic of deciding whether to move an old rendition or orphan it and create a new one amongst other things.
  * 
  * @author Nick Smith
  *
@@ -71,7 +68,6 @@ public class RenditionNodeManager
 
     private static final List<QName> unchangedProperties = Arrays.asList(PROP_NODE_REF, PROP_STORE_NAME);
     private static final String LINE_BREAK = System.getProperty("line.separator", "\n");
-    
 
     /**
      * The source node being rendered.
@@ -84,24 +80,30 @@ public class RenditionNodeManager
     private final BehaviourFilter behaviourFilter;
     private final RenditionService renditionService;
     /**
-     * This holds an existing rendition node if one exists and is linked to the source node
-     * by a correctly named rendition association.
+     * This holds an existing rendition node if one exists and is linked to the source node by a correctly named rendition association.
      */
     private final NodeRef existingLinkedRendition;
-    
+
     /**
      * 
-     * @param sourceNode the source node which is being rendered.
-     * @param tempRenditionNode the temporary rendition
-     * @param location the proposed location of the rendition node.
-     * @param renditionDefinition RenditionDefinition
-     * @param nodeService NodeService
-     * @param renditionService RenditionService
-     * @param behaviourFilter BehaviourFilter
+     * @param sourceNode
+     *            the source node which is being rendered.
+     * @param tempRenditionNode
+     *            the temporary rendition
+     * @param location
+     *            the proposed location of the rendition node.
+     * @param renditionDefinition
+     *            RenditionDefinition
+     * @param nodeService
+     *            NodeService
+     * @param renditionService
+     *            RenditionService
+     * @param behaviourFilter
+     *            BehaviourFilter
      */
     public RenditionNodeManager(NodeRef sourceNode, NodeRef tempRenditionNode, RenditionLocation location,
-                RenditionDefinition renditionDefinition, NodeService nodeService, RenditionService renditionService,
-                BehaviourFilter behaviourFilter)
+            RenditionDefinition renditionDefinition, NodeService nodeService, RenditionService renditionService,
+            BehaviourFilter behaviourFilter)
     {
         this.sourceNode = sourceNode;
         this.tempRenditionNode = tempRenditionNode;
@@ -110,33 +112,32 @@ public class RenditionNodeManager
         this.nodeService = nodeService;
         this.renditionService = renditionService;
         this.behaviourFilter = behaviourFilter;
-        
+
         this.existingLinkedRendition = getExistingRendition();
 
         if (logger.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
             msg.append("Creating/updating rendition based on:").append(LINE_BREAK)
-               .append("    sourceNode: ").append(sourceNode).append(LINE_BREAK)
-               .append("    tempRendition: ").append(tempRenditionNode).append(LINE_BREAK)
-               .append("    parentNode: ").append(location.getParentRef()).append(LINE_BREAK)
-               .append("    childNode: ").append(location.getChildRef()).append(LINE_BREAK)
-               .append("    childName: ").append(location.getChildName()).append(LINE_BREAK)
-               .append("    renditionDefinition.name: ").append(renditionDefinition.getRenditionName());
+                    .append("    sourceNode: ").append(sourceNode).append(LINE_BREAK)
+                    .append("    tempRendition: ").append(tempRenditionNode).append(LINE_BREAK)
+                    .append("    parentNode: ").append(location.getParentRef()).append(LINE_BREAK)
+                    .append("    childNode: ").append(location.getChildRef()).append(LINE_BREAK)
+                    .append("    childName: ").append(location.getChildName()).append(LINE_BREAK)
+                    .append("    renditionDefinition.name: ").append(renditionDefinition.getRenditionName());
             logger.debug(msg.toString());
         }
     }
 
     /**
-     * This method returns the {@link ChildAssociationRef} for the rendition node. In doing this
-     * it may reuse an existing rendition node, move an existing rendition node or create a new rendition node
-     * as appropriate.
+     * This method returns the {@link ChildAssociationRef} for the rendition node. In doing this it may reuse an existing rendition node, move an existing rendition node or create a new rendition node as appropriate.
+     * 
      * @return the primary parent association of the rendition node, which may not be the rendition association.
      */
     public ChildAssociationRef findOrCreateRenditionNode()
     {
         QName renditionName = renditionDefinition.getRenditionName();
-        
+
         ChildAssociationRef result;
         // If no rendition already exists create a new rendition node and association.
         if (existingLinkedRendition == null)
@@ -145,7 +146,7 @@ public class RenditionNodeManager
             {
                 logger.debug("No existing rendition was found to be linked from the source node.");
             }
-            
+
             result = getSpecifiedRenditionOrCreateNewRendition(renditionName);
         }
         else
@@ -167,7 +168,7 @@ public class RenditionNodeManager
                     orphanOldRendition(renditionName);
                     result = getSpecifiedRenditionOrCreateNewRendition(renditionName);
                 }
-                
+
                 // If the old rendition is in the wrong place and the 'orphan existing
                 // rendition' param is not set to true then move the existing rendition
                 // to the correct location.
@@ -179,10 +180,10 @@ public class RenditionNodeManager
     }
 
     /**
-     * This method moves the old rendition to the required location giving it the correct parent-assoc type and
-     * the specified association name.
+     * This method moves the old rendition to the required location giving it the correct parent-assoc type and the specified association name.
      * 
-     * @param renditionName the name to put on the newly created association.
+     * @param renditionName
+     *            the name to put on the newly created association.
      * @return the ChildAssociationRef of the moved nodeRef.
      */
     private ChildAssociationRef moveOldRendition(QName renditionName)
@@ -191,7 +192,7 @@ public class RenditionNodeManager
         QName assocName = getAssociationName(parent.equals(sourceNode), renditionName);
         QName assocType = sourceNode.equals(parent) ? RenditionModel.ASSOC_RENDITION : ContentModel.ASSOC_CONTAINS;
         ChildAssociationRef result = nodeService.moveNode(existingLinkedRendition, parent, assocType, assocName);
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("The old rendition was moved to " + result);
@@ -200,28 +201,28 @@ public class RenditionNodeManager
     }
 
     /**
-     * This method performs the 'orphaning' of the oldRendition. It removes the rendition aspect(s) and removes
-     * the child-association linking the old rendition to its source node. The old rendition node is not deleted.
+     * This method performs the 'orphaning' of the oldRendition. It removes the rendition aspect(s) and removes the child-association linking the old rendition to its source node. The old rendition node is not deleted.
      * 
-     * @param renditionName the name of the rendition.
-     * @throws RenditionServiceException if there was not exactly one parent assoc from the oldRendition having the specified renditionName
-     *                                   or if the matching parent assoc was not to the correct source node.
+     * @param renditionName
+     *            the name of the rendition.
+     * @throws RenditionServiceException
+     *             if there was not exactly one parent assoc from the oldRendition having the specified renditionName or if the matching parent assoc was not to the correct source node.
      */
     private void orphanOldRendition(QNamePattern renditionName)
     {
         // Get all parent assocs from the old rendition of the specified renditionName.
         List<ChildAssociationRef> parents = nodeService.getParentAssocs(existingLinkedRendition, RenditionModel.ASSOC_RENDITION, renditionName);
         // There should only be one matching assoc.
-        if(parents.size() == 1)
+        if (parents.size() == 1)
         {
             ChildAssociationRef parentAssoc = parents.get(0);
-            if(parentAssoc.getParentRef().equals(sourceNode))
+            if (parentAssoc.getParentRef().equals(sourceNode))
             {
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Orphaning old rendition node " + existingLinkedRendition);
                 }
-                
+
                 behaviourFilter.disableBehaviour(existingLinkedRendition, ContentModel.ASPECT_AUDITABLE);
                 behaviourFilter.disableBehaviour(sourceNode, ContentModel.ASPECT_AUDITABLE);
                 try
@@ -238,9 +239,9 @@ public class RenditionNodeManager
                 return;
             }
         }
-        String msg = "Node: " + existingLinkedRendition 
-            + " is not a rendition of type: " + renditionName 
-            + " for source node: " + sourceNode;
+        String msg = "Node: " + existingLinkedRendition
+                + " is not a rendition of type: " + renditionName
+                + " for source node: " + sourceNode;
         if (logger.isDebugEnabled())
         {
             logger.debug(msg);
@@ -271,11 +272,9 @@ public class RenditionNodeManager
     }
 
     /**
-     * This method determines whether or not orphaning of the old rendition is
-     * required.
+     * This method determines whether or not orphaning of the old rendition is required.
      * 
-     * @return <code>true</code> if orphaning is required, else
-     *         <code>false</code>.
+     * @return <code>true</code> if orphaning is required, else <code>false</code>.
      */
     private boolean isOrphaningRequiredWithoutLog()
     {
@@ -285,7 +284,7 @@ public class RenditionNodeManager
             return true;
         else
             return AbstractRenderingEngine.getParamWithDefault(RenditionService.PARAM_ORPHAN_EXISTING_RENDITION,
-                        Boolean.FALSE, renditionDefinition);
+                    Boolean.FALSE, renditionDefinition);
     }
 
     /**
@@ -353,7 +352,7 @@ public class RenditionNodeManager
             }
             result = createNewRendition(renditionName, nodeType);
         }
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Using rendition " + result);
@@ -361,7 +360,7 @@ public class RenditionNodeManager
 
         return result;
     }
-    
+
     private void checkDestinationNodeIsAcceptable(NodeRef destination)
     {
         if (!nodeService.exists(destination))
@@ -388,12 +387,12 @@ public class RenditionNodeManager
     }
 
     /**
-     * This method creates a new rendition node. If the source node for this rendition is not
-     * the primary parent of the newly created rendition node, the rendition node is added as
-     * a child of the source node.
+     * This method creates a new rendition node. If the source node for this rendition is not the primary parent of the newly created rendition node, the rendition node is added as a child of the source node.
      * 
-     * @param renditionName QName
-     * @param nodeTypeQName QName
+     * @param renditionName
+     *            QName
+     * @param nodeTypeQName
+     *            QName
      * @return the primary parent association of the newly created rendition node.
      */
     private ChildAssociationRef createNewRendition(QName renditionName, QName nodeTypeQName)
@@ -406,9 +405,9 @@ public class RenditionNodeManager
         {
             nodeTypeQName = ContentModel.TYPE_CONTENT;
         }
-        
+
         QName assocName = getAssociationName(parentIsSource, renditionName);
-        
+
         // We don't want to propagate timestamps to the source node.
         // We don't want to index renditions.
         ChildAssociationRef primaryAssoc = null;
@@ -460,8 +459,10 @@ public class RenditionNodeManager
     }
 
     /**
-     * @param parentIsSource boolean
-     * @param renditionName QName
+     * @param parentIsSource
+     *            boolean
+     * @param renditionName
+     *            QName
      * @return QName
      */
     private QName getAssociationName(boolean parentIsSource, QName renditionName)
@@ -469,9 +470,9 @@ public class RenditionNodeManager
         // If the parent is not the source node and the location has a child name then use that name.
         QName assocName = renditionName;
         String childName = location.getChildName();
-        if(parentIsSource==false 
-                    && childName!=null 
-                    && childName.length()>0)
+        if (parentIsSource == false
+                && childName != null
+                && childName.length() > 0)
         {
             assocName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, childName);
         }
@@ -479,8 +480,7 @@ public class RenditionNodeManager
     }
 
     /**
-     * This method returns the rendition on the given sourceNode with the given renditionDefinition, if such
-     * a rendition exists.
+     * This method returns the rendition on the given sourceNode with the given renditionDefinition, if such a rendition exists.
      * 
      * @return the rendition node if one exists, else null.
      */
@@ -488,25 +488,26 @@ public class RenditionNodeManager
     {
         QName renditionName = renditionDefinition.getRenditionName();
         ChildAssociationRef renditionAssoc = renditionService.getRenditionByName(sourceNode, renditionName);
-        
+
         NodeRef result = (renditionAssoc == null) ? null : renditionAssoc.getChildRef();
         if (logger.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
             msg.append("Existing rendition with name ")
-               .append(renditionName)
-               .append(": ")
-               .append(result);
+                    .append(renditionName)
+                    .append(": ")
+                    .append(result);
             logger.debug(msg.toString());
         }
-        
+
         return result;
     }
-    
+
     /**
-     * This method copies properties from the temporary rendition node onto the targetNode. It also sets the node type.
-     * {@link #unchangedProperties Some properties} are not copied.
-     * @param finalRenditionAssoc ChildAssociationRef
+     * This method copies properties from the temporary rendition node onto the targetNode. It also sets the node type. {@link #unchangedProperties Some properties} are not copied.
+     * 
+     * @param finalRenditionAssoc
+     *            ChildAssociationRef
      */
     private void transferNodeProperties(ChildAssociationRef finalRenditionAssoc)
     {
@@ -524,14 +525,14 @@ public class RenditionNodeManager
         {
             nodeService.setType(targetNode, type);
         }
-        
+
         // Copy over all regular properties from the temporary rendition
         Map<QName, Serializable> newProps = nodeService.getProperties(targetNode);
-        for(Entry<QName,Serializable> entry : nodeService.getProperties(tempRenditionNode).entrySet())
+        for (Entry<QName, Serializable> entry : nodeService.getProperties(tempRenditionNode).entrySet())
         {
             QName propKey = entry.getKey();
-            if(unchangedProperties.contains(propKey) ||
-               NamespaceService.SYSTEM_MODEL_1_0_URI.equals(propKey.getNamespaceURI()))
+            if (unchangedProperties.contains(propKey) ||
+                    NamespaceService.SYSTEM_MODEL_1_0_URI.equals(propKey.getNamespaceURI()))
             {
                 // These shouldn't be copied over
                 continue;

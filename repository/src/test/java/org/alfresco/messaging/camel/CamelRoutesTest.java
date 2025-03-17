@@ -27,7 +27,6 @@ package org.alfresco.messaging.camel;
 
 import static org.junit.Assert.*;
 
-import org.alfresco.util.testing.category.NeverRunsTests;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
@@ -39,6 +38,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import org.alfresco.util.testing.category.NeverRunsTests;
 
 /**
  * Tests routes defined via Spring with package scan
@@ -52,16 +53,16 @@ public class CamelRoutesTest
 {
     @EndpointInject("mock:result1")
     protected MockEndpoint resultEndpoint1;
-    
+
     @EndpointInject("mock:result2")
     protected MockEndpoint resultEndpoint2;
-    
+
     @EndpointInject("mock:dlq")
     protected MockEndpoint dlqEndpoint;
-    
+
     @Autowired
     protected CamelContext camelContext;
-    
+
     @Produce("direct:alfresco.test.1")
     protected ProducerTemplate template1;
 
@@ -84,7 +85,8 @@ public class CamelRoutesTest
     protected MockExceptionThrowingConsumer mockExceptionThrowingConsumer;
 
     @Test
-    public void testMessageRouteXmlDefined() throws Exception {
+    public void testMessageRouteXmlDefined() throws Exception
+    {
         String expectedBody = "<matched.>";
 
         resultEndpoint1.expectedBodiesReceived(expectedBody);
@@ -95,7 +97,8 @@ public class CamelRoutesTest
     }
 
     @Test
-    public void testMessageRoutePackageDefined() throws Exception {
+    public void testMessageRoutePackageDefined() throws Exception
+    {
         String expectedBody = "<matched.>";
 
         resultEndpoint2.expectedBodiesReceived(expectedBody);
@@ -106,7 +109,8 @@ public class CamelRoutesTest
     }
 
     @Test
-    public void testMessageRouteXmlOverride() throws Exception {
+    public void testMessageRouteXmlOverride() throws Exception
+    {
         String expectedBody = "<matched.>";
 
         dlqEndpoint.expectedBodiesReceived(expectedBody);
@@ -117,7 +121,8 @@ public class CamelRoutesTest
     }
 
     @Test
-    public void testTransactedRoute() throws Exception {
+    public void testTransactedRoute() throws Exception
+    {
         String expectedBody = "<matched.>";
 
         template4.sendBody(expectedBody);

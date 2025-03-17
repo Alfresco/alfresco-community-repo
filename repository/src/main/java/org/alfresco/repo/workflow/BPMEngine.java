@@ -25,9 +25,9 @@
  */
 package org.alfresco.repo.workflow;
 
-import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.springframework.beans.factory.InitializingBean;
 
+import org.alfresco.service.cmr.workflow.WorkflowException;
 
 /**
  * Base functionality for a plug-in BPM Engine
@@ -39,11 +39,12 @@ public class BPMEngine implements InitializingBean
 {
     private BPMEngineRegistry registry;
     private String engineId;
- 
+
     /**
      * Sets the BPM Engine Registry
      * 
-     * @param registry   the registry
+     * @param registry
+     *            the registry
      */
     public void setBPMEngineRegistry(BPMEngineRegistry registry)
     {
@@ -53,7 +54,8 @@ public class BPMEngine implements InitializingBean
     /**
      * Sets the BPM Engine Id
      * 
-     * @param engineId   the id
+     * @param engineId
+     *            the id
      */
     public void setEngineId(String engineId)
     {
@@ -67,9 +69,9 @@ public class BPMEngine implements InitializingBean
     {
         return engineId;
     }
-    
+
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     public void afterPropertiesSet() throws Exception
     {
@@ -79,34 +81,36 @@ public class BPMEngine implements InitializingBean
         }
         if (this instanceof WorkflowComponent)
         {
-            registry.registerWorkflowComponent(engineId, (WorkflowComponent)this);
+            registry.registerWorkflowComponent(engineId, (WorkflowComponent) this);
         }
         if (this instanceof TaskComponent)
         {
-            registry.registerTaskComponent(engineId, (TaskComponent)this);
+            registry.registerTaskComponent(engineId, (TaskComponent) this);
         }
     }
 
     /**
      * Construct a global Id for use outside of the engine
-     *  
-     * @param localId  the local engine id
-     * @return  the global id
+     * 
+     * @param localId
+     *            the local engine id
+     * @return the global id
      */
     public String createGlobalId(String localId)
     {
         return BPMEngineRegistry.createGlobalId(engineId, localId);
     }
-    
+
     /**
      * Construct a local Id from a global Id
      * 
-     * @param globalId  the global id
-     * @return  the local id
+     * @param globalId
+     *            the global id
+     * @return the local id
      */
     public String createLocalId(String globalId)
     {
         return BPMEngineRegistry.getLocalId(globalId);
     }
-    
+
 }

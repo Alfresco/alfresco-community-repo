@@ -28,10 +28,11 @@ package org.alfresco.repo.web.scripts.dictionary;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.service.namespace.QName;
 
 /*
  * Webscript to get the Associationdefinition for a given classname and association-name
@@ -61,14 +62,16 @@ public abstract class AbstractAssociationGet extends DictionaryWebServiceBase
     }
 
     /**
-     * @param req - webscript request
+     * @param req
+     *            - webscript request
      * @return qualified name for association
      */
     protected abstract QName getAssociationQname(WebScriptRequest req);
 
     /**
-     * @param req - webscript request
-     * @return  qualified name for class
+     * @param req
+     *            - webscript request
+     * @return qualified name for class
      */
     protected abstract QName getClassQname(WebScriptRequest req);
 

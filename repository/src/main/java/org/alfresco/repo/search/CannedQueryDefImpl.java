@@ -33,6 +33,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.dom4j.Element;
+import org.dom4j.Namespace;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.search.NamedQueryParameterDefinition;
@@ -40,8 +43,6 @@ import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.dom4j.Element;
-import org.dom4j.Namespace;
 
 public class CannedQueryDefImpl implements CannedQueryDef
 {
@@ -69,7 +70,7 @@ public class CannedQueryDefImpl implements CannedQueryDef
         this.qName = qName;
         this.language = language;
         this.query = query;
-        for(QueryParameterDefinition paramDef : queryParameterDefs)
+        for (QueryParameterDefinition paramDef : queryParameterDefs)
         {
             this.queryParameterDefs.put(paramDef.getQName(), paramDef);
         }
@@ -107,57 +108,57 @@ public class CannedQueryDefImpl implements CannedQueryDef
         {
             QName qName = null;
             Element qNameElement = element.element(QNAME.getName());
-            if(qNameElement != null)
+            if (qNameElement != null)
             {
-               qName = QName.createQName(qNameElement.getText(), container.getNamespacePrefixResolver());
-            }   
-            
+                qName = QName.createQName(qNameElement.getText(), container.getNamespacePrefixResolver());
+            }
+
             String language = null;
             Element languageElement = element.element(LANGUAGE.getName());
-            if(languageElement != null)
+            if (languageElement != null)
             {
-               language = languageElement.getText();
-            }  
-            
+                language = languageElement.getText();
+            }
+
             String query = null;
             Element queryElement = element.element(QUERY.getName());
-            if(queryElement != null)
+            if (queryElement != null)
             {
-               query = queryElement.getText();
-            }  
-            
+                query = queryElement.getText();
+            }
+
             List<QueryParameterDefinition> queryParameterDefs = new ArrayList<QueryParameterDefinition>();
-            
+
             List list = element.elements(QueryParameterDefImpl.getElementQName().getName());
-            for(Iterator it = list.iterator(); it.hasNext(); /**/)
+            for (Iterator it = list.iterator(); it.hasNext(); /**/)
             {
                 Element defElement = (Element) it.next();
                 NamedQueryParameterDefinition nqpd = QueryParameterDefImpl.createParameterDefinition(defElement, dictionaryService, nspr);
                 queryParameterDefs.add(nqpd.getQueryParameterDefinition());
             }
-            
+
             list = element.elements(QueryParameterRefImpl.getElementQName().getName());
-            for(Iterator it = list.iterator(); it.hasNext(); /**/)
+            for (Iterator it = list.iterator(); it.hasNext(); /**/)
             {
                 Element refElement = (Element) it.next();
                 NamedQueryParameterDefinition nqpd = QueryParameterRefImpl.createParameterReference(refElement, dictionaryService, container);
-                QueryParameterDefinition  resolved = nqpd.getQueryParameterDefinition();
-                if(resolved == null)
+                QueryParameterDefinition resolved = nqpd.getQueryParameterDefinition();
+                if (resolved == null)
                 {
-                    throw new AlfrescoRuntimeException("Unable to find refernce parameter : "+nqpd.getQName());
+                    throw new AlfrescoRuntimeException("Unable to find refernce parameter : " + nqpd.getQName());
                 }
                 queryParameterDefs.add(resolved);
             }
-            
+
             return new CannedQueryDefImpl(qName, language, query, queryParameterDefs, container);
-            
+
         }
         else
         {
             return null;
         }
     }
-    
+
     public static org.dom4j.QName getElementQName()
     {
         return ELEMENT_QNAME;

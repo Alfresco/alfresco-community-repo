@@ -28,16 +28,6 @@ package org.alfresco.opencmis;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.query.PagingRequest;
-import org.alfresco.query.PagingResults;
-import org.alfresco.repo.tenant.Network;
-import org.alfresco.repo.tenant.NetworksService;
-import org.alfresco.repo.tenant.TenantAdminService;
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
-import org.alfresco.util.FileFilterMode;
-import org.alfresco.util.FileFilterMode.Client;
 import org.apache.chemistry.opencmis.commons.data.Acl;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.data.ExtensionsData;
@@ -48,6 +38,17 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundExcept
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.RepositoryInfoImpl;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
 
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
+import org.alfresco.repo.tenant.Network;
+import org.alfresco.repo.tenant.NetworksService;
+import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.util.FileFilterMode;
+import org.alfresco.util.FileFilterMode.Client;
+
 /**
  * Override OpenCMIS service object - for public api
  * 
@@ -56,35 +57,35 @@ import org.apache.chemistry.opencmis.commons.spi.Holder;
  */
 public class PublicApiAlfrescoCmisService extends AlfrescoCmisServiceImpl
 {
-	protected CMISConnector connector;
+    protected CMISConnector connector;
     protected TenantAdminService tenantAdminService;
     protected NetworksService networksService;
-    
+
     public PublicApiAlfrescoCmisService(CMISConnector connector, TenantAdminService tenantAdminService, NetworksService networksService)
     {
         super(connector);
-        
+
         this.connector = connector;
         this.networksService = networksService;
         this.tenantAdminService = tenantAdminService;
     }
-    
+
     @Override
     public String create(String repositoryId, Properties properties, String folderId,
-                ContentStream contentStream, VersioningState versioningState,
-                List<String> policies, ExtensionsData extension)
+            ContentStream contentStream, VersioningState versioningState,
+            List<String> policies, ExtensionsData extension)
     {
         FileFilterMode.setClient(Client.cmis);
         try
         {
             return super.create(
-                        repositoryId,
-                        properties,
-                        folderId,
-                        contentStream,
-                        versioningState,
-                        policies,
-                        extension);
+                    repositoryId,
+                    properties,
+                    folderId,
+                    contentStream,
+                    versioningState,
+                    policies,
+                    extension);
         }
         finally
         {
@@ -92,25 +93,24 @@ public class PublicApiAlfrescoCmisService extends AlfrescoCmisServiceImpl
         }
     }
 
-
     /**
      * Overridden to capture content upload for publishing to analytics service.
      */
     @Override
     public String createDocument(String repositoryId, Properties properties, String folderId,
-                ContentStream contentStream, VersioningState versioningState,
-                List<String> policies, Acl addAces, Acl removeAces, ExtensionsData extension)
+            ContentStream contentStream, VersioningState versioningState,
+            List<String> policies, Acl addAces, Acl removeAces, ExtensionsData extension)
     {
         String newId = super.createDocument(
-                    repositoryId,
-                    properties,
-                    folderId,
-                    contentStream,
-                    versioningState,
-                    policies,
-                    addAces,
-                    removeAces,
-                    extension);
+                repositoryId,
+                properties,
+                folderId,
+                contentStream,
+                versioningState,
+                policies,
+                addAces,
+                removeAces,
+                extension);
         return newId;
     }
 
@@ -119,8 +119,8 @@ public class PublicApiAlfrescoCmisService extends AlfrescoCmisServiceImpl
      */
     @Override
     public void setContentStream(String repositoryId, Holder<String> objectId,
-                Boolean overwriteFlag, Holder<String> changeToken, ContentStream contentStream,
-                ExtensionsData extension)
+            Boolean overwriteFlag, Holder<String> changeToken, ContentStream contentStream,
+            ExtensionsData extension)
     {
         FileFilterMode.setClient(Client.cmis);
         try
@@ -136,9 +136,9 @@ public class PublicApiAlfrescoCmisService extends AlfrescoCmisServiceImpl
     @Override
     public List<RepositoryInfo> getRepositoryInfos(ExtensionsData extension)
     {
-    	// for currently authenticated user
-    	PagingResults<Network> networks = networksService.getNetworks(new PagingRequest(0, Integer.MAX_VALUE));
-    	List<Network> page = networks.getPage();
+        // for currently authenticated user
+        PagingResults<Network> networks = networksService.getNetworks(new PagingRequest(0, Integer.MAX_VALUE));
+        List<Network> page = networks.getPage();
         final List<RepositoryInfo> repoInfos = new ArrayList<RepositoryInfo>(page.size() + 1);
         for (Network network : page)
         {
@@ -146,36 +146,35 @@ public class PublicApiAlfrescoCmisService extends AlfrescoCmisServiceImpl
         }
         return repoInfos;
     }
-    
+
     @Override
     public RepositoryInfo getRepositoryInfo(String repositoryId, ExtensionsData extension)
     {
-    	Network network = null;
-    	
-    	try
-    	{
+        Network network = null;
+
+        try
+        {
             checkRepositoryId(repositoryId);
             network = networksService.getNetwork(repositoryId);
-    	}
-    	catch(Exception e)
-    	{
-    		// ACE-2540: Avoid information leak. Same response if repository does not exist or if user is not a member
+        }
+        catch (Exception e)
+        {
+            // ACE-2540: Avoid information leak. Same response if repository does not exist or if user is not a member
             throw new CmisObjectNotFoundException("Unknown repository '" + repositoryId + "'!");
-    	}
+        }
 
         return getRepositoryInfo(network);
     }
 
     private RepositoryInfo getRepositoryInfo(final Network network)
     {
-    	final String networkId = network.getTenantDomain();
+        final String networkId = network.getTenantDomain();
         final String tenantDomain = (networkId.equals(TenantUtil.SYSTEM_TENANT) || networkId.equals(TenantUtil.DEFAULT_TENANT)) ? TenantService.DEFAULT_DOMAIN : networkId;
 
-        return TenantUtil.runAsSystemTenant(new TenantRunAsWork<RepositoryInfo>()
-        {
+        return TenantUtil.runAsSystemTenant(new TenantRunAsWork<RepositoryInfo>() {
             public RepositoryInfo doWork()
             {
-                RepositoryInfoImpl repoInfo = (RepositoryInfoImpl)connector.getRepositoryInfo(getContext().getCmisVersion());
+                RepositoryInfoImpl repoInfo = (RepositoryInfoImpl) connector.getRepositoryInfo(getContext().getCmisVersion());
 
                 repoInfo.setId(!networkId.equals("") ? networkId : TenantUtil.SYSTEM_TENANT);
                 repoInfo.setName(tenantDomain);
@@ -189,37 +188,37 @@ public class PublicApiAlfrescoCmisService extends AlfrescoCmisServiceImpl
     @Override
     public void checkRepositoryId(String repositoryId)
     {
-        if(repositoryId.equals(TenantUtil.DEFAULT_TENANT) || repositoryId.equals(TenantUtil.SYSTEM_TENANT))
+        if (repositoryId.equals(TenantUtil.DEFAULT_TENANT) || repositoryId.equals(TenantUtil.SYSTEM_TENANT))
         {
             // TODO check for super admin
             return;
         }
 
-        if(!tenantAdminService.existsTenant(repositoryId) || !tenantAdminService.isEnabledTenant(repositoryId))
+        if (!tenantAdminService.existsTenant(repositoryId) || !tenantAdminService.isEnabledTenant(repositoryId))
         {
             throw new CmisObjectNotFoundException("Unknown repository '" + repositoryId + "'!");
         }
     }
-    
+
     @Override
     public void beforeCall()
     {
         // NOTE: Don't invoke super beforeCall to exclude authentication which is already supported by
-        //       Web Script F/W
-        //super.beforeCall();
+        // Web Script F/W
+        // super.beforeCall();
     }
-    
+
     @Override
     public void afterCall()
     {
         // NOTE: Don't invoke super afterCall to exclude authentication which is already supported by
-        //       Web Script F/W
-        //super.afterCall();
+        // Web Script F/W
+        // super.afterCall();
     }
-    
+
     @Override
     public void close()
     {
-    	super.close();
+        super.close();
     }
 }

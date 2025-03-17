@@ -42,20 +42,20 @@ import org.alfresco.service.namespace.QName;
 public abstract class BasePropertyDecorator implements PropertyDecorator
 {
     protected Set<QName> propertyNames;
-    
+
     protected NodeService nodeService;
-    
+
     protected NamespaceService namespaceService;
-    
+
     protected PermissionService permissionService;
-    
+
     protected JSONConversionComponent jsonConversionComponent;
-    
+
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     public void setJsonConversionComponent(JSONConversionComponent jsonConversionComponent)
     {
         this.jsonConversionComponent = jsonConversionComponent;
@@ -70,24 +70,24 @@ public abstract class BasePropertyDecorator implements PropertyDecorator
     {
         this.permissionService = permissionService;
     }
-    
+
     public void init()
     {
         jsonConversionComponent.registerPropertyDecorator(this);
     }
-    
+
     @Override
     public Set<QName> getPropertyNames()
     {
         return propertyNames;
     }
-    
+
     public void setPropertyName(String propertyName)
     {
-        propertyNames = new HashSet<QName>(1);        
+        propertyNames = new HashSet<QName>(1);
         propertyNames.add(QName.createQName(propertyName, namespaceService));
     }
-    
+
     public void setPropertyNames(Set<String> propertyNames)
     {
         this.propertyNames = new HashSet<QName>(propertyNames.size());

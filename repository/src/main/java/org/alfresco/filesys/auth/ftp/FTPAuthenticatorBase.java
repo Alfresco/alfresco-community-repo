@@ -28,7 +28,11 @@ package org.alfresco.filesys.auth.ftp;
 
 import jakarta.transaction.UserTransaction;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.extensions.config.ConfigElement;
+
 import org.alfresco.filesys.AlfrescoConfigSection;
 import org.alfresco.jlan.ftp.FTPAuthenticator;
 import org.alfresco.jlan.ftp.FTPSrvSession;
@@ -41,48 +45,40 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.DisposableBean;
 
 /**
  * 
  * @author gkspencer
  */
-public abstract class FTPAuthenticatorBase implements FTPAuthenticator, ActivateableBean, DisposableBean {
+public abstract class FTPAuthenticatorBase implements FTPAuthenticator, ActivateableBean, DisposableBean
+{
 
     // Logging
-	  
-    protected static final Log logger = LogFactory.getLog("org.alfresco.ftp.protocol.auth");
 
+    protected static final Log logger = LogFactory.getLog("org.alfresco.ftp.protocol.auth");
 
     protected ServerConfigurationAccessor serverConfiguration;
 
-
     private AuthenticationComponent authenticationComponent;
-
 
     private AuthenticationService authenticationService;
 
-
     private TransactionService transactionService;
 
-
     private AuthorityService authorityService;
-    
+
     /** Is this component active, i.e. should it be used? */
     private boolean active = true;
 
     /**
-	 * Default constructor
-	 */
-	public FTPAuthenticatorBase() {
-	}
+     * Default constructor
+     */
+    public FTPAuthenticatorBase()
+    {}
 
-	
-	public void setConfig(ServerConfigurationAccessor config)
+    public void setConfig(ServerConfigurationAccessor config)
     {
-	    this.serverConfiguration = config;
+        this.serverConfiguration = config;
     }
 
     public void setAuthenticationComponent(AuthenticationComponent authenticationComponent)
@@ -105,10 +101,9 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator, Activate
         this.authorityService = authorityService;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive() */
     public boolean isActive()
     {
         return active;
@@ -128,8 +123,10 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator, Activate
     /**
      * Initialize the authenticator
      * 
-	 * @param config ServerConfiguration
-	 * @param params ConfigElement
+     * @param config
+     *            ServerConfiguration
+     * @param params
+     *            ConfigElement
      * @exception InvalidConfigurationException
      */
     public void initialize(ServerConfiguration config, ConfigElement params) throws InvalidConfigurationException
@@ -137,9 +134,9 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator, Activate
         setConfig(config);
 
         // Get the alfresco configuration section, required to get hold of various services/components
-        
-        AlfrescoConfigSection alfrescoConfig = (AlfrescoConfigSection) config.getConfigSection( AlfrescoConfigSection.SectionName);
-        
+
+        AlfrescoConfigSection alfrescoConfig = (AlfrescoConfigSection) config.getConfigSection(AlfrescoConfigSection.SectionName);
+
         // Copy over relevant bean properties for backward compatibility
         setAuthenticationComponent(alfrescoConfig.getAuthenticationComponent());
         setAuthenticationService(alfrescoConfig.getAuthenticationService());
@@ -157,132 +154,144 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator, Activate
      */
     public void initialize() throws InvalidConfigurationException
     {
-        if ( this.serverConfiguration == null)
+        if (this.serverConfiguration == null)
             throw new InvalidConfigurationException("server configuration accessor property not set");
-	}
+    }
 
     /**
-	 * Authenticate the user
-	 * 
-	 * @param info ClientInfo
-	 * @param sess FTPSrvSession
-	 * @return boolean
-	 */
-	public abstract boolean authenticateUser(ClientInfo info, FTPSrvSession sess);
-
-	/**
-	 * Close the authenticator, perform any cleanup
-	 */
-	public void closeAuthenticator()
-	{
-	}
-	
-
-	/**
-	 * Return the authentication componenet
-	 * 
-	 * @return AuthenticationComponent
-	 */
-	protected final AuthenticationComponent getAuthenticationComponent() {
-		return this.authenticationComponent;
-	}
+     * Authenticate the user
+     * 
+     * @param info
+     *            ClientInfo
+     * @param sess
+     *            FTPSrvSession
+     * @return boolean
+     */
+    public abstract boolean authenticateUser(ClientInfo info, FTPSrvSession sess);
 
     /**
-	 * Return the authentication service
-	 * 
-	 * @return AuthenticationService
-	 */
-	protected final AuthenticationService getAuthenticationService() {
-		return this.authenticationService;
-	}
+     * Close the authenticator, perform any cleanup
+     */
+    public void closeAuthenticator()
+    {}
 
-	/**
-	 * Return the transaction service
-	 * 
-	 * @return TransactionService
-	 */
-	protected final TransactionService getTransactionService() {
-		return this.transactionService;
-	}
+    /**
+     * Return the authentication componenet
+     * 
+     * @return AuthenticationComponent
+     */
+    protected final AuthenticationComponent getAuthenticationComponent()
+    {
+        return this.authenticationComponent;
+    }
 
-	/**
-	 * Return the authority service
-	 * 
-	 * @return AuthorityService
-	 */
-	protected final AuthorityService getAuthorityService() {
-		return this.authorityService;
-	}
+    /**
+     * Return the authentication service
+     * 
+     * @return AuthenticationService
+     */
+    protected final AuthenticationService getAuthenticationService()
+    {
+        return this.authenticationService;
+    }
 
-	/**
-	 * Check if the user is an administrator user name
-	 * 
-	 * @param cInfo ClientInfo
-	 */
-	protected final void checkForAdminUserName(ClientInfo cInfo) {
-		
-		// Check if the user name is an administrator
+    /**
+     * Return the transaction service
+     * 
+     * @return TransactionService
+     */
+    protected final TransactionService getTransactionService()
+    {
+        return this.transactionService;
+    }
 
-		UserTransaction tx = getTransactionService().getUserTransaction();
+    /**
+     * Return the authority service
+     * 
+     * @return AuthorityService
+     */
+    protected final AuthorityService getAuthorityService()
+    {
+        return this.authorityService;
+    }
 
-		try {
-			tx.begin();
+    /**
+     * Check if the user is an administrator user name
+     * 
+     * @param cInfo
+     *            ClientInfo
+     */
+    protected final void checkForAdminUserName(ClientInfo cInfo)
+    {
 
-			if ( cInfo.getLogonType() == ClientInfo.LogonNormal && getAuthorityService().isAdminAuthority(cInfo.getUserName())) {
-				
-				// Indicate that this is an administrator logon
+        // Check if the user name is an administrator
 
-				cInfo.setLogonType(ClientInfo.LogonAdmin);
-			}
-			tx.commit();
-		}
-		catch (Throwable ex) {
-			try {
-				tx.rollback();
-			}
-			catch (Throwable ex2) {
-				logger.error("Failed to rollback transaction", ex2);
-			}
+        UserTransaction tx = getTransactionService().getUserTransaction();
 
-			// Re-throw the exception
+        try
+        {
+            tx.begin();
 
-			if ( ex instanceof RuntimeException) {
-				throw (RuntimeException) ex;
-			}
-			else {
-				throw new RuntimeException("Error during execution of transaction.", ex);
-			}
-		}
-	}
-	
-	/**
-	 * Create a transaction, this will be a wrteable transaction unless the system is in read-only mode.
-	 * 
-	 * return UserTransaction
-	 */
-	protected final UserTransaction createTransaction()
-	{
-		// Get the transaction service
-		
-		TransactionService txService = getTransactionService();
-		
-		// DEBUG
-		
-		if ( logger.isDebugEnabled())
-			logger.debug("Using " + (txService.isReadOnly() ? "ReadOnly" : "Write") + " transaction");
-		
-		// Create the transaction
-		
-		return txService.getUserTransaction( txService.isReadOnly() ? true : false);
-	}
+            if (cInfo.getLogonType() == ClientInfo.LogonNormal && getAuthorityService().isAdminAuthority(cInfo.getUserName()))
+            {
 
-	/**
-	 * Handle tidy up on container shutdown
-	 */
+                // Indicate that this is an administrator logon
+
+                cInfo.setLogonType(ClientInfo.LogonAdmin);
+            }
+            tx.commit();
+        }
+        catch (Throwable ex)
+        {
+            try
+            {
+                tx.rollback();
+            }
+            catch (Throwable ex2)
+            {
+                logger.error("Failed to rollback transaction", ex2);
+            }
+
+            // Re-throw the exception
+
+            if (ex instanceof RuntimeException)
+            {
+                throw (RuntimeException) ex;
+            }
+            else
+            {
+                throw new RuntimeException("Error during execution of transaction.", ex);
+            }
+        }
+    }
+
+    /**
+     * Create a transaction, this will be a wrteable transaction unless the system is in read-only mode.
+     * 
+     * return UserTransaction
+     */
+    protected final UserTransaction createTransaction()
+    {
+        // Get the transaction service
+
+        TransactionService txService = getTransactionService();
+
+        // DEBUG
+
+        if (logger.isDebugEnabled())
+            logger.debug("Using " + (txService.isReadOnly() ? "ReadOnly" : "Write") + " transaction");
+
+        // Create the transaction
+
+        return txService.getUserTransaction(txService.isReadOnly() ? true : false);
+    }
+
+    /**
+     * Handle tidy up on container shutdown
+     */
     public void destroy()
     {
         closeAuthenticator();
     }
-	
-	
+
 }

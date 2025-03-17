@@ -28,14 +28,13 @@ package org.alfresco.service.cmr.workflow;
 import java.util.Optional;
 
 /**
- * The goal of this class is to provide a support for workflow deployment failure. Since {@link WorkflowDeployment} is
- * part of the public API we don't want to change it.
+ * The goal of this class is to provide a support for workflow deployment failure. Since {@link WorkflowDeployment} is part of the public API we don't want to change it.
  */
 public final class FailedWorkflowDeployment
 {
     private FailedWorkflowDeployment()
     {
-        //no instantiation
+        // no instantiation
     }
 
     public static WorkflowDeployment deploymentForbidden(String workflowName, String reason)

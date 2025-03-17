@@ -40,24 +40,13 @@ import org.alfresco.utility.model.TestModel;
 /**
  * Base Path {@linkplain /alfresco/api/-default-/private/alfresco/versions/1}
  * 
- * @author Meenal Bhave
- * {
-     "entry": {
-        "deviceSubscriptionId": "012d6bf6-8b11-4dc3-bd45-6e4f77b48f67",
-        "createdAt": "2017-08-11T15:54:41.444+0000",
-        "targetPath": "/Company Home/Data Dictionary",
-        "state": "VALID",
-        "id": "5d120857-e155-44bc-9d1f-97ead5631090",
-        "targetNodeId": "20ad767c-4d86-4d9f-91a6-2e82fffa4e87"
-    }
-}
+ * @author Meenal Bhave { "entry": { "deviceSubscriptionId": "012d6bf6-8b11-4dc3-bd45-6e4f77b48f67", "createdAt": "2017-08-11T15:54:41.444+0000", "targetPath": "/Company Home/Data Dictionary", "state": "VALID", "id": "5d120857-e155-44bc-9d1f-97ead5631090", "targetNodeId": "20ad767c-4d86-4d9f-91a6-2e82fffa4e87" } }
  */
 public class RestSyncNodeSubscriptionModel extends TestModel implements IRestModel<RestSyncNodeSubscriptionModel>
 {
 
     public RestSyncNodeSubscriptionModel()
-    {
-    }
+    {}
 
     public RestSyncNodeSubscriptionModel(String targetNodeId, String subscriptionType)
     {
@@ -89,7 +78,7 @@ public class RestSyncNodeSubscriptionModel extends TestModel implements IRestMod
 
     @JsonProperty(required = true)
     private String id;
-    
+
     @JsonProperty(required = true)
     private String targetNodeId;
 
@@ -127,5 +116,5 @@ public class RestSyncNodeSubscriptionModel extends TestModel implements IRestMod
     {
         return targetNodeId;
     }
-    
+
 }

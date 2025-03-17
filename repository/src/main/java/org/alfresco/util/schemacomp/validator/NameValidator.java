@@ -29,21 +29,19 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.ValidationResult;
 import org.alfresco.util.schemacomp.model.DbObject;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * Validates the name of a DbObject using a regular expression. A regular expression
- * can be supplied for each supported {@link Dialect database dialect}. In addition to
- * dialect specific regular expressions, a default may be supplied - comparisons will fall
- * back to the default if no specific dialect is matched.
+ * Validates the name of a DbObject using a regular expression. A regular expression can be supplied for each supported {@link Dialect database dialect}. In addition to dialect specific regular expressions, a default may be supplied - comparisons will fall back to the default if no specific dialect is matched.
  * 
  * @author Matt Ward
  */
@@ -51,12 +49,12 @@ public class NameValidator implements DbValidator
 {
     private Pattern pattern;
     private final static Log log = LogFactory.getLog(NameValidator.class);
-    
+
     @Override
     public void validate(DbObject reference, DbObject target, DiffContext ctx)
     {
         String name = target.getName();
-        
+
         if (log.isDebugEnabled())
         {
             log.debug("Validating: pattern: [" + pattern + "], reference: " + reference + ", target: " + target);
@@ -80,29 +78,25 @@ public class NameValidator implements DbValidator
         }
     }
 
-
     public void setPattern(Pattern pattern)
     {
-        this.pattern = pattern; 
+        this.pattern = pattern;
     }
 
-    
     public Pattern getPattern()
     {
         return this.pattern;
     }
 
-    
     @Override
     public void setProperty(String name, String value)
     {
         if (name.equals("pattern") && value != null)
         {
-            Pattern pattern = Pattern.compile(value); 
+            Pattern pattern = Pattern.compile(value);
             setPattern(pattern);
         }
     }
-
 
     @Override
     public String getProperty(String name)
@@ -114,7 +108,6 @@ public class NameValidator implements DbValidator
         return null;
     }
 
-
     @Override
     public Set<String> getPropertyNames()
     {
@@ -123,7 +116,6 @@ public class NameValidator implements DbValidator
         return props;
     }
 
-
     @Override
     public boolean validates(String fieldName)
     {
@@ -131,10 +123,9 @@ public class NameValidator implements DbValidator
         return (fieldName.equals("name"));
     }
 
-
     @Override
     public boolean validatesFullObject()
     {
         return false;
-    }    
+    }
 }

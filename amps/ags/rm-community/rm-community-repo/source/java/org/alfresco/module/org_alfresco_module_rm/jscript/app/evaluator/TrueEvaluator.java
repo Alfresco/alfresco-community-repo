@@ -36,7 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Roy Wetherall
  */
 public class TrueEvaluator extends BaseEvaluator
-{       
+{
     @Override
     protected boolean evaluateImpl(NodeRef nodeRef)
     {

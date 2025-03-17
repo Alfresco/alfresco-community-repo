@@ -44,8 +44,7 @@ public class CustomModelConstraint extends AbstractCommonDetails
     private List<CustomModelNamedValue> parameters = Collections.emptyList();
 
     public CustomModelConstraint()
-    {
-    }
+    {}
 
     public CustomModelConstraint(ConstraintDefinition constraintDefinition, MessageLookup messageLookup)
     {
@@ -93,12 +92,12 @@ public class CustomModelConstraint extends AbstractCommonDetails
     {
         StringBuilder builder = new StringBuilder(300);
         builder.append("CustomModelConstraint [name=").append(this.name)
-                    .append(", prefixedName=").append(this.prefixedName)
-                    .append(", type=").append(this.type)
-                    .append(", title=").append(this.title)
-                    .append(", description=").append(this.description)
-                    .append(", parameters=").append(this.parameters)
-                    .append(']');
+                .append(", prefixedName=").append(this.prefixedName)
+                .append(", type=").append(this.type)
+                .append(", title=").append(this.title)
+                .append(", description=").append(this.description)
+                .append(", parameters=").append(this.parameters)
+                .append(']');
         return builder.toString();
     }
 }

@@ -30,13 +30,13 @@ import org.apache.commons.logging.Log;
 public class LogTee extends LogAdapter
 {
     protected Log log2;
-    
+
     public LogTee(Log log1, Log log2)
     {
         super(log1);
         this.log2 = log2;
     }
-    
+
     @Override
     public void trace(Object arg0, Throwable arg1)
     {

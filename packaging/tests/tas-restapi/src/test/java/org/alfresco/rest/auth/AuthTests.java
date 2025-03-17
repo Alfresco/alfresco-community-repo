@@ -1,5 +1,10 @@
 package org.alfresco.rest.auth;
 
+import org.apache.commons.codec.binary.Base64;
+import org.springframework.http.HttpStatus;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.exception.JsonToModelConversionException;
@@ -9,10 +14,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.commons.codec.binary.Base64;
-import org.springframework.http.HttpStatus;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public class AuthTests extends RestTest
 {
@@ -23,9 +24,9 @@ public class AuthTests extends RestTest
         return restClient;
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUTH }, executionType = ExecutionType.SANITY, description = "Verify HttpMethod.POST tickets")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SANITY, TestGroup.AUTH })
+    @TestRail(section = {TestGroup.REST_API,
+            TestGroup.AUTH}, executionType = ExecutionType.SANITY, description = "Verify HttpMethod.POST tickets")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SANITY, TestGroup.AUTH})
     public void adminShouldGetTicketBody() throws JsonToModelConversionException, Exception
     {
         RestTicketBodyModel ticketBody = new RestTicketBodyModel();
@@ -38,9 +39,9 @@ public class AuthTests extends RestTest
         ticketReturned.assertThat().field("id").contains("TICKET_");
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUTH }, executionType = ExecutionType.SANITY, description = "Verify HttpMethod.GET tickets/-me-")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SANITY, TestGroup.AUTH })
+    @TestRail(section = {TestGroup.REST_API,
+            TestGroup.AUTH}, executionType = ExecutionType.SANITY, description = "Verify HttpMethod.GET tickets/-me-")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SANITY, TestGroup.AUTH})
     public void randomUserGetTicket() throws Exception
     {
         UserModel userModel = dataUser.createRandomTestUser();
@@ -57,9 +58,9 @@ public class AuthTests extends RestTest
 
     }
 
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.AUTH }, executionType = ExecutionType.SANITY, description = "Verify HttpMethod.REMOVE tickets/-me-")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SANITY, TestGroup.AUTH })
+    @TestRail(section = {TestGroup.REST_API,
+            TestGroup.AUTH}, executionType = ExecutionType.SANITY, description = "Verify HttpMethod.REMOVE tickets/-me-")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SANITY, TestGroup.AUTH})
     public void randomUserRemoveTicket() throws Exception
     {
         UserModel userModel = dataUser.createRandomTestUser();

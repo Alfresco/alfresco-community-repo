@@ -38,8 +38,10 @@ public class NodeSearchResultsMap extends BaseSearchResultsMap
     /**
      * Constructor
      * 
-     * @param parent         The parent TemplateNode to execute searches from 
-     * @param services       The ServiceRegistry to use
+     * @param parent
+     *            The parent TemplateNode to execute searches from
+     * @param services
+     *            The ServiceRegistry to use
      */
     public NodeSearchResultsMap(TemplateNode parent, ServiceRegistry services)
     {
@@ -54,7 +56,7 @@ public class NodeSearchResultsMap extends BaseSearchResultsMap
         TemplateNode result = null;
         if (key != null)
         {
-            NodeRef nodeRef = new NodeRef((String)key);
+            NodeRef nodeRef = new NodeRef((String) key);
             result = new TemplateNode(nodeRef, services, this.parent.getImageResolver());
         }
         return result;

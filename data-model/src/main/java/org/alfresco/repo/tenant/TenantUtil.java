@@ -50,44 +50,46 @@ public abstract class TenantUtil
          */
         Result doWork() throws Exception;
     }
-    
+
     /**
-     * Execute a unit of work in a given tenant context. The thread's tenant context will be returned to its normal state
-     * after the call.
+     * Execute a unit of work in a given tenant context. The thread's tenant context will be returned to its normal state after the call.
      * 
-     * @param runAsWork    the unit of work to do
-     * @param uid          the user ID
-     * @param tenantDomain  the tenant domain
-     * @return Returns     the work's return value
+     * @param runAsWork
+     *            the unit of work to do
+     * @param uid
+     *            the user ID
+     * @param tenantDomain
+     *            the tenant domain
+     * @return Returns the work's return value
      */
     public static <R> R runAsUserTenant(final TenantRunAsWork<R> runAsWork, final String uid, final String tenantDomain)
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<R>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<R>() {
             public R doWork()
             {
                 return runAsTenant(runAsWork, tenantDomain);
             }
         }, uid);
     }
-    
+
     /**
-     * Execute a unit of work in a given tenant context. The thread's tenant context will be returned to its normal state
-     * after the call.
+     * Execute a unit of work in a given tenant context. The thread's tenant context will be returned to its normal state after the call.
      * 
-     * @param runAsWork    the unit of work to do
-     * @param tenantDomain  the tenant domain
-     * @return Returns     the work's return value
+     * @param runAsWork
+     *            the unit of work to do
+     * @param tenantDomain
+     *            the tenant domain
+     * @return Returns the work's return value
      */
     public static <R> R runAsTenant(final TenantRunAsWork<R> runAsWork, String tenantDomain)
     {
         ParameterCheck.mandatory("tenantDomain", tenantDomain);
-        
+
         if (tenantDomain.indexOf(TenantService.SEPARATOR) > 0)
         {
-            throw new AlfrescoRuntimeException("Unexpected tenant domain: "+tenantDomain+" (should not contain '"+TenantService.SEPARATOR+"')");
+            throw new AlfrescoRuntimeException("Unexpected tenant domain: " + tenantDomain + " (should not contain '" + TenantService.SEPARATOR + "')");
         }
-        
+
         String currentTenantDomain = null;
         try
         {
@@ -99,7 +101,7 @@ public abstract class TenantUtil
             TenantContextHolder.setTenantDomain(currentTenantDomain);
         }
     }
-    
+
     public static <R> R runAsDefaultTenant(final TenantRunAsWork<R> runAsWork)
     {
         // Note: with MT Enterprise, if you're current user is not already part of the default domain then this will switch to System
@@ -112,13 +114,13 @@ public abstract class TenantUtil
             return runAsSystemTenant(runAsWork, TenantService.DEFAULT_DOMAIN); // force System in default domain
         }
     }
-    
+
     // switch tenant and run as System within that tenant
     public static <R> R runAsSystemTenant(final TenantRunAsWork<R> runAsWork, final String tenantDomain)
     {
         return runAsUserTenant(runAsWork, AuthenticationUtil.getSystemUserName(), tenantDomain);
     }
-    
+
     private static <R> R runAsWork(final TenantRunAsWork<R> runAsWork)
     {
         try
@@ -135,7 +137,7 @@ public abstract class TenantUtil
             throw new RuntimeException("Error encountered while performing TenantUtil.runAsWork: " + e.getMessage(), e);
         }
     }
-    
+
     // note: this does not check if tenant is enabled (unlike non-static MultiTServiceImpl.getCurrentUserDomain)
     public static String getCurrentDomain()
     {
@@ -146,16 +148,16 @@ public abstract class TenantUtil
         }
         return tenantDomain;
     }
-    
+
     public static boolean isCurrentDomainDefault()
     {
         return TenantService.DEFAULT_DOMAIN.equals(getCurrentDomain());
     }
-    
+
     public static String getTenantDomain(String name)
     {
         ParameterCheck.mandatory("name", name);
-        
+
         int idx1 = name.indexOf(TenantService.SEPARATOR);
         if (idx1 == 0)
         {

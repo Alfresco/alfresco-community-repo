@@ -26,6 +26,18 @@
  */
 package org.alfresco.rm.rest.api.retentionschedule;
 
+import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
+import static org.alfresco.util.ParameterCheck.mandatory;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -49,18 +61,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
-import static org.alfresco.util.ParameterCheck.mandatory;
 
 /**
  * Retention schedule action relation is used to perform the retention schedule step operations.
@@ -95,7 +95,7 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
     }
 
     @Override
-    @WebApiDescription(title="Create a retention schedule step for the particular retention schedule using the 'retentionScheduleId'")
+    @WebApiDescription(title = "Create a retention schedule step for the particular retention schedule using the 'retentionScheduleId'")
     public List<RetentionScheduleActionDefinition> create(String retentionScheduleId, List<RetentionScheduleActionDefinition> nodeInfos, Parameters parameters)
     {
         checkNotBlank("retentionScheduleId", retentionScheduleId);
@@ -141,8 +141,11 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
 
     /**
      * this method is used to validate the order of the retention schedule step
-     * @param retentionScheduleNodeRef nodeRef
-     * @param retentionScheduleActionDefinition retention schedule action definition
+     * 
+     * @param retentionScheduleNodeRef
+     *            nodeRef
+     * @param retentionScheduleActionDefinition
+     *            retention schedule action definition
      */
     private void retentionScheduleStepValidation(NodeRef retentionScheduleNodeRef, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
     {
@@ -188,14 +191,16 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
 
     /**
      * this method is used to validate the request of the retention schedule
-     * @param retentionScheduleActionDefinition retention schedule action definition
+     * 
+     * @param retentionScheduleActionDefinition
+     *            retention schedule action definition
      */
     private void retentionScheduleRequestValidation(RetentionScheduleActionDefinition retentionScheduleActionDefinition)
     {
         // step name validation
         if (invalidStepNameCheck(retentionScheduleActionDefinition.getName()))
         {
-            throw new InvalidArgumentException("name value is invalid : " +retentionScheduleActionDefinition.getName());
+            throw new InvalidArgumentException("name value is invalid : " + retentionScheduleActionDefinition.getName());
         }
 
         validatePeriodAndPeriodProperty(retentionScheduleActionDefinition);
@@ -222,7 +227,7 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
         // period value validation
         if (invalidPeriodCheck(retentionScheduleActionDefinition.getPeriod()))
         {
-            throw new InvalidArgumentException("period value is invalid : " +retentionScheduleActionDefinition.getPeriod());
+            throw new InvalidArgumentException("period value is invalid : " + retentionScheduleActionDefinition.getPeriod());
         }
 
         // periodProperty validation
@@ -243,7 +248,7 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
     {
         return retentionScheduleActionDefinition.getLocation() != null
                 && !retentionScheduleActionDefinition.getName().equals(RetentionSteps.TRANSFER.stepName)
-                    && !retentionScheduleActionDefinition.getLocation().isEmpty();
+                && !retentionScheduleActionDefinition.getLocation().isEmpty();
     }
 
     private boolean checkStepAlreadyExists(Set<String> completedActions, String stepName)

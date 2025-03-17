@@ -26,4 +26,5 @@
  */
 package org.alfresco.rm.rest.api.model;
 
-public record BulkCancellationEntry(String reason) {}
+public record BulkCancellationEntry(String reason)
+{}

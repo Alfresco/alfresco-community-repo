@@ -31,7 +31,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 
 import net.sf.acegisecurity.providers.encoding.BaseDigestPasswordEncoder;
-
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -43,8 +42,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
  * </p>
  * 
  * <p>
- * If a <code>null</code> password is presented, it will be treated as an
- * empty <code>String</code> ("") password.
+ * If a <code>null</code> password is presented, it will be treated as an empty <code>String</code> ("") password.
  * </p>
  * 
  * <P>
@@ -66,7 +64,6 @@ public class MD4PasswordEncoderImpl extends BaseDigestPasswordEncoder implements
         }
     }
 
-    
     public MD4PasswordEncoderImpl()
     {
         super();
@@ -135,7 +132,7 @@ public class MD4PasswordEncoderImpl extends BaseDigestPasswordEncoder implements
             }
             catch (DecoderException e)
             {
-               throw new RuntimeException("Unable to decode password hash");
+                throw new RuntimeException("Unable to decode password hash");
             }
         }
         else

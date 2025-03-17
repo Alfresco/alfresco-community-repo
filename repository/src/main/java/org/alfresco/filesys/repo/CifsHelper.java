@@ -38,6 +38,9 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.repo.CommandExecutorImpl.PropagatingException;
 import org.alfresco.jlan.server.filesys.FileAttribute;
@@ -69,20 +72,17 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.SearchLanguageConversion;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Class with supplying helper methods and potentially acting as a cache for
- * queries.
- *  
+ * Class with supplying helper methods and potentially acting as a cache for queries.
+ * 
  * @author derekh
  */
 public class CifsHelper
 {
     // Logging
     private static Log logger = LogFactory.getLog(CifsHelper.class);
-    
+
     // Services
     private DictionaryService dictionaryService;
     private NodeService nodeService;
@@ -94,33 +94,32 @@ public class CifsHelper
     private RetryingTransactionHelper retryingTransactionHelper;
 
     private Set<QName> excludedTypes = new HashSet<QName>();
-    
+
     private boolean isReadOnlyFlagOnFolders = false;
-    
+
     /**
      * Class constructor
      */
     public CifsHelper()
-    {
-    }
-    
+    {}
+
     public void init()
-    {   
-        PropertyCheck.mandatory(this, "dictionaryService",dictionaryService);
-        PropertyCheck.mandatory(this, "nodeService",nodeService);
-        PropertyCheck.mandatory(this, "fileFolderService",fileFolderService);
-        PropertyCheck.mandatory(this, "permissionService",permissionService);
-        PropertyCheck.mandatory(this, "lockService",lockService);
-        PropertyCheck.mandatory(this, "mimetypeService",mimetypeService);
-        PropertyCheck.mandatory(this, "transactionHelper",getRetryingTransactionHelper());
+    {
+        PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "fileFolderService", fileFolderService);
+        PropertyCheck.mandatory(this, "permissionService", permissionService);
+        PropertyCheck.mandatory(this, "lockService", lockService);
+        PropertyCheck.mandatory(this, "mimetypeService", mimetypeService);
+        PropertyCheck.mandatory(this, "transactionHelper", getRetryingTransactionHelper());
     }
-    
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
 
-	public void setNodeService(NodeService nodeService)
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
@@ -129,7 +128,7 @@ public class CifsHelper
     {
         this.fileFolderService = fileFolderService;
     }
-    
+
     public void setMimetypeService(MimetypeService mimetypeService)
     {
         this.mimetypeService = mimetypeService;
@@ -150,22 +149,21 @@ public class CifsHelper
      * 
      * @return NodeService
      */
-    protected NodeService getNodeService() {
+    protected NodeService getNodeService()
+    {
         return nodeService;
     }
-    
+
     public void setExcludedTypes(List<String> excludedTypes)
     {
-        for(String exType:excludedTypes)
+        for (String exType : excludedTypes)
         {
             this.excludedTypes.add(QName.createQName(exType));
         }
     }
 
     /**
-     * Controls whether the read only flag is set on folders. This flag, when set, may cause problematic # behaviour in
-     * Windows clients and doesn't necessarily mean a folder can't be written to. See ALF-6727. Should we ever set the
-     * read only flag on folders?
+     * Controls whether the read only flag is set on folders. This flag, when set, may cause problematic # behaviour in Windows clients and doesn't necessarily mean a folder can't be written to. See ALF-6727. Should we ever set the read only flag on folders?
      * 
      * @param setReadOnlyFlagOnFolders
      *            the setReadOnlyFlagOnFolders to set
@@ -178,7 +176,8 @@ public class CifsHelper
     /**
      * @param nodeRef
      * @return Returns true if the node is a subtype of {@link ContentModel#TYPE_FOLDER folder}
-     * @throws AlfrescoRuntimeException if the type is neither related to a folder or content
+     * @throws AlfrescoRuntimeException
+     *             if the type is neither related to a folder or content
      */
     public boolean isDirectory(NodeRef nodeRef)
     {
@@ -194,35 +193,34 @@ public class CifsHelper
         else
         {
             // it is not a directory, but what is it?
-            return false;   
+            return false;
         }
     }
-    
+
     /**
-     * Extract a single node's file info, where the node is reference by
-     * a path relative to an ancestor node.
+     * Extract a single node's file info, where the node is reference by a path relative to an ancestor node.
      * 
      * @param pathRootNodeRef
-     * @param path the path
+     * @param path
+     *            the path
      * @return Returns the existing node reference
      * @throws FileNotFoundException
      */
     public ContentFileInfo getFileInformation(final NodeRef pathRootNodeRef, final String path, final boolean readOnly, final boolean lockedFilesAsOffline) throws FileNotFoundException
     {
-               
-        RetryingTransactionCallback<ContentFileInfo> cb =  new RetryingTransactionCallback<ContentFileInfo>()
-        {
+
+        RetryingTransactionCallback<ContentFileInfo> cb = new RetryingTransactionCallback<ContentFileInfo>() {
             /**
              * Perform a set of commands as a unit of transactional work.
              *
-             * @return              Return the result of the unit of work
+             * @return Return the result of the unit of work
              * @throws IOException
              */
             public ContentFileInfo execute() throws IOException
             {
                 try
                 {
-                	return getFileInformationImpl(pathRootNodeRef, path, readOnly, lockedFilesAsOffline);
+                    return getFileInformationImpl(pathRootNodeRef, path, readOnly, lockedFilesAsOffline);
                 }
                 catch (FileNotFoundException e)
                 {
@@ -231,34 +229,32 @@ public class CifsHelper
                 }
             }
         };
-        
+
         try
         {
             return getRetryingTransactionHelper().doInTransaction(cb, true);
         }
-        catch(PropagatingException pe)
-        {          
+        catch (PropagatingException pe)
+        {
             // Unwrap checked exceptions
             throw (FileNotFoundException) pe.getCause();
         }
     }
 
-    
     public ContentFileInfo getFileInformation(final NodeRef nodeRef, final boolean readOnly, final boolean lockedFilesAsOffline) throws FileNotFoundException
     {
-        RetryingTransactionCallback<ContentFileInfo> cb =  new RetryingTransactionCallback<ContentFileInfo>()
-        {
+        RetryingTransactionCallback<ContentFileInfo> cb = new RetryingTransactionCallback<ContentFileInfo>() {
             /**
              * Perform a set of commands as a unit of transactional work.
              *
-             * @return              Return the result of the unit of work
+             * @return Return the result of the unit of work
              * @throws IOException
              */
             public ContentFileInfo execute() throws IOException
             {
                 try
                 {
-                	return getFileInformationImpl(nodeRef, readOnly, lockedFilesAsOffline);
+                    return getFileInformationImpl(nodeRef, readOnly, lockedFilesAsOffline);
                 }
                 catch (FileNotFoundException e)
                 {
@@ -267,26 +263,25 @@ public class CifsHelper
                 }
             }
         };
-        
+
         try
         {
             return getRetryingTransactionHelper().doInTransaction(cb, true);
         }
-        catch(PropagatingException pe)
-        {          
+        catch (PropagatingException pe)
+        {
             // Unwrap checked exceptions
             throw (FileNotFoundException) pe.getCause();
         }
-    	
+
     }
 
-
     /**
-     * Extract a single node's file info, where the node is reference by
-     * a path relative to an ancestor node.
+     * Extract a single node's file info, where the node is reference by a path relative to an ancestor node.
      * 
      * @param pathRootNodeRef
-     * @param path the path
+     * @param path
+     *            the path
      * @return Returns the existing node reference
      * @throws FileNotFoundException
      */
@@ -297,37 +292,39 @@ public class CifsHelper
 
         return getFileInformationImpl(nodeRef, readOnly, lockedFilesAsOffline);
     }
-    
 
     /**
      * Helper method to extract file info from a specific node.
      * <p>
-     * This method goes direct to the repo for all information and no data is
-     * cached here.
+     * This method goes direct to the repo for all information and no data is cached here.
      * 
-     * @param nodeRef the node
-     * @param readOnly, should the file be shown as "read only", regardless of its permissions?
-     * @param lockedFilesAsOffline should a locked file be marked as offline
+     * @param nodeRef
+     *            the node
+     * @param readOnly,
+     *            should the file be shown as "read only", regardless of its permissions?
+     * @param lockedFilesAsOffline
+     *            should a locked file be marked as offline
      * 
      * @return Returns the file information pertinent to the node
-     * @throws FileNotFoundException if the path refers to a non-existent file
+     * @throws FileNotFoundException
+     *             if the path refers to a non-existent file
      */
     private ContentFileInfo getFileInformationImpl(NodeRef nodeRef, boolean readOnly, boolean lockedFilesAsOffline) throws FileNotFoundException
     {
         // get the file info
         org.alfresco.service.cmr.model.FileInfo fileFolderInfo = fileFolderService.getFileInfo(nodeRef);
-        
+
         // retrieve required properties and create new JLAN file info
         ContentFileInfo fileInfo = new ContentFileInfo(nodeRef);
-        
+
         // Set the file id from the node's DBID
         long id = DefaultTypeConverter.INSTANCE.convert(Long.class, nodeService.getProperty(nodeRef, ContentModel.PROP_NODE_DBID));
-        fileInfo.setFileId((int) (id & 0xFFFFFFFFL));    
-        
+        fileInfo.setFileId((int) (id & 0xFFFFFFFFL));
+
         // unset all attribute flags
         int fileAttributes = 0;
         fileInfo.setFileAttributes(fileAttributes);
-        
+
         if (fileFolderInfo.isFolder())
         {
             // add directory attribute
@@ -338,9 +335,9 @@ public class CifsHelper
         else
         {
             Map<QName, Serializable> nodeProperties = fileFolderInfo.getProperties();
-            
+
             // Get the file size from the content
-            
+
             ContentData contentData = (ContentData) nodeProperties.get(ContentModel.PROP_CONTENT);
             long size = 0L;
             if (contentData != null)
@@ -348,73 +345,72 @@ public class CifsHelper
                 size = contentData.getSize();
             }
             fileInfo.setSize(size);
-            
+
             // Set the allocation size by rounding up the size to a 512 byte block boundary
-            
-            if ( size > 0)
+
+            if (size > 0)
             {
                 fileInfo.setAllocationSize((size + 512L) & 0xFFFFFFFFFFFFFE00L);
             }
-            
-            // Check whether the file is locked 
-            
-            if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
+
+            // Check whether the file is locked
+
+            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
             {
                 LockType lockType = lockService.getLockType(nodeRef);
-                
+
                 int attr = fileInfo.getFileAttributes();
-                
-                if(lockType != null)
+
+                if (lockType != null)
                 {
-                    switch(lockType)
+                    switch (lockType)
                     {
-                        case NODE_LOCK:
-                            if (( attr & FileAttribute.ReadOnly) == 0)
-                                attr += FileAttribute.ReadOnly;
-                            break;
-                        case WRITE_LOCK:
-                            LockStatus lockStatus = lockService.getLockStatus(nodeRef);
-                            if (lockStatus == LockStatus.LOCK_OWNER)
-                            {
-                            }
-                            else
-                            {
-                                if (( attr & FileAttribute.ReadOnly) == 0)
-                                {
-                                    attr += FileAttribute.ReadOnly;
-                                }
-                        
-                                if ( lockedFilesAsOffline)
-                                {
-                                    attr += FileAttribute.NTOffline;
-                                }
-                            }
-                            break;
-                        case READ_ONLY_LOCK:
-                            if (( attr & FileAttribute.ReadOnly) == 0)
+                    case NODE_LOCK:
+                        if ((attr & FileAttribute.ReadOnly) == 0)
+                            attr += FileAttribute.ReadOnly;
+                        break;
+                    case WRITE_LOCK:
+                        LockStatus lockStatus = lockService.getLockStatus(nodeRef);
+                        if (lockStatus == LockStatus.LOCK_OWNER)
+                        {}
+                        else
+                        {
+                            if ((attr & FileAttribute.ReadOnly) == 0)
                             {
                                 attr += FileAttribute.ReadOnly;
                             }
-                    
-                            if ( lockedFilesAsOffline)
+
+                            if (lockedFilesAsOffline)
                             {
                                 attr += FileAttribute.NTOffline;
                             }
-                            break;
+                        }
+                        break;
+                    case READ_ONLY_LOCK:
+                        if ((attr & FileAttribute.ReadOnly) == 0)
+                        {
+                            attr += FileAttribute.ReadOnly;
+                        }
+
+                        if (lockedFilesAsOffline)
+                        {
+                            attr += FileAttribute.NTOffline;
+                        }
+                        break;
                     }
-                
-                    fileInfo.setFileAttributes( attr);
+
+                    fileInfo.setFileAttributes(attr);
                 }
             }
-            
+
             // Check if it is a link node
-            
-            if ( fileFolderInfo.isLink())
+
+            if (fileFolderInfo.isLink())
             {
-            	fileInfo.setLinkNodeRef( fileFolderInfo.getLinkNodeRef());
+                fileInfo.setLinkNodeRef(fileFolderInfo.getLinkNodeRef());
             }
         }
-        
+
         // created
         Date createdDate = fileFolderInfo.getCreatedDate();
         if (createdDate != null)
@@ -438,27 +434,27 @@ public class CifsHelper
             fileInfo.setFileName(name);
 
             // Check for file names that should be hidden
-            if(hiddenAspect.getVisibility(Client.cifs, fileInfo.getNodeRef()) == Visibility.HiddenAttribute)
+            if (hiddenAspect.getVisibility(Client.cifs, fileInfo.getNodeRef()) == Visibility.HiddenAttribute)
             {
-            	// Add the hidden file attribute
-            	int attr = fileInfo.getFileAttributes();
-            	if (( attr & FileAttribute.Hidden) == 0)
-            	{
-            		attr += FileAttribute.Hidden;
-            		fileInfo.setFileAttributes( attr);
-            	}
+                // Add the hidden file attribute
+                int attr = fileInfo.getFileAttributes();
+                if ((attr & FileAttribute.Hidden) == 0)
+                {
+                    attr += FileAttribute.Hidden;
+                    fileInfo.setFileAttributes(attr);
+                }
             }
         }
-        
+
         // Read/write access
-        
+
         if (!fileFolderInfo.isFolder() || isReadOnlyFlagOnFolders)
         {
-            boolean deniedPermission = permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED; 
+            boolean deniedPermission = permissionService.hasPermission(nodeRef, PermissionService.WRITE) == AccessStatus.DENIED;
             if (readOnly || deniedPermission)
             {
                 int attr = fileInfo.getFileAttributes();
-                if (( attr & FileAttribute.ReadOnly) == 0)
+                if ((attr & FileAttribute.ReadOnly) == 0)
                 {
                     attr += FileAttribute.ReadOnly;
                     fileInfo.setFileAttributes(attr);
@@ -467,34 +463,37 @@ public class CifsHelper
         }
 
         // Set the normal file attribute if no other attributes are set
-        
-        if ( fileInfo.getFileAttributes() == 0)
+
+        if (fileInfo.getFileAttributes() == 0)
             fileInfo.setFileAttributes(FileAttribute.NTNormal);
-        
+
         // Debug
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Fetched file info: \n" +
                     "   info: " + fileInfo);
         }
-        
+
         // Return the file information
-        
+
         return fileInfo;
     }
-    
+
     /**
      * Creates a file or directory using the given paths.
      * <p>
-     * If the directory path doesn't exist, then all the parent directories will be created.
-     * If the file path is <code>null</code>, then the file will not be created
+     * If the directory path doesn't exist, then all the parent directories will be created. If the file path is <code>null</code>, then the file will not be created
      * 
-     * @param rootNodeRef the root node of the path
-     * @param path the path to a node
-     * @param typeQName type of fole
+     * @param rootNodeRef
+     *            the root node of the path
+     * @param path
+     *            the path to a node
+     * @param typeQName
+     *            type of fole
      * @return Returns a newly created file or folder node
-     * @throws FileExistsException if the file or folder already exists
+     * @throws FileExistsException
+     *             if the file or folder already exists
      */
     public NodeRef createNode(NodeRef rootNodeRef, String path, QName typeQName) throws FileExistsException
     {
@@ -505,7 +504,7 @@ public class CifsHelper
         while (tokenizer.hasMoreTokens())
         {
             String pathElement = tokenizer.nextToken();
-            
+
             if (!tokenizer.hasMoreTokens())
             {
                 // the last token becomes the name
@@ -530,7 +529,7 @@ public class CifsHelper
         try
         {
             NodeRef nodeRef = fileFolderService.create(parentFolderNodeRef, name, typeQName).getNodeRef();
-            
+
             // done
             if (logger.isDebugEnabled())
             {
@@ -557,7 +556,7 @@ public class CifsHelper
             results.addAll(pathRootNodeRefs);
             return;
         }
-        
+
         // take the first path element off the stack
         String pathElement = pathElements.pop();
 
@@ -574,11 +573,11 @@ public class CifsHelper
             // recurse onto the descendents
             addDescendents(directDescendents, pathElements, results);
         }
-        
+
         // restore the path element stack
         pathElements.push(pathElement);
     }
-    
+
     /**
      * Searches for the node or nodes that match the path element for the given parent node
      */
@@ -630,12 +629,14 @@ public class CifsHelper
      * <p>
      * Examples of the path are:
      * <ul>
-     *   <li>\New Folder\New Text Document.txt</li>
-     *   <li>\New Folder\Sub Folder</li>
+     * <li>\New Folder\New Text Document.txt</li>
+     * <li>\New Folder\Sub Folder</li>
      * </ul>
      * 
-     * @param pathRootNodeRef the node from which to start the path search
-     * @param path the search path to either a folder or file
+     * @param pathRootNodeRef
+     *            the node from which to start the path search
+     * @param path
+     *            the search path to either a folder or file
      * @return Returns references to all matching nodes
      */
     public List<NodeRef> getNodeRefs(NodeRef pathRootNodeRef, String path)
@@ -645,7 +646,7 @@ public class CifsHelper
         StringTokenizer tokenizer = new StringTokenizer(path, FileName.DOS_SEPERATOR_STR, false);
         String[] tokens = new String[tokenizer.countTokens()];
         int count = 0;
-        while(tokenizer.hasMoreTokens())
+        while (tokenizer.hasMoreTokens())
         {
             tokens[count] = tokenizer.nextToken();
             count++;
@@ -655,17 +656,17 @@ public class CifsHelper
         {
             pathElements.push(tokens[i]);
         }
-        
+
         // start with a single parent node
         List<NodeRef> pathRootNodeRefs = Collections.singletonList(pathRootNodeRef);
-        
+
         // result storage
         List<NodeRef> results = new ArrayList<NodeRef>(5);
         List<NodeRef> rubeResults = new ArrayList<NodeRef>(5);
-        
+
         // kick off the path walking
-        addDescendents(pathRootNodeRefs, pathElements, rubeResults); 
-        
+        addDescendents(pathRootNodeRefs, pathElements, rubeResults);
+
         for (NodeRef nodeRef : rubeResults)
         {
             QName nodeType = nodeService.getType(nodeRef);
@@ -674,7 +675,7 @@ public class CifsHelper
                 results.add(nodeRef);
             }
         }
-        
+
         // done
         if (logger.isDebugEnabled())
         {
@@ -685,14 +686,15 @@ public class CifsHelper
         }
         return results;
     }
-    
+
     /**
      * Attempts to fetch a specific single node at the given path.
      * <p>
      * The path may contain wild cards
      * <p>
      * 
-     * @throws FileNotFoundException if the path can't be resolved to a node
+     * @throws FileNotFoundException
+     *             if the path can't be resolved to a node
      * 
      * @see #getNodeRefs(NodeRef, String)
      */
@@ -719,10 +721,14 @@ public class CifsHelper
     /**
      * Relink the content data from a new node to an existing node to preserve the version history.
      * 
-     * @param tempNodeRef temp nodeRef
-     * @param nodeToMoveRef NodeRef
-     * @param newParentNodeRef NodeRef
-     * @param newName new name
+     * @param tempNodeRef
+     *            temp nodeRef
+     * @param nodeToMoveRef
+     *            NodeRef
+     * @param newParentNodeRef
+     *            NodeRef
+     * @param newName
+     *            new name
      */
     public void relinkNode(NodeRef tempNodeRef, NodeRef nodeToMoveRef, NodeRef newParentNodeRef, String newName)
             throws FileNotFoundException, FileExistsException
@@ -730,17 +736,17 @@ public class CifsHelper
         // Get the properties for the old and new nodes
         org.alfresco.service.cmr.model.FileInfo tempFileInfo = fileFolderService.getFileInfo(tempNodeRef);
         org.alfresco.service.cmr.model.FileInfo fileToMoveInfo = fileFolderService.getFileInfo(nodeToMoveRef);
-        
+
         // Save the current name of the old node
         String tempName = tempFileInfo.getName();
 
         try
         {
             // Rename operation will add or remove the sys:temporary aspect appropriately
-            
+
             // rename temp file to the new name
             fileFolderService.rename(tempNodeRef, newName);
-            
+
             // rename new file to old name
             fileFolderService.rename(nodeToMoveRef, tempName);
         }
@@ -752,7 +758,7 @@ public class CifsHelper
         {
             throw new FileExistsException(e.getMessage());
         }
-        
+
         if (!tempFileInfo.isFolder() && !fileToMoveInfo.isFolder())
         {
             // swap the content between the two
@@ -762,7 +768,7 @@ public class CifsHelper
                 String mimetype = mimetypeService.guessMimetype(tempName);
                 oldContentData = ContentData.setMimetype(null, mimetype);
             }
-            
+
             ContentData newContentData = fileToMoveInfo.getContentData();
 
             // Reset the mime type
@@ -774,14 +780,18 @@ public class CifsHelper
             nodeService.setProperty(nodeToMoveRef, ContentModel.PROP_CONTENT, oldContentData);
         }
     }
-    
+
     /**
      * Move a node
+     * 
      * @deprecated - not used by live code - exception handling is too severe
      * 
-     * @param nodeToMoveRef Node to be moved
-     * @param newParentNodeRef New parent folder node
-     * @param newName New name for the moved node
+     * @param nodeToMoveRef
+     *            Node to be moved
+     * @param newParentNodeRef
+     *            New parent folder node
+     * @param newName
+     *            New name for the moved node
      * @throws FileExistsException
      */
     public void move(NodeRef nodeToMoveRef, NodeRef oldParent, NodeRef newParentNodeRef, String newName) throws FileExistsException
@@ -803,13 +813,16 @@ public class CifsHelper
                     e);
         }
     }
-    
+
     /**
      * Rename a node
+     * 
      * @deprecated - not used by live code - exception handling is too severe
      * 
-     * @param nodeToRenameRef Node to be renamed
-     * @param newName New name for the node
+     * @param nodeToRenameRef
+     *            Node to be renamed
+     * @param newName
+     *            New name for the node
      * @throws FileExistsException
      */
     public void rename(NodeRef nodeToRenameRef, String newName) throws FileExistsException
@@ -830,21 +843,21 @@ public class CifsHelper
                     e);
         }
     }
-    
+
     /**
      * Return the file name for a node
      * 
-     * @param nodeRef NodeRef of node to get the file name
+     * @param nodeRef
+     *            NodeRef of node to get the file name
      * @return String or null if the nodeRef is not valid
      */
     public String getFileName(final NodeRef nodeRef)
     {
-        RetryingTransactionCallback<String> cb =  new RetryingTransactionCallback<String>()
-        {
+        RetryingTransactionCallback<String> cb = new RetryingTransactionCallback<String>() {
             /**
              * Perform a set of commands as a unit of transactional work.
              *
-             * @return              Return the result of the unit of work
+             * @return Return the result of the unit of work
              * @throws IOException
              */
             public String execute() throws IOException
@@ -852,47 +865,50 @@ public class CifsHelper
                 return getFileName(nodeRef);
             }
         };
-        
+
         return getRetryingTransactionHelper().doInTransaction(cb, true);
-    	
+
     }
+
     /**
      * Return the file name for a node
      * 
-     * @param node NodeRef
+     * @param node
+     *            NodeRef
      * @return String
      */
     public String getFileNameImpl(NodeRef node)
     {
         String fname = null;
-        
+
         try
         {
-            fname = (String) nodeService.getProperty( node, ContentModel.PROP_NAME);
+            fname = (String) nodeService.getProperty(node, ContentModel.PROP_NAME);
         }
         catch (InvalidNodeRefException ex)
-        {
-        }
-        
+        {}
+
         return fname;
     }
-    
+
     /**
      * Check if the folder node is empty
      * 
-     * @param folderNode NodeRef
+     * @param folderNode
+     *            NodeRef
      * @return boolean
      */
-    public boolean isFolderEmpty( NodeRef folderNode) {
+    public boolean isFolderEmpty(NodeRef folderNode)
+    {
 
-    	// Check if the node has any child files/folders
-    	
-    	List<FileInfo> filesAndFolders = fileFolderService.list(folderNode);
-    	if ( filesAndFolders == null || filesAndFolders.size() == 0)
-    	{
-    		return true;
-    	}
-    	return false;
+        // Check if the node has any child files/folders
+
+        List<FileInfo> filesAndFolders = fileFolderService.list(folderNode);
+        if (filesAndFolders == null || filesAndFolders.size() == 0)
+        {
+            return true;
+        }
+        return false;
     }
 
     public void setLockService(LockService lockService)
@@ -905,12 +921,14 @@ public class CifsHelper
         return lockService;
     }
 
-	public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper) {
-		this.retryingTransactionHelper = retryingTransactionHelper;
-	}
+    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
+    {
+        this.retryingTransactionHelper = retryingTransactionHelper;
+    }
 
-	public RetryingTransactionHelper getRetryingTransactionHelper() {
-		return retryingTransactionHelper;
-	}
+    public RetryingTransactionHelper getRetryingTransactionHelper()
+    {
+        return retryingTransactionHelper;
+    }
 
 }

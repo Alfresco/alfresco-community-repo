@@ -24,10 +24,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 
 import org.springframework.util.FileCopyUtils;
-
 
 /**
  * Input Stream based Content
@@ -35,20 +33,21 @@ import org.springframework.util.FileCopyUtils;
 public class InputStreamContent implements Content, Serializable
 {
     private static final long serialVersionUID = -7729633986840536282L;
-    
-    private InputStream stream;    
+
+    private InputStream stream;
     private String mimetype;
     private String encoding;
-    
+
     /** cached result - to ensure we only read it once */
     private String content;
-    
-    
+
     /**
      * Constructor
      * 
-     * @param stream    content input stream
-     * @param mimetype  content mimetype
+     * @param stream
+     *            content input stream
+     * @param mimetype
+     *            content mimetype
      */
     public InputStreamContent(InputStream stream, String mimetype, String encoding)
     {
@@ -58,17 +57,17 @@ public class InputStreamContent implements Content, Serializable
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.util.Content#getContent()
-     */
+     * 
+     * @see org.alfresco.util.Content#getContent() */
     public String getContent()
-        throws IOException
+            throws IOException
     {
         // ensure we only try to read the content once - as this method may be called several times
         // but the inputstream can only be processed a single time
         if (this.content == null)
         {
             ByteArrayOutputStream os = new ByteArrayOutputStream(1024);
-            FileCopyUtils.copy(stream, os);  // both streams are closed
+            FileCopyUtils.copy(stream, os); // both streams are closed
             byte[] bytes = os.toByteArray();
             // get the encoding for the string
             String encoding = getEncoding();
@@ -77,41 +76,40 @@ public class InputStreamContent implements Content, Serializable
         }
         return this.content;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.util.Content#getInputStream()
-     */
+     * 
+     * @see org.alfresco.util.Content#getInputStream() */
     public InputStream getInputStream()
     {
         return stream;
     }
 
-    
     public Reader getReader()
-        throws IOException
+            throws IOException
     {
         return (encoding == null) ? new InputStreamReader(stream) : new InputStreamReader(stream, encoding);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.util.Content#getSize()
-     */
+     * 
+     * @see org.alfresco.util.Content#getSize() */
     public long getSize()
     {
         return -1;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.util.Content#getMimetype()
-     */
+     * 
+     * @see org.alfresco.util.Content#getMimetype() */
     public String getMimetype()
     {
         return mimetype;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.util.Content#getEncoding()
-     */
+     * 
+     * @see org.alfresco.util.Content#getEncoding() */
     public String getEncoding()
     {
         return encoding;

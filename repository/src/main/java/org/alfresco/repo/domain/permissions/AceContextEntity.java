@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.domain.permissions;
 
-
 /**
  * Entity for <b>alf_ace_context</b> persistence.
  * 
@@ -39,71 +38,70 @@ public class AceContextEntity implements AceContext
     private String classContext;
     private String propertyContext;
     private String kvpContext;
-    
+
     /**
      * Default constructor
      */
     public AceContextEntity()
-    {
-    }
-    
+    {}
+
     public AceContextEntity(String classContext, String propertyContext, String kvpContext)
     {
         this.classContext = classContext;
         this.propertyContext = propertyContext;
         this.kvpContext = kvpContext;
     }
-    
+
     public Long getId()
     {
         return id;
     }
-    
+
     public void setId(Long id)
     {
         this.id = id;
     }
-    
+
     public Long getVersion()
     {
         return version;
     }
-    
+
     public void setVersion(Long version)
     {
         this.version = version;
     }
-    
+
     public String getClassContext()
     {
         return classContext;
     }
-    
+
     public void setClassContext(String classContext)
     {
         this.classContext = classContext;
     }
-    
+
     public String getPropertyContext()
     {
         return propertyContext;
     }
-    
+
     public void setPropertyContext(String propertyContext)
     {
         this.propertyContext = propertyContext;
     }
-    
+
     public String getKvpContext()
     {
         return kvpContext;
     }
-    
+
     public void setKvpContext(String kvpContext)
     {
         this.kvpContext = kvpContext;
     }
-    
+
     @Override
     public int hashCode()
     {
@@ -122,17 +120,17 @@ public class AceContextEntity implements AceContext
         {
             return true;
         }
-        
+
         if (obj == null)
         {
             return false;
         }
-        
+
         if (getClass() != obj.getClass())
         {
             return false;
         }
-        
+
         final AceContextEntity other = (AceContextEntity) obj;
         if (classContext == null)
         {
@@ -143,7 +141,7 @@ public class AceContextEntity implements AceContext
         {
             return false;
         }
-        
+
         if (kvpContext == null)
         {
             if (other.kvpContext != null)
@@ -155,7 +153,7 @@ public class AceContextEntity implements AceContext
         {
             return false;
         }
-        
+
         if (propertyContext == null)
         {
             if (other.propertyContext != null)
@@ -167,21 +165,21 @@ public class AceContextEntity implements AceContext
         {
             return false;
         }
-        
+
         return true;
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("AceContextEntity")
-          .append("[ ID=").append(id)
-          .append(", version=").append(version)
-          .append(", classContext=").append(classContext)
-          .append(", propertyContext=").append(propertyContext)
-          .append(", kvpContext=").append(kvpContext)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", version=").append(version)
+                .append(", classContext=").append(classContext)
+                .append(", propertyContext=").append(propertyContext)
+                .append(", kvpContext=").append(kvpContext)
+                .append("]");
         return sb.toString();
     }
 }

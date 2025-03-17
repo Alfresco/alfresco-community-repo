@@ -36,7 +36,5 @@ import org.alfresco.api.AlfrescoPublicApi;
 @AlfrescoPublicApi
 public enum PolicyType
 {
-    Class, 
-    Property, 
-    Association 
+    Class, Property, Association
 };

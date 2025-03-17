@@ -57,17 +57,13 @@ import org.alfresco.service.namespace.QName;
 public class DispositionScheduleInheritanceTest extends BaseRMTestCase
 {
     /**
-     * Given a root record category with a retention schedule
-     * and another root record category
-     * When moving the second record category into the first one (with the disposition)
-     * Then records under the second record category inherit the retention schedule of the parent record category
+     * Given a root record category with a retention schedule and another root record category When moving the second record category into the first one (with the disposition) Then records under the second record category inherit the retention schedule of the parent record category
      * <p>
      * relates to https://issues.alfresco.com/jira/browse/RM-7065
      */
     public void testRetentionScheduleInheritance_RM7065()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef category1;
             NodeRef subcategory2;
             NodeRef record;
@@ -116,19 +112,13 @@ public class DispositionScheduleInheritanceTest extends BaseRMTestCase
     }
 
     /**
-     * Given a root record category A with a retention schedule set to cut off after 10 days
-     * and another root record category B with a retention schedule set to cut off after 5 days containing a
-     * subcategory
-     * When moving the subcategory into the first root category
-     * Then records under the subcategory inherit the retention schedule of the parent record category
-     * The cut off date is updated to the new one, since the initial date was before the new one
+     * Given a root record category A with a retention schedule set to cut off after 10 days and another root record category B with a retention schedule set to cut off after 5 days containing a subcategory When moving the subcategory into the first root category Then records under the subcategory inherit the retention schedule of the parent record category The cut off date is updated to the new one, since the initial date was before the new one
      * <p>
      * Please see https://alfresco.atlassian.net/browse/RM-7103
      */
     public void testRetentionScheduleInheritance_APPS7103()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef category1;
             NodeRef subcategory2;
             NodeRef record;
@@ -159,7 +149,7 @@ public class DispositionScheduleInheritanceTest extends BaseRMTestCase
                 record = utils.createRecord(folder, generate(), generate());
                 utils.completeRecord(record);
 
-                //store the date to check if it was updated
+                // store the date to check if it was updated
                 asOfDateBeforeMove = dispositionService.getNextDispositionAction(record).getAsOfDate();
             }
 
@@ -194,19 +184,13 @@ public class DispositionScheduleInheritanceTest extends BaseRMTestCase
     }
 
     /**
-     * Given a root record category A with a retention schedule set to retain and destroy after 1 day
-     * and another root record category B with a retention schedule set to cut off and destroy after 1 day containing a
-     * subcategory
-     * When moving the subcategory into the first root category
-     * Then records under the subcategory inherit the retention schedule of the parent record category
-     * The events list contain the retain event step inherited from the new parent category
+     * Given a root record category A with a retention schedule set to retain and destroy after 1 day and another root record category B with a retention schedule set to cut off and destroy after 1 day containing a subcategory When moving the subcategory into the first root category Then records under the subcategory inherit the retention schedule of the parent record category The events list contain the retain event step inherited from the new parent category
      * <p>
      * Please see https://alfresco.atlassian.net/browse/APPS-1004
      */
     public void testRetentionScheduleInheritance_APPS_1004()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef category1;
             NodeRef subcategory2;
             NodeRef record;
@@ -237,7 +221,7 @@ public class DispositionScheduleInheritanceTest extends BaseRMTestCase
                 record = utils.createRecord(folder, generate(), generate());
                 utils.completeRecord(record);
 
-                //store the date to check if it was updated
+                // store the date to check if it was updated
                 asOfDateBeforeMove = dispositionService.getNextDispositionAction(record).getAsOfDate();
             }
 
@@ -272,18 +256,13 @@ public class DispositionScheduleInheritanceTest extends BaseRMTestCase
     }
 
     /**
-     * Given a root record category A with a retention schedule set to cut off on event 'case closed'
-     * and another root record category B with a retention schedule set to cut off on event 'separation'
-     * When moving the subcategory into the first root category
-     * Then records under the subcategory inherit the retention schedule of the parent record category
-     * The events list contain the case closed event step inherited from the new parent category
+     * Given a root record category A with a retention schedule set to cut off on event 'case closed' and another root record category B with a retention schedule set to cut off on event 'separation' When moving the subcategory into the first root category Then records under the subcategory inherit the retention schedule of the parent record category The events list contain the case closed event step inherited from the new parent category
      * <p>
      * Please see https://alfresco.atlassian.net/browse/APPS-1005
      */
     public void testRetentionScheduleInheritance_APPS_1005()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef category1;
             NodeRef subcategory2;
             NodeRef record;
@@ -315,7 +294,7 @@ public class DispositionScheduleInheritanceTest extends BaseRMTestCase
                 record = utils.createRecord(folder, generate(), generate());
                 utils.completeRecord(record);
 
-                //store the date to check if it was updated
+                // store the date to check if it was updated
                 asOfDateBeforeMove = dispositionService.getNextDispositionAction(record).getAsOfDate();
             }
 

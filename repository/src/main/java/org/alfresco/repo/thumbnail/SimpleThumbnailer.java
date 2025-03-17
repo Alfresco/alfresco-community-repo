@@ -30,13 +30,17 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -45,13 +49,9 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
- * A simplistic policy that generates all applicable thumbnails for content as it is added or updated. As this is done
- * synchronously, this is not recommended for production use.
+ * A simplistic policy that generates all applicable thumbnails for content as it is added or updated. As this is done synchronously, this is not recommended for production use.
  * 
  * @author dward
  *
@@ -151,10 +151,9 @@ public class SimpleThumbnailer extends TransactionListenerAdapter implements
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.transaction.TransactionListenerAdapter#afterCommit()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.transaction.TransactionListenerAdapter#afterCommit() */
     @Override
     public void afterCommit()
     {
@@ -162,14 +161,14 @@ public class SimpleThumbnailer extends TransactionListenerAdapter implements
         {
             if (!this.nodeService.exists(nodeRef))
             {
-        	continue;
+                continue;
             }
             Serializable value = this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
             ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
             if (contentData != null)
             {
                 List<ThumbnailDefinition> thumbnailDefinitions = this.thumbnailService.getThumbnailRegistry()
-                    .getThumbnailDefinitions(contentData.getMimetype(), contentData.getSize());
+                        .getThumbnailDefinitions(contentData.getMimetype(), contentData.getSize());
                 for (final ThumbnailDefinition thumbnailDefinition : thumbnailDefinitions)
                 {
                     final NodeRef existingThumbnail = this.thumbnailService.getThumbnailByName(nodeRef,
@@ -178,8 +177,7 @@ public class SimpleThumbnailer extends TransactionListenerAdapter implements
                     {
                         // Generate each thumbnail in its own transaction, so that we can recover if one of them goes wrong
                         this.transactionService.getRetryingTransactionHelper().doInTransaction(
-                                new RetryingTransactionCallback<Object>()
-                                {
+                                new RetryingTransactionCallback<Object>() {
 
                                     public Object execute() throws Throwable
                                     {

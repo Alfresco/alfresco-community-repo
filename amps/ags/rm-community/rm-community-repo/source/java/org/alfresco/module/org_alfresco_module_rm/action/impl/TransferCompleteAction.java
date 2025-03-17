@@ -27,13 +27,14 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.transfer.TransferService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Transfer complete action
@@ -60,7 +61,8 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
     }
 
     /**
-     * @param transferService transfer service
+     * @param transferService
+     *            transfer service
      */
     public void setTransferService(TransferService transferService)
     {
@@ -68,8 +70,7 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
@@ -81,7 +82,8 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
     /**
      * Checks if the actioned upon node reference is a sub class of transfer
      *
-     * @param actionedUponNodeRef actioned upon node reference
+     * @param actionedUponNodeRef
+     *            actioned upon node reference
      */
     private void checkTransferSubClass(NodeRef actionedUponNodeRef)
     {

@@ -35,45 +35,47 @@ import org.alfresco.service.namespace.QName;
  * @author Nick Burch
  * @since Odin
  */
-public class OAuth1CredentialsInfoImpl extends AbstractCredentialsImpl implements OAuth1CredentialsInfo 
+public class OAuth1CredentialsInfoImpl extends AbstractCredentialsImpl implements OAuth1CredentialsInfo
 {
-   private static final long serialVersionUID = 4739556616590284462L;
-   private static final QName TYPE = RemoteCredentialsModel.TYPE_OAUTH1_CREDENTIALS;
-   
-   private String oauthToken;
-   private String oauthTokenSecret;
-   
-   public OAuth1CredentialsInfoImpl()
-   {
-       super(TYPE);
-   }
+    private static final long serialVersionUID = 4739556616590284462L;
+    private static final QName TYPE = RemoteCredentialsModel.TYPE_OAUTH1_CREDENTIALS;
 
-   public OAuth1CredentialsInfoImpl(NodeRef nodeRef, String remoteSystemName, NodeRef remoteSystemContainerNodeRef)
-   {
-       super(nodeRef, TYPE, remoteSystemName, remoteSystemContainerNodeRef);
-   }
+    private String oauthToken;
+    private String oauthTokenSecret;
 
-   /**
-    * @return the OAuth Token Identifier
-    */
-   public String getOAuthToken()
-   {
-       return oauthToken;
-   }
-   public void setOAuthToken(String token)
-   {
-       this.oauthToken = token;
-   }
-   
-   /**
-    * @return the OAuth Token Secret
-    */
-   public String getOAuthSecret()
-   {
-       return oauthTokenSecret;
-   }
-   public void setOAuthSecret(String secret)
-   {
-       this.oauthTokenSecret = secret;
-   }
+    public OAuth1CredentialsInfoImpl()
+    {
+        super(TYPE);
+    }
+
+    public OAuth1CredentialsInfoImpl(NodeRef nodeRef, String remoteSystemName, NodeRef remoteSystemContainerNodeRef)
+    {
+        super(nodeRef, TYPE, remoteSystemName, remoteSystemContainerNodeRef);
+    }
+
+    /**
+     * @return the OAuth Token Identifier
+     */
+    public String getOAuthToken()
+    {
+        return oauthToken;
+    }
+
+    public void setOAuthToken(String token)
+    {
+        this.oauthToken = token;
+    }
+
+    /**
+     * @return the OAuth Token Secret
+     */
+    public String getOAuthSecret()
+    {
+        return oauthTokenSecret;
+    }
+
+    public void setOAuthSecret(String secret)
+    {
+        this.oauthTokenSecret = secret;
+    }
 }

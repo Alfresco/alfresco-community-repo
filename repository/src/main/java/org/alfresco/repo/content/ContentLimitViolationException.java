@@ -41,7 +41,7 @@ public class ContentLimitViolationException extends ContentIOException
     {
         super(msg);
     }
-    
+
     public ContentLimitViolationException(String msg, Throwable cause)
     {
         super(msg, cause);

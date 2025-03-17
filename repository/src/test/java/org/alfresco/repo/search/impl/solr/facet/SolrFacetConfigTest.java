@@ -26,17 +26,17 @@
 
 package org.alfresco.repo.search.impl.solr.facet;
 
+import static org.junit.Assert.*;
+
 import java.util.Map;
 import java.util.Properties;
 
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.util.ApplicationContextHelper;
 import org.junit.*;
-
-import static org.junit.Assert.*;
-
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.util.ApplicationContextHelper;
 
 /**
  * This class contains tests for the class {@link SolrFacetConfig}
@@ -53,8 +53,8 @@ public class SolrFacetConfigTest
     @BeforeClass
     public static void setUp() throws Exception
     {
-        context = new ClassPathXmlApplicationContext(new String[] { "classpath:facets/test-facet-property-context.xml" },
-                    ApplicationContextHelper.getApplicationContext());
+        context = new ClassPathXmlApplicationContext(new String[]{"classpath:facets/test-facet-property-context.xml"},
+                ApplicationContextHelper.getApplicationContext());
 
         rawProperties = context.getBean("solrFacetRawPropertiesTest", Properties.class);
         facetConfig = context.getBean("solrFacetConfigsTest", SolrFacetConfig.class);
@@ -180,14 +180,11 @@ public class SolrFacetConfigTest
     @Test
     public void testOverrideOrder() throws Exception
     {
-        ApplicationEvent applicationEvent = new ApplicationEvent(this)
-        {
+        ApplicationEvent applicationEvent = new ApplicationEvent(this) {
             private static final long serialVersionUID = 1L;
         };
 
-        /*
-         * Override order: default,custom
-         */
+        /* Override order: default,custom */
         SolrFacetConfig config = new SolrFacetConfig(rawProperties, "default,custom");
         config.setNamespaceService(context.getBean("namespaceService", NamespaceService.class));
         config.onBootstrap(applicationEvent);
@@ -200,9 +197,7 @@ public class SolrFacetConfigTest
         assertEquals(1, creatorFP.getScopedSites().size());
         assertEquals("site1", creatorFP.getScopedSites().iterator().next());
 
-        /*
-         * Override order: custom,default
-         */
+        /* Override order: custom,default */
         config = new SolrFacetConfig(rawProperties, "custom,default");
         config.setNamespaceService(context.getBean("namespaceService", NamespaceService.class));
         config.onBootstrap(applicationEvent);

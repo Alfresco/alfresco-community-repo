@@ -34,44 +34,47 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * WebScript implementation to retrieve a complete dictionary required to implement
- * a lightweight remote web-tier dictionary. 
+ * WebScript implementation to retrieve a complete dictionary required to implement a lightweight remote web-tier dictionary.
  * 
  * @author Kevin Roast
  */
 public class DictionaryGet extends DictionaryWebServiceBase
 {
-    private static final String MODEL_CLASS_DEFS        = "classdefs";
-    private static final String MODEL_PROPERTY_DEFS     = "propertydefs";
-    private static final String MODEL_ASSOCIATION_DEFS  = "assocdefs";
-    
+    private static final String MODEL_CLASS_DEFS = "classdefs";
+    private static final String MODEL_PROPERTY_DEFS = "propertydefs";
+    private static final String MODEL_ASSOCIATION_DEFS = "assocdefs";
+
     /** Set of model namespaces to ignore when outputing dictionary classes and aspects */
-    private Set<String> ignoreNamespaces = Collections.<String>emptySet();
-    
+    private Set<String> ignoreNamespaces = Collections.<String> emptySet();
+
     /**
      * Set of model namespaces to ignore when outputing dictionary classes and aspects
      * 
-     * @param namespaces    Set of model namespaces to ignore
+     * @param namespaces
+     *            Set of model namespaces to ignore
      */
     public void setIgnoreNamespaces(Set<String> namespaces)
     {
         this.ignoreNamespaces = namespaces;
     }
-    
+
     /**
      * Execute the webscript
      * 
-     * @param req       WebScriptRequest
-     * @param status    Status
+     * @param req
+     *            WebScriptRequest
+     * @param status
+     *            Status
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
@@ -81,7 +84,7 @@ public class DictionaryGet extends DictionaryWebServiceBase
         Map<QName, ClassDefinition> classdef = new HashMap<QName, ClassDefinition>();
         Map<QName, Collection<PropertyDefinition>> propdef = new HashMap<QName, Collection<PropertyDefinition>>();
         Map<QName, Collection<AssociationDefinition>> assocdef = new HashMap<QName, Collection<AssociationDefinition>>();
-        
+
         // check configured list of model namespaces to ignore when retrieving all models
         for (String ns : this.namespaceService.getURIs())
         {
@@ -94,7 +97,7 @@ public class DictionaryGet extends DictionaryWebServiceBase
         String strModel = req.getParameter("model");
         if (strModel != null && strModel.length() != 0)
         {
-            // handle full QName and prefixed shortname of a model 
+            // handle full QName and prefixed shortname of a model
             QName modelQName = (strModel.charAt(0) == QName.NAMESPACE_BEGIN ? QName.createQName(strModel) : QName.createQName(strModel, this.namespaceService));
             ModelDefinition modelDef = this.dictionaryservice.getModel(modelQName);
             if (modelDef != null)
@@ -123,10 +126,10 @@ public class DictionaryGet extends DictionaryWebServiceBase
             propdef.put(qname, classDef.getProperties().values());
             assocdef.put(qname, classDef.getAssociations().values());
         }
-        
+
         Map<String, Object> model = new HashMap<String, Object>();
-        model.put(MODEL_CLASS_DEFS, classdef.values());     
-        model.put(MODEL_PROPERTY_DEFS, propdef.values());          
+        model.put(MODEL_CLASS_DEFS, classdef.values());
+        model.put(MODEL_PROPERTY_DEFS, propdef.values());
         model.put(MODEL_ASSOCIATION_DEFS, assocdef.values());
         model.put(MODEL_PROP_KEY_MESSAGE_LOOKUP, this.dictionaryservice);
         return model;

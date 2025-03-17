@@ -25,9 +25,10 @@
  */
 package org.alfresco.repo.content.transform;
 
+import static org.junit.Assert.assertEquals;
+
 import static org.alfresco.repo.content.transform.LocalTransformServiceRegistry.LOCAL_TRANSFORMER;
 import static org.alfresco.repo.content.transform.LocalTransformServiceRegistry.URL;
-import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 import java.util.StringJoiner;

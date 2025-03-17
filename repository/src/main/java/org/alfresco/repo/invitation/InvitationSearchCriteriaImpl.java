@@ -25,8 +25,8 @@
  */
 package org.alfresco.repo.invitation;
 
-import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
 import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
+import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
 
 public class InvitationSearchCriteriaImpl implements InvitationSearchCriteria
 {
@@ -36,51 +36,51 @@ public class InvitationSearchCriteriaImpl implements InvitationSearchCriteria
     private ResourceType resourceType;
     private InvitationSearchCriteria.InvitationType invitationType = InvitationSearchCriteria.InvitationType.ALL;
 
-    public void setInvitee(String invitee) 
+    public void setInvitee(String invitee)
     {
         this.invitee = invitee;
     }
-    
-    public String getInvitee() 
+
+    public String getInvitee()
     {
         return invitee;
     }
-    
-    public void setInviter(String inviter) 
+
+    public void setInviter(String inviter)
     {
         this.inviter = inviter;
     }
-    
-    public String getInviter() 
+
+    public String getInviter()
     {
         return inviter;
     }
-    
-    public void setResourceName(String resourceName) 
+
+    public void setResourceName(String resourceName)
     {
         this.resourceName = resourceName;
     }
-    
-    public String getResourceName() 
+
+    public String getResourceName()
     {
         return resourceName;
     }
-    
-    public void setResourceType(ResourceType resourceType) 
+
+    public void setResourceType(ResourceType resourceType)
     {
         this.resourceType = resourceType;
     }
-    
-    public ResourceType getResourceType() 
+
+    public ResourceType getResourceType()
     {
         return resourceType;
     }
-    
-    public InvitationType getInvitationType() 
+
+    public InvitationType getInvitationType()
     {
         return invitationType;
     }
-    
+
     public void setInvitationType(InvitationType invitationType)
     {
         this.invitationType = invitationType;

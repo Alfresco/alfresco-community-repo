@@ -34,6 +34,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -43,12 +50,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Implementation for Java backed webscript to return the list of holds in the hold container.
@@ -66,14 +67,15 @@ public class HoldsGet extends DeclarativeWebScript
 
     /** Hold Service */
     private HoldService holdService;
-    
+
     /** permission service */
     private PermissionService permissionService;
 
     /**
      * Set the file plan service
      *
-     * @param filePlanService the file plan service
+     * @param filePlanService
+     *            the file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -83,7 +85,8 @@ public class HoldsGet extends DeclarativeWebScript
     /**
      * Set the node service
      *
-     * @param nodeService the node service
+     * @param nodeService
+     *            the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -93,17 +96,19 @@ public class HoldsGet extends DeclarativeWebScript
     /**
      * Set the hold service
      *
-     * @param holdService the hold service
+     * @param holdService
+     *            the hold service
      */
     public void setHoldService(HoldService holdService)
     {
         this.holdService = holdService;
     }
-    
+
     /**
      * Set the permission service
      * 
-     * @param permissionService     the permission service
+     * @param permissionService
+     *            the permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -152,7 +157,8 @@ public class HoldsGet extends DeclarativeWebScript
     /**
      * Helper method to get the file plan from the request
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      * @return The {@link NodeRef} of the file plan
      */
     private NodeRef getFilePlan(WebScriptRequest req)
@@ -167,7 +173,7 @@ public class HoldsGet extends DeclarativeWebScript
         if (StringUtils.isNotBlank(storeType) && StringUtils.isNotBlank(storeId) && StringUtils.isNotBlank(id))
         {
             filePlan = new NodeRef(new StoreRef(storeType, storeId), id);
-            
+
             // check that this node is actually a file plan
             if (!nodeService.exists(filePlan) || !filePlanService.isFilePlan(filePlan))
             {
@@ -189,7 +195,8 @@ public class HoldsGet extends DeclarativeWebScript
     /**
      * Helper method to get the item node reference from the request
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      * @return The {@link NodeRef} of the item (record / record folder) or null if the parameter has not been passed
      */
     private NodeRef getItemNodeRef(WebScriptRequest req)
@@ -206,7 +213,8 @@ public class HoldsGet extends DeclarativeWebScript
     /**
      * Helper method to get the includeInHold parameter value from the request
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      * @return The value of the includeInHold parameter
      */
     private boolean getIncludedInHold(WebScriptRequest req)
@@ -219,7 +227,7 @@ public class HoldsGet extends DeclarativeWebScript
         }
         return result;
     }
-    
+
     private boolean getFileOnly(WebScriptRequest req)
     {
         boolean result = false;
@@ -234,12 +242,12 @@ public class HoldsGet extends DeclarativeWebScript
     /**
      * Helper method to sort the holds by their names
      *
-     * @param holds List of holds to sort
+     * @param holds
+     *            List of holds to sort
      */
     private void sortHoldByName(List<Hold> holds)
     {
-        Collections.sort(holds, new Comparator<Hold>()
-        {
+        Collections.sort(holds, new Comparator<Hold>() {
             @Override
             public int compare(Hold h1, Hold h2)
             {

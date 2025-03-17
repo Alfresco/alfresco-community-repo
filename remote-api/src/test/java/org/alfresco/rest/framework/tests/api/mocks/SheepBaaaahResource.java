@@ -34,7 +34,6 @@ import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
-import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
@@ -48,8 +47,8 @@ import org.alfresco.rest.framework.webscripts.WithResponse;
  *
  * @author Gethin James
  */
-@RelationshipResource(name = "baaahh", entityResource=SheepEntityResource.class, title = "Sheep baaah")
-public class SheepBaaaahResource implements RelationshipResourceAction.Read<Sheep>, RelationshipResourceAction.ReadById<Sheep>, RelationshipResourceBinaryAction.Read, RelationshipResourceBinaryAction.Delete,RelationshipResourceBinaryAction.Update
+@RelationshipResource(name = "baaahh", entityResource = SheepEntityResource.class, title = "Sheep baaah")
+public class SheepBaaaahResource implements RelationshipResourceAction.Read<Sheep>, RelationshipResourceAction.ReadById<Sheep>, RelationshipResourceBinaryAction.Read, RelationshipResourceBinaryAction.Delete, RelationshipResourceBinaryAction.Update
 {
 
     @Override
@@ -62,8 +61,8 @@ public class SheepBaaaahResource implements RelationshipResourceAction.Read<Shee
     public CollectionWithPagingInfo<Sheep> readAll(String entityResourceId, Parameters params)
     {
         List<Sheep> toReturn = Arrays.asList(new Sheep("D1"), new Sheep("Z2"), new Sheep("4X"));
-        toReturn = toReturn.subList(0, params.getPaging().getMaxItems()>toReturn.size()?toReturn.size():params.getPaging().getMaxItems());
-        return CollectionWithPagingInfo.asPaged(params.getPaging(),toReturn,toReturn.size()!=3 ,3);
+        toReturn = toReturn.subList(0, params.getPaging().getMaxItems() > toReturn.size() ? toReturn.size() : params.getPaging().getMaxItems());
+        return CollectionWithPagingInfo.asPaged(params.getPaging(), toReturn, toReturn.size() != 3, 3);
     }
 
     @Override
@@ -91,7 +90,8 @@ public class SheepBaaaahResource implements RelationshipResourceAction.Read<Shee
     }
 
     @Operation("chew")
-    public String chewTheGrass(String entityId, String id, Void notused, Parameters parameters, WithResponse withResponse) {
+    public String chewTheGrass(String entityId, String id, Void notused, Parameters parameters, WithResponse withResponse)
+    {
         return "All done";
     }
 }

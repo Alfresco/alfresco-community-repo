@@ -40,12 +40,13 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletRequest;
-import org.alfresco.error.AlfrescoRuntimeException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 @SuppressWarnings("PMD.UseDiamondOperator")
 public class AdminConsoleHttpServletRequestWrapperUnitTest
@@ -55,14 +56,16 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
     private static final String DEFAULT_HEADER_VALUE = "default_value";
     private static final String ADDITIONAL_HEADER = "additional_header";
     private static final String ADDITIONAL_HEADER_VALUE = "additional_value";
-    private static final Map<String, String> DEFAULT_HEADERS = new HashMap<String, String>()
-    {{
-        put(DEFAULT_HEADER, DEFAULT_HEADER_VALUE);
-    }};
-    private static final Map<String, String> ADDITIONAL_HEADERS = new HashMap<String, String>()
-    {{
-        put(ADDITIONAL_HEADER, ADDITIONAL_HEADER_VALUE);
-    }};
+    private static final Map<String, String> DEFAULT_HEADERS = new HashMap<String, String>() {
+        {
+            put(DEFAULT_HEADER, DEFAULT_HEADER_VALUE);
+        }
+    };
+    private static final Map<String, String> ADDITIONAL_HEADERS = new HashMap<String, String>() {
+        {
+            put(ADDITIONAL_HEADER, ADDITIONAL_HEADER_VALUE);
+        }
+    };
 
     @Mock
     private HttpServletRequest request;
@@ -128,7 +131,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
         assertNotNull("headerNames should not be null", headerNames);
         assertTrue("headerNames should not be empty", headerNames.hasMoreElements());
         assertEquals("The returned header should be the additional header", ADDITIONAL_HEADER,
-            headerNames.nextElement());
+                headerNames.nextElement());
         assertFalse("There should be no more headers", headerNames.hasMoreElements());
 
         verify(request).getHeaderNames();

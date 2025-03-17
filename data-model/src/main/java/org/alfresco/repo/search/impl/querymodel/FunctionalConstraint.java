@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.search.impl.querymodel;
 
-
 /**
  * A constraint defined by a function that returns a boolean value.
  * 
@@ -33,5 +32,5 @@ package org.alfresco.repo.search.impl.querymodel;
  */
 public interface FunctionalConstraint extends Constraint, FunctionInvokation
 {
-    
+
 }

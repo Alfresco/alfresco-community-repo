@@ -32,5 +32,4 @@ import org.alfresco.repo.policy.BehaviourFilter;
  * @author Oussama Messeguem
  */
 public interface BehaviourFilterExtension extends BehaviourFilter
-{
-}
+{}

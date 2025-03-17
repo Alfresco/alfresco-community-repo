@@ -25,25 +25,26 @@
  */
 package org.alfresco.heartbeat;
 
-import com.sun.management.OperatingSystemMXBean;
-import com.sun.management.UnixOperatingSystemMXBean;
-import org.alfresco.heartbeat.datasender.HBData;
-import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
-import org.alfresco.repo.descriptor.DescriptorDAO;
-import org.alfresco.service.cmr.repository.HBDataCollectorService;
-import org.alfresco.service.descriptor.Descriptor;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.sun.management.OperatingSystemMXBean;
+import com.sun.management.UnixOperatingSystemMXBean;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.junit.Before;
+import org.junit.Test;
+
+import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
+import org.alfresco.repo.descriptor.DescriptorDAO;
+import org.alfresco.service.cmr.repository.HBDataCollectorService;
+import org.alfresco.service.descriptor.Descriptor;
 
 /**
  * @author eknizat
@@ -69,7 +70,7 @@ public class SystemUsageDataCollectorTest
         when(mockDescriptor.getId()).thenReturn("mock_id");
         when(mockDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
 
-        usageSystemCollector = new SystemUsageDataCollector("acs.repository.usage.system","1.0","0 0 0 ? * *", mockScheduler);
+        usageSystemCollector = new SystemUsageDataCollector("acs.repository.usage.system", "1.0", "0 0 0 ? * *", mockScheduler);
         usageSystemCollector.setHbDataCollectorService(mockCollectorService);
         usageSystemCollector.setDataSource(mockDataSource);
         usageSystemCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
@@ -96,7 +97,7 @@ public class SystemUsageDataCollectorTest
         HBData systemUsage = grabDataByCollectorId(usageSystemCollector.getCollectorId());
         assertNotNull("Repository usage data missing.", systemUsage);
 
-        Map<String,Object> data = systemUsage.getData();
+        Map<String, Object> data = systemUsage.getData();
 
         assertTrue(data.containsKey("cpu"));
         Map<String, Object> cpu = (Map<String, Object>) data.get("cpu");

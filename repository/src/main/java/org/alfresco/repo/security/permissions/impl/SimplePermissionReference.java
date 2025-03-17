@@ -40,7 +40,7 @@ public final class SimplePermissionReference extends AbstractPermissionReference
 {
     private static final long serialVersionUID = 637302438293417818L;
 
-    //Use thread-safe map initiallized with a slightly larger capacity to reduce the posibility of two or more threads attempting to resize at the same time
+    // Use thread-safe map initiallized with a slightly larger capacity to reduce the posibility of two or more threads attempting to resize at the same time
     private static ConcurrentMap<Pair<QName, String>, SimplePermissionReference> instances = new ConcurrentHashMap<>(100, 0.9f, 2);
 
     /**
@@ -50,28 +50,23 @@ public final class SimplePermissionReference extends AbstractPermissionReference
      */
     public static SimplePermissionReference getPermissionReference(QName qName, String name)
     {
-            Pair<QName, String> key = new Pair<>(qName, name);
-            SimplePermissionReference instance = instances.get(key);
-            if (instance == null) 
-            {
-                instance =  new SimplePermissionReference(qName, name);
-                instances.putIfAbsent(key, instance);
-            }
+        Pair<QName, String> key = new Pair<>(qName, name);
+        SimplePermissionReference instance = instances.get(key);
+        if (instance == null)
+        {
+            instance = new SimplePermissionReference(qName, name);
+            instances.putIfAbsent(key, instance);
+        }
 
-            return instance;
+        return instance;
     }
-    
-    /*
-     * The type
-     */
+
+    /* The type */
     private QName qName;
-    
-    /*
-     * The name of the permission
-     */
+
+    /* The name of the permission */
     private String name;
-    
-    
+
     protected SimplePermissionReference(QName qName, String name)
     {
         super();

@@ -26,10 +26,11 @@
 
 package org.alfresco.repo.forms.processor.workflow;
 
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.*;
-import static org.alfresco.repo.workflow.WorkflowModel.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.*;
+import static org.alfresco.repo.workflow.WorkflowModel.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,6 +41,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import junit.framework.TestCase;
 
 import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.Form;
@@ -60,8 +63,6 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
-
-import junit.framework.TestCase;
 
 public abstract class FormProcessorTest extends TestCase
 {
@@ -255,7 +256,7 @@ public abstract class FormProcessorTest extends TestCase
         String dataKey = fieldDef.getDataKeyName();
         assertEquals(expDataKey, dataKey);
         FieldData data = form.getFormData().getFieldData(dataKey);
-        if (fieldData != null  && data != null)
+        if (fieldData != null && data != null)
         {
             assertEquals(fieldData, data.getValue());
         }

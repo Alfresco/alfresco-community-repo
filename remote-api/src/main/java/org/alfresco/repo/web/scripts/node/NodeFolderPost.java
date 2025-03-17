@@ -31,6 +31,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -40,14 +49,6 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * This class is the webscript for creating child folders, of either a Node or a Site Container.
@@ -68,8 +69,8 @@ public class NodeFolderPost extends DeclarativeWebScript
         SiteInfo site = null;
         String container = null;
         NodeRef parentNodeRef = null;
-        
-        Map<String,String> templateArgs = req.getServiceMatch().getTemplateVars();
+
+        Map<String, String> templateArgs = req.getServiceMatch().getTemplateVars();
         if (templateArgs.get("site") != null && templateArgs.get("container") != null)
         {
             // Site based request
@@ -80,7 +81,7 @@ public class NodeFolderPost extends DeclarativeWebScript
                 status.setRedirect(true);
                 return null;
             }
-            
+
             // Check the container exists
             container = templateArgs.get("container");
             NodeRef containerNodeRef = siteService.getContainer(site.getShortName(), container);
@@ -90,7 +91,7 @@ public class NodeFolderPost extends DeclarativeWebScript
                 status.setRedirect(true);
                 return null;
             }
-            
+
             // Work out where to put it
             if (templateArgs.get("path") != null)
             {
@@ -116,12 +117,12 @@ public class NodeFolderPost extends DeclarativeWebScript
             }
         }
         else if (templateArgs.get("store_type") != null && templateArgs.get("store_id") != null
-                 && templateArgs.get("id") != null)
+                && templateArgs.get("id") != null)
         {
             // NodeRef based creation
-            parentNodeRef = new NodeRef(templateArgs.get("store_type"), 
-                                    templateArgs.get("store_id"), templateArgs.get("id"));
-            if (! nodeService.exists(parentNodeRef))
+            parentNodeRef = new NodeRef(templateArgs.get("store_type"),
+                    templateArgs.get("store_id"), templateArgs.get("id"));
+            if (!nodeService.exists(parentNodeRef))
             {
                 status.setCode(Status.STATUS_NOT_FOUND);
                 status.setRedirect(true);
@@ -132,71 +133,67 @@ public class NodeFolderPost extends DeclarativeWebScript
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "No parent details found");
         }
-        
-        
+
         // Process the JSON post details
         JSONObject json = null;
         JSONParser parser = new JSONParser();
         try
         {
-           json = (JSONObject)parser.parse(req.getContent().getContent());
+            json = (JSONObject) parser.parse(req.getContent().getContent());
         }
         catch (IOException io)
         {
-           throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + io.getMessage());
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + io.getMessage());
         }
         catch (ParseException pe)
         {
-           throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + pe.getMessage());
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + pe.getMessage());
         }
 
-        
         // Fetch the name, title and description
-        String name = (String)json.get("name");
+        String name = (String) json.get("name");
         if (name == null)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Name is required");
         }
-                
-        String title = (String)json.get("title");
+
+        String title = (String) json.get("title");
         if (title == null)
         {
             title = name;
         }
-        String description = (String)json.get("description");
-        
-        Map<QName,Serializable> props = new HashMap<QName, Serializable>();
+        String description = (String) json.get("description");
+
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
         props.put(ContentModel.PROP_NAME, name);
         props.put(ContentModel.PROP_TITLE, title);
         props.put(ContentModel.PROP_DESCRIPTION, description);
-        
-        
+
         // Verify the type is allowed
         QName type = ContentModel.TYPE_FOLDER;
         if (json.get("type") != null)
         {
-            type = QName.createQName( (String)json.get("type"), namespaceService );
-            if (! dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER))
+            type = QName.createQName((String) json.get("type"), namespaceService);
+            if (!dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER))
             {
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Specified type is not a folder");
             }
         }
-        
-        
+
         // Have the node created
         NodeRef nodeRef = null;
         try
         {
-            nodeRef = nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, 
+            nodeRef = nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS,
                     QName.createQName(name), type, props).getChildRef();
         }
         catch (AccessDeniedException e)
         {
             throw new WebScriptException(Status.STATUS_FORBIDDEN, "You don't have permission to create the node");
         }
-        
+
         // Report the details
-        Map<String,Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<String, Object>();
         model.put("nodeRef", nodeRef);
         model.put("site", site);
         model.put("container", container);
@@ -208,14 +205,17 @@ public class NodeFolderPost extends DeclarativeWebScript
     {
         this.nodeService = nodeService;
     }
+
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
     }
+
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;

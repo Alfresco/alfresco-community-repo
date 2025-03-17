@@ -74,8 +74,8 @@ public class RMSitesImpl extends SitesImpl implements RMSites
     }
 
     /**
-     * Even if the method it will be protected in core, we still need to override since we don't need to check if the visibility is set since for RM site it is always PUBLIC.
-     * We also don't need to generate the id from title, or to check the id, since the id is always rm.
+     * Even if the method it will be protected in core, we still need to override since we don't need to check if the visibility is set since for RM site it is always PUBLIC. We also don't need to generate the id from title, or to check the id, since the id is always rm.
+     * 
      * @param site
      * @return
      */
@@ -86,11 +86,11 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         String siteTitle = site.getTitle();
         if ((siteTitle == null) || siteTitle.isEmpty())
         {
-            throw new InvalidArgumentException("Site title is expected: "+siteTitle);
+            throw new InvalidArgumentException("Site title is expected: " + siteTitle);
         }
         else if (siteTitle.length() > SITE_MAXLEN_TITLE)
         {
-            throw new InvalidArgumentException("Site title exceeds max length of "+SITE_MAXLEN_TITLE+" characters");
+            throw new InvalidArgumentException("Site title exceeds max length of " + SITE_MAXLEN_TITLE + " characters");
         }
 
         String siteDescription = site.getDescription();
@@ -103,7 +103,7 @@ public class RMSitesImpl extends SitesImpl implements RMSites
 
         if ((siteDescription != null) && (siteDescription.length() > SITE_MAXLEN_DESCRIPTION))
         {
-            throw new InvalidArgumentException("Site description exceeds max length of "+SITE_MAXLEN_DESCRIPTION+" characters");
+            throw new InvalidArgumentException("Site description exceeds max length of " + SITE_MAXLEN_DESCRIPTION + " characters");
         }
 
         return site;
@@ -178,13 +178,12 @@ public class RMSitesImpl extends SitesImpl implements RMSites
     }
 
     /**
-     * Method used for solving rm site nodeRef caching problem that affected rm site update and get from rest api, after site deletion from rest api.
-     * See RM-4289 issue for details.
+     * Method used for solving rm site nodeRef caching problem that affected rm site update and get from rest api, after site deletion from rest api. See RM-4289 issue for details.
      *
      */
     private void solveRMSiteNodeRefCaching()
     {
-        //since we do not have access to SiteServiceImpl.getSiteNodeRef(String shortName, boolean enforcePermissions) method we can use hasSite method to solve caching problem
+        // since we do not have access to SiteServiceImpl.getSiteNodeRef(String shortName, boolean enforcePermissions) method we can use hasSite method to solve caching problem
         siteService.hasSite(RM_SITE_ID);
     }
 }

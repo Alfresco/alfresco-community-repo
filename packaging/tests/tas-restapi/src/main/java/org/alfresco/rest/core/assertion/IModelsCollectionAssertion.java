@@ -26,14 +26,15 @@
 package org.alfresco.rest.core.assertion;
 
 @SuppressWarnings("rawtypes")
-public interface IModelsCollectionAssertion<ModelCollection> {
-  public ModelsCollectionAssertion and();
+public interface IModelsCollectionAssertion<ModelCollection>
+{
+    public ModelsCollectionAssertion and();
 
-  public ModelsCollectionAssertion assertThat();
+    public ModelsCollectionAssertion assertThat();
 
-  @SuppressWarnings("unchecked")
-  default ModelCollection when()
-  {
-    return (ModelCollection) this;
-  }
+    @SuppressWarnings("unchecked")
+    default ModelCollection when()
+    {
+        return (ModelCollection) this;
+    }
 }

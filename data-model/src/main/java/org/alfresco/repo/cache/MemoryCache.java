@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * A cache backed by a simple <code>ConcurrentHashMap</code>.
  * <p>
- * <b>Note:</b> This cache is not transaction-safe.  Use it for tests or wrap it appropriately.
+ * <b>Note:</b> This cache is not transaction-safe. Use it for tests or wrap it appropriately.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MemoryCache<K extends Serializable, V extends Object> implements SimpleCache<K, V>
 {
     private Map<K, V> map;
-    
+
     public MemoryCache()
     {
         map = new ConcurrentHashMap<K, V>(15);

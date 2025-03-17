@@ -35,8 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 
 /**
- * This class is the controller for the blog-posts-mydrafts.get web script.
- * Based on the original JavaScript webscript controller
+ * This class is the controller for the blog-posts-mydrafts.get web script. Based on the original JavaScript webscript controller
  * 
  * @author Neil Mc Erlean (based on existing JavaScript webscript controllers)
  * @since 4.0
@@ -47,13 +46,13 @@ public class BlogPostsMyDraftsGet extends AbstractGetBlogWebScript
     protected PagingResults<BlogPostInfo> getBlogResultsImpl(SiteInfo site, NodeRef node, Date fromDate, Date toDate, PagingRequest pagingReq)
     {
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        if(site != null)
+        if (site != null)
         {
-           return blogService.getDrafts(site.getShortName(), user, pagingReq);
+            return blogService.getDrafts(site.getShortName(), user, pagingReq);
         }
         else
         {
-           return blogService.getDrafts(node, user, pagingReq);
+            return blogService.getDrafts(node, user, pagingReq);
         }
     }
 }

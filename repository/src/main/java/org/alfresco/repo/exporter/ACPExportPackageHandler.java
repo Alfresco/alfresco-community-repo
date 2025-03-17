@@ -25,23 +25,18 @@
  */
 package org.alfresco.repo.exporter;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
 
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import org.apache.commons.compress.archivers.zip.Zip64Mode;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream.UnicodeExtraFieldPolicy;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -55,13 +50,6 @@ import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 import org.alfresco.service.cmr.view.ExportPackageHandler;
 import org.alfresco.service.cmr.view.ExporterException;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.compress.archivers.zip.Zip64Mode;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream.UnicodeExtraFieldPolicy;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Handler for exporting Repository to ACP (Alfresco Content Package) file
@@ -69,12 +57,11 @@ import org.w3c.dom.NodeList;
  * @author David Caruana
  */
 public class ACPExportPackageHandler
-    implements ExportPackageHandler
+        implements ExportPackageHandler
 {
     /** ACP File Extension */
     public final static String ACP_EXTENSION = "acp";
-    protected static final String TEMP_FILE_PREFIX = "export_";
-    
+
     protected MimetypeService mimetypeService;
     protected NodeService nodeService;
     protected OutputStream outputStream;
@@ -85,17 +72,22 @@ public class ACPExportPackageHandler
     protected ZipArchiveOutputStream zipStream;
     protected int iFileCnt = 0;
     protected boolean exportAsFolders;
-    
-        
+
     /**
      * Construct
      * 
-     * @param destDir File
-     * @param zipFile File
-     * @param dataFile File
-     * @param contentDir File
-     * @param overwrite boolean
-     * @param mimetypeService MimetypeService
+     * @param destDir
+     *            File
+     * @param zipFile
+     *            File
+     * @param dataFile
+     *            File
+     * @param contentDir
+     *            File
+     * @param overwrite
+     *            boolean
+     * @param mimetypeService
+     *            MimetypeService
      */
     public ACPExportPackageHandler(File destDir, File zipFile, File dataFile, File contentDir, boolean overwrite, MimetypeService mimetypeService)
     {
@@ -105,7 +97,7 @@ public class ACPExportPackageHandler
             String zipFilePath = zipFile.getPath();
             if (!zipFilePath.endsWith("." + ACP_EXTENSION))
             {
-                zipFilePath += (zipFilePath.charAt(zipFilePath.length() -1) == '.') ? ACP_EXTENSION : "." + ACP_EXTENSION;
+                zipFilePath += (zipFilePath.charAt(zipFilePath.length() - 1) == '.') ? ACP_EXTENSION : "." + ACP_EXTENSION;
             }
 
             File absZipFile = new File(destDir, zipFilePath);
@@ -119,7 +111,7 @@ public class ACPExportPackageHandler
                 }
                 log("Warning: Overwriting existing package zip file " + absZipFile.getAbsolutePath());
             }
-            
+
             this.outputStream = new FileOutputStream(absZipFile);
             this.dataFile = dataFile;
             this.contentDir = contentDir;
@@ -134,10 +126,14 @@ public class ACPExportPackageHandler
     /**
      * Construct
      * 
-     * @param outputStream OutputStream
-     * @param dataFile File
-     * @param contentDir File
-     * @param mimetypeService MimetypeService
+     * @param outputStream
+     *            OutputStream
+     * @param dataFile
+     *            File
+     * @param contentDir
+     *            File
+     * @param mimetypeService
+     *            MimetypeService
      */
     public ACPExportPackageHandler(OutputStream outputStream, File dataFile, File contentDir, MimetypeService mimetypeService)
     {
@@ -146,34 +142,36 @@ public class ACPExportPackageHandler
         this.contentDir = contentDir;
         this.mimetypeService = mimetypeService;
     }
-    
+
     /**
-     * @param nodeService NodeService
+     * @param nodeService
+     *            NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Export content into folder structure of nodes
      * 
-     * @param exportAsFolders boolean
+     * @param exportAsFolders
+     *            boolean
      */
     public void setExportAsFolders(boolean exportAsFolders)
     {
         this.exportAsFolders = exportAsFolders;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ExportPackageHandler#startExport()
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ExportPackageHandler#startExport() */
     public void startExport()
     {
         // ALF-2016
         zipStream = new ZipArchiveOutputStream(outputStream);
         // NOTE: This encoding allows us to workaround bug...
-        //       http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
+        // http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
         zipStream.setEncoding("UTF-8");
         zipStream.setCreateUnicodeExtraFields(UnicodeExtraFieldPolicy.ALWAYS);
         zipStream.setUseLanguageEncodingFlag(true);
@@ -182,14 +180,14 @@ public class ACPExportPackageHandler
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ExportPackageHandler#createDataStream()
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ExportPackageHandler#createDataStream() */
     public OutputStream createDataStream()
     {
         tempDataFile = TempFileProvider.createTempFile("exportDataStream", ".xml");
         try
         {
-            tempDataFileStream = new FileOutputStream(tempDataFile); 
+            tempDataFileStream = new FileOutputStream(tempDataFile);
             return tempDataFileStream;
         }
         catch (FileNotFoundException e)
@@ -199,8 +197,8 @@ public class ACPExportPackageHandler
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ExportStreamHandler#exportStream(java.io.InputStream)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ExportStreamHandler#exportStream(java.io.InputStream) */
     public ContentData exportContent(InputStream content, ContentData contentData)
     {
         // if the content stream to output is empty, then just return content descriptor as is
@@ -208,18 +206,18 @@ public class ACPExportPackageHandler
         {
             return contentData;
         }
-        
+
         // create zip entry for stream to export
         String contentDirPath = contentDir.getPath();
-        if (contentDirPath.charAt(contentDirPath.length() -1) != '.' && contentDirPath.lastIndexOf('.') != -1)
+        if (contentDirPath.charAt(contentDirPath.length() - 1) != '.' && contentDirPath.lastIndexOf('.') != -1)
         {
             contentDirPath = contentDirPath.substring(0, contentDirPath.lastIndexOf("."));
         }
-        
+
         File file;
         if (exportAsFolders && nodeService != null && contentData instanceof NodeContentData)
         {
-            NodeContentData nodeContentData = (NodeContentData)contentData;
+            NodeContentData nodeContentData = (NodeContentData) contentData;
             file = new File(contentDirPath + toDisplayPath(nodeService.getPath(nodeContentData.getNodeRef())));
         }
         else
@@ -234,7 +232,7 @@ public class ACPExportPackageHandler
                     {
                         extension = mimetypeService.getExtension(mimetype);
                     }
-                    catch(AlfrescoRuntimeException e)
+                    catch (AlfrescoRuntimeException e)
                     {
                         // use default extension
                     }
@@ -242,13 +240,13 @@ public class ACPExportPackageHandler
             }
             file = new File(contentDirPath, "content" + iFileCnt++ + "." + extension);
         }
-        
+
         try
         {
             // ALF-2016
-            ZipArchiveEntry zipEntry=new ZipArchiveEntry(file.getPath());
+            ZipArchiveEntry zipEntry = new ZipArchiveEntry(file.getPath());
             zipStream.putArchiveEntry(zipEntry);
-            
+
             // copy export stream to zip
             copyStream(zipStream, content);
         }
@@ -256,41 +254,26 @@ public class ACPExportPackageHandler
         {
             throw new ExporterException("Failed to zip export stream", e);
         }
-        
+
         return new ContentData(file.getPath(), contentData.getMimetype(), contentData.getSize(), contentData.getEncoding());
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ExportPackageHandler#endExport()
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ExportPackageHandler#endExport() */
     public void endExport()
     {
-        // Create a CSV file containing metadata headers
-        File csvFile = null;
-        try
-        {
-            csvFile = createCSVFileWithMetadataHeaders(tempDataFile);
-            addCSVFileToDir(csvFile, contentDir);
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException(e);
-        }
-
-        // Optionally add the CSV file to the ACP package
-        addFilesToACP(contentDir);
-
         // ensure data file has .xml extension
         String dataFilePath = dataFile.getPath();
         if (!dataFilePath.endsWith(".xml"))
         {
-        	dataFilePath  += (dataFilePath .charAt(dataFilePath .length() -1) == '.') ? "xml" : ".xml";
+            dataFilePath += (dataFilePath.charAt(dataFilePath.length() - 1) == '.') ? "xml" : ".xml";
         }
-        
+
         // add data file to zip stream
         // ALF-2016
-        ZipArchiveEntry zipEntry=new ZipArchiveEntry(dataFilePath);
-        
+        ZipArchiveEntry zipEntry = new ZipArchiveEntry(dataFilePath);
+
         try
         {
             // close data file stream and place temp data file into zip output stream
@@ -307,49 +290,52 @@ public class ACPExportPackageHandler
         {
             throw new ExporterException("Failed to zip data stream file", e);
         }
-        
+
         try
         {
             // close zip stream
             zipStream.close();
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new ExporterException("Failed to close zip package stream", e);
         }
     }
-    
+
     /**
      * Log Export Message
      * 
-     * @param message  message to log
+     * @param message
+     *            message to log
      */
     protected void log(String message)
-    {
-    }
+    {}
 
     /**
      * Copy input stream to output stream
      * 
-     * @param output  output stream
-     * @param in  input stream
+     * @param output
+     *            output stream
+     * @param in
+     *            input stream
      * @throws IOException
      */
     private void copyStream(OutputStream output, InputStream in)
-        throws IOException
+            throws IOException
     {
         byte[] buffer = new byte[2048 * 10];
-        int read = in.read(buffer, 0, 2048 *10);
+        int read = in.read(buffer, 0, 2048 * 10);
         while (read != -1)
         {
             output.write(buffer, 0, read);
-            read = in.read(buffer, 0, 2048 *10);
+            read = in.read(buffer, 0, 2048 * 10);
         }
     }
-    
+
     /**
-     * @param path Path
-     * @return  display path
+     * @param path
+     *            Path
+     * @return display path
      */
     private String toDisplayPath(Path path)
     {
@@ -365,7 +351,7 @@ public class ACPExportPackageHandler
                 Path.Element element = path.get(i);
                 if (element instanceof ChildAssocElement)
                 {
-                    ChildAssociationRef assocRef = ((ChildAssocElement)element).getRef();
+                    ChildAssociationRef assocRef = ((ChildAssocElement) element).getRef();
                     NodeRef node = assocRef.getChildRef();
                     displayPath.append("/");
                     displayPath.append(nodeService.getProperty(node, ContentModel.PROP_NAME));
@@ -375,127 +361,4 @@ public class ACPExportPackageHandler
         return displayPath.toString();
     }
 
-    public File getTempDataFile()
-    {
-        return this.tempDataFile;
-    }
-
-    public void addFilesToACP(File contentDir)
-    {
-        // Add all files from contentDir to the ACP archive
-        File[] files = contentDir.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isFile()) {
-                    try {
-                        // Create a Zip entry for each file in contentDir
-                        ZipArchiveEntry contentEntry = new ZipArchiveEntry(file.getName());
-                        zipStream.putArchiveEntry(contentEntry);
-
-                        // Copy content from the file into the zip stream
-                        InputStream contentStream = new FileInputStream(file);
-                        copyStream(zipStream, contentStream);
-                        zipStream.closeArchiveEntry();
-                        contentStream.close();
-                    } catch (IOException e) {
-                        throw new ExporterException("Failed to add content file to zip", e);
-                    }
-                }
-            }
-        }
-    }
-
-    // Method to create CSV with metadata and properties from XML
-    public static File createCSVFileWithMetadataHeaders(File xmlFile) throws IOException {
-        List<String> headers = new ArrayList<>();
-        List<String> values = new ArrayList<>();
-
-        try {
-            if (xmlFile.exists())
-            {
-                // Parse XML file
-                Document doc = parseXMLFile(xmlFile);
-
-                // Extract metadata and properties
-                extractMetadataAndProperties(doc, headers, values);
-            }
-
-        } catch (Exception e) {
-            throw new IOException("Error parsing XML to extract metadata", e);
-        }
-
-        // Create and write to CSV file
-        File csvFile = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, ".csv");
-        writeCSV(csvFile, headers, values);
-
-        return csvFile;
-    }
-
-    // Helper method to parse XML file
-    private static Document parseXMLFile(File xmlFile) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        return builder.parse(xmlFile);
-    }
-
-    // Helper method to extract metadata and properties from XML document
-    private static void extractMetadataAndProperties(Document doc, List<String> headers, List<String> values) {
-        // Extract metadata
-        extractNodesToCSV(doc, "view:metadata", headers, values);
-
-        // Extract properties
-        extractNodesToCSV(doc, "view:properties", headers, values);
-    }
-
-    // Helper method to extract XML nodes and add to CSV
-    private static void extractNodesToCSV(Document doc, String tagName, List<String> headers, List<String> values) {
-        NodeList nodes = doc.getElementsByTagName(tagName);
-        for (int i = 0; i < nodes.getLength(); i++) {
-            Node node = nodes.item(i);
-            NodeList children = node.getChildNodes();
-            for (int j = 0; j < children.getLength(); j++) {
-                Node child = children.item(j);
-                if (child.getNodeType() == Node.ELEMENT_NODE) {
-                    headers.add(child.getNodeName());
-                    values.add(child.getTextContent().trim());
-                }
-            }
-        }
-    }
-
-    // Helper method to write headers and values to CSV file
-    private static void writeCSV(File csvFile, List<String> headers, List<String> values) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFile))) {
-            // Write headers
-            writer.write(String.join(",", headers));
-            writer.newLine();
-
-            // Write values
-            writer.write(String.join(",", values));
-            writer.newLine();
-        }
-    }
-
-    public static void addCSVFileToDir(File csvFile, File contentDir) throws IOException
-    {
-        System.out.println("CSV File Path: " + csvFile.getAbsolutePath());
-        System.out.println("Content Directory Path: " + contentDir.getAbsolutePath());
-
-        // Ensure the contentDir exists
-        if (!contentDir.exists())
-        {
-            if (!contentDir.mkdirs())
-            {
-                throw new IOException("Failed to create directory: " + contentDir.getAbsolutePath());
-            }
-        }
-
-        // Copy the CSV file into the content directory of the ACP package
-        java.nio.file.Path destination = contentDir.toPath()
-                    .resolve(csvFile.getName());
-        Files.copy(csvFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
-
-        // Optionally, delete the CSV file after it's added to the ACP (or you can leave it as is)
-        csvFile.deleteOnExit();
-    }
 }

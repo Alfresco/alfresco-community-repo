@@ -38,8 +38,6 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
-
-
 /**
  * Records management IsKind evaluator that evaluates according to the file plan
  * component kind passed in.
@@ -67,9 +65,9 @@ public class IsKindEvaluator extends RecordsManagementActionConditionEvaluatorAb
         FilePlanComponentKind filePlanComponentKind = getFilePlanService().getFilePlanComponentKind(actionedUponNodeRef);
 
         if (filePlanComponentKind != null &&
-            filePlanComponentKind.toString().equals(kind))
+                filePlanComponentKind.toString().equals(kind))
         {
-                result = true;
+            result = true;
         }
         return result;
     }

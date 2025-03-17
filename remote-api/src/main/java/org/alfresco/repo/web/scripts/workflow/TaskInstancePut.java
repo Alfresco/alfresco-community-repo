@@ -31,16 +31,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
-import org.alfresco.service.cmr.workflow.WorkflowException;
-import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,6 +41,14 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
+import org.alfresco.service.cmr.workflow.WorkflowException;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author unknown
@@ -61,33 +61,33 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
     protected Map<String, Object> buildModel(WorkflowModelBuilder modelBuilder, WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, String> params = req.getServiceMatch().getTemplateVars();
-        
+
         // getting task id from request parameters
         String taskId = params.get("task_instance_id");
-        
+
         JSONObject json = null;
-        
+
         try
         {
             WorkflowTask workflowTask = workflowService.getTaskById(taskId);
             String currentUser = authenticationService.getCurrentUserName();
 
-            // read request json            
+            // read request json
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-                
+
             // update task properties
             workflowTask = workflowService.updateTask(taskId, parseTaskProperties(json, workflowTask), null, null);
-                
+
             // task was not found -> return 404
             if (workflowTask == null)
             {
                 throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Failed to find workflow task with id: " + taskId);
             }
-                
+
             // build the model for ftl
             Map<String, Object> model = new HashMap<String, Object>();
             model.put("workflowTask", modelBuilder.buildDetailed(workflowTask));
-                
+
             return model;
         }
         catch (IOException iox)
@@ -107,15 +107,15 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
             throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Failed to update workflow task with id: " + taskId, we);
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     private Map<QName, Serializable> parseTaskProperties(JSONObject json, WorkflowTask workflowTask) throws JSONException
     {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-        
+
         // gets the array of properties names
         String[] names = JSONObject.getNames(json);
-        
+
         if (names != null)
         {
             // array is not empty
@@ -124,10 +124,10 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
                 // build the qname of property
                 QName key = QName.createQName(name.replaceFirst("_", ":"), namespaceService);
                 Object jsonValue = json.get(name);
-                
+
                 Serializable value = null;
-                
-                // process null values 
+
+                // process null values
                 if (jsonValue.equals(JSONObject.NULL))
                 {
                     props.put(key, null);
@@ -136,16 +136,16 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
                 {
                     // gets the property definition from dictionary
                     PropertyDefinition prop = dictionaryService.getProperty(key);
-                    
+
                     if (prop != null)
                     {
                         if (prop.isMultiValued() && jsonValue instanceof JSONArray)
                         {
                             value = new ArrayList<Serializable>();
-                            
-                            for (int i = 0; i < ((JSONArray)jsonValue).length(); i++)
+
+                            for (int i = 0; i < ((JSONArray) jsonValue).length(); i++)
                             {
-                                ((List<Serializable>)value).add((Serializable) DefaultTypeConverter.INSTANCE.convert(prop.getDataType(),((JSONArray)jsonValue).get(i)));
+                                ((List<Serializable>) value).add((Serializable) DefaultTypeConverter.INSTANCE.convert(prop.getDataType(), ((JSONArray) jsonValue).get(i)));
                             }
                         }
                         else
@@ -160,10 +160,10 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
                         if (jsonValue instanceof JSONArray)
                         {
                             value = new ArrayList<String>();
-                            
-                            for (int i = 0; i < ((JSONArray)jsonValue).length(); i++)
+
+                            for (int i = 0; i < ((JSONArray) jsonValue).length(); i++)
                             {
-                                ((List<String>)value).add(((JSONArray)jsonValue).getString(i));
+                                ((List<String>) value).add(((JSONArray) jsonValue).getString(i));
                             }
                         }
                         else
@@ -180,7 +180,7 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
                                     {
                                         value = DefaultTypeConverter.INSTANCE.convert(existingValue.getClass(), jsonValue);
                                     }
-                                    catch(TypeConversionException tce)
+                                    catch (TypeConversionException tce)
                                     {
                                         // TODO: is this the right approach, ignoring exception?
                                         // Ignore the exception, revert to using String-value
@@ -200,7 +200,7 @@ public class TaskInstancePut extends AbstractWorkflowWebscript
                         }
                     }
                 }
-                
+
                 props.put(key, value);
             }
         }

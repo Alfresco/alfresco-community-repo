@@ -50,11 +50,9 @@ public class FileToAuditEvent extends AuditEvent implements OnUpdatePropertiesPo
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            type = "rma:record"
-    )
+            type = "rma:record")
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         if (before.get(PROP_DATE_FILED) == null && after.get(PROP_DATE_FILED) != null)

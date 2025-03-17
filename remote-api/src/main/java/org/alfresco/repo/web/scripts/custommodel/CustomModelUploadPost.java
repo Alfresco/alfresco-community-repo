@@ -38,8 +38,16 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-
 import javax.xml.parsers.DocumentBuilder;
+
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.servlet.FormData;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 import org.alfresco.repo.dictionary.CustomModelServiceImpl;
 import org.alfresco.repo.dictionary.M2Model;
@@ -53,18 +61,9 @@ import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.XMLUtil;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.servlet.FormData;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 /**
- * Custom model upload POST. This class is the controller for the
- * "cmm-upload.post" web scripts.
+ * Custom model upload POST. This class is the controller for the "cmm-upload.post" web scripts.
  * 
  * @author Jamal Kaabi-Mofrad
  */
@@ -116,7 +115,7 @@ public class CustomModelUploadPost extends DeclarativeWebScript
                 }
                 catch (ZipException ze)
                 {
-                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "cmm.rest_api.model.import_not_zip_format", new Object[] { fileName });
+                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "cmm.rest_api.model.import_not_zip_format", new Object[]{fileName});
                 }
                 catch (IOException io)
                 {
@@ -197,12 +196,12 @@ public class CustomModelUploadPost extends DeclarativeWebScript
 
                                 if (shareExtModule == null)
                                 {
-                                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "cmm.rest_api.model.import_invalid_zip_entry_format", new Object[] { entryName });
+                                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "cmm.rest_api.model.import_invalid_zip_entry_format", new Object[]{entryName});
                                 }
                             }
                             else
                             {
-                                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "cmm.rest_api.model.import_invalid_model_entry", new Object[] { entryName });
+                                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "cmm.rest_api.model.import_invalid_model_entry", new Object[]{entryName});
                             }
                         }
                     }
@@ -211,7 +210,7 @@ public class CustomModelUploadPost extends DeclarativeWebScript
                         shareExtModule = getExtensionModule(input, entryName);
                         if (shareExtModule == null)
                         {
-                            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "cmm.rest_api.model.import_invalid_ext_module_entry", new Object[] { entryName });
+                            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "cmm.rest_api.model.import_invalid_ext_module_entry", new Object[]{entryName});
                         }
                     }
                 }
@@ -267,7 +266,7 @@ public class CustomModelUploadPost extends DeclarativeWebScript
         }
         catch (SAXException ex)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "cmm.rest_api.model.import_invalid_ext_module_entry", new Object[] { fileName }, ex);
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "cmm.rest_api.model.import_invalid_ext_module_entry", new Object[]{fileName}, ex);
         }
 
         if (rootElement != null && SHARE_EXT_MODULE_ROOT_ELEMENT.equals(rootElement.getNodeName()))

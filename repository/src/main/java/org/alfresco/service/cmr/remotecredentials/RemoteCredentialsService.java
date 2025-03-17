@@ -32,105 +32,89 @@ import org.alfresco.service.namespace.QName;
 /**
  * The core Remote Credentials service.
  * 
- * This provides low level support for storing, retrieving
- *  and finding remote credentials. Most users will want 
- *  something built on top of this, eg to do the OAuth Dance.
+ * This provides low level support for storing, retrieving and finding remote credentials. Most users will want something built on top of this, eg to do the OAuth Dance.
  * 
- * The "Remote System" name chosen by systems built on top of
- *  this need to be unique, to avoid clashes. Where there is
- *  only one thing that is talked to (eg Twitter, Flickr,
- *  Alfresco Cloud), then the "Remote System Name" should be
- *  the name of the system. Where one service can talk to
- *  multiple systems, the system hostname should be used as
- *  a suffix, such as "OpenID-livejournal.com" and 
- *  "OpenID-stackexchange.net", so they can be differentiated.
+ * The "Remote System" name chosen by systems built on top of this need to be unique, to avoid clashes. Where there is only one thing that is talked to (eg Twitter, Flickr, Alfresco Cloud), then the "Remote System Name" should be the name of the system. Where one service can talk to multiple systems, the system hostname should be used as a suffix, such as "OpenID-livejournal.com" and "OpenID-stackexchange.net", so they can be differentiated.
  * 
  * @author Nick Burch
  * @since 4.0.2
  */
-public interface RemoteCredentialsService 
+public interface RemoteCredentialsService
 {
-   /**
-    * Stores a new {@link BaseCredentialsInfo} for the current user
-    */
-   BaseCredentialsInfo createPersonCredentials(String remoteSystem, BaseCredentialsInfo credentials); 
-    
-   /**
-    * Stores a new {@link BaseCredentialsInfo} for shared use.
-    * Permissions should then be set to control access to these.
-    */
-   BaseCredentialsInfo createSharedCredentials(String remoteSystem, BaseCredentialsInfo credentials);
-     
-   /**
-    * Updates an existing {@link BaseCredentialsInfo}. The type
-    *  must not change.
-    */
-   BaseCredentialsInfo updateCredentials(BaseCredentialsInfo credentials);
-   
-   /**
-    * Records if the most recent Authentication attempt with a given
-    *  set of credentials worked or not.
-    */
-   BaseCredentialsInfo updateCredentialsAuthenticationSucceeded(boolean succeeded, BaseCredentialsInfo credentialsInfo);
-     
-   /**
-    * Deletes an existing {@link BaseCredentialsInfo} from the repository
-    */
-   void deleteCredentials(BaseCredentialsInfo credentialsInfo);
+    /**
+     * Stores a new {@link BaseCredentialsInfo} for the current user
+     */
+    BaseCredentialsInfo createPersonCredentials(String remoteSystem, BaseCredentialsInfo credentials);
 
-   
-   /**
-    * Lists all Remote Systems for which credentials are
-    *  stored for the current user
-    */
-   PagingResults<String> listPersonRemoteSystems(PagingRequest paging);
-   
-   /**
-    * Lists all Remote Systems for which the user has access
-    *  to shared credentials
-    */
-   PagingResults<String> listSharedRemoteSystems(PagingRequest paging);
-   
-   /**
-    * Lists all the Remote Systems for which the user has credentials,
-    *  either personal ones or shared ones
-    */
-   PagingResults<String> listAllRemoteSystems(PagingRequest paging);
-   
-   
-   /**
-    * Fetches the credentials for the current user for the specified
-    *  System. If multiple credentials exist, the first is returned, so
-    *  this should only be used for systems where a user is restricted
-    *  to only one set of credentials per system.
-    * @return The Credentials, or Null if none exist for the current user
-    */
-   BaseCredentialsInfo getPersonCredentials(String remoteSystem);
+    /**
+     * Stores a new {@link BaseCredentialsInfo} for shared use. Permissions should then be set to control access to these.
+     */
+    BaseCredentialsInfo createSharedCredentials(String remoteSystem, BaseCredentialsInfo credentials);
 
-   
-   /**
-    * Lists all Credentials for the current user for the given Remote System 
-    * 
-    * @param remoteSystem The Remote System to return credentials for
-    * @param credentialsType Optional type (including child subtypes) of the credentials to filter by
-    */
-   PagingResults<? extends BaseCredentialsInfo> listPersonCredentials(String remoteSystem, QName credentialsType, PagingRequest paging);
+    /**
+     * Updates an existing {@link BaseCredentialsInfo}. The type must not change.
+     */
+    BaseCredentialsInfo updateCredentials(BaseCredentialsInfo credentials);
 
-   /**
-    * Lists all Credentials that are shared with the current user for
-    *  the given Remote System 
-    * 
-    * @param remoteSystem The Remote System to return credentials for
-    * @param credentialsType Optional type (including child subtypes) of the credentials to filter by
-    */
-   PagingResults<? extends BaseCredentialsInfo> listSharedCredentials(String remoteSystem, QName credentialsType, PagingRequest paging);
+    /**
+     * Records if the most recent Authentication attempt with a given set of credentials worked or not.
+     */
+    BaseCredentialsInfo updateCredentialsAuthenticationSucceeded(boolean succeeded, BaseCredentialsInfo credentialsInfo);
 
-   /**
-    * Lists all Credentials that the user has access to
-    *  for the given Remote System 
-    * 
-    * @param remoteSystem The Remote System to return credentials for
-    * @param credentialsType Optional type (including child subtypes) of the credentials to filter by
-    */
-   PagingResults<? extends BaseCredentialsInfo> listAllCredentials(String remoteSystem, QName credentialsType, PagingRequest paging);
+    /**
+     * Deletes an existing {@link BaseCredentialsInfo} from the repository
+     */
+    void deleteCredentials(BaseCredentialsInfo credentialsInfo);
+
+    /**
+     * Lists all Remote Systems for which credentials are stored for the current user
+     */
+    PagingResults<String> listPersonRemoteSystems(PagingRequest paging);
+
+    /**
+     * Lists all Remote Systems for which the user has access to shared credentials
+     */
+    PagingResults<String> listSharedRemoteSystems(PagingRequest paging);
+
+    /**
+     * Lists all the Remote Systems for which the user has credentials, either personal ones or shared ones
+     */
+    PagingResults<String> listAllRemoteSystems(PagingRequest paging);
+
+    /**
+     * Fetches the credentials for the current user for the specified System. If multiple credentials exist, the first is returned, so this should only be used for systems where a user is restricted to only one set of credentials per system.
+     * 
+     * @return The Credentials, or Null if none exist for the current user
+     */
+    BaseCredentialsInfo getPersonCredentials(String remoteSystem);
+
+    /**
+     * Lists all Credentials for the current user for the given Remote System
+     * 
+     * @param remoteSystem
+     *            The Remote System to return credentials for
+     * @param credentialsType
+     *            Optional type (including child subtypes) of the credentials to filter by
+     */
+    PagingResults<? extends BaseCredentialsInfo> listPersonCredentials(String remoteSystem, QName credentialsType, PagingRequest paging);
+
+    /**
+     * Lists all Credentials that are shared with the current user for the given Remote System
+     * 
+     * @param remoteSystem
+     *            The Remote System to return credentials for
+     * @param credentialsType
+     *            Optional type (including child subtypes) of the credentials to filter by
+     */
+    PagingResults<? extends BaseCredentialsInfo> listSharedCredentials(String remoteSystem, QName credentialsType, PagingRequest paging);
+
+    /**
+     * Lists all Credentials that the user has access to for the given Remote System
+     * 
+     * @param remoteSystem
+     *            The Remote System to return credentials for
+     * @param credentialsType
+     *            Optional type (including child subtypes) of the credentials to filter by
+     */
+    PagingResults<? extends BaseCredentialsInfo> listAllCredentials(String remoteSystem, QName credentialsType, PagingRequest paging);
 }

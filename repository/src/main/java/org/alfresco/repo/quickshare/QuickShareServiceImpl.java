@@ -40,27 +40,28 @@ import java.util.UUID;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.UUIDUtil;
-import org.alfresco.sync.events.types.ActivityEvent;
-import org.alfresco.sync.events.types.Event;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
+import org.joda.time.Interval;
+import org.joda.time.PeriodType;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
-import org.alfresco.sync.repo.Client;
-import org.alfresco.sync.repo.Client.ClientType;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.client.config.ClientAppConfig;
+import org.alfresco.repo.client.config.ClientAppConfig.ClientApp;
 import org.alfresco.repo.client.config.ClientAppNotFoundException;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
-import org.alfresco.sync.repo.events.EventPreparator;
-import org.alfresco.sync.repo.events.EventPublisher;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.client.config.ClientAppConfig.ClientApp;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -99,31 +100,30 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.sync.events.types.ActivityEvent;
+import org.alfresco.sync.events.types.Event;
+import org.alfresco.sync.repo.Client;
+import org.alfresco.sync.repo.Client.ClientType;
+import org.alfresco.sync.repo.events.EventPreparator;
+import org.alfresco.sync.repo.events.EventPublisher;
 import org.alfresco.util.EmailHelper;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.UrlUtil;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.joda.time.DateTime;
-import org.joda.time.Interval;
-import org.joda.time.PeriodType;
 
 /**
  * QuickShare Service implementation.
  * 
- * In addition to the quick share service, this class also provides a BeforeDeleteNodePolicy and
- * OnCopyNodePolicy for content with the QuickShare aspect.
+ * In addition to the quick share service, this class also provides a BeforeDeleteNodePolicy and OnCopyNodePolicy for content with the QuickShare aspect.
  *
  * @author Alex Miller, janv, Jamal Kaabi-Mofrad
  */
 public class QuickShareServiceImpl implements QuickShareService,
-            NodeServicePolicies.BeforeDeleteNodePolicy,
-            CopyServicePolicies.OnCopyNodePolicy,
-            NodeServicePolicies.OnRestoreNodePolicy
+        NodeServicePolicies.BeforeDeleteNodePolicy,
+        CopyServicePolicies.OnCopyNodePolicy,
+        NodeServicePolicies.OnRestoreNodePolicy
 {
     private static final Log logger = LogFactory.getLog(QuickShareServiceImpl.class);
 
@@ -138,7 +138,7 @@ public class QuickShareServiceImpl implements QuickShareService,
 
     private static final String CONFIG_SHARED_LINK_BASE_URL = "sharedLinkBaseUrl";
     private static final String DEFAULT_EMAIL_SUBJECT = "quickshare.notifier.email.subject";
-    private static final String EMAIL_TEMPLATE_REF ="alfresco/templates/quickshare-email-templates/quickshare-email.default.template.ftl";
+    private static final String EMAIL_TEMPLATE_REF = "alfresco/templates/quickshare-email-templates/quickshare-email.default.template.ftl";
 
     private AttributeService attributeService;
     private DictionaryService dictionaryService;
@@ -165,6 +165,7 @@ public class QuickShareServiceImpl implements QuickShareService,
     private QuickShareLinkExpiryActionPersister quickShareLinkExpiryActionPersister;
     // The default period is in DAYS, but we allow HOURS|MINUTES as well for testing purposes.
     private ExpiryDatePeriod expiryDatePeriod = ExpiryDatePeriod.DAYS;
+
     /**
      * Set the attribute service
      */
@@ -178,9 +179,9 @@ public class QuickShareServiceImpl implements QuickShareService,
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
-        this.dictionaryService = dictionaryService;	
+        this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * Set the node service
      */
@@ -196,15 +197,15 @@ public class QuickShareServiceImpl implements QuickShareService,
     {
         this.permissionService = permissionService;
     }
-    
+
     /**
-     * Set the person service 
+     * Set the person service
      */
-    public void setPersonService(PersonService personService) 
+    public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-    
+
     /**
      * Set the policy component
      */
@@ -216,11 +217,11 @@ public class QuickShareServiceImpl implements QuickShareService,
     /**
      * Set the tenant service
      */
-    public void setTenantService(TenantService tenantService) 
+    public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     /**
      * Set the thumbnail service
      */
@@ -228,7 +229,7 @@ public class QuickShareServiceImpl implements QuickShareService,
     {
         this.thumbnailService = thumbnailService;
     }
-    
+
     /**
      * Set the eventPublisher
      */
@@ -248,7 +249,8 @@ public class QuickShareServiceImpl implements QuickShareService,
     /**
      * Spring configuration
      *
-     * @param behaviourFilter the behaviourFilter to set
+     * @param behaviourFilter
+     *            the behaviourFilter to set
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
@@ -258,7 +260,8 @@ public class QuickShareServiceImpl implements QuickShareService,
     /**
      * Spring configuration
      *
-     * @param searchService the searchService to set
+     * @param searchService
+     *            the searchService to set
      */
     public void setSearchService(SearchService searchService)
     {
@@ -268,7 +271,8 @@ public class QuickShareServiceImpl implements QuickShareService,
     /**
      * Spring configuration
      *
-     * @param siteService the siteService to set
+     * @param siteService
+     *            the siteService to set
      */
     public void setSiteService(SiteService siteService)
     {
@@ -278,7 +282,8 @@ public class QuickShareServiceImpl implements QuickShareService,
     /**
      * Spring configuration
      *
-     * @param authorityService the authorityService to set
+     * @param authorityService
+     *            the authorityService to set
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -288,7 +293,8 @@ public class QuickShareServiceImpl implements QuickShareService,
     /**
      * Spring configuration
      *
-     * @param sysAdminParams the sysAdminParams to set
+     * @param sysAdminParams
+     *            the sysAdminParams to set
      */
     public void setSysAdminParams(SysAdminParams sysAdminParams)
     {
@@ -298,7 +304,8 @@ public class QuickShareServiceImpl implements QuickShareService,
     /**
      * Spring configuration
      *
-     * @param emailHelper the emailHelper to set
+     * @param emailHelper
+     *            the emailHelper to set
      */
     public void setEmailHelper(EmailHelper emailHelper)
     {
@@ -332,7 +339,8 @@ public class QuickShareServiceImpl implements QuickShareService,
     /**
      * Spring configuration
      *
-     * @param scheduledPersistedActionService the scheduledPersistedActionService to set
+     * @param scheduledPersistedActionService
+     *            the scheduledPersistedActionService to set
      */
     public void setScheduledPersistedActionService(ScheduledPersistedActionService scheduledPersistedActionService)
     {
@@ -342,7 +350,8 @@ public class QuickShareServiceImpl implements QuickShareService,
     /**
      * Spring configuration
      *
-     * @param quickShareLinkExpiryActionPersister the quickShareLinkExpiryActionPersister to set
+     * @param quickShareLinkExpiryActionPersister
+     *            the quickShareLinkExpiryActionPersister to set
      */
     public void setQuickShareLinkExpiryActionPersister(QuickShareLinkExpiryActionPersister quickShareLinkExpiryActionPersister)
     {
@@ -352,7 +361,8 @@ public class QuickShareServiceImpl implements QuickShareService,
     /**
      * Spring configuration
      *
-     * @param expiryDatePeriod the expiryDatePeriod to set
+     * @param expiryDatePeriod
+     *            the expiryDatePeriod to set
      */
     public void setExpiryDatePeriod(String expiryDatePeriod)
     {
@@ -398,19 +408,18 @@ public class QuickShareServiceImpl implements QuickShareService,
                 QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
                 ContentModel.TYPE_CONTENT,
                 new JavaBehaviour(this, "beforeDeleteNode"));
-        
-        //Register interest in the onCopyNodePolicy to block copying of quick share metadta
+
+        // Register interest in the onCopyNodePolicy to block copying of quick share metadta
         policyComponent.bindClassBehaviour(
-                    CopyServicePolicies.OnCopyNodePolicy.QNAME, 
-                    QuickShareModel.ASPECT_QSHARE, 
-                    new JavaBehaviour(this, "getCopyCallback"));
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
+                QuickShareModel.ASPECT_QSHARE,
+                new JavaBehaviour(this, "getCopyCallback"));
 
         this.policyComponent.bindClassBehaviour(
-                    NodeServicePolicies.OnRestoreNodePolicy.QNAME,
-                    QuickShareModel.ASPECT_QSHARE,
-                    new JavaBehaviour(this, "onRestoreNode"));
+                NodeServicePolicies.OnRestoreNodePolicy.QNAME,
+                QuickShareModel.ASPECT_QSHARE,
+                new JavaBehaviour(this, "onRestoreNode"));
     }
-
 
     @Override
     public QuickShareDTO shareContent(final NodeRef nodeRef)
@@ -423,7 +432,7 @@ public class QuickShareServiceImpl implements QuickShareService,
     {
         checkEnabled();
 
-        //Check the node is the correct type
+        // Check the node is the correct type
         final QName typeQName = nodeService.getType(nodeRef);
         if (isSharable(typeQName) == false)
         {
@@ -434,7 +443,7 @@ public class QuickShareServiceImpl implements QuickShareService,
 
         // Only add the quick share aspect if it isn't already present.
         // If it is retura dto built from the existing properties.
-        if (! nodeService.getAspects(nodeRef).contains(QuickShareModel.ASPECT_QSHARE))
+        if (!nodeService.getAspects(nodeRef).contains(QuickShareModel.ASPECT_QSHARE))
         {
             UUID uuid = Generators.randomBasedGenerator().generate();
             sharedId = Base64.encodeBase64URLSafeString(UUIDUtil.asByteArray(uuid)); // => 22 chars (eg. q3bEKPeDQvmJYgt4hJxOjw)
@@ -449,8 +458,7 @@ public class QuickShareServiceImpl implements QuickShareService,
             try
             {
                 // consumer/contributor should be able to add "shared" aspect (MNT-10366)
-                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
                     public Void doWork()
                     {
                         nodeService.addAspect(nodeRef, QuickShareModel.ASPECT_QSHARE, props);
@@ -465,8 +473,7 @@ public class QuickShareServiceImpl implements QuickShareService,
 
             final NodeRef tenantNodeRef = tenantService.getName(nodeRef);
 
-            TenantUtil.runAsDefaultTenant(new TenantRunAsWork<Void>()
-            {
+            TenantUtil.runAsDefaultTenant(new TenantRunAsWork<Void>() {
                 public Void doWork() throws Exception
                 {
                     attributeService.setAttribute(tenantNodeRef, ATTR_KEY_SHAREDIDS_ROOT, sharedId);
@@ -477,27 +484,27 @@ public class QuickShareServiceImpl implements QuickShareService,
             final StringBuffer sb = new StringBuffer();
             sb.append("{").append("\"sharedId\":\"").append(sharedId).append("\"").append("}");
 
-            eventPublisher.publishEvent(new EventPreparator(){
+            eventPublisher.publishEvent(new EventPreparator() {
                 @Override
                 public Event prepareEvent(String user, String networkId, String transactionId)
                 {
                     return new ActivityEvent("quickshare", transactionId, networkId, user, nodeRef.getId(),
-                                null, typeQName.toString(),  Client.asType(ClientType.webclient), sb.toString(),
-                                null, null, 0l, null);
+                            null, typeQName.toString(), Client.asType(ClientType.webclient), sb.toString(),
+                            null, null, 0l, null);
                 }
             });
 
             if (logger.isInfoEnabled())
             {
-                logger.info("QuickShare - shared content: "+sharedId+" ["+nodeRef+"]");
+                logger.info("QuickShare - shared content: " + sharedId + " [" + nodeRef + "]");
             }
         }
         else
         {
-            sharedId = (String)nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
+            sharedId = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
             if (logger.isDebugEnabled())
             {
-                logger.debug("QuickShare - content already shared: "+sharedId+" ["+nodeRef+"]");
+                logger.debug("QuickShare - content already shared: " + sharedId + " [" + nodeRef + "]");
             }
         }
 
@@ -524,12 +531,14 @@ public class QuickShareServiceImpl implements QuickShareService,
     }
 
     /**
-     * Is this service enable? 
-     * @throws QuickShareDisabledException if it isn't.
+     * Is this service enable?
+     * 
+     * @throws QuickShareDisabledException
+     *             if it isn't.
      */
     private void checkEnabled()
     {
-        if (enabled == false) 
+        if (enabled == false)
         {
             throw new QuickShareDisabledException("QuickShare is disabled system-wide");
         }
@@ -540,11 +549,11 @@ public class QuickShareServiceImpl implements QuickShareService,
     public Map<String, Object> getMetaData(NodeRef nodeRef)
     {
         // TODO This functionality MUST be available when quickshare is also disabled, therefor refactor it out from the quickshare package to a more common package.
-        
+
         Map<QName, Serializable> nodeProps = nodeService.getProperties(nodeRef);
-        ContentData contentData = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-        
-        String modifierUserName = (String)nodeProps.get(ContentModel.PROP_MODIFIER);
+        ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+
+        String modifierUserName = (String) nodeProps.get(ContentModel.PROP_MODIFIER);
         Map<QName, Serializable> personProps = null;
         if (modifierUserName != null)
         {
@@ -561,18 +570,18 @@ public class QuickShareServiceImpl implements QuickShareService,
                 // absorb this exception - eg. System (or maybe the user has been deleted)
                 if (logger.isInfoEnabled())
                 {
-                    logger.info("MetaDataGet - no such person: "+modifierUserName);
+                    logger.info("MetaDataGet - no such person: " + modifierUserName);
                 }
             }
         }
-        
+
         Map<String, Object> metadata = new HashMap<String, Object>(8);
-        
+
         metadata.put("nodeRef", nodeRef.toString());
         metadata.put("name", nodeProps.get(ContentModel.PROP_NAME));
         metadata.put("title", nodeProps.get(ContentModel.PROP_TITLE));
         metadata.put("description", nodeProps.get(ContentModel.PROP_DESCRIPTION));
-        
+
         if (contentData != null)
         {
             metadata.put("mimetype", contentData.getMimetype());
@@ -582,15 +591,15 @@ public class QuickShareServiceImpl implements QuickShareService,
         {
             metadata.put("size", 0L);
         }
-        
+
         metadata.put("modified", nodeProps.get(ContentModel.PROP_MODIFIED));
-        
+
         if (personProps != null)
         {
             metadata.put("modifierFirstName", personProps.get(ContentModel.PROP_FIRSTNAME));
             metadata.put("modifierLastName", personProps.get(ContentModel.PROP_LASTNAME));
         }
-        
+
         // thumbnail defs for this nodeRef
         List<String> thumbnailDefs = new ArrayList<String>(7);
         if (contentData != null)
@@ -605,18 +614,18 @@ public class QuickShareServiceImpl implements QuickShareService,
             }
         }
         metadata.put("thumbnailDefinitions", thumbnailDefs);
-        
+
         // thumbnail instances for this nodeRef
         List<NodeRef> thumbnailRefs = thumbnailService.getThumbnails(nodeRef, ContentModel.PROP_CONTENT, null, null);
         List<String> thumbnailNames = new ArrayList<String>(thumbnailRefs.size());
         for (NodeRef thumbnailRef : thumbnailRefs)
         {
-            thumbnailNames.add((String)nodeService.getProperty(thumbnailRef, ContentModel.PROP_NAME));
+            thumbnailNames.add((String) nodeService.getProperty(thumbnailRef, ContentModel.PROP_NAME));
         }
         metadata.put("thumbnailNames", thumbnailNames);
-        
-        metadata.put("lastThumbnailModificationData", (List<String>)nodeProps.get(ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA));
-        
+
+        metadata.put("lastThumbnailModificationData", (List<String>) nodeProps.get(ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA));
+
         if (nodeProps.containsKey(QuickShareModel.PROP_QSHARE_SHAREDID))
         {
             metadata.put("sharedId", nodeProps.get(QuickShareModel.PROP_QSHARE_SHAREDID));
@@ -638,8 +647,7 @@ public class QuickShareServiceImpl implements QuickShareService,
     @Override
     public Pair<String, NodeRef> getTenantNodeRefFromSharedId(final String sharedId)
     {
-        NodeRef nodeRef = TenantUtil.runAsDefaultTenant(new TenantRunAsWork<NodeRef>()
-        {
+        NodeRef nodeRef = TenantUtil.runAsDefaultTenant(new TenantRunAsWork<NodeRef>() {
             public NodeRef doWork() throws Exception
             {
                 return (NodeRef) attributeService.getAttribute(ATTR_KEY_SHAREDIDS_ROOT, sharedId);
@@ -648,11 +656,7 @@ public class QuickShareServiceImpl implements QuickShareService,
 
         if (nodeRef == null)
         {
-            /* TODO
-             * Temporary fix for RA-1093 and MNT-16224. The extra lookup should be
-             * removed (the same as before, just throw the 'InvalidSharedIdException' exception) when we
-             * have a system wide patch to remove the 'shared' aspect of the nodes that have been archived while shared.
-             */
+            /* TODO Temporary fix for RA-1093 and MNT-16224. The extra lookup should be removed (the same as before, just throw the 'InvalidSharedIdException' exception) when we have a system wide patch to remove the 'shared' aspect of the nodes that have been archived while shared. */
             // TMDQ
             final String query = "+TYPE:\"cm:content\" AND +ASPECT:\"qshare:shared\" AND =qshare:sharedId:\"" + sharedId + "\"";
             SearchParameters sp = new SearchParameters();
@@ -698,29 +702,28 @@ public class QuickShareServiceImpl implements QuickShareService,
         Pair<String, NodeRef> pair = getTenantNodeRefFromSharedId(sharedId);
         final String tenantDomain = pair.getFirst();
         final NodeRef nodeRef = pair.getSecond();
-        
-        Map<String, Object> model = TenantUtil.runAsSystemTenant(new TenantRunAsWork<Map<String, Object>>()
-        {
+
+        Map<String, Object> model = TenantUtil.runAsSystemTenant(new TenantRunAsWork<Map<String, Object>>() {
             public Map<String, Object> doWork() throws Exception
             {
                 checkQuickShareNode(nodeRef);
-                
+
                 return getMetaData(nodeRef);
             }
         }, tenantDomain);
-        
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("QuickShare - retrieved metadata: "+sharedId+" ["+nodeRef+"]["+model+"]");
+            logger.debug("QuickShare - retrieved metadata: " + sharedId + " [" + nodeRef + "][" + model + "]");
         }
-        //model.put("nodeRef", nodeRef)
-        
+        // model.put("nodeRef", nodeRef)
+
         return model;
     }
 
     private void checkQuickShareNode(final NodeRef nodeRef)
     {
-        if (! nodeService.getAspects(nodeRef).contains(QuickShareModel.ASPECT_QSHARE))
+        if (!nodeService.getAspects(nodeRef).contains(QuickShareModel.ASPECT_QSHARE))
         {
             throw new InvalidNodeRefException(nodeRef);
         }
@@ -730,11 +733,10 @@ public class QuickShareServiceImpl implements QuickShareService,
     // note: will remove "share" even if node is only being archived (ie. moved to trash) => a subsequent restore will *not* restore the "share"
     public void beforeDeleteNode(final NodeRef beforeDeleteNodeRef)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             public Void doWork() throws Exception
             {
-                String sharedId = (String)nodeService.getProperty(beforeDeleteNodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
+                String sharedId = (String) nodeService.getProperty(beforeDeleteNodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
                 if (sharedId != null)
                 {
                     try
@@ -771,16 +773,12 @@ public class QuickShareServiceImpl implements QuickShareService,
         });
     }
 
-    /* TODO
-     * Temporary fix for MNT-16224. This method should be removed when we
-     * have a system wide patch to remove the 'shared' aspect of the nodes that have been archived while shared.
-     */
+    /* TODO Temporary fix for MNT-16224. This method should be removed when we have a system wide patch to remove the 'shared' aspect of the nodes that have been archived while shared. */
     @Override
     public void onRestoreNode(ChildAssociationRef childAssocRef)
     {
         final NodeRef childNodeRef = childAssocRef.getChildRef();
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             public Void doWork() throws Exception
             {
                 if (nodeService.hasAspect(childNodeRef, QuickShareModel.ASPECT_QSHARE))
@@ -803,8 +801,7 @@ public class QuickShareServiceImpl implements QuickShareService,
 
     private void removeSharedId(final String sharedId)
     {
-        TenantUtil.runAsDefaultTenant(new TenantRunAsWork<Void>()
-        {
+        TenantUtil.runAsDefaultTenant(new TenantRunAsWork<Void>() {
             public Void doWork() throws Exception
             {
                 attributeService.removeAttribute(ATTR_KEY_SHAREDIDS_ROOT, sharedId);
@@ -833,22 +830,21 @@ public class QuickShareServiceImpl implements QuickShareService,
         Pair<String, NodeRef> pair = getTenantNodeRefFromSharedId(sharedId);
         final String tenantDomain = pair.getFirst();
         final NodeRef nodeRef = pair.getSecond();
-        
-        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-        {
+
+        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>() {
             public Void doWork() throws Exception
             {
                 QName typeQName = nodeService.getType(nodeRef);
-                if (! isSharable(typeQName))
+                if (!isSharable(typeQName))
                 {
                     throw new InvalidNodeRefException(nodeRef);
                 }
-                
-                String nodeSharedId = (String)nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
-                
-                if (! EqualsHelper.nullSafeEquals(nodeSharedId, sharedId))
+
+                String nodeSharedId = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
+
+                if (!EqualsHelper.nullSafeEquals(nodeSharedId, sharedId))
                 {
-                    logger.warn("SharedId mismatch: expected="+sharedId+",actual="+nodeSharedId);
+                    logger.warn("SharedId mismatch: expected=" + sharedId + ",actual=" + nodeSharedId);
                 }
 
                 // Disable audit to preserve modifier and modified date
@@ -866,12 +862,12 @@ public class QuickShareServiceImpl implements QuickShareService,
                 return null;
             }
         }, tenantDomain);
-        
+
         removeSharedId(sharedId);
 
         if (logger.isInfoEnabled())
         {
-            logger.info("QuickShare - unshared content: "+sharedId+" ["+nodeRef+"]");
+            logger.info("QuickShare - unshared content: " + sharedId + " [" + nodeRef + "]");
         }
     }
 
@@ -879,6 +875,7 @@ public class QuickShareServiceImpl implements QuickShareService,
     {
         return type.equals(ContentModel.TYPE_CONTENT) || dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT);
     }
+
     // Prevent copying of Quick share properties on node copy.
     @Override
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
@@ -892,9 +889,8 @@ public class QuickShareServiceImpl implements QuickShareService,
         Pair<String, NodeRef> pair = getTenantNodeRefFromSharedId(sharedId);
         final String tenantDomain = pair.getFirst();
         final NodeRef nodeRef = pair.getSecond();
-        
-        return TenantUtil.runAsTenant(new TenantRunAsWork<Boolean>()
-        {
+
+        return TenantUtil.runAsTenant(new TenantRunAsWork<Boolean>() {
             public Boolean doWork() throws Exception
             {
                 try
@@ -908,7 +904,7 @@ public class QuickShareServiceImpl implements QuickShareService,
                 }
             }
         }, tenantDomain);
-        
+
     }
 
     @Override
@@ -936,7 +932,7 @@ public class QuickShareServiceImpl implements QuickShareService,
         templateModel.put(FTL_SENDER_FIRST_NAME, senderFirstName);
         templateModel.put(FTL_SENDER_LAST_NAME, senderLastName);
         final String sharedNodeUrl = getUrl(clientApp.getProperty(CONFIG_SHARED_LINK_BASE_URL), CONFIG_SHARED_LINK_BASE_URL)
-                    + '/' + emailRequest.getSharedId();
+                + '/' + emailRequest.getSharedId();
 
         templateModel.put(FTL_SHARED_NODE_URL, sharedNodeUrl);
         templateModel.put(FTL_SHARED_NODE_NAME, emailRequest.getSharedNodeName());
@@ -951,15 +947,15 @@ public class QuickShareServiceImpl implements QuickShareService,
         actionParams.put(MailActionExecuter.PARAM_FROM, this.defaultEmailSender);
         actionParams.put(MailActionExecuter.PARAM_FROM_PERSONAL_NAME, senderFullName);
         actionParams.put(MailActionExecuter.PARAM_SUBJECT, DEFAULT_EMAIL_SUBJECT);
-        actionParams.put(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[] { senderFirstName, senderLastName, emailRequest.getSharedNodeName() });
+        actionParams.put(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[]{senderFirstName, senderLastName, emailRequest.getSharedNodeName()});
         actionParams.put(MailActionExecuter.PARAM_IGNORE_SEND_FAILURE, emailRequest.isIgnoreSendFailure());
         // Pick the template
         final String templatePath = emailHelper.getEmailTemplate(clientApp.getName(), getSharedLinkEmailTemplatePath(clientApp), EMAIL_TEMPLATE_REF);
         actionParams.put(MailActionExecuter.PARAM_TEMPLATE, templatePath);
         actionParams.put(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) templateModel);
         actionParams.put(MailActionExecuter.PARAM_LOCALE, getDefaultIfNull(
-                    emailHelper.getUserLocaleOrDefault(authenticatedUser),
-                    emailRequest.getLocale()));
+                emailHelper.getUserLocaleOrDefault(authenticatedUser),
+                emailRequest.getLocale()));
 
         for (String to : emailRequest.getToEmails())
         {
@@ -1018,7 +1014,7 @@ public class QuickShareServiceImpl implements QuickShareService,
             // check that we can read parent name
             if (permissionService.hasReadPermission(parent) == AccessStatus.ALLOWED)
             {
-                String parentName = (String) nodeService.getProperty(parent,ContentModel.PROP_NAME);
+                String parentName = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
             }
             else
             {
@@ -1248,7 +1244,7 @@ public class QuickShareServiceImpl implements QuickShareService,
 
         // Create the expiry action
         final QuickShareLinkExpiryAction expiryAction = new QuickShareLinkExpiryActionImpl(UUID.randomUUID().toString(), sharedId,
-                    "QuickShare link expiry action");
+                "QuickShare link expiry action");
         // Create the persisted schedule
         final ScheduledPersistedAction schedule = scheduledPersistedActionService.createSchedule(expiryAction);
 
@@ -1274,7 +1270,7 @@ public class QuickShareServiceImpl implements QuickShareService,
         if (logger.isDebugEnabled())
         {
             logger.debug("Quick share link expiry action is created for sharedId[" + sharedId + "] and it's scheduled to be executed on: "
-                        + expiryDate);
+                    + expiryDate);
         }
     }
 
@@ -1318,8 +1314,7 @@ public class QuickShareServiceImpl implements QuickShareService,
     }
 
     /**
-     * Removes (hard deletes) the previously persisted {@link QuickShareLinkExpiryAction} and its related
-     * schedule {@link ScheduledPersistedAction} from the repository.
+     * Removes (hard deletes) the previously persisted {@link QuickShareLinkExpiryAction} and its related schedule {@link ScheduledPersistedAction} from the repository.
      */
     protected void deleteQuickShareLinkExpiryAction(NodeRef linkExpiryActionNodeRef)
     {
@@ -1370,7 +1365,7 @@ public class QuickShareServiceImpl implements QuickShareService,
         if (expiryDatePeriod.getDuration(now, new DateTime(expiryDate)) < 1)
         {
             throw new QuickShareLinkExpiryActionException.InvalidExpiryDateException(
-                        "Invalid expiry date. Expiry date can't be less then 1 " + expiryDatePeriod.getMessage() + '.');
+                    "Invalid expiry date. Expiry date can't be less then 1 " + expiryDatePeriod.getMessage() + '.');
         }
     }
 
@@ -1432,4 +1427,3 @@ public class QuickShareServiceImpl implements QuickShareService,
         abstract String getMessage();
     }
 }
-

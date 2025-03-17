@@ -27,8 +27,7 @@
 package org.alfresco.rest.framework.core.exceptions;
 
 /**
- * Thrown when the required service is disabled.
- * Default status is <i>Not Implemented</i> server error = 501.
+ * Thrown when the required service is disabled. Default status is <i>Not Implemented</i> server error = 501.
  *
  * @author Jamal Kaabi-Mofrad
  */

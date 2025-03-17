@@ -32,8 +32,7 @@ import org.alfresco.service.cmr.i18n.MessageLookup;
 public class Aspect extends AbstractClass
 {
     public Aspect()
-    {
-    }
+    {}
 
     public Aspect(AspectDefinition aspectDefinition, MessageLookup messageLookup)
     {
@@ -63,4 +62,3 @@ public class Aspect extends AbstractClass
         return builder.toString();
     }
 }
-

@@ -23,9 +23,10 @@ package org.alfresco.slingshot.web.scripts;
 import java.io.IOException;
 import java.util.Map;
 
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
 import org.alfresco.model.ContentModel;
-import org.alfresco.sync.repo.Client;
-import org.alfresco.sync.repo.Client.ClientType;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -34,18 +35,15 @@ import org.alfresco.service.cmr.activities.ActivityPoster;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.alfresco.sync.repo.Client;
+import org.alfresco.sync.repo.Client.ClientType;
 
 /**
  * Share specific ContentGet implementation.
  * <p>
- * Checks to see if:
- * a) the request is an explicit download (attachment)
- * b) the requested NodeRef within the context of a Share Site
+ * Checks to see if: a) the request is an explicit download (attachment) b) the requested NodeRef within the context of a Share Site
  * <p>
- * If both tests are true then generates an Activity feed item to record the Download request.
- * All other requests and any further processing is performed by the super class.
+ * If both tests are true then generates an Activity feed item to record the Download request. All other requests and any further processing is performed by the super class.
  *
  * @author Kevin Roast
  */
@@ -70,14 +68,13 @@ public class SlingshotContentGet extends ContentGet
         this.transactionHelper = transactionHelper;
     }
 
-
     @Override
     public void execute(final WebScriptRequest req, final WebScriptResponse res) throws IOException
     {
         // are we downloading content as an attachment?
         if (Boolean.valueOf(req.getParameter("a")))
         {
-            // is this    private ActivityPoster poster; node part of a Site context?
+            // is this private ActivityPoster poster; node part of a Site context?
             Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
             String storeType = templateVars.get("store_type");
             String storeId = templateVars.get("store_id");
@@ -108,7 +105,7 @@ public class SlingshotContentGet extends ContentGet
                     String filename = templateVars.get("filename");
                     if (filename == null || filename.length() == 0)
                     {
-                        filename = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                        filename = (String) this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                         if (nodeId.contains("/"))
                         {
                             filename = nodeId.substring(nodeId.lastIndexOf("/") + 1);
@@ -116,8 +113,7 @@ public class SlingshotContentGet extends ContentGet
                     }
                     final String strFilename = filename;
                     final String siteName = site.getShortName();
-                    transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-                    {
+                    transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
                         @Override
                         public Void execute() throws Throwable
                         {

@@ -27,14 +27,6 @@ package org.alfresco.repo.tagging;
 
 import static java.util.Collections.emptyMap;
 
-import static org.alfresco.model.ContentModel.ASPECT_TAGGABLE;
-import static org.alfresco.model.ContentModel.ASSOC_SUBCATEGORIES;
-import static org.alfresco.model.ContentModel.PROP_NAME;
-import static org.alfresco.repo.tagging.TaggingServiceImpl.TAG_UPDATES;
-import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
-import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
-import static org.alfresco.service.cmr.tagging.TaggingService.TAG_ROOT_NODE_REF;
-import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,11 +35,27 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
+import static org.alfresco.model.ContentModel.ASPECT_TAGGABLE;
+import static org.alfresco.model.ContentModel.ASSOC_SUBCATEGORIES;
+import static org.alfresco.model.ContentModel.PROP_NAME;
+import static org.alfresco.repo.tagging.TaggingServiceImpl.TAG_UPDATES;
+import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
+import static org.alfresco.service.cmr.tagging.TaggingService.TAG_ROOT_NODE_REF;
+import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.event2.EventGenerator;
@@ -63,12 +71,6 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TaggingServiceImplUnitTest
@@ -110,7 +112,7 @@ public class TaggingServiceImplUnitTest
         given(categoryServiceMock.getRootCategories(any(), any(), any(String.class), eq(true))).willReturn(List.of(tagAssociationMock));
         given(tagAssociationMock.getChildRef()).willReturn(TAG_NODE_REF);
 
-        //when
+        // when
         final List<Pair<String, NodeRef>> actualTagPairs = taggingService.createTags(STORE_REF_WORKSPACE_SPACESSTORE, List.of(TAG_NAME));
 
         then(categoryServiceMock).should().getRootCategories(STORE_REF_WORKSPACE_SPACESSTORE, ASPECT_TAGGABLE, TAG_NAME, false);
@@ -118,8 +120,8 @@ public class TaggingServiceImplUnitTest
         then(categoryServiceMock).shouldHaveNoMoreInteractions();
         List<Pair<String, NodeRef>> expectedTagPairs = List.of(new Pair<>(TAG_NAME, TAG_NODE_REF));
         assertThat(actualTagPairs)
-            .isNotNull()
-            .isEqualTo(expectedTagPairs);
+                .isNotNull()
+                .isEqualTo(expectedTagPairs);
     }
 
     @Test
@@ -127,7 +129,7 @@ public class TaggingServiceImplUnitTest
     {
         given(categoryServiceMock.getRootCategories(any(), any(), any(String.class), eq(false))).willThrow(new DuplicateChildNodeNameException(null, null, null, null));
 
-        //when
+        // when
         final Throwable actualException = catchThrowable(() -> taggingService.createTags(STORE_REF_WORKSPACE_SPACESSTORE, List.of(TAG_NAME)));
 
         then(categoryServiceMock).should().getRootCategories(STORE_REF_WORKSPACE_SPACESSTORE, ASPECT_TAGGABLE, TAG_NAME, false);
@@ -143,7 +145,7 @@ public class TaggingServiceImplUnitTest
         given(searchServiceMock.query(STORE_REF_WORKSPACE_SPACESSTORE, LANGUAGE_LUCENE, "+PATH:\"/cm:taggable/cm:" + TAG_NAME + "/member\"")).willReturn(resultSetMock);
         given(resultSetMock.getNodeRefs()).willReturn(List.of(CONTENT_NODE_REF));
 
-        //when
+        // when
         taggingService.changeTag(STORE_REF_WORKSPACE_SPACESSTORE, TAG_NAME, newTagName);
 
         then(nodeServiceMock).should().setProperty(TAG_NODE_REF, PROP_NAME, newTagName);
@@ -160,7 +162,7 @@ public class TaggingServiceImplUnitTest
     private static List<ChildAssociationRef> childAssociationsOf(final NodeRef... childNodeRefs)
     {
         return Arrays.stream(childNodeRefs)
-            .map(childNodeRef -> new ChildAssociationRef(null, null, null, childNodeRef))
-            .collect(Collectors.toList());
+                .map(childNodeRef -> new ChildAssociationRef(null, null, null, childNodeRef))
+                .collect(Collectors.toList());
     }
 }

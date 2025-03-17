@@ -58,7 +58,8 @@ public class AddToHoldAuditEvent extends AuditEvent implements HoldServicePolici
     /**
      * Sets the node service
      *
-     * @param nodeService nodeService to set
+     * @param nodeService
+     *            nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -69,12 +70,10 @@ public class AddToHoldAuditEvent extends AuditEvent implements HoldServicePolici
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnAddToHoldPolicy#onAddToHold(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    @Behaviour
-            (
-                    kind = BehaviourKind.CLASS,
-                    type = "rma:hold",
-                    notificationFrequency = EVERY_EVENT
-            )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            type = "rma:hold",
+            notificationFrequency = EVERY_EVENT)
     public void onAddToHold(NodeRef holdNodeRef, NodeRef contentNodeRef)
     {
         Map<QName, Serializable> auditProperties = HoldUtils.makePropertiesMap(holdNodeRef, nodeService);

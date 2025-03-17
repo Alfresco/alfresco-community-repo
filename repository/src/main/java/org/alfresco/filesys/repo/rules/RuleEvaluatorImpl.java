@@ -31,33 +31,33 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
-import org.alfresco.filesys.repo.rules.commands.CompoundCommand;
-import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
+import org.alfresco.util.PropertyCheck;
+
 /**
- * The Rule Evaluator evaluates the operation and returns 
- * details of the commands to implement those operations.
+ * The Rule Evaluator evaluates the operation and returns details of the commands to implement those operations.
  * <p>
  * It is configured with a list of scenarios which act as factories for scenario instances.
  */
 public class RuleEvaluatorImpl implements RuleEvaluator
 {
     private static Log logger = LogFactory.getLog(RuleEvaluatorImpl.class);
-    
+
     /**
      * The evaluator context, one for each folder
      */
     private class EvaluatorContextImpl implements EvaluatorContext
     {
-        Map<String, Object>sessionState;
-        
-        EvaluatorContextImpl (Map<String, Object>sessionState)
+        Map<String, Object> sessionState;
+
+        EvaluatorContextImpl(Map<String, Object> sessionState)
         {
             this.sessionState = sessionState;
         }
+
         /**
          * Current instances of scenarios
          */
@@ -73,44 +73,45 @@ public class RuleEvaluatorImpl implements RuleEvaluator
         public Map<String, Object> getSessionState()
         {
             return sessionState;
-        }     
-    } 
-    
+        }
+    }
+
     public void init()
     {
         PropertyCheck.mandatory(this, "scenarios", scenarios);
     }
-     
+
     /**
      * The scenarios contained within this RuleEvaluator
      */
     private List<Scenario> scenarios;
-    
+
     /**
      * Evaluate the scenarios against the current operation
-     * @param operation the operation to be evaluated
+     * 
+     * @param operation
+     *            the operation to be evaluated
      * @return the command to execute that operation
      */
     public Command evaluate(EvaluatorContext context, Operation operation)
     {
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("evaluate:" + operation);
         }
-               
+
         /**
-         * For each scenario, do we need to create a new scenario 
-         * instance for the specified operation ?
+         * For each scenario, do we need to create a new scenario instance for the specified operation ?
          */
         List<ScenarioResult> results = new ArrayList<ScenarioResult>(5);
-        
+
         // currentScenarioInstances needs to be protected for concurrency.
         synchronized (context.getScenarioInstances())
         {
-            for(Scenario scenario : scenarios)
+            for (Scenario scenario : scenarios)
             {
                 ScenarioInstance instance = scenario.createInstance(context, operation);
-                if(instance != null)
+                if (instance != null)
                 {
                     context.getScenarioInstances().add(instance);
                 }
@@ -121,24 +122,24 @@ public class RuleEvaluatorImpl implements RuleEvaluator
              */
             Iterator<ScenarioInstance> i = context.getScenarioInstances().iterator();
 
-            while(i.hasNext())
+            while (i.hasNext())
             {
 
                 ScenarioInstance scenario = i.next();
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
-                    logger.debug("evaluating:" + scenario + " operation: " +operation );
+                    logger.debug("evaluating:" + scenario + " operation: " + operation);
                 }
                 Command executor = scenario.evaluate(operation);
-                if(executor != null)
+                if (executor != null)
                 {
                     results.add(new ScenarioResult(scenario, executor));
 
                 }
-                if(scenario.isComplete())
+                if (scenario.isComplete())
                 {
                     // That scenario is no longer active.
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("Scenario is complete:" + scenario);
                     }
@@ -146,52 +147,52 @@ public class RuleEvaluatorImpl implements RuleEvaluator
                 }
             }
         } // End of syncronized block
-      
+
         // results contains the results of the evaluator
-        
+
         Map<Ranking, ScenarioResult> executors = new HashMap<Ranking, ScenarioResult>();
-        
+
         // HOW to arbitrate between many scenario executors
         // Idea : Scenarios have rankings.
-        for(ScenarioResult result : results)
+        for (ScenarioResult result : results)
         {
             executors.put(result.scenario.getRanking(), result);
         }
-        
+
         ScenarioResult ex = executors.get(Ranking.HIGH);
-        if (ex != null) 
+        if (ex != null)
         {
-            if(ex.scenario instanceof DependentInstance)
+            if (ex.scenario instanceof DependentInstance)
             {
-                DependentInstance di = (DependentInstance)ex.scenario;
-                for(ScenarioResult looser : results)
+                DependentInstance di = (DependentInstance) ex.scenario;
+                for (ScenarioResult looser : results)
                 {
-                    if(ex != looser)
+                    if (ex != looser)
                     {
                         Command c = di.win(results, ex.command);
                         logger.debug("returning merged high priority executor");
-                        
+
                         return c;
                     }
                 }
             }
-                
+
             logger.debug("returning high priority executor");
             return ex.command;
         }
         ex = executors.get(Ranking.MEDIUM);
-        if (ex != null) 
+        if (ex != null)
         {
             logger.debug("returning medium priority executor");
             return ex.command;
         }
         ex = executors.get(Ranking.LOW);
-        if (ex != null) 
+        if (ex != null)
         {
             logger.debug("returning low priority executor");
             return ex.command;
         }
-        
+
         return null;
     }
 
@@ -206,10 +207,10 @@ public class RuleEvaluatorImpl implements RuleEvaluator
     }
 
     @Override
-    public EvaluatorContext createContext(Map<String, Object>sessionState)
+    public EvaluatorContext createContext(Map<String, Object> sessionState)
     {
         EvaluatorContextImpl impl = new EvaluatorContextImpl(sessionState);
-        
+
         return impl;
     }
 
@@ -225,17 +226,17 @@ public class RuleEvaluatorImpl implements RuleEvaluator
              */
             Iterator<ScenarioInstance> i = context.getScenarioInstances().iterator();
 
-            while(i.hasNext())
+            while (i.hasNext())
             {
                 ScenarioInstance scenario = i.next();
-                if(scenario instanceof ScenarioInstanceRenameAware)
+                if (scenario instanceof ScenarioInstanceRenameAware)
                 {
-                    ScenarioInstanceRenameAware awareScenario = (ScenarioInstanceRenameAware)scenario;
+                    ScenarioInstanceRenameAware awareScenario = (ScenarioInstanceRenameAware) scenario;
                     awareScenario.notifyRename(operation, command);
                 }
-                
+
             }
         }
-      
-    } 
+
+    }
 }

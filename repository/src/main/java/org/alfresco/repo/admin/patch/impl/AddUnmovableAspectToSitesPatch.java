@@ -31,6 +31,10 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AsynchronousPatch;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
@@ -43,9 +47,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * MNT-13577: Prevent sites to be moved
@@ -62,7 +63,7 @@ public class AddUnmovableAspectToSitesPatch extends AsynchronousPatch
     private final int NUM_THREADS = 4;
     private final int BATCH_SIZE = 200;
 
-    private SiteService siteService; 
+    private SiteService siteService;
     private BehaviourFilter behaviourFilter;
 
     public void setSiteService(SiteService siteService)
@@ -78,8 +79,7 @@ public class AddUnmovableAspectToSitesPatch extends AsynchronousPatch
     @Override
     protected String applyInternal() throws Exception
     {
-        BatchProcessWorkProvider<ChildAssociationRef> workProvider = new BatchProcessWorkProvider<ChildAssociationRef>()
-        {
+        BatchProcessWorkProvider<ChildAssociationRef> workProvider = new BatchProcessWorkProvider<ChildAssociationRef>() {
             NodeRef sitesRoot = siteService.getSiteRoot();
             List<ChildAssociationRef> sites = nodeService.getChildAssocs(sitesRoot, Collections.singleton(SiteModel.TYPE_SITE));
             final Iterator<ChildAssociationRef> iterator = sites.listIterator();
@@ -122,15 +122,12 @@ public class AddUnmovableAspectToSitesPatch extends AsynchronousPatch
                 1000);
 
         final String authenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        BatchProcessor.BatchProcessWorker<ChildAssociationRef> worker = new BatchProcessor.BatchProcessWorker<ChildAssociationRef>()
-        {
+        BatchProcessor.BatchProcessWorker<ChildAssociationRef> worker = new BatchProcessor.BatchProcessWorker<ChildAssociationRef>() {
             public void afterProcess() throws Throwable
-            {
-            }
+            {}
 
             public void beforeProcess() throws Throwable
-            {
-            }
+            {}
 
             public String getIdentifier(ChildAssociationRef entry)
             {
@@ -139,12 +136,8 @@ public class AddUnmovableAspectToSitesPatch extends AsynchronousPatch
 
             public void process(final ChildAssociationRef child) throws Throwable
             {
-                /*
-                 * Fix for MNT-15064.
-                 * Run as authenticated user to make sure the nodes are searched in the correct space store.
-                 */
-                RunAsWork<Void> work = new RunAsWork<Void>()
-                {
+                /* Fix for MNT-15064. Run as authenticated user to make sure the nodes are searched in the correct space store. */
+                RunAsWork<Void> work = new RunAsWork<Void>() {
                     @Override
                     public Void doWork() throws Exception
                     {

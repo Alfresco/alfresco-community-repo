@@ -30,7 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 import org.aopalliance.intercept.MethodInvocation;
 
 /**
- * Policy interface 
+ * Policy interface
  * 
  * @author Roy Wetherall
  * @since 2.1
@@ -38,10 +38,10 @@ import org.aopalliance.intercept.MethodInvocation;
 public interface Policy
 {
     /**
-     * @return   policy name
+     * @return policy name
      */
     String getName();
-    
+
     /**
      * Evaluate the policy
      * 
@@ -51,8 +51,8 @@ public interface Policy
      * @return
      */
     @SuppressWarnings("rawtypes")
-	int evaluate(
-            MethodInvocation invocation, 
-            Class[] params, 
+    int evaluate(
+            MethodInvocation invocation,
+            Class[] params,
             ConfigAttributeDefinition cad);
 }

@@ -26,16 +26,17 @@
 
 package org.alfresco.rest.api.impl.mapper.rules;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.BDDMockito.given;
+
 import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.COMPARATOR_NOT_NULL;
 import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.FIELD_NOT_NULL;
 import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.INVALID_COMPARATOR_VALUE;
 import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.PARAMETER_NOT_NULL;
 import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.PARAM_CATEGORY;
 import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.PARAM_MIMETYPE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.BDDMockito.given;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -45,6 +46,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionConditionImpl;
@@ -68,12 +76,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 @Experimental
 @RunWith(MockitoJUnitRunner.class)
@@ -155,7 +157,7 @@ public class RestRuleSimpleConditionModelMapperTest
     public void testToRestModelListOfEmptyActionConditions()
     {
         // when
-        final List<SimpleCondition> actualSimpleConditions =  objectUnderTest.toRestModels(Collections.emptyList());
+        final List<SimpleCondition> actualSimpleConditions = objectUnderTest.toRestModels(Collections.emptyList());
 
         assertThat(actualSimpleConditions).isEmpty();
     }
@@ -175,7 +177,7 @@ public class RestRuleSimpleConditionModelMapperTest
         actionConditions.add(null);
 
         // when
-        final List<SimpleCondition> actualSimpleConditions =  objectUnderTest.toRestModels(actionConditions);
+        final List<SimpleCondition> actualSimpleConditions = objectUnderTest.toRestModels(actionConditions);
 
         assertThat(actualSimpleConditions).isEmpty();
     }
@@ -388,7 +390,8 @@ public class RestRuleSimpleConditionModelMapperTest
         return new ActionConditionImpl("fake-id", actionDefinitionName, createParameterValues());
     }
 
-    private static Map<String, Serializable> createParameterValues() {
+    private static Map<String, Serializable> createParameterValues()
+    {
         final QName audioAspect = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, NamespaceService.AUDIO_MODEL_PREFIX);
         final NodeRef defaultNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARAMETER_DEFAULT);
         final Map<String, Serializable> parameterValues = new HashMap<>();
@@ -419,7 +422,8 @@ public class RestRuleSimpleConditionModelMapperTest
                 .create();
     }
 
-    private static List<TestData> getTestData() {
+    private static List<TestData> getTestData()
+    {
         return List.of(
                 TestData.of(ComparePropertyValueEvaluator.NAME),
                 TestData.of(CompareMimeTypeEvaluator.NAME),
@@ -432,8 +436,7 @@ public class RestRuleSimpleConditionModelMapperTest
                 TestData.of(NoConditionEvaluator.NAME, NULL_RESULT),
                 TestData.of("fake-definition-name", NULL_RESULT),
                 TestData.of("", NULL_RESULT),
-                TestData.of(null, NULL_RESULT)
-        );
+                TestData.of(null, NULL_RESULT));
     }
 
     private static class TestData
@@ -447,11 +450,13 @@ public class RestRuleSimpleConditionModelMapperTest
             this.isNullResult = isNullResult;
         }
 
-        public static TestData of(String conditionDefinitionName) {
+        public static TestData of(String conditionDefinitionName)
+        {
             return new TestData(conditionDefinitionName, false);
         }
 
-        public static TestData of(String conditionDefinitionName, boolean isNullResult) {
+        public static TestData of(String conditionDefinitionName, boolean isNullResult)
+        {
             return new TestData(conditionDefinitionName, isNullResult);
         }
     }

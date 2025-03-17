@@ -42,7 +42,8 @@ public class WebDAVServerException extends Exception
     /**
      * Constructs a WebDAVException
      * 
-     * @param httpStatusCode The HTTP status code
+     * @param httpStatusCode
+     *            The HTTP status code
      */
     public WebDAVServerException(int httpStatusCode)
     {
@@ -52,8 +53,10 @@ public class WebDAVServerException extends Exception
     /**
      * Constructs a WebDAVException
      * 
-     * @param httpStatusCode The HTTP status code
-     * @param cause The cause of this exception
+     * @param httpStatusCode
+     *            The HTTP status code
+     * @param cause
+     *            The cause of this exception
      */
     public WebDAVServerException(int httpStatusCode, Throwable cause)
     {

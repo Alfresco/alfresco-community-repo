@@ -35,17 +35,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
 /**
- * This provides basic services such as caching, but defers to the underlying implementation
- * for CRUD operations.
+ * This provides basic services such as caching, but defers to the underlying implementation for CRUD operations.
  * 
- *     <b>alf_access_control_list</b>
- *     <b>alf_acl_member</b>
- *     <b>alf_acl_change_set</b>
- *     <b>alf_access_control_entry</b>
- *     <b>alf_ace_context</b>
- *     <b>alf_permission</b>
- *     <b>alf_authority</b>
- *     <b>alf_authority_alias</b>
+ * <b>alf_access_control_list</b> <b>alf_acl_member</b> <b>alf_acl_change_set</b> <b>alf_access_control_entry</b> <b>alf_ace_context</b> <b>alf_permission</b> <b>alf_authority</b> <b>alf_authority_alias</b>
  * 
  * @since 3.4
  * @author janv
@@ -53,87 +45,121 @@ import org.alfresco.util.Pair;
 public interface AclCrudDAO
 {
     /**
-     * Transaction-scope setting to make the DAO guarantee the validity of all caches: some cache data will be reloaded;
-     * some cache data will be considered safe.
+     * Transaction-scope setting to make the DAO guarantee the validity of all caches: some cache data will be reloaded; some cache data will be considered safe.
      */
     public void setCheckAclConsistency();
 
     //
     // Access Control List (ACL)
     //
-    
+
     public Acl createAcl(AclEntity entity);
+
     public Acl getAcl(Long aclEntityId);
+
     public AclUpdateEntity getAclForUpdate(long aclEntityId);
+
     public List<Long> getAclsThatInheritFromAcl(long aclEntityId);
+
     public Long getLatestAclByGuid(String aclGuid);
+
     public void updateAcl(AclUpdateEntity entity);
+
     public void deleteAcl(long aclEntityId);
+
     public List<Long> getADMNodesByAcl(long aclEntityId, int maxResults);
     //
     // Access Control Entry (ACE)
     //
-    
+
     public Ace createAce(Permission permission, Authority authority, ACEType type, AccessStatus accessStatus);
+
     public Ace getAce(Permission permission, Authority authority, ACEType type, AccessStatus accessStatus);
+
     public Ace getAce(long aceEntityId);
+
     public Ace getOrCreateAce(Permission permission, Authority authority, ACEType type, AccessStatus accessStatus);
+
     public List<Ace> getAcesByAuthority(long authorityEntityId);
+
     public List<Map<String, Object>> getAcesAndAuthoritiesByAcl(long aclEntityId);
+
     public int deleteAces(List<Long> aceEntityIds);
-    
+
     //
     // ACL Change Set
     //
-    
+
     public Long createAclChangeSet();
+
     public void updateAclChangeSet(Long aclChangeSetEntityId, long commitTimeMs);
+
     public AclChangeSet getAclChangeSet(Long aclChangeSetEntityId);
+
     public void deleteAclChangeSet(Long aclChangeSetEntityId);
-    
+
     //
     // ACL Member
     //
-    
+
     public void addAclMembersToAcl(long aclId, List<Long> aceIds, int depth);
+
     public void addAclMembersToAcl(long aclId, List<Pair<Long, Integer>> aceIdsWithDepths);
+
     public List<AclMember> getAclMembersByAcl(long aclEntityId);
+
     public List<AclMemberEntity> getAclMembersByAclForUpdate(long aclEntityId);
+
     public List<AclMember> getAclMembersByAuthority(String authorityName);
+
     public void updateAclMember(AclMemberEntity entity);
+
     public int deleteAclMembers(List<Long> aclMemberIds);
+
     public int deleteAclMembersByAcl(long aclEntityId);
-    
+
     //
     // Permission
     //
-    
+
     public Permission createPermission(PermissionReference permissionReference);
+
     public Permission getPermission(long permissionEntityId);
+
     public Permission getPermission(PermissionReference permissionReference);
+
     public Permission getOrCreatePermission(PermissionReference permissionReference);
+
     public void renamePermission(QName oldTypeQName, String oldName, QName newTypeQName, String newName);
+
     public void deletePermission(long permissionEntityId);
-    
+
     //
     // Authority
     //
-    
+
     public Authority getAuthority(long authorityEntityId);
+
     public Authority getAuthority(String authorityName);
+
     public Authority getOrCreateAuthority(String authorityName);
+
     public void renameAuthority(String authorityNameBefore, String authorityAfter);
+
     public void deleteAuthority(long authorityEntityId);
+
     /**
      * @return Long
      */
     public Long getMaxChangeSetCommitTime();
+
     /**
-     * @param maxCommitTime long
+     * @param maxCommitTime
+     *            long
      * @return Long
      */
     public Long getMaxChangeSetIdByCommitTime(long maxCommitTime);
-    
-    // AceContext     (NOTE: currently unused - intended for possible future enhancement)
+
+    // AceContext (NOTE: currently unused - intended for possible future enhancement)
     // AuthorityAlias (NOTE: currently unused - intended for possible future enhancement)
 }

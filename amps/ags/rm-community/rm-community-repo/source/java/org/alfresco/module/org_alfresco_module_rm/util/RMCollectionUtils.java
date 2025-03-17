@@ -38,12 +38,10 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
-
 import org.apache.commons.collections.CollectionUtils;
 
 /**
- * Various common helper methods for Collections. This class is probably only appropriate for use with relatively
- * small collections as it has not been optimised for dealing with large collections.
+ * Various common helper methods for Collections. This class is probably only appropriate for use with relatively small collections as it has not been optimised for dealing with large collections.
  *
  * @author Neil Mc Erlean
  * @since 2.4.a
@@ -51,24 +49,29 @@ import org.apache.commons.collections.CollectionUtils;
 // This class should all be moved to core Alfresco whenever possible and reused from there.
 public final class RMCollectionUtils
 {
-    private RMCollectionUtils() { /* Intentionally empty. */}
+    private RMCollectionUtils()
+    { /* Intentionally empty. */}
 
     /**
      * Gets the list of duplicate elements contained within the specified list, if any.
-     * @param l   the list in which to find duplicates.
-     * @param <T> the element type of the list.
-     * @return    a list of duplicate elements. If there are no duplicates, returns an empty list.
+     * 
+     * @param l
+     *            the list in which to find duplicates.
+     * @param <T>
+     *            the element type of the list.
+     * @return a list of duplicate elements. If there are no duplicates, returns an empty list.
      */
     public static <T> List<T> getDuplicateElements(List<T> l)
     {
         final Set<T> uniqueElems = new HashSet<>();
         final List<T> duplicateElems = new ArrayList<>();
 
-        for (T elem: l)
+        for (T elem : l)
         {
             if (uniqueElems.contains(elem))
             {
-                if (!duplicateElems.contains(elem)) duplicateElems.add(elem);
+                if (!duplicateElems.contains(elem))
+                    duplicateElems.add(elem);
             }
             else
             {
@@ -78,12 +81,16 @@ public final class RMCollectionUtils
         return duplicateElems;
     }
 
-    /** Returns the head (element at index 0) of the provided List.
+    /**
+     * Returns the head (element at index 0) of the provided List.
      *
-     * @param l the list whose head is sought.
-     * @param <T> the type of the List.
+     * @param l
+     *            the list whose head is sought.
+     * @param <T>
+     *            the type of the List.
      * @return the head element or {@code null} for the empty list.
-     * @throws NullPointerException if l is {@code null}
+     * @throws NullPointerException
+     *             if l is {@code null}
      */
     public static <T> T head(List<T> l)
     {
@@ -91,14 +98,17 @@ public final class RMCollectionUtils
     }
 
     /**
-     * Returns the tail of the provided List i&#46;e&#46; the sublist which contains
-     * all elements of the given list except the {@link #head(List) head}.
+     * Returns the tail of the provided List i&#46;e&#46; the sublist which contains all elements of the given list except the {@link #head(List) head}.
      *
-     * @param l the list whose tail is sought.
-     * @param <T> the type of the List.
+     * @param l
+     *            the list whose tail is sought.
+     * @param <T>
+     *            the type of the List.
      * @return the tail sublist, which will be an empty list if the provided list had only a single element.
-     * @throws NullPointerException if l is {@code null}
-     * @throws UnsupportedOperationException if the provided list was empty.
+     * @throws NullPointerException
+     *             if l is {@code null}
+     * @throws UnsupportedOperationException
+     *             if the provided list was empty.
      */
     public static <T> List<T> tail(List<T> l)
     {
@@ -115,16 +125,17 @@ public final class RMCollectionUtils
     /**
      * Returns a Serializable List containing all of the provided elements.
      *
-     * @param elements the elements to put in a list.
-     * @param <T>      the element type.
-     * @return         a Serializable List containing all the provided elements.
+     * @param elements
+     *            the elements to put in a list.
+     * @param <T>
+     *            the element type.
+     * @return a Serializable List containing all the provided elements.
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public static <T extends Serializable, LIST extends Serializable & List<T>>
-                  LIST asSerializableList(T... elements)
+    public static <T extends Serializable, LIST extends Serializable & List<T>> LIST asSerializableList(T... elements)
     {
-        final LIST l = (LIST)new ArrayList<T>(elements.length);
+        final LIST l = (LIST) new ArrayList<T>(elements.length);
         for (T element : elements)
         {
             l.add(element);
@@ -133,12 +144,13 @@ public final class RMCollectionUtils
     }
 
     /**
-     * Returns a Set containing all of the provided elements. Duplicate elements will be removed as per the
-     * {@code Set} contract.
+     * Returns a Set containing all of the provided elements. Duplicate elements will be removed as per the {@code Set} contract.
      *
-     * @param elements the elements to put in a Set.
-     * @param <T>      the element type.
-     * @return         a Set containing all the provided elements (without duplicates).
+     * @param elements
+     *            the elements to put in a Set.
+     * @param <T>
+     *            the element type.
+     * @return a Set containing all the provided elements (without duplicates).
      */
     @SafeVarargs
     public static <T> HashSet<T> asSet(T... elements)
@@ -152,13 +164,13 @@ public final class RMCollectionUtils
     }
 
     /**
-     * Returns a Set containing all of the elements in the provided collection.
-     * Duplicate elements will be removed as per the
-     * {@code Set} contract.
+     * Returns a Set containing all of the elements in the provided collection. Duplicate elements will be removed as per the {@code Set} contract.
      *
-     * @param c   the elements to put in a Set.
-     * @param <T> the element type.
-     * @return    a Set containing all the provided elements (without duplicates).
+     * @param c
+     *            the elements to put in a Set.
+     * @param <T>
+     *            the element type.
+     * @return a Set containing all the provided elements (without duplicates).
      */
     public static <T> HashSet<T> asSet(Collection<T> c)
     {
@@ -174,43 +186,68 @@ public final class RMCollectionUtils
     }
 
     /**
-     * Determines the change in a Map entry between two Maps.
-     * Note that both maps must have the same types of key-value pair.
+     * Determines the change in a Map entry between two Maps. Note that both maps must have the same types of key-value pair.
      *
-     * @param from the first collection.
-     * @param to   the second collection.
-     * @param key  the key identifying the entry.
-     * @param <K>  the type of the key.
-     * @param <V>  the type of the value.
+     * @param from
+     *            the first collection.
+     * @param to
+     *            the second collection.
+     * @param key
+     *            the key identifying the entry.
+     * @param <K>
+     *            the type of the key.
+     * @param <V>
+     *            the type of the value.
      * @return the {@link Difference}.
      *
-     * @throws IllegalArgumentException if {@code key} is {@code null}.
+     * @throws IllegalArgumentException
+     *             if {@code key} is {@code null}.
      */
     public static <K, V> Difference diffKey(Map<K, V> from, Map<K, V> to, K key)
     {
-        if (key == null) { throw new IllegalArgumentException("Key cannot be null."); }
+        if (key == null)
+        {
+            throw new IllegalArgumentException("Key cannot be null.");
+        }
 
         if (from.containsKey(key))
         {
             if (to.containsKey(key))
             {
-                if (nullSafeEquals(from.get(key), to.get(key))) { return Difference.UNCHANGED; }
-                else                                            { return Difference.CHANGED; }
+                if (nullSafeEquals(from.get(key), to.get(key)))
+                {
+                    return Difference.UNCHANGED;
+                }
+                else
+                {
+                    return Difference.CHANGED;
+                }
             }
-            else { return Difference.REMOVED; }
+            else
+            {
+                return Difference.REMOVED;
+            }
         }
         else
         {
-            if (to.containsKey(key)) { return Difference.ADDED; }
-            else                     { return Difference.UNCHANGED; }
+            if (to.containsKey(key))
+            {
+                return Difference.ADDED;
+            }
+            else
+            {
+                return Difference.UNCHANGED;
+            }
         }
     }
 
     /**
      * Convert a collection to an immutable set. Any instances of null in the original collection will be removed.
      *
-     * @param collection The original collection.
-     * @param <T> The type of the object in the collection.
+     * @param collection
+     *            The original collection.
+     * @param <T>
+     *            The type of the object in the collection.
      * @return The immutable set.
      */
     public static <T> ImmutableSet<T> toImmutableSet(Collection<T> collection)
@@ -230,11 +267,10 @@ public final class RMCollectionUtils
     }
 
     /**
-     * Check if a property is null or an empty collection. Note that this is the same as
-     * {org.apache.commons.collections.CollectionUtils.isEmpty(Collection)}, except that it takes a Serializable rather
-     * than a Collection. This avoids awkward casting exceptions when working with properties.
+     * Check if a property is null or an empty collection. Note that this is the same as {org.apache.commons.collections.CollectionUtils.isEmpty(Collection)}, except that it takes a Serializable rather than a Collection. This avoids awkward casting exceptions when working with properties.
      *
-     * @param value The (probably Collection) value to check.
+     * @param value
+     *            The (probably Collection) value to check.
      * @return true if the supplied value is null or an empty collection.
      */
     public static boolean isEmpty(Serializable value)

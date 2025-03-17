@@ -40,24 +40,23 @@ public class AuditEntryEntity
     private Long auditUserId;
     private long auditTime;
     private Long auditValuesId;
-    
+
     public AuditEntryEntity()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("AuditEntryEntity")
-          .append("[ ID=").append(id)
-          .append(", auditApplicationId=").append(auditApplicationId)
-          .append(", auditTime").append(new Date(auditTime))
-          .append(", auditValuesId=").append(auditValuesId)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", auditApplicationId=").append(auditApplicationId)
+                .append(", auditTime").append(new Date(auditTime))
+                .append(", auditValuesId=").append(auditValuesId)
+                .append("]");
         return sb.toString();
     }
-    
+
     public Long getId()
     {
         return id;

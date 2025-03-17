@@ -34,8 +34,7 @@ package org.alfresco.rest.api.model;
 public class RestoreArchivedContentRequest
 {
     /**
-     * Restore priority. Possible values: Standard/High.
-     * This field is optional.
+     * Restore priority. Possible values: Standard/High. This field is optional.
      */
     private String restorePriority;
 

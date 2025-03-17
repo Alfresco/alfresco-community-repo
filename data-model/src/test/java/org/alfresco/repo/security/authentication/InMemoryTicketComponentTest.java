@@ -1,19 +1,17 @@
 package org.alfresco.repo.security.authentication;
 
-import org.alfresco.service.cmr.repository.datatype.Duration;
-import org.junit.Test;
+import static org.junit.Assert.fail;
 
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.fail;
+import org.junit.Test;
+
+import org.alfresco.service.cmr.repository.datatype.Duration;
 
 /**
- * This test class is not exhaustive.
- * Please add here tests that are relevant for the
- * org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl and
- * org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Ticket classes
+ * This test class is not exhaustive. Please add here tests that are relevant for the org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl and org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Ticket classes
  */
 public class InMemoryTicketComponentTest
 {
@@ -58,7 +56,7 @@ public class InMemoryTicketComponentTest
     }
 
     private void checkEqualsAndHashCode(Duration validDuration, InMemoryTicketComponentImpl.ExpiryMode expireMode, Date someDate,
-        String randomUserName)
+            String randomUserName)
     {
         InMemoryTicketComponentImpl.Ticket ticket1 = new InMemoryTicketComponentImpl.Ticket(expireMode, someDate, randomUserName, validDuration);
         InMemoryTicketComponentImpl.Ticket ticket2 = new InMemoryTicketComponentImpl.Ticket(expireMode, someDate, randomUserName, validDuration);
@@ -81,7 +79,7 @@ public class InMemoryTicketComponentTest
         }
         catch (IllegalArgumentException e)
         {
-            //we expect this, we sent the date to be null
+            // we expect this, we sent the date to be null
         }
     }
 }

@@ -32,6 +32,11 @@ import static org.mockito.Mockito.when;
 import java.net.ConnectException;
 import java.util.Optional;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -43,10 +48,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
 {
@@ -66,7 +67,6 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
 
     @Autowired
     private PersonService personService;
-
 
     private IdentityServiceJITProvisioningHandler jitProvisioning;
     private IdentityServiceFacade mockIdentityServiceFacade;
@@ -92,7 +92,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         authenticationContext.clearCurrentSecurityContext();
     }
 
-    @Test (expected=AuthenticationException.class)
+    @Test(expected = AuthenticationException.class)
     public void testAuthenticationFail()
     {
         final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
@@ -122,7 +122,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         }
     }
 
-    @Test (expected=AuthenticationException.class)
+    @Test(expected = AuthenticationException.class)
     public void testAuthenticationFail_otherException()
     {
         final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
@@ -145,15 +145,15 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         when(accessToken.getTokenValue()).thenReturn("JWT_TOKEN");
         when(mockIdentityServiceFacade.authorize(grant)).thenReturn(authorization);
         when(jitProvisioning.extractUserInfoAndCreateUserIfNeeded("JWT_TOKEN"))
-                    .thenReturn(Optional.of(new OIDCUserInfo("username", "", "", "")));
+                .thenReturn(Optional.of(new OIDCUserInfo("username", "", "", "")));
 
         authComponent.authenticateImpl("username", "password".toCharArray());
 
         // Check that the authenticated user has been set
-        assertEquals("User has not been set as expected.","username", authenticationContext.getCurrentUserName());
+        assertEquals("User has not been set as expected.", "username", authenticationContext.getCurrentUserName());
     }
 
-    @Test (expected= AuthenticationException.class)
+    @Test(expected = AuthenticationException.class)
     public void testFallthroughWhenIdentityServiceFacadeIsNull()
     {
         authComponent.setIdentityServiceFacade(null);

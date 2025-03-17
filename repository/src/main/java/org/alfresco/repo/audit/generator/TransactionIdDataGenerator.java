@@ -38,7 +38,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 public class TransactionIdDataGenerator extends AbstractDataGenerator
 {
     /**
-     * @return              Returns the current transaction ID (<tt>null</tt> if not in a transction)
+     * @return Returns the current transaction ID (<tt>null</tt> if not in a transction)
      */
     public Serializable getData() throws Throwable
     {

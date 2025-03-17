@@ -30,7 +30,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Interface to process email messages. 
+ * Interface to process email messages.
  * 
  * @author maxim
  * @since 2.2
@@ -46,7 +46,7 @@ public interface EmailMessage extends Serializable
      * @return TO address.
      */
     public String getTo();
-    
+
     /**
      * @return CC addresses.
      */
@@ -59,6 +59,7 @@ public interface EmailMessage extends Serializable
 
     /**
      * Get the subject of the message
+     * 
      * @return subject of the message or null if there is no subject.
      */
     public String getSubject();

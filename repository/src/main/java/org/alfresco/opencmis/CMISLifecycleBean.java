@@ -26,7 +26,6 @@
 package org.alfresco.opencmis;
 
 import java.util.HashMap;
-
 import jakarta.servlet.ServletContext;
 
 import org.apache.chemistry.opencmis.commons.server.CmisServiceFactory;

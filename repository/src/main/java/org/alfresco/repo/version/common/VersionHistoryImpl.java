@@ -45,7 +45,7 @@ import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.util.EqualsHelper;
 
 /**
- * Version History implementation. 
+ * Version History implementation.
  * 
  * @author Roy Wetherall
  */
@@ -53,81 +53,72 @@ public class VersionHistoryImpl implements VersionHistory
 {
     private static final long serialVersionUID = 3257001051558326840L;
 
-    /*
-     * Error message(s)
-     */
+    /* Error message(s) */
     private static final String ERR_MSG = "The root version must be specified when creating a version history object.";
-    
-    /*
-     * Field is left here to aid in detection of old serialized versions
-     */
+
+    /* Field is left here to aid in detection of old serialized versions */
     @SuppressWarnings("unused")
     private transient List<Version> versions;
-    
-    /*
-     * Version history tree structure map
-     */
+
+    /* Version history tree structure map */
     private HashMap<String, String> versionHistory = null;
-    
-    /*
-     * Label to version object map - Iterators must be in the order entries were addded.
-     */
+
+    /* Label to version object map - Iterators must be in the order entries were addded. */
     private Map<String, Version> versionsByLabel = null;
-    
-    /*
-     * Versions ordered by creation date (descending).
-     */
+
+    /* Versions ordered by creation date (descending). */
     private Comparator<Version> versionComparatorDesc;
 
     /**
      * Constructor, ensures the root version is set.
      * 
-     * @param rootVersion  the root version, can not be null.
-     * @param versionComparatorDesc optional comparator of versions.
+     * @param rootVersion
+     *            the root version, can not be null.
+     * @param versionComparatorDesc
+     *            optional comparator of versions.
      */
     public VersionHistoryImpl(Version rootVersion, Comparator<Version> versionComparatorDesc)
     {
         if (rootVersion == null)
         {
             // Exception - a version history can not be created unless
-            //             a root version is specified
+            // a root version is specified
             throw new VersionServiceException(VersionHistoryImpl.ERR_MSG);
         }
-        
+
         this.versionHistory = new HashMap<String, String>();
         this.versionsByLabel = new LinkedHashMap<String, Version>();
         this.versionComparatorDesc = versionComparatorDesc;
-        
+
         addVersion(rootVersion, null);
-    }    
-    
+    }
+
     /**
      * Gets the root (initial / least recent) version of the version history.
      * 
-     * @return  the root version
+     * @return the root version
      */
     public Version getRootVersion()
     {
         return versionsByLabel.values().iterator().next();
     }
-    
+
     /**
      * Gets the head (current / most recent) version of the version history.
      * 
-     * @return  the head version
+     * @return the head version
      */
     public Version getHeadVersion()
     {
         return getAllVersions().iterator().next();
     }
-    
+
     /**
-     * Gets a collection containing all the versions within the
-     * version history.
+     * Gets a collection containing all the versions within the version history.
      * <p>
      * Versions are returned in descending create date order (most recent first).
      * 
-     * @return  collection containing all the versions
+     * @return collection containing all the versions
      */
     public Collection<Version> getAllVersions()
     {
@@ -136,7 +127,9 @@ public class VersionHistoryImpl implements VersionHistory
 
     /**
      * Sorts Versions into descending create date order (most recent first).
-     * @param versions <b>Must be in order addVersion was called</b>.
+     * 
+     * @param versions
+     *            <b>Must be in order addVersion was called</b>.
      * @return Collection<Version>
      */
     private Collection<Version> sortDescending(Collection<Version> versions)
@@ -153,12 +146,13 @@ public class VersionHistoryImpl implements VersionHistory
         }
         return sortedVersions;
     }
-    
+
     /**
      * Gets the predecessor of a specified version
      * 
-     * @param version  the version object
-     * @return         the predeceeding version, null if root version
+     * @param version
+     *            the version object
+     * @return the predeceeding version, null if root version
      */
     public Version getPredecessor(Version version)
     {
@@ -171,23 +165,23 @@ public class VersionHistoryImpl implements VersionHistory
     }
 
     /**
-     * Gets the succeeding versions of a specified version. If there are multiple
-     * Versions they are sorted into descending create date order (most recent first).
+     * Gets the succeeding versions of a specified version. If there are multiple Versions they are sorted into descending create date order (most recent first).
      * 
-     * @param version  the version object
-     * @return         a collection containing the succeeding version, empty is none
+     * @param version
+     *            the version object
+     * @return a collection containing the succeeding version, empty is none
      */
     public Collection<Version> getSuccessors(Version version)
     {
         ArrayList<Version> result = new ArrayList<Version>();
-        
+
         if (version != null)
         {
             String versionLabel = version.getVersionLabel();
-            
+
             if (this.versionHistory.containsValue(versionLabel) == true)
             {
-                for (Entry<String, Version> entry: versionsByLabel.entrySet())
+                for (Entry<String, Version> entry : versionsByLabel.entrySet())
                 {
                     String key = entry.getKey();
                     if (EqualsHelper.nullSafeEquals(this.versionHistory.get(key), versionLabel))
@@ -200,14 +194,15 @@ public class VersionHistoryImpl implements VersionHistory
 
         return sortDescending(result);
     }
-    
+
     /**
-     * Gets a version with a specified version label.  The version label is guaranteed 
-     * unique within the version history.
+     * Gets a version with a specified version label. The version label is guaranteed unique within the version history.
      * 
-     * @param versionLabel                   the version label
-     * @return                               the version object
-     * @throws VersionDoesNotExistException  indicates requested version does not exist
+     * @param versionLabel
+     *            the version label
+     * @return the version object
+     * @throws VersionDoesNotExistException
+     *             indicates requested version does not exist
      */
     public Version getVersion(String versionLabel)
     {
@@ -215,7 +210,7 @@ public class VersionHistoryImpl implements VersionHistory
         if (versionLabel != null)
         {
             result = this.versionsByLabel.get(versionLabel);
-            
+
             if (result == null)
             {
                 // Throw exception indicating that the version does not exit
@@ -224,29 +219,30 @@ public class VersionHistoryImpl implements VersionHistory
         }
         return result;
     }
-    
+
     /**
-     * Add a version to the version history, <b>in the order they were
-     * created</b>.
+     * Add a version to the version history, <b>in the order they were created</b>.
      * <p>
      * Used internally to build the version history tree.
      * 
-     * @param version       the version object
-     * @param predecessor   the preceeding version
+     * @param version
+     *            the version object
+     * @param predecessor
+     *            the preceeding version
      */
     public void addVersion(Version version, Version predecessor)
     {
         // TODO cope with exception case where duplicate version labels have been specified
-        
+
         this.versionsByLabel.put(version.getVersionLabel(), version);
-        
+
         if (predecessor != null)
         {
             this.versionHistory.put(version.getVersionLabel(), predecessor.getVersionLabel());
         }
     }
 
-    @SuppressWarnings({ "unchecked", "deprecation" })
+    @SuppressWarnings({"unchecked", "deprecation"})
     private void readObject(ObjectInputStream is) throws ClassNotFoundException, IOException
     {
         GetField fields = is.readFields();
@@ -257,8 +253,8 @@ public class VersionHistoryImpl implements VersionHistory
             this.versionsByLabel = (HashMap<String, Version>) fields.get("versions", new HashMap<String, Version>());
             // The old 'versionHistory' maps to the current 'versionHistory'
             this.versionHistory = (HashMap<String, String>) fields.get("versionHistory", new HashMap<String, String>());
-            // Need this comparator as versionsByLabel is not a LinkedHashMap in this version 
-            this.versionComparatorDesc = new VersionLabelComparator(); 
+            // Need this comparator as versionsByLabel is not a LinkedHashMap in this version
+            this.versionComparatorDesc = new VersionLabelComparator();
         }
         else if (fields.defaulted("versionComparatorDesc"))
         {
@@ -267,8 +263,8 @@ public class VersionHistoryImpl implements VersionHistory
             this.versionsByLabel = (HashMap<String, Version>) fields.get("versionsByLabel", new HashMap<String, Version>());
             // The old 'versionHistory' maps to the current 'versionHistory'
             this.versionHistory = (HashMap<String, String>) fields.get("versionHistory", new HashMap<String, String>());
-            // Need this comparator as versionsByLabel is not a LinkedHashMap in this version 
-            this.versionComparatorDesc = new VersionLabelComparator(); 
+            // Need this comparator as versionsByLabel is not a LinkedHashMap in this version
+            this.versionComparatorDesc = new VersionLabelComparator();
         }
         else
         {
@@ -277,27 +273,28 @@ public class VersionHistoryImpl implements VersionHistory
             this.versionsByLabel = (Map<String, Version>) fields.get("versionsByLabel", new LinkedHashMap<String, Version>());
             // The old 'versionHistory' maps to the current 'versionHistory'
             this.versionHistory = (HashMap<String, String>) fields.get("versionHistory", new HashMap<String, String>());
-            this.versionComparatorDesc = (Comparator<Version>) fields.get("versionComparatorDesc", null); 
+            this.versionComparatorDesc = (Comparator<Version>) fields.get("versionComparatorDesc", null);
         }
     }
-    
+
     /**
      * @since 4.1.7
      */
-    @Override public String toString()
+    @Override
+    public String toString()
     {
         // The toString result looks something like: "VersionHistoryImpl [1] , { '0.1', tail... }"
         final Collection<Version> allVersions = getAllVersions();
-        
+
         final StringBuilder msg = new StringBuilder();
-        
+
         msg.append(VersionHistoryImpl.class.getSimpleName())
-           .append(" [") .append(allVersions.size()) .append("] ");
-        if ( !allVersions.isEmpty())
+                .append(" [").append(allVersions.size()).append("] ");
+        if (!allVersions.isEmpty())
         {
-            msg.append(", { '") .append(getHeadVersion().getVersionLabel()) .append("', tail... }");
+            msg.append(", { '").append(getHeadVersion().getVersionLabel()).append("', tail... }");
         }
-        
+
         return msg.toString();
     }
 }

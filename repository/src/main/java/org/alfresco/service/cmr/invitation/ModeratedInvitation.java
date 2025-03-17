@@ -25,10 +25,8 @@
  */
 package org.alfresco.service.cmr.invitation;
 
-
 /**
- * The moderated invitation request is a model object for who, needs to be added or removed 
- * from which resource with which attributes.
+ * The moderated invitation request is a model object for who, needs to be added or removed from which resource with which attributes.
  * 
  * Invitations are processed by the InvitationService
  * 
@@ -37,11 +35,12 @@ package org.alfresco.service.cmr.invitation;
  * @author mrogers
  */
 public interface ModeratedInvitation extends Invitation
-{	
-	/**
-	 * The invitee comments - why does the invitee want access ?
-	 * @return invitee comments
-	 */
-	public String getInviteeComments();
+{
+    /**
+     * The invitee comments - why does the invitee want access ?
+     * 
+     * @return invitee comments
+     */
+    public String getInviteeComments();
 
 }

@@ -43,8 +43,7 @@ public class PathInfo
     private List<ElementInfo> elements;
 
     public PathInfo()
-    {
-    }
+    {}
 
     public PathInfo(String name, Boolean isComplete, List<ElementInfo> elements)
     {
@@ -62,7 +61,7 @@ public class PathInfo
     {
         return isComplete;
     }
-    
+
     public String getRelativePath()
     {
         return relativePath;
@@ -78,9 +77,9 @@ public class PathInfo
     {
         final StringBuilder sb = new StringBuilder(120);
         sb.append("PathInfo [name=").append(name)
-                    .append(", isComplete=").append(isComplete)
-                    .append(", elements=").append(elements)
-                    .append(']');
+                .append(", isComplete=").append(isComplete)
+                .append(", elements=").append(elements)
+                .append(']');
         return sb.toString();
     }
 
@@ -95,14 +94,13 @@ public class PathInfo
          * Required by jackson deserialisation.
          */
         public ElementInfo()
-        {
-        }
+        {}
 
         public ElementInfo(String id, String name)
         {
             this(id, name, null, null);
         }
-        
+
         public ElementInfo(String id, String name, String nodeType, List<String> aspectNames)
         {
             this.id = id;
@@ -142,7 +140,7 @@ public class PathInfo
                     .append(']');
             return sb.toString();
         }
-        
+
         public void expected(Object o)
         {
             assertTrue(o instanceof ElementInfo);
@@ -168,8 +166,8 @@ public class PathInfo
         {
             ElementInfo otherElement = other.getElements().get(idx);
 
-            assertEquals("Expected: "+element.getId()+", actual: "+otherElement.getId(), element.getId(), otherElement.getId());
-            assertEquals("Expected: "+element.getName()+", actual: "+otherElement.getName(), element.getName(), otherElement.getName());
+            assertEquals("Expected: " + element.getId() + ", actual: " + otherElement.getId(), element.getId(), otherElement.getId());
+            assertEquals("Expected: " + element.getName() + ", actual: " + otherElement.getName(), element.getName(), otherElement.getName());
             idx++;
         }
     }

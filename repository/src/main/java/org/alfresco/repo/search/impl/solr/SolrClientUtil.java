@@ -30,6 +30,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.index.shard.ShardInstance;
 import org.alfresco.repo.index.shard.ShardRegistry;
@@ -37,19 +42,17 @@ import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.BasicSearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.apache.commons.logging.Log;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
-import org.apache.commons.logging.LogFactory;
 /**
  * Helper class for solr http client.
+ * 
  * @author Michael Suzuki
  *
  */
 public class SolrClientUtil
 {
     private static Log logger = LogFactory.getLog(SolrClientUtil.class);
+
     public static Locale extractLocale(BasicSearchParameters searchParameters)
     {
         Locale locale = I18NUtil.getLocale();
@@ -59,18 +62,18 @@ public class SolrClientUtil
         }
         return locale;
     }
-    
+
     public static StoreRef extractStoreRef(BasicSearchParameters searchParameters)
     {
         if (searchParameters.getStores().size() == 0)
         {
             throw new AlfrescoRuntimeException("No store for query");
         }
-        
+
         StoreRef store = searchParameters.getStores().get(0);
         return store;
     }
-    
+
     public static String extractLanguageFragment(Map<String, String> languageMappings, String language)
     {
         String languageUrlFragment = languageMappings.get(language);
@@ -80,16 +83,17 @@ public class SolrClientUtil
         }
         return languageUrlFragment;
     }
-    public static SolrStoreMappingWrapper extractMapping(StoreRef store, 
+
+    public static SolrStoreMappingWrapper extractMapping(StoreRef store,
             HashMap<StoreRef, SolrStoreMappingWrapper> mappingLookup, ShardRegistry shardRegistry,
-            boolean useDynamicShardRegistration,BeanFactory beanFactory)
+            boolean useDynamicShardRegistration, BeanFactory beanFactory)
     {
-        if((shardRegistry != null) && useDynamicShardRegistration)
+        if ((shardRegistry != null) && useDynamicShardRegistration)
         {
             SearchParameters sp = new SearchParameters();
             sp.addStore(store);
             List<ShardInstance> slice = shardRegistry.getIndexSlice(sp);
-            if((slice == null) || (slice.size() == 0))
+            if ((slice == null) || (slice.size() == 0))
             {
                 logger.error("No available shards for solr query of store " + store + " - trying non-dynamic configuration");
                 SolrStoreMappingWrapper mappings = mappingLookup.get(store);
@@ -112,5 +116,5 @@ public class SolrClientUtil
             return mappings;
         }
     }
-    
+
 }

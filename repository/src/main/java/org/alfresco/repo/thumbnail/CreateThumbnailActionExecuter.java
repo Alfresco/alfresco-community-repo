@@ -29,6 +29,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -47,13 +50,11 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Create thumbnail action executer.
  * 
- * NOTE:  This action is used to facilitate the async creation of thumbnails.  It is not intended for genereral useage.
+ * NOTE: This action is used to facilitate the async creation of thumbnails. It is not intended for genereral useage.
  * 
  * @author Roy Wetherall
  * @author Ph Dubois (optional thumbnail creation by mimetype and in general)
@@ -64,15 +65,15 @@ import org.apache.commons.logging.LogFactory;
 public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
 {
     private static Log logger = LogFactory.getLog(CreateThumbnailActionExecuter.class);
-    
+
     /** Thumbnail Service */
     private ThumbnailService thumbnailService;
-    
+
     /** Node Service */
     private NodeService nodeService;
-    
+
     // Size limitations (in KBytes) indexed by mimetype for thumbnail creation
-    private HashMap<String,Long> mimetypeMaxSourceSizeKBytes;
+    private HashMap<String, Long> mimetypeMaxSourceSizeKBytes;
 
     private RenditionService2 renditionService2;
 
@@ -80,30 +81,34 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
     public static final String NAME = "create-thumbnail";
     public static final String PARAM_CONTENT_PROPERTY = "content-property";
     public static final String PARAM_THUMBANIL_NAME = "thumbnail-name";
-    
+
     /**
      * Set the thumbnail service
      * 
-     * @param thumbnailService  the thumbnail service
+     * @param thumbnailService
+     *            the thumbnail service
      */
     public void setThumbnailService(ThumbnailService thumbnailService)
     {
         this.thumbnailService = thumbnailService;
     }
-    
+
     /**
      * Set the node service
      * 
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set the maximum size for each mimetype above which thumbnails are not created.
-     * @param mimetypeMaxSourceSizeKBytes map of mimetypes to max source sizes.
+     * 
+     * @param mimetypeMaxSourceSizeKBytes
+     *            map of mimetypes to max source sizes.
      */
     public void setMimetypeMaxSourceSizeKBytes(HashMap<String, Long> mimetypeMaxSourceSizeKBytes)
     {
@@ -117,7 +122,9 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
 
     /**
      * Enable thumbnail creation at all regardless of mimetype.
-     * @param generateThumbnails a {@code false} value turns off all thumbnail creation.
+     * 
+     * @param generateThumbnails
+     *            a {@code false} value turns off all thumbnail creation.
      * @deprecated Use {@link ThumbnailServiceImpl#setThumbnailsEnabled(boolean)} instead.
      */
     public void setGenerateThumbnails(boolean generateThumbnails)
@@ -125,12 +132,12 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
         if (logger.isDebugEnabled())
         {
             logger.debug("Thumbnail generation is " +
-                         (generateThumbnails ? "enabled" : "disabled") +
-                         "via deprecated method in " + this.getClass().getSimpleName());
+                    (generateThumbnails ? "enabled" : "disabled") +
+                    "via deprecated method in " + this.getClass().getSimpleName());
         }
         this.thumbnailService.setThumbnailsEnabled(generateThumbnails);
     }
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -146,28 +153,28 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
             }
             return;
         }
-        
+
         if (this.nodeService.exists(actionedUponNodeRef) == true)
         {
             // Get the thumbnail Name
-            String thumbnailName = (String)action.getParameterValue(PARAM_THUMBANIL_NAME);
-            
+            String thumbnailName = (String) action.getParameterValue(PARAM_THUMBANIL_NAME);
+
             // Get the details of the thumbnail
             ThumbnailRegistry registry = this.thumbnailService.getThumbnailRegistry();
             ThumbnailDefinition details = registry.getThumbnailDefinition(thumbnailName);
             if (details == null)
             {
-                // Throw exception 
+                // Throw exception
                 throw new AlfrescoRuntimeException("The thumbnail name '" + thumbnailName + "' is not registered");
             }
-            
+
             // Get the content property
-            QName contentProperty = (QName)action.getParameterValue(PARAM_CONTENT_PROPERTY);
+            QName contentProperty = (QName) action.getParameterValue(PARAM_CONTENT_PROPERTY);
             if (contentProperty == null)
             {
                 contentProperty = ContentModel.PROP_CONTENT;
             }
-            
+
             // If there isn't a currently active transformer for this, log and skip
             Serializable contentProp = nodeService.getProperty(actionedUponNodeRef, contentProperty);
             if (contentProp == null)
@@ -176,9 +183,9 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
                 return;
             }
 
-            if(contentProp instanceof ContentData)
+            if (contentProp instanceof ContentData)
             {
-                ContentData content = (ContentData)contentProp;
+                ContentData content = (ContentData) contentProp;
                 String mimetype = content.getMimetype();
                 if (!registry.isThumbnailDefinitionAvailable(content.getContentUrl(), mimetype, content.getSize(), actionedUponNodeRef, details))
                 {
@@ -189,11 +196,11 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
                 if (mimetypeMaxSourceSizeKBytes != null)
                 {
                     Long maxSourceSizeKBytes = mimetypeMaxSourceSizeKBytes.get(mimetype);
-                    if (maxSourceSizeKBytes != null && maxSourceSizeKBytes >= 0 && maxSourceSizeKBytes < (content.getSize()/1024L))
+                    if (maxSourceSizeKBytes != null && maxSourceSizeKBytes >= 0 && maxSourceSizeKBytes < (content.getSize() / 1024L))
                     {
                         logger.debug("Unable to create thumbnail '" + details.getName() + "' for " +
-                                mimetype + " as content is too large ("+(content.getSize()/1024L)+"K > "+maxSourceSizeKBytes+"K)");
-                        return; //avoid transform
+                                mimetype + " as content is too large (" + (content.getSize() / 1024L) + "K > " + maxSourceSizeKBytes + "K)");
+                        return; // avoid transform
                     }
                 }
             }
@@ -248,7 +255,7 @@ public class CreateThumbnailActionExecuter extends ActionExecuterAbstractBase
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
-        paramList.add(new ParameterDefinitionImpl(PARAM_THUMBANIL_NAME, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_THUMBANIL_NAME)));      
-        paramList.add(new ParameterDefinitionImpl(PARAM_CONTENT_PROPERTY, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_CONTENT_PROPERTY)));        
+        paramList.add(new ParameterDefinitionImpl(PARAM_THUMBANIL_NAME, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_THUMBANIL_NAME)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_CONTENT_PROPERTY, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_CONTENT_PROPERTY)));
     }
 }

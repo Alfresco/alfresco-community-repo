@@ -42,11 +42,11 @@ public class FTSProximity extends BaseFunction
     public final static String NAME = "FTSProximity";
 
     public final static String ARG_FIRST = "First";
-    
+
     public final static String ARG_LAST = "Last";
-    
+
     public final static String ARG_PROPERTY = "Property";
-    
+
     public final static String ARG_SLOP = "Slop";
 
     public static LinkedHashMap<String, ArgumentDefinition> args;
@@ -64,6 +64,7 @@ public class FTSProximity extends BaseFunction
     {
         super(NAME, DataTypeDefinition.BOOLEAN, args);
     }
+
     public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
         throw new UnsupportedOperationException();

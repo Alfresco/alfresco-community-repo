@@ -45,6 +45,7 @@ import org.activiti.engine.impl.bpmn.parser.handler.AbstractBpmnParseHandler;
 import org.activiti.engine.impl.pvm.delegate.ActivityBehavior;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.parse.BpmnParseHandler;
+
 import org.alfresco.repo.tenant.TenantService;
 
 /**
@@ -56,31 +57,31 @@ import org.alfresco.repo.tenant.TenantService;
  */
 public class AlfrescoCallActivityBpmnParseHandler extends AbstractBpmnParseHandler<CallActivity>
 {
-    
+
     private TenantService tenantService;
     private boolean multiTenancyEnabled = true;
-    
+
     protected Class<? extends BaseElement> getHandledType()
     {
         return CallActivity.class;
     }
-    
+
     protected void executeParse(BpmnParse bpmnParse, CallActivity callActivity)
     {
         if (multiTenancyEnabled && tenantService.isEnabled())
         {
             ActivityImpl activity = findActivity(bpmnParse, callActivity.getId());
             ActivityBehavior activityBehavior = activity.getActivityBehavior();
-            if(activityBehavior instanceof CallActivityBehavior)
+            if (activityBehavior instanceof CallActivityBehavior)
             {
                 CallActivityBehavior callActivityBehavior = (CallActivityBehavior) activityBehavior;
-                
+
                 // Make name of process-definition to be called aware of the current tenant
                 callActivityBehavior.setProcessDefinitonKey(tenantService.getName(callActivityBehavior.getProcessDefinitonKey()));
             }
         }
     }
-    
+
     /**
      * @param tenantService
      *            the tenantService to set
@@ -89,7 +90,7 @@ public class AlfrescoCallActivityBpmnParseHandler extends AbstractBpmnParseHandl
     {
         this.tenantService = tenantService;
     }
-    
+
     public void setMultiTenancyEnabled(boolean multiTenancyEnabled)
     {
         this.multiTenancyEnabled = multiTenancyEnabled;

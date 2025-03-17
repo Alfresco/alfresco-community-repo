@@ -26,41 +26,35 @@
 
 package org.alfresco.filesys.alfresco;
 
-import org.alfresco.filesys.repo.ContentContext;
-import org.alfresco.jlan.server.SrvSession;
-import org.alfresco.jlan.server.core.DeviceContext;
-import org.alfresco.jlan.server.core.DeviceContextException;
-import org.alfresco.jlan.server.filesys.IOControlNotImplementedException;
-import org.alfresco.jlan.server.filesys.IOCtlInterface;
-import org.alfresco.jlan.server.filesys.NetworkFile;
-import org.alfresco.jlan.server.filesys.TreeConnection;
-import org.alfresco.jlan.smb.SMBException;
-import org.alfresco.jlan.smb.SMBStatus;
-import org.alfresco.jlan.util.DataBuffer;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.jlan.server.core.DeviceContext;
+import org.alfresco.jlan.server.core.DeviceContextException;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Alfresco Disk Driver Base Class
  * 
- * <p>Provides common code to the Alfresco filesystem implementations.
+ * <p>
+ * Provides common code to the Alfresco filesystem implementations.
  *
  * @author gkspencer
  */
-public abstract class AlfrescoDiskDriver implements ExtendedDiskInterface {
+public abstract class AlfrescoDiskDriver implements ExtendedDiskInterface
+{
 
     // Logging
-    
+
     private static final Log logger = LogFactory.getLog(AlfrescoDiskDriver.class);
-    
+
     // Service registry for desktop actions
-    
+
     private ServiceRegistry m_serviceRegistry;
-    
-    //  Transaction service
-    
+
+    // Transaction service
+
     protected TransactionService m_transactionService;
 
     /**
@@ -82,19 +76,21 @@ public abstract class AlfrescoDiskDriver implements ExtendedDiskInterface {
     {
         return m_transactionService;
     }
-    
+
     /**
      * Set the service registry
      * 
-     * @param serviceRegistry ServiceRegistry
+     * @param serviceRegistry
+     *            ServiceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         m_serviceRegistry = serviceRegistry;
     }
-    
+
     /**
-     * @param transactionService the transaction service
+     * @param transactionService
+     *            the transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -102,11 +98,10 @@ public abstract class AlfrescoDiskDriver implements ExtendedDiskInterface {
     }
 
     /**
-     * Registers a device context object for this instance
-     * of the shared device. The same DeviceInterface implementation may be used for multiple
-     * shares. In this base class, we initialize all desktop actions.
+     * Registers a device context object for this instance of the shared device. The same DeviceInterface implementation may be used for multiple shares. In this base class, we initialize all desktop actions.
      * 
-     * @param ctx the context
+     * @param ctx
+     *            the context
      * @exception DeviceContextException
      */
     public void registerContext(DeviceContext ctx) throws DeviceContextException
@@ -114,11 +109,11 @@ public abstract class AlfrescoDiskDriver implements ExtendedDiskInterface {
         if (ctx instanceof AlfrescoContext)
         {
             // Enable a standalone state cache on the filesystem
-            
+
             AlfrescoContext alfCtx = (AlfrescoContext) ctx;
-            
+
             // Initialize the filesystem
-            
+
             alfCtx.initialize(this);
         }
     }

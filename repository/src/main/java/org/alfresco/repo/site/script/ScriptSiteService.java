@@ -28,6 +28,8 @@ package org.alfresco.repo.site.script;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -38,8 +40,6 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
-
 
 /**
  * Script object representing the site service.
@@ -52,103 +52,122 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     public static final String PUBLIC_SITE = "PUBLIC";
     public static final String MODERATED_SITE = "MODERATED";
     public static final String PRIVATE_SITE = "PRIVATE";
-    
-	/** Service Registry */
-	private ServiceRegistry serviceRegistry;
-	
+
+    /** Service Registry */
+    private ServiceRegistry serviceRegistry;
+
     /** The site service */
     private SiteService siteService;
 
     /**
      * Sets the Service Registry
      * 
-     * @param serviceRegistry ServiceRegistry
+     * @param serviceRegistry
+     *            ServiceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
-    	this.serviceRegistry = serviceRegistry;
+        this.serviceRegistry = serviceRegistry;
     }
-    
+
     /**
      * Set the site service
      * 
-     * @param siteService   the site service
+     * @param siteService
+     *            the site service
      */
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
     }
-    
+
     /**
      * @see #createSite(String, String, String, String, String)
      * 
-     * @param sitePreset    site preset
-     * @param shortName     site short name
-     * @param title         site title
-     * @param description   site description
-     * @param isPublic      whether the site is public or not
-     * @return Site         the created site
-     * @deprecated          as of version 3.2, replaced by {@link #createSite(String, String, String, String, String)}
-     */    
+     * @param sitePreset
+     *            site preset
+     * @param shortName
+     *            site short name
+     * @param title
+     *            site title
+     * @param description
+     *            site description
+     * @param isPublic
+     *            whether the site is public or not
+     * @return Site the created site
+     * @deprecated as of version 3.2, replaced by {@link #createSite(String, String, String, String, String)}
+     */
     public Site createSite(String sitePreset, String shortName, String title, String description, boolean isPublic)
-    {                
+    {
         SiteInfo siteInfo = this.siteService.createSite(sitePreset, shortName, title, description, isPublic);
         return new Site(siteInfo, this.serviceRegistry, this.siteService, getScope());
     }
-    
+
     /**
      * Create a new site.
      * <p>
      * The site short name will be used to uniquely identify the site so it must be unique.
      * 
-     * @param sitePreset    site preset
-     * @param shortName     site short name
-     * @param title         site title
-     * @param description   site description
-     * @param visibility    visibility of the site (public|moderated|private)
-     * @return Site         the created site
+     * @param sitePreset
+     *            site preset
+     * @param shortName
+     *            site short name
+     * @param title
+     *            site title
+     * @param description
+     *            site description
+     * @param visibility
+     *            visibility of the site (public|moderated|private)
+     * @return Site the created site
      */
     public Site createSite(String sitePreset, String shortName, String title, String description, String visibility)
-    { 
+    {
         ParameterCheck.mandatoryString("visibility", visibility);
         SiteVisibility siteVisibility = SiteVisibility.valueOf(visibility);
         SiteInfo siteInfo = this.siteService.createSite(sitePreset, shortName, title, description, siteVisibility);
         return new Site(siteInfo, this.serviceRegistry, this.siteService, getScope());
     }
-    
+
     /**
      * Create a new site.
      * <p>
      * The site short name will be used to uniquely identify the site so it must be unique.
      * 
-     * @param sitePreset    site preset
-     * @param shortName     site short name
-     * @param title         site title
-     * @param description   site description
-     * @param visibility    visibility of the site (public|moderated|private)
-     * @param siteType      qname of site type to create
-     * @return Site         the created site
+     * @param sitePreset
+     *            site preset
+     * @param shortName
+     *            site short name
+     * @param title
+     *            site title
+     * @param description
+     *            site description
+     * @param visibility
+     *            visibility of the site (public|moderated|private)
+     * @param siteType
+     *            qname of site type to create
+     * @return Site the created site
      */
     public Site createSite(String sitePreset, String shortName, String title, String description, String visibility, String siteType)
-    {     	
+    {
         ParameterCheck.mandatoryString("visibility", visibility);
         SiteVisibility siteVisibility = SiteVisibility.valueOf(visibility);
         QName siteTypeQName = QName.createQName(siteType);
         SiteInfo siteInfo = this.siteService.createSite(sitePreset, shortName, title, description, siteVisibility, siteTypeQName);
         return new Site(siteInfo, this.serviceRegistry, this.siteService, getScope());
     }
-    
+
     /**
      * Site existence check. Allows private site existence to be tested.
      * 
-     * @param shortName     site short name
+     * @param shortName
+     *            site short name
      * @return true if the site exists, false otherwise.
      */
     public boolean hasSite(String shortName)
     {
         return this.siteService.hasSite(shortName);
     }
-    
+
     /**
      * This method checks if the currently authenticated user has permission to create sites.
      * 
@@ -157,13 +176,14 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
      */
     public boolean hasCreateSitePermissions()
     {
-    	return siteService.hasCreateSitePermissions();
+        return siteService.hasCreateSitePermissions();
     }
-    
+
     /**
      * Determines if the current user is a manager of the given site.
      * 
-     * @param siteId The short name of the site to check
+     * @param siteId
+     *            The short name of the site to check
      * @return true if the current user is a manager of the given site
      */
     public boolean isSiteManager(String siteId)
@@ -171,20 +191,19 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
         String role = siteService.getMembersRole(siteId, AuthenticationUtil.getFullyAuthenticatedUser());
         return (SiteServiceImpl.SITE_MANAGER.equals(role));
     }
-    
+
     /**
-     * Retrieves the sites available in the repository. The returned list can optionally be filtered by name and site
-     * preset. If no filters are specified then all the available sites are returned.
+     * Retrieves the sites available in the repository. The returned list can optionally be filtered by name and site preset. If no filters are specified then all the available sites are returned.
      * 
-     * NOTE: If the filter starts with a * a Lucene based search will be performed, this may discover a wider range
-     * of results i.e. those sites that contain the search term as opposed to those that start with the search term,
-     * but newly created sites may not be found until the underlying search indexes are updated.
+     * NOTE: If the filter starts with a * a Lucene based search will be performed, this may discover a wider range of results i.e. those sites that contain the search term as opposed to those that start with the search term, but newly created sites may not be found until the underlying search indexes are updated.
      * 
-     * @param filter            inclusion filter for returned sites. Only sites whose cm:name OR cm:title
-     *                          OR cm:description start with the filter string will be returned.
-     * @param sitePresetFilter  site preset filter
-     * @param size              max results size crop if >0
-     * @return Site[]           a list of the site filtered as appropriate
+     * @param filter
+     *            inclusion filter for returned sites. Only sites whose cm:name OR cm:title OR cm:description start with the filter string will be returned.
+     * @param sitePresetFilter
+     *            site preset filter
+     * @param size
+     *            max results size crop if >0
+     * @return Site[] a list of the site filtered as appropriate
      */
     public Site[] getSites(String filter, String sitePresetFilter, int size)
     {
@@ -193,12 +212,12 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
         {
             filter = null;
         }
-        
+
         if (filter != null && (filter.startsWith("*")))
         {
             // findSites will add the wildcard so remove here
             filter = filter.substring(1, filter.length());
-            
+
             // use findSites to do a "contains" search
             return findSites(filter, sitePresetFilter, size);
         }
@@ -208,17 +227,17 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
             return listSites(filter, sitePresetFilter, size);
         }
     }
-    
+
     /**
-     * List the sites available in the repository.  The returned list can optionally be filtered by name and site
-     * preset.
+     * List the sites available in the repository. The returned list can optionally be filtered by name and site preset.
      * <p>
      * If no filters are specified then all the available sites are returned.
      * 
-     * @param filter            inclusion filter for returned sites. Only sites whose cm:name OR cm:title
-     *                          OR cm:description start with the filter string will be returned.
-     * @param sitePresetFilter  site preset filter
-     * @return Site[]           a list of the site filtered as appropriate
+     * @param filter
+     *            inclusion filter for returned sites. Only sites whose cm:name OR cm:title OR cm:description start with the filter string will be returned.
+     * @param sitePresetFilter
+     *            site preset filter
+     * @return Site[] a list of the site filtered as appropriate
      * 
      * @see SiteService#listSites(String, String, int) for a description of the limitations of this method.
      */
@@ -226,18 +245,19 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     {
         return listSites(filter, sitePresetFilter, -1);
     }
-    
+
     /**
-     * List the sites available in the repository.  The returned list can optionally be filtered by name and site
-     * preset.
+     * List the sites available in the repository. The returned list can optionally be filtered by name and site preset.
      * <p/>
      * If no filters are specified then all the available sites are returned.
      * 
-     * @param filter            inclusion filter for returned sites. Only sites whose cm:name OR cm:title
-     *                          OR cm:description start with the filter string will be returned.
-     * @param sitePresetFilter  site preset filter
-     * @param size              max results size crop if >0
-     * @return Site[]           a list of the site filtered as appropriate
+     * @param filter
+     *            inclusion filter for returned sites. Only sites whose cm:name OR cm:title OR cm:description start with the filter string will be returned.
+     * @param sitePresetFilter
+     *            site preset filter
+     * @param size
+     *            max results size crop if >0
+     * @return Site[] a list of the site filtered as appropriate
      * 
      * @see SiteService#listSites(String, String, int) for a description of the limitations of this method.
      */
@@ -246,19 +266,20 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
         List<SiteInfo> siteInfos = this.siteService.listSites(filter, sitePresetFilter, size);
         return makeSitesArray(siteInfos);
     }
-    
+
     /**
-     * Find (search) the sites available in the repository.  The returned list can optionally be filtered by name and site
-     * preset.
+     * Find (search) the sites available in the repository. The returned list can optionally be filtered by name and site preset.
      * <p/>
      * If no filters are specified then all the available sites are returned.
      * 
-     * @param filter            inclusion filter for returned sites. Only sites whose cm:name OR cm:title
-     *                          OR cm:description CONTAIN the filter string will be returned.
-     * @param sitePresetFilter  site preset filter
-     * @param size              max results size crop if >0
+     * @param filter
+     *            inclusion filter for returned sites. Only sites whose cm:name OR cm:title OR cm:description CONTAIN the filter string will be returned.
+     * @param sitePresetFilter
+     *            site preset filter
+     * @param size
+     *            max results size crop if >0
      * 
-     * @return Site[]           a list of the site filtered as appropriate
+     * @return Site[] a list of the site filtered as appropriate
      * 
      * @see SiteService#findSites(String, String, int) for a description of the limitations of this method.
      * @since 4.0
@@ -270,14 +291,15 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     }
 
     /**
-     * Find (search) the sites available in the repository.  The returned list can optionally be filtered by name
+     * Find (search) the sites available in the repository. The returned list can optionally be filtered by name
      * <p/>
      * 
-     * @param filter            inclusion filter for returned sites. Only sites whose cm:name OR cm:title
-     *                          OR cm:description CONTAIN the filter string will be returned.
-     * @param size              max results size crop if >0
+     * @param filter
+     *            inclusion filter for returned sites. Only sites whose cm:name OR cm:title OR cm:description CONTAIN the filter string will be returned.
+     * @param size
+     *            max results size crop if >0
      * 
-     * @return Site[]           a list of the site filtered as appropriate
+     * @return Site[] a list of the site filtered as appropriate
      * 
      * @see SiteService#findSites(String, int) for a description of the limitations of this method.
      * @since 5.0
@@ -286,10 +308,10 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     {
         List<SiteInfo> siteInfos = this.siteService.findSites(filter, size);
         return makeSitesArray(siteInfos);
-    }    
+    }
+
     /**
-     * Converts the given List of SiteInfo objects to a JavaScript friendly array
-     * of Site objects.
+     * Converts the given List of SiteInfo objects to a JavaScript friendly array of Site objects.
      * 
      * @return Array of Site objects
      */
@@ -300,16 +322,18 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
         {
             sites.add(new Site(siteInfo, this.serviceRegistry, this.siteService, getScope()));
         }
-        
+
         return sites.toArray(new Site[sites.size()]);
     }
-    
+
     /**
      * List all the sites that the specified user has an explicit membership to.
      * 
-     * @param userName      user name
-     * @param size          maximum list size
-     * @return Site[]       a list of sites the user has an explicit membership to
+     * @param userName
+     *            user name
+     * @param size
+     *            maximum list size
+     * @return Site[] a list of sites the user has an explicit membership to
      */
     public Site[] listUserSites(String userName, int size)
     {
@@ -321,24 +345,26 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
         }
         return sites.toArray(new Site[sites.size()]);
     }
-    
+
     /**
      * List all the sites that the specified user has an explicit membership to.
      * 
-     * @param userName      user name
-     * @return Site[]       a list of sites the user has an explicit membership to
+     * @param userName
+     *            user name
+     * @return Site[] a list of sites the user has an explicit membership to
      */
     public Site[] listUserSites(String userName)
     {
         return listUserSites(userName, 0);
     }
-    
+
     /**
      * Get a site for a provided site short name.
      * <p>
      * Returns null if the site does not exist.
      * 
-     * @param shortName short name of the site
+     * @param shortName
+     *            short name of the site
      * @return Site the site, null if does not exist
      */
     public Site getSite(final String shortName)
@@ -347,8 +373,7 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
         Site site = null;
         if (siteService.isSiteAdmin(AuthenticationUtil.getFullyAuthenticatedUser()))
         {
-            siteInfo = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<SiteInfo>()
-            {
+            siteInfo = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<SiteInfo>() {
                 public SiteInfo doWork() throws Exception
                 {
                     return siteService.getSite(shortName);
@@ -366,51 +391,50 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
         }
         return site;
     }
-    
+
     /**
-     * Get a site for a provided site short name. If the current user does not have permission to view the site content, the info
-     * will still be returned, but none of the operations that would modify site information on save() will work. As usual ACLs
-     * will apply on any attempt to modify the Site object.
+     * Get a site for a provided site short name. If the current user does not have permission to view the site content, the info will still be returned, but none of the operations that would modify site information on save() will work. As usual ACLs will apply on any attempt to modify the Site object.
      * <p>
      * Returns null if the site does not exist.
      * 
-     * @param shortName short name of the site
+     * @param shortName
+     *            short name of the site
      * @return Site the site, null if does not exist
      */
     public Site getSiteInfo(final String shortName)
     {
         Site site = null;
-        
-        SiteInfo siteInfo = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<SiteInfo>()
-        {
+
+        SiteInfo siteInfo = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<SiteInfo>() {
             public SiteInfo doWork() throws Exception
             {
                 return siteService.getSite(shortName);
             }
         }, AuthenticationUtil.getAdminUserName());
-        
+
         if (siteInfo != null)
         {
             site = new Site(siteInfo, this.serviceRegistry, this.siteService, getScope());
         }
         return site;
     }
-    
+
     /**
      * Returns an array of all the roles that can be assigned to a member of a site.
      * 
-     * @return  String[]    roles available to assign to a member of a site
+     * @return String[] roles available to assign to a member of a site
      */
     public String[] listSiteRoles()
     {
         List<String> roles = this.siteService.getSiteRoles();
         return roles.toArray(new String[roles.size()]);
     }
-    
+
     /**
      * It removes permissions which pertain to sites other than the node's current site.
      * 
-     * @param targetNode the root node which is to have its permissions cleaned.
+     * @param targetNode
+     *            the root node which is to have its permissions cleaned.
      * @see SiteService#cleanSitePermissions(NodeRef, SiteInfo)
      */
     public void cleanSitePermissions(NodeRef targetNode)
@@ -419,8 +443,7 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     }
 
     /**
-     * This method cleans up the permissions on the specified node and all its primary children.
-     * It removes permissions which pertain to sites other than the node's current site.
+     * This method cleans up the permissions on the specified node and all its primary children. It removes permissions which pertain to sites other than the node's current site.
      * 
      * @since 3.4.2
      * @see SiteService#cleanSitePermissions(NodeRef, SiteInfo)
@@ -431,14 +454,13 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     }
 
     /**
-     * Returns an array of all the roles that can be assigned to a member of a 
-     *  specific site.
+     * Returns an array of all the roles that can be assigned to a member of a specific site.
      * 
-     * @return  String[]    roles available to assign to a member of a site
+     * @return String[] roles available to assign to a member of a site
      */
     public String[] listSiteRoles(String shortName)
     {
         List<String> roles = this.siteService.getSiteRoles(shortName);
-        return (String[])roles.toArray(new String[roles.size()]);
+        return (String[]) roles.toArray(new String[roles.size()]);
     }
 }

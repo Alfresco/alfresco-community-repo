@@ -51,7 +51,8 @@ public class CompositeActionImpl extends ActionImpl implements CompositeAction
     /**
      * Constructor
      * 
-     * @param id the action id
+     * @param id
+     *            the action id
      */
     public CompositeActionImpl(NodeRef nodeRef, String id)
     {
@@ -59,7 +60,8 @@ public class CompositeActionImpl extends ActionImpl implements CompositeAction
     }
 
     /**
-     * @param action Action
+     * @param action
+     *            Action
      * @see org.alfresco.service.cmr.action.ActionList#addAction(org.alfresco.service.cmr.action.Action)
      */
     public void addAction(Action action)
@@ -68,10 +70,11 @@ public class CompositeActionImpl extends ActionImpl implements CompositeAction
     }
 
     /**
-     * @param index int
-     * @param action Action
-     * @see org.alfresco.service.cmr.action.ActionList#addAction(int,
-     *      org.alfresco.service.cmr.action.Action)
+     * @param index
+     *            int
+     * @param action
+     *            Action
+     * @see org.alfresco.service.cmr.action.ActionList#addAction(int, org.alfresco.service.cmr.action.Action)
      */
     public void addAction(int index, Action action)
     {
@@ -79,7 +82,8 @@ public class CompositeActionImpl extends ActionImpl implements CompositeAction
     }
 
     /**
-     * @param index int
+     * @param index
+     *            int
      * @return Action
      * @see org.alfresco.service.cmr.action.ActionList#getAction(int)
      */
@@ -106,7 +110,8 @@ public class CompositeActionImpl extends ActionImpl implements CompositeAction
     }
 
     /**
-     * @param action Action
+     * @param action
+     *            Action
      * @return int
      * @see org.alfresco.service.cmr.action.ActionList#indexOfAction(org.alfresco.service.cmr.action.Action)
      */
@@ -116,7 +121,8 @@ public class CompositeActionImpl extends ActionImpl implements CompositeAction
     }
 
     /**
-     * @param action Action
+     * @param action
+     *            Action
      * @see org.alfresco.service.cmr.action.ActionList#removeAction(org.alfresco.service.cmr.action.Action)
      */
     public void removeAction(Action action)
@@ -133,10 +139,11 @@ public class CompositeActionImpl extends ActionImpl implements CompositeAction
     }
 
     /**
-     * @param index int
-     * @param action Action
-     * @see org.alfresco.service.cmr.action.ActionList#setAction(int,
-     *      org.alfresco.service.cmr.action.Action)
+     * @param index
+     *            int
+     * @param action
+     *            Action
+     * @see org.alfresco.service.cmr.action.ActionList#setAction(int, org.alfresco.service.cmr.action.Action)
      */
     public void setAction(int index, Action action)
     {

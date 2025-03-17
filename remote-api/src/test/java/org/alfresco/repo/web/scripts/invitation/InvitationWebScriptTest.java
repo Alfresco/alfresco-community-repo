@@ -32,6 +32,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.invitation.InvitationServiceImpl;
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
@@ -52,13 +60,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
  * Unit test of Invitation REST API.
@@ -88,7 +89,7 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
     private List<String> createdSites = new ArrayList<String>(5);
     private List<Tracker> createdInvitations = new ArrayList<Tracker>(10);
 
-    private final Map<String, Map<String, String>> userProperties = new HashMap<String, Map<String,String>>(3);
+    private final Map<String, Map<String, String>> userProperties = new HashMap<String, Map<String, String>>(3);
 
     private class Tracker
     {
@@ -108,18 +109,18 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         super.setUp();
 
         this.authenticationService = (MutableAuthenticationService) getServer().getApplicationContext().getBean(
-                    "AuthenticationService");
+                "AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent) getServer().getApplicationContext().getBean(
-                    "authenticationComponent");
+                "authenticationComponent");
         this.personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
         this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
         this.transactionService = (TransactionService) getServer().getApplicationContext().getBean("TransactionService");
         this.invitationServiceImpl = (InvitationServiceImpl) getServer().getApplicationContext().getBean("invitationService");
-        
-        // turn off email sending to prevent errors during unit testing 
+
+        // turn off email sending to prevent errors during unit testing
         // (or sending out email by accident from tests)
         InviteServiceTest.configureMailExecutorForTestMode(this.getServer());
-        
+
         this.authenticationComponent.setSystemUserAsCurrentUser();
 
         // Create users
@@ -138,11 +139,11 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         ppOne.put(ContentModel.PROP_USERNAME, userName);
         ppOne.put(ContentModel.PROP_FIRSTNAME, firstName);
         ppOne.put(ContentModel.PROP_LASTNAME, lastName);
-        String email = firstName+"@email.com";
+        String email = firstName + "@email.com";
         ppOne.put(ContentModel.PROP_EMAIL, email);
         ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
         NodeRef person = personService.createPerson(ppOne);
-        String avatarUrl = makeAvatar(nodeService,person);
+        String avatarUrl = makeAvatar(nodeService, person);
 
         // Create expected user properties
         HashMap<String, String> properties = new HashMap<String, String>(4);
@@ -159,8 +160,7 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         super.tearDown();
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
 
-        RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deleteCallback = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -185,7 +185,7 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
     }
 
     private JSONObject createSite(String sitePreset, String shortName, String title, String description,
-                SiteVisibility visibility, int expectedStatus) throws Exception
+            SiteVisibility visibility, int expectedStatus) throws Exception
     {
         JSONObject site = new JSONObject();
         site.put("sitePreset", sitePreset);
@@ -199,10 +199,10 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
     }
 
     /**
-     * Detailed Test of List Invitation Web Script. 
-     * Using URL: /api/invitations
+     * Detailed Test of List Invitation Web Script. Using URL: /api/invitations
      * 
-     * @param requireAcceptance true if a workflow requiring acceptance is being used
+     * @param requireAcceptance
+     *            true if a workflow requiring acceptance is being used
      * @throws Exception
      */
     protected void testInvitationsGet(boolean requireAcceptance) throws Exception
@@ -229,7 +229,7 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
 
         // Create a moderated invitation on SiteB, USER_THREE
         String moderatedIdBUSER_THREE = createModeratedInvitation(shortNameSiteB, inviteeCommentsB, userNameB,
-                    roleNameB);
+                roleNameB);
 
         String inviteeFirstName = "Buffy";
         String inviteeLastName = "Summers";
@@ -241,7 +241,7 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
 
         // Create a nominated invitation on SiteA, UsER_TWO
         String nominatedId = createNominatedInvitation(shortNameSiteA, inviteeFirstName, inviteeLastName, inviteeEmail,
-                    inviteeUserName, roleName, serverPath, acceptURL, rejectURL);
+                inviteeUserName, roleName, serverPath, acceptURL, rejectURL);
 
         // search by user - find USER_TWO's three invitations
         {
@@ -263,7 +263,6 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
             checkJSONInvitations(data);
         }
 
-        
         // search by type - should find three moderated invitations
         {
             Response response = sendRequest(new GetRequest(URL_INVITATIONS + "?invitationType=MODERATED"), 200);
@@ -286,7 +285,7 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         // Search by type and site
         {
             Response response = sendRequest(new GetRequest(URL_INVITATIONS + "?invitationType=MODERATED&resourceName="
-                        + shortNameSiteA + "&resourceType=WEB_SITE"), 200);
+                    + shortNameSiteA + "&resourceType=WEB_SITE"), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
             JSONArray data = top.getJSONArray("data");
             assertEquals("One moderated invitations not found", 1, data.length());
@@ -295,16 +294,15 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         // negative test - unknown resourceType
         {
             Response response = sendRequest(new GetRequest(URL_INVITATIONS + "?invitationType=MODERATED&resourceName="
-                        + shortNameSiteA + "&resourceType=madeUpStuff"), 500);
+                    + shortNameSiteA + "&resourceType=madeUpStuff"), 500);
             assertEquals(500, response.getStatus());
             JSONObject top = new JSONObject(response.getContentAsString());
             assertNotNull(top.getString("message"));
         }
     }
-    
+
     /**
-     * Detailed Test of List Invitation Web Script. 
-     * Using URL: /api/invitations
+     * Detailed Test of List Invitation Web Script. Using URL: /api/invitations
      * 
      * @throws Exception
      */
@@ -312,10 +310,9 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
     {
         testInvitationsGet(false);
     }
-    
+
     /**
-     * Detailed Test of List Invitation Web Script using legacy workflow which requires user acceptance
-     * Using URL: /api/invitations
+     * Detailed Test of List Invitation Web Script using legacy workflow which requires user acceptance Using URL: /api/invitations
      * 
      * @throws Exception
      */
@@ -330,10 +327,10 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
     }
 
     /**
-     * Detailed Test of List Invitation Web Script. 
-     * Using URL: /api/sites/{shortname}/invitations
+     * Detailed Test of List Invitation Web Script. Using URL: /api/sites/{shortname}/invitations
      * 
-     * @param requireAcceptance true if a workflow requiring acceptance is being used
+     * @param requireAcceptance
+     *            true if a workflow requiring acceptance is being used
      * @throws Exception
      */
     protected void testSiteInvitationsGet(boolean requireAcceptance) throws Exception
@@ -360,7 +357,7 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
 
         // Create a moderated invitation on SiteB, USER_THREE
         String moderatedIdBUSER_THREE = createModeratedInvitation(shortNameSiteB, inviteeCommentsB, userNameB,
-                    roleNameB);
+                roleNameB);
 
         String inviteeFirstName = "Buffy";
         String inviteeLastName = "Summers";
@@ -372,17 +369,17 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
 
         // Create a nominated invitation on SiteA, UsER_TWO
         String nominatedId = createNominatedInvitation(shortNameSiteA, inviteeFirstName, inviteeLastName, inviteeEmail,
-                    inviteeUserName, roleName, serverPath, acceptURL, rejectURL);
+                inviteeUserName, roleName, serverPath, acceptURL, rejectURL);
 
         // search for all invitations to site A: One Moderated Usr2, One Nominated User2
         {
-            String allSiteAUrl = URL_SITES +"/" + shortNameSiteA + "/invitations";
+            String allSiteAUrl = URL_SITES + "/" + shortNameSiteA + "/invitations";
             Response response = sendRequest(new GetRequest(allSiteAUrl), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
             // System.out.println(response.getContentAsString());
             JSONArray data = top.getJSONArray("data");
             assertEquals("Wrong number of invitations!", requireAcceptance ? 2 : 1, data.length());
-            
+
             JSONObject moderatedAInv = getInvitation(moderatedIdAUSER_TWO, data);
             assertNotNull("Moderated invitation to Site A not present!", moderatedAInv);
             JSONObject nominatedInv = getInvitation(nominatedId, data);
@@ -395,23 +392,23 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
 
         // search for all invitations to site B: One Moderated User2, One Moderated User3.
         {
-            String allSiteBUrl = URL_SITES +"/" + shortNameSiteB + "/invitations";
+            String allSiteBUrl = URL_SITES + "/" + shortNameSiteB + "/invitations";
             Response response = sendRequest(new GetRequest(allSiteBUrl), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
             // System.out.println(response.getContentAsString());
             JSONArray data = top.getJSONArray("data");
             assertEquals("Wrong number of invitations!", 2, data.length());
-            
+
             JSONObject moderatedB2Inv = getInvitation(moderatedIdBUSER_TWO, data);
             assertNotNull("Moderated invitation User 2 to Site B not present!", moderatedB2Inv);
             JSONObject moderatedB3Inv = getInvitation(moderatedIdBUSER_THREE, data);
             assertNotNull("Moderated invitation User 3 to Site B not present!", moderatedB3Inv);
             checkJSONInvitations(data);
         }
-        
+
         // search SiteA by type Moderated: One Moderated User2
         {
-            String siteAModeratedUrl = URL_SITES + "/" +shortNameSiteA + "/invitations?invitationType=MODERATED";
+            String siteAModeratedUrl = URL_SITES + "/" + shortNameSiteA + "/invitations?invitationType=MODERATED";
             Response response = sendRequest(new GetRequest(siteAModeratedUrl), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
             // System.out.println(response.getContentAsString());
@@ -422,10 +419,11 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
             JSONObject moderatedATwoInv = getInvitation(moderatedIdAUSER_TWO, data);
             assertNotNull("first is null", moderatedATwoInv);
         }
-        
+
         // search SiteA by type Nominated: One Nominated User2
-        if (requireAcceptance) {
-            String siteANominatedUrl = URL_SITES + "/" +shortNameSiteA + "/invitations?invitationType=NOMINATED";
+        if (requireAcceptance)
+        {
+            String siteANominatedUrl = URL_SITES + "/" + shortNameSiteA + "/invitations?invitationType=NOMINATED";
             Response response = sendRequest(new GetRequest(siteANominatedUrl), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
             // System.out.println(response.getContentAsString());
@@ -436,10 +434,10 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
             JSONObject nominatedATwoInv = getInvitation(nominatedId, data);
             assertNotNull("first is null", nominatedATwoInv);
         }
-        
+
         // search SiteB by userId 2: One Moderated User2
         {
-            String siteBUser2Url = URL_SITES + "/" +shortNameSiteB + "/invitations?inviteeUserName=" + userTwo;
+            String siteBUser2Url = URL_SITES + "/" + shortNameSiteB + "/invitations?inviteeUserName=" + userTwo;
             Response response = sendRequest(new GetRequest(siteBUser2Url), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
             // System.out.println(response.getContentAsString());
@@ -450,10 +448,10 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
             JSONObject moderatedBTwoInv = getInvitation(moderatedIdBUSER_TWO, data);
             assertNotNull("first is null", moderatedBTwoInv);
         }
-        
+
         // search SiteB by userId 2: One Moderated User2
         {
-            String siteBUser2Url = URL_SITES + "/" +shortNameSiteB + "/invitations?inviteeUserName=" + userThree;
+            String siteBUser2Url = URL_SITES + "/" + shortNameSiteB + "/invitations?inviteeUserName=" + userThree;
             Response response = sendRequest(new GetRequest(siteBUser2Url), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
             // System.out.println(response.getContentAsString());
@@ -468,16 +466,15 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         // negative test - unknown resourceType
         {
             Response response = sendRequest(new GetRequest(URL_INVITATIONS + "?invitationType=MODERATED&resourceName="
-                        + shortNameSiteA + "&resourceType=madeUpStuff"), 500);
+                    + shortNameSiteA + "&resourceType=madeUpStuff"), 500);
             assertEquals(500, response.getStatus());
             JSONObject top = new JSONObject(response.getContentAsString());
             assertNotNull(top.getString("message"));
         }
     }
-    
+
     /**
-     * Detailed Test of List Invitation Web Script. 
-     * Using URL: /api/sites/{shortname}/invitations
+     * Detailed Test of List Invitation Web Script. Using URL: /api/sites/{shortname}/invitations
      * 
      * @throws Exception
      */
@@ -485,10 +482,9 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
     {
         testSiteInvitationsGet(false);
     }
-    
+
     /**
-     * Detailed Test of List Invitation Web Script using legacy workflow which requires user acceptance.
-     * Using URL: /api/sites/{shortname}/invitations
+     * Detailed Test of List Invitation Web Script using legacy workflow which requires user acceptance. Using URL: /api/sites/{shortname}/invitations
      * 
      * @throws Exception
      */
@@ -508,7 +504,7 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         {
             JSONObject invitation = data.getJSONObject(i);
             String userId = invitation.getString("inviteeUserName");
-         
+
             // Check invitee info for Nominated invitation.
             Map<String, String> expectedProps = userProperties.get(userId);
             JSONObject invitee = invitation.getJSONObject("invitee");
@@ -524,19 +520,17 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
     {
         nodeService.addAspect(person, ContentModel.ASPECT_PREFERENCES, null);
         ChildAssociationRef assoc = nodeService.createNode(person, ContentModel.ASSOC_PREFERENCE_IMAGE, avatarQName,
-                    ContentModel.TYPE_CONTENT);
+                ContentModel.TYPE_CONTENT);
         NodeRef avatar = assoc.getChildRef();
         nodeService.createAssociation(person, avatar, ContentModel.ASSOC_AVATAR);
         return "api/node/" + avatar + "/content/thumbnails/avatar";
     }
 
     private String createNominatedInvitation(String siteName, String inviteeFirstName, String inviteeLastName,
-                String inviteeEmail, String inviteeUserName, String inviteeRoleName, String serverPath,
-                String acceptURL, String rejectURL) throws Exception
+            String inviteeEmail, String inviteeUserName, String inviteeRoleName, String serverPath,
+            String acceptURL, String rejectURL) throws Exception
     {
-        /*
-         * Create a new nominated invitation
-         */
+        /* Create a new nominated invitation */
         JSONObject newInvitation = new JSONObject();
 
         newInvitation.put("invitationType", "NOMINATED");
@@ -545,7 +539,8 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         {
             // nominate an existing user
             newInvitation.put("inviteeUserName", inviteeUserName);
-        } else
+        }
+        else
         {
             // nominate someone else
             newInvitation.put("inviteeFirstName", inviteeFirstName);
@@ -557,7 +552,7 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         newInvitation.put("rejectURL", rejectURL);
 
         Response response = sendRequest(new PostRequest(URL_SITES + "/" + siteName + "/invitations", newInvitation
-                    .toString(), "application/json"), 201);
+                .toString(), "application/json"), 201);
         JSONObject top = new JSONObject(response.getContentAsString());
         JSONObject data = top.getJSONObject("data");
         String inviteId = data.getString("inviteId");
@@ -631,11 +626,9 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
     }
 
     private String createModeratedInvitation(String siteName, String inviteeComments, String inviteeUserName,
-                String inviteeRoleName) throws Exception
+            String inviteeRoleName) throws Exception
     {
-        /*
-         * Create a new moderated invitation
-         */
+        /* Create a new moderated invitation */
         JSONObject newInvitation = new JSONObject();
 
         newInvitation.put("invitationType", "MODERATED");
@@ -643,7 +636,7 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         newInvitation.put("inviteeComments", inviteeComments);
         newInvitation.put("inviteeUserName", inviteeUserName);
         Response response = sendRequest(new PostRequest(URL_SITES + "/" + siteName + "/invitations", newInvitation
-                    .toString(), "application/json"), 201);
+                .toString(), "application/json"), 201);
         JSONObject top = new JSONObject(response.getContentAsString());
         JSONObject data = top.getJSONObject("data");
         String inviteId = data.getString("inviteId");

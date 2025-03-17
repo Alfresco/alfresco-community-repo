@@ -40,27 +40,36 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface ContentStorageInformation
 {
     /**
-     * @param nodeRef         Node reference
-     * @param contentPropName Qualified name of content property (e.g. 'cm_content')
-     * @param parameters      {@link Parameters} object to get the parameters passed into the request
+     * @param nodeRef
+     *            Node reference
+     * @param contentPropName
+     *            Qualified name of content property (e.g. 'cm_content')
+     * @param parameters
+     *            {@link Parameters} object to get the parameters passed into the request
      * @return {@link ContentStorageInfo} object consisting of qualified name of content property and a map of storage properties
      */
     ContentStorageInfo getStorageInfo(NodeRef nodeRef, String contentPropName, Parameters parameters);
 
     /**
-     * @param nodeRef               Node reference
-     * @param contentPropName       Qualified name of content property (e.g. 'cm_content')
-     * @param archiveContentRequest {@link ArchiveContentRequest} object holding parameters for archive content request
+     * @param nodeRef
+     *            Node reference
+     * @param contentPropName
+     *            Qualified name of content property (e.g. 'cm_content')
+     * @param archiveContentRequest
+     *            {@link ArchiveContentRequest} object holding parameters for archive content request
      * @return true when request successful, false when unsuccessful
      */
     boolean requestArchiveContent(NodeRef nodeRef, String contentPropName, ArchiveContentRequest archiveContentRequest);
 
     /**
-     * @param nodeRef                       Node reference
-     * @param contentPropName               Qualified name of content property (e.g. 'cm_content')
-     * @param restoreArchivedContentRequest {@link RestoreArchivedContentRequest} object holding parameters for restore from archive request
+     * @param nodeRef
+     *            Node reference
+     * @param contentPropName
+     *            Qualified name of content property (e.g. 'cm_content')
+     * @param restoreArchivedContentRequest
+     *            {@link RestoreArchivedContentRequest} object holding parameters for restore from archive request
      * @return true when request successful, false when unsuccessful
      */
     boolean requestRestoreContentFromArchive(NodeRef nodeRef, String contentPropName,
-                                             RestoreArchivedContentRequest restoreArchivedContentRequest);
+            RestoreArchivedContentRequest restoreArchivedContentRequest);
 }

@@ -28,6 +28,7 @@ package org.alfresco.rest.rm.community.model.retentionschedule;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+
 import org.alfresco.rest.core.RestModels;
 
 @Data

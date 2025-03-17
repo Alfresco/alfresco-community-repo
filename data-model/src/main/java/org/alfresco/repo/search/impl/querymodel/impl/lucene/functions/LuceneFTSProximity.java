@@ -38,12 +38,13 @@ import org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext;
 
 /**
  * Proximity
+ * 
  * @author andyh
  *
  */
 public class LuceneFTSProximity<Q, S, E extends Throwable> extends FTSProximity implements LuceneQueryBuilderComponent<Q, S, E>
 {
-    
+
     /**
      * 
      */
@@ -52,13 +53,9 @@ public class LuceneFTSProximity<Q, S, E extends Throwable> extends FTSProximity 
         super();
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery,
-     *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
-     *      java.lang.String)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService, java.lang.String) */
     public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
             throws E
     {
@@ -70,20 +67,19 @@ public class LuceneFTSProximity<Q, S, E extends Throwable> extends FTSProximity 
 
         int slop = 100;
         argument = functionArgs.get(ARG_SLOP);
-        if(argument != null)
+        if (argument != null)
         {
             String val = (String) argument.getValue(functionContext);
             try
             {
                 slop = Integer.parseInt(val);
             }
-            catch(NumberFormatException nfe)
+            catch (NumberFormatException nfe)
             {
                 // ignore rubbish
             }
         }
-        
-        
+
         PropertyArgument propArg = (PropertyArgument) functionArgs.get(ARG_PROPERTY);
         Q query;
         if (propArg != null)
@@ -94,7 +90,7 @@ public class LuceneFTSProximity<Q, S, E extends Throwable> extends FTSProximity 
         else
         {
             query = lqpa.getSpanQuery(lqpa.getField(), first, last, slop, true);
-            
+
         }
         return query;
     }

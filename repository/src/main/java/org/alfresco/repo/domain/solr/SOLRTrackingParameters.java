@@ -46,13 +46,14 @@ public class SOLRTrackingParameters
     /**
      * Construct the parameters
      * 
-     * @param deletedTypeQNameId            the QName ID representing deleted nodes
+     * @param deletedTypeQNameId
+     *            the QName ID representing deleted nodes
      */
     public SOLRTrackingParameters(Long deletedTypeQNameId)
     {
         this.deletedTypeQNameId = deletedTypeQNameId;
     }
-    
+
     public Long getFromIdInclusive()
     {
         return fromIdInclusive;
@@ -84,24 +85,24 @@ public class SOLRTrackingParameters
     }
 
     /**
-	 * Helper for cross-DB boolean support
-	 * 
-	 * @return             <tt>true</tt> always
-	 */
-	public boolean getTrue()
-	{
-	    return true;
-	}
-	
+     * Helper for cross-DB boolean support
+     * 
+     * @return <tt>true</tt> always
+     */
+    public boolean getTrue()
+    {
+        return true;
+    }
+
     /**
      * Helper for cross-DB boolean support
      * 
-     * @return             <tt>false</tt> always
+     * @return <tt>false</tt> always
      */
-	public boolean getFalse()
-	{
-	    return false;
-	}
+    public boolean getFalse()
+    {
+        return false;
+    }
 
     public Long getDeletedTypeQNameId()
     {
@@ -152,8 +153,7 @@ public class SOLRTrackingParameters
         if (getClass() != obj.getClass())
             return false;
         SOLRTrackingParameters other = (SOLRTrackingParameters) obj;
-        return
-                EqualsHelper.nullSafeEquals(this.fromCommitTimeInclusive, other.fromCommitTimeInclusive) &&
+        return EqualsHelper.nullSafeEquals(this.fromCommitTimeInclusive, other.fromCommitTimeInclusive) &&
                 EqualsHelper.nullSafeEquals(this.fromIdInclusive, other.fromIdInclusive) &&
                 EqualsHelper.nullSafeEquals(this.ids, other.ids) &&
                 EqualsHelper.nullSafeEquals(this.toIdExclusive, other.toIdExclusive) &&

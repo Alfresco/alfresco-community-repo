@@ -1,16 +1,16 @@
 package org.alfresco.cmis;
 
+import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.cmis.exception.InvalidCmisObjectException;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.*;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Created by Claudia Agache on 9/27/2016.
@@ -31,22 +31,22 @@ public class GetContentStreamTests extends CmisTest
         privateSite = dataSite.usingUser(siteManager).createPrivateRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(publicSite, UserRole.SiteManager, UserRole.SiteContributor, UserRole.SiteCollaborator, UserRole.SiteConsumer);
     }
-    
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to get a document content in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS})
     public void siteManagerShouldGetDocumentContent() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
         cmisApi.authenticateUser(siteManager)
                 .usingSite(publicSite).createFile(testFile)
                 .then().assertThat().existsInRepo()
-                    .and().assertThat().contentIs(content);
+                .and().assertThat().contentIs(content);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to get empty document content in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteManagerShouldGetEmptyDocumentContent() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.MSWORD);
@@ -54,23 +54,23 @@ public class GetContentStreamTests extends CmisTest
                 .usingSite(publicSite).createFile(testFile)
                 .then().assertThat().existsInRepo().and().assertThat().contentIs("");
     }
-    
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to get content from checked out document with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteManagerShouldGetContentFromCheckedOutDoc() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
         cmisApi.authenticateUser(siteManager)
                 .usingSite(publicSite).createFile(testFile)
                 .and().assertThat().existsInRepo()
-                    .then().checkOut()
-                    .and().assertThat().contentIs(content);
+                .then().checkOut()
+                .and().assertThat().contentIs(content);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin is able to get document content with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void adminShouldGetContentOfFileCreatedByOtherUser() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -80,9 +80,9 @@ public class GetContentStreamTests extends CmisTest
                 .usingResource(testFile).assertThat().contentIs(content);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to get content of file created by other user in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteManagerShouldGetContentOfFileCreatedByOtherUser() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -92,9 +92,9 @@ public class GetContentStreamTests extends CmisTest
                 .usingResource(testFile).assertThat().contentIs(content);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to get content of file created by other user in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorShouldGetContentOfFileCreatedByOtherUser() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -104,9 +104,9 @@ public class GetContentStreamTests extends CmisTest
                 .usingResource(testFile).assertThat().contentIs(content);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to get content of file created by self in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorShouldGetContentOfFileCreatedBySelf() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -115,9 +115,9 @@ public class GetContentStreamTests extends CmisTest
                 .and().assertThat().contentIs(content);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is able to get content of file created by other user in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void contributorShouldGetContentOfFileCreatedByOtherUser() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -127,9 +127,9 @@ public class GetContentStreamTests extends CmisTest
                 .usingResource(testFile).assertThat().contentIs(content);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is able to get content of file created by self in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void contributorShouldGetContentOfFileCreatedBySelf() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -138,9 +138,9 @@ public class GetContentStreamTests extends CmisTest
                 .and().assertThat().contentIs(content);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site consumer is able to get content of file created by other user in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void consumerShouldGetContentOfFileCreatedByOtherUser() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -150,9 +150,9 @@ public class GetContentStreamTests extends CmisTest
                 .usingResource(testFile).assertThat().contentIs(content);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to get content from checked out document with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteManagerShouldGetContentOfPWCDoc() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -163,9 +163,9 @@ public class GetContentStreamTests extends CmisTest
                 .usingPWCDocument().assertThat().contentIs(content);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify unauthorized is not able to get content of file created in a private site with CMIS")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserShouldNotGetFileContent() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -175,9 +175,9 @@ public class GetContentStreamTests extends CmisTest
                 .usingResource(testFile).assertThat().contentIs(content);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify user is not able to get content of non existent file with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisObjectNotFoundException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisObjectNotFoundException.class)
     public void userShouldNotGetContentOfNonexistentFile() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -186,9 +186,9 @@ public class GetContentStreamTests extends CmisTest
                 .usingResource(testFile).assertThat().contentIs(content);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify user is not able to get content of invalid file with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = InvalidCmisObjectException.class, expectedExceptionsMessageRegExp = "^Content at.*is not a file$")
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = InvalidCmisObjectException.class, expectedExceptionsMessageRegExp = "^Content at.*is not a file$")
     public void userShouldNotGetContentOfInvalidFile() throws Exception
     {
         FolderModel testFolder = FolderModel.getRandomFolderModel();

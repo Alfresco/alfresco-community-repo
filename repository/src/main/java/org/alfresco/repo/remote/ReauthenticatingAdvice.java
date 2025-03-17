@@ -25,44 +25,45 @@
  */
 package org.alfresco.repo.remote;
 
-import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ReflectiveMethodInvocation;
 
+import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.service.cmr.security.AuthenticationService;
+
 /**
- * This is an interceptor that continuosly tries to reauthenticate when
- * a method call results in an AuthenticationException.
+ * This is an interceptor that continuosly tries to reauthenticate when a method call results in an AuthenticationException.
+ * 
  * @author britt
  */
-public class ReauthenticatingAdvice implements MethodInterceptor   
+public class ReauthenticatingAdvice implements MethodInterceptor
 {
     /**
      * The authentication service reference.
      */
     private AuthenticationService fAuthService;
-    
+
     /**
      * The ticket holder.
      */
     private ClientTicketHolder fTicketHolder;
-    
+
     /**
      * The user name.
      */
     private String fUser;
-    
+
     /**
      * The user's password.
      */
     private String fPassword;
-    
+
     /**
      * The time in milliseconds to wait between attempts to reauthenticate.
      */
     private long fRetryInterval;
-    
+
     /**
      * Default constructor.
      */
@@ -86,7 +87,7 @@ public class ReauthenticatingAdvice implements MethodInterceptor
     {
         fTicketHolder = ticketHolder;
     }
-    
+
     /**
      * Setter.
      */
@@ -94,7 +95,7 @@ public class ReauthenticatingAdvice implements MethodInterceptor
     {
         fUser = user;
     }
-    
+
     /**
      * Setter.
      */
@@ -102,7 +103,7 @@ public class ReauthenticatingAdvice implements MethodInterceptor
     {
         fPassword = password;
     }
-    
+
     /**
      * Setter.
      */
@@ -110,17 +111,17 @@ public class ReauthenticatingAdvice implements MethodInterceptor
     {
         fRetryInterval = retryInterval;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
-     */
-    public Object invoke(MethodInvocation mi) throws Throwable 
+     * 
+     * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation) */
+    public Object invoke(MethodInvocation mi) throws Throwable
     {
         while (true)
         {
             try
             {
-                MethodInvocation clone = ((ReflectiveMethodInvocation)mi).invocableClone();
+                MethodInvocation clone = ((ReflectiveMethodInvocation) mi).invocableClone();
                 return clone.proceed();
             }
             catch (AuthenticationException ae)

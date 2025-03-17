@@ -29,6 +29,8 @@ package org.alfresco.module.org_alfresco_module_rm.patch.v20;
 
 import java.util.List;
 
+import org.springframework.beans.factory.BeanNameAware;
+
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.patch.compatibility.ModulePatchComponent;
@@ -38,7 +40,6 @@ import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * RM v2.0 Model Updates Patch
@@ -48,7 +49,7 @@ import org.springframework.beans.factory.BeanNameAware;
  */
 @SuppressWarnings("deprecation")
 public class RMv2ModelPatch extends ModulePatchComponent
-                            implements BeanNameAware, RecordsManagementModel, DOD5015Model
+        implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
     private static final long BATCH_SIZE = 100000L;
 
@@ -97,14 +98,17 @@ public class RMv2ModelPatch extends ModulePatchComponent
         /**
          * Constructor
          *
-         * @param qnameBefore   qname before
-         * @param qnameAfter    qname after
-         * @param reindexClass  reindex class
+         * @param qnameBefore
+         *            qname before
+         * @param qnameAfter
+         *            qname after
+         * @param reindexClass
+         *            reindex class
          */
         Work(QName qnameBefore, QName qnameAfter, String reindexClass)
         {
             this.qnameBefore = qnameBefore;
-            this.qnameAfter  = qnameAfter;
+            this.qnameAfter = qnameAfter;
             this.reindexClass = reindexClass;
         }
 
@@ -120,27 +124,27 @@ public class RMv2ModelPatch extends ModulePatchComponent
 
             if (before != null)
             {
-            	for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
-            	{
-            		if ("TYPE".equals(reindexClass))
-            		{
-            			List<Long> nodeIds = patchDAO.getNodesByTypeQNameId(before.getFirst(), i, i + BATCH_SIZE);
-            			nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
-            		}
-            		else if ("ASPECT".equals(reindexClass))
-            		{
-            			List<Long> nodeIds = patchDAO.getNodesByAspectQNameId(before.getFirst(), i, i + BATCH_SIZE);
-            			nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
-            		}
-            	}
+                for (Long i = 0L; i < maxNodeId; i += BATCH_SIZE)
+                {
+                    if ("TYPE".equals(reindexClass))
+                    {
+                        List<Long> nodeIds = patchDAO.getNodesByTypeQNameId(before.getFirst(), i, i + BATCH_SIZE);
+                        nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
+                    }
+                    else if ("ASPECT".equals(reindexClass))
+                    {
+                        List<Long> nodeIds = patchDAO.getNodesByAspectQNameId(before.getFirst(), i, i + BATCH_SIZE);
+                        nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
+                    }
+                }
 
-            	qnameDAO.updateQName(qnameBefore, qnameAfter);
+                qnameDAO.updateQName(qnameBefore, qnameAfter);
 
-            	if (LOGGER.isDebugEnabled())
-            	{
-            		LOGGER.debug(" ... updated qname " + qnameBefore.toString());
-            	}
-        	}
+                if (LOGGER.isDebugEnabled())
+                {
+                    LOGGER.debug(" ... updated qname " + qnameBefore.toString());
+                }
+            }
             else
             {
                 if (LOGGER.isDebugEnabled())
@@ -149,8 +153,8 @@ public class RMv2ModelPatch extends ModulePatchComponent
                 }
             }
 
-        	//nothing to do
-        	return 0;
+            // nothing to do
+            return 0;
         }
     }
 }

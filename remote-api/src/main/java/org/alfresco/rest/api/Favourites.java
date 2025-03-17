@@ -44,33 +44,42 @@ public interface Favourites
     /**
      * Add a favourite for user personId
      *
-     * @param personId the personId for which the favourite is to be added
-     * @param favourite the favourite to add
+     * @param personId
+     *            the personId for which the favourite is to be added
+     * @param favourite
+     *            the favourite to add
      */
     Favourite addFavourite(String personId, Favourite favourite);
 
     /**
      * Add a favourite for user personId taking parameters into account
      *
-     * @param personId   the personId for which the favourite is to be added
-     * @param favourite  the favourite to add
-     * @param parameters the parameters
+     * @param personId
+     *            the personId for which the favourite is to be added
+     * @param favourite
+     *            the favourite to add
+     * @param parameters
+     *            the parameters
      */
     Favourite addFavourite(String personId, Favourite favourite, Parameters parameters);
 
     /**
      * Add a favourite for user personId
      *
-     * @param personId the personId for which the favourite is to be removed
-     * @param id the id of the favourite to remove (id is a uuid)
+     * @param personId
+     *            the personId for which the favourite is to be removed
+     * @param id
+     *            the id of the favourite to remove (id is a uuid)
      */
     void removeFavourite(String personId, String id);
 
     /**
      * Get a paged list of favourites for user personId
      *
-     * @param personId the personId for which the favourite is to be removed
-     * @param parameters Parameters
+     * @param personId
+     *            the personId for which the favourite is to be removed
+     * @param parameters
+     *            Parameters
      * @return paged favourites
      */
     CollectionWithPagingInfo<Favourite> getFavourites(String personId, final Parameters parameters);
@@ -78,8 +87,10 @@ public interface Favourites
     /**
      * Get a specific favourite for user personId
      *
-     * @param personId the personId for which the favourite is to be removed
-     * @param favouriteId the favourite id
+     * @param personId
+     *            the personId for which the favourite is to be removed
+     * @param favouriteId
+     *            the favourite id
      * @return the favourite
      */
     Favourite getFavourite(String personId, String favouriteId);
@@ -87,9 +98,12 @@ public interface Favourites
     /**
      * Get a specific favourite for user personId taking parameters into account
      *
-     * @param personId    the personId for which the favourite is to be removed
-     * @param favouriteId the favourite id
-     * @param parameters  the parameters
+     * @param personId
+     *            the personId for which the favourite is to be removed
+     * @param favouriteId
+     *            the favourite id
+     * @param parameters
+     *            the parameters
      * @return the favourite
      */
     Favourite getFavourite(String personId, String favouriteId, Parameters parameters);

@@ -27,8 +27,7 @@
 package org.alfresco.repo.virtual.ref;
 
 /**
- * Returns the virtual folder template inner path for a virtualized entity
- * reference.
+ * Returns the virtual folder template inner path for a virtualized entity reference.
  * 
  * @author Bogdan Horje
  */

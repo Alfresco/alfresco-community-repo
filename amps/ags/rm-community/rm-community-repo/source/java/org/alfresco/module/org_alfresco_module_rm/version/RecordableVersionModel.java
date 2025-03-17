@@ -51,7 +51,7 @@ public interface RecordableVersionModel
     QName PROP_RECORD_NODE_REF = QName.createQName(RMV_URI, "recordNodeRef");
     QName PROP_FROZEN_OWNER = QName.createQName(RMV_URI, "frozenOwner");
     QName PROP_DESTROYED = QName.createQName(RMV_URI, "destroyed");
-    
+
     /** version record aspect */
     QName ASPECT_VERSION_RECORD = QName.createQName(RMV_URI, "versionRecord");
     QName PROP_VERSIONED_NODEREF = QName.createQName(RMV_URI, "versionedNodeRef");

@@ -48,15 +48,16 @@ public class RMv21CapabilityPatch extends RMv21PatchComponent
 {
     /** File plan service */
     private FilePlanService filePlanService;
-    
+
     /** authority service */
     private AuthorityService authorityService;
-    
+
     /** permission service */
     private PermissionService permissionService;
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -71,18 +72,20 @@ public class RMv21CapabilityPatch extends RMv21PatchComponent
     protected Set<NodeRef> getFilePlans()
     {
         return filePlanService.getFilePlans();
-    }   
-    
+    }
+
     /**
-     * @param authorityService authority service
+     * @param authorityService
+     *            authority service
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
     }
-    
+
     /**
-     * @param permissionService permission service
+     * @param permissionService
+     *            permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -92,11 +95,14 @@ public class RMv21CapabilityPatch extends RMv21PatchComponent
     /**
      * Adds a new capability to the specified roles.
      *
-     * @param filePlan          file plan
-     * @param capabilityName    capability name
-     * @param roles             roles
+     * @param filePlan
+     *            file plan
+     * @param capabilityName
+     *            capability name
+     * @param roles
+     *            roles
      */
-    private void addCapability(NodeRef filePlan, String capabilityName, String ... roles)
+    private void addCapability(NodeRef filePlan, String capabilityName, String... roles)
     {
         for (String role : roles)
         {
@@ -135,42 +141,42 @@ public class RMv21CapabilityPatch extends RMv21PatchComponent
 
             // add new capabilities
             addCapability(filePlan,
-                          "CreateRecords",
-                          FilePlanRoleService.ROLE_ADMIN,
-                          FilePlanRoleService.ROLE_POWER_USER,
-                          FilePlanRoleService.ROLE_RECORDS_MANAGER,
-                          FilePlanRoleService.ROLE_SECURITY_OFFICER);
+                    "CreateRecords",
+                    FilePlanRoleService.ROLE_ADMIN,
+                    FilePlanRoleService.ROLE_POWER_USER,
+                    FilePlanRoleService.ROLE_RECORDS_MANAGER,
+                    FilePlanRoleService.ROLE_SECURITY_OFFICER);
             addCapability(filePlan,
-                          "ManageRules",
-                          FilePlanRoleService.ROLE_ADMIN);
+                    "ManageRules",
+                    FilePlanRoleService.ROLE_ADMIN);
             addCapability(filePlan,
-                          "RequestRecordInformation",
-                          FilePlanRoleService.ROLE_ADMIN,
-                          FilePlanRoleService.ROLE_POWER_USER,
-                          FilePlanRoleService.ROLE_RECORDS_MANAGER,
-                          FilePlanRoleService.ROLE_SECURITY_OFFICER);
+                    "RequestRecordInformation",
+                    FilePlanRoleService.ROLE_ADMIN,
+                    FilePlanRoleService.ROLE_POWER_USER,
+                    FilePlanRoleService.ROLE_RECORDS_MANAGER,
+                    FilePlanRoleService.ROLE_SECURITY_OFFICER);
             addCapability(filePlan,
-                          "FileDestructionReport",
-                          FilePlanRoleService.ROLE_ADMIN,
-                          FilePlanRoleService.ROLE_RECORDS_MANAGER);
+                    "FileDestructionReport",
+                    FilePlanRoleService.ROLE_ADMIN,
+                    FilePlanRoleService.ROLE_RECORDS_MANAGER);
             addCapability(filePlan,
-                          "RejectRecords",
-                          FilePlanRoleService.ROLE_ADMIN,
-                          FilePlanRoleService.ROLE_POWER_USER,
-                          FilePlanRoleService.ROLE_RECORDS_MANAGER,
-                          FilePlanRoleService.ROLE_SECURITY_OFFICER);
+                    "RejectRecords",
+                    FilePlanRoleService.ROLE_ADMIN,
+                    FilePlanRoleService.ROLE_POWER_USER,
+                    FilePlanRoleService.ROLE_RECORDS_MANAGER,
+                    FilePlanRoleService.ROLE_SECURITY_OFFICER);
             addCapability(filePlan,
-                          "FileUnfiledRecords",
-                          FilePlanRoleService.ROLE_ADMIN,
-                          FilePlanRoleService.ROLE_POWER_USER,
-                          FilePlanRoleService.ROLE_RECORDS_MANAGER,
-                          FilePlanRoleService.ROLE_SECURITY_OFFICER);
+                    "FileUnfiledRecords",
+                    FilePlanRoleService.ROLE_ADMIN,
+                    FilePlanRoleService.ROLE_POWER_USER,
+                    FilePlanRoleService.ROLE_RECORDS_MANAGER,
+                    FilePlanRoleService.ROLE_SECURITY_OFFICER);
             addCapability(filePlan,
-                          "LinkToRecords",
-                          FilePlanRoleService.ROLE_ADMIN,
-                          FilePlanRoleService.ROLE_POWER_USER,
-                          FilePlanRoleService.ROLE_RECORDS_MANAGER,
-                          FilePlanRoleService.ROLE_SECURITY_OFFICER);
+                    "LinkToRecords",
+                    FilePlanRoleService.ROLE_ADMIN,
+                    FilePlanRoleService.ROLE_POWER_USER,
+                    FilePlanRoleService.ROLE_RECORDS_MANAGER,
+                    FilePlanRoleService.ROLE_SECURITY_OFFICER);
         }
     }
 }

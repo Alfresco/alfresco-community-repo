@@ -1,5 +1,12 @@
 package org.alfresco.cmis;
 
+import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictException;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.cmis.exception.InvalidCmisObjectException;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
@@ -7,12 +14,6 @@ import org.alfresco.utility.model.*;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictException;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Created by Claudia Agache on 9/27/2016.
@@ -34,78 +35,78 @@ public class DeleteContentStreamTests extends CmisTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(publicSite, UserRole.SiteManager, UserRole.SiteContributor, UserRole.SiteCollaborator, UserRole.SiteConsumer);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to delete content of a not empty document in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS})
     public void siteManagerDeletesDocumentContent() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
         cmisApi.authenticateUser(siteManager).usingSite(publicSite)
-            .createFile(testFile)
+                .createFile(testFile)
                 .deleteContent().and().assertThat().contentIs("");
     }
-    
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify user is not able to delete content of a nonexistent document in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisObjectNotFoundException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisObjectNotFoundException.class)
     public void userCantDeleteContentFromNonexistentFile() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
         testFile.setCmisLocation("/fake-folder/test.txt");
         cmisApi.authenticateUser(siteManager)
-            .usingResource(testFile).deleteContent();
+                .usingResource(testFile).deleteContent();
     }
-    
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to delete content of a empty document in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteManagerCanDeleteContentOfEmptyDocument() throws Exception
     {
         FileModel emptyDoc = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(siteManager)
-            .usingSite(publicSite).createFile(emptyDoc).and().assertThat().existsInRepo()
+                .usingSite(publicSite).createFile(emptyDoc).and().assertThat().existsInRepo()
                 .and().assertThat().contentIs("")
-            .then().deleteContent().and().assertThat().contentIs("");
+                .then().deleteContent().and().assertThat().contentIs("");
     }
 
     @Bug(id = "REPO-5388")
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify nonexistent user is not able to delete content of a document with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUnauthorizedException.class)
     public void nonexistentUserCannotDeleteDocumentContent() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
         cmisApi.authenticateUser(siteManager).usingSite(publicSite)
-            .createFile(testFile)
-            .then().authenticateUser(UserModel.getRandomUserModel())
+                .createFile(testFile)
+                .then().authenticateUser(UserModel.getRandomUserModel())
                 .usingResource(testFile).deleteContent();
     }
-    
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to delete content of a not empty document with refresh set to TRUE with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteManagerCanDeleteDocContentWithRefreshTrue() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.HTML, content);
         cmisApi.authenticateUser(siteManager)
-            .usingSite(publicSite).createFile(testFile)
+                .usingSite(publicSite).createFile(testFile)
                 .deleteContent(true).and().assertThat().contentIs("");
     }
-    
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to delete content of a not empty document with refresh set to FALSE with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteManagerCanDeleteDocContentWithRefreshFalse() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.HTML, content);
         cmisApi.authenticateUser(siteManager).usingSite(publicSite)
-            .createFile(testFile)
+                .createFile(testFile)
                 .deleteContent(true).and().assertThat().contentIs("");
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin is able to delete content of a not empty document created by other user in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void adminDeletesContentOfFileCreatedByOtherUser() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -115,9 +116,9 @@ public class DeleteContentStreamTests extends CmisTest
                 .deleteContent().and().assertThat().contentIs("");
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to delete content of a not empty document created by other user in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteManagerDeletesContentOfFileCreatedByOtherUser() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -127,9 +128,9 @@ public class DeleteContentStreamTests extends CmisTest
                 .deleteContent().and().assertThat().contentIs("");
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to delete content of a not empty document created by other user in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorDeletesContentOfFileCreatedByOtherUser() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -139,9 +140,9 @@ public class DeleteContentStreamTests extends CmisTest
                 .deleteContent().and().assertThat().contentIs("");
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to delete content of a not empty document created by self in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorDeletesContentOfFileCreatedBySelf() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -151,9 +152,9 @@ public class DeleteContentStreamTests extends CmisTest
                 .and().assertThat().contentIs("");
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is not able to delete content of a not empty document created by other user in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void contributorCannotDeleteContentOfFileCreatedByOtherUser() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -163,9 +164,9 @@ public class DeleteContentStreamTests extends CmisTest
                 .deleteContent();
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is able to delete content of a not empty document created by self in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void contributorDeletesContentOfFileCreatedBySelf() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -175,9 +176,9 @@ public class DeleteContentStreamTests extends CmisTest
                 .and().assertThat().contentIs("");
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site consumer is not able to delete content of a not empty document in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotDeleteContentOfFileCreatedByOtherUser() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
@@ -187,8 +188,8 @@ public class DeleteContentStreamTests extends CmisTest
                 .deleteContent();
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUpdateConflictException.class, expectedExceptionsMessageRegExp = "^.*Cannot perform operation since the node.*is locked.$")
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisUpdateConflictException.class, expectedExceptionsMessageRegExp = "^.*Cannot perform operation since the node.*is locked.$")
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is not able to delete content of a checked out file with CMIS")
     public void managerCannotDeleteContentOfCheckedOutFile() throws Exception
     {
@@ -199,8 +200,8 @@ public class DeleteContentStreamTests extends CmisTest
                 .when().deleteContent();
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to delete content of a PWC file with CMIS")
     public void managerDeletesContentOfPWCFile() throws Exception
     {
@@ -212,8 +213,8 @@ public class DeleteContentStreamTests extends CmisTest
                 .assertThat().contentIs("");
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify unauthorized user is not able to delete content of a file created in a private site with CMIS")
     public void unauthorizedUserCannotDeleteContentOfFileFromPrivateSite() throws Exception
     {
@@ -224,9 +225,9 @@ public class DeleteContentStreamTests extends CmisTest
                 .usingResource(testFile).deleteContent();
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify user is not able to delete content of invalid file with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = InvalidCmisObjectException.class, expectedExceptionsMessageRegExp = "^Content at.*is not a file$")
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = InvalidCmisObjectException.class, expectedExceptionsMessageRegExp = "^Content at.*is not a file$")
     public void userShouldNotDeleteContentOfInvalidFile() throws Exception
     {
         FolderModel testFolder = FolderModel.getRandomFolderModel();

@@ -47,13 +47,13 @@ public class RenameShuffleDetectionTest
     private WebDAVHelper davHelper;
     private String path;
     private boolean expectedResult;
-    
+
     public RenameShuffleDetectionTest(String path, boolean expectedResult)
     {
         this.path = path;
         this.expectedResult = expectedResult;
     }
-    
+
     @Before
     public void setUp() throws Exception
     {
@@ -63,41 +63,41 @@ public class RenameShuffleDetectionTest
     @Parameters
     public static Collection<Object[]> data()
     {
-        Object[][] data = new Object[][] {
-            // Simple cases that shouldn't be detected as a rename shuffle
-            { "a_file.doc", false },
-            { "/path/a_file.doc", false },
-            { "__file__name.xls", false },
-            { "/some/parent/ffffffff.doc", false}, // ALF-19673
-            // Paths that should be detected as "rename shuffles"
-            { "/some/parent/.tmp", true },
-            { "/some/parent/a.tmp", true },
-            { "/some/parent/ffffffff.tmp", true },
-            { "/some/parent/.any_hidden_file", true },
-            { "/some/parent/any_file.wbk", true },            
-            { "/some/parent/ends_in_tilda~", true },            
-            { "/some/parent/junk_backup_morejunk.doc", true },            
-            { "/some/parent/junk_backup_morejunk.docx", true },            
-            { "/some/parent/junk_backup_morejunk.docm", true },            
-            { "/some/parent/junk_backup_morejunk.docxm", true }, // MW: is this an intentional match?            
-            { "/some/parent/junk_backup_morejunk.dotx", true },
-            { "/some/parent/junk_backup_morejunk.dotm", true },
-            { "/some/parent/junk_backup_morejunk.dotxm", true }, // MW: is this an intentional match?
-            // TODO: review these cases, in context of ALF-19673
-            { "/some/parent/aaaaaaaa", true },
-            { "/some/parent/ffffffff", true },
-            { "/some/parent/ffffffffff", true },
-            { "/some/parent/ab0c1d2ef3456789", true},
-            { "aaaaaaaa", true },
-            { "abcdef01", true },
-            { "1234567890.txt.sb-764f0c5c-JUoEKy", true }, // MNT-10373 test for TextEdit shuffle
-            // Photoshop (MNT-8971)
-            { "/psC1DA.tmp", true },
-            { "/path/psA1B5.tmp", true }
+        Object[][] data = new Object[][]{
+                // Simple cases that shouldn't be detected as a rename shuffle
+                {"a_file.doc", false},
+                {"/path/a_file.doc", false},
+                {"__file__name.xls", false},
+                {"/some/parent/ffffffff.doc", false}, // ALF-19673
+                // Paths that should be detected as "rename shuffles"
+                {"/some/parent/.tmp", true},
+                {"/some/parent/a.tmp", true},
+                {"/some/parent/ffffffff.tmp", true},
+                {"/some/parent/.any_hidden_file", true},
+                {"/some/parent/any_file.wbk", true},
+                {"/some/parent/ends_in_tilda~", true},
+                {"/some/parent/junk_backup_morejunk.doc", true},
+                {"/some/parent/junk_backup_morejunk.docx", true},
+                {"/some/parent/junk_backup_morejunk.docm", true},
+                {"/some/parent/junk_backup_morejunk.docxm", true}, // MW: is this an intentional match?
+                {"/some/parent/junk_backup_morejunk.dotx", true},
+                {"/some/parent/junk_backup_morejunk.dotm", true},
+                {"/some/parent/junk_backup_morejunk.dotxm", true}, // MW: is this an intentional match?
+                // TODO: review these cases, in context of ALF-19673
+                {"/some/parent/aaaaaaaa", true},
+                {"/some/parent/ffffffff", true},
+                {"/some/parent/ffffffffff", true},
+                {"/some/parent/ab0c1d2ef3456789", true},
+                {"aaaaaaaa", true},
+                {"abcdef01", true},
+                {"1234567890.txt.sb-764f0c5c-JUoEKy", true}, // MNT-10373 test for TextEdit shuffle
+                // Photoshop (MNT-8971)
+                {"/psC1DA.tmp", true},
+                {"/path/psA1B5.tmp", true}
         };
         return Arrays.asList(data);
     }
-    
+
     @Test
     public void testIsRenameShuffle()
     {

@@ -32,12 +32,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 
 /**
  * REST API Tests for Properties Definitions
@@ -128,11 +129,10 @@ public class RmPropertiesRestApiTest extends BaseRMWebScriptTestCase
      */
     private List<String> getRmTypes()
     {
-        return Arrays.asList(new String[]
-        {
-            "rma:eventExecution",
-            "rma:nonElectronicDocument",
-            "rma:transfer"
+        return Arrays.asList(new String[]{
+                "rma:eventExecution",
+                "rma:nonElectronicDocument",
+                "rma:transfer"
         });
     }
 
@@ -143,13 +143,12 @@ public class RmPropertiesRestApiTest extends BaseRMWebScriptTestCase
      */
     private List<String> getDmTypes()
     {
-        return Arrays.asList(new String[]
-        {
-            "cm:authority",
-            "sys:descriptor",
-            "app:folderlink",
-            "wf:submitGroupReviewTask",
-            "cmis:policy"
+        return Arrays.asList(new String[]{
+                "cm:authority",
+                "sys:descriptor",
+                "app:folderlink",
+                "wf:submitGroupReviewTask",
+                "cmis:policy"
         });
     }
 }

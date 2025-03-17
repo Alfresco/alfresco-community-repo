@@ -31,20 +31,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Handles compound behavioural callbacks for the same dictionary class (type or aspect).
  * <p>
- * When multiple policy handlers register callback for the same model class, an instance
- * of this class is used to resolve the calls.  The behaviour is sometimes able to resolve
- * conflicts and sometimes not.  Look at the individual callback methods to see how
- * conflicts are handled.
+ * When multiple policy handlers register callback for the same model class, an instance of this class is used to resolve the calls. The behaviour is sometimes able to resolve conflicts and sometimes not. Look at the individual callback methods to see how conflicts are handled.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -52,32 +48,33 @@ import org.apache.commons.logging.LogFactory;
 public class CompoundCopyBehaviourCallback extends AbstractCopyBehaviourCallback
 {
     private static Log logger = LogFactory.getLog(CompoundCopyBehaviourCallback.class);
-    
+
     private QName classQName;
     private List<CopyBehaviourCallback> callbacks;
-    
+
     /**
      * 
-     * @param classQName            the 
+     * @param classQName
+     *            the
      */
     public CompoundCopyBehaviourCallback(QName classQName)
     {
         this.classQName = classQName;
         callbacks = new ArrayList<CopyBehaviourCallback>(2);
     }
-    
+
     public void addBehaviour(CopyBehaviourCallback callback)
     {
         callbacks.add(callback);
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(1024);
         sb.append("\n")
-          .append("CompoundCopyBehaviourCallback: \n")
-          .append("      Model Class: ").append(classQName);
+                .append("CompoundCopyBehaviourCallback: \n")
+                .append("      Model Class: ").append(classQName);
         boolean first = true;
         for (CopyBehaviourCallback callback : callbacks)
         {
@@ -90,7 +87,7 @@ public class CompoundCopyBehaviourCallback extends AbstractCopyBehaviourCallback
         }
         return sb.toString();
     }
-    
+
     @Override
     public Pair<AssocCopySourceAction, AssocCopyTargetAction> getAssociationCopyAction(
             QName classQName,
@@ -116,28 +113,23 @@ public class CompoundCopyBehaviourCallback extends AbstractCopyBehaviourCallback
                 bestTargetAction = action.getSecond();
             }
         }
-        Pair<AssocCopySourceAction, AssocCopyTargetAction> bestAction =
-                new Pair<AssocCopySourceAction, AssocCopyTargetAction>(bestSourceAction, bestTargetAction);
+        Pair<AssocCopySourceAction, AssocCopyTargetAction> bestAction = new Pair<AssocCopySourceAction, AssocCopyTargetAction>(bestSourceAction, bestTargetAction);
         // Done
         if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Association copy behaviour: " + bestAction + "\n" +
-                    "   " + assocCopyDetails + "\n" +
-                    "   " + copyDetails + "\n" +
-                    "   " + this);
+                            "   " + assocCopyDetails + "\n" +
+                            "   " + copyDetails + "\n" +
+                            "   " + this);
         }
         return bestAction;
     }
 
     /**
-     * Individual callbacks effectively have a veto on the copy i.e. if one of the
-     * callbacks returns <tt>false</tt> for {@link CopyBehaviourCallback#getMustCopy(org.alfresco.service.namespace.QName, org.alfresco.repo.copy.CopyDetails)},
-     * then the copy will NOT proceed.  However, a warning is generated indicating that
-     * there is a conflict in the defined behaviour.
+     * Individual callbacks effectively have a veto on the copy i.e. if one of the callbacks returns <tt>false</tt> for {@link CopyBehaviourCallback#getMustCopy(org.alfresco.service.namespace.QName, org.alfresco.repo.copy.CopyDetails)}, then the copy will NOT proceed. However, a warning is generated indicating that there is a conflict in the defined behaviour.
      * 
-     * @return          Returns <tt>true</tt> if all registered callbacks return <tt>true</tt>
-     *                  or <b><tt>false</tt> if any of the  registered callbacks return <tt>false</tt></b>.
+     * @return Returns <tt>true</tt> if all registered callbacks return <tt>true</tt> or <b><tt>false</tt> if any of the registered callbacks return <tt>false</tt></b>.
      */
     public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
     {
@@ -154,9 +146,9 @@ public class CompoundCopyBehaviourCallback extends AbstractCopyBehaviourCallback
                 // The callback says 'copy' but there is already a veto in place
                 logger.warn(
                         "CopyBehaviourCallback '" + callback.getClass().getName() + "' " +
-                        "is attempting to induce a copy when callback '" + firstVeto.getClass().getName() +
-                        "' has already vetoed it.  Copying of '" + copyDetails.getSourceNodeRef() +
-                        "' will not occur.");
+                                "is attempting to induce a copy when callback '" + firstVeto.getClass().getName() +
+                                "' has already vetoed it.  Copying of '" + copyDetails.getSourceNodeRef() +
+                                "' will not occur.");
             }
         }
         // Done
@@ -167,8 +159,8 @@ public class CompoundCopyBehaviourCallback extends AbstractCopyBehaviourCallback
             {
                 logger.debug(
                         "All copy behaviours voted for a copy of node \n" +
-                        "   " + copyDetails + "\n" +
-                        "   " + this);
+                                "   " + copyDetails + "\n" +
+                                "   " + this);
             }
             return true;
         }
@@ -179,19 +171,18 @@ public class CompoundCopyBehaviourCallback extends AbstractCopyBehaviourCallback
             {
                 logger.debug(
                         "Copy behaviour vetoed for node " + copyDetails.getSourceNodeRef() + "\n" +
-                        "   First veto: " + firstVeto.getClass().getName() + "\n" +
-                        "   " + copyDetails + "\n" +
-                        "   " + this);
+                                "   First veto: " + firstVeto.getClass().getName() + "\n" +
+                                "   " + copyDetails + "\n" +
+                                "   " + this);
             }
             return false;
         }
     }
 
     /**
-     * Uses the ChildAssocCopyAction ordering to drive priority i.e. a vote
-     * to copy will override a vote NOT to copy.
+     * Uses the ChildAssocCopyAction ordering to drive priority i.e. a vote to copy will override a vote NOT to copy.
      * 
-     * @return          Returns the most lively choice of action 
+     * @return Returns the most lively choice of action
      */
     public ChildAssocCopyAction getChildAssociationCopyAction(
             QName classQName,
@@ -216,17 +207,17 @@ public class CompoundCopyBehaviourCallback extends AbstractCopyBehaviourCallback
         {
             logger.debug(
                     "Child association copy behaviour: " + bestAction + "\n" +
-                    "   " + childAssocCopyDetails + "\n" +
-                    "   " + copyDetails + "\n" +
-                    "   " + this);
+                            "   " + childAssocCopyDetails + "\n" +
+                            "   " + copyDetails + "\n" +
+                            "   " + this);
         }
         return bestAction;
     }
 
     /**
-     * Uses the  ChildAssocRecurseAction ordering to drive recursive copy behaviour.
+     * Uses the ChildAssocRecurseAction ordering to drive recursive copy behaviour.
      * 
-     * @return          Returns the most lively choice of action 
+     * @return Returns the most lively choice of action
      */
     @Override
     public ChildAssocRecurseAction getChildAssociationRecurseAction(
@@ -252,20 +243,17 @@ public class CompoundCopyBehaviourCallback extends AbstractCopyBehaviourCallback
         {
             logger.debug(
                     "Child association recursion behaviour: " + bestAction + "\n" +
-                    "   " + childAssocCopyDetails + "\n" +
-                    "   " + copyDetails + "\n" +
-                    "   " + this);
+                            "   " + childAssocCopyDetails + "\n" +
+                            "   " + copyDetails + "\n" +
+                            "   " + this);
         }
         return bestAction;
     }
 
     /**
-     * The lowest common denominator applies here.  The properties are passed to each
-     * callback in turn.  The resulting map is then passed to the next callback and so
-     * on.  If any callback removes or alters properties, these will not be recoverable.
+     * The lowest common denominator applies here. The properties are passed to each callback in turn. The resulting map is then passed to the next callback and so on. If any callback removes or alters properties, these will not be recoverable.
      * 
-     * @return          Returns the least properties assigned for the copy by any individual
-     *                  callback handler
+     * @return Returns the least properties assigned for the copy by any individual callback handler
      */
     public Map<QName, Serializable> getCopyProperties(
             QName classQName,
@@ -276,15 +264,12 @@ public class CompoundCopyBehaviourCallback extends AbstractCopyBehaviourCallback
         for (CopyBehaviourCallback callback : callbacks)
         {
             Map<QName, Serializable> propsToCopy = callback.getCopyProperties(classQName,
-                copyDetails,
-                copyProperties);
+                    copyDetails,
+                    copyProperties);
 
-            if(propsToCopy != copyProperties)
+            if (propsToCopy != copyProperties)
             {
-                /*
-                 * Collections.emptyMap() is a valid return from the callback so we need to ensure it
-                 * is still mutable for the next iteration
-                 */
+                /* Collections.emptyMap() is a valid return from the callback so we need to ensure it is still mutable for the next iteration */
                 copyProperties = new HashMap<QName, Serializable>(propsToCopy);
             }
         }
@@ -293,10 +278,10 @@ public class CompoundCopyBehaviourCallback extends AbstractCopyBehaviourCallback
         {
             logger.debug(
                     "Copy properties: \n" +
-                    "   " + copyDetails + "\n" +
-                    "   " + this + "\n" +
-                    "   Before: " + properties + "\n" +
-                    "   After:  " + copyProperties);
+                            "   " + copyDetails + "\n" +
+                            "   " + this + "\n" +
+                            "   Before: " + properties + "\n" +
+                            "   After:  " + copyProperties);
         }
         return copyProperties;
     }

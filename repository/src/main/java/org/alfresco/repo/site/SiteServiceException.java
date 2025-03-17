@@ -36,22 +36,25 @@ public class SiteServiceException extends AlfrescoRuntimeException
 {
     /** Serial version UID */
     private static final long serialVersionUID = -5838634544722182609L;
-    
+
     /**
      * Constructor
      * 
-     * @param msgId             message id
+     * @param msgId
+     *            message id
      */
     public SiteServiceException(String msgId)
     {
         super(msgId);
     }
-    
+
     /**
      * Constructor
      * 
-     * @param msgId         message id
-     * @param msgParams     message params
+     * @param msgId
+     *            message id
+     * @param msgParams
+     *            message params
      */
     public SiteServiceException(String msgId, Object[] msgParams)
     {
@@ -61,20 +64,25 @@ public class SiteServiceException extends AlfrescoRuntimeException
     /**
      * Constructor
      * 
-     * @param msgId     message id
-     * @param cause     causing exception
+     * @param msgId
+     *            message id
+     * @param cause
+     *            causing exception
      */
     public SiteServiceException(String msgId, Throwable cause)
     {
         super(msgId, cause);
     }
-    
+
     /**
-     * Constructor 
+     * Constructor
      * 
-     * @param msgId         message id
-     * @param msgParams     message params
-     * @param cause         causing exception
+     * @param msgId
+     *            message id
+     * @param msgParams
+     *            message params
+     * @param cause
+     *            causing exception
      */
     public SiteServiceException(String msgId, Object[] msgParams, Throwable cause)
     {

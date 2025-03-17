@@ -48,126 +48,131 @@ public interface ModuleDetails extends Serializable
     static final String PROP_VERSION = "module.version";
     static final String PROP_TITLE = "module.title";
     static final String PROP_DESCRIPTION = "module.description";
-    static final String PROP_EDITIONS = "module.editions";    
+    static final String PROP_EDITIONS = "module.editions";
     static final String PROP_REPO_VERSION_MIN = "module.repo.version.min";
     static final String PROP_REPO_VERSION_MAX = "module.repo.version.max";
     static final String PROP_DEPENDS_PREFIX = "module.depends.";
     static final String PROP_INSTALL_DATE = "module.installDate";
     static final String PROP_INSTALL_STATE = "module.installState";
-    
+
     static final String INVALID_ID_REGEX = ".*[^\\w.-].*";
-    
+
     /**
      * Get all defined properties.
      * 
      * @return Returns the properties defined by this set of details
      */
     Properties getProperties();
-    
+
     /**
      * Get the id of the module
      * 
-     * @return  module id
+     * @return module id
      */
     String getId();
-    
+
     /**
-     * @return  Returns a list of IDs by which this module may once have been known
+     * @return Returns a list of IDs by which this module may once have been known
      */
     List<String> getAliases();
-    
+
     /**
      * Get the version number of the module
      * 
-     * @return  module version number
+     * @return module version number
      */
     ModuleVersionNumber getModuleVersionNumber();
-    
+
     /**
      * Get the version number of the module
      * 
-     * @return  module version number
+     * @return module version number
      * @deprecated use getModuleVersionNumber which knows about maven style version numbers
      */
     VersionNumber getVersion();
-    
+
     /**
      * Get the title of the module
      * 
-     * @return  module title
+     * @return module title
      */
     String getTitle();
-    
-    /** 
+
+    /**
      * Get the description of the module
      * 
-     * @return  module description
+     * @return module description
      */
     String getDescription();
-    
+
     /**
      * @return Returns the minimum version of the repository in which the module may be active
      */
     VersionNumber getRepoVersionMin();
 
     /**
-     * @param repoVersionMin the minimum version of the repository in which the module may be acitve
+     * @param repoVersionMin
+     *            the minimum version of the repository in which the module may be acitve
      */
     void setRepoVersionMin(VersionNumber repoVersionMin);
-    
+
     /**
      * @return Returns the maximum version of the repository in which the module may be active
      */
     VersionNumber getRepoVersionMax();
-    
+
     /**
-     * @param repoVersionMax the maximum version of the repository in which the module may be acitve
+     * @param repoVersionMax
+     *            the maximum version of the repository in which the module may be acitve
      */
     void setRepoVersionMax(VersionNumber repoVersionMax);
-    
+
     /**
-     * @return  Returns a list of module dependencies that must be present for this module
+     * @return Returns a list of module dependencies that must be present for this module
      */
     List<ModuleDependency> getDependencies();
-    
+
     /**
      * Get the modules install date
      * 
-     * @return  module install date or <tt>null</tt> if it has not been set
+     * @return module install date or <tt>null</tt> if it has not been set
      */
     Date getInstallDate();
-    
+
     /**
      * Set the module installation date.
      * 
-     * @param installDate   the module install date
+     * @param installDate
+     *            the module install date
      */
     void setInstallDate(Date installDate);
-    
+
     /**
      * Get the modules install state
      * 
-     * @return  the modules install state
+     * @return the modules install state
      */
     ModuleInstallState getInstallState();
-    
+
     /**
      * Set the module install state.
      * 
-     * @param installState  the module install state
+     * @param installState
+     *            the module install state
      */
     void setInstallState(ModuleInstallState installState);
-    
+
     /**
      * 
      * @return the editions
      */
     List<String> getEditions();
-    
+
     /**
      * Sets the editions of Alfresco the module is valid for
      * 
-     * @param editions  comma seperated list of editions.  e.g. community,Enterprise
+     * @param editions
+     *            comma seperated list of editions. e.g. community,Enterprise
      */
-     void setEditions(List<String> editions);
+    void setEditions(List<String> editions);
 }

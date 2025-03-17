@@ -36,7 +36,7 @@ public interface ManagedBean
     public void setBeanName(String name);
 
     public void setObjectName(String objectName);
-    
+
     public void setResource(Object resource);
 
 }

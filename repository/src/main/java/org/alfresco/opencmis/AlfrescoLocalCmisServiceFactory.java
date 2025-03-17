@@ -27,10 +27,10 @@ package org.alfresco.opencmis;
 
 import java.util.Map;
 
+import lib3party.org.apache.chemistry.opencmis.server.support.wrapper.ConformanceCmisServiceWrapper;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
-import lib3party.org.apache.chemistry.opencmis.server.support.wrapper.ConformanceCmisServiceWrapper;
 
 /**
  * Factory for local OpenCMIS service objects.
@@ -45,8 +45,7 @@ public class AlfrescoLocalCmisServiceFactory extends AbstractServiceFactory
 
     @Override
     public void init(Map<String, String> parameters)
-    {
-    }
+    {}
 
     /**
      * Sets the CMIS connector.
@@ -74,7 +73,7 @@ public class AlfrescoLocalCmisServiceFactory extends AbstractServiceFactory
                     CMIS_CONNECTOR.getObjectsDefaultMaxItems(), CMIS_CONNECTOR.getObjectsDefaultDepth());
             THREAD_LOCAL_SERVICE.set(wrapperService);
         }
-        ((AlfrescoCmisService)wrapperService.getWrappedService()).open(context);
+        ((AlfrescoCmisService) wrapperService.getWrappedService()).open(context);
         return wrapperService;
     }
 }

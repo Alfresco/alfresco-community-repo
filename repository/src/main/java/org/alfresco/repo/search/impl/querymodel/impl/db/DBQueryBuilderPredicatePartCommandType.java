@@ -30,12 +30,7 @@ package org.alfresco.repo.search.impl.querymodel.impl.db;
  */
 public enum DBQueryBuilderPredicatePartCommandType
 {
-    OPEN,
-    CLOSE,
-    AND,
-    OR,
-    NOT,
-    EQUALS
+    OPEN, CLOSE, AND, OR, NOT, EQUALS
     {
         @Override
         public DBQueryBuilderPredicatePartCommandType propertyNotFound()
@@ -70,7 +65,7 @@ public enum DBQueryBuilderPredicatePartCommandType
         @Override
         public DBQueryBuilderPredicatePartCommandType propertyAndValueReversed()
         {
-           return LT;
+            return LT;
         }
     },
     GTE
@@ -155,9 +150,7 @@ public enum DBQueryBuilderPredicatePartCommandType
             return NP_MATCHES;
         }
     },
-    TYPE,
-    ASPECT,
-    NP_MATCHES
+    TYPE, ASPECT, NP_MATCHES
     {
         @Override
         public DBQueryBuilderPredicatePartCommandType propertyNotFound()
@@ -182,12 +175,11 @@ public enum DBQueryBuilderPredicatePartCommandType
         }
     },
     NO_ORDER;
-    
 
     /**
      * @return DBQueryBuilderPredicatePartCommandType
      */
-    public  DBQueryBuilderPredicatePartCommandType propertyNotFound()
+    public DBQueryBuilderPredicatePartCommandType propertyNotFound()
     {
         return this;
     }

@@ -43,6 +43,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.ListBackedPagingResults;
 import org.alfresco.query.PagingResults;
@@ -71,7 +73,6 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TypeConstraint;
-import org.apache.commons.collections.CollectionUtils;
 
 /**
  * Centralises access to tag services and maps between representations.
@@ -101,6 +102,7 @@ public class TagsImpl implements Tags
     {
         this.nodes = nodes;
     }
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -158,7 +160,8 @@ public class TagsImpl implements Tags
     }
 
     @Override
-    public void deleteTagById(StoreRef storeRef, String tagId) {
+    public void deleteTagById(StoreRef storeRef, String tagId)
+    {
         verifyAdminAuthority();
 
         NodeRef tagNodeRef = validateTag(storeRef, tagId);
@@ -175,7 +178,7 @@ public class TagsImpl implements Tags
 
         Map<NodeRef, Long> results = taggingService.getTags(storeRef, params.getInclude(), sorting, namesFilters.get(EQUALS), namesFilters.get(MATCHES));
 
-        List<Tag> tagsList = results.entrySet().stream().map(entry -> new Tag(entry.getKey(), (String)nodeService.getProperty(entry.getKey(), ContentModel.PROP_NAME))).collect(Collectors.toList());
+        List<Tag> tagsList = results.entrySet().stream().map(entry -> new Tag(entry.getKey(), (String) nodeService.getProperty(entry.getKey(), ContentModel.PROP_NAME))).collect(Collectors.toList());
 
         if (params.getInclude().contains(PARAM_INCLUDE_COUNT))
         {
@@ -192,7 +195,7 @@ public class TagsImpl implements Tags
         NodeRef tagNodeRef = nodes.validateNode(tagId);
         return checkTagRootAsNodePrimaryParent(tagId, tagNodeRef);
     }
-    
+
     public NodeRef validateTag(StoreRef storeRef, String tagId)
     {
         NodeRef tagNodeRef = nodes.validateNode(storeRef, tagId);
@@ -202,9 +205,12 @@ public class TagsImpl implements Tags
     /**
      * Find the number of times the given tag is used (if requested).
      *
-     * @param storeRef The store the tag is in.
-     * @param tagName The name of the tag.
-     * @param parameters The request parameters object containing the includes parameter.
+     * @param storeRef
+     *            The store the tag is in.
+     * @param tagName
+     *            The name of the tag.
+     * @param parameters
+     *            The request parameters object containing the includes parameter.
      * @return The number of times the tag is applied, or null if "count" wasn't in the include parameter.
      */
     private Long findCountIfRequested(StoreRef storeRef, String tagName, Parameters parameters)
@@ -229,15 +235,15 @@ public class TagsImpl implements Tags
             NodeRef newTagNodeRef = taggingService.changeTag(storeRef, existingTagName, newTagName);
             return Tag.builder().nodeRef(newTagNodeRef).tag(newTagName).count(count).create();
         }
-        catch(NonExistentTagException e)
+        catch (NonExistentTagException e)
         {
             throw new NotFoundException(e.getMessage());
         }
-        catch(TagExistsException e)
+        catch (TagExistsException e)
         {
             throw new ConstraintViolatedException(e.getMessage());
         }
-        catch(TaggingException e)
+        catch (TaggingException e)
         {
             throw new InvalidArgumentException(e.getMessage());
         }
@@ -260,7 +266,7 @@ public class TagsImpl implements Tags
         Integer totalItems = results.getTotalResultCount().getFirst();
         List<Pair<NodeRef, String>> page = results.getPage();
         List<Tag> tags = new ArrayList<>(page.size());
-        for(Pair<NodeRef, String> pair : page)
+        for (Pair<NodeRef, String> pair : page)
         {
             tags.add(new Tag(pair.getFirst(), pair.getSecond()));
         }
@@ -273,10 +279,10 @@ public class TagsImpl implements Tags
     {
         verifyAdminAuthority();
         final List<String> tagNames = Optional.ofNullable(tags).orElse(Collections.emptyList()).stream()
-            .filter(Objects::nonNull)
-            .map(Tag::getTag)
-            .distinct()
-            .collect(toList());
+                .filter(Objects::nonNull)
+                .map(Tag::getTag)
+                .distinct()
+                .collect(toList());
 
         if (CollectionUtils.isEmpty(tagNames))
         {
@@ -284,13 +290,13 @@ public class TagsImpl implements Tags
         }
 
         return taggingService.createTags(storeRef, tagNames).stream()
-            .map(pair -> Tag.builder().tag(pair.getFirst()).nodeRef(pair.getSecond()).create())
-            .peek(tag -> {
-                if (parameters.getInclude().contains(PARAM_INCLUDE_COUNT))
-                {
-                    tag.setCount(0L);
-                }
-            }).collect(toList());
+                .map(pair -> Tag.builder().tag(pair.getFirst()).nodeRef(pair.getSecond()).create())
+                .peek(tag -> {
+                    if (parameters.getInclude().contains(PARAM_INCLUDE_COUNT))
+                    {
+                        tag.setCount(0L);
+                    }
+                }).collect(toList());
     }
 
     private void verifyAdminAuthority()
@@ -302,9 +308,10 @@ public class TagsImpl implements Tags
     }
 
     /**
-     * Method resolves where query looking for clauses: EQUALS, IN or MATCHES.
-     * Expected values for EQUALS and IN will be merged under EQUALS clause.
-     * @param namesQuery Where query with expected tag name(s).
+     * Method resolves where query looking for clauses: EQUALS, IN or MATCHES. Expected values for EQUALS and IN will be merged under EQUALS clause.
+     * 
+     * @param namesQuery
+     *            Where query with expected tag name(s).
      * @return Map of expected exact and alike tag names.
      */
     private Map<Integer, Collection<String>> resolveTagNamesQuery(final Query namesQuery)
@@ -315,29 +322,29 @@ public class TagsImpl implements Tags
         }
 
         final Map<Integer, Collection<String>> properties = QueryHelper
-            .resolve(namesQuery)
-            .usingOrOperator()
-            .withoutNegations()
-            .getProperty(PARAM_WHERE_TAG)
-            .getExpectedValuesForAnyOf(EQUALS, IN, MATCHES)
-            .skipNegated();
+                .resolve(namesQuery)
+                .usingOrOperator()
+                .withoutNegations()
+                .getProperty(PARAM_WHERE_TAG)
+                .getExpectedValuesForAnyOf(EQUALS, IN, MATCHES)
+                .skipNegated();
 
         return properties.entrySet().stream()
-            .collect(Collectors.groupingBy((entry) -> {
-                if (entry.getKey() == EQUALS || entry.getKey() == IN)
-                {
-                    return EQUALS;
-                }
-                else
-                {
-                    return MATCHES;
-                }
-            }, Collectors.flatMapping((entry) -> entry.getValue().stream().map(String::toLowerCase), Collectors.toCollection(HashSet::new))));
+                .collect(Collectors.groupingBy((entry) -> {
+                    if (entry.getKey() == EQUALS || entry.getKey() == IN)
+                    {
+                        return EQUALS;
+                    }
+                    else
+                    {
+                        return MATCHES;
+                    }
+                }, Collectors.flatMapping((entry) -> entry.getValue().stream().map(String::toLowerCase), Collectors.toCollection(HashSet::new))));
     }
 
     private NodeRef checkTagRootAsNodePrimaryParent(String tagId, NodeRef tagNodeRef)
     {
-        if ( tagNodeRef == null || !nodeService.getPrimaryParent(tagNodeRef).getParentRef().equals(TAG_ROOT_NODE_REF))
+        if (tagNodeRef == null || !nodeService.getPrimaryParent(tagNodeRef).getParentRef().equals(TAG_ROOT_NODE_REF))
         {
             throw new EntityNotFoundException(tagId);
         }

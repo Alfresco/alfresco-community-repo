@@ -25,13 +25,14 @@
  */
 package org.alfresco.opencmis.mapping;
 
+import org.apache.chemistry.opencmis.commons.enums.Action;
+
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.apache.chemistry.opencmis.commons.enums.Action;
 
 /**
  * Alfresco Permission based Action Evaluator

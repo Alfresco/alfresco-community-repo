@@ -52,8 +52,7 @@ public interface SubscriptionService extends ActivateableBean
      *            paging details
      * 
      * @throws PrivateSubscriptionListException
-     *             if the subscription list is private and the calling user is
-     *             not allowed to see it
+     *             if the subscription list is private and the calling user is not allowed to see it
      */
     @NotAuditable
     PagingSubscriptionResults getSubscriptions(String userId, SubscriptionItemTypeEnum type, PagingRequest pagingRequest);
@@ -77,7 +76,7 @@ public interface SubscriptionService extends ActivateableBean
      * @param node
      *            the node
      */
-    @Auditable(parameters = { "userId", "node" })
+    @Auditable(parameters = {"userId", "node"})
     void subscribe(String userId, NodeRef node);
 
     /**
@@ -88,7 +87,7 @@ public interface SubscriptionService extends ActivateableBean
      * @param node
      *            the node
      */
-    @Auditable(parameters = { "userId", "node" })
+    @Auditable(parameters = {"userId", "node"})
     void unsubscribe(String userId, NodeRef node);
 
     /**
@@ -112,8 +111,7 @@ public interface SubscriptionService extends ActivateableBean
      * @param pagingRequest
      *            paging details
      * @throws PrivateSubscriptionListException
-     *             if the subscription list is private and the calling user is
-     *             not allowed to see it
+     *             if the subscription list is private and the calling user is not allowed to see it
      */
     @NotAuditable
     PagingFollowingResults getFollowing(String userId, PagingRequest pagingRequest);
@@ -155,7 +153,7 @@ public interface SubscriptionService extends ActivateableBean
      * @param userToFollow
      *            the id of the user to follow
      */
-    @Auditable(parameters = { "userId", "userToFollow" })
+    @Auditable(parameters = {"userId", "userToFollow"})
     void follow(String userId, String userToFollow);
 
     /**
@@ -166,7 +164,7 @@ public interface SubscriptionService extends ActivateableBean
      * @param userToUnfollow
      *            the id of the user to unfollow
      */
-    @Auditable(parameters = { "userId", "userToUnfollow" })
+    @Auditable(parameters = {"userId", "userToUnfollow"})
     void unfollow(String userId, String userToUnfollow);
 
     /**
@@ -188,11 +186,10 @@ public interface SubscriptionService extends ActivateableBean
      * @param userId
      *            the id of the user
      * @param isPrivate
-     *            <code>true</code> - set list private,
-     *            <code>false</code> - set list public
+     *            <code>true</code> - set list private, <code>false</code> - set list public
      * 
      */
-    @Auditable(parameters = { "userId", "isPrivate" })
+    @Auditable(parameters = {"userId", "isPrivate"})
     void setSubscriptionListPrivate(String userId, boolean isPrivate);
 
     /**

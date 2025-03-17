@@ -36,11 +36,7 @@ public class LDAPADUserAccountStatusInterpreter extends AbstractDirectoryService
     {
         checkForNullArgument(userAccountStatusValue);
 
-        /*
-         * References:
-         * https://blogs.technet.microsoft.com/heyscriptingguy/2005/05/12/how-can-i-get-a-list-of-all-the-disabled-user-accounts-in-active-directory
-         * http://stackoverflow.com/questions/19250969/include-enabled-disabled-account-status-of-ldap-user-in-results/19252033#19252033
-         */
+        /* References: https://blogs.technet.microsoft.com/heyscriptingguy/2005/05/12/how-can-i-get-a-list-of-all-the-disabled-user-accounts-in-active-directory http://stackoverflow.com/questions/19250969/include-enabled-disabled-account-status-of-ldap-user-in-results/19252033#19252033 */
         return ((Integer.parseInt(userAccountStatusValue.toString())) & 2) != 0;
     }
 

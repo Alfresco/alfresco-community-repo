@@ -28,6 +28,9 @@ package org.alfresco.repo.rule;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
@@ -43,8 +46,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Class containing behaviour for the rules aspect
@@ -52,24 +53,24 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  */
 public class RulesAspect implements
-                 CopyServicePolicies.OnCopyNodePolicy,
-                 CopyServicePolicies.OnCopyCompletePolicy,
-                 NodeServicePolicies.OnAddAspectPolicy,
-                 NodeServicePolicies.BeforeRemoveAspectPolicy,
-                 NodeServicePolicies.BeforeDeleteNodePolicy
+        CopyServicePolicies.OnCopyNodePolicy,
+        CopyServicePolicies.OnCopyCompletePolicy,
+        NodeServicePolicies.OnAddAspectPolicy,
+        NodeServicePolicies.BeforeRemoveAspectPolicy,
+        NodeServicePolicies.BeforeDeleteNodePolicy
 {
     private PolicyComponent policyComponent;
     private BehaviourFilter behaviourFilter;
     private RuleService ruleService;
     private NodeService nodeService;
-    
-    private static Log logger = LogFactory.getLog(RulesAspect.class); 
-    
+
+    private static Log logger = LogFactory.getLog(RulesAspect.class);
+
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
@@ -79,12 +80,12 @@ public class RulesAspect implements
     {
         this.nodeService = nodeService;
     }
-   
+
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
     }
-    
+
     public void init()
     {
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
@@ -101,19 +102,19 @@ public class RulesAspect implements
                 RuleModel.ASPECT_RULES,
                 new JavaBehaviour(this, "onCopyComplete"));
         this.policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnAddAspectPolicy.QNAME, 
-                RuleModel.ASPECT_RULES, 
+                NodeServicePolicies.OnAddAspectPolicy.QNAME,
+                RuleModel.ASPECT_RULES,
                 new JavaBehaviour(this, "onAddAspect"));
         this.policyComponent.bindClassBehaviour(
-                NodeServicePolicies.BeforeRemoveAspectPolicy.QNAME, 
-                RuleModel.ASPECT_RULES, 
+                NodeServicePolicies.BeforeRemoveAspectPolicy.QNAME,
+                RuleModel.ASPECT_RULES,
                 new JavaBehaviour(this, "beforeRemoveAspect"));
         this.policyComponent.bindClassBehaviour(
-                NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, 
-                RuleModel.ASPECT_RULES, 
+                NodeServicePolicies.BeforeDeleteNodePolicy.QNAME,
+                RuleModel.ASPECT_RULES,
                 new JavaBehaviour(this, "beforeDeleteNode"));
     }
-    
+
     /**
      * Creates the rules folder below the node
      */
@@ -125,7 +126,7 @@ public class RulesAspect implements
             int count = this.nodeService.getChildAssocs(nodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).size();
             if (count == 0)
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("rules folder does not exist: create new rules folder for: " + nodeRef);
                 }
@@ -141,12 +142,9 @@ public class RulesAspect implements
             this.ruleService.enableRules(nodeRef);
         }
     }
-    
-    
+
     /**
-     * The rule folder & below will be deleted automatically in the normal way, so we don't need to worry about them.
-     * But we need additional handling for any other folders which have rules linked to this folder's rules. See
-     * ALF-11923, ALF-15262.
+     * The rule folder & below will be deleted automatically in the normal way, so we don't need to worry about them. But we need additional handling for any other folders which have rules linked to this folder's rules. See ALF-11923, ALF-15262.
      * 
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeRemoveAspectPolicy#beforeRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
@@ -191,7 +189,9 @@ public class RulesAspect implements
     }
 
     /**
-     * <br>author Neil McErlean
+     * <br>
+     * author Neil McErlean
+     * 
      * @since 3.4.11
      */
     @Override
@@ -201,15 +201,15 @@ public class RulesAspect implements
         // trigger handling removal of the rules aspect.
         beforeRemoveAspect(nodeRef, RuleModel.ASPECT_RULES);
     }
-    
+
     /**
-     * @return              Returns CopyBehaviourCallback
+     * @return Returns CopyBehaviourCallback
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
         return new RulesAspectCopyBehaviourCallback(behaviourFilter);
     }
-    
+
     /**
      * Copy behaviour for the 'rules' model
      * 
@@ -219,7 +219,7 @@ public class RulesAspect implements
     private class RulesAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
     {
         private final BehaviourFilter behaviourFilter;
-        
+
         private RulesAspectCopyBehaviourCallback(BehaviourFilter behaviourFilter)
         {
             this.behaviourFilter = behaviourFilter;
@@ -228,7 +228,7 @@ public class RulesAspect implements
         /**
          * Disables the aspect behaviour for this node
          * 
-         * @return          Returns <tt>true</tt>
+         * @return Returns <tt>true</tt>
          */
         @Override
         public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
@@ -242,8 +242,7 @@ public class RulesAspect implements
         /**
          * Always copy into rules folders
          * 
-         * @return          Returns {@link ChildAssocCopyAction#COPY_CHILD}
-         *                  for {@link RuleModel#ASSOC_RULE_FOLDER}
+         * @return Returns {@link ChildAssocCopyAction#COPY_CHILD} for {@link RuleModel#ASSOC_RULE_FOLDER}
          */
         @Override
         public ChildAssocCopyAction getChildAssociationCopyAction(
@@ -259,15 +258,14 @@ public class RulesAspect implements
             else
             {
                 super.throwExceptionForUnexpectedBehaviour(copyDetails, childAssocCopyDetails.toString());
-                return null;            // Never reached
+                return null; // Never reached
             }
         }
 
         /**
          * Force copy recursion after copying a rules folder
          * 
-         * @return          Returns {@link ChildAssocRecurseAction#FORCE_RECURSE}
-         *                  for {@link RuleModel#ASSOC_RULE_FOLDER}
+         * @return Returns {@link ChildAssocRecurseAction#FORCE_RECURSE} for {@link RuleModel#ASSOC_RULE_FOLDER}
          */
         @Override
         public ChildAssocRecurseAction getChildAssociationRecurseAction(
@@ -283,11 +281,11 @@ public class RulesAspect implements
             else
             {
                 super.throwExceptionForUnexpectedBehaviour(copyDetails, childAssocCopyDetails.toString());
-                return null;            // Never reached
+                return null; // Never reached
             }
         }
     }
-    
+
     /**
      * Re-enable aspect behaviour for the source node
      */

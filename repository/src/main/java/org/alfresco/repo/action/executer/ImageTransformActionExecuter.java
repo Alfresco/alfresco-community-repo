@@ -37,17 +37,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
- * Transform action executer. Modified original code to use any transformer rather than just 
- * ImageMagick. The original, allowed additional command line options to be supplied (added for
- * backward compatibility in 15/04/2008). Now removed. Did not find any internal usage (22/11/2012) but it
- * is possible that there may be some in Javascript calling ScriptNode or custom code using
- * the context passed to the ImageRenderingEngine. That said, it will almost always be ImagMagick
- * that does the transform so it will still be used. These command line options were to overcome issues with
- * ImageMagick. Other transformers will just ignore them.
+ * Transform action executer. Modified original code to use any transformer rather than just ImageMagick. The original, allowed additional command line options to be supplied (added for backward compatibility in 15/04/2008). Now removed. Did not find any internal usage (22/11/2012) but it is possible that there may be some in Javascript calling ScriptNode or custom code using the context passed to the ImageRenderingEngine. That said, it will almost always be ImagMagick that does the transform so it will still be used. These command line options were to overcome issues with ImageMagick. Other transformers will just ignore them.
  * 
  * @author Roy Wetherall
  */
-public class ImageTransformActionExecuter extends TransformActionExecuter 
+public class ImageTransformActionExecuter extends TransformActionExecuter
 {
     /**
      * Action constants
@@ -72,7 +66,7 @@ public class ImageTransformActionExecuter extends TransformActionExecuter
         options.setSourceNodeRef(sourceNodeRef);
         options.setSourceContentProperty(ContentModel.PROP_NAME);
         options.setTargetContentProperty(ContentModel.PROP_NAME);
-        
+
         String convertCommand = (String) ruleAction.getParameterValue(PARAM_CONVERT_COMMAND);
         options.setCommandOptions(convertCommand);
 

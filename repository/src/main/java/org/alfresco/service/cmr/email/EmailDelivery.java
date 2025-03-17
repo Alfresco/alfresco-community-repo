@@ -29,6 +29,7 @@ import java.io.Serializable;
 
 /**
  * Delivery instructions for an email message.
+ * 
  * @author mrogers
  *
  */
@@ -39,11 +40,14 @@ public class EmailDelivery implements Serializable
     private String auth;
 
     /**
-     * New Email Delivery Instructions.  Who gets the message and who sent it.
-     * Which may be different from the contents of the message.
-     * @param recipient String
-     * @param from String
-     * @param auth - may be null if the email is not authenticated
+     * New Email Delivery Instructions. Who gets the message and who sent it. Which may be different from the contents of the message.
+     * 
+     * @param recipient
+     *            String
+     * @param from
+     *            String
+     * @param auth
+     *            - may be null if the email is not authenticated
      */
     public EmailDelivery(String recipient, String from, String auth)
     {
@@ -56,11 +60,12 @@ public class EmailDelivery implements Serializable
     {
         return recipient;
     }
-    
+
     public String getFrom()
     {
         return from;
     }
+
     public String getAuth()
     {
         return auth;

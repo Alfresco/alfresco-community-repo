@@ -28,12 +28,13 @@ package org.alfresco.heartbeat;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.service.license.LicenseDescriptor;
 import org.alfresco.service.license.LicenseService.LicenseChangeHandler;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * This service lets implementations of {@link HBBaseDataCollector} register. <br>
@@ -61,10 +62,10 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
     /**
      *
      * @param defaultHeartBeatState
-     *          the default enabled state of heartbeat
+     *            the default enabled state of heartbeat
      *
      */
-    public HBDataCollectorServiceImpl (boolean defaultHeartBeatState)
+    public HBDataCollectorServiceImpl(boolean defaultHeartBeatState)
     {
         this.defaultHbState = defaultHeartBeatState;
         this.enabled = defaultHeartBeatState;
@@ -82,20 +83,19 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
 
     /**
      *
-     * Register data collector with this service, a job will be scheduled for the collector if Heartbeat is enabled.
-     * The registered collector will be called to provide heartbeat data at the scheduled interval.
-     * Each collector registered via this method must have a unique collector id.
+     * Register data collector with this service, a job will be scheduled for the collector if Heartbeat is enabled. The registered collector will be called to provide heartbeat data at the scheduled interval. Each collector registered via this method must have a unique collector id.
      *
-     * @param collector collector to register
+     * @param collector
+     *            collector to register
      */
     @Override
     public synchronized void registerCollector(final HBBaseDataCollector collector)
     {
         // Check collector with the same ID does't already exist
-        if(collectors.containsKey(collector.getCollectorId()))
+        if (collectors.containsKey(collector.getCollectorId()))
         {
             throw new IllegalArgumentException("HeartBeat did not registered collector because a collector with ID: \n"
-                    + collector.getCollectorId() + " already exists. Collectors must have unique collector IDs" );
+                    + collector.getCollectorId() + " already exists. Collectors must have unique collector IDs");
         }
         // Schedule collector job
         scheduleCollector(collector);
@@ -111,7 +111,8 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
     /**
      *
      *
-     * @param collector - Deregister data collector. Removed collector and unscheduled associated job.
+     * @param collector
+     *            - Deregister data collector. Removed collector and unscheduled associated job.
      */
     @Override
     public synchronized void deregisterCollector(final HBBaseDataCollector collector)
@@ -146,7 +147,7 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
     }
 
     /**
-     * Listens for license changes.  If a license is change or removed, the heartbeat job is rescheduled.
+     * Listens for license changes. If a license is change or removed, the heartbeat job is rescheduled.
      */
     @Override
     public synchronized void onLicenseChange(final LicenseDescriptor licenseDescriptor)
@@ -185,7 +186,7 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
 
     private void restartAllCollectorSchedules()
     {
-        for( HBBaseDataCollector collector : collectors.values() )
+        for (HBBaseDataCollector collector : collectors.values())
         {
             try
             {
@@ -194,7 +195,7 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
             catch (Exception e)
             {
                 // Log and ignore
-                logger.error("HeartBeat failed to restart collector: " + collector.getCollectorId() ,e);
+                logger.error("HeartBeat failed to restart collector: " + collector.getCollectorId(), e);
             }
         }
     }

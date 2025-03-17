@@ -43,36 +43,27 @@
  */
 package org.alfresco.rest.search;
 
-import org.alfresco.rest.core.RestModels;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.alfresco.rest.core.RestModels;
+
 /**
- * Search response sample.
- * {"list": {
- *   "entries": [],
- *   "pagination": {
- *     "maxItems": 100,
- *     "hasMoreItems": false,
- *     "totalItems": 0,
- *     "count": 0,
- *     "skipCount": 0
- *  },
- *    "context": {"consistency": {"lastTxId": 1123}}
- * }}
+ * Search response sample. {"list": { "entries": [], "pagination": { "maxItems": 100, "hasMoreItems": false, "totalItems": 0, "count": 0, "skipCount": 0 }, "context": {"consistency": {"lastTxId": 1123}} }}
  **/
 public class SearchResponse extends RestModels<SearchNodeModel, SearchNodeModelsCollection>
 {
     @JsonProperty(value = "entry")
     SearchResponse model;
     private RestResultSetContextModel context;
+
     public RestResultSetContextModel getContext()
     {
         return context;
     }
+
     public void setContext(RestResultSetContextModel context)
     {
         this.context = context;
     }
-    
+
 }

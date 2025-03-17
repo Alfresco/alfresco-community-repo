@@ -46,6 +46,11 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.dictionary.Facetable;
@@ -80,10 +85,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.collections.CollectionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * Solr Facet Service Implementation.
@@ -92,9 +93,9 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * @since 5.0
  */
 public class SolrFacetServiceImpl extends AbstractLifecycleBean
-                                  implements SolrFacetService,
-                                             NodeServicePolicies.OnCreateNodePolicy,
-                                             NodeServicePolicies.BeforeDeleteNodePolicy
+        implements SolrFacetService,
+        NodeServicePolicies.OnCreateNodePolicy,
+        NodeServicePolicies.BeforeDeleteNodePolicy
 {
     private static final Log logger = LogFactory.getLog(SolrFacetServiceImpl.class);
     /**
@@ -102,7 +103,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
      */
     public static final String ALFRESCO_SEARCH_ADMINISTRATORS_AUTHORITY = "ALFRESCO_SEARCH_ADMINISTRATORS";
     public static final String GROUP_ALFRESCO_SEARCH_ADMINISTRATORS_AUTHORITY = PermissionService.GROUP_PREFIX
-                + ALFRESCO_SEARCH_ADMINISTRATORS_AUTHORITY;
+            + ALFRESCO_SEARCH_ADMINISTRATORS_AUTHORITY;
 
     /** The store where facets are kept */
     private static final StoreRef FACET_STORE = new StoreRef("workspace://SpacesStore");
@@ -121,7 +122,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     private String facetsRootChildName;
 
     private ImporterBootstrap importerBootstrap;
-    private Properties        bootstrapView;
+    private Properties bootstrapView;
 
     private SimpleCache<String, Object> singletonCache; // eg. for facetsHomeNodeRef
     private final String KEY_FACETS_HOME_NODEREF = "key.facetshome.noderef";
@@ -129,7 +130,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     private ConcurrentMap<String, SolrFacetProperties> defaultFacetsMap = new ConcurrentHashMap<>(10);
 
     /**
-     * @param authorityService the authorityService to set
+     * @param authorityService
+     *            the authorityService to set
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -137,7 +139,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * @param dictionaryService the dictionaryService to set
+     * @param dictionaryService
+     *            the dictionaryService to set
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -145,7 +148,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * @param nodeService the nodeService to set
+     * @param nodeService
+     *            the nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -153,7 +157,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * @param namespaceService the namespaceService to set
+     * @param namespaceService
+     *            the namespaceService to set
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -161,7 +166,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * @param searchService the searchService to set
+     * @param searchService
+     *            the searchService to set
      */
     public void setSearchService(SearchService searchService)
     {
@@ -169,7 +175,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * @param retryingTransactionHelper the retryingTransactionHelper to set
+     * @param retryingTransactionHelper
+     *            the retryingTransactionHelper to set
      */
     public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
@@ -177,7 +184,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * @param behaviourFilter the behaviourFilter to set
+     * @param behaviourFilter
+     *            the behaviourFilter to set
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
@@ -185,7 +193,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * @param policyComponent the policyComponent to set
+     * @param policyComponent
+     *            the policyComponent to set
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -198,7 +207,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * @param facetConfig the facetConfig to set
+     * @param facetConfig
+     *            the facetConfig to set
      */
     public void setFacetConfig(SolrFacetConfig facetConfig)
     {
@@ -206,7 +216,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * @param facetsRootXPath the facetsRootXPath to set
+     * @param facetsRootXPath
+     *            the facetsRootXPath to set
      */
     public void setFacetsRootXPath(String facetsRootXPath)
     {
@@ -218,7 +229,10 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
         this.facetsRootChildName = facetsRootChildName;
     }
 
-    public void setImporterBootstrap(ImporterBootstrap importer) { this.importerBootstrap = importer; }
+    public void setImporterBootstrap(ImporterBootstrap importer)
+    {
+        this.importerBootstrap = importer;
+    }
 
     public void setBootstrapView(Properties bootstrapView)
     {
@@ -226,7 +240,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * @param singletonCache the singletonCache to set
+     * @param singletonCache
+     *            the singletonCache to set
      */
     public void setSingletonCache(SimpleCache<String, Object> singletonCache)
     {
@@ -234,7 +249,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     }
 
     /**
-     * @param facetNodeRefCache the facetNodeRefCache to set
+     * @param facetNodeRefCache
+     *            the facetNodeRefCache to set
      */
     public void setFacetNodeRefCache(SimpleCache<String, NodeRef> facetNodeRefCache)
     {
@@ -249,7 +265,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
             return false;
         }
         return this.authorityService.isAdminAuthority(userName)
-                    || this.authorityService.getAuthoritiesForUser(userName).contains(GROUP_ALFRESCO_SEARCH_ADMINISTRATORS_AUTHORITY);
+                || this.authorityService.getAuthoritiesForUser(userName).contains(GROUP_ALFRESCO_SEARCH_ADMINISTRATORS_AUTHORITY);
     }
 
     @Override
@@ -265,11 +281,11 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
         {
             for (ChildAssociationRef ref : nodeService.getChildAssocs(facetsRoot))
             {
-	            // MNT-13812 Check that child has facetField type
-	            if (nodeService.getType(ref.getChildRef()).equals(SolrFacetModel.TYPE_FACET_FIELD))
-	            {
-	                result.add(getFacetProperties(ref.getChildRef()));
-				}	
+                // MNT-13812 Check that child has facetField type
+                if (nodeService.getType(ref.getChildRef()).equals(SolrFacetModel.TYPE_FACET_FIELD))
+                {
+                    result.add(getFacetProperties(ref.getChildRef()));
+                }
             }
         }
 
@@ -284,19 +300,13 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     {
         final NodeRef facetsRoot = getFacetsRoot();
 
-        return facetsRoot == null ?
-                new ArrayList<>(facetConfig.getDefaultFacets().keySet()) :
-                (List<String>)nodeService.getProperty(facetsRoot, SolrFacetModel.PROP_FACET_ORDER);
+        return facetsRoot == null ? new ArrayList<>(facetConfig.getDefaultFacets().keySet()) : (List<String>) nodeService.getProperty(facetsRoot, SolrFacetModel.PROP_FACET_ORDER);
     }
 
     @Override
     public SolrFacetProperties getFacet(String filterID)
     {
-        /*
-         * Note: There is no need to worry about the state of the SolrFacetProperties returned from
-         * facetConfig (getDefaultLoadedFacet), as if the FP has been modified, then we'll get it from
-         * the nodeService.
-         */
+        /* Note: There is no need to worry about the state of the SolrFacetProperties returned from facetConfig (getDefaultLoadedFacet), as if the FP has been modified, then we'll get it from the nodeService. */
         NodeRef nodeRef = getFacetNodeRef(filterID);
         return (nodeRef == null) ? defaultFacetsMap.get(filterID) : getFacetProperties(nodeRef);
     }
@@ -323,8 +333,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
 
             if (facetRoot != null)
             {
-                facetNodeRef = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
-                {
+                facetNodeRef = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>() {
                     public NodeRef doWork() throws Exception
                     {
                         // the filterID directly maps to the cm:name property
@@ -345,7 +354,9 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
 
     /**
      * Gets the {@link SolrFacetProperties} stored on the specified {@link NodeRef}.
-     * @throws org.alfresco.service.cmr.repository.InvalidNodeRefException if the nodeRef does not exist.
+     * 
+     * @throws org.alfresco.service.cmr.repository.InvalidNodeRefException
+     *             if the nodeRef does not exist.
      */
     private SolrFacetProperties getFacetProperties(NodeRef nodeRef)
     {
@@ -359,7 +370,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
         boolean isDefault = (Boolean) properties.get(SolrFacetModel.PROP_IS_DEFAULT);
 
         SolrFacetProperties defaultFacet = defaultFacetsMap.get(filterID);
-        if(defaultFacet == null)
+        if (defaultFacet == null)
         {
             defaultFacet = new SolrFacetProperties.Builder().build();
         }
@@ -394,19 +405,19 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
         }
         // Construct the FacetProperty object
         SolrFacetProperties fp = new SolrFacetProperties.Builder()
-                    .filterID(filterID)
-                    .facetQName(fieldQName)
-                    .displayName(displayName)
-                    .displayControl(displayControl)
-                    .maxFilters(maxFilters)
-                    .hitThreshold(hitThreshold)
-                    .minFilterValueLength(minFilterValueLength)
-                    .sortBy(sortBy)
-                    .scope(scope)
-                    .isEnabled(isEnabled)
-                    .isDefault(isDefault)
-                    .scopedSites(scopedSites)
-                    .customProperties(extraProps).build();
+                .filterID(filterID)
+                .facetQName(fieldQName)
+                .displayName(displayName)
+                .displayControl(displayControl)
+                .maxFilters(maxFilters)
+                .hitThreshold(hitThreshold)
+                .minFilterValueLength(minFilterValueLength)
+                .sortBy(sortBy)
+                .scope(scope)
+                .isEnabled(isEnabled)
+                .isDefault(isDefault)
+                .scopedSites(scopedSites)
+                .customProperties(extraProps).build();
 
         return fp;
     }
@@ -441,13 +452,11 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
         }
         final NodeRef finalFacetRoot = facetRoot;
 
-        return AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-        {
+        return AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
             @Override
             public NodeRef doWork() throws Exception
             {
-                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-                {
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
                     public NodeRef execute() throws Exception
                     {
                         behaviourFilter.disableBehaviour(finalFacetRoot, ContentModel.ASPECT_AUDITABLE);
@@ -457,8 +466,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
                             // We don't want the node to be indexed
                             properties.put(ContentModel.PROP_IS_INDEXED, false);
                             NodeRef ref = nodeService.createNode(finalFacetRoot, ContentModel.ASSOC_CONTAINS,
-                                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, filterID),
-                                        SolrFacetModel.TYPE_FACET_FIELD, properties).getChildRef();
+                                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, filterID),
+                                    SolrFacetModel.TYPE_FACET_FIELD, properties).getChildRef();
                             if (logger.isDebugEnabled())
                             {
                                 logger.debug("Created [" + filterID + "] facet node with properties: [" + properties + "]");
@@ -586,6 +595,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
 
     /**
      * Gets the {@link NodeRef} of the {@code srft:facets} folder, if it exists.
+     * 
      * @return the {@link NodeRef} if it exists, else {@code null}.
      */
     public NodeRef getFacetsRoot()
@@ -593,12 +603,10 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
         NodeRef facetHomeRef = (NodeRef) singletonCache.get(KEY_FACETS_HOME_NODEREF);
         if (facetHomeRef == null)
         {
-            facetHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-            {
+            facetHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
                 public NodeRef doWork() throws Exception
                 {
-                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-                    {
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
                         public NodeRef execute() throws Exception
                         {
                             NodeRef result = null;
@@ -606,7 +614,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
                             // Get the root 'facets' folder
                             NodeRef rootNodeRef = nodeService.getRootNode(FACET_STORE);
                             List<NodeRef> results = searchService.selectNodes(rootNodeRef, facetsRootXPath, null,
-                                        namespaceService, false, SearchService.LANGUAGE_XPATH);
+                                    namespaceService, false, SearchService.LANGUAGE_XPATH);
                             if (results.size() != 0)
                             {
                                 result = results.get(0);
@@ -618,7 +626,10 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
                 }
             }, AuthenticationUtil.getSystemUserName());
 
-            if (facetHomeRef != null) { singletonCache.put(KEY_FACETS_HOME_NODEREF, facetHomeRef); }
+            if (facetHomeRef != null)
+            {
+                singletonCache.put(KEY_FACETS_HOME_NODEREF, facetHomeRef);
+            }
         }
         return facetHomeRef;
     }
@@ -628,15 +639,15 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     {
         // Filter creation
         this.policyComponent.bindClassBehaviour(
-                    OnCreateNodePolicy.QNAME,
-                    SolrFacetModel.TYPE_FACET_FIELD,
-                    new JavaBehaviour(this, "onCreateNode"));
+                OnCreateNodePolicy.QNAME,
+                SolrFacetModel.TYPE_FACET_FIELD,
+                new JavaBehaviour(this, "onCreateNode"));
 
         // Filter before deletion
         this.policyComponent.bindClassBehaviour(
-                    BeforeDeleteNodePolicy.QNAME,
-                    SolrFacetModel.TYPE_FACET_FIELD,
-                    new JavaBehaviour(this, "beforeDeleteNode"));
+                BeforeDeleteNodePolicy.QNAME,
+                SolrFacetModel.TYPE_FACET_FIELD,
+                new JavaBehaviour(this, "beforeDeleteNode"));
 
         Map<String, SolrFacetProperties> mergedMap = new HashMap<>(100);
         // Loaded facets
@@ -646,31 +657,21 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
 
         // Persisted facets
         Map<String, SolrFacetProperties> persistedProperties = getPersistedFacetProperties();
-        for(Entry<String, SolrFacetProperties> entry : persistedProperties.entrySet())
+        for (Entry<String, SolrFacetProperties> entry : persistedProperties.entrySet())
         {
             final String facetId = entry.getKey();
-            /*
-             * If the default facet has been removed from the config file and
-             * the facet was persisted as its property was modified, then, the
-             * persisted node needs to be deleted. This should be done to avoid
-             * errors when loading the facets. Also, as all the properties of
-             * the facet may not have been persisted and the default facet
-             * doesn't exist anymore, there is no way of merging the
-             * non-persisted properties.
-             */
-            if(entry.getValue().isDefault() && !defaultFP.containsKey(facetId))
+            /* If the default facet has been removed from the config file and the facet was persisted as its property was modified, then, the persisted node needs to be deleted. This should be done to avoid errors when loading the facets. Also, as all the properties of the facet may not have been persisted and the default facet doesn't exist anymore, there is no way of merging the non-persisted properties. */
+            if (entry.getValue().isDefault() && !defaultFP.containsKey(facetId))
             {
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     @Override
                     public Void doWork() throws Exception
                     {
-                        return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-                        {
+                        return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
                             public Void execute() throws Exception
                             {
                                 deleteFacet(facetId);
-                                
+
                                 logger.info("Deleted [" + facetId + "] node, as the filter has been removed from the config file!");
                                 return null;
                             }
@@ -702,13 +703,11 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
             newFacetOrder.add(fp.getFilterID());
         }
 
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
-                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-                {
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
                     public Void execute() throws Exception
                     {
                         reorderFacets(new ArrayList<>(newFacetOrder));
@@ -731,8 +730,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
 
         Map<String, SolrFacetProperties> facets = new HashMap<>();
 
-        final List<ChildAssociationRef> list = facetsRoot == null ?
-                new ArrayList<ChildAssociationRef>() : nodeService.getChildAssocs(facetsRoot);
+        final List<ChildAssociationRef> list = facetsRoot == null ? new ArrayList<ChildAssociationRef>() : nodeService.getChildAssocs(facetsRoot);
 
         for (ChildAssociationRef associationRef : list)
         {
@@ -829,21 +827,28 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
         return customProperties;
     }
 
-    @Override public void reorderFacets(List<String> facetIds)
+    @Override
+    public void reorderFacets(List<String> facetIds)
     {
         // We need to validate the provided facet IDs
-        if (facetIds == null)        { throw new NullPointerException("Illegal null facetIds"); }
-        else if (facetIds.isEmpty()) { throw new MissingFacetId("Illegal empty facetIds"); }
+        if (facetIds == null)
+        {
+            throw new NullPointerException("Illegal null facetIds");
+        }
+        else if (facetIds.isEmpty())
+        {
+            throw new MissingFacetId("Illegal empty facetIds");
+        }
         else
         {
             final List<SolrFacetProperties> existingFacets = getFacets();
-            
+
             final Map<String, SolrFacetProperties> sortedFacets = new LinkedHashMap<>(); // maintains insertion order
             final List<String> removedFacetIds = new ArrayList<>();
             for (String facetId : facetIds)
             {
                 final SolrFacetProperties facet = getFacet(facetId);
-                
+
                 if (facet == null)
                 {
                     // ACE-3083
@@ -862,9 +867,9 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
             if (existingFacets.size() != sortedFacets.size())
             {
                 throw new IllegalArgument("Cannot reorder facets. Expected " + existingFacets.size() +
-                                          " IDs but only received " + sortedFacets.size());
+                        " IDs but only received " + sortedFacets.size());
             }
-            
+
             // We can now safely apply the updates to the facet ID sequence.
             //
             // Put them in an ArrayList to ensure the collection is Serializable.
@@ -891,9 +896,9 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
 
     private NodeRef createFacetsRootFolder()
     {
-        return AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-        {
-            @Override public NodeRef doWork() throws Exception
+        return AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
+            @Override
+            public NodeRef doWork() throws Exception
             {
                 final NodeRef companyHome = repositoryHelper.getCompanyHome();
                 final QName appModel = QName.createQName("http://www.alfresco.org/model/application/1.0", "dictionary");
@@ -916,7 +921,10 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
                     result = getSingleChildNodeRef(dataDict, facetsRootAssocQName);
                 }
 
-                if (logger.isDebugEnabled()) { logger.debug("Created Facets Root Folder: " + result); }
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Created Facets Root Folder: " + result);
+                }
 
                 return result;
             }
@@ -926,15 +934,17 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     /**
      * Gets a child NodeRef under the specified parent NodeRef linked by a child-assoc of the specified name.
      *
-     * @param parent the parent whose child is sought.
-     * @param assocName the name of the child-association.
+     * @param parent
+     *            the parent whose child is sought.
+     * @param assocName
+     *            the name of the child-association.
      * @return the NodeRef of the requested child, if it exists. null if there is no match.
      */
     private NodeRef getSingleChildNodeRef(NodeRef parent, QName assocName)
     {
-        final List<ChildAssociationRef> assocs  = nodeService.getChildAssocs(parent,
-                                                                             RegexQNamePattern.MATCH_ALL,
-                                                                             assocName, true);
+        final List<ChildAssociationRef> assocs = nodeService.getChildAssocs(parent,
+                RegexQNamePattern.MATCH_ALL,
+                assocName, true);
         final NodeRef result;
 
         if (assocs == null || assocs.isEmpty())
@@ -945,10 +955,13 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
         {
             final StringBuilder msg = new StringBuilder();
             msg.append("Expected exactly one child node at: ")
-               .append(parent).append("/").append(assocName)
-               .append(" but found ")
-               .append(assocs == null ? "<null assocs>" : assocs.size());
-            if (logger.isErrorEnabled()) { logger.error(msg.toString()); }
+                    .append(parent).append("/").append(assocName)
+                    .append(" but found ")
+                    .append(assocs == null ? "<null assocs>" : assocs.size());
+            if (logger.isErrorEnabled())
+            {
+                logger.error(msg.toString());
+            }
 
             result = assocs.get(0).getChildRef();
         }
@@ -959,96 +972,100 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
 
         return result;
     }
-    
-    @Override public List<PropertyDefinition> getFacetableProperties()
+
+    @Override
+    public List<PropertyDefinition> getFacetableProperties()
     {
         final List<PropertyDefinition> result = new ArrayList<>();
-        
+
         final List<QName> allContentClasses = CollectionUtils.flatten(dictionaryService.getAllAspects(), dictionaryService.getAllTypes());
-        
+
         for (QName contentClass : allContentClasses)
         {
             result.addAll(getFacetableProperties(contentClass));
         }
-        
+
         return result;
     }
-    
-    @Override public List<PropertyDefinition> getFacetableProperties(QName contentClass)
+
+    @Override
+    public List<PropertyDefinition> getFacetableProperties(QName contentClass)
     {
         final List<PropertyDefinition> result = new ArrayList<>();
-        
+
         final Map<QName, PropertyDefinition> propertyDefs = dictionaryService.getPropertyDefs(contentClass);
-        
+
         if (propertyDefs != null)
         {
             for (final Map.Entry<QName, PropertyDefinition> prop : propertyDefs.entrySet())
             {
                 final PropertyDefinition propDef = prop.getValue();
-                if (propDef.isIndexed()) //SHA-1308
+                if (propDef.isIndexed()) // SHA-1308
                 {
                     final Facetable propIsFacetable = propDef.getFacetable();
 
                     switch (propIsFacetable)
                     {
-                        case TRUE:
+                    case TRUE:
+                        result.add(propDef);
+                        break;
+                    case FALSE:
+                        // The value is not facetable. Do nothing.
+                        break;
+                    case UNSET:
+                        // These values may be facetable.
+                        final DataTypeDefinition datatype = propDef.getDataType();
+                        if (isNumeric(datatype) || isDateLike(datatype) || isFacetableText(datatype))
+                        {
                             result.add(propDef);
                             break;
-                        case FALSE:
-                            // The value is not facetable. Do nothing.
-                            break;
-                        case UNSET:
-                            // These values may be facetable.
-                            final DataTypeDefinition datatype = propDef.getDataType();
-                            if (isNumeric(datatype) || isDateLike(datatype) || isFacetableText(datatype))
-                            {
-                                result.add(propDef);
-                                break;
-                            }
-                            break;
-                        default:
-                            // This should never happen. If it does, it's a programming error.
-                            throw new IllegalStateException("Failed to handle " + Facetable.class.getSimpleName() + " type: " + propIsFacetable);
+                        }
+                        break;
+                    default:
+                        // This should never happen. If it does, it's a programming error.
+                        throw new IllegalStateException("Failed to handle " + Facetable.class.getSimpleName() + " type: " + propIsFacetable);
                     }
                 }
             }
         }
-        
+
         return result;
     }
-    
-    @Override public List<SyntheticPropertyDefinition> getFacetableSyntheticProperties()
+
+    @Override
+    public List<SyntheticPropertyDefinition> getFacetableSyntheticProperties()
     {
         final List<SyntheticPropertyDefinition> result = new ArrayList<>();
-        
+
         final List<QName> allContentClasses = CollectionUtils.flatten(dictionaryService.getAllAspects(), dictionaryService.getAllTypes());
-        
+
         for (QName contentClass : allContentClasses)
         {
             result.addAll(getFacetableSyntheticProperties(contentClass));
         }
-        
+
         return result;
     }
-    
-    @Override public List<SyntheticPropertyDefinition> getFacetableSyntheticProperties(QName contentClass)
+
+    @Override
+    public List<SyntheticPropertyDefinition> getFacetableSyntheticProperties(QName contentClass)
     {
         final List<SyntheticPropertyDefinition> result = new ArrayList<>();
-        
+
         final Map<QName, PropertyDefinition> propertyDefs = dictionaryService.getPropertyDefs(contentClass);
-        
+
         if (propertyDefs != null)
         {
             for (final Map.Entry<QName, PropertyDefinition> prop : propertyDefs.entrySet())
             {
                 final PropertyDefinition propDef = prop.getValue();
-                
+
                 // Only properties of type cm:content can expand to synthetic properties.
                 if (DataTypeDefinition.CONTENT.equals(propDef.getDataType().getName()))
                 {
                     // We do not want to treat the cm:content property itself as facetable.
                     // It is a content URL whose value is not suitable for facetting.
-                    //   e.g. 2010/1/22/13/14/6e228904-d5d2-4a99-b7b1-8fe7c03c71f3.bin|mimetype=application/octet-stream|size=728|encoding=UTF-8|locale=en_GB_
+                    // e.g. 2010/1/22/13/14/6e228904-d5d2-4a99-b7b1-8fe7c03c71f3.bin|mimetype=application/octet-stream|size=728|encoding=UTF-8|locale=en_GB_
                     //
                     // However there are elements within that content URL which *are* facetable and are correctly treated as such by SOLR.
                     // As these are not actually Alfresco content properties, we must return artificial PropertyDefinition objects:
@@ -1061,10 +1078,10 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
                 }
             }
         }
-        
+
         return result;
     }
-    
+
     private boolean isNumeric(DataTypeDefinition datatype)
     {
         boolean result;
@@ -1072,19 +1089,20 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
         {
             Class<?> clazz = Class.forName(datatype.getJavaClassName());
             result = Number.class.isAssignableFrom(clazz);
-        } catch (ClassNotFoundException e)
+        }
+        catch (ClassNotFoundException e)
         {
             result = false;
         }
         return result;
     }
-    
+
     private boolean isDateLike(DataTypeDefinition datatype)
     {
         return DataTypeDefinition.DATE.equals(datatype.getName()) ||
-               DataTypeDefinition.DATETIME.equals(datatype.getName());
+                DataTypeDefinition.DATETIME.equals(datatype.getName());
     }
-    
+
     private boolean isFacetableText(DataTypeDefinition datatype)
     {
         // For now at least, we're excluding MLTEXT

@@ -25,8 +25,8 @@
  */
 package org.alfresco.heartbeat;
 
-import org.alfresco.heartbeat.datasender.HBDataSenderServiceBuilder;
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
+import org.alfresco.heartbeat.datasender.HBDataSenderServiceBuilder;
 
 /**
  * Creates and configures a {@link HBDataSenderService}
@@ -43,7 +43,8 @@ public class HBDataSenderServiceFactory
     /**
      * Sets the ingestion url for the heartbeat data
      *
-     * @param target valid url
+     * @param target
+     *            valid url
      */
     public void setTarget(String target)
     {
@@ -75,12 +76,12 @@ public class HBDataSenderServiceFactory
      *
      * @return
      */
-    public HBDataSenderService createInstance() 
+    public HBDataSenderService createInstance()
     {
         return HBDataSenderServiceBuilder.builder()
-                  .withHeartbeatURL(target)
-                  .withSendingSchedule(sendingSchedule)
-                  .enable(heartbeatEnabled)
-                  .build();
+                .withHeartbeatURL(target)
+                .withSendingSchedule(sendingSchedule)
+                .enable(heartbeatEnabled)
+                .build();
     }
 }

@@ -31,8 +31,7 @@ import org.alfresco.repo.virtual.ActualEnvironment;
 import org.alfresco.service.cmr.search.SearchParameters;
 
 /**
- * Constraints decorator that adds {@link PagingRequest} related information
- * (things like skip-count and max-items) to query parameters.
+ * Constraints decorator that adds {@link PagingRequest} related information (things like skip-count and max-items) to query parameters.
  *
  * @author Bogdan Horje
  */
@@ -48,7 +47,7 @@ public class PagingRequestConstraint extends VirtualQueryConstraintDecorator
 
     @Override
     protected SearchParameters applyDecorations(ActualEnvironment environment, SearchParameters searchParameters,
-                VirtualQuery query)
+            VirtualQuery query)
     {
         SearchParameters searchParametersCopy = searchParameters.copy();
 

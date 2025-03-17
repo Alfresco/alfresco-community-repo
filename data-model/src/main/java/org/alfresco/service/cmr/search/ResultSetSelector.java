@@ -37,13 +37,15 @@ public interface ResultSetSelector
 {
     /**
      * The unique name for the selector.
+     * 
      * @return - the unique name for the selector
      */
-   public String getName();
-   
-   /**
-    * Get the Alfresco type QName for the type or aspect
-    * @return - the type or aspect 
-    */
-   public QName getType();
+    public String getName();
+
+    /**
+     * Get the Alfresco type QName for the type or aspect
+     * 
+     * @return - the type or aspect
+     */
+    public QName getType();
 }

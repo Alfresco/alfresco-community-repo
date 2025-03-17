@@ -70,7 +70,7 @@ public interface WorkflowModelNominatedInvitation
     public static final QName WF_PROP_RESOURCE_TYPE = QName.createQName(NAMESPACE_URI, "resourceType");
     public static final QName WF_PROP_RESOURCE_NAME = QName.createQName(NAMESPACE_URI, "resourceName");
     public static final QName WF_PROP_RESOURCE_TITLE = QName.createQName(NAMESPACE_URI, "resourceTitle");
-    public static final QName WF_PROP_RESOURCE_DESCRIPTION = QName.createQName(NAMESPACE_URI, "resourceDescription");   
+    public static final QName WF_PROP_RESOURCE_DESCRIPTION = QName.createQName(NAMESPACE_URI, "resourceDescription");
     public static final QName WF_PROP_INVITEE_ROLE = QName.createQName(NAMESPACE_URI, "inviteeRole");
     public static final QName WF_PROP_INVITEE_GEN_PASSWORD = QName.createQName(NAMESPACE_URI, "inviteeGenPassword");
 

@@ -30,12 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.activities.feed.FeedTaskProcessor;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.service.cmr.activities.ActivityService;
-import org.alfresco.util.JSONtoFmModel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -43,23 +37,30 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.activities.feed.FeedTaskProcessor;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.util.JSONtoFmModel;
+
 /**
  * Java-backed WebScript to retrieve Activity Site Feed
  */
 public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
 {
     private static final Log logger = LogFactory.getLog(SiteFeedRetrieverWebScript.class);
-    
+
     private ActivityService activityService;
-   
+
     public void setActivityService(ActivityService activityService)
     {
         this.activityService = activityService;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * 
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
@@ -69,37 +70,36 @@ public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
         {
             format = getDescription().getDefaultFormat();
         }
-        
+
         String extensionPath = req.getExtensionPath();
         String[] extParts = extensionPath == null ? new String[1] : extensionPath.split("/");
-        
+
         String siteId = null;
         if (extParts.length == 1)
         {
-           siteId = extParts[0];
+            siteId = extParts[0];
         }
         else
         {
             throw new AlfrescoRuntimeException("Unexpected extension: " + extensionPath);
         }
-        
+
         // map feed collection format to feed entry format (if not the same), eg.
-        //     atomfeed -> atomentry
-        //     atom     -> atomentry
+        // atomfeed -> atomentry
+        // atom -> atomentry
         if (format.equals("atomfeed") || format.equals("atom"))
         {
-           format = "atomentry";
+            format = "atomentry";
         }
-        
+
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         try
         {
             List<String> feedEntries = activityService.getSiteFeedEntries(siteId);
-            
-            
+
             if (format.equals(FeedTaskProcessor.FEED_FORMAT_JSON))
-            { 
+            {
                 model.put("feedEntries", feedEntries);
                 model.put("siteId", siteId);
             }
@@ -107,17 +107,17 @@ public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
             {
                 List<Map<String, Object>> activityFeedModels = new ArrayList<Map<String, Object>>();
                 try
-                { 
+                {
                     for (String feedEntry : feedEntries)
                     {
                         activityFeedModels.add(JSONtoFmModel.convertJSONObjectToMap(feedEntry));
                     }
                 }
                 catch (JSONException je)
-                {    
+                {
                     throw new AlfrescoRuntimeException("Unable to get user feed entries: " + je.getMessage());
                 }
-                
+
                 model.put("feedEntries", activityFeedModels);
                 model.put("siteId", siteId);
             }
@@ -127,12 +127,12 @@ public class SiteFeedRetrieverWebScript extends DeclarativeWebScript
             // implies that site either does not exist or is private (and current user is not admin or a member) - hence return 401 (unauthorised)
             String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
             status.setCode(Status.STATUS_UNAUTHORIZED);
-            logger.warn("Unable to get site feed entries for '" + siteId + "' (site does not exist or is private) - currently logged in as '" + currentUser +"'");
-            
+            logger.warn("Unable to get site feed entries for '" + siteId + "' (site does not exist or is private) - currently logged in as '" + currentUser + "'");
+
             model.put("feedEntries", null);
             model.put("siteId", "");
         }
-        
+
         return model;
     }
 }

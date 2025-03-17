@@ -40,16 +40,17 @@ public interface AlfrescoCmisService extends CmisService
      * Called directly before any CMIS method is used
      */
     void beforeCall();
-    
+
     /**
      * Called directly after any CMIS method is used
      */
     void afterCall();
-    
+
     /**
      * Call before the work method and forms the opposite of {@link #close()}.
      * 
-     * @param context               the context in which the service must operate
+     * @param context
+     *            the context in which the service must operate
      */
     void open(CallContext context);
 }

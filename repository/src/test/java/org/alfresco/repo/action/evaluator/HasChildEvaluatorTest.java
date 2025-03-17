@@ -25,6 +25,10 @@
  */
 package org.alfresco.repo.action.evaluator;
 
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.service.cmr.action.ActionCondition;
@@ -35,9 +39,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Test class for {@link HasChildEvaluator}.
@@ -56,14 +57,14 @@ public class HasChildEvaluatorTest extends BaseSpringTest
     private NodeRef childNodeRef;
     private QName parentChildAssocName;
     private HasChildEvaluator evaluator;
-    
+
     private final static String ID = GUID.generate();
 
     @Before
     public void before() throws Exception
     {
-        this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
-        
+        this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
+
         // Create the store and get the root node
         this.testStoreRef = this.nodeService.createStore(
                 StoreRef.PROTOCOL_WORKSPACE, "Test_"
@@ -76,27 +77,27 @@ public class HasChildEvaluatorTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}testnode_p"),
                 ContentModel.TYPE_CONTENT).getChildRef();
-        
+
         parentChildAssocName = QName.createQName("{test}testnode_c");
         this.childNodeRef = this.nodeService.createNode(
                 this.parentNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 parentChildAssocName,
                 ContentModel.TYPE_CONTENT).getChildRef();
-        
-        this.evaluator = (HasChildEvaluator)this.applicationContext.getBean(HasChildEvaluator.NAME);
+
+        this.evaluator = (HasChildEvaluator) this.applicationContext.getBean(HasChildEvaluator.NAME);
     }
-    
+
     public void testPass()
     {
         ActionCondition condition = new ActionConditionImpl(ID, HasChildEvaluator.NAME, null);
         // no parameters means match all.
         assertTrue(this.evaluator.evaluate(condition, this.parentNodeRef));
-        
+
         // should find child with specific assoc type
         condition.setParameterValue(HasChildEvaluator.PARAM_ASSOC_TYPE, ContentModel.ASSOC_CHILDREN);
         assertTrue(this.evaluator.evaluate(condition, this.parentNodeRef));
-        
+
         // should find child with specific assoc type (and name)
         condition.setParameterValue(HasChildEvaluator.PARAM_ASSOC_NAME, this.parentChildAssocName);
         assertTrue(this.evaluator.evaluate(condition, this.parentNodeRef));
@@ -106,18 +107,18 @@ public class HasChildEvaluatorTest extends BaseSpringTest
         condition.setParameterValue(HasChildEvaluator.PARAM_ASSOC_NAME, this.parentChildAssocName);
         assertTrue(this.evaluator.evaluate(condition, this.parentNodeRef));
     }
-    
+
     public void testFail()
     {
         ActionCondition condition = new ActionConditionImpl(ID, HasChildEvaluator.NAME, null);
-        
+
         // node has no children
         assertFalse(this.evaluator.evaluate(condition, this.childNodeRef));
-        
+
         // node has child of unmatched assoc type
         condition.setParameterValue(HasChildEvaluator.PARAM_ASSOC_TYPE, ContentModel.ASSOC_ATTACHMENTS);
         assertFalse(this.evaluator.evaluate(condition, this.parentNodeRef));
-        
+
         // node has child of unmatched assoc name
         condition = new ActionConditionImpl(ID, HasChildEvaluator.NAME, null);
         condition.setParameterValue(HasChildEvaluator.PARAM_ASSOC_NAME, QName.createQName("{foo}noSuchName"));

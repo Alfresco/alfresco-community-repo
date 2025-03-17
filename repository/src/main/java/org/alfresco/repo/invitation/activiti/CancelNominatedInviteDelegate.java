@@ -32,6 +32,7 @@ import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVa
 import java.util.Map;
 
 import org.activiti.engine.delegate.DelegateExecution;
+
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 
 /**

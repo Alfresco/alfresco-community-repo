@@ -26,14 +26,13 @@
 package org.alfresco.repo.search.transaction;
 
 import java.io.UnsupportedEncodingException;
-
+import javax.transaction.xa.XAResource;
 import jakarta.transaction.HeuristicMixedException;
 import jakarta.transaction.HeuristicRollbackException;
 import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.Synchronization;
 import jakarta.transaction.SystemException;
-import javax.transaction.xa.XAResource;
 
 import org.alfresco.util.GUID;
 
@@ -137,9 +136,7 @@ public class SimpleTransaction implements XidTransaction
         isRollBackOnly = true;
     }
 
-    /*
-     * Support for suspend, resume and begin.
-     */
+    /* Support for suspend, resume and begin. */
 
     /* package */static SimpleTransaction suspend()
     {

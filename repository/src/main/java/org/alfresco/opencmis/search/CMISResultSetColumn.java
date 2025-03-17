@@ -25,10 +25,11 @@
  */
 package org.alfresco.opencmis.search;
 
+import org.apache.chemistry.opencmis.commons.enums.PropertyType;
+
 import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
 import org.alfresco.service.cmr.search.ResultSetColumn;
 import org.alfresco.service.namespace.QName;
-import org.apache.chemistry.opencmis.commons.enums.PropertyType;
 
 /**
  * @author andyh

@@ -20,12 +20,13 @@
  */
 package org.alfresco.repo.jscript;
 
-import org.alfresco.repo.jscript.app.CustomResponse;
+import java.io.Serializable;
+import java.util.Map;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.Serializable;
-import java.util.Map;
+import org.alfresco.repo.jscript.app.CustomResponse;
 
 /**
  * Populates DocLib webscript response with custom metadata output
@@ -65,13 +66,12 @@ public final class SlingshotDocLibCustomResponse extends BaseScopableProcessorEx
     {
         JSONObject json = new JSONObject();
 
-
         for (Map.Entry<String, Object> entry : this.customResponses.entrySet())
         {
             try
             {
                 Serializable response = ((CustomResponse) entry.getValue()).populate();
-                json.put(entry.getKey(), response == null ? JSONObject.NULL: response);
+                json.put(entry.getKey(), response == null ? JSONObject.NULL : response);
             }
             catch (JSONException error)
             {

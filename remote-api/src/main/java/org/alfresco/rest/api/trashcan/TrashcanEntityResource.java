@@ -55,7 +55,7 @@ import org.alfresco.service.cmr.repository.DirectAccessUrl;
  *
  * @author Gethin James
  */
-@EntityResource(name="deleted-nodes", title = "Deleted Nodes")
+@EntityResource(name = "deleted-nodes", title = "Deleted Nodes")
 public class TrashcanEntityResource implements
         EntityResourceAction.ReadById<Node>, EntityResourceAction.Read<Node>, EntityResourceAction.Delete, BinaryResourceAction.Read
 {
@@ -94,7 +94,7 @@ public class TrashcanEntityResource implements
 
     @Override
     @WebApiDescription(title = "Download content", description = "Download content")
-    @BinaryProperties({ "content" })
+    @BinaryProperties({"content"})
     public BinaryResource readProperty(String nodeId, Parameters parameters)
     {
         return deletedNodes.getContent(nodeId, null, parameters);
@@ -103,7 +103,7 @@ public class TrashcanEntityResource implements
     @Operation("request-direct-access-url")
     @WebApiParam(name = "directAccessUrlRequest", title = "Request direct access url", description = "Options for direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Request content url",
-            description="Generates a direct access URL.",
+            description = "Generates a direct access URL.",
             successStatus = HttpServletResponse.SC_OK)
     public DirectAccessUrl requestContentDirectUrl(String originalNodeId, DirectAccessUrlRequest directAccessUrlRequest, Parameters parameters, WithResponse withResponse)
     {

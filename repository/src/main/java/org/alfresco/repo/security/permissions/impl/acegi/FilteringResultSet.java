@@ -60,7 +60,7 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
         this.unfiltered = unfiltered;
         inclusionMask = new BitSet(unfiltered.length());
     }
-    
+
     public FilteringResultSet(ResultSet unfiltered, BitSet inclusionMask)
     {
         super();
@@ -133,7 +133,7 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
     public List<NodeRef> getNodeRefs()
     {
         ArrayList<NodeRef> answer = new ArrayList<NodeRef>(length());
-        for(ResultSetRow row : this)
+        for (ResultSetRow row : this)
         {
             answer.add(row.getNodeRef());
         }
@@ -143,7 +143,7 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
     public List<ChildAssociationRef> getChildAssocRefs()
     {
         ArrayList<ChildAssociationRef> answer = new ArrayList<ChildAssociationRef>(length());
-        for(ResultSetRow row : this)
+        for (ResultSetRow row : this)
         {
             answer.add(row.getChildAssocRef());
         }
@@ -237,9 +237,7 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
             return -1;
         }
 
-        /*
-         * Mutation is not supported
-         */
+        /* Mutation is not supported */
 
         public void remove()
         {
@@ -288,7 +286,7 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
 
     public boolean hasMore()
     {
-        if(getResultSetMetaData().getLimitedBy() != LimitBy.UNLIMITED)
+        if (getResultSetMetaData().getLimitedBy() != LimitBy.UNLIMITED)
         {
             return true;
         }
@@ -296,9 +294,9 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
         {
             try
             {
-                return (unfiltered.getStart()+unfiltered.length()) < unfiltered.getNumberFound();
+                return (unfiltered.getStart() + unfiltered.length()) < unfiltered.getNumberFound();
             }
-            catch(UnsupportedOperationException uoe)
+            catch (UnsupportedOperationException uoe)
             {
                 return true;
             }
@@ -308,11 +306,12 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
     /**
      * Bulk fetch results in the cache
      * 
-     * @param bulkFetch boolean
+     * @param bulkFetch
+     *            boolean
      */
     public boolean setBulkFetch(boolean bulkFetch)
     {
-    	return unfiltered.setBulkFetch(bulkFetch);
+        return unfiltered.setBulkFetch(bulkFetch);
     }
 
     /**
@@ -328,11 +327,12 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
     /**
      * Set the bulk fetch size
      * 
-     * @param bulkFetchSize int
+     * @param bulkFetchSize
+     *            int
      */
     public int setBulkFetchSize(int bulkFetchSize)
     {
-    	return unfiltered.setBulkFetchSize(bulkFetchSize);
+        return unfiltered.setBulkFetchSize(bulkFetchSize);
     }
 
     /**
@@ -344,22 +344,22 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
     {
         return unfiltered.getBulkFetchSize();
     }
-    
+
     @Override
     public List<Pair<String, Integer>> getFieldFacet(String field)
     {
-       return unfiltered.getFieldFacet(field);
+        return unfiltered.getFieldFacet(field);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
-     */
+     * 
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound() */
     @Override
     public long getNumberFound()
     {
         return inclusionMask.cardinality();
     }
-    
+
     @Override
     public Map<String, Integer> getFacetQueries()
     {
@@ -371,7 +371,7 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
     {
         return unfiltered.getHighlighting();
     }
-    
+
     @Override
     public SpellCheckResult getSpellCheckResult()
     {

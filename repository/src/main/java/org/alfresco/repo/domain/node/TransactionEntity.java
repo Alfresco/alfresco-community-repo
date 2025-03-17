@@ -40,26 +40,25 @@ public class TransactionEntity implements Transaction, Serializable
     private Long version;
     private String changeTxnId;
     private Long commitTimeMs;
-    
+
     /**
      * Required default constructor
      */
     public TransactionEntity()
-    {
-    }
-        
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("TransactionEntity")
-          .append("[ ID=").append(id)
-          .append(", changeTxnId=").append(changeTxnId)
-          .append(", commitTimeMs=").append(commitTimeMs)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", changeTxnId=").append(changeTxnId)
+                .append(", commitTimeMs=").append(commitTimeMs)
+                .append("]");
         return sb.toString();
     }
-    
+
     public Long getId()
     {
         return id;

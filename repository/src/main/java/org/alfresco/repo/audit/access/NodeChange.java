@@ -62,12 +62,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Changes made to a {@code Node} in a single transaction. For example the creation of
- * a Node also involves updating properties, but the main action remains create node.
+ * Changes made to a {@code Node} in a single transaction. For example the creation of a Node also involves updating properties, but the main action remains create node.
  * 
  * @author Alan Davis
  */
-/*package*/ class NodeChange implements
+/* package */ class NodeChange implements
 
         BeforeDeleteNodePolicy, OnAddAspectPolicy, OnCreateNodePolicy, OnMoveNodePolicy,
         OnRemoveAspectPolicy, OnUpdatePropertiesPolicy,
@@ -77,7 +76,7 @@ import org.alfresco.service.namespace.QName;
         OnCreateVersionPolicy,
 
         OnCopyCompletePolicy,
-        
+
         OnCheckOut, OnCheckIn, OnCancelCheckOut
 {
     private static final String USER = "user";
@@ -114,7 +113,7 @@ import org.alfresco.service.namespace.QName;
     private static final String CANCEL_CHECK_OUT = "cancelCheckOut";
 
     private static final String INVALID_PATH_CHAR_REPLACEMENT = "-";
-    
+
     public static Collection<String> SUMMARY_KEYS = new ArrayList<String>();
     static
     {
@@ -127,37 +126,37 @@ import org.alfresco.service.namespace.QName;
     }
 
     public static final String SUB_ACTION_PREFIX = SUB_ACTION + AUDIT_PATH_SEPARATOR;
-    
+
     private final NodeInfoFactory nodeInfoFactory;
     private final NamespaceService namespaceService;
     private NodeInfo nodeInfo;
 
     private String action;
     private String runAsUser;
-    
+
     private boolean auditSubActions = false;
     private Set<String> subActions = new LinkedHashSet<String>();
     private List<Map<String, Serializable>> subActionAuditMaps;
-    
+
     private NodeInfo copyFrom;
-    
+
     private NodeInfo moveFrom;
 
     private Map<QName, Serializable> fromProperties;
     private Map<QName, Serializable> toProperties;
-    
+
     private HashSet<QName> addedAspects;
     private HashSet<QName> deletedAspects;
-    
+
     private HashMap<String, Serializable> versionProperties;
-    
-    /*package*/ NodeChange(NodeInfoFactory nodeInfoFactory, NamespaceService namespaceService, NodeRef nodeRef)
+
+    /* package */ NodeChange(NodeInfoFactory nodeInfoFactory, NamespaceService namespaceService, NodeRef nodeRef)
     {
         this.nodeInfoFactory = nodeInfoFactory;
         this.nodeInfo = nodeInfoFactory.newNodeInfo(nodeRef);
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * @return a derived action for a transaction based on the sub-actions that have taken place.
      */
@@ -166,7 +165,7 @@ import org.alfresco.service.namespace.QName;
         // Derive higher level action
         String action;
         boolean keepRunAsUser = false;
-        
+
         if (subActions.contains(CHECK_OUT))
         {
             action = "CHECK OUT";
@@ -191,7 +190,7 @@ import org.alfresco.service.namespace.QName;
         {
             // Reads in combinations with other actions tend to only facilitate the other action.
             action = "READ";
-            // MNT-8810 fix, action is considered as READ -> so let's keep actual user who performed readContent 
+            // MNT-8810 fix, action is considered as READ -> so let's keep actual user who performed readContent
             keepRunAsUser = true;
         }
         else if (subActions.contains(DELETE_NODE))
@@ -221,7 +220,7 @@ import org.alfresco.service.namespace.QName;
         }
         return action;
     }
-    
+
     /**
      * @return {@code true} if the node has been created and then deleted.
      */
@@ -241,14 +240,14 @@ import org.alfresco.service.namespace.QName;
     {
         // Remember sub-actions so we can check them later to derive the high level action
         subActions.add(subNodeChange.action);
-        
+
         // Default the action to the first sub-action;
         if (action == null)
         {
             action = subNodeChange.action;
         }
-        
-        // Audit sub actions if required. 
+
+        // Audit sub actions if required.
         if (auditSubActions)
         {
             if (subActionAuditMaps == null)
@@ -284,7 +283,7 @@ import org.alfresco.service.namespace.QName;
     private NodeChange setMoveTo(ChildAssociationRef childAssocRef)
     {
         nodeInfo = nodeInfoFactory.newNodeInfo(childAssocRef);
-        
+
         // Clear values if we are back to where we started.
         if (nodeInfo.equals(moveFrom))
         {
@@ -292,7 +291,7 @@ import org.alfresco.service.namespace.QName;
         }
         return this;
     }
-    
+
     private NodeChange setFromProperties(Map<QName, Serializable> fromProperties)
     {
         // Don't overwrite original value if multiple calls.
@@ -308,9 +307,9 @@ import org.alfresco.service.namespace.QName;
         this.toProperties = toProperties;
         return this;
     }
-    
+
     /**
-     * Add an aspect - if just deleted, remove the delete, otherwise record the add. 
+     * Add an aspect - if just deleted, remove the delete, otherwise record the add.
      */
     private NodeChange addAspect(QName aspect)
     {
@@ -320,10 +319,10 @@ import org.alfresco.service.namespace.QName;
         }
 
         // Consider sequences
-        //   add           = add
-        //   del add       = ---
-        //   add del add   = add
-        //   add add       = add
+        // add = add
+        // del add = ---
+        // add del add = add
+        // add add = add
         if (deletedAspects != null && deletedAspects.contains(aspect))
         {
             deletedAspects.remove(aspect);
@@ -332,10 +331,10 @@ import org.alfresco.service.namespace.QName;
         {
             addedAspects.add(aspect);
         }
-        
+
         return this;
     }
-    
+
     /**
      * Delete an aspect - if just added, remove the add, otherwise record the delete.
      */
@@ -347,10 +346,10 @@ import org.alfresco.service.namespace.QName;
         }
 
         // Consider sequences
-        //   del           = del
-        //   add del       = ---
-        //   del add del   = del
-        //   del del       = del
+        // del = del
+        // add del = ---
+        // del add del = del
+        // del del = del
         if (addedAspects != null && addedAspects.contains(aspect))
         {
             addedAspects.remove(aspect);
@@ -359,10 +358,10 @@ import org.alfresco.service.namespace.QName;
         {
             deletedAspects.add(aspect);
         }
-        
+
         return this;
     }
-    
+
     private NodeChange setVersionProperties(
             HashMap<String, Serializable> versionProperties)
     {
@@ -373,28 +372,24 @@ import org.alfresco.service.namespace.QName;
         this.versionProperties.putAll(versionProperties);
         return this;
     }
-    
+
     @Override
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).
-                setAction(DELETE_NODE));
+        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(DELETE_NODE));
     }
 
     @Override
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        Map<QName, Serializable> fromProperties = Collections.<QName, Serializable>emptyMap();
+        Map<QName, Serializable> fromProperties = Collections.<QName, Serializable> emptyMap();
         Map<QName, Serializable> toProperties = nodeInfoFactory.getProperties(nodeRef);
         this.fromProperties = null; // Sometimes onCreateNode policy is out of order (e.g. create a person)
         setFromProperties(fromProperties);
         setToProperties(toProperties);
 
-        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).
-                setAction(CREATE_NODE).
-                setFromProperties(fromProperties).
-                setToProperties(toProperties));
+        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(CREATE_NODE).setFromProperties(fromProperties).setToProperties(toProperties));
     }
 
     @Override
@@ -402,14 +397,11 @@ import org.alfresco.service.namespace.QName;
     {
         setMoveFrom(fromChildAssocRef);
         setMoveTo(toChildAssocRef);
-        
+
         // Note: A change of the child node name will be picked up as a property name change.
-        
-        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, toChildAssocRef.getChildRef()).
-                setAction(MOVE_NODE).
-                setMoveFrom(fromChildAssocRef).
-                setMoveTo(toChildAssocRef));
-    }  
+
+        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, toChildAssocRef.getChildRef()).setAction(MOVE_NODE).setMoveFrom(fromChildAssocRef).setMoveTo(toChildAssocRef));
+    }
 
     @Override
     public void onUpdateProperties(NodeRef nodeRef,
@@ -420,56 +412,46 @@ import org.alfresco.service.namespace.QName;
         {
             fromProperties = this.toProperties;
         }
-        
+
         setFromProperties(fromProperties);
         setToProperties(toProperties);
-        
-        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).
-                setAction(UPDATE_NODE_PROPERTIES).
-                setFromProperties(fromProperties).
-                setToProperties(toProperties));
+
+        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(UPDATE_NODE_PROPERTIES).setFromProperties(fromProperties).setToProperties(toProperties));
     }
 
     @Override
     public void onRemoveAspect(NodeRef nodeRef, QName aspect)
     {
         deleteAspect(aspect);
-        
-        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).
-                setAction(DELETE_NODE_ASPECT).
-                deleteAspect(aspect));
+
+        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(DELETE_NODE_ASPECT).deleteAspect(aspect));
     }
 
     @Override
     public void onAddAspect(NodeRef nodeRef, QName aspect)
     {
         addAspect(aspect);
-        
-        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).
-                setAction(ADD_NODE_ASPECT).
-                addAspect(aspect));
+
+        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(ADD_NODE_ASPECT).addAspect(aspect));
     }
-    
+
     @Override
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
         if (newContent)
         {
-            appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).
-                    setAction(CREATE_CONTENT));
+            appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(CREATE_CONTENT));
         }
         else
         {
-            appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).
-                    setAction(UPDATE_CONTENT));
+            appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(UPDATE_CONTENT));
         }
     }
 
     @Override
     public void onContentRead(NodeRef nodeRef)
     {
-        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).
-                setAction(READ_CONTENT));
+        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(READ_CONTENT));
         // MNT-8810 fix, remember runAsUser for read operation
         runAsUser = AuthenticationUtil.getRunAsUser();
     }
@@ -478,59 +460,52 @@ import org.alfresco.service.namespace.QName;
     public void onCreateVersion(QName classRef, NodeRef nodeRef,
             Map<String, Serializable> versionProperties, PolicyScope nodeDetails)
     {
-        setVersionProperties((HashMap<String, Serializable>)versionProperties);
-        
-        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).
-                setAction(CREATE_VERSION).
-                setVersionProperties((HashMap<String, Serializable>)versionProperties));
+        setVersionProperties((HashMap<String, Serializable>) versionProperties);
+
+        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(CREATE_VERSION).setVersionProperties((HashMap<String, Serializable>) versionProperties));
         // Note nodeDetails are not used
     }
-    
+
     public void onCopyComplete(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef,
             boolean copyToNewNode, Map<NodeRef, NodeRef> copyMap)
     {
         setCopyFrom(sourceNodeRef);
-        
-        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, targetNodeRef).
-                setAction(COPY_NODE).
-                setCopyFrom(sourceNodeRef));
+
+        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, targetNodeRef).setAction(COPY_NODE).setCopyFrom(sourceNodeRef));
     }
-    
+
     public void onCheckOut(NodeRef workingCopy)
     {
-        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, workingCopy).
-                setAction(CHECK_OUT));
+        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, workingCopy).setAction(CHECK_OUT));
     }
-    
+
     public void onCheckIn(NodeRef nodeRef)
     {
-        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).
-                setAction(CHECK_IN));
+        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(CHECK_IN));
     }
-    
+
     public void onCancelCheckOut(NodeRef nodeRef)
     {
-        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).
-                setAction(CANCEL_CHECK_OUT));
+        appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).setAction(CANCEL_CHECK_OUT));
     }
-    
+
     public Map<String, Serializable> getAuditData(boolean subAction)
     {
         Map<String, Serializable> auditMap = new HashMap<String, Serializable>(
                 2 *
-                (1 +               // action
-                 1 +               // user
-                 1 +               // sub actions
-                 3 +               // node, path, type
-                 3 +               // copy source's node, path, type 
-                 3 +               // move source's node, path, type
-                 (fromProperties != null ? fromProperties.size() + toProperties.size() + 4 : 0) +
-                                   // individual property changes
-                                   // grouped from, to, add and delete changes
-                 (addedAspects != null ? addedAspects.size() : 0) +
-                 (deletedAspects != null ? deletedAspects.size() : 0) +
-                 (versionProperties != null ? versionProperties.size()+1 : 0) +
-                 getSubAuditDataSize()));
+                        (1 + // action
+                                1 + // user
+                                1 + // sub actions
+                                3 + // node, path, type
+                                3 + // copy source's node, path, type
+                                3 + // move source's node, path, type
+                                (fromProperties != null ? fromProperties.size() + toProperties.size() + 4 : 0) +
+                                // individual property changes
+                                // grouped from, to, add and delete changes
+                                (addedAspects != null ? addedAspects.size() : 0) +
+                                (deletedAspects != null ? deletedAspects.size() : 0) +
+                                (versionProperties != null ? versionProperties.size() + 1 : 0) +
+                                getSubAuditDataSize()));
 
         // For a transaction, set the action
         if (!subAction)
@@ -538,68 +513,68 @@ import org.alfresco.service.namespace.QName;
             setAction(getDerivedAction());
         }
         auditMap.put(ACTION, action);
-        
+
         if (!subAction) // no need to repeat for sub actions
         {
             // MNT-8810 fix, if runAsUser is not null this means that this is READ action and we should use real user who performed readContent,
             // not the current user as actual read may be executed in runAs block (for example for thumbnail creation)
             auditMap.put(USER, (runAsUser == null ? AuthenticationUtil.getFullyAuthenticatedUser() : runAsUser));
             addSubActionsToAuditMap(auditMap);
-        
+
             auditMap.put(NODE, nodeInfo.getNodeRef());
             auditMap.put(PATH, nodeInfo.getPrefixPath());
             auditMap.put(TYPE, nodeInfo.getPrefixType());
         }
-        
+
         if (copyFrom != null)
         {
             auditMap.put(buildPath(COPY, FROM, NODE), copyFrom.getNodeRef());
             auditMap.put(buildPath(COPY, FROM, PATH), copyFrom.getPrefixPath());
             auditMap.put(buildPath(COPY, FROM, TYPE), copyFrom.getPrefixType());
         }
-        
+
         if (moveFrom != null)
         {
             auditMap.put(buildPath(MOVE, FROM, NODE), moveFrom.getNodeRef());
             auditMap.put(buildPath(MOVE, FROM, PATH), moveFrom.getPrefixPath());
             auditMap.put(buildPath(MOVE, FROM, TYPE), moveFrom.getPrefixType());
         }
-        
+
         if (fromProperties != null)
         {
             addPropertyChangesToAuditMap(auditMap, subAction);
         }
-        
+
         if (addedAspects != null && !addedAspects.isEmpty())
         {
             addAspectChangesToAuditMap(auditMap, ADD, addedAspects, subAction);
         }
-        
+
         if (deletedAspects != null && !deletedAspects.isEmpty())
         {
             addAspectChangesToAuditMap(auditMap, DELETE, deletedAspects, subAction);
         }
-        
+
         if (versionProperties != null && !versionProperties.isEmpty())
         {
             addVersionPropertiesToAuditMap(auditMap, versionProperties, subAction);
         }
-        
+
         addSubActionAuditMapsToAuditMap(auditMap);
-        
+
         return auditMap;
     }
-    
+
     private void addSubActionsToAuditMap(Map<String, Serializable> auditMap)
     {
         StringBuilder sb = new StringBuilder();
-        for (String subAction: subActions)
+        for (String subAction : subActions)
         {
             if (sb.length() > 0)
             {
                 sb.append(' ');
             }
-            sb.append(subAction);                
+            sb.append(subAction);
         }
 
         auditMap.put(SUB_ACTIONS, sb.toString());
@@ -611,7 +586,7 @@ import org.alfresco.service.namespace.QName;
         HashMap<QName, Serializable> to = new HashMap<QName, Serializable>(toProperties.size());
         HashMap<QName, Serializable> add = new HashMap<QName, Serializable>(toProperties.size());
         HashMap<QName, Serializable> delete = new HashMap<QName, Serializable>(fromProperties.size());
-        
+
         // Initially check for changes to existing keys and values.
         // Record individual value changes and group (from, to, delete) changes in their own maps.
         for (Map.Entry<QName, Serializable> entry : fromProperties.entrySet())
@@ -620,22 +595,22 @@ import org.alfresco.service.namespace.QName;
             // Map operations as only the namesapace and local name are used in equals and
             // hashcode methods.
             QName key = getPrefixedQName(entry.getKey());
-            
+
             String name = replaceInvalidPathChars(key.toPrefixString());
             Serializable beforeValue = entry.getValue();
             Serializable afterValue = null;
-            
-            boolean exists = toProperties.containsKey(key); 
+
+            boolean exists = toProperties.containsKey(key);
             boolean same = false;
             if (exists)
             {
-                // Audit nothing if both values are null or equal. 
+                // Audit nothing if both values are null or equal.
                 afterValue = toProperties.get(key);
                 if ((beforeValue == afterValue) ||
-                    (beforeValue != null && beforeValue.equals(afterValue)))
+                        (beforeValue != null && beforeValue.equals(afterValue)))
                     same = true;
             }
-            
+
             if (!same)
             {
                 if (exists)
@@ -656,7 +631,7 @@ import org.alfresco.service.namespace.QName;
         // Check for new values. Record individual values and group as a single map.
         Set<QName> newKeys = new HashSet<QName>(toProperties.keySet());
         newKeys.removeAll(fromProperties.keySet());
-        for (QName key: newKeys)
+        for (QName key : newKeys)
         {
             // Audit QNames with the prefix set.
             key = getPrefixedQName(key);
@@ -666,7 +641,7 @@ import org.alfresco.service.namespace.QName;
             auditMap.put(buildPath(PROPERTIES, ADD, name), afterValue);
             add.put(key, afterValue);
         }
-        
+
         // Record maps of additions, deletes and paired from and to values.
         if (!subAction)
         {
@@ -688,17 +663,17 @@ import org.alfresco.service.namespace.QName;
             }
         }
     }
-    
+
     private void addAspectChangesToAuditMap(Map<String, Serializable> auditMap,
             String addOrDelete, HashSet<QName> aspects, boolean subAction)
     {
         // Audit Set<QName> where the QName has the prefix set.
         HashSet<QName> prefixedAspects = new HashSet<QName>(aspects.size());
-        for (QName aspect: aspects)
+        for (QName aspect : aspects)
         {
             // Audit QNames with the prefix set.
             aspect = getPrefixedQName(aspect);
-            
+
             prefixedAspects.add(aspect);
             String name = replaceInvalidPathChars(aspect.toPrefixString());
             auditMap.put(buildPath(ASPECTS, addOrDelete, name), null);
@@ -708,11 +683,11 @@ import org.alfresco.service.namespace.QName;
             auditMap.put(buildPath(ASPECTS, addOrDelete), prefixedAspects);
         }
     }
-    
+
     private void addVersionPropertiesToAuditMap(Map<String, Serializable> auditMap,
             HashMap<String, Serializable> properties, boolean subAction)
     {
-        for (Map.Entry<String, Serializable> entry: properties.entrySet())
+        for (Map.Entry<String, Serializable> entry : properties.entrySet())
         {
             // The key may be the string version ({URI}localName) of a QName.
             // If so get the prefixed version.
@@ -730,7 +705,7 @@ import org.alfresco.service.namespace.QName;
                     // Its just a String.
                 }
             }
-            
+
             String name = replaceInvalidPathChars(key);
             auditMap.put(buildPath(VERSION_PROPERTIES, name), entry.getValue());
         }
@@ -746,20 +721,20 @@ import org.alfresco.service.namespace.QName;
         // No point doing sub actions if only one!
         if (subActionAuditMaps != null && subActionAuditMaps.size() > 1)
         {
-            for (Map<String, Serializable> subActionAuditMap: subActionAuditMaps)
+            for (Map<String, Serializable> subActionAuditMap : subActionAuditMaps)
             {
                 size += subActionAuditMap.size();
             }
         }
         return size;
     }
-    
+
     private void addSubActionAuditMapsToAuditMap(Map<String, Serializable> auditMap)
     {
         // No point doing sub actions if only one!
         if (subActionAuditMaps != null && subActionAuditMaps.size() > 1)
         {
-            String format = "%0"+Integer.toString(auditMap.size()).length()+"d";
+            String format = "%0" + Integer.toString(auditMap.size()).length() + "d";
             int i = 0;
             for (Map<String, Serializable> subActionAuditMap : subActionAuditMaps)
             {
@@ -772,17 +747,18 @@ import org.alfresco.service.namespace.QName;
             }
         }
     }
-    
+
     /**
-     * Returns a path to be used in an audit map. Unlike {@link AuditApplication#buildPath(String...)}
-     * the returned value is relative (no leading slash).
-     * @param components String.. components of the path.
+     * Returns a path to be used in an audit map. Unlike {@link AuditApplication#buildPath(String...)} the returned value is relative (no leading slash).
+     * 
+     * @param components
+     *            String.. components of the path.
      * @return a component path of the supplied values.
      */
     private static String buildPath(String... components)
     {
         StringBuilder sb = new StringBuilder();
-        for (String component: components)
+        for (String component : components)
         {
             if (sb.length() > 0)
             {
@@ -792,7 +768,7 @@ import org.alfresco.service.namespace.QName;
         }
         return sb.toString();
     }
-    
+
     /**
      * @return a new QName that has the prefix set or the original if it is unknown.
      */
@@ -808,7 +784,7 @@ import org.alfresco.service.namespace.QName;
         }
         return qName;
     }
-    
+
     /**
      * @return a String where all invalid audit path characters are replaced by a '-'.
      */

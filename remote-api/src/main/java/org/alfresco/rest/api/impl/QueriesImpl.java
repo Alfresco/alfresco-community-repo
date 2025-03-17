@@ -41,6 +41,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.site.SiteModel;
@@ -77,8 +80,6 @@ import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.SearchLanguageConversion;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Queries implementation
@@ -88,43 +89,42 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class QueriesImpl implements Queries, InitializingBean
 {
-    private final static Map<String,QName> NODE_SORT_PARAMS_TO_QNAMES = sortParamsToQNames(
-        PARAM_NAME,       ContentModel.PROP_NAME,
-        PARAM_CREATEDAT,  ContentModel.PROP_CREATED,
-        PARAM_MODIFIEDAT, ContentModel.PROP_MODIFIED);
+    private final static Map<String, QName> NODE_SORT_PARAMS_TO_QNAMES = sortParamsToQNames(
+            PARAM_NAME, ContentModel.PROP_NAME,
+            PARAM_CREATEDAT, ContentModel.PROP_CREATED,
+            PARAM_MODIFIEDAT, ContentModel.PROP_MODIFIED);
 
     private final static Map<String, QName> PEOPLE_SORT_PARAMS_TO_QNAMES = sortParamsToQNames(
-        PARAM_PERSON_ID, ContentModel.PROP_USERNAME,
-        ContentModel.PROP_FIRSTNAME,
-        ContentModel.PROP_LASTNAME);
+            PARAM_PERSON_ID, ContentModel.PROP_USERNAME,
+            ContentModel.PROP_FIRSTNAME,
+            ContentModel.PROP_LASTNAME);
 
     private final static Map<String, QName> SITE_SORT_PARAMS_TO_QNAMES = sortParamsToQNames(
-            PARAM_SITE_ID,  ContentModel.PROP_NAME,
-            PARAM_SITE_TITLE,  ContentModel.PROP_TITLE,
+            PARAM_SITE_ID, ContentModel.PROP_NAME,
+            PARAM_SITE_TITLE, ContentModel.PROP_TITLE,
             PARAM_SITE_DESCRIPTION, ContentModel.PROP_DESCRIPTION);
 
     /**
-     * Helper method to build a map of sort parameter names to QNames. This method iterates through
-     * the parameters. If a parameter is a String it is assumed to be a sort parameter name and will
-     * be followed by a QName to which it maps. If however it is a QName the local name of the OName
-     * is used as the sort parameter name.
-     * @param parameters to build up the map.
+     * Helper method to build a map of sort parameter names to QNames. This method iterates through the parameters. If a parameter is a String it is assumed to be a sort parameter name and will be followed by a QName to which it maps. If however it is a QName the local name of the OName is used as the sort parameter name.
+     * 
+     * @param parameters
+     *            to build up the map.
      * @return the map
      */
     private static Map<String, QName> sortParamsToQNames(Object... parameters)
     {
         Map<String, QName> map = new HashMap<>();
-        for (int i=0; i<parameters.length; i++)
+        for (int i = 0; i < parameters.length; i++)
         {
             map.put(
-                parameters[i] instanceof String
-                ? (String)parameters[i++]
-                : ((QName)parameters[i]).getLocalName(),
-                (QName)parameters[i]);
+                    parameters[i] instanceof String
+                            ? (String) parameters[i++]
+                            : ((QName) parameters[i]).getLocalName(),
+                    (QName) parameters[i]);
         }
         return Collections.unmodifiableMap(map);
     }
-    
+
     private ServiceRegistry sr;
     private NodeService nodeService;
     private NamespaceService namespaceService;
@@ -162,7 +162,7 @@ public class QueriesImpl implements Queries, InitializingBean
         ParameterCheck.mandatory("nodes", this.nodes);
         ParameterCheck.mandatory("people", this.people);
         ParameterCheck.mandatory("sites", this.sites);
-        
+
         this.nodeService = sr.getNodeService();
         this.namespaceService = sr.getNamespaceService();
         this.dictionaryService = sr.getDictionaryService();
@@ -173,10 +173,9 @@ public class QueriesImpl implements Queries, InitializingBean
     public CollectionWithPagingInfo<Node> findNodes(Parameters parameters)
     {
         SearchService searchService = sr.getSearchService();
-        return new AbstractQuery<Node>(nodeService, searchService)
-        {
+        return new AbstractQuery<Node>(nodeService, searchService) {
             private final Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
-            
+
             @Override
             protected void buildQuery(StringBuilder query, String term, SearchParameters sp, String queryTemplateName)
             {
@@ -198,14 +197,14 @@ public class QueriesImpl implements Queries, InitializingBean
                 {
                     query.append(")");
                 }
-                
+
                 String nodeTypeStr = parameters.getParameter(PARAM_NODE_TYPE);
                 if (nodeTypeStr != null)
                 {
                     QName filterNodeTypeQName = nodes.createQName(nodeTypeStr);
                     if (dictionaryService.getType(filterNodeTypeQName) == null)
                     {
-                        throw new InvalidArgumentException("Unknown filter nodeType: "+nodeTypeStr);
+                        throw new InvalidArgumentException("Unknown filter nodeType: " + nodeTypeStr);
                     }
 
                     query.append(" AND (+TYPE:\"").append(nodeTypeStr).append(("\")"));
@@ -229,7 +228,7 @@ public class QueriesImpl implements Queries, InitializingBean
                 Path path = null;
                 try
                 {
-                   path = nodeService.getPath(nodeRef);
+                    path = nodeService.getPath(nodeRef);
                 }
                 catch (InvalidNodeRefException inre)
                 {
@@ -281,18 +280,17 @@ public class QueriesImpl implements Queries, InitializingBean
                 term = SearchLanguageConversion.escapeLuceneQuery(term);
                 return term;
             }
-            
+
         }.find(parameters, PARAM_TERM, MIN_TERM_LENGTH_NODES, "keywords",
-            IN_QUERY_SORT, NODE_SORT_PARAMS_TO_QNAMES,
-            new SortColumn(PARAM_MODIFIEDAT, false));
+                IN_QUERY_SORT, NODE_SORT_PARAMS_TO_QNAMES,
+                new SortColumn(PARAM_MODIFIEDAT, false));
     }
-    
+
     @Override
     public CollectionWithPagingInfo<Person> findPeople(Parameters parameters)
     {
         SearchService searchService = sr.getSearchService();
-        return new AbstractQuery<Person>(nodeService, searchService)
-        {
+        return new AbstractQuery<Person>(nodeService, searchService) {
             @Override
             protected void buildQuery(StringBuilder query, String term, SearchParameters sp, String queryTemplateName)
             {
@@ -318,20 +316,19 @@ public class QueriesImpl implements Queries, InitializingBean
                 Person person = people.getPerson(personId);
                 return person;
             }
-            
+
             // TODO Do the sort in the query on day. A comment in the code for the V0 API used for live people
-            //      search says adding sort values for this query don't work - tried it and they really don't.
+            // search says adding sort values for this query don't work - tried it and they really don't.
         }.find(parameters, PARAM_TERM, MIN_TERM_LENGTH_PEOPLE, "_PERSON",
-            POST_QUERY_SORT, PEOPLE_SORT_PARAMS_TO_QNAMES,
-            new SortColumn(PARAM_FIRSTNAME, true), new SortColumn(PARAM_LASTNAME, true));
+                POST_QUERY_SORT, PEOPLE_SORT_PARAMS_TO_QNAMES,
+                new SortColumn(PARAM_FIRSTNAME, true), new SortColumn(PARAM_LASTNAME, true));
     }
 
     @Override
     public CollectionWithPagingInfo<Site> findSites(Parameters parameters)
     {
         SearchService searchService = sr.getSearchService();
-        return new AbstractQuery<Site>(nodeService, searchService)
-        {
+        return new AbstractQuery<Site>(nodeService, searchService) {
             @Override
             protected void buildQuery(StringBuilder query, String term, SearchParameters sp, String queryTemplateName)
             {
@@ -343,7 +340,7 @@ public class QueriesImpl implements Queries, InitializingBean
                 query.append(term);
                 query.append("*\")");
             }
-            
+
             @Override
             protected List<Site> newList(int capacity)
             {
@@ -362,7 +359,7 @@ public class QueriesImpl implements Queries, InitializingBean
                 // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
                 String siteId = siteInfo.getShortName();
                 String role = null;
-                if(includeRole)
+                if (includeRole)
                 {
                     role = sites.getSiteRole(siteId);
                 }
@@ -370,17 +367,17 @@ public class QueriesImpl implements Queries, InitializingBean
             }
         }.find(parameters, PARAM_TERM, MIN_TERM_LENGTH_SITES, "_SITE", POST_QUERY_SORT, SITE_SORT_PARAMS_TO_QNAMES, new SortColumn(PARAM_SITE_TITLE, true));
     }
-    
+
     public abstract static class AbstractQuery<T>
     {
         public enum Sort
         {
             IN_QUERY_SORT, POST_QUERY_SORT
         }
-        
+
         private final NodeService nodeService;
         private final SearchService searchService;
-        
+
         public AbstractQuery(NodeService nodeService, SearchService searchService)
         {
             this.nodeService = nodeService;
@@ -388,14 +385,14 @@ public class QueriesImpl implements Queries, InitializingBean
         }
 
         public CollectionWithPagingInfo<T> find(Parameters parameters,
-            String termName, int minTermLength, String queryTemplateName,
-            Sort sort, Map<String, QName> sortParamsToQNames, SortColumn... defaultSort)
+                String termName, int minTermLength, String queryTemplateName,
+                Sort sort, Map<String, QName> sortParamsToQNames, SortColumn... defaultSort)
         {
             SearchParameters sp = new SearchParameters();
             sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
             sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
             sp.setDefaultFieldName(queryTemplateName);
-            
+
             String term = getTerm(parameters, termName, minTermLength);
 
             StringBuilder query = new StringBuilder();
@@ -404,7 +401,7 @@ public class QueriesImpl implements Queries, InitializingBean
 
             Paging paging = parameters.getPaging();
             PagingRequest pagingRequest = Util.getPagingRequest(paging);
-            
+
             List<SortColumn> defaultSortCols = (defaultSort != null ? Arrays.asList(defaultSort) : Collections.emptyList());
             if (sort == IN_QUERY_SORT)
             {
@@ -413,20 +410,20 @@ public class QueriesImpl implements Queries, InitializingBean
                 sp.setSkipCount(pagingRequest.getSkipCount());
                 sp.setMaxItems(pagingRequest.getMaxItems());
             }
-            
+
             ResultSet queryResults = null;
             List<T> collection = null;
             try
             {
                 queryResults = searchService.query(sp);
-                
+
                 List<NodeRef> nodeRefs = queryResults.getNodeRefs();
-                
+
                 if (sort == POST_QUERY_SORT)
                 {
                     nodeRefs = postQuerySort(parameters, sortParamsToQNames, defaultSortCols, nodeRefs);
                 }
-                
+
                 collection = newList(nodeRefs.size());
                 List<String> includeParam = parameters.getInclude();
 
@@ -455,40 +452,48 @@ public class QueriesImpl implements Queries, InitializingBean
         }
 
         /**
-         * Builds up the query and is expected to call {@link SearchParameters#setDefaultFieldName(String)}
-         * and {@link SearchParameters#addQueryTemplate(String, String)}
-         * @param query StringBuilder into which the query should be built.
-         * @param term to be searched for
-         * @param sp SearchParameters
+         * Builds up the query and is expected to call {@link SearchParameters#setDefaultFieldName(String)} and {@link SearchParameters#addQueryTemplate(String, String)}
+         * 
+         * @param query
+         *            StringBuilder into which the query should be built.
+         * @param term
+         *            to be searched for
+         * @param sp
+         *            SearchParameters
          * @param queryTemplateName
          */
         protected abstract void buildQuery(StringBuilder query, String term, SearchParameters sp, String queryTemplateName);
-        
+
         /**
          * Returns a list of the correct type.
-         * @param capacity of the list
+         * 
+         * @param capacity
+         *            of the list
          * @return a new list.
          */
         protected abstract List<T> newList(int capacity);
 
         /**
          * Converts a nodeRef into the an object of the required type.
-         * @param nodeRef to be converted
-         * @param includeParam additional fields to be included
+         * 
+         * @param nodeRef
+         *            to be converted
+         * @param includeParam
+         *            additional fields to be included
          * @return the object
          */
         protected abstract T convert(NodeRef nodeRef, List<String> includeParam);
-        
+
         protected String getTerm(Parameters parameters, String termName, int minTermLength)
         {
             String term = parameters.getParameter(termName);
             if (term == null)
             {
-                throw new InvalidArgumentException("Query '"+termName+"' not specified");
+                throw new InvalidArgumentException("Query '" + termName + "' not specified");
             }
-            
+
             term = escapeTerm(term);
-            
+
             int cnt = 0;
             for (int i = 0; i < term.length(); i++)
             {
@@ -505,7 +510,7 @@ public class QueriesImpl implements Queries, InitializingBean
 
             if (cnt < minTermLength)
             {
-                throw new InvalidArgumentException("Query '"+termName+"' is too short. Must have at least "+minTermLength+" alphanumeric chars");
+                throw new InvalidArgumentException("Query '" + termName + "' is too short. Must have at least " + minTermLength + " alphanumeric chars");
             }
 
             return term;
@@ -524,12 +529,12 @@ public class QueriesImpl implements Queries, InitializingBean
             term = SearchLanguageConversion.escapeLuceneQuery(term);
             return term;
         }
-        
+
         /**
          * Adds sort order to the SearchParameters.
          */
         protected void addSortOrder(Parameters parameters, Map<String, QName> sortParamsToQNames,
-            List<SortColumn> defaultSortCols, SearchParameters sp)
+                List<SortColumn> defaultSortCols, SearchParameters sp)
         {
             List<SortColumn> sortCols = getSorting(parameters, defaultSortCols);
             for (SortColumn sortCol : sortCols)
@@ -537,9 +542,9 @@ public class QueriesImpl implements Queries, InitializingBean
                 QName sortPropQName = sortParamsToQNames.get(sortCol.column);
                 if (sortPropQName == null)
                 {
-                    throw new InvalidArgumentException("Invalid sort field: "+sortCol.column);
+                    throw new InvalidArgumentException("Invalid sort field: " + sortCol.column);
                 }
-                sp.addSort("@" + sortPropQName,  sortCol.asc);
+                sp.addSort("@" + sortPropQName, sortCol.asc);
             }
         }
 
@@ -554,7 +559,7 @@ public class QueriesImpl implements Queries, InitializingBean
         }
 
         protected List<NodeRef> postQuerySort(Parameters parameters, Map<String, QName> sortParamsToQNames,
-            List<SortColumn> defaultSortCols, List<NodeRef> nodeRefs)
+                List<SortColumn> defaultSortCols, List<NodeRef> nodeRefs)
         {
             final List<SortColumn> sortCols = getSorting(parameters, defaultSortCols);
             int sortColCount = sortCols.size();
@@ -562,38 +567,37 @@ public class QueriesImpl implements Queries, InitializingBean
             {
                 // make copy of nodeRefs because it can be unmodifiable list.
                 nodeRefs = new ArrayList<NodeRef>(nodeRefs);
-                
+
                 List<QName> sortPropQNames = new ArrayList<>(sortColCount);
                 for (SortColumn sortCol : sortCols)
                 {
                     QName sortPropQName = sortParamsToQNames.get(sortCol.column);
                     if (sortPropQName == null)
                     {
-                        throw new InvalidArgumentException("Invalid sort field: "+sortCol.column);
+                        throw new InvalidArgumentException("Invalid sort field: " + sortCol.column);
                     }
                     sortPropQNames.add(sortPropQName);
                 }
-                
+
                 final Collator col = AlfrescoCollator.getInstance(I18NUtil.getLocale());
-                Collections.sort(nodeRefs, new Comparator<NodeRef>()
-                {
+                Collections.sort(nodeRefs, new Comparator<NodeRef>() {
                     @Override
                     public int compare(NodeRef n1, NodeRef n2)
                     {
                         int result = 0;
-                        for (int i=0; i<sortCols.size(); i++)
+                        for (int i = 0; i < sortCols.size(); i++)
                         {
                             SortColumn sortCol = sortCols.get(i);
                             QName sortPropQName = sortPropQNames.get(i);
-                            
-                            Serializable  p1 = getProperty(n1, sortPropQName);
-                            Serializable  p2 = getProperty(n2, sortPropQName);
+
+                            Serializable p1 = getProperty(n1, sortPropQName);
+                            Serializable p2 = getProperty(n2, sortPropQName);
 
                             result = ((p1 instanceof Long) && (p2 instanceof Long)
-                                ? Long.compare((Long)p1, (Long)p2)
-                                : col.compare(p1.toString(), p2.toString()))
-                                * (sortCol.asc ? 1 : -1);
-                            
+                                    ? Long.compare((Long) p1, (Long) p2)
+                                    : col.compare(p1.toString(), p2.toString()))
+                                    * (sortCol.asc ? 1 : -1);
+
                             if (result != 0)
                             {
                                 break;

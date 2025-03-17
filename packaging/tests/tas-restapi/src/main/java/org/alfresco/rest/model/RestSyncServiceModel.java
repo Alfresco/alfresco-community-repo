@@ -32,56 +32,20 @@
 
 package org.alfresco.rest.model;
 
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Base Path {@linkplain /alfresco/api/-default-/private/alfresco/versions/1}
  * 
- * @author Meenal Bhave
- * Example:
- * "syncService": {
- *  "id": "0",
- *  "uri": "https://localhost:9090/alfresco",
- *  "config": {
- *      "filters": {
- *          "nodeAspects": [
- *              "rma:filePlanComponent",
- *              "sf:*",
- *              "smf:*",
- *              "cm:workingcopy"
- *           ],
- *          "smartFolderNodeAspects": [
- *              "sf:*",
- *              "smf:*"
- *          ],
- *          "nodeTypesWhitelist": [
- *              "dod:filePlan",
- *              "hwf:rejectedCloudTask",
- *              "imap:imapBody",
- *              "st:site"
- *          ],
- *          "nodeTypes": [
- *              "bpm:package",
- *              "cm:systemfolder",
- *              "cm:failedThumbnail"
- *          ]
- *      },
- *      "dsyncClientVersionMin": "1.0.1",
- *      "repoInfo": {
- *          "versionLabel": "5.2.2",
- *          "edition": "Enterprise"
- *      }
- *  }
- * }
+ * @author Meenal Bhave Example: "syncService": { "id": "0", "uri": "https://localhost:9090/alfresco", "config": { "filters": { "nodeAspects": [ "rma:filePlanComponent", "sf:*", "smf:*", "cm:workingcopy" ], "smartFolderNodeAspects": [ "sf:*", "smf:*" ], "nodeTypesWhitelist": [ "dod:filePlan", "hwf:rejectedCloudTask", "imap:imapBody", "st:site" ], "nodeTypes": [ "bpm:package", "cm:systemfolder", "cm:failedThumbnail" ] }, "dsyncClientVersionMin": "1.0.1", "repoInfo": { "versionLabel": "5.2.2", "edition": "Enterprise" } } }
  */
 public class RestSyncServiceModel extends TestModel
 {
 
     public RestSyncServiceModel()
-    {
-    }
+    {}
 
     @JsonProperty(required = true)
     private String id;
@@ -91,9 +55,9 @@ public class RestSyncServiceModel extends TestModel
 
     @JsonProperty(required = true)
     private RestSyncServiceConfigModel config;
-    
+
     private RestIdentityServiceConfigurationModel identityServiceConfig;
-    
+
     public String getId()
     {
         return id;
@@ -109,11 +73,13 @@ public class RestSyncServiceModel extends TestModel
         return config;
     }
 
-	public RestIdentityServiceConfigurationModel getIdentityServiceConfig() {
-		return identityServiceConfig;
-	}
+    public RestIdentityServiceConfigurationModel getIdentityServiceConfig()
+    {
+        return identityServiceConfig;
+    }
 
-	public void setIdentityServiceConfig(RestIdentityServiceConfigurationModel identityServiceConfig) {
-		this.identityServiceConfig = identityServiceConfig;
-	}
+    public void setIdentityServiceConfig(RestIdentityServiceConfigurationModel identityServiceConfig)
+    {
+        this.identityServiceConfig = identityServiceConfig;
+    }
 }

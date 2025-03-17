@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionResult;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
@@ -46,7 +48,6 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Report service implementation unit test.
@@ -57,8 +58,7 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
 {
     public void testGetReportTypes() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -79,8 +79,7 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
 
     public void testGenerateReport() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -101,8 +100,7 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
 
     public void testFileReport() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -134,7 +132,7 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
     {
         return reportService.generateReport(TYPE_DESTRUCTION_REPORT, rmFolder);
     }
-    
+
     /**
      * Helper method to file a destruction report
      *
@@ -159,18 +157,17 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
 
     public void testFileDestructionReportAction() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
                 Map<String, Serializable> params = new HashMap<>(1);
                 params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 rmActionService.executeRecordsManagementAction(rmFolder, CompleteEventAction.NAME, params);
-                
+
                 rmActionService.executeRecordsManagementAction(rmFolder, CutOffAction.NAME);
                 rmActionService.executeRecordsManagementAction(rmFolder, DestroyAction.NAME);
-                
+
                 Map<String, Serializable> fileReportParams = new HashMap<>(2);
                 fileReportParams.put(FileReportAction.REPORT_TYPE, "rmr:destructionReport");
                 fileReportParams.put(FileReportAction.DESTINATION, filePlan.toString());
@@ -182,8 +179,7 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
 
     public void testFileTransferReportAction() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -209,12 +205,12 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
     {
         NodeRef recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
         utils.createDispositionSchedule(
-                            recordCategory,
-                            CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS,
-                            CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY,
-                            false,  // record level
-                            true,   // set the default actions
-                            true);  // extended disposition schedule
+                recordCategory,
+                CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS,
+                CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY,
+                false, // record level
+                true, // set the default actions
+                true); // extended disposition schedule
 
         NodeRef recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
 

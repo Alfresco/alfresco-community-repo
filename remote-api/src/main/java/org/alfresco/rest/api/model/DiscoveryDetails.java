@@ -35,8 +35,7 @@ public class DiscoveryDetails
     private RepositoryInfo repository;
 
     public DiscoveryDetails()
-    {
-    }
+    {}
 
     public DiscoveryDetails(RepositoryInfo repository)
     {
@@ -59,7 +58,7 @@ public class DiscoveryDetails
     {
         final StringBuilder sb = new StringBuilder();
         sb.append("DiscoveryDetails [repository=").append(repository)
-                    .append(']');
+                .append(']');
         return sb.toString();
     }
 }

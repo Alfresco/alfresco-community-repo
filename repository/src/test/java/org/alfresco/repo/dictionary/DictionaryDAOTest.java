@@ -32,6 +32,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -46,10 +51,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ThreadPoolExecutorFactoryBean;
 import org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * 
@@ -66,7 +67,7 @@ public class DictionaryDAOTest
 
     @Before
     public void setUp() throws Exception
-    {   
+    {
         // register resource bundles for messages
         I18NUtil.registerResourceBundle(TEST_RESOURCE_MESSAGES);
 
@@ -98,7 +99,7 @@ public class DictionaryDAOTest
         component.setMessageLookup(new StaticMessageLookup());
         service = component;
     }
-    
+
     private void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO, TenantService tenantService) throws Exception
     {
         CompiledModelsCache compiledModelsCache = new CompiledModelsCache();
@@ -115,17 +116,17 @@ public class DictionaryDAOTest
     @Test
     public void testBootstrap() throws Exception
     {
-        TenantService tenantService = new SingleTServiceImpl();   
-        
+        TenantService tenantService = new SingleTServiceImpl();
+
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
         initDictionaryCaches(dictionaryDAO, tenantService);
-        
+
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();
-        
+
         bootstrapModels.add("alfresco/model/dictionaryModel.xml");
-        
+
         bootstrap.setModels(bootstrapModels);
         bootstrap.setDictionaryDAO(dictionaryDAO);
         bootstrap.setTenantService(tenantService);
@@ -135,34 +136,31 @@ public class DictionaryDAOTest
     @Test
     public void test1()
     {
-        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-        {
-			@Override
-			public Void doWork() throws Exception
-			{
-				M2Model customModel = M2Model.createModel(
-						Thread.currentThread().getContextClassLoader().
-						getResourceAsStream("dictionary/dictionarydaotest_model1.xml"));
-				dictionaryDAO.putModel(customModel);
-				assertNotNull(service.getType(ContentModel.TYPE_CONTENT));
-				QName qname = QName.createQName("{http://www.alfresco.org/test/dictionarydaotest1/1.0}type1");
-				TypeDefinition td = service.getType(qname);
-				assertNotNull(td);
-				return null;
-			}
-		}, "user1", "tenant1");
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>() {
+            @Override
+            public Void doWork() throws Exception
+            {
+                M2Model customModel = M2Model.createModel(
+                        Thread.currentThread().getContextClassLoader().getResourceAsStream("dictionary/dictionarydaotest_model1.xml"));
+                dictionaryDAO.putModel(customModel);
+                assertNotNull(service.getType(ContentModel.TYPE_CONTENT));
+                QName qname = QName.createQName("{http://www.alfresco.org/test/dictionarydaotest1/1.0}type1");
+                TypeDefinition td = service.getType(qname);
+                assertNotNull(td);
+                return null;
+            }
+        }, "user1", "tenant1");
 
-        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-        {
-			@Override
-			public Void doWork() throws Exception
-			{
-				assertNotNull(service.getType(ContentModel.TYPE_CONTENT));
-				QName qname = QName.createQName("{http://www.alfresco.org/test/dictionarydaotest1/1.0}type1");
-				TypeDefinition td = service.getType(qname);
-				assertNull(td);
-				return null;
-			}
-		}, "user2", "tenant2");
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>() {
+            @Override
+            public Void doWork() throws Exception
+            {
+                assertNotNull(service.getType(ContentModel.TYPE_CONTENT));
+                QName qname = QName.createQName("{http://www.alfresco.org/test/dictionarydaotest1/1.0}type1");
+                TypeDefinition td = service.getType(qname);
+                assertNull(td);
+                return null;
+            }
+        }, "user2", "tenant2");
     }
 }

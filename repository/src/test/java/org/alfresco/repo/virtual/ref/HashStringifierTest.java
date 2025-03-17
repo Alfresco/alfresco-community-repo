@@ -29,9 +29,9 @@ package org.alfresco.repo.virtual.ref;
 import java.util.Collections;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.junit.Test;
 
 public class HashStringifierTest extends TestCase
 {
@@ -42,7 +42,7 @@ public class HashStringifierTest extends TestCase
 
         cpHashStore = HashStoreConfiguration.getInstance().getClasspathHashStore();
         cpHashStore.put("/com/alfresco",
-                        "1");
+                "1");
 
     }
 
@@ -61,12 +61,12 @@ public class HashStringifierTest extends TestCase
         NodeRef actualNode = new NodeRef("workspace://SpacesStore/67c8f11d-0936-4295-88a0-12b85764c76f");
 
         Reference virtualReference = ((VirtualProtocol) Protocols.VIRTUAL.protocol).newReference(templateNodeRef,
-                                                                                                 "/1/2/3",
-                                                                                                 actualNode);
+                "/1/2/3",
+                actualNode);
         Reference spReference = stringifyParse(virtualReference);
 
         assertEquals(virtualReference,
-                     spReference);
+                spReference);
 
     }
 
@@ -77,15 +77,15 @@ public class HashStringifierTest extends TestCase
         NodeRef actualNode = new NodeRef("workspace://SpacesStore/67c8f11d-0936-4295-88a0-12b85764c76f");
         RepositoryResource actualNodeResource = new RepositoryResource(new RepositoryNodeRef(actualNode));
         Reference virtualReference = ((VirtualProtocol) Protocols.VIRTUAL.protocol)
-                    .newReference(Encodings.PLAIN.encoding,
-                                  classpathTemplate,
-                                  "/1/2/3",
-                                  actualNodeResource,
-                                  Collections.<Parameter> emptyList());
+                .newReference(Encodings.PLAIN.encoding,
+                        classpathTemplate,
+                        "/1/2/3",
+                        actualNodeResource,
+                        Collections.<Parameter> emptyList());
         Reference spReference = stringifyParse(virtualReference);
 
         assertEquals(virtualReference,
-                     spReference);
+                spReference);
 
     }
 
@@ -95,15 +95,15 @@ public class HashStringifierTest extends TestCase
         ClasspathResource classpathTemplate = new ClasspathResource("/com/alfresco/template.js");
         RepositoryResource actualNodeResource = new RepositoryResource(new RepositoryPath("/app:company_home/cm:aVirtualFolder"));
         Reference virtualReference = ((VirtualProtocol) Protocols.VIRTUAL.protocol)
-                    .newReference(Encodings.PLAIN.encoding,
-                                  classpathTemplate,
-                                  "/1/2/3",
-                                  actualNodeResource,
-                                  Collections.<Parameter> emptyList());
+                .newReference(Encodings.PLAIN.encoding,
+                        classpathTemplate,
+                        "/1/2/3",
+                        actualNodeResource,
+                        Collections.<Parameter> emptyList());
         Reference spReference = stringifyParse(virtualReference);
 
         assertEquals(virtualReference,
-                     spReference);
+                spReference);
 
     }
 
@@ -114,12 +114,12 @@ public class HashStringifierTest extends TestCase
         NodeRef actualNode = new NodeRef("workspace://SpacesStore/67c8f11d-0936-4295-88a0-12b85764c76f");
 
         Reference virtualReference = ((VirtualProtocol) Protocols.VIRTUAL.protocol).newReference(templateNodeRef,
-                                                                                                 "/",
-                                                                                                 actualNode);
+                "/",
+                actualNode);
         Reference spReference = stringifyParse(virtualReference);
 
         assertEquals(virtualReference,
-                     spReference);
+                spReference);
 
     }
 
@@ -130,16 +130,16 @@ public class HashStringifierTest extends TestCase
         NodeRef actualTemplateNode = new NodeRef("workspace://SpacesStore/67c8f11d-0936-4295-88a0-12b85764c76f");
 
         Reference virtualReference = ((VirtualProtocol) Protocols.VIRTUAL.protocol).newReference(templateNodeRef,
-                                                                                                 "/1/2/3",
-                                                                                                 actualTemplateNode);
+                "/1/2/3",
+                actualTemplateNode);
         RepositoryResource actualNodeResource = new RepositoryResource(new RepositoryPath("/app:company_home/cm:aVirtualFolder"));
         Reference nodeReference = NodeProtocol.newReference(Encodings.PLAIN.encoding,
-                                                            actualNodeResource,
-                                                            virtualReference);
+                actualNodeResource,
+                virtualReference);
         Reference spReference = stringifyParse(nodeReference);
 
         assertEquals(nodeReference,
-                     spReference);
+                spReference);
     }
 
     @Test
@@ -149,15 +149,15 @@ public class HashStringifierTest extends TestCase
         NodeRef actualTemplateNode = new NodeRef("workspace://SpacesStore/67c8f11d-0936-4295-88a0-12b85764c76f");
 
         Reference virtualReference = ((VirtualProtocol) Protocols.VIRTUAL.protocol).newReference(templateNodeRef,
-                                                                                                 "/1/2/3",
-                                                                                                 actualTemplateNode);
+                "/1/2/3",
+                actualTemplateNode);
         NodeRef actualNode = new NodeRef("workspace://SpacesStore/00c8f11d-0936-4295-88a0-12b85764c76f");
         Reference nodeReference = NodeProtocol.newReference(actualNode,
-                                                            virtualReference);
+                virtualReference);
         Reference spReference = stringifyParse(nodeReference);
 
         assertEquals(nodeReference,
-                     spReference);
+                spReference);
 
     }
 
@@ -170,17 +170,17 @@ public class HashStringifierTest extends TestCase
         ClasspathResource vanillaClasspathTemplate = new ClasspathResource("/com/alfresco/vanilla-template.js");
 
         Reference vanillaReference = ((VanillaProtocol) Protocols.VANILLA.protocol)
-                    .newReference(Encodings.PLAIN.encoding,
-                                  virtualClasspathTemplate,
-                                  "/1/2/3",
-                                  actualNodeResource,
-                                  vanillaClasspathTemplate,
-                                  Collections.<Parameter> emptyList());
+                .newReference(Encodings.PLAIN.encoding,
+                        virtualClasspathTemplate,
+                        "/1/2/3",
+                        actualNodeResource,
+                        vanillaClasspathTemplate,
+                        Collections.<Parameter> emptyList());
 
         Reference spReference = stringifyParse(vanillaReference);
 
         assertEquals(vanillaReference,
-                     spReference);
+                spReference);
 
     }
 

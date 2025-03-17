@@ -38,149 +38,148 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Nick Burch (based on existing webscript controllers in the REST API)
  * @since 4.0
  */
-public class TopicInfoImpl implements TopicInfo 
+public class TopicInfoImpl implements TopicInfo
 {
-   private NodeRef nodeRef;
-   private NodeRef containerNodeRef;
-   private String systemName;
-   private String title;
-   private String creator;
-   private String modifier;
-   private Date createdAt;
-   private Date modifiedAt;
-   private String shortSiteName;
-   private List<String> tags = new ArrayList<String>();
+    private NodeRef nodeRef;
+    private NodeRef containerNodeRef;
+    private String systemName;
+    private String title;
+    private String creator;
+    private String modifier;
+    private Date createdAt;
+    private Date modifiedAt;
+    private String shortSiteName;
+    private List<String> tags = new ArrayList<String>();
 
-   /**
-    * Creates a new, empty {@link TopicInfo}
-    */
-   public TopicInfoImpl()
-   {
-   }
-   
-   /**
-    * Create a {@link TopicInfo} object from an existing node
-    */
-   public TopicInfoImpl(NodeRef nodeRef, NodeRef containerNodeRef, String systemName)
-   {
-      this.nodeRef = nodeRef;
-      this.containerNodeRef = containerNodeRef;
-      this.systemName = systemName;
-   }
+    /**
+     * Creates a new, empty {@link TopicInfo}
+     */
+    public TopicInfoImpl()
+    {}
 
-   @Override
-   public NodeRef getContainerNodeRef() 
-   {
-      return containerNodeRef;
-   }
+    /**
+     * Create a {@link TopicInfo} object from an existing node
+     */
+    public TopicInfoImpl(NodeRef nodeRef, NodeRef containerNodeRef, String systemName)
+    {
+        this.nodeRef = nodeRef;
+        this.containerNodeRef = containerNodeRef;
+        this.systemName = systemName;
+    }
 
-   @Override
-   public NodeRef getNodeRef() 
-   {
-      return nodeRef;
-   }
-   
-   @Override
-   public String getSystemName() 
-   {
-      return systemName;
-   }
+    @Override
+    public NodeRef getContainerNodeRef()
+    {
+        return containerNodeRef;
+    }
 
-   @Override
-   public String getTitle() 
-   {
-      return title;
-   }
+    @Override
+    public NodeRef getNodeRef()
+    {
+        return nodeRef;
+    }
 
-   @Override
-   public String getCreator() 
-   {
-      return creator;
-   }
+    @Override
+    public String getSystemName()
+    {
+        return systemName;
+    }
 
-   @Override
-   public String getModifier() 
-   {
-      return modifier;
-   }
-   
-   @Override
-   public Date getCreatedAt() 
-   {
-      return createdAt;
-   }
+    @Override
+    public String getTitle()
+    {
+        return title;
+    }
 
-   @Override
-   public Date getModifiedAt() 
-   {
-      return modifiedAt;
-   }
+    @Override
+    public String getCreator()
+    {
+        return creator;
+    }
 
-   @Override
-   public List<String> getTags() 
-   {
-      return tags;
-   }
+    @Override
+    public String getModifier()
+    {
+        return modifier;
+    }
 
-   @Override
-   public void setTitle(String title) 
-   {
-      this.title = title;
-   }
+    @Override
+    public Date getCreatedAt()
+    {
+        return createdAt;
+    }
 
-   public void setCreator(String creator) 
-   {
-      this.creator = creator;
-   }
+    @Override
+    public Date getModifiedAt()
+    {
+        return modifiedAt;
+    }
 
-   public void setModifier(String modifier) 
-   {
-      this.modifier = modifier;
-   }
-   
-   public void setCreatedAt(Date createdAt) 
-   {
-      this.createdAt = createdAt;
-   }
+    @Override
+    public List<String> getTags()
+    {
+        return tags;
+    }
 
-   public void setModifiedAt(Date modifiedAt) 
-   {
-      this.modifiedAt = modifiedAt;
-   }
+    @Override
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
 
-   public void setTags(List<String> tags)
-   {
-      this.tags = tags;
-   }
-   
-   @Override
-   public int hashCode()
-   {
-      return nodeRef.hashCode();
-   }
+    public void setCreator(String creator)
+    {
+        this.creator = creator;
+    }
 
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj instanceof TopicInfoImpl)
-      {
-         TopicInfoImpl tii = (TopicInfoImpl) obj;
-         if(nodeRef.equals(tii.nodeRef))
-         {
-            return true;
-         }
-      }
-      return false;
-   }
+    public void setModifier(String modifier)
+    {
+        this.modifier = modifier;
+    }
 
-   @Override
-   public String getShortSiteName()
-   {
-      return shortSiteName;
-   }
-   
-   public void setShortSiteName(String shortSiteName)
-   {
-      this.shortSiteName = shortSiteName;
-   }
+    public void setCreatedAt(Date createdAt)
+    {
+        this.createdAt = createdAt;
+    }
+
+    public void setModifiedAt(Date modifiedAt)
+    {
+        this.modifiedAt = modifiedAt;
+    }
+
+    public void setTags(List<String> tags)
+    {
+        this.tags = tags;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return nodeRef.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof TopicInfoImpl)
+        {
+            TopicInfoImpl tii = (TopicInfoImpl) obj;
+            if (nodeRef.equals(tii.nodeRef))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public String getShortSiteName()
+    {
+        return shortSiteName;
+    }
+
+    public void setShortSiteName(String shortSiteName)
+    {
+        this.shortSiteName = shortSiteName;
+    }
 }

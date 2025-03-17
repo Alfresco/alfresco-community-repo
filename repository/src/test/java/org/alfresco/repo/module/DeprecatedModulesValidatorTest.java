@@ -32,13 +32,14 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import org.alfresco.service.cmr.module.ModuleDetails;
-import org.alfresco.service.cmr.module.ModuleService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.service.cmr.module.ModuleDetails;
+import org.alfresco.service.cmr.module.ModuleService;
 
 /**
  * Test suite for the {@link DeprecatedModulesValidator} class.
@@ -101,11 +102,11 @@ public class DeprecatedModulesValidatorTest
     {
         when(moduleService.getAllModules()).thenReturn(List.of(moduleDetails, moduleDetails));
         when(moduleDetails.getId()).thenReturn(DEPRECATED_MODULE_1)
-            .thenReturn(DEPRECATED_MODULE_2);
+                .thenReturn(DEPRECATED_MODULE_2);
 
         assertThrows("IllegalStateException should be thrown.",
-            IllegalStateException.class,
-            () -> deprecatedModulesValidator.onInit());
+                IllegalStateException.class,
+                () -> deprecatedModulesValidator.onInit());
 
         verify(moduleService).getAllModules();
         verify(moduleDetails, times(2)).getId();
@@ -116,11 +117,11 @@ public class DeprecatedModulesValidatorTest
     {
         when(moduleService.getAllModules()).thenReturn(List.of(moduleDetails, moduleDetails));
         when(moduleDetails.getId()).thenReturn(VALID_MODULE)
-            .thenReturn(DEPRECATED_MODULE_2);
+                .thenReturn(DEPRECATED_MODULE_2);
 
         assertThrows("IllegalStateException should be thrown.",
-            IllegalStateException.class,
-            () -> deprecatedModulesValidator.onInit());
+                IllegalStateException.class,
+                () -> deprecatedModulesValidator.onInit());
 
         verify(moduleService).getAllModules();
         verify(moduleDetails, times(2)).getId();

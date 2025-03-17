@@ -37,15 +37,15 @@ public final class Imap extends BaseScopableProcessorExtension
 
     /** Default store reference */
     private StoreRef storeRef;
-    
+
     /** Repository helper */
     private Repository repository;
-
 
     /**
      * Set the default store reference
      * 
-     * @param   storeRef the default store reference
+     * @param storeRef
+     *            the default store reference
      */
     public void setStoreUrl(String storeRef)
     {
@@ -60,17 +60,19 @@ public final class Imap extends BaseScopableProcessorExtension
     /**
      * Set the service registry
      * 
-     * @param services  the service registry
+     * @param services
+     *            the service registry
      */
     public void setServiceRegistry(ServiceRegistry services)
     {
         this.services = services;
     }
-    
+
     /**
      * Set the repository helper
      * 
-     * @param repository    the repository helper
+     * @param repository
+     *            the repository helper
      */
     public void setRepositoryHelper(Repository repository)
     {
@@ -80,7 +82,8 @@ public final class Imap extends BaseScopableProcessorExtension
     /**
      * Searches NodeRef to the IMAP home for specified user
      * 
-     * @param userName  the name of the user
+     * @param userName
+     *            the name of the user
      */
     public ScriptNode getImapHomeRef(String userName)
     {
@@ -92,5 +95,5 @@ public final class Imap extends BaseScopableProcessorExtension
         }
         return result;
     }
-    
+
 }

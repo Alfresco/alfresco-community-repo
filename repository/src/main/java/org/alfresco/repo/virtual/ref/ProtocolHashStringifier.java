@@ -44,7 +44,7 @@ public abstract class ProtocolHashStringifier implements HashEncodingArtefact, S
     private NodeRefHasher nodeRefHasher = NodeRefRadixHasher.RADIX_36_HASHER;
 
     private PathHasher classpathHasher;
-    
+
     private PathHasher repositoryPathHasher;
 
     private Stringifier referenceDispatcher;
@@ -52,7 +52,7 @@ public abstract class ProtocolHashStringifier implements HashEncodingArtefact, S
     public ProtocolHashStringifier(HashStore classpathHashStore, Stringifier referenceDispatcher)
     {
         this.classpathHasher = new StoredPathHasher(classpathHashStore);
-        this.repositoryPathHasher=new StoredPathHasher(classpathHashStore);
+        this.repositoryPathHasher = new StoredPathHasher(classpathHashStore);
         this.referenceDispatcher = referenceDispatcher;
     }
 

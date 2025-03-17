@@ -43,8 +43,7 @@ public class NodeRefEntity
      * Default constructor.
      */
     public NodeRefEntity()
-    {
-    }
+    {}
 
     public Long getNum()
     {

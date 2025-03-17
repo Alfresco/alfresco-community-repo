@@ -27,9 +27,10 @@ package org.alfresco.service.cmr.repository;
 
 import static org.junit.Assert.*;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * Test {@link TemporalSourceOptions}.
@@ -42,8 +43,8 @@ import org.junit.Test;
 public class TemporalSourceOptionsTest
 {
     private TemporalSourceOptions temporalSourceOptions;
-    
-    private String[] expectedFailures = new String[] {
+
+    private String[] expectedFailures = new String[]{
             "not even close",
             "2 hours",
             "01:00", // Incomplete: hours, minutes, and seconds required
@@ -52,8 +53,8 @@ public class TemporalSourceOptionsTest
             "1:30:15", // Hours, minutes, and seconds must have leading zeros
             "00:99:99" // Minutes and seconds can not be greater than 60
     };
-    
-    private String[] expectedSuccesses = new String[] {
+
+    private String[] expectedSuccesses = new String[]{
             "00:00:00.05",
             "00:01:30",
             "01:01:01",
@@ -61,7 +62,7 @@ public class TemporalSourceOptionsTest
             "99:59:59.999",
             "99:00:00"
     };
-    
+
     @Before
     public void setUp() throws Exception
     {
@@ -80,7 +81,7 @@ public class TemporalSourceOptionsTest
             // expected
         }
     }
-    
+
     protected void setDurationWithExpectedSuccess(String value)
     {
         try
@@ -92,7 +93,7 @@ public class TemporalSourceOptionsTest
             fail(e.getMessage());
         }
     }
-    
+
     protected void setOffsetWithExpectedFailure(String value)
     {
         try
@@ -105,7 +106,7 @@ public class TemporalSourceOptionsTest
             // expected
         }
     }
-    
+
     protected void setOffsetWithExpectedSuccess(String value)
     {
         try
@@ -117,7 +118,7 @@ public class TemporalSourceOptionsTest
             fail(e.getMessage());
         }
     }
-    
+
     @Test
     public void testDurationValidation() throws Exception
     {
@@ -130,7 +131,7 @@ public class TemporalSourceOptionsTest
             setDurationWithExpectedSuccess(expectedSuccess);
         }
     }
-    
+
     @Test
     public void testOffsetValidation() throws Exception
     {
@@ -145,4 +146,3 @@ public class TemporalSourceOptionsTest
     }
 
 }
-

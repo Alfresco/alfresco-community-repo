@@ -36,12 +36,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Delegate for a Class-level Policy.  Provides access to Policy Interface
- * implementations which invoke the appropriate bound behaviours.
- *  
+ * Delegate for a Class-level Policy. Provides access to Policy Interface implementations which invoke the appropriate bound behaviours.
+ * 
  * @author David Caruana
  *
- * @param <P>  the policy interface
+ * @param <P>
+ *            the policy interface
  */
 @AlfrescoPublicApi
 public class ClassPolicyDelegate<P extends ClassPolicy>
@@ -49,16 +49,18 @@ public class ClassPolicyDelegate<P extends ClassPolicy>
     private DictionaryService dictionary;
     private CachedPolicyFactory<ClassBehaviourBinding, P> factory;
 
-
     /**
      * Construct.
      * 
-     * @param dictionary  the dictionary service
-     * @param policyClass  the policy interface class
-     * @param index  the behaviour index to query against
+     * @param dictionary
+     *            the dictionary service
+     * @param policyClass
+     *            the policy interface class
+     * @param index
+     *            the behaviour index to query against
      */
     @SuppressWarnings("unchecked")
-    /*package*/ ClassPolicyDelegate(DictionaryService dictionary, Class<P> policyClass, BehaviourIndex<ClassBehaviourBinding> index, long tryLockTimeout)
+    /* package */ ClassPolicyDelegate(DictionaryService dictionary, Class<P> policyClass, BehaviourIndex<ClassBehaviourBinding> index, long tryLockTimeout)
     {
         // Get list of all pre-registered behaviours for the policy and
         // ensure they are valid.
@@ -74,17 +76,15 @@ public class ClassPolicyDelegate<P extends ClassPolicy>
         this.factory.setTryLockTimeout(tryLockTimeout);
         this.dictionary = dictionary;
     }
-    
 
     /**
      * Gets the Policy implementation for the specified Class
      * 
-     * When multiple behaviours are bound to the policy for the class, an
-     * aggregate policy implementation is returned which invokes each policy
-     * in turn.
+     * When multiple behaviours are bound to the policy for the class, an aggregate policy implementation is returned which invokes each policy in turn.
      * 
-     * @param classQName  the class qualified name
-     * @return  the policy
+     * @param classQName
+     *            the class qualified name
+     * @return the policy
      */
     public P get(QName classQName)
     {
@@ -94,9 +94,11 @@ public class ClassPolicyDelegate<P extends ClassPolicy>
     /**
      * Gets the Policy implementation for the specified Class
      * 
-     * @param nodeRef  the node reference
-     * @param classQName  the class name
-     * @return  the policy
+     * @param nodeRef
+     *            the node reference
+     * @param classQName
+     *            the class name
+     * @return the policy
      */
     public P get(NodeRef nodeRef, QName classQName)
     {
@@ -107,24 +109,27 @@ public class ClassPolicyDelegate<P extends ClassPolicy>
         }
         return factory.create(new ClassBehaviourBinding(dictionary, nodeRef, classQName));
     }
-    
+
     /**
      * Gets the collection of Policy implementations for the specified Class
      * 
-     * @param classQName  the class qualified name
-     * @return  the collection of policies
+     * @param classQName
+     *            the class qualified name
+     * @return the collection of policies
      */
     public Collection<P> getList(QName classQName)
     {
         return getList(null, classQName);
     }
-    
+
     /**
      * Gets the collection of Policy implementations for the specified Class
      * 
-     * @param nodeRef  the node reference
-     * @param classQName  the class qualified name
-     * @return  the collection of policies
+     * @param nodeRef
+     *            the node reference
+     * @param classQName
+     *            the class qualified name
+     * @return the collection of policies
      */
     public Collection<P> getList(NodeRef nodeRef, QName classQName)
     {
@@ -137,10 +142,10 @@ public class ClassPolicyDelegate<P extends ClassPolicy>
     }
 
     /**
-     * Gets the policy implementation for the given classes.  The single <tt>Policy</tt>
-     * will be a wrapper of multiple appropriate policies.
+     * Gets the policy implementation for the given classes. The single <tt>Policy</tt> will be a wrapper of multiple appropriate policies.
      * 
-     * @param classQNames the class qualified names
+     * @param classQNames
+     *            the class qualified names
      * @return Returns the policy
      */
     public P get(Set<QName> classQNames)
@@ -149,11 +154,12 @@ public class ClassPolicyDelegate<P extends ClassPolicy>
     }
 
     /**
-     * Gets the policy implementation for the given classes.  The single <tt>Policy</tt>
-     * will be a wrapper of multiple appropriate policies.
+     * Gets the policy implementation for the given classes. The single <tt>Policy</tt> will be a wrapper of multiple appropriate policies.
      *
-     * @param nodeRef  the node reference
-     * @param classQNames the class qualified names
+     * @param nodeRef
+     *            the node reference
+     * @param classQNames
+     *            the class qualified names
      * @return Returns the policy
      */
     public P get(NodeRef nodeRef, Set<QName> classQNames)
@@ -164,7 +170,8 @@ public class ClassPolicyDelegate<P extends ClassPolicy>
     /**
      * Gets the collection of <tt>Policy</tt> implementations for the given classes
      * 
-     * @param classQNames the class qualified names
+     * @param classQNames
+     *            the class qualified names
      * @return Returns the collection of policies
      */
     public Collection<P> getList(Set<QName> classQNames)
@@ -175,7 +182,8 @@ public class ClassPolicyDelegate<P extends ClassPolicy>
     /**
      * Gets the collection of <tt>Policy</tt> implementations for the given classes
      * 
-     * @param classQNames the class qualified names
+     * @param classQNames
+     *            the class qualified names
      * @return Returns the collection of policies
      */
     public Collection<P> getList(NodeRef nodeRef, Set<QName> classQNames)
@@ -184,14 +192,14 @@ public class ClassPolicyDelegate<P extends ClassPolicy>
         for (QName classQName : classQNames)
         {
             P policy = factory.create(new ClassBehaviourBinding(dictionary, nodeRef, classQName));
-			if (policy instanceof PolicyList)
-			{
-				policies.addAll(((PolicyList<P>)policy).getPolicies());
-			}
-			else
-			{
-				policies.add(policy);
-			}
+            if (policy instanceof PolicyList)
+            {
+                policies.addAll(((PolicyList<P>) policy).getPolicies());
+            }
+            else
+            {
+                policies.add(policy);
+            }
         }
         return policies;
     }

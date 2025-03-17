@@ -25,6 +25,19 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
+
+import java.util.*;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.data.Document;
@@ -33,17 +46,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import java.util.*;
-
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class NodeApiVersioningJsonParameterizedTest extends AbstractSingleNetworkSiteTest
@@ -71,7 +73,6 @@ public class NodeApiVersioningJsonParameterizedTest extends AbstractSingleNetwor
     private NodeService nodeService;
     private NamespaceService namespaceService;
 
-
     @Parameterized.Parameter(value = 0)
     public String type;
 
@@ -87,7 +88,7 @@ public class NodeApiVersioningJsonParameterizedTest extends AbstractSingleNetwor
     @Parameterized.Parameter(value = 4)
     public String expectedAspect;
 
-    @Parameterized.Parameters //parameters source - MMT-22462 comments
+    @Parameterized.Parameters // parameters source - MMT-22462 comments
     public static Collection<Object[]> data()
     {
         Collection<Object[]> params = new ArrayList();
@@ -126,7 +127,7 @@ public class NodeApiVersioningJsonParameterizedTest extends AbstractSingleNetwor
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
         authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
         nodeService = applicationContext.getBean("NodeService", NodeService.class);
-        namespaceService= (NamespaceService) applicationContext.getBean("NamespaceService");
+        namespaceService = (NamespaceService) applicationContext.getBean("NamespaceService");
     }
 
     @After
@@ -146,11 +147,11 @@ public class NodeApiVersioningJsonParameterizedTest extends AbstractSingleNetwor
         d1.setName("testDoc" + UUID.randomUUID());
         d1.setNodeType(type);
 
-        if(versioningEnabled != null)
+        if (versioningEnabled != null)
         {
             params.put("versioningEnabled", versioningEnabled);
         }
-        if(majorVersion != null)
+        if (majorVersion != null)
         {
             params.put("majorVersion", majorVersion.toString());
         }
@@ -164,14 +165,16 @@ public class NodeApiVersioningJsonParameterizedTest extends AbstractSingleNetwor
 
     private void assertExpectedVersion(String expectedVersion, Map<String, Object> documentProperties)
     {
-        if(documentProperties != null) {
+        if (documentProperties != null)
+        {
             assertEquals(expectedVersion, documentProperties.get("cm:versionLabel"));
         }
     }
 
     private void assertContainsAspect(String expectedAspect, Document documentResponse)
     {
-        if(expectedAspect != null) {
+        if (expectedAspect != null)
+        {
             assertTrue(!documentResponse.getAspectNames().isEmpty());
             assertTrue(documentResponse.getAspectNames().contains(expectedAspect));
         }

@@ -39,6 +39,7 @@ import org.alfresco.util.PropertyMap;
 
 /**
  * Utility class to help write tests which require creation of people.
+ * 
  * @author Nick Smith
  *
  */
@@ -54,8 +55,8 @@ public class TestPersonManager
     private final PersonService personService;
     private final NodeService nodeService;
 
-    private final Map<String, NodeRef> people = new HashMap<String, NodeRef>(); 
-    
+    private final Map<String, NodeRef> people = new HashMap<String, NodeRef>();
+
     public TestPersonManager(MutableAuthenticationService authenticationService,
             PersonService personService,
             NodeService nodeService)
@@ -67,8 +68,7 @@ public class TestPersonManager
 
     public NodeRef createPerson(final String userName)
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>() {
             public NodeRef doWork() throws Exception
             {
                 if (authenticationService.authenticationExists(userName) == false)
@@ -88,11 +88,10 @@ public class TestPersonManager
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     public void deletePerson(final String userName)
     {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
             public Void doWork() throws Exception
             {
                 personService.deletePerson(userName);
@@ -106,7 +105,7 @@ public class TestPersonManager
     private NodeRef makePersonNode(String userName)
     {
         PropertyMap personProps = makePersonProperties(userName);
-        
+
         NodeRef person = personService.createPerson(personProps);
         people.put(userName, person);
         return person;
@@ -116,38 +115,40 @@ public class TestPersonManager
     {
         PropertyMap personProps = new PropertyMap();
         personProps.put(ContentModel.PROP_USERNAME, userName);
-        personProps.put(ContentModel.PROP_FIRSTNAME, userName+FIRST_NAME_SUFFIX);
-        personProps.put(ContentModel.PROP_LASTNAME, userName+LAST_NAME_SUFFIX);
-        personProps.put(ContentModel.PROP_EMAIL, userName+EMAIL_SUFFIX);
-        personProps.put(ContentModel.PROP_JOBTITLE, userName+JOB_SUFFIX);
-        personProps.put(ContentModel.PROP_JOBTITLE, userName+ORGANISATION_SUFFIX);
+        personProps.put(ContentModel.PROP_FIRSTNAME, userName + FIRST_NAME_SUFFIX);
+        personProps.put(ContentModel.PROP_LASTNAME, userName + LAST_NAME_SUFFIX);
+        personProps.put(ContentModel.PROP_EMAIL, userName + EMAIL_SUFFIX);
+        personProps.put(ContentModel.PROP_JOBTITLE, userName + JOB_SUFFIX);
+        personProps.put(ContentModel.PROP_JOBTITLE, userName + ORGANISATION_SUFFIX);
         return personProps;
     }
-    
+
     public NodeRef get(String userName)
     {
         NodeRef person = people.get(userName);
-        if(person !=null)
+        if (person != null)
             return person;
-        else throw new IllegalArgumentException("Cannot get user as unregistered person:"+userName);
+        else
+            throw new IllegalArgumentException("Cannot get user as unregistered person:" + userName);
     }
-    
+
     public void setUser(String userName)
     {
-        if(people.containsKey(userName))
+        if (people.containsKey(userName))
         {
             AuthenticationUtil.setFullyAuthenticatedUser(userName);
         }
-        else throw new IllegalArgumentException("Cannot set user as unregistered person: "+userName);
+        else
+            throw new IllegalArgumentException("Cannot set user as unregistered person: " + userName);
     }
-    
+
     public void clearPeople()
     {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-                {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
             public Void doWork() throws Exception
             {
-                for (String user : people.keySet()) {
+                for (String user : people.keySet())
+                {
                     personService.deletePerson(user);
                 }
                 return null;
@@ -161,7 +162,7 @@ public class TestPersonManager
         NodeRef person = get(userName);
         return (String) nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME);
     }
-    
+
     public String getLastName(String userName)
     {
         NodeRef person = get(userName);

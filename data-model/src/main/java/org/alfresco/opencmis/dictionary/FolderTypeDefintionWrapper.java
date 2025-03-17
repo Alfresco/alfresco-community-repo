@@ -27,6 +27,9 @@ package org.alfresco.opencmis.dictionary;
 
 import java.util.Collection;
 
+import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.FolderTypeDefinitionImpl;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.CMISUtils;
 import org.alfresco.opencmis.mapping.CMISMapping;
@@ -35,8 +38,6 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
-import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.FolderTypeDefinitionImpl;
 
 public class FolderTypeDefintionWrapper extends ShadowTypeDefinitionWrapper
 {
@@ -45,9 +46,8 @@ public class FolderTypeDefintionWrapper extends ShadowTypeDefinitionWrapper
     private FolderTypeDefinitionImpl typeDef;
     private FolderTypeDefinitionImpl typeDefInclProperties;
     private DictionaryService dictionaryService;
-    
 
-    public FolderTypeDefintionWrapper(CMISMapping cmisMapping, PropertyAccessorMapping accessorMapping, 
+    public FolderTypeDefintionWrapper(CMISMapping cmisMapping, PropertyAccessorMapping accessorMapping,
             PropertyLuceneBuilderMapping luceneBuilderMapping, String typeId, DictionaryService dictionaryService, ClassDefinition cmisClassDef)
     {
         this.dictionaryService = dictionaryService;
@@ -66,7 +66,8 @@ public class FolderTypeDefintionWrapper extends ShadowTypeDefinitionWrapper
         {
             typeDef.setQueryName(ISO9075.encodeSQL(typeId));
             typeDef.setParentTypeId(null);
-        } else
+        }
+        else
         {
             typeDef.setQueryName(ISO9075.encodeSQL(cmisMapping.buildPrefixEncodedString(alfrescoName)));
             QName parentQName = cmisMapping.getCmisType(cmisClassDef.getParentName());
@@ -99,7 +100,7 @@ public class FolderTypeDefintionWrapper extends ShadowTypeDefinitionWrapper
         createOwningPropertyDefinitions(cmisMapping, accessorMapping, luceneBuilderMapping, dictionaryService, cmisClassDef);
         createActionEvaluators(accessorMapping, BaseTypeId.CMIS_FOLDER);
     }
-    
+
     @Override
     public void updateDefinition(DictionaryService dictionaryService)
     {
@@ -114,10 +115,10 @@ public class FolderTypeDefintionWrapper extends ShadowTypeDefinitionWrapper
         {
             super.updateDefinition(dictionaryService);
         }
-        
+
         updateTypeDefInclProperties();
     }
-    
+
     @Override
     public PropertyDefinitionWrapper getPropertyById(String propertyId)
     {
@@ -131,7 +132,7 @@ public class FolderTypeDefintionWrapper extends ShadowTypeDefinitionWrapper
         updateProperties(dictionaryService);
         return propertiesById.values();
     }
-    
+
     @Override
     public Collection<PropertyDefinitionWrapper> getProperties(boolean update)
     {

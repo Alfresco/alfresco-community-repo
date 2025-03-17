@@ -39,25 +39,23 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * @author Jeff Varszegi
  * @author Gary Gregory
  * 
- * <p>
- * Assists with the serialization process and performs additional functionality
- * based on serialization.
- * </p>
- * <p>
- * <ul>
- * <li>Deep clone using serialization
- * <li>Serialize managing finally and IOException
- * <li>Deserialize managing finally and IOException
- * </ul>
+ *         <p>
+ *         Assists with the serialization process and performs additional functionality based on serialization.
+ *         </p>
+ *         <p>
+ *         <ul>
+ *         <li>Deep clone using serialization
+ *         <li>Serialize managing finally and IOException
+ *         <li>Deserialize managing finally and IOException
+ *         </ul>
  * 
- * <p>
- * This class throws exceptions for invalid <code>null</code> inputs. Each
- * method documents its behaviour in more detail.
- * </p>
+ *         <p>
+ *         This class throws exceptions for invalid <code>null</code> inputs. Each method documents its behaviour in more detail.
+ *         </p>
  * 
- * <p>
- * #ThreadSafe#
- * </p>
+ *         <p>
+ *         #ThreadSafe#
+ *         </p>
  *
  */
 public class SerializationUtils
@@ -65,14 +63,11 @@ public class SerializationUtils
 
     /**
      * <p>
-     * SerializationUtils instances should NOT be constructed in standard
-     * programming. Instead, the class should be used as
-     * <code>SerializationUtils.clone(object)</code>.
+     * SerializationUtils instances should NOT be constructed in standard programming. Instead, the class should be used as <code>SerializationUtils.clone(object)</code>.
      * </p>
      * 
      * <p>
-     * This constructor is public to permit tools that require a JavaBean
-     * instance to operate.
+     * This constructor is public to permit tools that require a JavaBean instance to operate.
      * </p>
      */
     public SerializationUtils()
@@ -88,11 +83,7 @@ public class SerializationUtils
      * </p>
      * 
      * <p>
-     * This is many times slower than writing clone methods by hand on all
-     * objects in your object graph. However, for complex object graphs, or for
-     * those that don't support deep cloning this can be a simple alternative
-     * implementation. Of course all the objects must be
-     * <code>Serializable</code>.
+     * This is many times slower than writing clone methods by hand on all objects in your object graph. However, for complex object graphs, or for those that don't support deep cloning this can be a simple alternative implementation. Of course all the objects must be <code>Serializable</code>.
      * </p>
      * 
      * @param object
@@ -103,11 +94,7 @@ public class SerializationUtils
      */
     public static <T extends Serializable> T clone(T object)
     {
-        /*
-         * when we serialize and deserialize an object, it is reasonable to
-         * assume the deserialized object is of the same type as the original
-         * serialized object
-         */
+        /* when we serialize and deserialize an object, it is reasonable to assume the deserialized object is of the same type as the original serialized object */
         @SuppressWarnings("unchecked")
         final T result = (T) deserialize(serialize(object));
         return result;
@@ -121,14 +108,11 @@ public class SerializationUtils
      * </p>
      * 
      * <p>
-     * The stream will be closed once the object is written. This avoids the
-     * need for a finally clause, and maybe also exception handling, in the
-     * application code.
+     * The stream will be closed once the object is written. This avoids the need for a finally clause, and maybe also exception handling, in the application code.
      * </p>
      * 
      * <p>
-     * The stream passed in is not buffered internally within this method. This
-     * is the responsibility of your application if desired.
+     * The stream passed in is not buffered internally within this method. This is the responsibility of your application if desired.
      * </p>
      * 
      * @param obj
@@ -153,10 +137,12 @@ public class SerializationUtils
             out = new ObjectOutputStream(outputStream);
             out.writeObject(obj);
 
-        } catch (IOException ex)
+        }
+        catch (IOException ex)
         {
             throw new AlfrescoRuntimeException("Failed to serialize", ex);
-        } finally
+        }
+        finally
         {
             try
             {
@@ -164,7 +150,8 @@ public class SerializationUtils
                 {
                     out.close();
                 }
-            } catch (IOException ex)
+            }
+            catch (IOException ex)
             {
                 // ignore close exception
             }
@@ -173,8 +160,7 @@ public class SerializationUtils
 
     /**
      * <p>
-     * Serializes an <code>Object</code> to a byte array for
-     * storage/serialization.
+     * Serializes an <code>Object</code> to a byte array for storage/serialization.
      * </p>
      * 
      * @param obj
@@ -198,14 +184,11 @@ public class SerializationUtils
      * </p>
      * 
      * <p>
-     * The stream will be closed once the object is written. This avoids the
-     * need for a finally clause, and maybe also exception handling, in the
-     * application code.
+     * The stream will be closed once the object is written. This avoids the need for a finally clause, and maybe also exception handling, in the application code.
      * </p>
      * 
      * <p>
-     * The stream passed in is not buffered internally within this method. This
-     * is the responsibility of your application if desired.
+     * The stream passed in is not buffered internally within this method. This is the responsibility of your application if desired.
      * </p>
      * 
      * @param inputStream
@@ -229,13 +212,16 @@ public class SerializationUtils
             in = new ObjectInputStream(inputStream);
             return in.readObject();
 
-        } catch (ClassNotFoundException ex)
+        }
+        catch (ClassNotFoundException ex)
         {
             throw new AlfrescoRuntimeException("Failed to deserialize", ex);
-        } catch (IOException ex)
+        }
+        catch (IOException ex)
         {
             throw new AlfrescoRuntimeException("Failed to deserialize", ex);
-        } finally
+        }
+        finally
         {
             try
             {
@@ -243,7 +229,8 @@ public class SerializationUtils
                 {
                     in.close();
                 }
-            } catch (IOException ex)
+            }
+            catch (IOException ex)
             {
                 // ignore close exception
             }

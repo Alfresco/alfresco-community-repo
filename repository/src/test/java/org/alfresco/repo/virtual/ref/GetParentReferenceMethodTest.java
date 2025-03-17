@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
-
 import org.junit.Test;
 
 public class GetParentReferenceMethodTest extends TestCase
@@ -48,7 +47,7 @@ public class GetParentReferenceMethodTest extends TestCase
     {
         final String path = "/Media types/Images";
         assertEquals("/Media types",
-                     toParentPath(path));
+                toParentPath(path));
     }
 
     @Test
@@ -56,7 +55,7 @@ public class GetParentReferenceMethodTest extends TestCase
     {
         final String path = "/Media types/Images/";
         assertEquals("/Media types",
-                     toParentPath(path));
+                toParentPath(path));
     }
 
     @Test
@@ -64,7 +63,7 @@ public class GetParentReferenceMethodTest extends TestCase
     {
         final String path = "/Media types";
         assertEquals("/",
-                     toParentPath(path));
+                toParentPath(path));
     }
 
     @Test
@@ -85,9 +84,9 @@ public class GetParentReferenceMethodTest extends TestCase
     {
         List<Parameter> params = Arrays.<Parameter> asList(new StringParameter(path));
         Reference ref = new Reference(Encodings.PLAIN.encoding,
-                                      Protocols.VIRTUAL.protocol,
-                                      new ClasspathResource("/some/class/path.js"),
-                                      params);
+                Protocols.VIRTUAL.protocol,
+                new ClasspathResource("/some/class/path.js"),
+                params);
         Reference parent = ref.execute(method);
         if (parent == null)
         {

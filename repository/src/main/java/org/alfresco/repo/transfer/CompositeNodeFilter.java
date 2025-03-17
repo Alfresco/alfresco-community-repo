@@ -45,22 +45,22 @@ public class CompositeNodeFilter extends AbstractNodeFilter
     {
         this.filters = Arrays.asList(filters);
     }
-    
+
     public CompositeNodeFilter(Collection<NodeFilter> filters)
     {
         this.filters = filters;
     }
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public void init()
     {
         super.init();
         for (NodeFilter filter : filters)
         {
-            if(filter instanceof AbstractNodeFilter)
+            if (filter instanceof AbstractNodeFilter)
             {
                 AbstractNodeFilter nodeFilter = (AbstractNodeFilter) filter;
                 nodeFilter.setServiceRegistry(serviceRegistry);
@@ -68,16 +68,16 @@ public class CompositeNodeFilter extends AbstractNodeFilter
             }
         }
     }
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public boolean accept(NodeRef thisNode)
     {
         for (NodeFilter filter : filters)
         {
-            if(filter.accept(thisNode)==false)
+            if (filter.accept(thisNode) == false)
             {
                 return false;
             }

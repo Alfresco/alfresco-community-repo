@@ -25,15 +25,16 @@
  */
 package org.alfresco.rest.requests.discoveryAPI;
 
+import io.restassured.RestAssured;
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestDiscoveryModel;
 import org.alfresco.rest.requests.ModelRequest;
-import org.springframework.http.HttpMethod;
 
-import io.restassured.RestAssured;
-
-public class RestDiscoveryAPI extends ModelRequest<RestDiscoveryAPI> {
+public class RestDiscoveryAPI extends ModelRequest<RestDiscoveryAPI>
+{
 
     public RestDiscoveryAPI(RestWrapper restWrapper)
     {
@@ -50,4 +51,3 @@ public class RestDiscoveryAPI extends ModelRequest<RestDiscoveryAPI> {
     }
 
 }
-

@@ -25,8 +25,9 @@
  */
 package org.alfresco.rest.framework.tests.api.mocks;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.resource.UniqueId;
@@ -38,8 +39,11 @@ import org.alfresco.rest.framework.resource.UniqueId;
  */
 public class Farmer
 {
-    public enum size {LARGE,SMALL, MEDIUM}
-    
+    public enum size
+    {
+        LARGE, SMALL, MEDIUM
+    }
+
     private String name = "Giles";
     private Date created = new Date();
     private int age = 54;
@@ -47,7 +51,7 @@ public class Farmer
     private size farm = size.LARGE;
     private String sheepId;
     private String goatId;
-    
+
     public Farmer()
     {
         super();
@@ -109,7 +113,7 @@ public class Farmer
         this.farm = farm;
     }
 
-    @EmbeddedEntityResource(propertyName = "sheep", entityResource=SheepEntityResource.class)
+    @EmbeddedEntityResource(propertyName = "sheep", entityResource = SheepEntityResource.class)
     @JsonIgnore
     public String getSheepId()
     {
@@ -121,7 +125,7 @@ public class Farmer
         this.sheepId = sheepId;
     }
 
-    @EmbeddedEntityResource(propertyName = "goat", entityResource=GoatEntityResource.class)
+    @EmbeddedEntityResource(propertyName = "goat", entityResource = GoatEntityResource.class)
     @JsonIgnore
     public String getGoatId()
     {
@@ -132,6 +136,5 @@ public class Farmer
     {
         this.goatId = goatId;
     }
-    
-    
+
 }

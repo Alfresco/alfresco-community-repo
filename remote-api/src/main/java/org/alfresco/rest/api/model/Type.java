@@ -32,8 +32,7 @@ import org.alfresco.service.cmr.i18n.MessageLookup;
 public class Type extends AbstractClass
 {
     public Type()
-    {
-    }
+    {}
 
     public Type(TypeDefinition typeDefinition, MessageLookup messageLookup)
     {
@@ -63,4 +62,3 @@ public class Type extends AbstractClass
         return builder.toString();
     }
 }
-

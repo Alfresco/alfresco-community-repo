@@ -38,7 +38,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 public class AuthenticatedUserDataGenerator extends AbstractDataGenerator
 {
     /**
-     * @return              Returns the currently-authenticated user
+     * @return Returns the currently-authenticated user
      */
     public Serializable getData() throws Throwable
     {

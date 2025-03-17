@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
- 
+
 package org.alfresco.rest.framework.tests.core;
 
 import static org.junit.Assert.*;
@@ -34,31 +34,25 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+
+import org.junit.Test;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Description;
+import org.springframework.extensions.webscripts.Format;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
 import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.rest.framework.tools.ResponseWriter;
 import org.alfresco.rest.framework.webscripts.AbstractResourceWebScript;
-import org.alfresco.rest.framework.webscripts.ApiWebScript;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptDelete;
 import org.alfresco.rest.framework.webscripts.WithResponse;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Description;
-import org.springframework.extensions.webscripts.Format;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * Tests the interactions with WithResponse
@@ -81,7 +75,7 @@ public class WithResponseTest
     @Test
     public void testSetHeader() throws Exception
     {
-        WithResponse callBack = new WithResponse(Status.STATUS_OK,ResponseWriter.DEFAULT_JSON_CONTENT, ResponseWriter.CACHE_NEVER);
+        WithResponse callBack = new WithResponse(Status.STATUS_OK, ResponseWriter.DEFAULT_JSON_CONTENT, ResponseWriter.CACHE_NEVER);
         callBack.setHeader("king", "can");
         callBack.setHeader("king", "kong");
         assertTrue(callBack.getHeaders().size() == 1);
@@ -93,7 +87,7 @@ public class WithResponseTest
     @Test
     public void testAddHeader() throws Exception
     {
-        WithResponse callBack = new WithResponse(Status.STATUS_OK,ResponseWriter.DEFAULT_JSON_CONTENT, ResponseWriter.CACHE_NEVER);
+        WithResponse callBack = new WithResponse(Status.STATUS_OK, ResponseWriter.DEFAULT_JSON_CONTENT, ResponseWriter.CACHE_NEVER);
         callBack.addHeader("king", "can");
         callBack.addHeader("king", "kong");
         assertTrue(callBack.getHeaders().size() == 1);
@@ -102,14 +96,12 @@ public class WithResponseTest
         assertEquals(vals, Arrays.asList("can", "kong"));
     }
 
-
     @Test
     public void testSetters() throws Exception
     {
         WithResponse callBack = new WithResponse(Status.STATUS_OK, ResponseWriter.DEFAULT_JSON_CONTENT, ResponseWriter.CACHE_NEVER);
         callBack.setStatus(Status.STATUS_GONE);
-        Cache myCache = new Cache(new Description.RequiredCache()
-        {
+        Cache myCache = new Cache(new Description.RequiredCache() {
             @Override
             public boolean getNeverCache()
             {
@@ -129,14 +121,13 @@ public class WithResponseTest
             }
         });
         callBack.setCache(myCache);
-        ContentInfo myContent = new ContentInfoImpl(Format.HTML.mimetype(),"UTF-16", 12, Locale.FRENCH);
+        ContentInfo myContent = new ContentInfoImpl(Format.HTML.mimetype(), "UTF-16", 12, Locale.FRENCH);
         callBack.setContentInfo(myContent);
 
         assertEquals(Status.STATUS_GONE, callBack.getStatus());
         assertEquals(myCache, callBack.getCache());
         assertEquals(myContent, callBack.getContentInfo());
     }
-
 
     @Test
     public void testSetResponse() throws Exception
@@ -147,7 +138,7 @@ public class WithResponseTest
 
         WebScriptResponse response = mock(WebScriptResponse.class);
 
-        responseWriter.setResponse(response,wr.getStatus(), wr.getCache(), wr.getContentInfo(), wr.getHeaders());
+        responseWriter.setResponse(response, wr.getStatus(), wr.getCache(), wr.getContentInfo(), wr.getHeaders());
         verify(response, times(1)).setStatus(anyInt());
         verify(response, times(1)).setCache((Cache) any());
         verify(response, times(1)).setContentType(anyString());
@@ -155,7 +146,7 @@ public class WithResponseTest
 
         response = mock(WebScriptResponse.class);
 
-        responseWriter.setResponse(response,wr.getStatus(), null, null, null);
+        responseWriter.setResponse(response, wr.getStatus(), null, null, null);
         verify(response, times(1)).setStatus(anyInt());
         verify(response, times(0)).setCache((Cache) any());
         verify(response, times(0)).setContentType(anyString());
@@ -165,7 +156,7 @@ public class WithResponseTest
 
         wr.addHeader("king", "can");
         wr.addHeader("king", "kong");
-        responseWriter.setResponse(response,wr.getStatus(), null, null, wr.getHeaders());
+        responseWriter.setResponse(response, wr.getStatus(), null, null, wr.getHeaders());
         verify(response, times(1)).setStatus(anyInt());
         verify(response, times(0)).setCache((Cache) any());
         verify(response, times(0)).setContentType(anyString());
@@ -176,14 +167,13 @@ public class WithResponseTest
 
         wr.addHeader("king", "kin");
         wr.setHeader("ping", "ping");
-        responseWriter.setResponse(response,wr.getStatus(), null, null, wr.getHeaders());
+        responseWriter.setResponse(response, wr.getStatus(), null, null, wr.getHeaders());
         verify(response, times(1)).setStatus(anyInt());
         verify(response, times(0)).setCache((Cache) any());
         verify(response, times(0)).setContentType(anyString());
         verify(response, times(1)).setHeader(eq("king"), anyString());
         verify(response, times(1)).setHeader(eq("ping"), anyString());
         verify(response, times(2)).addHeader(eq("king"), anyString());
-
 
     }
 

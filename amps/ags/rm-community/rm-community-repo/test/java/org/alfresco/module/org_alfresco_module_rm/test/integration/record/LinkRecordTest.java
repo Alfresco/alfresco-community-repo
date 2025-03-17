@@ -29,11 +29,12 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.record;
 
 import java.util.List;
 
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.webscripts.GUID;
 
 /**
  * Link/Unlink Record Tests
@@ -62,20 +63,17 @@ public class LinkRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given source and destination disposition schedules are compatible
-     * When I link a record to the record folder
-     * Then it is successful
+     * Given source and destination disposition schedules are compatible When I link a record to the record folder Then it is successful
      */
     public void testLinkWithCompatibleDispositionSchedules() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef sourceRecordCategory;
             private NodeRef targetRecordCategory;
             private NodeRef sourceRecordFolder;
             private NodeRef targetRecordFolder;
             private NodeRef myRecord;
-            
+
             public void given() throws Exception
             {
                 // test entities
@@ -84,19 +82,19 @@ public class LinkRecordTest extends BaseRMTestCase
                 myRecord = utils.createRecord(sourceRecordFolder, GUID.generate());
                 targetRecordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 targetRecordFolder = recordFolderService.createRecordFolder(targetRecordCategory, GUID.generate());
-                
+
                 // create disposition schedules on record folders
                 utils.createBasicDispositionSchedule(
-                        sourceRecordCategory, 
-                        "disposition instructions", 
-                        "disposition authority", 
-                        false, 
+                        sourceRecordCategory,
+                        "disposition instructions",
+                        "disposition authority",
+                        false,
                         true);
                 utils.createBasicDispositionSchedule(
-                        targetRecordCategory, 
-                        "disposition instructions", 
-                        "disposition authority", 
-                        false, 
+                        targetRecordCategory,
+                        "disposition instructions",
+                        "disposition authority",
+                        false,
                         true);
             }
 
@@ -111,26 +109,23 @@ public class LinkRecordTest extends BaseRMTestCase
                 // assert that the record now has two parents
                 List<ChildAssociationRef> assocs = nodeService.getParentAssocs(myRecord);
                 assertNotNull(assocs);
-                assertEquals(2, assocs.size());                
+                assertEquals(2, assocs.size());
             }
         });
     }
-    
+
     /**
-     * Given source and destination disposition schedules are incompatible
-     * When I link a record to the record folder
-     * Then it is fails
+     * Given source and destination disposition schedules are incompatible When I link a record to the record folder Then it is fails
      */
     public void testLinkWithIncompatibleDispositionSchedules() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class) {
             private NodeRef sourceRecordCategory;
             private NodeRef targetRecordCategory;
             private NodeRef sourceRecordFolder;
             private NodeRef targetRecordFolder;
             private NodeRef myRecord;
-            
+
             public void given() throws Exception
             {
                 // test entities
@@ -139,19 +134,19 @@ public class LinkRecordTest extends BaseRMTestCase
                 myRecord = utils.createRecord(sourceRecordFolder, GUID.generate());
                 targetRecordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 targetRecordFolder = recordFolderService.createRecordFolder(targetRecordCategory, GUID.generate());
-                
+
                 // create disposition schedules on record folders
                 utils.createBasicDispositionSchedule(
-                        sourceRecordCategory, 
-                        "disposition instructions", 
-                        "disposition authority", 
-                        false, 
+                        sourceRecordCategory,
+                        "disposition instructions",
+                        "disposition authority",
+                        false,
                         true);
                 utils.createBasicDispositionSchedule(
-                        targetRecordCategory, 
-                        "disposition instructions", 
-                        "disposition authority", 
-                        true, 
+                        targetRecordCategory,
+                        "disposition instructions",
+                        "disposition authority",
+                        true,
                         true);
             }
 

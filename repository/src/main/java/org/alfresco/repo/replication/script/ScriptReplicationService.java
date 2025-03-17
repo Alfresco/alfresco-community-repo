@@ -27,12 +27,13 @@ package org.alfresco.repo.replication.script;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Script object representing the replication service.
@@ -42,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
 public class ScriptReplicationService extends BaseScopableProcessorExtension
 {
     private static Log logger = LogFactory.getLog(ScriptReplicationService.class);
-    
+
     /** The Services registry */
     private ServiceRegistry serviceRegistry;
     private ReplicationService replicationService;
@@ -50,71 +51,73 @@ public class ScriptReplicationService extends BaseScopableProcessorExtension
     /**
      * Set the service registry
      * 
-     * @param serviceRegistry the service registry.
+     * @param serviceRegistry
+     *            the service registry.
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
     }
-    
+
     /**
      * Set the replication service
      * 
-     * @param replicationService the replication service.
+     * @param replicationService
+     *            the replication service.
      */
     public void setReplicationService(ReplicationService replicationService)
     {
         this.replicationService = replicationService;
     }
-    
+
     /**
-     * Creates a new {@link ScriptReplicationDefinition} and sets the replication name and
-     * the description to the specified values.
+     * Creates a new {@link ScriptReplicationDefinition} and sets the replication name and the description to the specified values.
      * 
-     * @param replicationName A unique identifier used to specify the created
-     *            {@link ScriptReplicationDefinition}.
-     * @param description A description of the replication
+     * @param replicationName
+     *            A unique identifier used to specify the created {@link ScriptReplicationDefinition}.
+     * @param description
+     *            A description of the replication
      * @return the created {@link ScriptReplicationDefinition}.
      * @see org.alfresco.service.cmr.replication.ReplicationService#createReplicationDefinition(String, String)
      */
     public ScriptReplicationDefinition createReplicationDefinition(String replicationName, String description)
     {
-    	 if (logger.isDebugEnabled())
-    	 {
-          StringBuilder msg = new StringBuilder();
-    		 msg.append("Creating ScriptReplicationDefinition [")
-    		    .append(replicationName).append(", ")
-    		    .append(description).append("]");
-    		 logger.debug(msg.toString());
-    	 }
-    	 
-    	 ReplicationDefinition replicationDefinition = replicationService.createReplicationDefinition(replicationName, description);
-       return new ScriptReplicationDefinition(serviceRegistry, replicationService, this.getScope(), replicationDefinition);
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Creating ScriptReplicationDefinition [")
+                    .append(replicationName).append(", ")
+                    .append(description).append("]");
+            logger.debug(msg.toString());
+        }
+
+        ReplicationDefinition replicationDefinition = replicationService.createReplicationDefinition(replicationName, description);
+        return new ScriptReplicationDefinition(serviceRegistry, replicationService, this.getScope(), replicationDefinition);
     }
-    
+
     public void saveReplicationDefinition(ScriptReplicationDefinition definition)
     {
-       if (logger.isDebugEnabled())
-       {
-          StringBuilder msg = new StringBuilder();
-          msg.append("Saving ScriptReplicationDefinition [")
-             .append(definition.getReplicationName()).append(", ")
-             .append(definition.getDescription()).append("]");
-          logger.debug(msg.toString());
-       }
-       
-       ReplicationDefinition replicationDefinition = definition.getReplicationDefinition();
-       replicationService.saveReplicationDefinition(replicationDefinition);
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Saving ScriptReplicationDefinition [")
+                    .append(definition.getReplicationName()).append(", ")
+                    .append(definition.getDescription()).append("]");
+            logger.debug(msg.toString());
+        }
+
+        ReplicationDefinition replicationDefinition = definition.getReplicationDefinition();
+        replicationService.saveReplicationDefinition(replicationDefinition);
     }
-    
+
     public ScriptReplicationDefinition loadReplicationDefinition(String replicationName)
     {
         ReplicationDefinition replicationDefinition = replicationService.loadReplicationDefinition(replicationName);
-        if(replicationDefinition == null)
-           return null;
+        if (replicationDefinition == null)
+            return null;
         return new ScriptReplicationDefinition(serviceRegistry, replicationService, this.getScope(), replicationDefinition);
     }
-    
+
     public ScriptReplicationDefinition[] loadReplicationDefinitions()
     {
         List<ReplicationDefinition> definitions = replicationService.loadReplicationDefinitions();
@@ -126,7 +129,7 @@ public class ScriptReplicationService extends BaseScopableProcessorExtension
         List<ReplicationDefinition> definitions = replicationService.loadReplicationDefinitions(targetName);
         return toScriptReplicationDefinitions(definitions);
     }
-    
+
     public void replicate(ScriptReplicationDefinition definition)
     {
         replicationService.replicate(definition.getReplicationDefinition());
@@ -135,10 +138,10 @@ public class ScriptReplicationService extends BaseScopableProcessorExtension
     private ScriptReplicationDefinition[] toScriptReplicationDefinitions(List<ReplicationDefinition> definitions)
     {
         ScriptReplicationDefinition[] scriptDefs = new ScriptReplicationDefinition[definitions.size()];
-        for(int i=0; i<scriptDefs.length; i++)
+        for (int i = 0; i < scriptDefs.length; i++)
         {
-           ReplicationDefinition def = definitions.get(i);
-           scriptDefs[i] = new ScriptReplicationDefinition(serviceRegistry, replicationService, this.getScope(), def);
+            ReplicationDefinition def = definitions.get(i);
+            scriptDefs[i] = new ScriptReplicationDefinition(serviceRegistry, replicationService, this.getScope(), def);
         }
         return scriptDefs;
     }

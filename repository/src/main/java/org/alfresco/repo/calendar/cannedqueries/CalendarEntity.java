@@ -29,8 +29,7 @@ import org.alfresco.repo.query.NodeBackedEntity;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
 
 /**
- * Calendar Entity - low level representation of parts of a 
- *  {@link CalendarEntry} - used by GetCalendarEntries Canned Query
+ * Calendar Entity - low level representation of parts of a {@link CalendarEntry} - used by GetCalendarEntries Canned Query
  *
  * @author Nick Burch
  * @since 4.0
@@ -41,24 +40,24 @@ public class CalendarEntity extends NodeBackedEntity
     private String toDate;
     private String recurrenceRule;
     private String recurrenceLastMeeting;
-    
+
     // Supplemental query-related parameters
     private Long fromDateQNameId;
     private Long toDateQNameId;
     private Long recurrenceRuleQNameId;
     private Long recurrenceLastMeetingQNameId;
-    
+
     /**
      * Default constructor
      */
     public CalendarEntity()
     {
-       super();
+        super();
     }
-    
+
     public CalendarEntity(Long parentNodeId, Long nameQNameId, Long contentTypeQNameId,
-                          Long fromDateQNameId, Long toDateQNameId,
-                          Long recurrenceRuleQNameId, Long recurrenceLastMeetingQNameId)
+            Long fromDateQNameId, Long toDateQNameId,
+            Long recurrenceRuleQNameId, Long recurrenceLastMeetingQNameId)
     {
         super(parentNodeId, nameQNameId, contentTypeQNameId);
         this.fromDateQNameId = fromDateQNameId;
@@ -66,76 +65,75 @@ public class CalendarEntity extends NodeBackedEntity
         this.recurrenceRuleQNameId = recurrenceRuleQNameId;
         this.recurrenceLastMeetingQNameId = recurrenceLastMeetingQNameId;
     }
-    
+
     // (ISO-8061)
     public String getFromDate()
     {
         return fromDate;
     }
-    
+
     public void setFromDate(String fromISO8601)
     {
         this.fromDate = fromISO8601;
     }
-    
+
     // (ISO-8061)
     public String getToDate()
     {
         return toDate;
     }
-    
+
     public void setToDate(String toISO8061)
     {
         this.toDate = toISO8061;
     }
-    
+
     /**
      * SharePoint/Oulook rules string
      */
-    public String getRecurrenceRule() 
+    public String getRecurrenceRule()
     {
-       return recurrenceRule;
+        return recurrenceRule;
     }
 
     /**
      * SharePoint/Oulook rules string
      */
-    public void setRecurrenceRule(String recurrenceRule) 
+    public void setRecurrenceRule(String recurrenceRule)
     {
-       this.recurrenceRule = recurrenceRule;
+        this.recurrenceRule = recurrenceRule;
     }
 
     // (ISO-8061)
-    public String getRecurrenceLastMeeting() 
+    public String getRecurrenceLastMeeting()
     {
-       return recurrenceLastMeeting;
+        return recurrenceLastMeeting;
     }
 
-    public void setRecurrenceLastMeeting(String recurrenceLastMeetingISO8601) 
+    public void setRecurrenceLastMeeting(String recurrenceLastMeetingISO8601)
     {
-       this.recurrenceLastMeeting = recurrenceLastMeetingISO8601;
+        this.recurrenceLastMeeting = recurrenceLastMeetingISO8601;
     }
-    
-    
+
     // Supplemental query-related parameters
-    
-    public Long getFromDateQNameId() 
+
+    public Long getFromDateQNameId()
     {
-       return fromDateQNameId;
+        return fromDateQNameId;
     }
 
-    public Long getToDateQNameId() 
+    public Long getToDateQNameId()
     {
-       return toDateQNameId;
+        return toDateQNameId;
     }
 
-    public Long getRecurrenceRuleQNameId() 
+    public Long getRecurrenceRuleQNameId()
     {
-       return recurrenceRuleQNameId;
+        return recurrenceRuleQNameId;
     }
 
-    public Long getRecurrenceLastMeetingQNameId() 
+    public Long getRecurrenceLastMeetingQNameId()
     {
-       return recurrenceLastMeetingQNameId;
+        return recurrenceLastMeetingQNameId;
     }
 }

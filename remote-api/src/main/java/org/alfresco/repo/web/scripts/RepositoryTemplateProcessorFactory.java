@@ -34,10 +34,10 @@ import org.springframework.extensions.webscripts.TemplateProcessorFactory;
 public class RepositoryTemplateProcessorFactory implements TemplateProcessorFactory
 {
     private TemplateProcessor templateProcessor;
-    
-    
+
     /**
-     * @param templateProcessor     the TemplateProcessor to set
+     * @param templateProcessor
+     *            the TemplateProcessor to set
      */
     public void setTemplateProcessor(TemplateProcessor templateProcessor)
     {
@@ -45,8 +45,8 @@ public class RepositoryTemplateProcessorFactory implements TemplateProcessorFact
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.TemplateProcessorFactory#newInstance()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.TemplateProcessorFactory#newInstance() */
     public TemplateProcessor newInstance()
     {
         return templateProcessor;

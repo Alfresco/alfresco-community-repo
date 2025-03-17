@@ -43,15 +43,15 @@ public class InvalidExtension extends RuntimeException
     public InvalidExtension(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace)
     {
         super(message,
-              cause,
-              enableSuppression,
-              writableStackTrace);
+                cause,
+                enableSuppression,
+                writableStackTrace);
     }
 
     public InvalidExtension(String message, Throwable cause)
     {
         super(message,
-              cause);
+                cause);
     }
 
     public InvalidExtension(String message)

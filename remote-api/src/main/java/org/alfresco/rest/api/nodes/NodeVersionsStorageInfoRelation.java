@@ -26,6 +26,10 @@
 
 package org.alfresco.rest.api.nodes;
 
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.ContentStorageInformation;
 import org.alfresco.rest.api.model.ArchiveContentRequest;
 import org.alfresco.rest.api.model.ContentStorageInfo;
@@ -43,14 +47,11 @@ import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Node Versions storage information.
  *
- *  - GET  /nodes/{nodeId}/versions/{versionId}/storage-info/{contentPropQNameId}
+ * - GET /nodes/{nodeId}/versions/{versionId}/storage-info/{contentPropQNameId}
  *
  * @author janv
  */
@@ -94,7 +95,7 @@ public class NodeVersionsStorageInfoRelation implements RelationshipResourceActi
             description = "Submits a request to send version content to archive",
             successStatus = HttpServletResponse.SC_OK)
     public void requestArchiveContent(String nodeId, String versionId, ArchiveContentRequest archiveContentRequest, Parameters parameters,
-                                      WithResponse withResponse) 
+            WithResponse withResponse)
     {
         String contentPropQNameId = parameters.getRelationship2Id();
 
@@ -104,7 +105,7 @@ public class NodeVersionsStorageInfoRelation implements RelationshipResourceActi
         if (result)
         {
             withResponse.setStatus(HttpServletResponse.SC_OK);
-        } 
+        }
         else
         {
             withResponse.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
@@ -118,7 +119,7 @@ public class NodeVersionsStorageInfoRelation implements RelationshipResourceActi
             description = "Submits a request to restore version content from archive",
             successStatus = HttpServletResponse.SC_ACCEPTED)
     public void requestRestoreContentFromArchive(String nodeId, String versionId, RestoreArchivedContentRequest restoreArchivedContentRequest,
-                                                 Parameters parameters, WithResponse withResponse)
+            Parameters parameters, WithResponse withResponse)
     {
         String contentPropQNameId = parameters.getRelationship2Id();
 
@@ -140,7 +141,7 @@ public class NodeVersionsStorageInfoRelation implements RelationshipResourceActi
         Version version = nodeVersions.findVersion(nodeId, versionId);
         if (version == null)
         {
-            throw new EntityNotFoundException(nodeId+"-"+versionId);
+            throw new EntityNotFoundException(nodeId + "-" + versionId);
         }
         return version.getFrozenStateNodeRef();
     }

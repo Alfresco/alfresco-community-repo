@@ -27,6 +27,7 @@ package org.alfresco.repo.security.authentication.external;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 
 /**

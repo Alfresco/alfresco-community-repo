@@ -30,13 +30,14 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.apache.commons.codec.net.URLCodec;
+import org.apache.commons.httpclient.HttpClient;
+import org.springframework.beans.factory.BeanFactory;
+
 import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.repo.index.shard.ShardInstance;
 import org.alfresco.repo.search.QueryParserException;
 import org.alfresco.util.Pair;
-import org.apache.commons.codec.net.URLCodec;
-import org.apache.commons.httpclient.HttpClient;
-import org.springframework.beans.factory.BeanFactory;
 
 /**
  * @author Andy
@@ -53,16 +54,16 @@ public class DynamicSolrStoreMappingWrapperFactory
      */
     public static SolrStoreMappingWrapper wrap(List<ShardInstance> slice, BeanFactory beanFactory)
     {
-        HttpClientFactory httpClientFactory = (HttpClientFactory)beanFactory.getBean("solrHttpClientFactory");
-        for(ShardInstance instance : slice)
+        HttpClientFactory httpClientFactory = (HttpClientFactory) beanFactory.getBean("solrHttpClientFactory");
+        for (ShardInstance instance : slice)
         {
             Pair<String, Integer> key = new Pair<String, Integer>(instance.getHostName(), instance.getPort());
-            if(!clients.contains(key))
+            if (!clients.contains(key))
             {
                 clients.put(key, httpClientFactory.getHttpClient(key.getFirst(), key.getSecond()));
             }
         }
-        
+
         return new DynamicSolrStoreMappingWrapper(slice);
     }
 
@@ -76,21 +77,21 @@ public class DynamicSolrStoreMappingWrapperFactory
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.repo.search.impl.solr.SolrStoreMappingWrapper#getHttpClientAndBaseUrl()
-         */
+         * 
+         * @see org.alfresco.repo.search.impl.solr.SolrStoreMappingWrapper#getHttpClientAndBaseUrl() */
         @Override
         public Pair<HttpClient, String> getHttpClientAndBaseUrl()
         {
-           int base = ThreadLocalRandom.current().nextInt(slice.size());
-           ShardInstance instance = slice.get(base);
-           Pair<String, Integer> key = new Pair<String, Integer>(instance.getHostName(), instance.getPort());
-           HttpClient client = clients.get(key);
-           return new Pair<HttpClient, String>(client, instance.getBaseUrl());
+            int base = ThreadLocalRandom.current().nextInt(slice.size());
+            ShardInstance instance = slice.get(base);
+            Pair<String, Integer> key = new Pair<String, Integer>(instance.getHostName(), instance.getPort());
+            HttpClient client = clients.get(key);
+            return new Pair<HttpClient, String>(client, instance.getBaseUrl());
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.repo.search.impl.solr.SolrStoreMappingWrapper#isSharded()
-         */
+         * 
+         * @see org.alfresco.repo.search.impl.solr.SolrStoreMappingWrapper#isSharded() */
         @Override
         public boolean isSharded()
         {
@@ -98,8 +99,8 @@ public class DynamicSolrStoreMappingWrapperFactory
         }
 
         /* (non-Javadoc)
-         * @see org.alfresco.repo.search.impl.solr.SolrStoreMappingWrapper#getShards()
-         */
+         * 
+         * @see org.alfresco.repo.search.impl.solr.SolrStoreMappingWrapper#getShards() */
         @Override
         public String getShards()
         {
@@ -108,7 +109,7 @@ public class DynamicSolrStoreMappingWrapperFactory
                 URLCodec encoder = new URLCodec();
                 StringBuilder builder = new StringBuilder();
 
-                for(ShardInstance instance : slice)
+                for (ShardInstance instance : slice)
                 {
                     if (builder.length() > 0)
                     {
@@ -116,17 +117,17 @@ public class DynamicSolrStoreMappingWrapperFactory
                     }
                     Pair<String, Integer> key = new Pair<String, Integer>(instance.getHostName(), instance.getPort());
                     HttpClient client = clients.get(key);
-                    builder.append(encoder.encode(client.getHostConfiguration().getProtocol().getScheme() +  "://", "UTF-8"));
+                    builder.append(encoder.encode(client.getHostConfiguration().getProtocol().getScheme() + "://", "UTF-8"));
                     builder.append(encoder.encode(instance.getHostName(), "UTF-8"));
                     builder.append(':');
                     builder.append(encoder.encode("" + instance.getPort(), "UTF-8"));
-                    if(!instance.getBaseUrl().startsWith("/"))
+                    if (!instance.getBaseUrl().startsWith("/"))
                     {
                         builder.append('/');
                     }
                     builder.append(encoder.encode(instance.getBaseUrl(), "UTF-8"));
                 }
-                
+
                 return builder.toString();
             }
             catch (UnsupportedEncodingException e)
@@ -134,6 +135,6 @@ public class DynamicSolrStoreMappingWrapperFactory
                 throw new QueryParserException("", e);
             }
         }
-        
+
     }
 }

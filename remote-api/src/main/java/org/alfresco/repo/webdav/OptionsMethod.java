@@ -48,8 +48,7 @@ public class OptionsMethod extends WebDAVMethod
      * Default constructor
      */
     public OptionsMethod()
-    {
-    }
+    {}
 
     /**
      * Parse the request header fields
@@ -72,7 +71,7 @@ public class OptionsMethod extends WebDAVMethod
     }
 
     /**
-     * @return          Returns <tt>true</tt> always
+     * @return Returns <tt>true</tt> always
      */
     @Override
     protected boolean isReadOnly()
@@ -87,8 +86,7 @@ public class OptionsMethod extends WebDAVMethod
      */
     protected void executeImpl() throws WebDAVServerException
     {
-        Boolean isFolder = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
-        {
+        Boolean isFolder = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>() {
             @Override
             public Boolean doWork() throws FileNotFoundException
             {

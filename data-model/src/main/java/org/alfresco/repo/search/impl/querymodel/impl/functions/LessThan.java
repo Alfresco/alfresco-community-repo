@@ -45,11 +45,9 @@ public class LessThan extends BaseComparison
         super(NAME, DataTypeDefinition.BOOLEAN, ARGS);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set) */
     public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
         throw new UnsupportedOperationException();

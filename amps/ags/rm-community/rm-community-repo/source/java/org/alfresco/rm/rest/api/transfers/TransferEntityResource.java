@@ -30,6 +30,8 @@ package org.alfresco.rm.rest.api.transfers;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
@@ -43,7 +45,6 @@ import org.alfresco.rm.rest.api.model.Transfer;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Transfer entity resource
@@ -51,7 +52,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Silviu Dinuta
  * @since 2.6
  */
-@EntityResource(name="transfers", title = "Transfers")
+@EntityResource(name = "transfers", title = "Transfers")
 public class TransferEntityResource implements
         EntityResourceAction.ReadById<Transfer>,
         InitializingBean

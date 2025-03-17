@@ -27,10 +27,8 @@
 package org.alfresco.repo.virtual.ref;
 
 /**
- * Returns a virtual parent reference upon execution by subtracting the last
- * template path element from of the given reference.<br>
- * For root template path references a <code>null</code> will be returned upon
- * execution.
+ * Returns a virtual parent reference upon execution by subtracting the last template path element from of the given reference.<br>
+ * For root template path references a <code>null</code> will be returned upon execution.
  * 
  * @see VirtualProtocol#replaceTemplatePath(Reference, String)
  * @author Bogdan Horje
@@ -52,7 +50,7 @@ public class GetParentReferenceMethod extends AbstractProtocolMethod<Reference>
             else
             {
                 path = path.substring(0,
-                                      trailingPathIndex);
+                        trailingPathIndex);
             }
         }
 
@@ -64,7 +62,7 @@ public class GetParentReferenceMethod extends AbstractProtocolMethod<Reference>
         else
         {
             String parentPath = path.substring(0,
-                                               index);
+                    index);
 
             if (parentPath.isEmpty())
             {
@@ -79,7 +77,7 @@ public class GetParentReferenceMethod extends AbstractProtocolMethod<Reference>
             }
 
             return virtualProtocol.replaceTemplatePath(reference,
-                                                       parentPath);
+                    parentPath);
         }
     }
 

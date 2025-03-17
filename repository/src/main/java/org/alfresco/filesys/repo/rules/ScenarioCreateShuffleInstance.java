@@ -30,6 +30,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.filesys.repo.rules.commands.CompoundCommand;
 import org.alfresco.filesys.repo.rules.commands.CopyContentCommand;
 import org.alfresco.filesys.repo.rules.commands.RenameFileCommand;
@@ -37,90 +40,79 @@ import org.alfresco.filesys.repo.rules.operations.CreateFileOperation;
 import org.alfresco.filesys.repo.rules.operations.DeleteFileOperation;
 import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.alfresco.jlan.server.filesys.FileName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * This is an instance of a "classic shuffle" triggered by a create of a 
- * file matching a specified pattern.
+ * This is an instance of a "classic shuffle" triggered by a create of a file matching a specified pattern.
  * <p>
- * a) New file created.   Typically with an obscure name.
- * b) Existing file moved out of the way
- * c) New file moved into place.
- * d) Old file deleted.
+ * a) New file created. Typically with an obscure name. b) Existing file moved out of the way c) New file moved into place. d) Old file deleted.
  * 
  * <p>
- * If this filter is active then this is what happens.
- * a) New file created.   New file created (X).
- * b) Existing file moved out of the way (Y to Z).   Raname tracked.
- * c) New file moved into place (X to Y).   Scenario kicks in to change commands.
- * d) Old file deleted.
+ * If this filter is active then this is what happens. a) New file created. New file created (X). b) Existing file moved out of the way (Y to Z). Raname tracked. c) New file moved into place (X to Y). Scenario kicks in to change commands. d) Old file deleted.
  */
 public class ScenarioCreateShuffleInstance implements ScenarioInstance
 {
     private static Log logger = LogFactory.getLog(ScenarioCreateShuffleInstance.class);
-    
-    enum InternalState 
+
+    enum InternalState
     {
-        NONE,
-        RENAME,
-        DELETE
+        NONE, RENAME, DELETE
     }
-       
+
     InternalState internalState = InternalState.NONE;
-    
+
     private Date startTime = new Date();
-    
+
     private String createName;
     private String move1;
     private String move2;
     private Ranking ranking;
-    
+
     /**
-     * Timeout in ms.  Default 30 seconds.
+     * Timeout in ms. Default 30 seconds.
      */
     private long timeout = 60000;
-    
+
     private boolean isComplete;
-    
+
     /**
      * Keep track of re-names
      */
-    private Map<String, String>renames = new HashMap<String, String>();
-    
+    private Map<String, String> renames = new HashMap<String, String>();
+
     /**
      * Evaluate the next operation
-     * @param operation Operation
+     * 
+     * @param operation
+     *            Operation
      */
     public Command evaluate(Operation operation)
     {
-        
+
         /**
          * Anti-pattern : timeout
          */
         Date now = new Date();
-        if(now.getTime() > startTime.getTime() + getTimeout())
+        if (now.getTime() > startTime.getTime() + getTimeout())
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("Instance timed out createName:" + createName);
                 isComplete = true;
                 return null;
             }
         }
-        
+
         /**
-         * Anti-pattern for all states - delete the file we are 
-         * shuffling
+         * Anti-pattern for all states - delete the file we are shuffling
          */
-        if(createName != null)
+        if (createName != null)
         {
-            if(operation instanceof DeleteFileOperation)
+            if (operation instanceof DeleteFileOperation)
             {
-                DeleteFileOperation d = (DeleteFileOperation)operation;
-                if(d.getName().equals(createName))
+                DeleteFileOperation d = (DeleteFileOperation) operation;
+                if (d.getName().equals(createName))
                 {
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("Anti-pattern : Shuffle file deleted createName:" + createName);
                     }
@@ -129,16 +121,16 @@ public class ScenarioCreateShuffleInstance implements ScenarioInstance
                 }
             }
         }
-        
+
         switch (internalState)
         {
         case NONE:
             // Looking for a create transition
-            if(operation instanceof CreateFileOperation)
+            if (operation instanceof CreateFileOperation)
             {
-                CreateFileOperation c = (CreateFileOperation)operation;
+                CreateFileOperation c = (CreateFileOperation) operation;
                 this.createName = c.getName();
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("entering RENAME state: " + createName);
                 }
@@ -148,122 +140,113 @@ public class ScenarioCreateShuffleInstance implements ScenarioInstance
             else
             {
                 // anything else bomb out
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("State error, expected a CREATE");
                 }
                 isComplete = true;
             }
             break;
-        
+
         case RENAME:
-            
+
             /**
              * Looking for two renames X(createName) to Y(middle) to Z(end)
-             */              
-            if(operation instanceof RenameFileOperation)
+             */
+            if (operation instanceof RenameFileOperation)
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("Tracking rename: " + operation);
                 }
-                RenameFileOperation r = (RenameFileOperation)operation;
+                RenameFileOperation r = (RenameFileOperation) operation;
                 renames.put(r.getFrom(), r.getTo());
-            
+
                 // Now see if this rename makes a pair.
                 String middle = renames.get(createName);
-                if(middle != null)
+                if (middle != null)
                 {
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
-                        logger.debug("Got second rename" );
+                        logger.debug("Got second rename");
                     }
-                
+
                     String end = renames.get(middle);
-                
-                    if(end != null)
+
+                    if (end != null)
                     {
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
-                            logger.debug("Got two renames " );
+                            logger.debug("Got two renames ");
                         }
                         this.move1 = middle;
                         this.move2 = end;
-                    
-                       
-                        if(logger.isDebugEnabled())
+
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("entering DELETE state");
                         }
-                    
+
                         internalState = InternalState.DELETE;
-                    
+
                         /**
-                         * This shuffle reverses the rename out of the way and then copies the 
-                         * content only.   Finally it moves the temp file into place for the subsequent 
-                         * delete.
-                         * a) Rename Z to Y (Reverse previous move)
-                         * b) Copy Content from X to Y
-                         * c) Rename X to Z (move temp file out to old location)
+                         * This shuffle reverses the rename out of the way and then copies the content only. Finally it moves the temp file into place for the subsequent delete. a) Rename Z to Y (Reverse previous move) b) Copy Content from X to Y c) Rename X to Z (move temp file out to old location)
                          */
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("Go and shuffle! createName:" + createName + " move1 " + move1 + " move2 " + move2);
                         }
-                        
+
                         String[] paths = FileName.splitPath(r.getFromPath());
                         String oldFolder = paths[0];
                         // String oldFile = paths[1];
-           
+
                         ArrayList<Command> commands = new ArrayList<Command>();
                         RenameFileCommand r1 = new RenameFileCommand(end, middle, r.getRootNodeRef(), oldFolder + "\\" + end, oldFolder + "\\" + middle);
                         CopyContentCommand copyContent = new CopyContentCommand(createName, move1, r.getRootNodeRef(), oldFolder + "\\" + createName, oldFolder + "\\" + middle);
-                        RenameFileCommand r2 = new RenameFileCommand(createName, end, r.getRootNodeRef(), oldFolder + "\\" + createName, oldFolder + "\\" + end); 
-                        
+                        RenameFileCommand r2 = new RenameFileCommand(createName, end, r.getRootNodeRef(), oldFolder + "\\" + createName, oldFolder + "\\" + end);
+
                         commands.add(r1);
                         commands.add(copyContent);
                         commands.add(r2);
-                    
+
                         return new CompoundCommand(commands);
                     }
                 }
             }
-            
+
             break;
-            
+
         case DELETE:
-           
+
             /**
              * Looking for a delete of the destination
              */
-            
-            if(operation instanceof DeleteFileOperation)
+
+            if (operation instanceof DeleteFileOperation)
             {
-                DeleteFileOperation d = (DeleteFileOperation)operation;
-                if(d.getName().equals(move2))
+                DeleteFileOperation d = (DeleteFileOperation) operation;
+                if (d.getName().equals(move2))
                 {
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("Scenario complete createName:" + createName);
                     }
                     isComplete = true;
                 }
             }
-            
+
             /**
-             * Todo consider create shuffle with backup file which will never 
-             * calls delete - do we need to pattern match on "Backup*".  
-             * At the moment the delete state does nothing - hence 
-             * we can simply set complete here for all situations.
+             * Todo consider create shuffle with backup file which will never calls delete - do we need to pattern match on "Backup*". At the moment the delete state does nothing - hence we can simply set complete here for all situations.
              */
             isComplete = true;
-            
+
             break;
         }
-        
+
         return null;
     }
-    
+
     @Override
     public boolean isComplete()
     {
@@ -275,12 +258,12 @@ public class ScenarioCreateShuffleInstance implements ScenarioInstance
     {
         return ranking;
     }
-    
+
     public void setRanking(Ranking ranking)
     {
         this.ranking = ranking;
     }
-    
+
     public String toString()
     {
         return "ScenarioShuffleInstance: createName:" + createName;

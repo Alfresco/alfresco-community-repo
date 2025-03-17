@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.convert.converter.Converter;
@@ -121,11 +122,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     {
         try
         {
-            return Optional.ofNullable(defaultOAuth2UserService.loadUser(new OAuth2UserRequest(clientRegistration, new OAuth2AccessToken(
-                    TokenType.BEARER,
-                    token,
-                    SOME_INSIGNIFICANT_DATE_IN_THE_PAST,
-                    SOME_INSIGNIFICANT_DATE_IN_THE_PAST.plusSeconds(1)))))
+            return Optional.ofNullable(defaultOAuth2UserService.loadUser(new OAuth2UserRequest(clientRegistration, getSpringAccessToken(token))))
                     .flatMap(oidcUser -> mapOAuth2UserToOIDCUserInfo(oidcUser, userInfoAttrMapping));
         }
         catch (OAuth2AuthenticationException exception)
@@ -169,11 +166,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
 
         if (grant.isRefreshToken())
         {
-            final OAuth2AccessToken expiredAccessToken = new OAuth2AccessToken(
-                    TokenType.BEARER,
-                    "JUST_FOR_FULFILLING_THE_SPRING_API",
-                    SOME_INSIGNIFICANT_DATE_IN_THE_PAST,
-                    SOME_INSIGNIFICANT_DATE_IN_THE_PAST.plusSeconds(1));
+            final OAuth2AccessToken expiredAccessToken = getSpringAccessToken("JUST_FOR_FULFILLING_THE_SPRING_API");
             final OAuth2RefreshToken refreshToken = new OAuth2RefreshToken(grant.getRefreshToken(), null);
 
             return new OAuth2RefreshTokenGrantRequest(clientRegistration, expiredAccessToken, refreshToken,
@@ -224,6 +217,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         client.setRestOperations(rest);
         return client;
     }
+
     private static DefaultOAuth2UserService createOAuth2UserService(RestOperations rest)
     {
         final DefaultOAuth2UserService userService = new DefaultOAuth2UserService();
@@ -236,7 +230,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         var preferredUsername = Optional.ofNullable(oAuth2User.getAttribute(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME))
                 .filter(String.class::isInstance)
                 .map(String.class::cast)
-                .filter(username -> !username.isEmpty());
+                .filter(StringUtils::isNotEmpty);
         var userName = Optional.ofNullable(oAuth2User.getName()).filter(username -> !username.isEmpty()).or(() -> preferredUsername);
         return userName.map(name -> new OIDCUserInfo(name,
                 Optional.ofNullable(oAuth2User.getAttribute(userInfoAttrMapping.firstNameClaim())).filter(String.class::isInstance).map(String.class::cast).orElse(""),
@@ -272,6 +266,16 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
 
             return parameters;
         };
+    }
+
+    private static OAuth2AccessToken getSpringAccessToken(String token)
+    {
+        // Just for fulfilling the Spring API
+        return new OAuth2AccessToken(
+                TokenType.BEARER,
+                token,
+                SOME_INSIGNIFICANT_DATE_IN_THE_PAST,
+                SOME_INSIGNIFICANT_DATE_IN_THE_PAST.plusSeconds(1));
     }
 
     private static class SpringAccessTokenAuthorization implements AccessTokenAuthorization

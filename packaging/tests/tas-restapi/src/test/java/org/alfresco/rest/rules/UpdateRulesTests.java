@@ -25,6 +25,11 @@
  */
 package org.alfresco.rest.rules;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.OK;
+
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
 import static org.alfresco.rest.rules.RulesTestsUtils.ADD_FEATURES_ACTION;
 import static org.alfresco.rest.rules.RulesTestsUtils.COPY_ACTION;
@@ -37,10 +42,6 @@ import static org.alfresco.rest.rules.RulesTestsUtils.RULE_CASCADE_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ENABLED_DEFAULT;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.OK;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -48,6 +49,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
 import org.alfresco.rest.model.RestRuleModel;
@@ -55,20 +59,18 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Tests for PUT /nodes/{nodeId}/rule-sets/{ruleSetId}/rules.
  */
-@Test (groups = { TestGroup.RULES })
+@Test(groups = {TestGroup.RULES})
 public class UpdateRulesTests extends RulesRestTest
 {
     private UserModel user;
     private SiteModel site;
     private FolderModel ruleFolder;
 
-    @BeforeClass (alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
         user = dataUser.createRandomTestUser();
@@ -81,7 +83,7 @@ public class UpdateRulesTests extends RulesRestTest
      * <p>
      * Also check that the isShared field is not returned when not requested.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void updateRule()
     {
         RestRuleModel rule = createAndSaveRule("Rule name");
@@ -89,16 +91,16 @@ public class UpdateRulesTests extends RulesRestTest
         STEP("Try to update the rule.");
         RestRuleModel updatedRuleModel = rulesUtils.createRuleModel("Updated rule name");
         RestRuleModel updatedRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                       .updateRule(rule.getId(), updatedRuleModel);
+                .updateRule(rule.getId(), updatedRuleModel);
 
         restClient.assertStatusCodeIs(OK);
         updatedRule.assertThat().field(ID).is(rule.getId())
-                   .assertThat().field("name").is("Updated rule name")
-                   .assertThat().field(IS_SHARED).isNull();
+                .assertThat().field("name").is("Updated rule name")
+                .assertThat().field(IS_SHARED).isNull();
     }
 
     /** Check we get a 404 if trying to update a rule in a folder that doesn't exist. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void updateRuleForNonExistentFolder()
     {
         RestRuleModel rule = createAndSaveRule("Rule name");
@@ -110,14 +112,14 @@ public class UpdateRulesTests extends RulesRestTest
         RestRuleModel updatedRuleModel = new RestRuleModel();
         updatedRuleModel.setName("Updated rule name");
         restClient.authenticateUser(user).withPrivateAPI().usingNode(nonExistentFolder).usingDefaultRuleSet()
-                  .updateRule(rule.getId(), updatedRuleModel);
+                .updateRule(rule.getId(), updatedRuleModel);
 
         restClient.assertLastError().statusCodeIs(NOT_FOUND)
-                                    .containsSummary("Folder with id fake-id was not found");
+                .containsSummary("Folder with id fake-id was not found");
     }
 
     /** Check we get a 404 if trying to update a rule in a rule set that doesn't exist. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void updateRuleForNonExistentRuleSet()
     {
         RestRuleModel rule = createAndSaveRule("Rule name");
@@ -126,28 +128,28 @@ public class UpdateRulesTests extends RulesRestTest
         RestRuleModel updatedRuleModel = new RestRuleModel();
         updatedRuleModel.setName("Updated rule name");
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingRuleSet("fake-id")
-                  .updateRule(rule.getId(), updatedRuleModel);
+                .updateRule(rule.getId(), updatedRuleModel);
 
         restClient.assertLastError().statusCodeIs(NOT_FOUND)
-                  .containsSummary("Rule set with id fake-id was not found");
+                .containsSummary("Rule set with id fake-id was not found");
     }
 
     /** Check we get a 404 if trying to update a rule that doesn't exist. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void updateRuleForNonExistentRuleId()
     {
         STEP("Try to update a rule that doesn't exist.");
         RestRuleModel updatedRuleModel = new RestRuleModel();
         updatedRuleModel.setName("Updated rule name");
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .updateRule("fake-id", updatedRuleModel);
+                .updateRule("fake-id", updatedRuleModel);
 
         restClient.assertLastError().statusCodeIs(NOT_FOUND)
-                  .containsSummary("fake-id was not found");
+                .containsSummary("fake-id was not found");
     }
 
     /** Check that a user without permission cannot update a rule. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void requirePermissionToUpdateRule()
     {
         STEP("Create a user and use them to create a private site containing a folder");
@@ -167,7 +169,7 @@ public class UpdateRulesTests extends RulesRestTest
     }
 
     /** Check we get an error trying to update a rule to have no name. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void updateRuleToHaveEmptyName()
     {
         RestRuleModel rule = createAndSaveRule("Rule name");
@@ -177,11 +179,11 @@ public class UpdateRulesTests extends RulesRestTest
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().updateRule(rule.getId(), updatedRuleModel);
 
         restClient.assertLastError().statusCodeIs(BAD_REQUEST)
-                                    .containsSummary("Rule name is a mandatory parameter");
+                .containsSummary("Rule name is a mandatory parameter");
     }
 
     /** Check that updates to the rule's id are ignored. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void tryToUpdateRuleId()
     {
         RestRuleModel rule = createAndSaveRule("Rule name");
@@ -190,13 +192,13 @@ public class UpdateRulesTests extends RulesRestTest
         RestRuleModel updatedRuleModel = rulesUtils.createRuleModel("Rule name");
         updatedRuleModel.setId("new-rule-id");
         RestRuleModel updatedRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                              .updateRule(rule.getId(), updatedRuleModel);
+                .updateRule(rule.getId(), updatedRuleModel);
 
         updatedRule.assertThat().field(ID).is(rule.getId());
     }
 
     /** Check we can update a rule and get the included fields. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void updateRuleWithIncludedFields()
     {
         RestRuleModel rule = createAndSaveRule("Rule name");
@@ -204,8 +206,8 @@ public class UpdateRulesTests extends RulesRestTest
         STEP("Try to update the rule.");
         RestRuleModel updatedRuleModel = rulesUtils.createRuleModel("Updated rule name");
         RestRuleModel updatedRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                              .include(IS_SHARED)
-                                              .updateRule(rule.getId(), updatedRuleModel);
+                .include(IS_SHARED)
+                .updateRule(rule.getId(), updatedRuleModel);
 
         updatedRule.assertThat().field(IS_SHARED).isNotNull();
     }
@@ -251,7 +253,7 @@ public class UpdateRulesTests extends RulesRestTest
     }
 
     /** Check we can use the POST response to create the new rule. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void updateCopyRuleWithResponseFromPOST()
     {
         FolderModel destination = dataContent.usingUser(user).usingSite(site).createFolder();
@@ -264,17 +266,17 @@ public class UpdateRulesTests extends RulesRestTest
         STEP("Try to update the rule.");
         rule.setName("Updated rule name");
         RestRuleModel updatedRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                              .include(IS_SHARED)
-                                              .updateRule(rule.getId(), rule);
+                .include(IS_SHARED)
+                .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(OK);
         updatedRule.assertThat().field("name").is("Updated rule name")
-                   .assertThat().field("actions.actionDefinitionId").is(List.of(COPY_ACTION))
-                   .assertThat().field("actions.params").is(List.of(ImmutableMap.of("destination-folder", destination.getNodeRef())));
+                .assertThat().field("actions.actionDefinitionId").is(List.of(COPY_ACTION))
+                .assertThat().field("actions.params").is(List.of(ImmutableMap.of("destination-folder", destination.getNodeRef())));
     }
 
     /** Check we can use the POST response and update rule fields. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void updateRuleFields()
     {
         final RestRuleModel rule = createAndSaveRule(rulesUtils.createRuleModelWithModifiedValues());
@@ -297,7 +299,7 @@ public class UpdateRulesTests extends RulesRestTest
     }
 
     /** Check we can use the POST response and update rule by adding conditions. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void updateRuleAddConditions()
     {
         final RestRuleModel rule = createAndSaveRule(rulesUtils.createRuleModelWithModifiedValues());
@@ -314,7 +316,7 @@ public class UpdateRulesTests extends RulesRestTest
     }
 
     /** Check we can use the POST response and update a rule rule without any conditions by adding null conditions. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void updateRuleAddNullConditions()
     {
         final RestRuleModel rule = createAndSaveRule(rulesUtils.createRuleModelWithModifiedValues());
@@ -331,7 +333,7 @@ public class UpdateRulesTests extends RulesRestTest
     }
 
     /** Check we can use the POST response and update rule by modifying conditions. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void updateRuleModifyConditions()
     {
         final RestRuleModel ruleModelWithInitialValues = rulesUtils.createRuleModelWithModifiedValues();
@@ -352,7 +354,7 @@ public class UpdateRulesTests extends RulesRestTest
     }
 
     /** Check we can use the POST response and update rule by removing all conditions. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void updateRuleRemoveAllConditions()
     {
         final RestRuleModel ruleModelWithInitialValues = rulesUtils.createRuleModelWithModifiedValues();
@@ -371,7 +373,7 @@ public class UpdateRulesTests extends RulesRestTest
     }
 
     /** Check we get a 400 error when using the POST response and update rule by adding condition with invalid category. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void updateRuleWithInvalidCategoryInConditionAndFail()
     {
         final RestRuleModel ruleModelWithInitialValues = rulesUtils.createRuleModelWithModifiedValues();
@@ -391,7 +393,7 @@ public class UpdateRulesTests extends RulesRestTest
     }
 
     /** Check we get a 400 error when using the POST response and update rule by adding condition without comparator when it is required. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void updateRuleWithConditionWithoutComparatorAndFail()
     {
         final RestRuleModel ruleModelWithInitialValues = rulesUtils.createRuleModelWithModifiedValues();
@@ -411,7 +413,7 @@ public class UpdateRulesTests extends RulesRestTest
     }
 
     /** Check we get a 400 error when using the POST response and update rule by adding condition without field. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void updateRuleWithConditionWithoutFieldAndFail()
     {
         final RestRuleModel ruleModelWithInitialValues = rulesUtils.createRuleModelWithModifiedValues();
@@ -431,7 +433,7 @@ public class UpdateRulesTests extends RulesRestTest
     }
 
     /** Check we get a 400 error when using the POST response and update rule by adding condition without parameter value. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void updateRuleWithConditionWithoutParamValueAndFail()
     {
         final RestRuleModel ruleModelWithInitialValues = rulesUtils.createRuleModelWithModifiedValues();
@@ -481,9 +483,8 @@ public class UpdateRulesTests extends RulesRestTest
         final RestRuleModel rule = createAndSaveRule(rulesUtils.createRuleModelWithModifiedValues());
 
         STEP("Try to update the rule by adding checkout action");
-        final Map<String, Serializable> checkOutParams =
-                Map.of("destination-folder", rulesUtils.getCheckOutDestinationFolder().getNodeRef(), "assoc-name", "cm:checkout",
-                        "assoc-type", "cm:contains");
+        final Map<String, Serializable> checkOutParams = Map.of("destination-folder", rulesUtils.getCheckOutDestinationFolder().getNodeRef(), "assoc-name", "cm:checkout",
+                "assoc-type", "cm:contains");
         final RestActionBodyExecTemplateModel checkOutAction = rulesUtils.createCustomActionModel("check-out", checkOutParams);
         rule.setActions(List.of(checkOutAction));
 
@@ -496,8 +497,7 @@ public class UpdateRulesTests extends RulesRestTest
     }
 
     /**
-     * Check we get a 500 error when attempting to update a rule by adding action with parameter with non existing namespace in value.
-     * In near future we need to fix this kind of negative path to return a 4xx error.
+     * Check we get a 500 error when attempting to update a rule by adding action with parameter with non existing namespace in value. In near future we need to fix this kind of negative path to return a 4xx error.
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void updateRuleAddActionWithInvalidParamShouldFail()
@@ -527,15 +527,15 @@ public class UpdateRulesTests extends RulesRestTest
     {
         STEP("Using admin create a rule with a private action.");
         RestRuleModel rule = restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                       .createSingleRule(rulesUtils.createRuleWithPrivateAction());
+                .createSingleRule(rulesUtils.createRuleWithPrivateAction());
 
         STEP("Try to update the rule with a normal user.");
         rule.setName("Updated name");
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .updateRule(rule.getId(), rule);
+                .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(FORBIDDEN)
-                  .assertLastError().containsSummary(ERROR_MESSAGE_ACCESS_RESTRICTED);
+                .assertLastError().containsSummary(ERROR_MESSAGE_ACCESS_RESTRICTED);
     }
 
     /** Check that an administrator can create rules that use private actions. */
@@ -544,12 +544,12 @@ public class UpdateRulesTests extends RulesRestTest
     {
         STEP("Using admin create a rule with a private action.");
         RestRuleModel rule = restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                       .createSingleRule(rulesUtils.createRuleWithPrivateAction());
+                .createSingleRule(rulesUtils.createRuleWithPrivateAction());
 
         STEP("Try to update the rule with the admin user.");
         rule.setName("Updated name");
         RestRuleModel updatedRule = restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                              .updateRule(rule.getId(), rule);
+                .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(OK);
         updatedRule.assertThat().field("name").is("Updated name");
@@ -563,8 +563,10 @@ public class UpdateRulesTests extends RulesRestTest
     /**
      * Create a rule for folder and store it.
      *
-     * @param name The name for the rule.
-     * @param restActionModels Rule's actions.
+     * @param name
+     *            The name for the rule.
+     * @param restActionModels
+     *            Rule's actions.
      * @return The created rule.
      */
     private RestRuleModel createAndSaveRule(String name, List<RestActionBodyExecTemplateModel> restActionModels)
@@ -572,13 +574,14 @@ public class UpdateRulesTests extends RulesRestTest
         STEP("Create a rule called " + name + ", containing actions: " + restActionModels);
         RestRuleModel ruleModel = rulesUtils.createRuleModel(name, restActionModels);
         return restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-            .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
     }
 
     /**
      * Create a rule for folder and store it.
      *
-     * @param ruleModel RuleModel used as create request
+     * @param ruleModel
+     *            RuleModel used as create request
      * @return The created rule.
      */
     private RestRuleModel createAndSaveRule(final RestRuleModel ruleModel)

@@ -27,10 +27,10 @@
 package org.alfresco.repo.virtual.ref;
 
 import junit.framework.TestCase;
-
-import org.alfresco.util.Pair;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
+
+import org.alfresco.util.Pair;
 
 public class NumericPathHasherTest extends TestCase
 {
@@ -41,22 +41,22 @@ public class NumericPathHasherTest extends TestCase
 
         Pair<String, String> h1 = nph.hash("/1/2/3");
         assertEquals(new Pair<String, String>("123",
-                                              null),
-                     h1);
+                null),
+                h1);
 
         Pair<String, String> h2 = nph.hash("/a/2/3");
         String xc2 = new String(Base64.encodeBase64("/a/2/3".getBytes(),
-                                                    false));
+                false));
         assertEquals(new Pair<String, String>(null,
-                                              xc2),
-                     h2);
+                xc2),
+                h2);
 
         Pair<String, String> h3 = nph.hash("/1/2/a/1/3");
         String xc3 = new String(Base64.encodeBase64("a/1/3".getBytes(),
-                                                    false));
+                false));
         assertEquals(new Pair<String, String>("12",
-                                              xc3),
-                     h3);
+                xc3),
+                h3);
 
     }
 
@@ -67,8 +67,8 @@ public class NumericPathHasherTest extends TestCase
 
         Pair<String, String> h1 = nph.hash("/");
         assertEquals(new Pair<String, String>(null,
-                                              ""),
-                     h1);
+                ""),
+                h1);
     }
 
     @Test
@@ -77,9 +77,9 @@ public class NumericPathHasherTest extends TestCase
         NumericPathHasher nph = new NumericPathHasher();
 
         String p = nph.lookup(new Pair<String, String>(null,
-                                                       ""));
+                ""));
         assertEquals("/",
-                     p);
+                p);
     }
 
     @Test
@@ -89,22 +89,22 @@ public class NumericPathHasherTest extends TestCase
         Pair<String, String> h = nph.hash("/1/2/3");
 
         assertEquals(new Pair<String, String>("123",
-                                              null),
-                     h);
+                null),
+                h);
 
         String xc2 = new String(Base64.encodeBase64("/a/2/3".getBytes(),
-                                                    false));
+                false));
         String p2 = nph.lookup(new Pair<String, String>(null,
-                                                        xc2));
+                xc2));
         assertEquals("/a/2/3",
-                     p2);
+                p2);
 
         String xc3 = new String(Base64.encodeBase64("a/1/3".getBytes(),
-                                                    false));
+                false));
         String p3 = nph.lookup(new Pair<String, String>("12",
-                                                        xc3));
+                xc3));
         assertEquals("/1/2/a/1/3",
-                     p3);
+                p3);
     }
 
     @Test

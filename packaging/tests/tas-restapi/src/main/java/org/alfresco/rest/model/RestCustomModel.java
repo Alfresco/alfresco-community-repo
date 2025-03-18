@@ -37,7 +37,7 @@ public class RestCustomModel extends CustomContentModel implements IRestModel<Re
 {
     @JsonProperty(value = "entry")
     RestCustomModel model;
-    
+
     @Override
     public RestCustomModel onModel()
     {

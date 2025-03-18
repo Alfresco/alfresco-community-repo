@@ -39,7 +39,7 @@ public abstract class AbstractDbValidator implements DbValidator
 {
     private final Map<String, String> properties = new HashMap<String, String>();
     private final Set<String> fieldsToValidate = new TreeSet<String>();
-    
+
     @Override
     public void setProperty(String name, String value)
     {
@@ -63,7 +63,7 @@ public abstract class AbstractDbValidator implements DbValidator
     {
         return fieldsToValidate.contains(fieldName);
     }
-    
+
     @Override
     public boolean validatesFullObject()
     {
@@ -75,7 +75,7 @@ public abstract class AbstractDbValidator implements DbValidator
         this.fieldsToValidate.clear();
         this.fieldsToValidate.addAll(fieldsToValidate);
     }
-    
+
     protected void addFieldToValidate(String fieldName)
     {
         fieldsToValidate.add(fieldName);

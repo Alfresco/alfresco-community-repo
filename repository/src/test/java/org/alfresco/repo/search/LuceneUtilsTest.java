@@ -25,11 +25,12 @@
  */
 package org.alfresco.repo.search;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Calendar;
 import java.util.Date;
-import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * Unit tests for {@link org.alfresco.repo.search.LuceneUtils}.
@@ -39,7 +40,8 @@ import static org.junit.Assert.assertEquals;
  */
 public class LuceneUtilsTest
 {
-    @Test public void convertSimpleDate() throws Exception
+    @Test
+    public void convertSimpleDate() throws Exception
     {
         Calendar cal = Calendar.getInstance();
 

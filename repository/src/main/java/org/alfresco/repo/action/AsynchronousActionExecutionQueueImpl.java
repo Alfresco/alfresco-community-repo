@@ -33,6 +33,9 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute;
@@ -49,8 +52,6 @@ import org.alfresco.service.cmr.action.ActionServiceException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * The asynchronous action execution queue implementation
@@ -60,45 +61,41 @@ import org.apache.commons.logging.LogFactory;
 public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionExecutionQueue
 {
     private static Log logger = LogFactory.getLog(AsynchronousActionExecutionQueueImpl.class);
-    
+
     /** Services */
-    private ActionServiceImpl  actionServiceImpl;
+    private ActionServiceImpl actionServiceImpl;
     private ThreadPoolExecutor threadPoolExecutor;
     private TransactionService transactionService;
     private PolicyComponent policyComponent;
-    private Map<String, AbstractAsynchronousActionFilter>
-            actionFilters = new ConcurrentHashMap<String, AbstractAsynchronousActionFilter>();
+    private Map<String, AbstractAsynchronousActionFilter> actionFilters = new ConcurrentHashMap<String, AbstractAsynchronousActionFilter>();
     private String id;
 
     /**
-     * We keep a record of ongoing asynchronous actions (this includes those being executed and
-     * those that are in the queue).
-     * This needs to be thread-safe - hence the Vector.
+     * We keep a record of ongoing asynchronous actions (this includes those being executed and those that are in the queue). This needs to be thread-safe - hence the Vector.
      */
     List<OngoingAsyncAction> ongoingActions = new Vector<OngoingAsyncAction>();
-    
+
     // Policy delegates
-    private ClassPolicyDelegate<OnAsyncActionExecute> onAsyncActionExecuteDelegate; 
+    private ClassPolicyDelegate<OnAsyncActionExecute> onAsyncActionExecuteDelegate;
 
     /**
      * Default constructor
      */
     public AsynchronousActionExecutionQueueImpl()
-    {
-    }
-    
+    {}
+
     /**
-     * Init method.  Registers the policies.
+     * Init method. Registers the policies.
      */
     public void init()
     {
         // Register the execution queue with the ActionService
         actionServiceImpl.registerAsynchronousActionExecutionQueue(id, this);
-        
+
         // Register the policies
         onAsyncActionExecuteDelegate = policyComponent.registerClassPolicy(OnAsyncActionExecute.class);
     }
-    
+
     /**
      * @since Thor Phase 2 Sprint 2
      */
@@ -106,7 +103,7 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     {
         this.actionServiceImpl = serviceImpl;
     }
-    
+
     /**
      * @since Thor Phase 2 Sprint 2
      */
@@ -114,12 +111,12 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     {
         this.id = id;
     }
-    
+
     /**
-     * Set the thread pool, which may be shared with other components, that will be used
-     * to run the actions.
+     * Set the thread pool, which may be shared with other components, that will be used to run the actions.
      * 
-     * @param threadPoolExecutor            the thread pool
+     * @param threadPoolExecutor
+     *            the thread pool
      */
     public void setThreadPoolExecutor(ThreadPoolExecutor threadPoolExecutor)
     {
@@ -129,7 +126,8 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     /**
      * Set the transaction service
      * 
-     * @param transactionService            the transaction service
+     * @param transactionService
+     *            the transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -147,52 +145,52 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     /**
      * Set the policy component
      * 
-     * @param policyComponent   policy component
+     * @param policyComponent
+     *            policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     private void invokeOnAsyncActionExecutePolicy(Action action, NodeRef actionedUponNodeRef)
     {
         // Execute the policy, passing it all details, firing as a general action case
-        AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute policy = 
-           onAsyncActionExecuteDelegate.get(actionedUponNodeRef, ActionModel.TYPE_ACTION);
+        AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute policy = onAsyncActionExecuteDelegate.get(actionedUponNodeRef, ActionModel.TYPE_ACTION);
         policy.onAsyncActionExecute(action, actionedUponNodeRef);
     }
-    
+
     /**
-     * This method registers an action filter, which can be used to prevent unwanted or unnecessary
-     * asynchronous actions from being scheduled for execution.
+     * This method registers an action filter, which can be used to prevent unwanted or unnecessary asynchronous actions from being scheduled for execution.
      * 
-     * @param filter the filter implementation.
+     * @param filter
+     *            the filter implementation.
      */
     public void registerActionFilter(AbstractAsynchronousActionFilter filter)
     {
         String filterName = filter.getName();
-        
+
         if (logger.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
             msg.append("Registered asynchronous action filter ")
-                .append(filter.getName()).append(" for action ")
-                .append(filter.getActionDefinitionName());
+                    .append(filter.getName()).append(" for action ")
+                    .append(filter.getActionDefinitionName());
             logger.debug(msg.toString());
         }
-        
+
         AbstractAsynchronousActionFilter existingFilter = actionFilters.get(filterName);
         if (logger.isDebugEnabled() && existingFilter != null)
         {
             StringBuilder msg = new StringBuilder();
             msg.append("This replaces previous filter ")
-                .append(existingFilter.getName());
+                    .append(existingFilter.getName());
             logger.debug(msg.toString());
         }
-        
+
         this.actionFilters.put(filter.getName(), filter);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -210,7 +208,7 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
         {
             StringBuilder msg = new StringBuilder();
             msg.append("Received request to execute async action ").append(action.getActionDefinitionName())
-                .append(" on ").append(actionedUponNodeRef);
+                    .append(" on ").append(actionedUponNodeRef);
             logger.debug(msg.toString());
 
             msg = new StringBuilder();
@@ -222,8 +220,7 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
             logger.debug(msg.toString());
         }
 
-        Set<RuleServiceImpl.ExecutedRuleData> executedRules =
-            (Set<RuleServiceImpl.ExecutedRuleData>) AlfrescoTransactionSupport.getResource("RuleServiceImpl.ExecutedRules");
+        Set<RuleServiceImpl.ExecutedRuleData> executedRules = (Set<RuleServiceImpl.ExecutedRuleData>) AlfrescoTransactionSupport.getResource("RuleServiceImpl.ExecutedRules");
         Runnable runnable = new ActionExecutionWrapper(
                 actionService,
                 action,
@@ -231,16 +228,16 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
                 checkConditions,
                 actionChain,
                 executedRules);
-        
+
         // Consider whether this action should be filtered out by one of the registered filters.
         boolean newActionShouldBeFilteredOut = false;
         OngoingAsyncAction nodeBeingNewlyActioned = new OngoingAsyncAction(actionedUponNodeRef, action);
-        
+
         for (Entry<String, AbstractAsynchronousActionFilter> entry : actionFilters.entrySet())
         {
             AbstractAsynchronousActionFilter comparator = entry.getValue();
             String actionDefinitionName = comparator.getActionDefinitionName();
-            
+
             if (actionDefinitionName.equals(action.getActionDefinitionName()) == false)
             {
                 // We're only interested in registered actions with the same name as this one.
@@ -251,9 +248,9 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
                 // Now we've found a registered action that matches the current one.
                 // So we'll go through the actions that are ongoing and consider them for matches with this one.
                 // Need to synchronize to prevent changes to ongoingActions whilst iterating. Assume that ongoingActions
-                // is not going to be too big and the loop will execute quite quickly, so that the synchronization 
+                // is not going to be too big and the loop will execute quite quickly, so that the synchronization
                 // will not impact concurrency too much.
-                synchronized(this.ongoingActions)
+                synchronized (this.ongoingActions)
                 {
                     for (OngoingAsyncAction ongoingAction : this.ongoingActions)
                     {
@@ -284,7 +281,7 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
                 msg.append("Executing action ").append(action);
                 logger.debug(msg.toString());
             }
-            
+
             // Queue it and do it.
             ongoingActions.add(nodeBeingNewlyActioned);
             threadPoolExecutor.execute(runnable);
@@ -299,16 +296,17 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
             StackTraceElement[] trace = e.getStackTrace();
             StringBuilder sb = new StringBuilder();
             sb.append("\n")
-              .append("Placed action on execution queue: \n")
-              .append("   Action:     " + action);
+                    .append("Placed action on execution queue: \n")
+                    .append("   Action:     " + action);
             String msg = sb.toString();
             sb = new StringBuilder();
             StackTraceUtil.buildStackTrace(msg, trace, sb, -1);
             logger.debug(sb);
         }
     }
-    
-    private void handleAsyncActionIsCompleted(NodeRef n, Action action) {
+
+    private void handleAsyncActionIsCompleted(NodeRef n, Action action)
+    {
         if (logger.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
@@ -318,7 +316,7 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
         OngoingAsyncAction ongoing = new OngoingAsyncAction(n, action);
         ongoingActions.remove(ongoing);
     }
-    
+
     /**
      * Transaction listener used to invoke callback policies
      */
@@ -326,12 +324,14 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     {
         private Action action;
         private NodeRef actionedUponNodeRef;
-        
+
         /**
          * Constructor
          * 
-         * @param action                    action
-         * @param actionedUponNodeRef       actioned upon node reference
+         * @param action
+         *            action
+         * @param actionedUponNodeRef
+         *            actioned upon node reference
          */
         public CallbackTransactionListener(Action action, NodeRef actionedUponNodeRef)
         {
@@ -346,8 +346,8 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
         public void afterCommit()
         {
             // Invoke the execute complete policy
-            invokeOnAsyncActionExecutePolicy(action, actionedUponNodeRef);           
-        }        
+            invokeOnAsyncActionExecutePolicy(action, actionedUponNodeRef);
+        }
     }
 
     /**
@@ -364,12 +364,18 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
         private Set<RuleServiceImpl.ExecutedRuleData> executedRules;
 
         /**
-         * @param actionService                     the action service
-         * @param action                            the action to perform
-         * @param actionedUponNodeRef               the node to perform the action on
-         * @param checkConditions                   the check conditions
-         * @param actionChain                       the action chain
-         * @param executedRules                     list of executions done to helps to prevent loop scenarios with async rules
+         * @param actionService
+         *            the action service
+         * @param action
+         *            the action to perform
+         * @param actionedUponNodeRef
+         *            the node to perform the action on
+         * @param checkConditions
+         *            the check conditions
+         * @param actionChain
+         *            the action chain
+         * @param executedRules
+         *            list of executions done to helps to prevent loop scenarios with async rules
          */
         public ActionExecutionWrapper(
                 RuntimeActionService actionService,
@@ -397,38 +403,35 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
             try
             {
                 // Get the run as user name
-                final String userName = ((ActionImpl)ActionExecutionWrapper.this.action).getRunAsUser();
+                final String userName = ((ActionImpl) ActionExecutionWrapper.this.action).getRunAsUser();
                 if (userName == null)
                 {
                     throw new ActionServiceException("Cannot execute action asynchronously since run as user is 'null'");
                 }
                 // Get the tenant the action was submitted from
-                final String tenantId = ((ActionImpl)ActionExecutionWrapper.this.action).getTenantId();
+                final String tenantId = ((ActionImpl) ActionExecutionWrapper.this.action).getTenantId();
 
                 // Let the executor know it is async
-                ((ActionImpl)ActionExecutionWrapper.this.action).setExecuteAsynchronously(true);
-                
+                ((ActionImpl) ActionExecutionWrapper.this.action).setExecuteAsynchronously(true);
+
                 // import the content
-                TenantRunAsWork<Object> actionRunAs = new TenantRunAsWork<Object>()
-                {
+                TenantRunAsWork<Object> actionRunAs = new TenantRunAsWork<Object>() {
                     public Object doWork() throws Exception
                     {
-                        RetryingTransactionCallback<Object> actionCallback = new RetryingTransactionCallback<Object>()
-                        {
+                        RetryingTransactionCallback<Object> actionCallback = new RetryingTransactionCallback<Object>() {
                             public Object execute()
-                            {   
+                            {
                                 // If we have rules, apply them
                                 if (ActionExecutionWrapper.this.executedRules != null)
                                 {
                                     AlfrescoTransactionSupport.bindResource("RuleServiceImpl.ExecutedRules", ActionExecutionWrapper.this.executedRules);
                                 }
-                                
+
                                 // Allow other classes to know when this action completes
                                 AlfrescoTransactionSupport.bindListener(new CallbackTransactionListener(
-                                      ActionExecutionWrapper.this.action,
-                                      ActionExecutionWrapper.this.actionedUponNodeRef
-                                ));
-                                
+                                        ActionExecutionWrapper.this.action,
+                                        ActionExecutionWrapper.this.actionedUponNodeRef));
+
                                 // Have the action run
                                 ActionExecutionWrapper.this.actionService.executeActionImpl(
                                         ActionExecutionWrapper.this.action,
@@ -446,12 +449,12 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
             }
             catch (Throwable e)
             {
-                Throwable rootCause = (e instanceof AlfrescoRuntimeException) ? ((AlfrescoRuntimeException)e).getRootCause() : null;
+                Throwable rootCause = (e instanceof AlfrescoRuntimeException) ? ((AlfrescoRuntimeException) e).getRootCause() : null;
                 String message = (rootCause == null ? null : rootCause.getMessage());
-                message = "Failed to execute asynchronous action: " + action+ (message == null ? "" : ": "+message);
-                if(!ActionExecutionWrapper.this.actionService.onLogException(action, logger, rootCause, message))
+                message = "Failed to execute asynchronous action: " + action + (message == null ? "" : ": " + message);
+                if (!ActionExecutionWrapper.this.actionService.onLogException(action, logger, rootCause, message))
                 {
-                    //if not handled by the executor just show in the log
+                    // if not handled by the executor just show in the log
                     logger.error(message, e);
                 }
             }

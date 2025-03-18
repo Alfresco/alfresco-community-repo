@@ -26,6 +26,15 @@
 
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.*;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.httpclient.HttpStatus;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
@@ -39,14 +48,6 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
-import org.apache.commons.httpclient.HttpStatus;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.*;
 
 public class TestSiteGroups extends AbstractBaseApiTest
 {
@@ -72,7 +73,6 @@ public class TestSiteGroups extends AbstractBaseApiTest
             setRequestContext(networkOne.getId(), DEFAULT_ADMIN, DEFAULT_ADMIN_PWD);
 
             TestSite site = TenantUtil.runAsUserTenant(() -> networkOne.createSite(SiteVisibility.PRIVATE), DEFAULT_ADMIN, networkOne.getId());
-
 
             SiteGroup response = sitesProxy.addGroup(site.getSiteId(), new SiteGroup(groupName, SiteRole.SiteCollaborator.name()));
             assertEquals(response.getGroup().getId(), groupName);
@@ -119,7 +119,7 @@ public class TestSiteGroups extends AbstractBaseApiTest
     }
 
     @Test
-    public void shouldAddGroup()  throws Exception
+    public void shouldAddGroup() throws Exception
     {
         Sites sitesProxy = publicApiClient.sites();
         try
@@ -261,7 +261,6 @@ public class TestSiteGroups extends AbstractBaseApiTest
             groupName = authorityService.createAuthority(AuthorityType.GROUP, groupName);
             authorityService.setAuthorityDisplayName(groupName, "Test Group A");
         }
-
 
         authorityService.addAuthority(groupName, user1);
         authorityService.addAuthority(groupName, user2);

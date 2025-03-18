@@ -29,11 +29,11 @@ import org.alfresco.utility.model.TestModel;
 
 public class RestClassModel extends TestModel
 {
-    public String  id;
-    public String  author;
-    public String  description;
-    public String  namespaceUri;
-    public String  namespacePrefix;
+    public String id;
+    public String author;
+    public String description;
+    public String namespaceUri;
+    public String namespacePrefix;
 
     public String getId()
     {

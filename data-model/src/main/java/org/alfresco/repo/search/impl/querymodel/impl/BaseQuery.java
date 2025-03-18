@@ -54,46 +54,38 @@ public class BaseQuery implements Query
         this.orderings = orderings;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Query#getColumns()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Query#getColumns() */
     public List<Column> getColumns()
     {
         return columns;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Query#getConstraint()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Query#getConstraint() */
     public Constraint getConstraint()
     {
         return constraint;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Query#getOrderings()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Query#getOrderings() */
     public List<Ordering> getOrderings()
     {
         return orderings;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Query#getSource()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Query#getSource() */
     public Source getSource()
     {
         return source;
     }
-    
+
     public String toString()
     {
         StringBuilder builder = new StringBuilder();

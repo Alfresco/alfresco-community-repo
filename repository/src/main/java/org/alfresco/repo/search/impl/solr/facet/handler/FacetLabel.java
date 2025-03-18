@@ -39,9 +39,12 @@ public class FacetLabel
     private final int labelIndex;
 
     /**
-     * @param value String
-     * @param label String
-     * @param labelIndex int
+     * @param value
+     *            String
+     * @param label
+     *            String
+     * @param labelIndex
+     *            int
      */
     public FacetLabel(String value, String label, int labelIndex)
     {
@@ -71,8 +74,7 @@ public class FacetLabel
     }
 
     /**
-     * Gets the label index to be used for sorting. The index only relevant to
-     * to Date and Size facets.
+     * Gets the label index to be used for sorting. The index only relevant to to Date and Size facets.
      * 
      * @return the index or -1, if it isn't relevant to the facet label
      */
@@ -81,9 +83,7 @@ public class FacetLabel
         return this.labelIndex;
     }
 
-    /*
-     * @see java.lang.Object#hashCode()
-     */
+    /* @see java.lang.Object#hashCode() */
     @Override
     public int hashCode()
     {
@@ -95,9 +95,7 @@ public class FacetLabel
         return result;
     }
 
-    /*
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+    /* @see java.lang.Object#equals(java.lang.Object) */
     @Override
     public boolean equals(Object obj)
     {

@@ -35,10 +35,10 @@ import org.alfresco.service.cmr.repository.NodeService;
 public class DefaultCorrespondingNodeResolverFactory implements CorrespondingNodeResolverFactory
 {
     private NodeService nodeService;
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.transfer.CorrespondingNodeResolverFactory#getResolver()
-     */
+     * 
+     * @see org.alfresco.repo.transfer.CorrespondingNodeResolverFactory#getResolver() */
     public CorrespondingNodeResolver getResolver()
     {
         BasicCorrespondingNodeResolverImpl basicResolver = new BasicCorrespondingNodeResolverImpl();
@@ -48,12 +48,12 @@ public class DefaultCorrespondingNodeResolverFactory implements CorrespondingNod
     }
 
     /**
-     * @param nodeService the nodeService to set
+     * @param nodeService
+     *            the nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
-    
 }

@@ -26,9 +26,10 @@
 
 package org.alfresco.repo.forms.processor.workflow;
 
-import static org.alfresco.repo.workflow.WorkflowModel.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+
+import static org.alfresco.repo.workflow.WorkflowModel.*;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -38,12 +39,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
+import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.forms.Item;
-import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.DefaultFieldProcessor;
 import org.alfresco.repo.forms.processor.node.MockClassAttributeDefinition;
 import org.alfresco.repo.forms.processor.node.MockFieldProcessorRegistry;
@@ -68,8 +72,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.NamespaceServiceMemoryImpl;
 import org.alfresco.service.namespace.QName;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 /**
  * 
@@ -88,9 +90,9 @@ public class TaskFormProcessorTest extends FormProcessorTest
     private PersonService personService;
     private WorkflowTask newTask;
     private Map<QName, Serializable> actualProperties = null;
-    private Map<QName, List<NodeRef>> actualAdded= null;
-    private Map<QName, List<NodeRef>> actualRemoved= null;
-    
+    private Map<QName, List<NodeRef>> actualAdded = null;
+    private Map<QName, List<NodeRef>> actualRemoved = null;
+
     public void testGetTypedItem() throws Exception
     {
         try
@@ -116,7 +118,7 @@ public class TaskFormProcessorTest extends FormProcessorTest
         WorkflowTask result = ((TaskFormProcessor) processor).getTypedItem(item);
         assertNotNull(result);
         assertEquals(TASK_ID, result.getId());
-        
+
         // Check URI-encoded id.
         result = ((TaskFormProcessor) processor).getTypedItem(item);
         assertNotNull(result);
@@ -216,11 +218,11 @@ public class TaskFormProcessorTest extends FormProcessorTest
         WorkflowTransition transition2 = makeTransition("id2", "title2");
         WorkflowTransition transition3 = makeTransition("id3", "title3");
         task = makeTask(transition1, transition2, transition3);
-        
+
         // Hide transition with id3.
         Serializable hiddenValue = (Serializable) Collections.singletonList("id3");
-        task.getProperties().put(PROP_HIDDEN_TRANSITIONS, hiddenValue );
-        
+        task.getProperties().put(PROP_HIDDEN_TRANSITIONS, hiddenValue);
+
         form = processForm(fieldName);
         transitionValues = "id1|title1,id2|title2";
         checkSingleProperty(form, fieldName, transitionValues);
@@ -236,27 +238,27 @@ public class TaskFormProcessorTest extends FormProcessorTest
         // add a description to the task and check it comes back
         message = "This is some text the user may have entered";
         this.task.getProperties().put(PROP_DESCRIPTION, message);
-        
+
         form = processForm(fieldName);
         checkSingleProperty(form, fieldName, message);
-        
+
         // set the description to the same as the task title
         // and make sure the message comes back as null
         this.task.getProperties().put(PROP_DESCRIPTION, this.task.getTitle());
         form = processForm(fieldName);
         checkSingleProperty(form, fieldName, NO_MESSAGE);
     }
-    
+
     public void testGenerateTaskOwner() throws Exception
     {
         // check the task owner is null
         String fieldName = TaskOwnerFieldProcessor.KEY;
         Form form = processForm(fieldName);
         checkSingleProperty(form, fieldName, null);
-        
+
         // set task owner
         this.task.getProperties().put(ContentModel.PROP_OWNER, "admin");
-        
+
         // check the task owner property is correct
         form = processForm(fieldName);
         checkSingleProperty(form, fieldName, "admin|System|Administrator");
@@ -269,25 +271,25 @@ public class TaskFormProcessorTest extends FormProcessorTest
         Form form = processForm(fieldName);
         Serializable packageItems = (Serializable) Collections.emptyList();
         checkSingleAssociation(form, fieldName, packageItems);
-        
+
         // Effectively add 3 items to package.
         List<NodeRef> value = Arrays.asList(FAKE_NODE, FAKE_NODE2, FAKE_NODE3);
         when(workflowService.getPackageContents(TASK_ID))
-            .thenReturn(value);
-        
+                .thenReturn(value);
+
         form = processForm(fieldName);
         packageItems = (Serializable) Arrays.asList(FAKE_NODE.toString(),
-                    FAKE_NODE2.toString(),
-                    FAKE_NODE3.toString());
+                FAKE_NODE2.toString(),
+                FAKE_NODE3.toString());
         checkSingleAssociation(form, fieldName, packageItems);
     }
 
     private WorkflowTransition makeTransition(String id, String title)
     {
         return new WorkflowTransition(
-                    id, title, null, false);
+                id, title, null, false);
     }
-    
+
     public void testPersistPropertyChanged() throws Exception
     {
         String fieldName = DESC_NAME.toPrefixString(namespaceService);
@@ -309,7 +311,7 @@ public class TaskFormProcessorTest extends FormProcessorTest
         processPersist(dataKey, value);
         assertEquals(2, actualProperties.get(PROP_PRIORITY));
     }
-    
+
     public void testPersistPropertyWith_() throws Exception
     {
         String fieldName = PROP_WITH_.toPrefixString(namespaceService);
@@ -366,7 +368,7 @@ public class TaskFormProcessorTest extends FormProcessorTest
         assertTrue(nodeRefs.contains(FAKE_NODE));
         assertTrue(nodeRefs.contains(FAKE_NODE2));
     }
-    
+
     @SuppressWarnings("unchecked")
     public void testPersistTransitions() throws Exception
     {
@@ -375,17 +377,17 @@ public class TaskFormProcessorTest extends FormProcessorTest
         // Check endTask is never called.
         verify(workflowService, times(1)).updateTask(eq(TASK_ID), anyMap(), anyMap(), anyMap());
         verify(workflowService, never()).endTask(eq(TASK_ID), anyString());
-        
+
         // Check default transition.
         String dataKey = makeDataKeyName(TransitionFieldProcessor.KEY);
         processPersist(dataKey, null);
         verify(workflowService, times(1)).endTask(TASK_ID, null);
-        
+
         // Check specific transition.
         processPersist(dataKey, "foo");
         verify(workflowService, times(1)).endTask(TASK_ID, "foo");
     }
-    
+
     @SuppressWarnings("unchecked")
     public void testPersistPropertyAndTransition() throws Exception
     {
@@ -394,53 +396,53 @@ public class TaskFormProcessorTest extends FormProcessorTest
         String dataKey = makeDataKeyName(TransitionFieldProcessor.KEY);
         data.addFieldData(dataKey, "foo");
         WorkflowTask persistedItem = (WorkflowTask) processor.persist(item, data);
-        
+
         // make sure task is correct and update and endTask were called
         assertEquals(newTask, persistedItem);
         verify(workflowService, times(1)).updateTask(eq(TASK_ID), anyMap(), anyMap(), anyMap());
         verify(workflowService, times(1)).endTask(TASK_ID, "foo");
     }
-    
+
     public void testPersistPropertyComment() throws Exception
     {
         super.testPersistPropertyComment(TASK_ID);
     }
-    
+
     public void testPersistPackageItemsAdded() throws Exception
     {
         mockPackageItems(FAKE_NODE3);
-        String dataKey = makeDataKeyName(PackageItemsFieldProcessor.KEY, true); 
+        String dataKey = makeDataKeyName(PackageItemsFieldProcessor.KEY, true);
         String value = FAKE_NODE + ", " + FAKE_NODE2;
         processPersist(dataKey, value);
         checkAddPackageItem(FAKE_NODE, true);
         checkAddPackageItem(FAKE_NODE2, true);
         checkAddPackageItem(FAKE_NODE3, false);
     }
-    
+
     public void testPersistPackageItemsRemoved() throws Exception
     {
         mockPackageItems(FAKE_NODE, FAKE_NODE2);
-        String dataKey = makeDataKeyName(PackageItemsFieldProcessor.KEY, false); 
-        String value = FAKE_NODE + ", " + FAKE_NODE2+ "," + FAKE_NODE3;
+        String dataKey = makeDataKeyName(PackageItemsFieldProcessor.KEY, false);
+        String value = FAKE_NODE + ", " + FAKE_NODE2 + "," + FAKE_NODE3;
         processPersist(dataKey, value);
-        
+
         // Check nodes 1 and 2 removed correctly.
         checkRemovedPackageItem(FAKE_NODE, true);
         checkRemovedPackageItem(FAKE_NODE2, true);
-        
+
         // Check node 3 is not removed as it was not in the package to start with.
         checkRemovedPackageItem(FAKE_NODE3, false);
     }
-    
+
     public void testEscapeMultiValuedProperty() throws Exception
     {
         try
         {
             ExtendedPropertyFieldProcessor extendedProcessor = new ExtendedPropertyFieldProcessor();
             extendedProcessor.addEscapedPropertyName(STATUS_NAME);
-            
+
             processor.setExtendedPropertyFieldProcessor(extendedProcessor);
-            
+
             // Check Status field is added to Form.
             String fieldName = STATUS_NAME.toPrefixString(namespaceService);
             List<String> fields = Arrays.asList(fieldName);
@@ -473,7 +475,7 @@ public class TaskFormProcessorTest extends FormProcessorTest
     {
         return processForm(Arrays.asList(fields));
     }
-    
+
     private Form processForm(List<String> fields)
     {
         Form form = ((TaskFormProcessor) processor).generate(item, fields, null, null);
@@ -490,9 +492,7 @@ public class TaskFormProcessorTest extends FormProcessorTest
         assertEquals("read_package_item_actions", pckgItemActionData.getValue());
     }
 
-    /*
-     * @see junit.framework.TestCase#setUp()
-     */
+    /* @see junit.framework.TestCase#setUp() */
     @Override
     protected void setUp() throws Exception
     {
@@ -506,21 +506,21 @@ public class TaskFormProcessorTest extends FormProcessorTest
         authenticationService = makeAuthenticationService();
         personService = makePersonService();
         MockFieldProcessorRegistry fieldProcessorRegistry = new MockFieldProcessorRegistry(namespaceService,
-                    dictionaryService);
+                dictionaryService);
         DefaultFieldProcessor defaultProcessor = super.makeDefaultFieldProcessor(dictionaryService);
         super.processor = makeTaskFormProcessor(dictionaryService, fieldProcessorRegistry, defaultProcessor);
     }
 
     private TaskFormProcessor makeTaskFormProcessor(DictionaryService dictionaryService,
-                MockFieldProcessorRegistry fieldProcessorRegistry, DefaultFieldProcessor defaultProcessor)
+            MockFieldProcessorRegistry fieldProcessorRegistry, DefaultFieldProcessor defaultProcessor)
     {
         TaskFormProcessor processor1 = new TaskFormProcessor();
-        processor1 =(TaskFormProcessor) super.makeTaskFormProcessor(processor1, dictionaryService,
+        processor1 = (TaskFormProcessor) super.makeTaskFormProcessor(processor1, dictionaryService,
                 fieldProcessorRegistry, defaultProcessor);
 
         processor1.setAuthenticationService(authenticationService);
         processor1.setPersonService(personService);
-        
+
         return processor1;
     }
 
@@ -535,13 +535,13 @@ public class TaskFormProcessorTest extends FormProcessorTest
         WorkflowDefinition definition = new WorkflowDefinition("42", "Test", "1.0", "Test", "Test", null);
         NodeRef wfPackage = PCKG_NODE;
         WorkflowInstance instance = new WorkflowInstance(null,
-                    definition, null,
-                    null, wfPackage,
-                    null, true, null, null);
+                definition, null,
+                null, wfPackage,
+                null, true, null, null);
         WorkflowNode node = new WorkflowNode("", "", "", "", true, new WorkflowTransition[0]);
         WorkflowPath path = new WorkflowPath(null, instance, node, true);
         return new WorkflowTask(id,
-                    taskDef, null, title, null, state, path, properties);
+                taskDef, null, title, null, state, path, properties);
     }
 
     private HashMap<QName, Serializable> makeTaskProperties()
@@ -558,7 +558,7 @@ public class TaskFormProcessorTest extends FormProcessorTest
         TypeDefinition metadata = makeTypeDef();
         WorkflowNode node = new WorkflowNode("", "", "", "", true, transitions);
         return new WorkflowTaskDefinition(id,
-                    node, metadata);
+                node, metadata);
     }
 
     private TypeDefinition makeTypeDef()
@@ -597,20 +597,18 @@ public class TaskFormProcessorTest extends FormProcessorTest
         // Add a Package Action property
         QName pckgActionGroup = PROP_PACKAGE_ACTION_GROUP;
         PropertyDefinition pckgAction = MockClassAttributeDefinition.mockPropertyDefinition(pckgActionGroup, textType,
-                    "");
+                "");
         properties.put(pckgActionGroup, pckgAction);
 
         // Add a Package Action property
         QName pckgItemActionGroup = PROP_PACKAGE_ITEM_ACTION_GROUP;
         PropertyDefinition pckgItemAction = MockClassAttributeDefinition.mockPropertyDefinition(pckgItemActionGroup,
-                    textType, "read_package_item_actions");
+                textType, "read_package_item_actions");
         properties.put(pckgItemActionGroup, pckgItemAction);
-        
-        
+
         // Add a priority property
         QName priorityName = PROP_PRIORITY;
-        PropertyDefinition priorityDef = 
-            MockClassAttributeDefinition.mockPropertyDefinition(priorityName, DataTypeDefinition.INT, Integer.class, "0");
+        PropertyDefinition priorityDef = MockClassAttributeDefinition.mockPropertyDefinition(priorityName, DataTypeDefinition.INT, Integer.class, "0");
         properties.put(priorityName, priorityDef);
 
         return properties;
@@ -639,7 +637,7 @@ public class TaskFormProcessorTest extends FormProcessorTest
         when(mock.getCurrentUserName()).thenReturn("admin");
         return mock;
     }
-    
+
     private PersonService makePersonService()
     {
         PersonService mock = mock(PersonService.class);
@@ -651,8 +649,7 @@ public class TaskFormProcessorTest extends FormProcessorTest
     private WorkflowService makeWorkflowService()
     {
         WorkflowService service = mock(WorkflowService.class);
-        when(service.getTaskById(any())).thenAnswer(new Answer<WorkflowTask>()
-        {
+        when(service.getTaskById(any())).thenAnswer(new Answer<WorkflowTask>() {
             public WorkflowTask answer(InvocationOnMock invocation) throws Throwable
             {
                 String id = (String) invocation.getArguments()[0];
@@ -665,43 +662,42 @@ public class TaskFormProcessorTest extends FormProcessorTest
                 }
             }
         });
-        
+
         this.newTask = new WorkflowTask(TASK_ID, null, null, null, null, null, null, null);
 
         when(service.updateTask(any(), anyMap(), anyMap(), anyMap()))
-        .thenAnswer(new Answer<WorkflowTask>()
-        {
-            public WorkflowTask answer(InvocationOnMock invocation) throws Throwable
-            {
-                Object[] args = invocation.getArguments();
-                Map<QName, Serializable> props = (Map<QName, Serializable>) args[1];
-                actualProperties = new HashMap<QName, Serializable>(props);
-                Map<QName, List<NodeRef>> added = (Map<QName, List<NodeRef>>) args[2];
-                actualAdded = new HashMap<QName, List<NodeRef>>(added);
-                Map<QName, List<NodeRef>> removed = (Map<QName, List<NodeRef>>) args[3];
-                actualRemoved = new HashMap<QName, List<NodeRef>>(removed);
-                return newTask;
-            }
-        });
-        
+                .thenAnswer(new Answer<WorkflowTask>() {
+                    public WorkflowTask answer(InvocationOnMock invocation) throws Throwable
+                    {
+                        Object[] args = invocation.getArguments();
+                        Map<QName, Serializable> props = (Map<QName, Serializable>) args[1];
+                        actualProperties = new HashMap<QName, Serializable>(props);
+                        Map<QName, List<NodeRef>> added = (Map<QName, List<NodeRef>>) args[2];
+                        actualAdded = new HashMap<QName, List<NodeRef>>(added);
+                        Map<QName, List<NodeRef>> removed = (Map<QName, List<NodeRef>>) args[3];
+                        actualRemoved = new HashMap<QName, List<NodeRef>>(removed);
+                        return newTask;
+                    }
+                });
+
         when(service.endTask(eq(TASK_ID), any()))
-            .thenReturn(newTask);
-        
-        when(service.isTaskEditable((WorkflowTask)any(), any())).thenReturn(true);
-        
+                .thenReturn(newTask);
+
+        when(service.isTaskEditable((WorkflowTask) any(), any())).thenReturn(true);
+
         return service;
     }
-    
+
     private NodeService makeNodeService()
     {
         NodeService service = mock(NodeService.class);
         when(service.hasAspect(PCKG_NODE, ASPECT_WORKFLOW_PACKAGE))
-            .thenReturn(true);
-        
+                .thenReturn(true);
+
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
         props.put(ContentModel.PROP_FIRSTNAME, "System");
         props.put(ContentModel.PROP_LASTNAME, "Administrator");
-        
+
         when(service.getProperties(USER_NODE)).thenReturn(props);
         return service;
     }

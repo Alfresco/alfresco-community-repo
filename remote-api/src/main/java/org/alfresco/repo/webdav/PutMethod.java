@@ -26,8 +26,9 @@
 package org.alfresco.repo.webdav;
 
 import java.io.InputStream;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.dao.ConcurrencyFailureException;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
@@ -43,7 +44,6 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.webdav.WebDavService;
-import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * Implements the WebDAV PUT method
@@ -62,13 +62,12 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
     private WebDAVActivityPoster activityPoster;
     private FileInfo contentNodeInfo;
     private long fileSize;
-    
+
     /**
      * Default constructor
      */
     public PutMethod()
-    {
-    }
+    {}
 
     /**
      * Parse the request headers
@@ -91,10 +90,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
     }
 
     /**
-     * Clears the aspect added by a LOCK request for a new file, so
-     * that the Timer started by the LOCK request will not remove the
-     * node now that the PUT request has been received. This is needed
-     * for large content.
+     * Clears the aspect added by a LOCK request for a new file, so that the Timer started by the LOCK request will not remove the node now that the PUT request has been received. This is needed for large content.
      * 
      * @exception WebDAVServerException
      */
@@ -102,18 +98,17 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
     {
         // Nothing is done with the body by this method. The body contains
         // the content it will be dealt with later.
-        
+
         // This method is called ONCE just before the FIRST call to executeImpl,
         // which is in a retrying transaction so may be called many times.
-        
+
         // Although this method is called just before the first executeImpl,
         // it is possible that the Thread could be interrupted before the first call
         // or between calls. However the chances are low and the consequence
         // (leaving a zero byte file) is minor.
-  
+
         noContent = getTransactionService().getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionCallback<Boolean>()
-                {
+                new RetryingTransactionCallback<Boolean>() {
                     public Boolean execute() throws Throwable
                     {
                         FileInfo contentNodeInfo = null;
@@ -173,7 +168,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
             }
 
             nodeLockInfo = checkNode(contentNodeInfo);
-            
+
             // 'Unhide' nodes hidden by us and behave as though we created them
             NodeRef contentNodeRef = contentNodeInfo.getNodeRef();
             if (fileFolderService.isHidden(contentNodeRef) && !getDAVHelper().isRenameShuffle(getPath()))
@@ -190,9 +185,9 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
             {
                 FileInfo parentNodeInfo = getNodeForPath(getRootNodeRef(), paths[0]);
                 // create file
-                contentNodeInfo = getDAVHelper().createFile(parentNodeInfo, paths[1]);  
+                contentNodeInfo = getDAVHelper().createFile(parentNodeInfo, paths[1]);
                 created = true;
-                
+
             }
             catch (FileNotFoundException ee)
             {
@@ -201,14 +196,14 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
             }
             catch (FileExistsException ee)
             {
-                // ALF-7079 fix, retry: it looks like concurrent access (file not found but file exists) 
-                throw new ConcurrencyFailureException("Concurrent access was detected.",  ee);
+                // ALF-7079 fix, retry: it looks like concurrent access (file not found but file exists)
+                throw new ConcurrencyFailureException("Concurrent access was detected.", ee);
             }
         }
-        
+
         String userName = getDAVHelper().getAuthenticationService().getCurrentUserName();
         LockInfo lockInfo = getDAVLockService().getLockInfo(contentNodeInfo.getNodeRef());
-        
+
         if (lockInfo != null)
         {
             if (lockInfo.isLocked() && !lockInfo.getOwner().equals(userName))
@@ -217,7 +212,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
                 {
                     String path = getPath();
                     String owner = lockInfo.getOwner();
-                    logger.debug("Node locked: path=["+path+"], owner=["+owner+"], current user=["+userName+"]");
+                    logger.debug("Node locked: path=[" + path + "], owner=[" + owner + "], current user=[" + userName + "]");
                 }
                 // Indicate that the resource is locked
                 throw new WebDAVServerException(WebDAV.WEBDAV_SC_LOCKED);
@@ -227,12 +222,12 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
         // empty content because it's probably part of a compound operation to
         // create a new single version
         boolean disabledVersioning = false;
-        
+
         try
         {
             // Disable versioning if we are overwriting an empty file with content
             NodeRef nodeRef = contentNodeInfo.getNodeRef();
-            ContentData contentData = (ContentData)getNodeService().getProperty(nodeRef, ContentModel.PROP_CONTENT);
+            ContentData contentData = (ContentData) getNodeService().getProperty(nodeRef, ContentModel.PROP_CONTENT);
             if ((contentData == null || contentData.getSize() == 0) && getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
             {
                 getDAVHelper().getPolicyBehaviourFilter().disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
@@ -240,33 +235,32 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
             }
             // Access the content
             ContentWriter writer = fileFolderService.getWriter(contentNodeInfo.getNodeRef());
-        
+
             // set content properties
             writer.guessMimetype(contentNodeInfo.getName());
             writer.guessEncoding();
-    
+
             // Get the input stream from the request data
             InputStream is = m_request.getInputStream();
-            
-    
+
             // Write the new data to the content node
             writer.putContent(is);
-          
+
             // ALF-16756: To avoid firing inbound rules too early (while a node is still locked) apply the no content aspect
-            //                     Note, for MNT-15801, that the aspect is only applied if:
-            //                         - the node is locked AND
-            //                         - the node does not have any content (zero length binaries included)
+            // Note, for MNT-15801, that the aspect is only applied if:
+            // - the node is locked AND
+            // - the node does not have any content (zero length binaries included)
             if (nodeLockInfo != null && nodeLockInfo.isExclusive() && !(ContentData.hasContent(contentData) && contentData.getSize() > 0))
             {
                 getNodeService().addAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_NO_CONTENT, null);
             }
-            
+
             // Ask for the document metadata to be extracted
             Action extract = getActionService().createAction(ContentMetadataExtracter.EXECUTOR_NAME);
-            if(extract != null)
+            if (extract != null)
             {
-               extract.setExecuteAsynchronously(false);
-               getActionService().executeAction(extract, contentNodeInfo.getNodeRef());
+                extract.setExecuteAsynchronously(false);
+                getActionService().executeAction(extract, contentNodeInfo.getNodeRef());
             }
 
             // If the mime-type determined by the repository is different
@@ -278,13 +272,13 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Mimetype originally specified as " + oldMimeType +
-                                ", now guessed to be " + m_strContentType);
+                            ", now guessed to be " + m_strContentType);
                 }
             }
 
             // Record the uploaded file's size
             fileSize = writer.getSize();
-            
+
             // Set the response status, depending if the node existed or not
             m_response.setStatus(created ? HttpServletResponse.SC_CREATED : HttpServletResponse.SC_NO_CONTENT);
         }
@@ -292,7 +286,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
         {
             throw new WebDAVServerException(HttpServletResponse.SC_FORBIDDEN, e);
         }
-        catch (Throwable e) 
+        catch (Throwable e)
         {
             // check if the node was marked with noContent aspect previously by lock method AND
             // we are about to give up
@@ -301,8 +295,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
                 // remove the 0 bytes content if save operation failed or was cancelled
                 final NodeRef nodeRef = contentNodeInfo.getNodeRef();
                 getTransactionService().getRetryingTransactionHelper().doInTransaction(
-                        new RetryingTransactionCallback<String>()
-                        {
+                        new RetryingTransactionCallback<String>() {
                             public String execute() throws Throwable
                             {
                                 getNodeService().deleteNode(nodeRef);
@@ -327,11 +320,9 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
         postActivity();
 
     }
-    
+
     /**
-     * Can be used after a successful {@link #execute()} invocation to
-     * check whether the resource was new (created) or over-writing existing
-     * content.
+     * Can be used after a successful {@link #execute()} invocation to check whether the resource was new (created) or over-writing existing content.
      * 
      * @return true if the content was newly created, false if existing.
      */
@@ -339,11 +330,9 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
     {
         return created;
     }
-    
+
     /**
-     * Retrieve the mimetype of the content sent for the PUT request. The initial
-     * value specified in the request may be updated after the file contents have
-     * been uploaded if the repository has determined a different mimetype for the content.
+     * Retrieve the mimetype of the content sent for the PUT request. The initial value specified in the request may be updated after the file contents have been uploaded if the repository has determined a different mimetype for the content.
      * 
      * @return content-type
      */
@@ -375,7 +364,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
     /**
      * Create an activity post.
      * 
-     * @throws WebDAVServerException 
+     * @throws WebDAVServerException
      */
     protected void postActivity() throws WebDAVServerException
     {
@@ -385,17 +374,17 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
             // Don't post activities if this behaviour is disabled.
             return;
         }
-        
+
         String path = getPath();
         String siteId = getSiteId();
         String tenantDomain = getTenantDomain();
-        
+
         if (siteId.equals(WebDAVHelper.EMPTY_SITE_ID))
         {
             // There is not enough information to publish site activity.
             return;
         }
-        
+
         FileInfo contentNodeInfo = null;
         try
         {
@@ -419,7 +408,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
         catch (FileNotFoundException error)
         {
             throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }        
+        }
     }
 
     @Override

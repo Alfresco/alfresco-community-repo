@@ -37,8 +37,7 @@ import org.alfresco.api.AlfrescoPublicApi;
 @AlfrescoPublicApi
 public enum UpdateActionType
 {
-    ADD,
-    REMOVE;
+    ADD, REMOVE;
 
     public static UpdateActionType valueOfIgnoreCase(String name)
     {

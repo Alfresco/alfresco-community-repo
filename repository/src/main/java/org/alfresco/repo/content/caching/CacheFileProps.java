@@ -50,11 +50,12 @@ public class CacheFileProps
     private final Properties properties = new Properties();
     private final File cacheFile;
     private final File propsFile;
-    
+
     /**
      * Construct a CacheFileProps specifying which cache file the properties belong to.
      * 
-     * @param cacheFile - cache file
+     * @param cacheFile
+     *            - cache file
      */
     public CacheFileProps(File cacheFile)
     {
@@ -68,7 +69,7 @@ public class CacheFileProps
     public void load()
     {
         properties.clear();
-        
+
         if (propsFile.exists())
         {
             try
@@ -99,21 +100,22 @@ public class CacheFileProps
             out = new BufferedOutputStream(new FileOutputStream(propsFile));
             properties.store(out, "Properties for " + cacheFile);
         }
-        catch(FileNotFoundException e)
+        catch (FileNotFoundException e)
         {
             throw new RuntimeException("Couldn't create output stream for file: " + propsFile, e);
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new RuntimeException("Couldn't write file: " + propsFile, e);
         }
-        finally 
+        finally
         {
             try
             {
-                if (out != null) out.close();
+                if (out != null)
+                    out.close();
             }
-            catch(IOException e)
+            catch (IOException e)
             {
                 // Couldn't close it, just log that it wasn't possible.
                 if (log.isErrorEnabled())
@@ -123,7 +125,7 @@ public class CacheFileProps
             }
         }
     }
-    
+
     /**
      * Delete the cache file's associated properties file.
      */
@@ -131,7 +133,7 @@ public class CacheFileProps
     {
         propsFile.delete();
     }
-    
+
     /**
      * Does a properties file exist for the cache file?
      * 
@@ -141,7 +143,7 @@ public class CacheFileProps
     {
         return propsFile.exists();
     }
-    
+
     /**
      * Size of the properties file or 0 if it does not exist.
      * 
@@ -151,17 +153,18 @@ public class CacheFileProps
     {
         return propsFile.length();
     }
-    
+
     /**
      * Set the value of the contentUrl property.
      * 
-     * @param url String
+     * @param url
+     *            String
      */
     public void setContentUrl(String url)
     {
         properties.setProperty(CONTENT_URL, url);
     }
-    
+
     /**
      * Get the value of the contentUrl property.
      * 
@@ -171,17 +174,18 @@ public class CacheFileProps
     {
         return properties.getProperty(CONTENT_URL);
     }
-    
+
     /**
      * Set the value of the deleteWatchCount property.
      * 
-     * @param watchCount Integer
+     * @param watchCount
+     *            Integer
      */
     public void setDeleteWatchCount(Integer watchCount)
     {
         properties.setProperty(DELETE_WATCH_COUNT, watchCount.toString());
     }
-    
+
     /**
      * Get the value of the deleteWatchCount property.
      * 

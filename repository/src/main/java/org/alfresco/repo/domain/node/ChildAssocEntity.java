@@ -30,6 +30,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.zip.CRC32;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
@@ -39,8 +42,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Bean for <b>alf_child_assoc</b> table.
@@ -53,7 +54,7 @@ public class ChildAssocEntity implements Serializable
     private static final long serialVersionUID = 1L;
 
     private static final Log logger = LogFactory.getLog(ChildAssocEntity.class);
-    
+
     private Long id;
     private Long version;
     private NodeEntity parentNode;
@@ -66,19 +67,20 @@ public class ChildAssocEntity implements Serializable
     private Long qnameCrc;
     private Boolean isPrimary;
     private int assocIndex;
-    
+
     // Supplemental query-related parameters
     private List<Long> typeQNameIds;
     private List<Long> childNodeNameCrcs;
     private List<Long> childNodeTypeQNameIds;
     private Boolean sameStore;
     private boolean ordered;
-    
+
     /**
      * Find a CRC value for the full QName using UTF-8 conversion.
      * 
-     * @param qname                 the association qname
-     * @return                      Returns the CRC value (UTF-8 compatible)
+     * @param qname
+     *            the association qname
+     * @return Returns the CRC value (UTF-8 compatible)
      */
     public static Long getQNameCrc(QName qname)
     {
@@ -93,14 +95,15 @@ public class ChildAssocEntity implements Serializable
             throw new RuntimeException("UTF-8 encoding is not supported");
         }
         return crc.getValue();
-        
+
     }
 
     /**
      * Find a CRC value for the association's child node name using UTF-8 conversion.
      * 
-     * @param childNodeName         the child node name
-     * @return                      Returns the CRC value (UTF-8 compatible)
+     * @param childNodeName
+     *            the child node name
+     * @return Returns the CRC value (UTF-8 compatible)
      */
     public static Long getChildNodeNameCrc(String childNodeName)
     {
@@ -122,8 +125,9 @@ public class ChildAssocEntity implements Serializable
     /**
      * Truncates the association's child node name to 50 characters.
      * 
-     * @param childNodeName         the child node name
-     * @return                      Returns the potentially truncated value
+     * @param childNodeName
+     *            the child node name
+     * @return Returns the potentially truncated value
      */
     public static String getChildNodeNameShort(String childNodeName)
     {
@@ -141,13 +145,12 @@ public class ChildAssocEntity implements Serializable
     }
 
     /**
-     * Apply the <b>cm:name</b> to the child association. If the child name is <tt>null</tt> then a GUID is generated as
-     * a substitute.
+     * Apply the <b>cm:name</b> to the child association. If the child name is <tt>null</tt> then a GUID is generated as a substitute.
      * <p>
-     * Unknown associations or associations that do not require unique name checking will use a GUID for the child
-     * name and the CRC value used <b>will be negative</b>.
+     * Unknown associations or associations that do not require unique name checking will use a GUID for the child name and the CRC value used <b>will be negative</b>.
      * 
-     * @param childName the <b>cm:name</b> applying to the association.
+     * @param childName
+     *            the <b>cm:name</b> applying to the association.
      */
     public static Pair<String, Long> getChildNameUnique(
             DictionaryService dictionaryService,
@@ -158,8 +161,8 @@ public class ChildAssocEntity implements Serializable
         {
             throw new IllegalArgumentException("Child name may not be null.  Use the Node ID ...");
         }
-        
-        String childNameNewShort; // 
+
+        String childNameNewShort; //
         long childNameNewCrc = -1L; // By default, they don't compete
 
         AssociationDefinition assocDef = dictionaryService.getAssociation(assocTypeQName);
@@ -203,19 +206,19 @@ public class ChildAssocEntity implements Serializable
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("ChildAssocEntity")
-          .append("[ ID=").append(id)
-          .append(", typeQNameId=").append(typeQNameId)
-          .append(", childNodeNameCrc=").append(childNodeNameCrc)
-          .append(", childNodeName=").append(childNodeName)
-          .append(", qnameNamespaceId=").append(qnameNamespaceId)
-          .append(", qnameLocalName=").append(qnameLocalName)
-          .append(", qnameCrc=").append(qnameCrc)
-          .append(", parentNode=").append(parentNode)
-          .append(", childNode=").append(childNode)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", typeQNameId=").append(typeQNameId)
+                .append(", childNodeNameCrc=").append(childNodeNameCrc)
+                .append(", childNodeName=").append(childNodeName)
+                .append(", qnameNamespaceId=").append(qnameNamespaceId)
+                .append(", qnameLocalName=").append(qnameLocalName)
+                .append(", qnameCrc=").append(qnameCrc)
+                .append(", parentNode=").append(parentNode)
+                .append(", childNode=").append(childNode)
+                .append("]");
         return sb.toString();
     }
-    
+
     public ChildAssociationRef getRef(QNameDAO qnameDAO)
     {
         QName typeQName = qnameDAO.getQName(typeQNameId).getSecond();
@@ -228,7 +231,7 @@ public class ChildAssocEntity implements Serializable
                 isPrimary,
                 assocIndex);
     }
-    
+
     public Pair<Long, ChildAssociationRef> getPair(QNameDAO qnameDAO)
     {
         return new Pair<Long, ChildAssociationRef>(id, getRef(qnameDAO));
@@ -273,16 +276,17 @@ public class ChildAssocEntity implements Serializable
     {
         this.childNode = childNode;
     }
-    
+
     /**
      * Helper method to set the {@link #setTypeQNameId(Long)}.
      * 
-     * @param qnameDAO                  the DAO to resolve the QName ID
-     * @param typeQName                 the association type
-     * @param forUpdate                 <tt>true</tt> if the QName must exist i.e. this
-     *                                  entity will be used for updates and the type
-     *                                  <code>QName</code> <b>must</b> exist.
-     * @return                          <tt>true</tt> if the set worked otherwise <tt>false</tt>
+     * @param qnameDAO
+     *            the DAO to resolve the QName ID
+     * @param typeQName
+     *            the association type
+     * @param forUpdate
+     *            <tt>true</tt> if the QName must exist i.e. this entity will be used for updates and the type <code>QName</code> <b>must</b> exist.
+     * @return <tt>true</tt> if the set worked otherwise <tt>false</tt>
      */
     public boolean setTypeQNameAll(QNameDAO qnameDAO, QName typeQName, boolean forUpdate)
     {
@@ -310,9 +314,9 @@ public class ChildAssocEntity implements Serializable
     {
         return typeQNameId;
     }
-    
+
     /**
-     * @deprecated                      For persistence use only
+     * @deprecated For persistence use only
      */
     public void setTypeQNameId(Long typeQNameId)
     {
@@ -320,14 +324,12 @@ public class ChildAssocEntity implements Serializable
     }
 
     /**
-     * Helper method to set all values associated with the
-     * {@link #setChildNodeName(String) child node name}.
+     * Helper method to set all values associated with the {@link #setChildNodeName(String) child node name}.
      * 
-     * @param dictionaryService         the service that determines how the CRC values are generated.
-     *                                  If this is <tt>null</tt> then the CRC values are generated
-     *                                  assuming that positive enforcement of the name constraint is
-     *                                  required.
-     * @param childNodeName             the child node name
+     * @param dictionaryService
+     *            the service that determines how the CRC values are generated. If this is <tt>null</tt> then the CRC values are generated assuming that positive enforcement of the name constraint is required.
+     * @param childNodeName
+     *            the child node name
      */
     public void setChildNodeNameAll(
             DictionaryService dictionaryService,
@@ -335,11 +337,11 @@ public class ChildAssocEntity implements Serializable
             String childNodeName)
     {
         ParameterCheck.mandatory("childNodeName", childNodeName);
-        
+
         if (dictionaryService != null)
         {
             ParameterCheck.mandatory("typeQName", typeQName);
-            
+
             Pair<String, Long> childNameUnique = ChildAssocEntity.getChildNameUnique(
                     dictionaryService,
                     typeQName,
@@ -361,7 +363,7 @@ public class ChildAssocEntity implements Serializable
     }
 
     /**
-     * @deprecated                      For persistence use
+     * @deprecated For persistence use
      */
     public void setChildNodeNameCrc(Long childNodeNameCrc)
     {
@@ -374,7 +376,7 @@ public class ChildAssocEntity implements Serializable
     }
 
     /**
-     * @deprecated                      For persistence use
+     * @deprecated For persistence use
      */
     public void setChildNodeName(String childNodeName)
     {
@@ -384,10 +386,9 @@ public class ChildAssocEntity implements Serializable
     /**
      * Set all required fields associated with the patch <code>QName</code>.
      * 
-     * @param forUpdate                 <tt>true</tt> if the entity is going to be used for a
-     *                                  data update i.e. the <code>QName</code> <b>must</b> exist.
-     * @return                          Returns <tt>true</tt> if the <code>QName</code> namespace
-     *                                  exists.
+     * @param forUpdate
+     *            <tt>true</tt> if the entity is going to be used for a data update i.e. the <code>QName</code> <b>must</b> exist.
+     * @return Returns <tt>true</tt> if the <code>QName</code> namespace exists.
      */
     public boolean setQNameAll(QNameDAO qnameDAO, QName qname, boolean forUpdate)
     {
@@ -416,18 +417,18 @@ public class ChildAssocEntity implements Serializable
         this.qnameNamespaceId = assocQNameNamespaceId;
         this.qnameLocalName = assocQNameLocalName;
         this.qnameCrc = assocQNameCrc;
-        
+
         // All set correctly
         return true;
     }
-    
+
     public Long getQnameNamespaceId()
     {
         return qnameNamespaceId;
     }
 
     /**
-     * @deprecated                      For persistence use
+     * @deprecated For persistence use
      */
     public void setQnameNamespaceId(Long qnameNamespaceId)
     {
@@ -440,7 +441,7 @@ public class ChildAssocEntity implements Serializable
     }
 
     /**
-     * @deprecated                      For persistence use
+     * @deprecated For persistence use
      */
     public void setQnameLocalName(String qnameLocalName)
     {
@@ -453,7 +454,7 @@ public class ChildAssocEntity implements Serializable
     }
 
     /**
-     * @deprecated                      For persistence use
+     * @deprecated For persistence use
      */
     public void setQnameCrc(Long qnameCrc)
     {

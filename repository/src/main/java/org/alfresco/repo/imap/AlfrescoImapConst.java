@@ -50,16 +50,14 @@ public interface AlfrescoImapConst
         /**
          * Defines {@link AlfrescoImapFolder} view mode as mixed mode. Used for IMAP Mixed View.
          * <p>
-         * In mixed mode both IMAP messages and Alfresco nodes of other types are shown.   
-         * Only nodes from IMAP favourite sites are shown, non favourite sites are not shown.
+         * In mixed mode both IMAP messages and Alfresco nodes of other types are shown. Only nodes from IMAP favourite sites are shown, non favourite sites are not shown.
          * 
          */
         MIXED,
         /**
          * Defines {@link AlfrescoImapFolder} view mode as archive mode. Used for Email Archive View.
          * <p>
-         * In archive mode only IMAP messages are shown.   Alfresco nodes of other types are not shown.  
-         * And no nodes within sites (favourite or otherwise) are shown.
+         * In archive mode only IMAP messages are shown. Alfresco nodes of other types are not shown. And no nodes within sites (favourite or otherwise) are shown.
          */
         ARCHIVE
     }
@@ -80,10 +78,9 @@ public interface AlfrescoImapConst
     // Default content model email message templates
     public static final String CLASSPATH_ALFRESCO_TEXT_PLAIN_TEMPLATE = "/alfresco/templates/imap/emailbody_textplain_alfresco.ftl";
     public static final String CLASSPATH_SHARE_TEXT_PLAIN_TEMPLATE = "/alfresco/templates/imap/emailbody_textplain_share.ftl";
-    
+
     public static final String CLASSPATH_ALFRESCO_TEXT_HTML_TEMPLATE = "/alfresco/templates/imap/emailbody_texthtml_alfresco.ftl";
     public static final String CLASSPATH_SHARE_TEXT_HTML_TEMPLATE = "/alfresco/templates/imap/emailbody_texthtml_share.ftl";
-
 
     public static final String DICTIONARY_TEMPLATE_PREFIX = "emailbody";
     public static final String PREF_IMAP_FAVOURITE_SITES = "org.alfresco.share.sites.imapFavourites";

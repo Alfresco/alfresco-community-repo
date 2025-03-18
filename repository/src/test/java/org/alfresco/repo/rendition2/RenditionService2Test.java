@@ -25,7 +25,27 @@
  */
 package org.alfresco.repo.rendition2;
 
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -41,26 +61,6 @@ import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.transform.registry.TransformServiceRegistryImpl;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-
-import org.mockito.junit.MockitoJUnitRunner;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
 
 /**
  * Tests the RenditionService2 in a Community context where we only have local transformers.
@@ -77,18 +77,30 @@ public class RenditionService2Test
     private RenditionService2Impl renditionService2;
     private RenditionDefinitionRegistry2Impl renditionDefinitionRegistry2;
 
-    @Mock private TransformClient transformClient;
-    @Mock private TransactionService transactionService;
-    @Mock private NodeService nodeService;
-    @Mock private ContentService contentService;
-    @Mock private RenditionPreventionRegistry renditionPreventionRegistry;
-    @Mock private ContentData contentData;
-    @Mock private PolicyComponent policyComponent;
-    @Mock private BehaviourFilter behaviourFilter;
-    @Mock private RuleService ruleService;
-    @Mock private TransformServiceRegistryImpl transformServiceRegistry;
-    @Mock private TransformReplyProvider transformReplyProvider;
-    @Mock private AsynchronousExtractor asynchronousExtractor;
+    @Mock
+    private TransformClient transformClient;
+    @Mock
+    private TransactionService transactionService;
+    @Mock
+    private NodeService nodeService;
+    @Mock
+    private ContentService contentService;
+    @Mock
+    private RenditionPreventionRegistry renditionPreventionRegistry;
+    @Mock
+    private ContentData contentData;
+    @Mock
+    private PolicyComponent policyComponent;
+    @Mock
+    private BehaviourFilter behaviourFilter;
+    @Mock
+    private RuleService ruleService;
+    @Mock
+    private TransformServiceRegistryImpl transformServiceRegistry;
+    @Mock
+    private TransformReplyProvider transformReplyProvider;
+    @Mock
+    private AsynchronousExtractor asynchronousExtractor;
 
     private NodeRef nodeRef = new NodeRef("workspace://spacesStore/test-id");
     private NodeRef nodeRefMissing = new NodeRef("workspace://spacesStore/bad-test-id");
@@ -105,8 +117,7 @@ public class RenditionService2Test
     @Before
     public void setup() throws Exception
     {
-        renditionService2 = new RenditionService2Impl()
-        {
+        renditionService2 = new RenditionService2Impl() {
             @Override
             public void failure(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, int transformContentHashCode)
             {
@@ -125,15 +136,14 @@ public class RenditionService2Test
         when(nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT)).thenReturn(contentData);
         when(contentData.getContentUrl()).thenReturn(contentUrl);
 
-        doAnswer(invocation ->
-        {
+        doAnswer(invocation -> {
             Object[] args = invocation.getArguments();
             NodeRef sourceNodeRef = (NodeRef) args[0];
             RenditionDefinition2 renditionDefinition = (RenditionDefinition2) args[1];
             int sourceContentHashCode = (int) args[3];
             if (!(renditionDefinition instanceof TransformDefinition))
             {
-                sourceContentHashCode += 1;  // Change the hashcode so that we don't actually try to create a rendition.
+                sourceContentHashCode += 1; // Change the hashcode so that we don't actually try to create a rendition.
             }
             renditionService2.consume(sourceNodeRef, null, renditionDefinition, sourceContentHashCode);
             return null;
@@ -253,7 +263,7 @@ public class RenditionService2Test
     @Test(expected = RenditionService2PreventedException.class)
     public void checkSourceNodeForRenditionPreventionClass()
     {
-        when(renditionPreventionRegistry.isContentClassRegistered((QName)any())).thenReturn(true);
+        when(renditionPreventionRegistry.isContentClassRegistered((QName) any())).thenReturn(true);
         renditionService2.render(nodeRef, TEST_RENDITION);
     }
 
@@ -269,9 +279,9 @@ public class RenditionService2Test
         renditionDefinitionRegistry2.readConfig();
 
         Set<String> renditionNames = renditionDefinitionRegistry2.getRenditionNames();
-        for (String name: new String[] {"medium", "doclib", "imgpreview", "avatar", "avatar32", "webpreview", "pdf"})
+        for (String name : new String[]{"medium", "doclib", "imgpreview", "avatar", "avatar32", "webpreview", "pdf"})
         {
-            assertTrue("Expected rendition "+name, renditionNames.contains(name));
+            assertTrue("Expected rendition " + name, renditionNames.contains(name));
         }
     }
 

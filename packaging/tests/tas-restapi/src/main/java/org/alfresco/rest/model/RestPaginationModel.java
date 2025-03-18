@@ -31,22 +31,14 @@ import org.alfresco.utility.model.TestModel;
 /**
  * Handles Pagination JSON
  *
- * Example:
- *  "pagination": {
-      "count": 100,
-      "hasMoreItems": true,
-      "totalItems": 269,
-      "skipCount": 0,
-      "maxItems": 100
-    },
+ * Example: "pagination": { "count": 100, "hasMoreItems": true, "totalItems": 269, "skipCount": 0, "maxItems": 100 },
  */
 public class RestPaginationModel extends TestModel implements IModelAssertion<RestPaginationModel>
 {
     private int count;
     private boolean hasMoreItems;
     /**
-     * {code}totalItems{code} is optional and some endpoints don't include it e.g. GET sites/{siteId}/members
-     * See the section entitled "The list object" in https://ts.alfresco.com/share/page/site/prodman/document-details?nodeRef=workspace://SpacesStore/17eacc65-28e5-40bb-8113-edb8c21d57a5
+     * {code}totalItems{code} is optional and some endpoints don't include it e.g. GET sites/{siteId}/members See the section entitled "The list object" in https://ts.alfresco.com/share/page/site/prodman/document-details?nodeRef=workspace://SpacesStore/17eacc65-28e5-40bb-8113-edb8c21d57a5
      */
     private Integer totalItems;
     private int skipCount;

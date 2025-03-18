@@ -56,7 +56,7 @@ public class DeleteHoldAction extends RMActionExecuterAbstractBase
         }
         else
         {
-            throw new AlfrescoRuntimeException(MSG_DELETE_NOT_HOLD_TYPE, new Object[]{ TYPE_HOLD.toString(), actionedUponNodeRef.toString() });
+            throw new AlfrescoRuntimeException(MSG_DELETE_NOT_HOLD_TYPE, new Object[]{TYPE_HOLD.toString(), actionedUponNodeRef.toString()});
         }
     }
 }

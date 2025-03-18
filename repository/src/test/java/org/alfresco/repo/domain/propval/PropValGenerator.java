@@ -46,40 +46,39 @@ public class PropValGenerator
     private final DoubleGen doubleGen = new DoubleGen();
     private final DateGen dateGen = new DateGen();
     private final SerializableGen serGen = new SerializableGen();
-    
+
     public PropValGenerator(PropertyValueDAO propertyValueDAO)
     {
         this.propertyValueDAO = propertyValueDAO;
     }
-    
+
     public String createUniqueString()
     {
         // No need to do anything more clever than create a UUID.
         return UUID.randomUUID().toString();
     }
-    
+
     public Double createUniqueDouble()
     {
         return doubleGen.getUnusedValue();
     }
-    
+
     public Date createUniqueDate()
     {
         return dateGen.getUnusedValue();
     }
-    
+
     public Serializable createUniqueSerializable()
     {
         return serGen.getUnusedValue();
     }
-    
-    
+
     private class DoubleGen extends UniqueValueGenerator<Double>
     {
         @Override
         protected Double createValue()
         {
-            return (Math.pow(2,32)) + (rand.nextDouble() * (Math.pow(2,32) - Math.pow(2,31)));
+            return (Math.pow(2, 32)) + (rand.nextDouble() * (Math.pow(2, 32) - Math.pow(2, 31)));
         }
 
         @Override
@@ -88,7 +87,7 @@ public class PropValGenerator
             return propertyValueDAO.getPropertyDoubleValue(value);
         }
     }
-    
+
     private class DateGen extends UniqueValueGenerator<Date>
     {
         @Override
@@ -123,12 +122,12 @@ public class PropValGenerator
             return propertyValueDAO.getPropertyValue(value);
         }
     }
-        
+
     private static class MySerializable implements Serializable
     {
         private static final long serialVersionUID = 1L;
         private final Long val;
-        
+
         public MySerializable()
         {
             val = rand.nextLong();
@@ -146,31 +145,35 @@ public class PropValGenerator
         @Override
         public boolean equals(Object obj)
         {
-            if (this == obj) return true;
-            if (obj == null) return false;
-            if (getClass() != obj.getClass()) return false;
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
             MySerializable other = (MySerializable) obj;
             if (this.val == null)
             {
-                if (other.val != null) return false;
+                if (other.val != null)
+                    return false;
             }
-            else if (!this.val.equals(other.val)) return false;
+            else if (!this.val.equals(other.val))
+                return false;
             return true;
         }
     }
-    
+
     /**
-     * Generate values that aren't currently in the properties tables. By trying random values
-     * several times until an unused value is used. This is to help avoid red builds, since the
-     * assumption by the orphaned property cleanup test is that the properties are not in use
-     * (otherwise they won't be cleaned up!)
+     * Generate values that aren't currently in the properties tables. By trying random values several times until an unused value is used. This is to help avoid red builds, since the assumption by the orphaned property cleanup test is that the properties are not in use (otherwise they won't be cleaned up!)
      */
     private abstract class UniqueValueGenerator<T>
     {
         private final int maxTries = 5;
+
         protected abstract T createValue();
+
         protected abstract Pair<Long, T> getExistingValue(T value);
-        
+
         public T getUnusedValue()
         {
             int tries = 0;

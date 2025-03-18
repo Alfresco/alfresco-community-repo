@@ -35,6 +35,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import org.alfresco.repo.content.AbstractRoutingContentStore;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
@@ -44,9 +48,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Content Store that supports tenant routing, if multi-tenancy is enabled.
@@ -60,14 +61,14 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
     protected TenantService tenantService;
     private ApplicationContext applicationContext;
     private TransactionService transactionService;
-    
+
     private final ReentrantReadWriteLock tenantContentStoreLock = new ReentrantReadWriteLock();
     private final WriteLock tenantContentStoreWriteLock = tenantContentStoreLock.writeLock();
     private final ReadLock tenantContentStoreReadLock = tenantContentStoreLock.readLock();
-    
+
     // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
     private final Map<String, ContentStore> cache;
-    
+
     /**
      * Default constructor
      */
@@ -75,27 +76,27 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
     {
         this.cache = new HashMap<String, ContentStore>(1024);
     }
-    
+
     public void setRootLocation(String defaultRootDirectory)
     {
         this.defaultRootDirectory = defaultRootDirectory;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     public void setTenantAdminDAO(TenantAdminDAO tenantAdminDAO)
     {
         this.tenantAdminDAO = tenantAdminDAO;
     }
-    
+
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.applicationContext = applicationContext;
     }
-    
+
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
@@ -106,12 +107,11 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
     {
         return defaultRootDirectory;
     }
-    
+
     @Override
     protected ContentStore selectWriteStore(ContentContext ctx)
     {
-        RetryingTransactionCallback<ContentStore> callback = new RetryingTransactionCallback<ContentStore>()
-        {
+        RetryingTransactionCallback<ContentStore> callback = new RetryingTransactionCallback<ContentStore>() {
             @Override
             public ContentStore execute() throws Throwable
             {
@@ -119,14 +119,13 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
             }
         };
         return transactionService.getRetryingTransactionHelper().doInTransaction(callback, true, false);
-        
+
     }
-    
+
     @Override
     public List<ContentStore> getAllStores()
     {
-        RetryingTransactionCallback<List<ContentStore>> callback = new RetryingTransactionCallback<List<ContentStore>>()
-        {
+        RetryingTransactionCallback<List<ContentStore>> callback = new RetryingTransactionCallback<List<ContentStore>>() {
             @Override
             public List<ContentStore> execute() throws Throwable
             {
@@ -135,6 +134,7 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
         };
         return transactionService.getRetryingTransactionHelper().doInTransaction(callback, true, false);
     }
+
     /**
      * Work method to build a list of stores and <b>must always be called from withing an active transaction</b>.
      */
@@ -147,10 +147,10 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
         {
             return Collections.singletonList(cs);
         }
-        
+
         final List<ContentStore> allEnabledStores = new ArrayList<ContentStore>();
         allEnabledStores.add(cs);
-        
+
         String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
         if ((currentUser == null) || (tenantService.getBaseNameUser(currentUser).equals(AuthenticationUtil.getSystemUserName())))
         {
@@ -161,8 +161,7 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
                 if (tenant.getEnabled())
                 {
                     String tenantDomain = tenant.getTenantDomain();
-                    TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-                    {
+                    TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>() {
                         public Void doWork() throws Exception
                         {
                             allEnabledStores.add(getTenantContentStore()); // note: cache should only contain enabled stores
@@ -174,12 +173,12 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
         }
         return allEnabledStores;
     }
-    
+
     private ContentStore getTenantContentStore()
     {
         String tenantDomain = tenantService.getCurrentUserDomain();
         ContentStore cs = null;
-        
+
         tenantContentStoreReadLock.lock();
         try
         {
@@ -193,7 +192,7 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
         {
             tenantContentStoreReadLock.unlock();
         }
-        
+
         // It was not found, so go and initialize it
         tenantContentStoreWriteLock.lock();
         try
@@ -213,13 +212,13 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
             tenantContentStoreWriteLock.unlock();
         }
     }
-    
+
     @Override
     public void init()
     {
         getTenantContentStore();
     }
-    
+
     public void destroy()
     {
         String tenantDomain = tenantService.getCurrentUserDomain();
@@ -233,22 +232,22 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
             tenantContentStoreWriteLock.unlock();
         }
     }
-    
+
     public void onEnableTenant()
     {
         init();
     }
-    
+
     public void onDisableTenant()
     {
         destroy();
     }
-    
+
     @Override
     public long getSpaceFree()
     {
         ContentStore x = getTenantContentStore();
-        if(x != null)
+        if (x != null)
         {
             return x.getSpaceFree();
         }
@@ -262,7 +261,7 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
     public long getSpaceTotal()
     {
         ContentStore x = getTenantContentStore();
-        if(x != null)
+        if (x != null)
         {
             return x.getSpaceTotal();
         }

@@ -27,10 +27,10 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability.impl;
 
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
 import org.alfresco.service.cmr.repository.NodeRef;
-
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * Change or delete references capability
@@ -60,7 +60,7 @@ public class ChangeOrDeleteReferencesCapability extends DeclarativeCapability
             else
             {
                 if (checkConditions(source) &&
-                    checkPermissions(source))
+                        checkPermissions(source))
                 {
                     return AccessDecisionVoter.ACCESS_GRANTED;
                 }

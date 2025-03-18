@@ -30,6 +30,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase;
@@ -44,32 +47,18 @@ import org.alfresco.service.cmr.thumbnail.FailedThumbnailInfo;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * This action evaluator is specifically created for the {@link ThumbnailService Thumbnail Service}.
- * It is used to evaluate whether a {@link ThumbnailDefinition} should be executed - based on
- * previous failed thumbnail attempts for that definition on that source node, as well as some
- * configuration data.
+ * This action evaluator is specifically created for the {@link ThumbnailService Thumbnail Service}. It is used to evaluate whether a {@link ThumbnailDefinition} should be executed - based on previous failed thumbnail attempts for that definition on that source node, as well as some configuration data.
  * <p/>
  * The behaviour is as follows:
  * <ul>
- * <li>All content nodes are eligible for thumbnailing initially. Of course thumbnails can only ever be
- *     attempted for those content mime types that have at least one registered and active {@link ContentTransformer}.</li>
- * <li>If the first attempt to produce a thumbnail for a node fails, then it may be retried up to a maximum of
- *     {@link FailureHandlingOptions#getRetryCount() system.thumbnail.retryCount} times.</li>
- * <li>These initial retries to produce a thumbnail will occur not more often than every
- *     {@link FailureHandlingOptions#getRetryPeriod() system.thumbnail.retryPeriod} seconds
- *     and will use which ever content transformers the ContentService#getTransformer(String, String content service gives.</li>
- * <li>If a thumbnail is not successfully produced for a node after these attempts then it is considered to be
- *     a 'difficult' piece of content with respect to thumbnailing and the assumption is that a thumbnail may
- *     never be available for it. However, in order to allow for the possibility of software upgrades or similiar, which may
- *     make the content thumbnailable at a later date, further attempts will be made, but at a much reduced frequency.</li>
- * <li>Difficult pieces of content will not be attempted more often than every
- *     {@link FailureHandlingOptions#getQuietPeriod() system.thumbnail.quietPeriod} seconds.</li>
- * <li>The attempts to thumbnail difficult pieces of content can be disabled by setting
- *     {@link FailureHandlingOptions#getQuietPeriodRetriesEnabled() system.thumbnail.quietPeriodRetriesEnabled} to false.</li>
+ * <li>All content nodes are eligible for thumbnailing initially. Of course thumbnails can only ever be attempted for those content mime types that have at least one registered and active {@link ContentTransformer}.</li>
+ * <li>If the first attempt to produce a thumbnail for a node fails, then it may be retried up to a maximum of {@link FailureHandlingOptions#getRetryCount() system.thumbnail.retryCount} times.</li>
+ * <li>These initial retries to produce a thumbnail will occur not more often than every {@link FailureHandlingOptions#getRetryPeriod() system.thumbnail.retryPeriod} seconds and will use which ever content transformers the ContentService#getTransformer(String, String content service gives.</li>
+ * <li>If a thumbnail is not successfully produced for a node after these attempts then it is considered to be a 'difficult' piece of content with respect to thumbnailing and the assumption is that a thumbnail may never be available for it. However, in order to allow for the possibility of software upgrades or similiar, which may make the content thumbnailable at a later date, further attempts will be made, but at a much reduced frequency.</li>
+ * <li>Difficult pieces of content will not be attempted more often than every {@link FailureHandlingOptions#getQuietPeriod() system.thumbnail.quietPeriod} seconds.</li>
+ * <li>The attempts to thumbnail difficult pieces of content can be disabled by setting {@link FailureHandlingOptions#getQuietPeriodRetriesEnabled() system.thumbnail.quietPeriodRetriesEnabled} to false.</li>
  * </ul>
  * At all times, thumbnails will be attempted when a user navigates to a page which needs to show the relevant thumbnail (lazy production).
  * 
@@ -79,7 +68,7 @@ import org.apache.commons.logging.LogFactory;
  * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
 @Deprecated
-public class NodeEligibleForRethumbnailingEvaluator extends ActionConditionEvaluatorAbstractBase 
+public class NodeEligibleForRethumbnailingEvaluator extends ActionConditionEvaluatorAbstractBase
 {
     private static Log logger = LogFactory.getLog(NodeEligibleForRethumbnailingEvaluator.class);
 
@@ -89,7 +78,7 @@ public class NodeEligibleForRethumbnailingEvaluator extends ActionConditionEvalu
     public final static String NAME = "node-eligible-for-rethumbnailing-evaluator";
 
     public final static String PARAM_THUMBNAIL_DEFINITION_NAME = "thumbnail-definition-name";
-    
+
     public final static String PARAM_RETRY_PERIOD = "retry-period";
     public final static String PARAM_RETRY_COUNT = "retry-count";
     public final static String PARAM_QUIET_PERIOD = "quiet-period";
@@ -97,28 +86,28 @@ public class NodeEligibleForRethumbnailingEvaluator extends ActionConditionEvalu
 
     protected NodeService nodeService;
     protected ThumbnailService thumbnailService;
-    
-    public void setNodeService(NodeService nodeService) 
+
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
-    public void setThumbnailService(ThumbnailService thumbnailService) 
+
+    public void setThumbnailService(ThumbnailService thumbnailService)
     {
         this.thumbnailService = thumbnailService;
     }
-    
+
     /**
      * Add parameter definitions
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_THUMBNAIL_DEFINITION_NAME, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_THUMBNAIL_DEFINITION_NAME)));
-        
+
         paramList.add(new ParameterDefinitionImpl(PARAM_RETRY_PERIOD, DataTypeDefinition.LONG, true, getParamDisplayLabel(PARAM_RETRY_PERIOD)));
         paramList.add(new ParameterDefinitionImpl(PARAM_RETRY_COUNT, DataTypeDefinition.INT, true, getParamDisplayLabel(PARAM_RETRY_COUNT)));
-        
+
         paramList.add(new ParameterDefinitionImpl(PARAM_QUIET_PERIOD, DataTypeDefinition.LONG, true, getParamDisplayLabel(PARAM_QUIET_PERIOD)));
         paramList.add(new ParameterDefinitionImpl(PARAM_QUIET_PERIOD_RETRIES_ENABLED, DataTypeDefinition.BOOLEAN, true, getParamDisplayLabel(PARAM_QUIET_PERIOD_RETRIES_ENABLED)));
     }
@@ -126,26 +115,24 @@ public class NodeEligibleForRethumbnailingEvaluator extends ActionConditionEvalu
     /**
      * @see ActionConditionEvaluatorAbstractBase#evaluateImpl(ActionCondition, NodeRef)
      */
-    public boolean evaluateImpl(ActionCondition actionCondition, NodeRef actionedUponNodeRef) 
+    public boolean evaluateImpl(ActionCondition actionCondition, NodeRef actionedUponNodeRef)
     {
         if (!this.nodeService.exists(actionedUponNodeRef))
         {
             return false;
         }
-    
+
         Serializable paramThumbnailDefnName = actionCondition.getParameterValue(PARAM_THUMBNAIL_DEFINITION_NAME);
-        
+
         Serializable paramRetryPeriod = actionCondition.getParameterValue(PARAM_RETRY_PERIOD);
         Serializable paramRetryCount = actionCondition.getParameterValue(PARAM_RETRY_COUNT);
         Serializable paramQuietPeriod = actionCondition.getParameterValue(PARAM_QUIET_PERIOD);
-        
+
         final Serializable parameterValue = actionCondition.getParameterValue(PARAM_QUIET_PERIOD_RETRIES_ENABLED);
         Serializable paramQuietPeriodRetriesEnabled = parameterValue != null ? parameterValue : FailureHandlingOptions.DEFAULT_QUIET_PERIOD_RETRIES_ENABLED;
-        
-        
-        
-        final QName thumbnailDefnQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, (String)paramThumbnailDefnName);
-        
+
+        final QName thumbnailDefnQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, (String) paramThumbnailDefnName);
+
         // If there are no previous failed thumbnail attempts for this thumbnail definition,
         // then the node is always eligible for a first try.
         Map<String, FailedThumbnailInfo> failures = thumbnailService.getFailedThumbnails(actionedUponNodeRef);
@@ -155,15 +142,14 @@ public class NodeEligibleForRethumbnailingEvaluator extends ActionConditionEvalu
             {
                 StringBuilder msg = new StringBuilder();
                 msg.append("Node ").append(actionedUponNodeRef).append(" has no matching ").append(ContentModel.ASSOC_FAILED_THUMBNAIL)
-                   .append(" child.");
+                        .append(" child.");
                 logger.debug(msg.toString());
             }
             return true;
         }
-        
-        
+
         final FailedThumbnailInfo failedThumbnailInfo = failures.get(thumbnailDefnQName.getLocalName());
-        
+
         // There is a cm:failedThumbnail child, so there has been at least one failed execution of the given
         // thumbnail definition at some point.
         if (failedThumbnailInfo.getMostRecentFailure() == null)
@@ -171,27 +157,27 @@ public class NodeEligibleForRethumbnailingEvaluator extends ActionConditionEvalu
             // The property should never be null like this, but just in case.
             return true;
         }
-        
+
         // So how long ago did the given thumbnail definition fail?
         long nowMs = new Date().getTime();
         long failureTimeMs = failedThumbnailInfo.getMostRecentFailure().getTime();
         final long timeSinceLastFailureMs = nowMs - failureTimeMs;
-        
+
         // And how many failures have there been?
         final int failureCount = failedThumbnailInfo.getFailureCount();
-        
+
         if (logger.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
             msg.append("Comparing failure time of ")
-               .append(failedThumbnailInfo.getMostRecentFailure()).append(" to now. Difference is ")
-               .append(timeSinceLastFailureMs).append(" ms. ").append(failureCount).append(" existing failures.");
+                    .append(failedThumbnailInfo.getMostRecentFailure()).append(" to now. Difference is ")
+                    .append(timeSinceLastFailureMs).append(" ms. ").append(failureCount).append(" existing failures.");
             logger.debug(msg.toString());
         }
 
-        if (failureCount >= (Integer)paramRetryCount)
+        if (failureCount >= (Integer) paramRetryCount)
         {
-            boolean quietPeriodRetriesEnabled = (Boolean)paramQuietPeriodRetriesEnabled;
+            boolean quietPeriodRetriesEnabled = (Boolean) paramQuietPeriodRetriesEnabled;
             return quietPeriodRetriesEnabled && timeSinceFailureExceedsLimit(paramQuietPeriod, timeSinceLastFailureMs);
         }
         else
@@ -204,19 +190,19 @@ public class NodeEligibleForRethumbnailingEvaluator extends ActionConditionEvalu
     {
         // Is that time period greater than the specified offset?
         // We'll allow for -ve offset values.
-        Long offsetLong = (Long)failurePeriod;
+        Long offsetLong = (Long) failurePeriod;
         long absOffset = Math.abs(offsetLong);
-        
+
         if (logger.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
             msg.append("timeSinceFailure is ");
             msg.append(timeSinceFailure).append(" ms.");
             msg.append(", absOffset is ")
-               .append(absOffset).append(" ms.");
+                    .append(absOffset).append(" ms.");
             logger.debug(msg.toString());
         }
-        
+
         return timeSinceFailure > absOffset;
     }
 }

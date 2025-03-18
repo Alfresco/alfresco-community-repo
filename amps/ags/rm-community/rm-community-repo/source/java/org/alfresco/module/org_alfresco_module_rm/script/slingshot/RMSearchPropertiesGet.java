@@ -33,6 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -42,10 +47,6 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * RM search properties GET web script
@@ -62,7 +63,8 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
     private FilePlanService filePlanService;
 
     /**
-     * @param adminService  records management admin service
+     * @param adminService
+     *            records management admin service
      */
     public void setAdminService(RecordsManagementAdminService adminService)
     {
@@ -70,7 +72,8 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
     }
 
     /**
-     * @param recordService     record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -78,7 +81,8 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
     }
 
     /**
-     * @param dictionaryService dictionary service
+     * @param dictionaryService
+     *            dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -86,7 +90,8 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
     }
 
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -94,7 +99,8 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -102,9 +108,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -128,7 +132,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
             {
                 Property propObj = new Property(propertyDefinition);
                 propObjs[index] = propObj;
-                index ++;
+                index++;
             }
 
             AspectDefinition aspectDefinition = dictionaryService.getAspect(aspect);
@@ -143,7 +147,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
         {
             Property propObj = new Property(propertyDefinition);
             propObjs[index] = propObj;
-            index ++;
+            index++;
         }
 
         Group group = new Group("rmcustom", "Custom", propObjs);

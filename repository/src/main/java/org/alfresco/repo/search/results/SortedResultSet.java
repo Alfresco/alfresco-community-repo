@@ -85,11 +85,16 @@ public class SortedResultSet implements ResultSet
     /**
      * Source and resources required to sort
      * 
-     * @param resultSet ResultSet
-     * @param nodeService NodeService
-     * @param namespacePrefixResolver NamespacePrefixResolver
-     * @param dictionaryService DictionaryService
-     * @param locale Locale
+     * @param resultSet
+     *            ResultSet
+     * @param nodeService
+     *            NodeService
+     * @param namespacePrefixResolver
+     *            NamespacePrefixResolver
+     * @param dictionaryService
+     *            DictionaryService
+     * @param locale
+     *            Locale
      */
     public SortedResultSet(ResultSet resultSet, NodeService nodeService, List<SortDefinition> sortDefinitions, NamespacePrefixResolver namespacePrefixResolver,
             DictionaryService dictionaryService, Locale locale)
@@ -222,7 +227,7 @@ public class SortedResultSet implements ResultSet
     {
         return nodeService;
     }
-    
+
     public ResultSetRow getRow(int i)
     {
         if (i < length())
@@ -345,7 +350,7 @@ public class SortedResultSet implements ResultSet
             this.locale = locale;
         }
 
-        @SuppressWarnings({ "rawtypes", "unchecked" })
+        @SuppressWarnings({"rawtypes", "unchecked"})
         public int compare(NodeRefAndScore n1, NodeRefAndScore n2)
         {
             // Treat missing nodes as null for comparison
@@ -542,7 +547,7 @@ public class SortedResultSet implements ResultSet
                         }
                         else
                         {
-                            return (ascending ? 1 : -1) * (int)(cd1.getSize() - cd2.getSize());
+                            return (ascending ? 1 : -1) * (int) (cd1.getSize() - cd2.getSize());
                         }
                     }
                 }
@@ -550,7 +555,7 @@ public class SortedResultSet implements ResultSet
 
         }
     }
-    
+
     private static class ContentMimetypeOrder implements OrderDefinition
     {
         QName attribute;
@@ -558,7 +563,7 @@ public class SortedResultSet implements ResultSet
         boolean ascending;
 
         NodeService nodeService;
-        
+
         Collator collator;
 
         ContentMimetypeOrder(QName attribute, boolean ascending, NodeService nodeService, Collator collator)
@@ -894,7 +899,8 @@ public class SortedResultSet implements ResultSet
     /**
      * Bulk fetch results in the cache
      * 
-     * @param bulkFetch boolean
+     * @param bulkFetch
+     *            boolean
      */
     public boolean setBulkFetch(boolean bulkFetch)
     {
@@ -914,7 +920,8 @@ public class SortedResultSet implements ResultSet
     /**
      * Set the bulk fetch size
      * 
-     * @param bulkFetchSize int
+     * @param bulkFetchSize
+     *            int
      */
     public int setBulkFetchSize(int bulkFetchSize)
     {
@@ -930,7 +937,7 @@ public class SortedResultSet implements ResultSet
     {
         return resultSet.getBulkFetchSize();
     }
-    
+
     @Override
     public List<Pair<String, Integer>> getFieldFacet(String field)
     {
@@ -938,20 +945,19 @@ public class SortedResultSet implements ResultSet
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
-     */
+     * 
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound() */
     @Override
     public long getNumberFound()
     {
         return resultSet.getNumberFound();
     }
-    
+
     @Override
     public Map<String, Integer> getFacetQueries()
     {
         return resultSet.getFacetQueries();
     }
-
 
     @Override
     public Map<NodeRef, List<Pair<String, List<String>>>> getHighlighting()

@@ -35,8 +35,7 @@ import java.util.stream.Stream;
  */
 public enum WhitelistedDMActions
 {
-    ARCHIVE("archive"),
-    RESTORE("restore");
+    ARCHIVE("archive"), RESTORE("restore");
 
     private final String value;
 
@@ -53,7 +52,7 @@ public enum WhitelistedDMActions
     public static List<String> getActionsList()
     {
         return Stream.of(WhitelistedDMActions.values())
-                     .map(WhitelistedDMActions::getValue)
-                     .collect(Collectors.toList());
+                .map(WhitelistedDMActions::getValue)
+                .collect(Collectors.toList());
     }
 }

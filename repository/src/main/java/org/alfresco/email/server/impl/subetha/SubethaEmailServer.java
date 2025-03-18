@@ -30,14 +30,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 
-import org.alfresco.email.server.EmailServer;
-import org.alfresco.service.cmr.email.EmailDelivery;
-import org.alfresco.service.cmr.email.EmailMessage;
-import org.alfresco.service.cmr.email.EmailMessageException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.subethamail.smtp.AuthenticationHandler;
@@ -52,6 +47,11 @@ import org.subethamail.smtp.auth.UsernamePasswordValidator;
 import org.subethamail.smtp.internal.io.DeferredFileOutputStream;
 import org.subethamail.smtp.server.SMTPServer;
 import org.subethamail.smtp.server.SMTPServer.Builder;
+
+import org.alfresco.email.server.EmailServer;
+import org.alfresco.service.cmr.email.EmailDelivery;
+import org.alfresco.service.cmr.email.EmailMessage;
+import org.alfresco.service.cmr.email.EmailMessageException;
 
 /**
  * @since 2.2
@@ -71,14 +71,14 @@ public class SubethaEmailServer extends EmailServer
     public void startup()
     {
         Builder serverBuilder = SMTPServer.port(getPort())
-                                          .hostName(getDomain())
-                                          .maxConnections(getMaxConnections())
-                                          .hideTLS(isHideTLS())
-                                          .enableTLS(isEnableTLS())
-                                          .requireTLS(isRequireTLS())
-                                          .messageHandlerFactory(new HandlerFactory());
+                .hostName(getDomain())
+                .maxConnections(getMaxConnections())
+                .hideTLS(isHideTLS())
+                .enableTLS(isEnableTLS())
+                .requireTLS(isRequireTLS())
+                .messageHandlerFactory(new HandlerFactory());
 
-        if(isAuthenticate())
+        if (isAuthenticate())
         {
             AuthenticationHandlerFactory authenticationHandler = new EasyAuthenticationHandlerFactory(new AlfrescoLoginUsernamePasswordValidator());
             serverBuilder.authenticationHandlerFactory(authenticationHandler);
@@ -96,25 +96,25 @@ public class SubethaEmailServer extends EmailServer
         serverImpl.stop();
         log.info("Inbound SMTP Email Server has stopped successfully");
     }
-    
+
     class AlfrescoLoginUsernamePasswordValidator implements UsernamePasswordValidator
     {
         @Override
         public void login(String username, String password, MessageContext context)
                 throws LoginFailedException
-        { 
-            if(!authenticateUserNamePassword(username, password.toCharArray()))
+        {
+            if (!authenticateUserNamePassword(username, password.toCharArray()))
             {
                 throw new LoginFailedException("unable to log on");
             }
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("User authenticated successfully" + username);
             }
             // here if authentication successful.
         }
     }
-    
+
     class HandlerFactory implements MessageHandlerFactory
     {
         public MessageHandler create(MessageContext messageContext)
@@ -134,9 +134,9 @@ public class SubethaEmailServer extends EmailServer
         private List<String> EMPTY_LIST = new LinkedList<String>();
 
         private MessageContext messageContext;
-        
+
         private String from;
-        
+
         List<EmailDelivery> deliveries = new ArrayList<EmailDelivery>();
 
         public Handler(MessageContext messageContext)
@@ -149,7 +149,6 @@ public class SubethaEmailServer extends EmailServer
             return messageContext;
         }
 
-
         public void from(String fromString) throws RejectException
         {
             try
@@ -158,12 +157,11 @@ public class SubethaEmailServer extends EmailServer
                 from = a.getAddress();
             }
             catch (AddressException e)
-            {
-            }
-            
+            {}
+
             try
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("check whether user is allowed to send email from" + from);
                 }
@@ -178,10 +176,10 @@ public class SubethaEmailServer extends EmailServer
         public void recipient(String recipient) throws RejectException
         {
             String identity = messageContext.getAuthenticationHandler()
-                                            .map(AuthenticationHandler::getIdentity)
-                                            .map(String.class::cast)
-                                            .orElse(null);
-            
+                    .map(AuthenticationHandler::getIdentity)
+                    .map(String.class::cast)
+                    .orElse(null);
+
             deliveries.add(new EmailDelivery(recipient, from, identity));
         }
 
@@ -217,8 +215,7 @@ public class SubethaEmailServer extends EmailServer
                         dfos.close();
                     }
                     catch (Exception e)
-                    {
-                    }
+                    {}
                 }
             }
             return null;

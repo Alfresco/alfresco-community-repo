@@ -32,6 +32,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.*;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.admin.patch.PatchExecuter;
@@ -48,9 +52,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Patch that updates workflow package type and package items associations
@@ -74,11 +75,12 @@ public class FixBpmPackagesPatch extends AbstractPatch
     private int batchSize = 1000;
 
     private ImporterBootstrap importerBootstrap;
-    
+
     private BehaviourFilter policyFilter;
 
     /**
-     * @param batchThreads              the number of threads that will write child association changes
+     * @param batchThreads
+     *            the number of threads that will write child association changes
      */
     public void setBatchThreads(int batchThreads)
     {
@@ -86,7 +88,8 @@ public class FixBpmPackagesPatch extends AbstractPatch
     }
 
     /**
-     * @param batchSize                 the number of child associations that will be modified per transaction
+     * @param batchSize
+     *            the number of child associations that will be modified per transaction
      */
     public void setBatchSize(int batchSize)
     {
@@ -98,12 +101,12 @@ public class FixBpmPackagesPatch extends AbstractPatch
         this.importerBootstrap = importerBootstrap;
     }
 
-    public void setPolicyFilter(BehaviourFilter policyFilter) 
+    public void setPolicyFilter(BehaviourFilter policyFilter)
     {
         this.policyFilter = policyFilter;
     }
 
-	@Override
+    @Override
     protected String applyInternal() throws Exception
     {
 
@@ -112,7 +115,7 @@ public class FixBpmPackagesPatch extends AbstractPatch
         {
             // disable auditable behavior. MNT-9538 fix
             policyFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
-            
+
             StoreRef store = importerBootstrap.getStoreRef();
             if (store == null)
             {
@@ -171,7 +174,7 @@ public class FixBpmPackagesPatch extends AbstractPatch
         {
             // enable auditable behavior. MNT-9538 fix
             policyFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
-            
+
             helper.closeWriter();
         }
     }
@@ -229,8 +232,7 @@ public class FixBpmPackagesPatch extends AbstractPatch
         {
             this.refs = references;
             this.assocCount = references.size();
-            BatchProcessWorkProvider<ChildAssociationRef> workProvider = new BatchProcessWorkProvider<ChildAssociationRef>()
-            {
+            BatchProcessWorkProvider<ChildAssociationRef> workProvider = new BatchProcessWorkProvider<ChildAssociationRef>() {
                 @Override
                 public synchronized int getTotalEstimatedWorkSize()
                 {
@@ -278,8 +280,7 @@ public class FixBpmPackagesPatch extends AbstractPatch
                     applicationEventPublisher,
                     progress_logger, 1000);
 
-            BatchProcessor.BatchProcessWorker<ChildAssociationRef> worker = new BatchProcessor.BatchProcessWorker<ChildAssociationRef>()
-            {
+            BatchProcessor.BatchProcessWorker<ChildAssociationRef> worker = new BatchProcessor.BatchProcessWorker<ChildAssociationRef>() {
                 @Override
                 public String getIdentifier(ChildAssociationRef entry)
                 {
@@ -288,8 +289,7 @@ public class FixBpmPackagesPatch extends AbstractPatch
 
                 @Override
                 public void beforeProcess() throws Throwable
-                {
-                }
+                {}
 
                 @Override
                 public void process(ChildAssociationRef assocRef) throws Throwable
@@ -341,7 +341,7 @@ public class FixBpmPackagesPatch extends AbstractPatch
                         }
                         // Recreate new association between package and particular item as bpm:packageContains
                         /* ChildAssociationRef newChildAssoc = */nodeService.addChild(parentRef, childRef, WorkflowModel.ASSOC_PACKAGE_CONTAINS,
-                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(itemName)));
+                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(itemName)));
                         if (logger.isDebugEnabled())
                         {
                             logger.debug("New association has been created between package: " + name + " and item: " + itemName);
@@ -351,8 +351,7 @@ public class FixBpmPackagesPatch extends AbstractPatch
 
                 @Override
                 public void afterProcess() throws Throwable
-                {
-                }
+                {}
             };
 
             int updated = batchProcessor.process(worker, true);

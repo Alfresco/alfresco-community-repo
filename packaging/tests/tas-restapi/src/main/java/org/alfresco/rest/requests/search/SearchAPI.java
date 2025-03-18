@@ -44,14 +44,17 @@
 package org.alfresco.rest.requests.search;
 
 import io.restassured.RestAssured;
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.requests.ModelRequest;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.search.SearchResponse;
-import org.springframework.http.HttpMethod;
+
 /**
  * Wrapper for Search API.
+ * 
  * @author Michael Suzuki
  *
  */

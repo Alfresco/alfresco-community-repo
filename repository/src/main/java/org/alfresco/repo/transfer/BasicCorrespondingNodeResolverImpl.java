@@ -28,16 +28,17 @@ package org.alfresco.repo.transfer;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.Path.Element;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author brian
@@ -46,14 +47,15 @@ import org.apache.commons.logging.LogFactory;
 public class BasicCorrespondingNodeResolverImpl implements CorrespondingNodeResolver
 {
     private static final Log log = LogFactory.getLog(BasicCorrespondingNodeResolverImpl.class);
-    
+
     private static final String MSG_SPECIFIED_STORE_DOES_NOT_EXIST = "transfer_service.receiver.specified_store_nonexistent";
     private NodeService nodeService;
 
     public ResolvedParentChildPair resolveCorrespondingNode(NodeRef sourceNodeRef, ChildAssociationRef primaryAssoc,
             Path parentPath)
     {
-        if (log.isDebugEnabled()) {
+        if (log.isDebugEnabled())
+        {
             log.debug("Attempting to resolve corresponding node for noderef " + sourceNodeRef);
             log.debug("Supplied parent path: " + parentPath);
             log.debug("Supplied parent assoc: " + primaryAssoc.toString());
@@ -74,7 +76,7 @@ public class BasicCorrespondingNodeResolverImpl implements CorrespondingNodeReso
         }
         if (!nodeService.exists(parentNodeRef))
         {
-            if (log.isDebugEnabled()) 
+            if (log.isDebugEnabled())
             {
                 log.debug("Unable to find node's parent by node ref: " + parentNodeRef);
             }
@@ -94,8 +96,8 @@ public class BasicCorrespondingNodeResolverImpl implements CorrespondingNodeReso
         result.resolvedParent = parentNodeRef;
         if ((parentNodeRef != null) && (result.resolvedChild == null))
         {
-            //We've managed to find the approprate parent node, but not the child.
-            //See if we can find the child by looking at the parent's child associations
+            // We've managed to find the approprate parent node, but not the child.
+            // See if we can find the child by looking at the parent's child associations
             List<ChildAssociationRef> children = nodeService.getChildAssocs(parentNodeRef, RegexQNamePattern.MATCH_ALL,
                     primaryAssoc.getQName());
             if (!children.isEmpty())
@@ -112,13 +114,15 @@ public class BasicCorrespondingNodeResolverImpl implements CorrespondingNodeReso
 
     /**
      *
-     * @param store StoreRef
-     * @param parentPath Path
+     * @param store
+     *            StoreRef
+     * @param parentPath
+     *            Path
      * @return NodeRef
      */
     private NodeRef resolveParentPath(StoreRef store, Path parentPath)
     {
-        if (log.isDebugEnabled()) 
+        if (log.isDebugEnabled())
         {
             log.debug("Trying to resolve parent path " + parentPath);
         }
@@ -138,7 +142,7 @@ public class BasicCorrespondingNodeResolverImpl implements CorrespondingNodeReso
                 }
                 return null;
             }
-            if (log.isDebugEnabled()) 
+            if (log.isDebugEnabled())
             {
                 log.debug("Resolved path element " + element.getElementString());
             }
@@ -148,7 +152,8 @@ public class BasicCorrespondingNodeResolverImpl implements CorrespondingNodeReso
     }
 
     /**
-     * @param nodeService the nodeService to set
+     * @param nodeService
+     *            the nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {

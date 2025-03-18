@@ -25,13 +25,10 @@
  */
 package org.alfresco.service.cmr.dictionary;
 
-import java.util.Locale;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-
 
 /**
  * Read-only definition of a Data Type
@@ -64,18 +61,17 @@ public interface DataTypeDefinition
     public QName PATH = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "path");
     public QName LOCALE = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "locale");
     public QName PERIOD = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "period");
-    
-    
+
     /**
      * @return defining model
      */
     public ModelDefinition getModel();
-    
+
     /**
      * @return the qualified name of the data type
      */
     public QName getName();
-    
+
     /**
      * @deprecated The problem identified in MNT-413 will still exist
      * @see org.alfresco.service.cmr.dictionary.DataTypeDefinition#getTitle(org.alfresco.service.cmr.i18n.MessageLookup)
@@ -87,19 +83,19 @@ public interface DataTypeDefinition
      * @see org.alfresco.service.cmr.dictionary.DataTypeDefinition#getDescription(org.alfresco.service.cmr.i18n.MessageLookup)
      */
     public String getDescription();
-    
+
     /**
-     * @return the human-readable class title 
+     * @return the human-readable class title
      */
     public String getTitle(MessageLookup messageLookup);
-    
+
     /**
-     * @return the human-readable class description 
+     * @return the human-readable class description
      */
     public String getDescription(MessageLookup messageLookup);
-    
+
     /**
-     * @return the equivalent java class name (or null, if not mapped) 
+     * @return the equivalent java class name (or null, if not mapped)
      */
     public String getJavaClassName();
 }

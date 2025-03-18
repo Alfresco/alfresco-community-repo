@@ -25,6 +25,33 @@
  */
 package org.alfresco.repo.web.scripts.person;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.URLEncoder;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -52,33 +79,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.surf.util.URLEncoder;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.TestWebScriptServer;
-import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Unit test to test person Web Script API
@@ -86,7 +86,7 @@ import static org.mockito.Mockito.when;
  * @author Glen Johnson
  */
 public class PersonServiceTest extends BaseWebScriptTest
-{    
+{
     private MutableAuthenticationService authenticationService;
     private AuthenticationComponent authenticationComponent;
     private PersonService personService;
@@ -122,7 +122,7 @@ public class PersonServiceTest extends BaseWebScriptTest
     private static final String DESC_DIR = "desc";
 
     private List<String> createdPeople = new ArrayList<String>(5);
-    
+
     @Override
     protected void setUp() throws Exception
     {
@@ -130,18 +130,18 @@ public class PersonServiceTest extends BaseWebScriptTest
         MockitoAnnotations.initMocks(this);
 
         ApplicationContext ctx = getServer().getApplicationContext();
-        this.authenticationService = (MutableAuthenticationService)ctx.getBean("AuthenticationService");
-        this.authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
-        this.personService = (PersonService)ctx.getBean("PersonService");
-        this.userNameMatcherImpl = (UserNameMatcherImpl)ctx.getBean("userNameMatcher");
-        this.nodeService = (NodeService)ctx.getBean("NodeService");
-        this.contentService = (ContentService)ctx.getBean("contentService");
-        this.userUsageTrackingComponent = (UserUsageTrackingComponent)ctx.getBean("userUsageTrackingComponent");
-        this.contentUsage = (ContentUsageImpl)ctx.getBean("contentUsageImpl");
+        this.authenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
+        this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        this.personService = (PersonService) ctx.getBean("PersonService");
+        this.userNameMatcherImpl = (UserNameMatcherImpl) ctx.getBean("userNameMatcher");
+        this.nodeService = (NodeService) ctx.getBean("NodeService");
+        this.contentService = (ContentService) ctx.getBean("contentService");
+        this.userUsageTrackingComponent = (UserUsageTrackingComponent) ctx.getBean("userUsageTrackingComponent");
+        this.contentUsage = (ContentUsageImpl) ctx.getBean("contentUsageImpl");
         this.transactionService = (TransactionService) ctx.getBean("TransactionService");
 
-    	serviceRegistry = (ServiceDescriptorRegistry) ctx.getBean("ServiceRegistry");
-    	serviceRegistry.setMockSearchService(mockSearchService);
+        serviceRegistry = (ServiceDescriptorRegistry) ctx.getBean("ServiceRegistry");
+        serviceRegistry.setMockSearchService(mockSearchService);
         when(mockSearchService.query(any())).thenReturn(mockSearchServiceQueryResultSet);
         when(mockSearchServiceQueryResultSet.getNodeRefs()).thenReturn(dummySearchServiceQueryNodeRefs);
 
@@ -158,17 +158,17 @@ public class PersonServiceTest extends BaseWebScriptTest
         createUser(USER_ONE);
         createUser(USER_TWO);
         createUser(USER_THREE);
-        
+
         // Do tests as user one
         this.authenticationComponent.setCurrentUser(USER_ONE);
     }
-    
+
     private void createUser(String userName)
     {
         if (this.authenticationService.authenticationExists(userName) == false)
         {
             this.authenticationService.createAuthentication(userName, "password".toCharArray());
-            
+
             PropertyMap personProps = new PropertyMap();
             personProps.put(ContentModel.PROP_USERNAME, userName);
             personProps.put(ContentModel.PROP_FIRSTNAME, "myFirstName");
@@ -176,44 +176,44 @@ public class PersonServiceTest extends BaseWebScriptTest
             personProps.put(ContentModel.PROP_EMAIL, "myFirstName.myLastName@email.com");
             personProps.put(ContentModel.PROP_JOBTITLE, "myJobTitle");
             personProps.put(ContentModel.PROP_JOBTITLE, "myOrganisation");
-            
+
             this.personService.createPerson(personProps);
-            
+
             this.createdPeople.add(userName);
-        }        
+        }
     }
-    
+
     @Override
     protected void tearDown() throws Exception
     {
         super.tearDown();
         String adminUser = this.authenticationComponent.getSystemUserName();
         this.authenticationComponent.setCurrentUser(adminUser);
-        
+
         for (String userName : this.createdPeople)
         {
             personService.deletePerson(userName);
         }
-        
+
         // Clear the list
         this.createdPeople.clear();
 
         // Should be safe not to do the following as we don't have a search service, but it is cleaner to remove the mock.
         if (serviceRegistry != null)
         {
-        	serviceRegistry.setMockSearchService(null);
+            serviceRegistry.setMockSearchService(null);
         }
     }
-    
-    private JSONObject updatePerson(String userName, String title, String firstName, String lastName, 
+
+    private JSONObject updatePerson(String userName, String title, String firstName, String lastName,
             String organisation, String jobTitle, String email, String bio, String avatarUrl, int expectedStatus)
-    throws Exception
+            throws Exception
     {
         // switch to admin user to create a person
         String currentUser = this.authenticationComponent.getCurrentUserName();
         String adminUser = this.authenticationComponent.getSystemUserName();
         this.authenticationComponent.setCurrentUser(adminUser);
-        
+
         JSONObject person = new JSONObject();
         person.put("userName", userName);
         person.put("title", title);
@@ -222,24 +222,24 @@ public class PersonServiceTest extends BaseWebScriptTest
         person.put("organisation", organisation);
         person.put("jobtitle", jobTitle);
         person.put("email", email);
-        
-        Response response = sendRequest(new PutRequest(URL_PEOPLE + "/" + userName, person.toString(), "application/json"), expectedStatus); 
-        
+
+        Response response = sendRequest(new PutRequest(URL_PEOPLE + "/" + userName, person.toString(), "application/json"), expectedStatus);
+
         // switch back to non-admin user
         this.authenticationComponent.setCurrentUser(currentUser);
-        
+
         return new JSONObject(response.getContentAsString());
     }
 
-    private JSONObject createPerson(String userName, String title, String firstName, String lastName, 
-                                    String organisation, String jobTitle, String email, String bio, String avatarUrl,
-                                    long quota, int expectedStatus)
-        throws Exception
+    private JSONObject createPerson(String userName, String title, String firstName, String lastName,
+            String organisation, String jobTitle, String email, String bio, String avatarUrl,
+            long quota, int expectedStatus)
+            throws Exception
     {
         // switch to admin user to create a person
         String currentUser = this.authenticationComponent.getCurrentUserName();
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        
+
         JSONObject person = new JSONObject();
         person.put("userName", userName);
         person.put("title", title);
@@ -252,22 +252,22 @@ public class PersonServiceTest extends BaseWebScriptTest
         {
             person.put("quota", quota);
         }
-        
-        Response response = sendRequest(new PostRequest(URL_PEOPLE, person.toString(), "application/json"), expectedStatus); 
-        
+
+        Response response = sendRequest(new PostRequest(URL_PEOPLE, person.toString(), "application/json"), expectedStatus);
+
         if ((userName != null) && (userName.length() != 0))
         {
             this.createdPeople.add(userName);
         }
-        
+
         // switch back to non-admin user
         this.authenticationComponent.setCurrentUser(currentUser);
-        
+
         return new JSONObject(response.getContentAsString());
     }
-    
+
     private JSONObject deletePerson(String userName, int expectedStatus)
-    throws Exception
+            throws Exception
     {
         // switch to admin user to delete a person
         String currentUser = this.authenticationComponent.getCurrentUserName();
@@ -282,55 +282,55 @@ public class PersonServiceTest extends BaseWebScriptTest
 
         return new JSONObject(response.getContentAsString());
     }
-    
+
     @SuppressWarnings("unused")
     public void testGetPeople() throws Exception
     {
         // Test basic GET people with no filters ==
-        Response response = sendRequest(new GetRequest(URL_PEOPLE), 200);        
+        Response response = sendRequest(new GetRequest(URL_PEOPLE), 200);
     }
-    
+
     public void testJobWithSpace() throws Exception
     {
-        String userName  = RandomStringUtils.randomNumeric(6);
+        String userName = RandomStringUtils.randomNumeric(6);
         String userJob = "myJob" + RandomStringUtils.randomNumeric(2) + " myJob" + RandomStringUtils.randomNumeric(3);
-        
-        //we need to ecape a spaces for search
+
+        // we need to ecape a spaces for search
         String jobSearchString = userJob.replace(" ", "\\ ");
-        
+
         createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
                 userJob, "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
-                Status.STATUS_OK);  
+                Status.STATUS_OK);
         dummySearchServiceQueryNodeRefs.clear();
         NodeRef nodeRef = personService.getPerson(userName);
         dummySearchServiceQueryNodeRefs.add(nodeRef);
-        
-        // Get a person 
+
+        // Get a person
         Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + URLEncoder.encode("jobtitle:" + jobSearchString)), 200);
         assertSearchQuery("jobtitle:\"" + jobSearchString + "\"", false);
         JSONObject res = new JSONObject(response.getContentAsString());
         assertEquals(1, res.getJSONArray("people").length());
-        
+
         dummySearchServiceQueryNodeRefs.clear();
         response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + URLEncoder.encode("jobtitle:" + userJob)), 200);
-        assertSearchQuery("jobtitle:\""+userJob.replace(" ", "\" \"")+"\" ", false);
+        assertSearchQuery("jobtitle:\"" + userJob.replace(" ", "\" \"") + "\" ", false);
         res = new JSONObject(response.getContentAsString());
         assertEquals(0, res.getJSONArray("people").length());
     }
-    
+
     @SuppressWarnings("unused")
     public void testGetPerson() throws Exception
     {
         // Get a person that doesn't exist
         Response response = sendRequest(new GetRequest(URL_PEOPLE + "/" + "nonExistantUser"), 404);
-        
+
         // Create a person and get him/her
-        String userName  = RandomStringUtils.randomNumeric(6);
+        String userName = RandomStringUtils.randomNumeric(6);
         JSONObject result = createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
-                                "myJobTitle", "myEmailAddress", "myBio", "images/avatar.jpg", 0, 200);
+                "myJobTitle", "myEmailAddress", "myBio", "images/avatar.jpg", 0, 200);
         response = sendRequest(new GetRequest(URL_PEOPLE + "/" + userName), 200);
     }
-    
+
     public void testGetPeopleSkipCount() throws Exception
     {
         // Test case for MNT-15357 skipCount
@@ -382,8 +382,8 @@ public class PersonServiceTest extends BaseWebScriptTest
                 new GetRequest(URL_PEOPLE +
                         "?filter=" + filter +
                         "&startIndex=" + 0 +
-                        "&pageSize=" + 6
-                ), Status.STATUS_OK);
+                        "&pageSize=" + 6),
+                Status.STATUS_OK);
         JSONObject res = new JSONObject(response.getContentAsString());
         JSONArray peopleAsc = res.getJSONArray("people");
         assertEquals("The number of returned results is not correct.", 6, peopleAsc.length());
@@ -393,8 +393,8 @@ public class PersonServiceTest extends BaseWebScriptTest
                 new GetRequest(URL_PEOPLE +
                         "?filter=" + filter +
                         "&startIndex=" + 0 +
-                        "&pageSize=" + 2
-                ), Status.STATUS_OK);
+                        "&pageSize=" + 2),
+                Status.STATUS_OK);
         res = new JSONObject(response.getContentAsString());
         peopleAsc = res.getJSONArray("people");
         assertEquals("The number of returned results is not correct.", 2, peopleAsc.length());
@@ -410,8 +410,8 @@ public class PersonServiceTest extends BaseWebScriptTest
                 new GetRequest(URL_PEOPLE +
                         "?filter=" + filter +
                         "&startIndex=" + 2 +
-                        "&pageSize=" + 2
-                ), Status.STATUS_OK);
+                        "&pageSize=" + 2),
+                Status.STATUS_OK);
         res = new JSONObject(response.getContentAsString());
         peopleAsc = res.getJSONArray("people");
         assertEquals("The number of returned results is not correct.", 2, peopleAsc.length());
@@ -427,8 +427,8 @@ public class PersonServiceTest extends BaseWebScriptTest
                 new GetRequest(URL_PEOPLE +
                         "?filter=" + filter +
                         "&startIndex=" + 4 +
-                        "&pageSize=" + 2
-                ), Status.STATUS_OK);
+                        "&pageSize=" + 2),
+                Status.STATUS_OK);
         res = new JSONObject(response.getContentAsString());
         peopleAsc = res.getJSONArray("people");
         assertEquals("The number of returned results is not correct.", 2, peopleAsc.length());
@@ -444,8 +444,8 @@ public class PersonServiceTest extends BaseWebScriptTest
                 new GetRequest(URL_PEOPLE +
                         "?filter=" + filter +
                         "&startIndex=" + 3 +
-                        "&pageSize=" + 5
-                ), Status.STATUS_OK);
+                        "&pageSize=" + 5),
+                Status.STATUS_OK);
         res = new JSONObject(response.getContentAsString());
         peopleAsc = res.getJSONArray("people");
         assertEquals("The number of returned results is not correct.", 3, peopleAsc.length());
@@ -490,11 +490,11 @@ public class PersonServiceTest extends BaseWebScriptTest
         addUserUsageContent(usernameD, 50);
         userUsageTrackingComponent.execute();
 
-        //check sorting for CQ
+        // check sorting for CQ
         checkSorting(filter, SORT_BY_USERNAME, usernameA, usernameB, usernameC, usernameD);
         checkSorting(filter, SORT_BY_FULLNAME, usernameA, usernameB, usernameC, usernameD);
 
-        //since CQ search only sorts by fullname and username test the other sorts by filtering for a job which bypasses CQ (MNT 22905)
+        // since CQ search only sorts by fullname and username test the other sorts by filtering for a job which bypasses CQ (MNT 22905)
         checkSorting(filterByJob, SORT_BY_USERNAME, usernameA, usernameB, usernameC, usernameD);
         checkSorting(filterByJob, SORT_BY_FULLNAME, usernameA, usernameB, usernameC, usernameD);
         checkSorting(filterByJob, SORT_BY_JOBTITLE, usernameA, usernameB, usernameC, usernameD);
@@ -516,8 +516,8 @@ public class PersonServiceTest extends BaseWebScriptTest
                 new GetRequest(URL_PEOPLE +
                         "?sortBy=" + sortBy +
                         "&filter=" + filter +
-                        "&dir=" + ASC_DIR
-                ), Status.STATUS_OK);
+                        "&dir=" + ASC_DIR),
+                Status.STATUS_OK);
         JSONObject res = new JSONObject(response.getContentAsString());
         JSONArray peopleAsc = res.getJSONArray("people");
         assertEquals(usernames.length, peopleAsc.length());
@@ -526,8 +526,8 @@ public class PersonServiceTest extends BaseWebScriptTest
                 new GetRequest(URL_PEOPLE +
                         "?sortBy=" + sortBy +
                         "&filter=" + filter +
-                        "&dir=" + DESC_DIR
-                ), Status.STATUS_OK);
+                        "&dir=" + DESC_DIR),
+                Status.STATUS_OK);
         res = new JSONObject(response.getContentAsString());
         JSONArray peopleDesc = res.getJSONArray("people");
         assertEquals(usernames.length, peopleDesc.length());
@@ -625,8 +625,7 @@ public class PersonServiceTest extends BaseWebScriptTest
 
     private void addUserUsageContent(final String userName, final int stringDataLength)
     {
-        RetryingTransactionHelper.RetryingTransactionCallback<Void> usageCallback = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> usageCallback = new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -687,11 +686,11 @@ public class PersonServiceTest extends BaseWebScriptTest
     public void testUpdatePerson() throws Exception
     {
         // Create a new person
-        String userName  = RandomStringUtils.randomNumeric(6);                
+        String userName = RandomStringUtils.randomNumeric(6);
         createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
-                                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
-                                Status.STATUS_OK);
-        
+                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
+                Status.STATUS_OK);
+
         // Update the person's details
         JSONObject result = updatePerson(userName, "updatedTitle", "updatedFirstName", "updatedLastName",
                 "updatedOrganisation", "updatedJobTitle", "updatedFN.updatedLN@email.com", "updatedBio",
@@ -704,68 +703,68 @@ public class PersonServiceTest extends BaseWebScriptTest
         assertEquals("updatedJobTitle", result.get("jobtitle"));
         assertEquals("updatedFN.updatedLN@email.com", result.get("email"));
     }
-    
+
     public void testDeletePerson() throws Exception
     {
         // Create a new person
-        String userName  = RandomStringUtils.randomNumeric(6);                
+        String userName = RandomStringUtils.randomNumeric(6);
         createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
-                                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
-                                Status.STATUS_OK);
-        
+                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
+                Status.STATUS_OK);
+
         // Delete the person
         deletePerson(userName, Status.STATUS_OK);
-        
+
         // Make sure that the person has been deleted and no longer exists
         deletePerson(userName, Status.STATUS_NOT_FOUND);
     }
-    
+
     public void testCreatePerson() throws Exception
     {
-        String userName  = RandomStringUtils.randomNumeric(6);
-                
+        String userName = RandomStringUtils.randomNumeric(6);
+
         // Create a new person
         JSONObject result = createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
-                                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
-                                Status.STATUS_OK);        
+                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
+                Status.STATUS_OK);
         assertEquals(userName, result.get("userName"));
         assertEquals("myFirstName", result.get("firstName"));
         assertEquals("myLastName", result.get("lastName"));
         assertEquals("myOrganisation", result.get("organization"));
         assertEquals("myJobTitle", result.get("jobtitle"));
         assertEquals("firstName.lastName@email.com", result.get("email"));
-        
+
         // Check for duplicate names
         createPerson(userName, "myTitle", "myFirstName", "mylastName", "myOrganisation",
                 "myJobTitle", "myEmail", "myBio", "images/avatar.jpg", 0, 409);
     }
-    
+
     public void testCreatePersonMissingUserName() throws Exception
     {
         // Create a new person with userName == null (user name missing)
         createPerson(null, "myTitle", "myFirstName", "myLastName", "myOrganisation",
-                        "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
-                        Status.STATUS_BAD_REQUEST);        
-        
+                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
+                Status.STATUS_BAD_REQUEST);
+
         // Create a new person with userName == "" (user name is blank)
         createPerson("", "myTitle", "myFirstName", "myLastName", "myOrganisation",
-                        "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
-                        Status.STATUS_BAD_REQUEST);        
+                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
+                Status.STATUS_BAD_REQUEST);
     }
-    
+
     public void testCreatePersonMissingFirstName() throws Exception
     {
-        String userName  = RandomStringUtils.randomNumeric(6);
-                
+        String userName = RandomStringUtils.randomNumeric(6);
+
         // Create a new person with firstName == null (first name missing)
         createPerson(userName, "myTitle", null, "myLastName", "myOrganisation",
-                        "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
-                        Status.STATUS_BAD_REQUEST);        
-        
+                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
+                Status.STATUS_BAD_REQUEST);
+
         // Create a new person with firstName == "" (first name is blank)
         createPerson(userName, "myTitle", "", "myLastName", "myOrganisation",
-                        "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
-                        Status.STATUS_BAD_REQUEST);        
+                "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
+                Status.STATUS_BAD_REQUEST);
     }
 
     public void testUserNameCaseSensitivityCQ() throws Exception
@@ -778,7 +777,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         try
         {
             /**
-             *  simulate cloud with lower case user names
+             * simulate cloud with lower case user names
              */
             createPerson(lowerCaseUserName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
                     "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
@@ -788,7 +787,7 @@ public class PersonServiceTest extends BaseWebScriptTest
             this.authenticationComponent.setCurrentUser(adminUser);
             personService.setCreateMissingPeople(false);
 
-            //try with canned query
+            // try with canned query
             String filter = "PerSOnSerVIceTest.MixEDCasEUseR";
             assertPersonIsFound(filter);
 
@@ -827,18 +826,18 @@ public class PersonServiceTest extends BaseWebScriptTest
         try
         {
             /**
-             *  simulate cloud with lower case user names   
+             * simulate cloud with lower case user names
              */
             createPerson(lowerCaseUserName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
                     "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
-                    Status.STATUS_OK); 
-            
+                    Status.STATUS_OK);
+
             String adminUser = this.authenticationComponent.getSystemUserName();
             this.authenticationComponent.setCurrentUser(adminUser);
             personService.setCreateMissingPeople(false);
-            //personServiceImpl.setUserNameCaseSensitive(true); 
+            // personServiceImpl.setUserNameCaseSensitive(true);
             userNameMatcherImpl.setUserNamesAreCaseSensitive(true);
-            
+
             assertTrue("case sensitive exists by matching case", personService.personExists(lowerCaseUserName));
             assertFalse("case sensitive exists by non matching case", personService.personExists(upperCaseUserName));
             assertNotNull("case sensitive lookup by matching case", personService.getPerson(lowerCaseUserName));
@@ -851,28 +850,27 @@ public class PersonServiceTest extends BaseWebScriptTest
             {
                 // expect to go here
             }
-            
-            //personServiceImpl.setUserNameCaseSensitive(false);
+
+            // personServiceImpl.setUserNameCaseSensitive(false);
             userNameMatcherImpl.setUserNamesAreCaseSensitive(false);
             assertNotNull("case insensitive lookup by matching case", personService.getPerson(lowerCaseUserName));
             assertNotNull("case insensitive lookup by non matching case", personService.getPerson(upperCaseUserName));
             assertTrue("case insensitive exists by matching case", personService.personExists(lowerCaseUserName));
             assertTrue("case insensitive exists by non matching case", personService.personExists(upperCaseUserName));
-            
+
             /**
              */
             personService.deletePerson(upperCaseUserName);
-            
-            
+
         }
         finally
         {
-//            personServiceImpl.setUserNameCaseSensitive(existingValue);
+            // personServiceImpl.setUserNameCaseSensitive(existingValue);
             userNameMatcherImpl.setUserNamesAreCaseSensitive(existingValue);
             this.authenticationComponent.setCurrentUser(currentUser);
         }
     }
-    
+
     public void testDisableEnablePerson() throws Exception
     {
         String userName = RandomStringUtils.randomNumeric(6);
@@ -901,7 +899,7 @@ public class PersonServiceTest extends BaseWebScriptTest
 
         this.authenticationComponent.setCurrentUser(currentUser);
     }
-    
+
     public void test_MNT10404_AuthenticationUtil()
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -938,11 +936,10 @@ public class PersonServiceTest extends BaseWebScriptTest
             }
         }
     }
-    
+
     private String getAuthInRun(String userName)
     {
-        RunAsWork<String> getWork = new RunAsWork<String>()
-        {
+        RunAsWork<String> getWork = new RunAsWork<String>() {
             @Override
             public String doWork() throws Exception
             {
@@ -951,7 +948,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         };
         return AuthenticationUtil.runAs(getWork, userName);
     }
-    
+
     private NodeRef createPerson(String userName)
     {
         if (personService.personExists(userName))

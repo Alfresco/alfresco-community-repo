@@ -27,24 +27,24 @@ package org.alfresco.opencmis;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 
 public class PublicApiCallContextHandler extends BasicAuthCallContextHandler
 {
     private static final long serialVersionUID = 8877878113507734452L;
 
     @Override
-	public Map<String, String> getCallContextMap(HttpServletRequest request)
-	{
+    public Map<String, String> getCallContextMap(HttpServletRequest request)
+    {
         Map<String, String> map = new HashMap<String, String>();
-        
+
         Map<String, String> basicAuthMap = super.getCallContextMap(request);
-        if (basicAuthMap != null && !basicAuthMap.isEmpty()) 
+        if (basicAuthMap != null && !basicAuthMap.isEmpty())
         {
             map.putAll(basicAuthMap);
         }
@@ -60,5 +60,5 @@ public class PublicApiCallContextHandler extends BasicAuthCallContextHandler
 
         map.put("isPublicApi", "true");
         return map;
-	}
+    }
 }

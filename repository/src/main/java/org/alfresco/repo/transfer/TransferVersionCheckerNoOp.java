@@ -25,9 +25,10 @@
  */
 package org.alfresco.repo.transfer;
 
-import org.alfresco.service.cmr.transfer.TransferVersion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.service.cmr.transfer.TransferVersion;
 
 /**
  * This implementation of TransferVersionChecker simply allows transfer between all versions.
@@ -35,10 +36,10 @@ import org.apache.commons.logging.LogFactory;
 public class TransferVersionCheckerNoOp implements TransferVersionChecker
 {
     private static Log logger = LogFactory.getLog(TransferVersionCheckerNoOp.class);
-    
+
     public boolean checkTransferVersions(TransferVersion from, TransferVersion to)
     {
-        logger.debug("checkTransferVersions from:" + from + ", to:" + to);        
+        logger.debug("checkTransferVersions from:" + from + ", to:" + to);
         return true;
     }
 

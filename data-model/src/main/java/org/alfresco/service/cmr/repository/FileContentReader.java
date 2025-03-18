@@ -28,8 +28,7 @@ package org.alfresco.service.cmr.repository;
 import java.io.File;
 
 /**
- * Extension to {@link ContentReader} for Readers which are able to
- *  make the backing file available to you.
+ * Extension to {@link ContentReader} for Readers which are able to make the backing file available to you.
  * 
  * @see org.alfresco.service.cmr.repository.ContentReader
  * 
@@ -38,9 +37,8 @@ import java.io.File;
 public interface FileContentReader extends ContentReader
 {
     /**
-     * Provides access to the underlying File that this
-     *  Reader accesses.
-     *  
+     * Provides access to the underlying File that this Reader accesses.
+     * 
      * @return Returns the file that this reader accesses
      */
     public File getFile();

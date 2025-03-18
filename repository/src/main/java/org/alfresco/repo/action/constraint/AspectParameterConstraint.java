@@ -43,14 +43,14 @@ public class AspectParameterConstraint extends BaseParameterConstraint
 {
     /** Name constant */
     public static final String NAME = "ac-aspects";
-    
+
     private DictionaryService dictionaryService;
-    
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-          
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
      */

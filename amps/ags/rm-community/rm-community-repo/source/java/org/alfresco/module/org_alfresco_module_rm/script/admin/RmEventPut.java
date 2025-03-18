@@ -31,10 +31,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
-import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
-import org.alfresco.util.ParameterCheck;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -43,6 +39,11 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
+import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
+import org.alfresco.util.ParameterCheck;
+
 /**
  * Records management event PUT web script
  *
@@ -50,8 +51,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class RmEventPut extends RMEventBase
 {
-	/** Parameter names */
-	public static final String PARAM_EVENTNAME = "eventname";
+    /** Parameter names */
+    public static final String PARAM_EVENTNAME = "eventname";
 
     /** Records management event service */
     private RecordsManagementEventService rmEventService;
@@ -67,9 +68,7 @@ public class RmEventPut extends RMEventBase
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -87,8 +86,8 @@ public class RmEventPut extends RMEventBase
             Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
             String eventName = templateVars.get(PARAM_EVENTNAME);
             if (eventName == null ||
-                eventName.isEmpty() ||
-                !rmEventService.existsEvent(eventName))
+                    eventName.isEmpty() ||
+                    !rmEventService.existsEvent(eventName))
             {
                 throw new WebScriptException(Status.STATUS_NOT_FOUND, "No event name was provided.");
             }
@@ -124,19 +123,21 @@ public class RmEventPut extends RMEventBase
         catch (JSONException je)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+                    "Could not parse JSON from req.", je);
         }
 
         return model;
     }
 
     /**
-     * Helper method for checking if an event can be edited or not. Throws an
-     * error if an event with the same display label already exists.
+     * Helper method for checking if an event can be edited or not. Throws an error if an event with the same display label already exists.
      *
-     * @param eventDisplayLabel The display label of the event
-     * @param eventName The name of the event
-     * @param eventType The type of the event
+     * @param eventDisplayLabel
+     *            The display label of the event
+     * @param eventName
+     *            The name of the event
+     * @param eventType
+     *            The type of the event
      * @return true if the event can be edited, false otherwise
      */
     private boolean canEditEvent(String eventDisplayLabel, String eventName, String eventType)
@@ -145,7 +146,7 @@ public class RmEventPut extends RMEventBase
 
         try
         {
-           canEditEvent = rmEventService.canEditEvent(eventDisplayLabel, eventName, eventType);
+            canEditEvent = rmEventService.canEditEvent(eventDisplayLabel, eventName, eventType);
         }
         catch (AlfrescoRuntimeException are)
         {

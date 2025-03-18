@@ -28,25 +28,24 @@ package org.alfresco.repo.audit.access;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Wrapper for a {@link NodeRef} to provide path and type values using namespace prefixes.
- * Use the {@link NodeInfoFactory#newNodeInfo(org.alfresco.service.cmr.repository.NodeRef)} to create new instances.
+ * Wrapper for a {@link NodeRef} to provide path and type values using namespace prefixes. Use the {@link NodeInfoFactory#newNodeInfo(org.alfresco.service.cmr.repository.NodeRef)} to create new instances.
  * 
  * @author Alan Davis
  */
-/*package*/ class NodeInfo
+/* package */ class NodeInfo
 {
     private final NodeRef nodeRef;
     private final String path;
     private final String type;
-    
-    /*package*/ NodeInfo(NodeRef nodeRef, String path, String type)
+
+    /* package */ NodeInfo(NodeRef nodeRef, String path, String type)
     {
         this.nodeRef = nodeRef;
         this.path = path;
         this.type = type;
     }
 
-   public NodeRef getNodeRef()
+    public NodeRef getNodeRef()
     {
         return nodeRef;
     }

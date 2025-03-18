@@ -30,6 +30,9 @@ import static org.junit.Assert.*;
 
 import java.util.Collection;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.repo.virtual.ref.GetActualNodeRefMethod;
@@ -40,8 +43,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
-import org.junit.Before;
-import org.junit.Test;
 
 public class VirtualVersionServiceExtensionTest extends VirtualizationIntegrationTest
 {
@@ -58,49 +59,49 @@ public class VirtualVersionServiceExtensionTest extends VirtualizationIntegratio
         super.setUp();
 
         versionService = ctx.getBean("VersionService",
-                                     VersionService.class);
+                VersionService.class);
 
         node2 = nodeService.getChildByName(virtualFolder1NodeRef,
-                                           ContentModel.ASSOC_CONTAINS,
-                                           "Node2");
+                ContentModel.ASSOC_CONTAINS,
+                "Node2");
         node2_1 = nodeService.getChildByName(node2,
-                                             ContentModel.ASSOC_CONTAINS,
-                                             "Node2_1");
+                ContentModel.ASSOC_CONTAINS,
+                "Node2_1");
     }
 
     @Test
     public void testGetCurrentVersion() throws Exception
     {
         ChildAssociationRef contentWithVersionsAssocRef = createContent(node2_1,
-                                                                        "ContentWithVersions");
+                "ContentWithVersions");
         NodeRef contentWithVersionsNodeRef = contentWithVersionsAssocRef.getChildRef();
 
         Version currentVersion = versionService.getCurrentVersion(contentWithVersionsNodeRef);
         assertNull(currentVersion);
 
         Version newVersion = versionService.createVersion(contentWithVersionsNodeRef,
-                                                          null);
+                null);
         assertNotNull(newVersion);
 
         Version newCurrentVersion = versionService.getCurrentVersion(contentWithVersionsNodeRef);
         assertNotNull(newCurrentVersion);
 
         assertSameVersion(newVersion,
-                          newCurrentVersion);
+                newCurrentVersion);
 
     }
 
     private void assertSameVersion(Version expectedVersion, Version actualVersion)
     {
         assertEquals("FrozenStateNodeRefs are not the same",
-                     expectedVersion.getFrozenStateNodeRef(),
-                     actualVersion.getFrozenStateNodeRef());
+                expectedVersion.getFrozenStateNodeRef(),
+                actualVersion.getFrozenStateNodeRef());
         assertEquals("VersionedNodeRefs are not the same",
-                     expectedVersion.getVersionedNodeRef(),
-                     actualVersion.getVersionedNodeRef());
+                expectedVersion.getVersionedNodeRef(),
+                actualVersion.getVersionedNodeRef());
         assertEquals("Versionlabels are not the same",
-                     expectedVersion.getVersionLabel(),
-                     actualVersion.getVersionLabel());
+                expectedVersion.getVersionLabel(),
+                actualVersion.getVersionLabel());
     }
 
     @Test
@@ -108,12 +109,11 @@ public class VirtualVersionServiceExtensionTest extends VirtualizationIntegratio
     {
 
         ChildAssociationRef contentWithVersionsAssocRef = createContent(node2_1,
-                                                                        "ContentWithVersions");
+                "ContentWithVersions");
         NodeRef contentWithVersionsNodeRef = contentWithVersionsAssocRef.getChildRef();
         Reference reference = Reference.fromNodeRef(contentWithVersionsNodeRef);
         assertNotNull(reference);
-        NodeRef actualContentWithVersionsNodeRef = 
-                        reference.execute(new GetActualNodeRefMethod(environment));
+        NodeRef actualContentWithVersionsNodeRef = reference.execute(new GetActualNodeRefMethod(environment));
 
         VersionHistory versionHistory = versionService.getVersionHistory(contentWithVersionsNodeRef);
         assertNull(versionHistory);
@@ -121,7 +121,7 @@ public class VirtualVersionServiceExtensionTest extends VirtualizationIntegratio
         assertNull(actualVersionHistory);
 
         Version newVersion = versionService.createVersion(contentWithVersionsNodeRef,
-                                                          null);
+                null);
 
         NodeRef newVersionNodeRef = newVersion.getVersionedNodeRef();
         assertNotNull(Reference.fromNodeRef(newVersionNodeRef));
@@ -131,14 +131,14 @@ public class VirtualVersionServiceExtensionTest extends VirtualizationIntegratio
 
         Collection<Version> allVersions = versionHistory.getAllVersions();
         assertEquals(1,
-                     allVersions.size());
+                allVersions.size());
 
         actualVersionHistory = versionService.getVersionHistory(actualContentWithVersionsNodeRef);
         assertNotNull(actualVersionHistory);
 
         Collection<Version> allActualVersions = versionHistory.getAllVersions();
         assertEquals(1,
-                     allActualVersions.size());
+                allActualVersions.size());
 
         Version actualVersion = actualVersionHistory.getHeadVersion();
 
@@ -146,67 +146,67 @@ public class VirtualVersionServiceExtensionTest extends VirtualizationIntegratio
         assertNull(Reference.fromNodeRef(newActualVersionNodeRef));
 
         assertEquals(newActualVersionNodeRef,
-                     actualContentWithVersionsNodeRef);
+                actualContentWithVersionsNodeRef);
     }
 
     @Test
     public void testRevert() throws Exception
     {
         ChildAssociationRef contentWithVersionsAssocRef = createContent(node2_1,
-                                                                        "ContentWithVersions");
+                "ContentWithVersions");
         // Create a versionable node
         NodeRef versionableNode = contentWithVersionsAssocRef.getChildRef();
 
         // Create the initial version
         Version version1 = versionService.createVersion(versionableNode,
-                                                        null);
+                null);
 
         // Check the history is correct
         VersionHistory history = versionService.getVersionHistory(versionableNode);
         assertEquals(version1.getVersionLabel(),
-                     history.getHeadVersion().getVersionLabel());
+                history.getHeadVersion().getVersionLabel());
         assertEquals(version1.getVersionedNodeRef(),
-                     history.getHeadVersion().getVersionedNodeRef());
+                history.getHeadVersion().getVersionedNodeRef());
         assertEquals(1,
-                     history.getAllVersions().size());
+                history.getAllVersions().size());
         Version[] versions = history.getAllVersions().toArray(new Version[1]);
         assertEquals("0.1",
-                     versions[0].getVersionLabel());
+                versions[0].getVersionLabel());
         assertEquals("0.1",
-                     nodeService.getProperty(versionableNode,
-                                             ContentModel.PROP_VERSION_LABEL));
+                nodeService.getProperty(versionableNode,
+                        ContentModel.PROP_VERSION_LABEL));
 
         ContentWriter contentWriter = this.contentService.getWriter(versionableNode,
-                                                                    ContentModel.PROP_CONTENT,
-                                                                    true);
+                ContentModel.PROP_CONTENT,
+                true);
         assertNotNull(contentWriter);
 
         // Record this as a new version
         Version version2 = versionService.createVersion(versionableNode,
-                                                        null);
+                null);
 
         // Check we're now seeing both versions in the history
         history = versionService.getVersionHistory(versionableNode);
         // assertEquals(version2.getVersionLabel(),
         // history.getHeadVersion().getVersionLabel());
         assertEquals(version2.getVersionedNodeRef(),
-                     history.getHeadVersion().getVersionedNodeRef());
+                history.getHeadVersion().getVersionedNodeRef());
         assertEquals(2,
-                     history.getAllVersions().size());
+                history.getAllVersions().size());
 
         versions = history.getAllVersions().toArray(new Version[2]);
         assertEquals("0.2",
-                     versions[0].getVersionLabel());
+                versions[0].getVersionLabel());
         assertEquals("0.1",
-                     versions[1].getVersionLabel());
+                versions[1].getVersionLabel());
         assertEquals("0.2",
-                     nodeService.getProperty(versionableNode,
-                                             ContentModel.PROP_VERSION_LABEL));
+                nodeService.getProperty(versionableNode,
+                        ContentModel.PROP_VERSION_LABEL));
 
         // Change the property and content values
         ContentWriter contentWriter2 = this.contentService.getWriter(versionableNode,
-                                                                     ContentModel.PROP_CONTENT,
-                                                                     true);
+                ContentModel.PROP_CONTENT,
+                true);
         assertNotNull(contentWriter2);
 
         // Revert to the previous version, which will loose these changes
@@ -215,30 +215,30 @@ public class VirtualVersionServiceExtensionTest extends VirtualizationIntegratio
         // Check that the history is back how it was
         history = versionService.getVersionHistory(versionableNode);
         assertEquals(version2.getVersionedNodeRef(),
-                     history.getHeadVersion().getVersionedNodeRef());
+                history.getHeadVersion().getVersionedNodeRef());
         assertEquals(2,
-                     history.getAllVersions().size());
+                history.getAllVersions().size());
 
         versions = history.getAllVersions().toArray(new Version[2]);
         assertEquals("0.2",
-                     versions[0].getVersionLabel());
+                versions[0].getVersionLabel());
         assertEquals("0.1",
-                     versions[1].getVersionLabel());
+                versions[1].getVersionLabel());
         assertEquals("0.2",
-                     nodeService.getProperty(versionableNode,
-                                             ContentModel.PROP_VERSION_LABEL));
+                nodeService.getProperty(versionableNode,
+                        ContentModel.PROP_VERSION_LABEL));
 
         // Revert to the first version
         this.versionService.revert(versionableNode,
-                                   version1);
+                version1);
 
         // Check the history still has 2 versions
         history = versionService.getVersionHistory(versionableNode);
         assertEquals(2,
-                     history.getAllVersions().size());
+                history.getAllVersions().size());
 
         assertEquals("0.1",
-                     history.getHeadVersion().getVersionLabel());
+                history.getHeadVersion().getVersionLabel());
 
     }
 }

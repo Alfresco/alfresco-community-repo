@@ -31,6 +31,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.MultiTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
@@ -40,27 +45,23 @@ import org.alfresco.util.DynamicallySizedThreadPoolExecutor;
 import org.alfresco.util.TraceableThreadFactory;
 import org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * 
  * @author sglover
  *
  */
-@Category (NeverRunsTests.class)
+@Category(NeverRunsTests.class)
 public class DictionaryLoadDAOTest
 {
     public static final String TEST_RESOURCE_MESSAGES = "alfresco/messages/dictionary-messages";
 
-//    private DictionaryService service;
+    // private DictionaryService service;
     private DictionaryDAOImpl dictionaryDAO;
 
     @Before
     public void setUp() throws Exception
-    {   
+    {
         // register resource bundles for messages
         I18NUtil.registerResourceBundle(TEST_RESOURCE_MESSAGES);
 
@@ -69,15 +70,15 @@ public class DictionaryLoadDAOTest
         this.dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
 
-//        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-//        {
-//			@Override
-//			public Void doWork() throws Exception
-//			{
-//		        dictionaryDAO.init();
-//				return null;
-//			}
-//        }, "user1", "tenant1");
+        // TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+        // {
+        // @Override
+        // public Void doWork() throws Exception
+        // {
+        // dictionaryDAO.init();
+        // return null;
+        // }
+        // }, "user1", "tenant1");
 
         initDictionaryCaches(dictionaryDAO, tenantService);
 
@@ -139,15 +140,14 @@ public class DictionaryLoadDAOTest
     @Test
     public void test1()
     {
-        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-        {
-			@Override
-			public Void doWork() throws Exception
-			{
-				dictionaryDAO.init();
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>() {
+            @Override
+            public Void doWork() throws Exception
+            {
+                dictionaryDAO.init();
 
-				return null;
-			}
-		}, "user1", "tenant1");
+                return null;
+            }
+        }, "user1", "tenant1");
     }
 }

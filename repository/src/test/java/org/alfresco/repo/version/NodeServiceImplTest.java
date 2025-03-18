@@ -33,6 +33,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.TransactionalCache;
@@ -53,38 +60,31 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TestWithUserUtils;
 import org.alfresco.util.debug.NodeStoreInspector;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Roy Wetherall
  */
 @Category(OwnJVMTestsCategory.class)
 @Transactional
-public class NodeServiceImplTest extends BaseVersionStoreTest 
+public class NodeServiceImplTest extends BaseVersionStoreTest
 {
     private static Log logger = LogFactory.getLog(NodeServiceImplTest.class);
-    
+
     /**
      * version store node service
      */
     protected NodeService versionStoreNodeService = null;
-    
+
     /**
      * Error message
      */
-    private final static String MSG_ERR = 
-        "This operation is not supported by a version store implementation of the node service.";
-    
+    private final static String MSG_ERR = "This operation is not supported by a version store implementation of the node service.";
+
     /**
      * User password
      */
     private static final String PWD = "password";
-    
+
     /**
      * Dummy data used in failure tests
      */
@@ -95,17 +95,17 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     public void before() throws Exception
     {
         super.before();
-        
+
         // Get the node service by name
-        this.versionStoreNodeService = (NodeService)this.applicationContext.getBean("versionNodeService");
-        
+        this.versionStoreNodeService = (NodeService) this.applicationContext.getBean("versionNodeService");
+
         // Create some dummy data used during the tests
         this.dummyNodeRef = new NodeRef(
                 this.versionService.getVersionStoreReference(),
                 "dummy");
         this.dummyQName = QName.createQName("{dummy}dummy");
     }
-    
+
     /**
      * Test getType
      */
@@ -114,16 +114,16 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
         // Create a new versionable node
         NodeRef versionableNode = createNewVersionableNode();
-        
+
         // Create a new version
         Version version = createVersion(versionableNode, this.versionProperties);
-        
+
         // Get the type from the versioned state
         QName versionedType = this.versionStoreNodeService.getType(version.getFrozenStateNodeRef());
         assertNotNull(versionedType);
         assertEquals(this.dbNodeService.getType(versionableNode), versionedType);
     }
-    
+
     /**
      * Test getProperties
      */
@@ -132,37 +132,37 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
         // Create a new versionable node
         NodeRef versionableNode = createNewVersionableNode();
-        
+
         // Get a list of the nodes properties
         Map<QName, Serializable> origProps = this.dbNodeService.getProperties(versionableNode);
-        
+
         // Create a new version
         Version version = createVersion(versionableNode, this.versionProperties);
-        
-        // Get the properties of the versioned state 
+
+        // Get the properties of the versioned state
         Map<QName, Serializable> versionedProperties = this.versionStoreNodeService.getProperties(version.getFrozenStateNodeRef());
-        
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("original ("+origProps.size()+"):  " + origProps.keySet());
-            logger.debug("versioned ("+versionedProperties.size()+"): " + versionedProperties.keySet());
+            logger.debug("original (" + origProps.size() + "):  " + origProps.keySet());
+            logger.debug("versioned (" + versionedProperties.size() + "): " + versionedProperties.keySet());
         }
-        
+
         for (QName key : origProps.keySet())
         {
             assertTrue(versionedProperties.containsKey(key));
-            assertEquals(""+key, origProps.get(key), versionedProperties.get(key));
+            assertEquals("" + key, origProps.get(key), versionedProperties.get(key));
         }
-        
+
         // NOTE: cm:versionLabel is an expected additional property
-        //assertEquals(origProps.size(), versionedProperties.size());
-        
+        // assertEquals(origProps.size(), versionedProperties.size());
+
         // check version label
         assertEquals("first version label", "0.1", versionedProperties.get(ContentModel.PROP_VERSION_LABEL));
-        
+
         // TODO do futher versioning and check by changing values
     }
-    
+
     /**
      * Test getProperty
      */
@@ -171,28 +171,28 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
         // Create a new versionable node
         NodeRef versionableNode = createNewVersionableNode();
-        
+
         // Create a new version
         Version version = createVersion(versionableNode, this.versionProperties);
-        
+
         // Check the property values can be retrieved
         Serializable value1 = this.versionStoreNodeService.getProperty(
                 version.getFrozenStateNodeRef(),
                 PROP_1);
         assertEquals(VALUE_1, value1);
-        
+
         // Check the mlText property
         // TODO
-        
+
         // Check the multi values property specifically
-        Collection<String> multiValue = (Collection<String>)this.versionStoreNodeService.getProperty(version.getFrozenStateNodeRef(), MULTI_PROP);
+        Collection<String> multiValue = (Collection<String>) this.versionStoreNodeService.getProperty(version.getFrozenStateNodeRef(), MULTI_PROP);
         assertNotNull(multiValue);
         assertEquals(2, multiValue.size());
         String[] array = multiValue.toArray(new String[multiValue.size()]);
         assertEquals(MULTI_VALUE_1, array[0]);
         assertEquals(MULTI_VALUE_2, array[1]);
     }
-    
+
     /**
      * Test getChildAssocs
      */
@@ -203,26 +203,26 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         {
             // Let's have a look at the version store ..
             logger.trace(NodeStoreInspector.dumpNodeStore(
-                    this.dbNodeService, 
+                    this.dbNodeService,
                     this.versionService.getVersionStoreReference()) + "\n\n");
             logger.trace("");
         }
-        
+
         // Create a new versionable node
         NodeRef versionableNode = createNewVersionableNode();
         Collection<ChildAssociationRef> originalChildren = this.dbNodeService.getChildAssocs(versionableNode);
         assertNotNull(originalChildren);
-        
+
         // Store the original children in a map for easy navigation later
         HashMap<String, ChildAssociationRef> originalChildAssocRefs = new HashMap<String, ChildAssociationRef>();
         for (ChildAssociationRef ref : originalChildren)
         {
             originalChildAssocRefs.put(ref.getChildRef().getId(), ref);
         }
-        
+
         // Create a new version
         Version version = createVersion(versionableNode, this.versionProperties);
-        
+
         if (logger.isTraceEnabled())
         {
             // Let's have a look at the version store ..
@@ -231,17 +231,17 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
                     this.versionService.getVersionStoreReference()));
             logger.trace("");
         }
-        
+
         // Get the children of the versioned node
         Collection<ChildAssociationRef> versionedChildren = this.versionStoreNodeService.getChildAssocs(version.getFrozenStateNodeRef());
         assertNotNull(versionedChildren);
         assertEquals(originalChildren.size(), versionedChildren.size());
-        
+
         for (ChildAssociationRef versionedChildRef : versionedChildren)
         {
             ChildAssociationRef origChildAssocRef = originalChildAssocRefs.get(versionedChildRef.getChildRef().getId());
             assertNotNull(origChildAssocRef);
-                        
+
             assertEquals(
                     origChildAssocRef.getChildRef(),
                     versionedChildRef.getChildRef());
@@ -253,7 +253,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
                     versionedChildRef.getNthSibling());
         }
     }
-    
+
     /**
      * Test getAssociationTargets
      */
@@ -262,24 +262,25 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
         // Create a new versionable node
         NodeRef versionableNode = createNewVersionableNode();
-        
+
         // Store the current details of the target associations
         List<AssociationRef> origAssocs = this.dbNodeService.getTargetAssocs(
                 versionableNode,
                 RegexQNamePattern.MATCH_ALL);
-        
+
         // Create a new version
         Version version = createVersion(versionableNode, this.versionProperties);
-        
+
         List<AssociationRef> assocs = this.versionStoreNodeService.getTargetAssocs(
-                version.getFrozenStateNodeRef(), 
+                version.getFrozenStateNodeRef(),
                 RegexQNamePattern.MATCH_ALL);
         assertNotNull(assocs);
         assertEquals(origAssocs.size(), assocs.size());
     }
 
     /**
-     * Tests get target associations by property value.</p>
+     * Tests get target associations by property value.
+     * </p>
      * See <b>MNT-14504</b> for more details.
      */
     @Test
@@ -311,15 +312,15 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
         // Create a new versionable node
         NodeRef versionableNode = createNewVersionableNode();
-        
+
         // Create a new version
         Version version = createVersion(versionableNode, this.versionProperties);
-        
+
         boolean test1 = this.versionStoreNodeService.hasAspect(
-                version.getFrozenStateNodeRef(), 
+                version.getFrozenStateNodeRef(),
                 ApplicationModel.ASPECT_UIFACETS);
         assertFalse(test1);
-        
+
         boolean test2 = this.versionStoreNodeService.hasAspect(
                 version.getFrozenStateNodeRef(),
                 ContentModel.ASPECT_VERSIONABLE);
@@ -330,24 +331,24 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
      * Test getAspects
      */
     @Test
-    public void testGetAspects() 
+    public void testGetAspects()
     {
         // Create a new versionable node
         NodeRef versionableNode = createNewVersionableNode();
         Set<QName> origAspects = this.dbNodeService.getAspects(versionableNode);
-        
+
         // Create a new version
         Version version = createVersion(versionableNode, this.versionProperties);
-        
+
         Set<QName> aspects = this.versionStoreNodeService.getAspects(version.getFrozenStateNodeRef());
         assertEquals(origAspects.size(), aspects.size());
-        
+
         for (QName origAspect : origAspects)
-        { 
-            assertTrue(origAspect+"",aspects.contains(origAspect));
+        {
+            assertTrue(origAspect + "", aspects.contains(origAspect));
         }
     }
-	
+
     /**
      * Test getParentAssocs
      */
@@ -356,11 +357,11 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
         // Create a new versionable node
         NodeRef versionableNode = createNewVersionableNode();
-        
+
         // Create a new version
         Version version = createVersion(versionableNode, this.versionProperties);
         NodeRef nodeRef = version.getFrozenStateNodeRef();
-        
+
         List<ChildAssociationRef> results = this.versionStoreNodeService.getParentAssocs(nodeRef);
         assertNotNull(results);
         assertEquals(1, results.size());
@@ -369,7 +370,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         NodeRef versionStoreRoot = this.dbNodeService.getRootNode(this.versionService.getVersionStoreReference());
         assertEquals(versionStoreRoot, childAssoc.getParentRef());
     }
-    
+
     /**
      * Test getPrimaryParent
      */
@@ -378,46 +379,45 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
         // Create a new versionable node
         NodeRef versionableNode = createNewVersionableNode();
-        
+
         // Create a new version
         Version version = createVersion(versionableNode, this.versionProperties);
         NodeRef nodeRef = version.getFrozenStateNodeRef();
-        
+
         ChildAssociationRef childAssoc = this.versionStoreNodeService.getPrimaryParent(nodeRef);
         assertNotNull(childAssoc);
         assertEquals(nodeRef, childAssoc.getChildRef());
         NodeRef versionStoreRoot = this.dbNodeService.getRootNode(this.versionService.getVersionStoreReference());
-        assertEquals(versionStoreRoot, childAssoc.getParentRef());        
+        assertEquals(versionStoreRoot, childAssoc.getParentRef());
     }
-    
-	/** ================================================
-	 *  These test ensure that the following operations
-	 *  are not supported as expected.
-	 */
-	
-	/**
-	 * Test createNode
-	 */
-	public void testCreateNode()
+
+    /**
+     * ================================================ These test ensure that the following operations are not supported as expected.
+     */
+
+    /**
+     * Test createNode
+     */
+    public void testCreateNode()
     {
-		try
-		{
-			this.versionStoreNodeService.createNode(
-					dummyNodeRef,
-					null,
-					dummyQName,
+        try
+        {
+            this.versionStoreNodeService.createNode(
+                    dummyNodeRef,
+                    null,
+                    dummyQName,
                     ContentModel.TYPE_CONTENT);
-			fail("This operation is not supported.");
-		}
-		catch (UnsupportedOperationException exception)
-		{
-			if (exception.getMessage() != MSG_ERR)
-			{
-				fail("Unexpected exception raised during method excution: " + exception.getMessage());
-			}
-		}
+            fail("This operation is not supported.");
+        }
+        catch (UnsupportedOperationException exception)
+        {
+            if (exception.getMessage() != MSG_ERR)
+            {
+                fail("Unexpected exception raised during method excution: " + exception.getMessage());
+            }
+        }
     }
-    
+
     /**
      * Test addAspect
      */
@@ -440,12 +440,12 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
             }
         }
     }
-    
+
     /**
      * Test removeAspect
      */
     @Test
-    public void testRemoveAspect() 
+    public void testRemoveAspect()
     {
         try
         {
@@ -462,73 +462,73 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
             }
         }
     }
-    
-	/**
-	 * Test delete node
-	 */
+
+    /**
+     * Test delete node
+     */
     @Test
     public void testDeleteNode()
     {
-		try
-		{
-			this.versionStoreNodeService.deleteNode(this.dummyNodeRef);
-			fail("This operation is not supported.");
-		}
-		catch (UnsupportedOperationException exception)
-		{
-			if (exception.getMessage() != MSG_ERR)
-			{
-				fail("Unexpected exception raised during method excution: " + exception.getMessage());
-			}
-		}
+        try
+        {
+            this.versionStoreNodeService.deleteNode(this.dummyNodeRef);
+            fail("This operation is not supported.");
+        }
+        catch (UnsupportedOperationException exception)
+        {
+            if (exception.getMessage() != MSG_ERR)
+            {
+                fail("Unexpected exception raised during method excution: " + exception.getMessage());
+            }
+        }
     }
-    
-	/**
-	 * Test addChild
-	 */
+
+    /**
+     * Test addChild
+     */
     @Test
     public void testAddChild()
     {
-		try
-		{
-			this.versionStoreNodeService.addChild(
-					this.dummyNodeRef,
-					this.dummyNodeRef,
+        try
+        {
+            this.versionStoreNodeService.addChild(
+                    this.dummyNodeRef,
+                    this.dummyNodeRef,
                     this.dummyQName,
-					this.dummyQName);
-			fail("This operation is not supported.");
-		}
-		catch (UnsupportedOperationException exception)
-		{
-			if (exception.getMessage() != MSG_ERR)
-			{
-				fail("Unexpected exception raised during method excution: " + exception.getMessage());
-			}
-		}
+                    this.dummyQName);
+            fail("This operation is not supported.");
+        }
+        catch (UnsupportedOperationException exception)
+        {
+            if (exception.getMessage() != MSG_ERR)
+            {
+                fail("Unexpected exception raised during method excution: " + exception.getMessage());
+            }
+        }
     }
-    
-	/**
-	 * Test removeChild
-	 */
+
+    /**
+     * Test removeChild
+     */
     @Test
     public void testRemoveChild()
     {
-		try
-		{
-			this.versionStoreNodeService.removeChild(
-					this.dummyNodeRef, 
-					this.dummyNodeRef);
-			fail("This operation is not supported.");
-		}
-		catch (UnsupportedOperationException exception)
-		{
-			if (exception.getMessage() != MSG_ERR)
-			{
-				fail("Unexpected exception raised during method excution: " + exception.getMessage());
-			}
-		}	
+        try
+        {
+            this.versionStoreNodeService.removeChild(
+                    this.dummyNodeRef,
+                    this.dummyNodeRef);
+            fail("This operation is not supported.");
+        }
+        catch (UnsupportedOperationException exception)
+        {
+            if (exception.getMessage() != MSG_ERR)
+            {
+                fail("Unexpected exception raised during method excution: " + exception.getMessage());
+            }
+        }
     }
-    
+
     /**
      * Test setProperties
      */
@@ -550,13 +550,13 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
             }
         }
     }
-    
+
     /**
      * Test setProperty
      */
     @Test
     public void testSetProperty()
-	{
+    {
         try
         {
             this.versionStoreNodeService.setProperty(
@@ -572,8 +572,8 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
                 fail("Unexpected exception raised during method excution: " + exception.getMessage());
             }
         }
-    }   
-    
+    }
+
     /**
      * Test createAssociation
      */
@@ -596,7 +596,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
             }
         }
     }
-    
+
     /**
      * Test removeAssociation
      */
@@ -618,8 +618,8 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
                 fail("Unexpected exception raised during method excution: " + exception.getMessage());
             }
         }
-    }       
-    
+    }
+
     /**
      * Test getAssociationSources
      */
@@ -641,7 +641,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
             }
         }
     }
-    
+
     /**
      * Test getPath
      */
@@ -650,7 +650,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
         Path path = this.versionStoreNodeService.getPath(this.dummyNodeRef);
     }
-    
+
     /**
      * Test getPaths
      */
@@ -659,108 +659,93 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
     {
         List<Path> paths = this.versionStoreNodeService.getPaths(this.dummyNodeRef, false);
     }
-    
+
     /**
-     * Tests that we can store and retrieve unicode properties
-     *  and association names.
-     * If there's something wrong with how we're setting up the
-     *  database or database connection WRT unicode, this is a
-     *  test that'll hopefully break in testing and alert us!
+     * Tests that we can store and retrieve unicode properties and association names. If there's something wrong with how we're setting up the database or database connection WRT unicode, this is a test that'll hopefully break in testing and alert us!
      */
     @Test
     public void testUnicodeNamesAndProperties()
     {
         // Get our cache objects
-        List<TransactionalCache> cachesToClear = new ArrayList<TransactionalCache>(); 
-        cachesToClear.add( (TransactionalCache)this.applicationContext.getBean("propertyValueCache") );
-        cachesToClear.add( (TransactionalCache)this.applicationContext.getBean("node.nodesCache") );
-        cachesToClear.add( (TransactionalCache)this.applicationContext.getBean("node.propertiesCache") );
-        
-        
+        List<TransactionalCache> cachesToClear = new ArrayList<TransactionalCache>();
+        cachesToClear.add((TransactionalCache) this.applicationContext.getBean("propertyValueCache"));
+        cachesToClear.add((TransactionalCache) this.applicationContext.getBean("node.nodesCache"));
+        cachesToClear.add((TransactionalCache) this.applicationContext.getBean("node.propertiesCache"));
+
         // First up, try with a simple English name+properties
         String engProp = "This is a property in English";
         QName engQName = QName.createQName("NameSpace", "In English");
         NodeRef engNode = nodeService.createNode(
                 this.rootNodeRef, ContentModel.ASSOC_CONTAINS,
-                engQName, ContentModel.TYPE_CONTENT
-        ).getChildRef();
+                engQName, ContentModel.TYPE_CONTENT).getChildRef();
         nodeService.setProperty(engNode, ContentModel.PROP_NAME, engProp);
-        
+
         // Check they exist and are correct
         assertEquals(engProp, nodeService.getProperty(engNode, ContentModel.PROP_NAME));
         assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, engQName).size());
         assertEquals(engNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, engProp));
-        
-        
+
         // Now French
         String frProp = "C'est une propri\u00e9t\u00e9 en fran\u00e7ais"; // C'est une propriÃ©tÃ© en franÃ§ais
         QName frQName = QName.createQName("NameSpace", "En Fran\u00e7ais"); // En FranÃ§ais
         NodeRef frNode = nodeService.createNode(
                 this.rootNodeRef, ContentModel.ASSOC_CONTAINS,
-                frQName, ContentModel.TYPE_CONTENT
-        ).getChildRef();
+                frQName, ContentModel.TYPE_CONTENT).getChildRef();
         nodeService.setProperty(frNode, ContentModel.PROP_NAME, frProp);
-        
+
         assertEquals(frProp, nodeService.getProperty(frNode, ContentModel.PROP_NAME));
         assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, frQName).size());
         assertEquals(frNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, frProp));
-        
-        
+
         // Zap the cache and re-check
         // (If the DB is broken but the cache works, then the above
-        //  tests could pass even in the face of a problem)
-        for(TransactionalCache tc : cachesToClear) tc.clear();
+        // tests could pass even in the face of a problem)
+        for (TransactionalCache tc : cachesToClear)
+            tc.clear();
         assertEquals(frProp, nodeService.getProperty(frNode, ContentModel.PROP_NAME));
         assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, frQName).size());
         assertEquals(frNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, frProp));
-        
-        
+
         // Next Spanish
         String esProp = "Esta es una propiedad en Espa\u00f1ol"; // Esta es una propiedad en EspaÃ±ol
         QName esQName = QName.createQName("NameSpace", "En Espa\u00f1ol"); // En EspaÃ±ol
         NodeRef esNode = nodeService.createNode(
                 this.rootNodeRef, ContentModel.ASSOC_CONTAINS,
-                esQName, ContentModel.TYPE_CONTENT
-        ).getChildRef();
+                esQName, ContentModel.TYPE_CONTENT).getChildRef();
         nodeService.setProperty(esNode, ContentModel.PROP_NAME, esProp);
-        
-        assertEquals(esProp, nodeService.getProperty(esNode, ContentModel.PROP_NAME));
-        assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, esQName).size());
-        assertEquals(esNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, esProp));
-        
-        
-        // Zap cache and re-test the Spanish
-        for(TransactionalCache tc : cachesToClear) tc.clear();
+
         assertEquals(esProp, nodeService.getProperty(esNode, ContentModel.PROP_NAME));
         assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, esQName).size());
         assertEquals(esNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, esProp));
 
-        
+        // Zap cache and re-test the Spanish
+        for (TransactionalCache tc : cachesToClear)
+            tc.clear();
+        assertEquals(esProp, nodeService.getProperty(esNode, ContentModel.PROP_NAME));
+        assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, esQName).size());
+        assertEquals(esNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, esProp));
+
         // Finally Japanese
-        String jpProp = "\u3092\u30af\u30ea\u30c3\u30af\u3057\u3066\u304f\u3060\u3055\u3044\u3002"; //  ã‚’ã‚¯ãƒªãƒƒã‚¯ã�—ã�¦ã��ã� ã�•ã�„ã€‚
-        QName jpQName = QName.createQName("NameSpace", "\u3092\u30af\u30ea\u30c3\u30af\u3057\u3066\u304f"); //  ã‚’ã‚¯ãƒªãƒƒã‚¯ã�—ã�¦ã��
+        String jpProp = "\u3092\u30af\u30ea\u30c3\u30af\u3057\u3066\u304f\u3060\u3055\u3044\u3002"; // ã‚’ã‚¯ãƒªãƒƒã‚¯ã�—ã�¦ã��ã� ã�•ã�„ã€‚
+        QName jpQName = QName.createQName("NameSpace", "\u3092\u30af\u30ea\u30c3\u30af\u3057\u3066\u304f"); // ã‚’ã‚¯ãƒªãƒƒã‚¯ã�—ã�¦ã��
         NodeRef jpNode = nodeService.createNode(
                 this.rootNodeRef, ContentModel.ASSOC_CONTAINS,
-                jpQName, ContentModel.TYPE_CONTENT
-        ).getChildRef();
+                jpQName, ContentModel.TYPE_CONTENT).getChildRef();
         nodeService.setProperty(jpNode, ContentModel.PROP_NAME, jpProp);
-        
+
         assertEquals(jpProp, nodeService.getProperty(jpNode, ContentModel.PROP_NAME));
         assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, jpQName).size());
         assertEquals(jpNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, jpProp));
-        
+
         // Zap the cache and check the Japanese
-        for(TransactionalCache tc : cachesToClear) tc.clear();
+        for (TransactionalCache tc : cachesToClear)
+            tc.clear();
         assertEquals(jpProp, nodeService.getProperty(jpNode, ContentModel.PROP_NAME));
         assertEquals(1, nodeService.getChildAssocs(this.rootNodeRef, ContentModel.ASSOC_CONTAINS, jpQName).size());
         assertEquals(jpNode, nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, jpProp));
     }
 
-    /*
-    * Test that during applying versionable aspect to the node
-    * that does not already have versionable aspect
-    * version history of this node should be deleted
-    */
+    /* Test that during applying versionable aspect to the node that does not already have versionable aspect version history of this node should be deleted */
     @Test
     public void testALF1793AddVersionableAspect()
     {
@@ -768,7 +753,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         NodeRef versionableNode = createNewVersionableNode();
         createVersion(versionableNode, this.versionProperties);
 
-        //Copy UUID from node properties
+        // Copy UUID from node properties
         Map<QName, Serializable> oldProperties = this.dbNodeService.getProperties(versionableNode);
         Map<QName, Serializable> newProperties = new HashMap<QName, Serializable>();
         newProperties.put(ContentModel.PROP_NODE_UUID, oldProperties.get(ContentModel.PROP_NODE_UUID));
@@ -787,7 +772,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         Version version = createVersion(newNode, this.versionProperties);
         assertNotNull(version);
     }
-    
+
     @Test
     public void testTakeOwnershipPermission()
     {
@@ -839,8 +824,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
             proxyNodeService.addAspect(docRef, ContentModel.ASPECT_OWNABLE, properties);
         }
         catch (AccessDeniedException e)
-        {
-        }
+        {}
 
         // Retrieve the data directly from the node service to ensure its not been changed
         String updatedOwner = (String) this.nodeService.getProperty(docRef, ContentModel.PROP_OWNER);
@@ -854,8 +838,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
             proxyNodeService.addProperties(docRef, properties);
         }
         catch (AccessDeniedException e)
-        {
-        }
+        {}
 
         // Retrieve the data directly from the node service to ensure its not been changed
         updatedOwner = (String) this.nodeService.getProperty(docRef, ContentModel.PROP_OWNER);
@@ -869,8 +852,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
             proxyNodeService.setProperties(docRef, properties);
         }
         catch (AccessDeniedException e)
-        {
-        }
+        {}
 
         // Retrieve the data directly from the node service to ensure its not been changed
         updatedOwner = (String) this.nodeService.getProperty(docRef, ContentModel.PROP_OWNER);
@@ -884,8 +866,7 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
             proxyNodeService.setProperty(docRef, ContentModel.ASPECT_OWNABLE, (Serializable) userName);
         }
         catch (AccessDeniedException e)
-        {
-        }
+        {}
 
         // Retrieve the data directly from the node service to ensure its not been changed
         updatedOwner = (String) this.nodeService.getProperty(docRef, ContentModel.PROP_OWNER);

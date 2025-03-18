@@ -27,10 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.bootstrap;
 
-import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
-import org.alfresco.service.cmr.module.ModuleService;
-import org.alfresco.service.descriptor.DescriptorService;
-import org.alfresco.service.license.LicenseDescriptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -38,11 +34,15 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
 
+import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
+import org.alfresco.service.cmr.module.ModuleService;
+import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.license.LicenseDescriptor;
+
 /**
  * Module compatibility component.
  * <p>
- * Checks that the currently installed RM AMP licence mode matches that of the
- * underlying repository.
+ * Checks that the currently installed RM AMP licence mode matches that of the underlying repository.
  * 
  * @author Roy Wetherall
  * @since 2.4
@@ -62,7 +62,8 @@ public class ModuleCompatibilityComponent implements ApplicationListener<Context
     private ModuleService moduleService;
 
     /**
-     * @param descriptorService descriptor service
+     * @param descriptorService
+     *            descriptor service
      */
     public void setDescriptorService(DescriptorService descriptorService)
     {
@@ -70,7 +71,8 @@ public class ModuleCompatibilityComponent implements ApplicationListener<Context
     }
 
     /**
-     * @param moduleService module service
+     * @param moduleService
+     *            module service
      */
     public void setModuleService(ModuleService moduleService)
     {
@@ -112,7 +114,7 @@ public class ModuleCompatibilityComponent implements ApplicationListener<Context
             // running enterprise rm on community core so close application
             // context
             closeApplicationContext(applicationContext,
-                        "Running Community Records Management Module on Enterprise Alfresco One is not a supported configuration.");
+                    "Running Community Records Management Module on Enterprise Alfresco One is not a supported configuration.");
 
         }
         else if (!LicenseMode.ENTERPRISE.equals(licenseMode) && isRMEnterprise)
@@ -120,7 +122,7 @@ public class ModuleCompatibilityComponent implements ApplicationListener<Context
             // running community rm on enterprise core so close application
             // context
             closeApplicationContext(applicationContext,
-                        "Running Enterprise Records Management module on Community Alfresco One is not a supported configuration.");
+                    "Running Enterprise Records Management module on Community Alfresco One is not a supported configuration.");
         }
     }
 
@@ -137,8 +139,10 @@ public class ModuleCompatibilityComponent implements ApplicationListener<Context
     /**
      * Close application context, logging message.
      * 
-     * @param applicationContext application context
-     * @param message closure message
+     * @param applicationContext
+     *            application context
+     * @param message
+     *            closure message
      */
     private void closeApplicationContext(ApplicationContext applicationContext, String message)
     {

@@ -48,54 +48,56 @@ public class IsSubTypeEvaluator extends ActionConditionEvaluatorAbstractBase
      */
     public static final String NAME = "is-subtype";
     public static final String PARAM_TYPE = "type";
-    
+
     /**
      * The node service
      */
     private NodeService nodeService;
-    
+
     /**
      * The dictionary service
      */
     private DictionaryService dictionaryService;
-    
+
     /**
      * Set node service
      * 
-     * @param nodeService  the node service
+     * @param nodeService
+     *            the node service
      */
-    public void setNodeService(NodeService nodeService) 
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set dictionary service
      * 
-     * @param dictionaryService  the dictionary service
+     * @param dictionaryService
+     *            the dictionary service
      */
-    public void setDictionaryService(DictionaryService dictionaryService) 
+    public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
-    }   
-    
+    }
+
     /**
      * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#evaluateImpl(org.alfresco.service.cmr.action.ActionCondition, org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean evaluateImpl(ActionCondition ruleCondition, NodeRef actionedUponNodeRef)
     {
         boolean result = false;
-        
+
         if (this.nodeService.exists(actionedUponNodeRef) == true)
         {
             // TODO: Move this type check into its own Class Evaluator
             QName nodeType = nodeService.getType(actionedUponNodeRef);
-            if (dictionaryService.isSubClass(nodeType, (QName)ruleCondition.getParameterValue(PARAM_TYPE)))
+            if (dictionaryService.isSubClass(nodeType, (QName) ruleCondition.getParameterValue(PARAM_TYPE)))
             {
                 result = true;
             }
         }
-        
+
         return result;
     }
 
@@ -103,7 +105,7 @@ public class IsSubTypeEvaluator extends ActionConditionEvaluatorAbstractBase
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_TYPE, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_TYPE), false, "ac-types"));
     }

@@ -25,13 +25,14 @@
  */
 package org.alfresco.opencmis;
 
+import java.util.Collections;
+import java.util.Set;
 import jakarta.servlet.http.HttpServletResponseWrapper;
-import org.alfresco.error.AlfrescoRuntimeException;
+
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRuntime;
 
-import java.util.Collections;
-import java.util.Set;
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * Wraps an OpenCMIS HttpServletResponse for specific mapping to the Alfresco implementation of OpenCMIS.
@@ -47,11 +48,11 @@ public class CMISHttpServletResponse extends HttpServletResponseWrapper
     private final static String ATTACHMENT = "attachment";
     private final static String INLINE = "inline";
 
-	public CMISHttpServletResponse(WebScriptResponse res, Set<String> nonAttachContentTypes)
-	{
-		super(WebScriptServletRuntime.getHttpServletResponse(res));
+    public CMISHttpServletResponse(WebScriptResponse res, Set<String> nonAttachContentTypes)
+    {
+        super(WebScriptServletRuntime.getHttpServletResponse(res));
         this.nonAttachContentTypes = nonAttachContentTypes;
-	}
+    }
 
     @Override
     public void setHeader(String name, String value)
@@ -69,16 +70,16 @@ public class CMISHttpServletResponse extends HttpServletResponseWrapper
     {
         if (HDR_CONTENT_DISPOSITION.equals(name))
         {
-            if (! nonAttachContentTypes.contains(contentType))
+            if (!nonAttachContentTypes.contains(contentType))
             {
                 if (value.startsWith(INLINE))
                 {
                     // force attachment
-                    value = ATTACHMENT+value.substring(INLINE.length());
+                    value = ATTACHMENT + value.substring(INLINE.length());
                 }
-                else if (! value.startsWith(ATTACHMENT))
+                else if (!value.startsWith(ATTACHMENT))
                 {
-                    throw new AlfrescoRuntimeException("Unexpected - header could not be set: "+name+" = "+value);
+                    throw new AlfrescoRuntimeException("Unexpected - header could not be set: " + name + " = " + value);
                 }
             }
         }

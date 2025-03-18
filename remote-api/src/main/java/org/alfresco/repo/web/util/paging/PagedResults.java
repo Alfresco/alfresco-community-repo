@@ -27,7 +27,6 @@ package org.alfresco.repo.web.util.paging;
 
 import java.io.Serializable;
 
-
 /**
  * A Paged Result Set
  * 
@@ -36,19 +35,20 @@ import java.io.Serializable;
 public class PagedResults implements Serializable
 {
     private static final long serialVersionUID = 5905699888354619269L;
-    
+
     private Object result;
     private Object[] results;
     private Cursor cursor;
-    
 
     /**
      * Construct
-     *  
-     * @param results  results for the page within cursor
-     * @param cursor  the cursor
+     * 
+     * @param results
+     *            results for the page within cursor
+     * @param cursor
+     *            the cursor
      */
-    /*Package*/ PagedResults(Object[] results, Cursor cursor)
+    /* Package */ PagedResults(Object[] results, Cursor cursor)
     {
         this.result = results;
         this.results = results;
@@ -57,11 +57,13 @@ public class PagedResults implements Serializable
 
     /**
      * Construct
-     *  
-     * @param result  results for the page within cursor
-     * @param cursor  the cursor
+     * 
+     * @param result
+     *            results for the page within cursor
+     * @param cursor
+     *            the cursor
      */
-    /*Package*/ PagedResults(Object result, Cursor cursor)
+    /* Package */ PagedResults(Object result, Cursor cursor)
     {
         this.result = result;
         this.results = null;
@@ -71,7 +73,7 @@ public class PagedResults implements Serializable
     /**
      * Get Results
      * 
-     * @return  results
+     * @return results
      */
     public Object[] getResults()
     {
@@ -79,7 +81,7 @@ public class PagedResults implements Serializable
         {
             if (result != null)
             {
-                results = new Object[] {result};
+                results = new Object[]{result};
             }
         }
         return results;
@@ -88,7 +90,7 @@ public class PagedResults implements Serializable
     /**
      * Get Result
      * 
-     * @return  result
+     * @return result
      */
     public Object getResult()
     {
@@ -98,11 +100,11 @@ public class PagedResults implements Serializable
     /**
      * Get Cursor
      * 
-     * @return  cursor
+     * @return cursor
      */
     public Cursor getCursor()
     {
         return cursor;
     }
-    
+
 }

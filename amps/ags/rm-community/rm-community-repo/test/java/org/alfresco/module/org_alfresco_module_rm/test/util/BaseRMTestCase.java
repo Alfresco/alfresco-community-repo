@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
@@ -92,7 +94,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.RetryingTransactionHelperTestCase;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Base test case class to use for RM unit tests.
@@ -100,18 +101,18 @@ import org.springframework.context.ApplicationContext;
  * @author Roy Wetherall
  */
 public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
-                                     implements RecordsManagementModel, ContentModel, RMPermissionModel
+        implements RecordsManagementModel, ContentModel, RMPermissionModel
 {
     /** Application context */
     protected String[] getConfigLocations()
     {
-        return new String[]
-        {
-            "classpath:alfresco/application-context.xml",
-            "classpath:alfresco/web-scripts-application-context.xml",
-            "classpath:test-context.xml"
+        return new String[]{
+                "classpath:alfresco/application-context.xml",
+                "classpath:alfresco/web-scripts-application-context.xml",
+                "classpath:test-context.xml"
         };
     }
+
     protected ApplicationContext applicationContext;
 
     /** test model constants */
@@ -199,31 +200,10 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef holdsContainer;
     protected NodeRef transfersContainer;
 
-    /** multi-hierarchy test data
+    /**
+     * multi-hierarchy test data
      *
-     *   |--rmRootContainer
-     *      |
-     *      |--mhContainer
-     *         |
-     *         |--mhContainer-1-1 (has schedule - folder level)
-     *         |  |
-     *         |  |--mhContainer-2-1
-     *         |     |
-     *         |     |--mhContainer-3-1
-     *         |
-     *         |--mhContainer-1-2 (has schedule - folder level)
-     *            |
-     *            |--mhContainer-2-2
-     *            |  |
-     *            |  |--mhContainer-3-2
-     *            |  |
-     *            |  |--mhContainer-3-3 (has schedule - record level)
-     *            |
-     *            |--mhContainer-2-3 (has schedule - folder level)
-     *               |
-     *               |--mhContainer-3-4
-     *               |
-     *               |--mhContainer-3-5 (has schedule- record level)
+     * |--rmRootContainer | |--mhContainer | |--mhContainer-1-1 (has schedule - folder level) | | | |--mhContainer-2-1 | | | |--mhContainer-3-1 | |--mhContainer-1-2 (has schedule - folder level) | |--mhContainer-2-2 | | | |--mhContainer-3-2 | | | |--mhContainer-3-3 (has schedule - record level) | |--mhContainer-2-3 (has schedule - folder level) | |--mhContainer-3-4 | |--mhContainer-3-5 (has schedule- record level)
      */
 
     protected NodeRef mhContainer;
@@ -295,8 +275,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef dmCollaboratorNodeRef;
 
     /**
-     * Indicates whether this is a RM site test or not.  If true then the test RM site is created along with a basic
-     * file plan structure, otherwise not.
+     * Indicates whether this is a RM site test or not. If true then the test RM site is created along with a basic file plan structure, otherwise not.
      */
     protected boolean isRMSiteTest()
     {
@@ -304,8 +283,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     }
 
     /**
-     * Indicates whether this is a multi-hierarchy test or not.  If it is then the multi-hierarchy record
-     * taxonomy test data is loaded.
+     * Indicates whether this is a multi-hierarchy test or not. If it is then the multi-hierarchy record taxonomy test data is loaded.
      */
     protected boolean isMultiHierarchyTest()
     {
@@ -329,8 +307,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     }
 
     /**
-     * Indicates whether the test users should have filling on the file plan structure
-     * by default or not.
+     * Indicates whether the test users should have filling on the file plan structure by default or not.
      */
     protected boolean isFillingForAllUsers()
     {
@@ -338,8 +315,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     }
 
     /**
-     * Indicates whether the test collaboration site should be created
-     * or not.
+     * Indicates whether the test collaboration site should be created or not.
      */
     protected boolean isCollaborationSiteTest()
     {
@@ -388,37 +364,37 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected void initServices()
     {
         // Get services
-        nodeService = (NodeService)applicationContext.getBean("NodeService");
-        contentService = (ContentService)applicationContext.getBean("ContentService");
-        retryingTransactionHelper = (RetryingTransactionHelper)applicationContext.getBean("retryingTransactionHelper");
-        namespaceService = (NamespaceService)this.applicationContext.getBean("NamespaceService");
-        searchService = (SearchService)this.applicationContext.getBean("SearchService");
-        policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
-        dictionaryService = (DictionaryService)this.applicationContext.getBean("DictionaryService");
-        siteService = (SiteService)this.applicationContext.getBean("SiteService");
-        authorityService = (AuthorityService)this.applicationContext.getBean("AuthorityService");
-        authenticationService = (MutableAuthenticationService)this.applicationContext.getBean("AuthenticationService");
-        personService = (PersonService)this.applicationContext.getBean("PersonService");
-        transactionService = (TransactionService)applicationContext.getBean("TransactionService");
-        fileFolderService = (FileFolderService)applicationContext.getBean("FileFolderService");
-        permissionService = (PermissionService)applicationContext.getBean("PermissionService");
-        taggingService = (TaggingService)applicationContext.getBean("TaggingService");
-        actionService = (ActionService)applicationContext.getBean("ActionService");
-        ownableService = (OwnableService)applicationContext.getBean("OwnableService");
-        versionService = (VersionService)applicationContext.getBean("VersionService");
-        documentLinkService = (DocumentLinkService)applicationContext.getBean("DocumentLinkService");
-        repositoryHelper = (Repository)applicationContext.getBean("repositoryHelper");
+        nodeService = (NodeService) applicationContext.getBean("NodeService");
+        contentService = (ContentService) applicationContext.getBean("ContentService");
+        retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
+        namespaceService = (NamespaceService) this.applicationContext.getBean("NamespaceService");
+        searchService = (SearchService) this.applicationContext.getBean("SearchService");
+        policyComponent = (PolicyComponent) this.applicationContext.getBean("policyComponent");
+        dictionaryService = (DictionaryService) this.applicationContext.getBean("DictionaryService");
+        siteService = (SiteService) this.applicationContext.getBean("SiteService");
+        authorityService = (AuthorityService) this.applicationContext.getBean("AuthorityService");
+        authenticationService = (MutableAuthenticationService) this.applicationContext.getBean("AuthenticationService");
+        personService = (PersonService) this.applicationContext.getBean("PersonService");
+        transactionService = (TransactionService) applicationContext.getBean("TransactionService");
+        fileFolderService = (FileFolderService) applicationContext.getBean("FileFolderService");
+        permissionService = (PermissionService) applicationContext.getBean("PermissionService");
+        taggingService = (TaggingService) applicationContext.getBean("TaggingService");
+        actionService = (ActionService) applicationContext.getBean("ActionService");
+        ownableService = (OwnableService) applicationContext.getBean("OwnableService");
+        versionService = (VersionService) applicationContext.getBean("VersionService");
+        documentLinkService = (DocumentLinkService) applicationContext.getBean("DocumentLinkService");
+        repositoryHelper = (Repository) applicationContext.getBean("repositoryHelper");
 
         // Get RM services
-        dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
-        rmEventService = (RecordsManagementEventService)applicationContext.getBean("RecordsManagementEventService");
-        rmAdminService = (RecordsManagementAdminService)applicationContext.getBean("RecordsManagementAdminService");
-        rmActionService = (RecordsManagementActionService)this.applicationContext.getBean("RecordsManagementActionService");
-        rmSearchService = (RecordsManagementSearchService)this.applicationContext.getBean("RecordsManagementSearchService");
-        filePlanRoleService = (FilePlanRoleService)this.applicationContext.getBean("FilePlanRoleService");
-        filePlanPermissionService = (FilePlanPermissionService)this.applicationContext.getBean("FilePlanPermissionService");
-        capabilityService = (CapabilityService)this.applicationContext.getBean("CapabilityService");
-        vitalRecordService = (VitalRecordService)this.applicationContext.getBean("VitalRecordService");
+        dispositionService = (DispositionService) applicationContext.getBean("DispositionService");
+        rmEventService = (RecordsManagementEventService) applicationContext.getBean("RecordsManagementEventService");
+        rmAdminService = (RecordsManagementAdminService) applicationContext.getBean("RecordsManagementAdminService");
+        rmActionService = (RecordsManagementActionService) this.applicationContext.getBean("RecordsManagementActionService");
+        rmSearchService = (RecordsManagementSearchService) this.applicationContext.getBean("RecordsManagementSearchService");
+        filePlanRoleService = (FilePlanRoleService) this.applicationContext.getBean("FilePlanRoleService");
+        filePlanPermissionService = (FilePlanPermissionService) this.applicationContext.getBean("FilePlanPermissionService");
+        capabilityService = (CapabilityService) this.applicationContext.getBean("CapabilityService");
+        vitalRecordService = (VitalRecordService) this.applicationContext.getBean("VitalRecordService");
         dataSetService = (DataSetService) applicationContext.getBean("DataSetService");
         freezeService = (FreezeService) applicationContext.getBean("FreezeService");
         recordService = (RecordService) applicationContext.getBean("RecordService");
@@ -442,14 +418,12 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     @Override
     protected void tearDown() throws Exception
     {
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             @Override
             public Object execute() throws Throwable
             {
                 // Do the tear down
-                AuthenticationUtil.runAsSystem(() ->
-                {
+                AuthenticationUtil.runAsSystem(() -> {
                     tearDownImpl();
                     return null;
                 });
@@ -464,7 +438,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      */
     protected void tearDownImpl()
     {
-        BehaviourFilter filter = (BehaviourFilter)applicationContext.getBean("policyBehaviourFilter");
+        BehaviourFilter filter = (BehaviourFilter) applicationContext.getBean("policyBehaviourFilter");
         filter.disableBehaviour();
         try
         {
@@ -520,8 +494,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      */
     protected void setupTestData()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 setupTestDataImpl();
@@ -575,11 +548,11 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         Map<QName, Serializable> containerProps = new HashMap<>(1);
         containerProps.put(ContentModel.PROP_NAME, containerName);
         folder = nodeService.createNode(
-              rootNodeRef,
-              ContentModel.ASSOC_CHILDREN,
-              QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, containerName),
-              ContentModel.TYPE_FOLDER,
-              containerProps).getChildRef();
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, containerName),
+                ContentModel.TYPE_FOLDER,
+                containerProps).getChildRef();
         assertNotNull("Could not create base folder", folder);
 
         permissionService.setPermission(folder, ADMIN_USER, PermissionService.WRITE, true);
@@ -589,12 +562,12 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         {
             siteId = GUID.generate();
             siteInfo = siteService.createSite(
-                            "rm-site-dashboard",
-                            siteId,
-                            "title",
-                            "descrition",
-                            SiteVisibility.PUBLIC,
-                            RecordsManagementModel.TYPE_RM_SITE);
+                    "rm-site-dashboard",
+                    siteId,
+                    "title",
+                    "descrition",
+                    SiteVisibility.PUBLIC,
+                    RecordsManagementModel.TYPE_RM_SITE);
 
             filePlan = siteService.getContainer(siteId, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
             assertNotNull("Site document library container was not created successfully.", filePlan);
@@ -631,10 +604,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
     protected void setupTestUsers(final NodeRef filePlan)
     {
-        AuthenticationUtil.runAs(() ->
-        {
-            retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-            {
+        AuthenticationUtil.runAs(() -> {
+            retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
                 @Override
                 public Object execute() throws Throwable
                 {
@@ -645,7 +616,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
             return null;
         },
-        AuthenticationUtil.getAdminUserName());
+                AuthenticationUtil.getAdminUserName());
     }
 
     /**
@@ -677,8 +648,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         rmAdminPerson = createPerson(rmAdminName);
         filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_ADMIN, rmAdminName);
 
-        testUsers = new String[]
-        {
+        testUsers = new String[]{
                 userName,
                 rmUserName,
                 powerUserName,
@@ -702,8 +672,10 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
     /**
      * Util method to create a person.
-     * @param userName  user name
-     * @return NodeRef  user node reference
+     * 
+     * @param userName
+     *            user name
+     * @return NodeRef user node reference
      */
     protected NodeRef createPerson(String userName, boolean createAuth)
     {
@@ -727,13 +699,11 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      */
     protected void setupMultiHierarchyTestData()
     {
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             @Override
             public Object execute() throws Throwable
             {
-                return AuthenticationUtil.runAsSystem(() ->
-                {
+                return AuthenticationUtil.runAsSystem(() -> {
                     // Do setup
                     setupMultiHierarchyTestDataImpl();
 
@@ -782,8 +752,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
     protected void setupCollaborationSiteTestData()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 setupCollaborationSiteTestDataImpl();
@@ -909,8 +878,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
          * Default constructor
          */
         public BehaviourDrivenTest()
-        {
-        }
+        {}
 
         public BehaviourDrivenTest(Class<?> expectedException)
         {
@@ -944,26 +912,33 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             this.runInTransactionTests = runInTransactionTests;
         }
 
-        public void given() throws Exception { /** empty implementation */ }
+        public void given() throws Exception
+        { /** empty implementation */
+        }
 
-        public void when() throws Exception  { /** empty implementation */ }
+        public void when() throws Exception
+        { /** empty implementation */
+        }
 
-        public void then() throws Exception  { /** empty implementation */ }
+        public void then() throws Exception
+        { /** empty implementation */
+        }
 
-        public void after() throws Exception { /** empty implementation */ }
-        
+        public void after() throws Exception
+        { /** empty implementation */
+        }
+
         public void run() throws Exception
         {
             try
             {
                 if (runInTransactionTests)
                 {
-                    doTestInTransaction(new VoidTest()
-                    {
+                    doTestInTransaction(new VoidTest() {
                         @Override
                         public void runImpl() throws Exception
                         {
-                           given();
+                            given();
                         }
                     }, runAsUser);
                 }
@@ -976,8 +951,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 {
                     if (runInTransactionTests)
                     {
-                        doTestInTransaction(new VoidTest()
-                        {
+                        doTestInTransaction(new VoidTest() {
                             @Override
                             public void runImpl() throws Exception
                             {
@@ -985,8 +959,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                             }
                         }, runAsUser);
 
-                        doTestInTransaction(new VoidTest()
-                        {
+                        doTestInTransaction(new VoidTest() {
                             @Override
                             public void runImpl() throws Exception
                             {
@@ -1002,8 +975,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 }
                 else
                 {
-                    doTestInTransaction(new FailureTest(expectedException)
-                    {
+                    doTestInTransaction(new FailureTest(expectedException) {
                         @Override
                         public void run() throws Exception
                         {
@@ -1016,12 +988,11 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             {
                 if (runInTransactionTests)
                 {
-                    doTestInTransaction(new VoidTest()
-                    {
+                    doTestInTransaction(new VoidTest() {
                         @Override
                         public void runImpl() throws Exception
                         {
-                           after();
+                            after();
                         }
                     }, runAsUser);
                 }

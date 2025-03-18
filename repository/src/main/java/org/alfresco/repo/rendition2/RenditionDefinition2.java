@@ -25,13 +25,12 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.api.AlfrescoPublicApi;
-
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
- * Defines a rendition in terms of name, target mimetype and transform options need to get there.
- * {@link RenditionDefinition2}s need to be registered in a {@link RenditionDefinitionRegistry2}.
+ * Defines a rendition in terms of name, target mimetype and transform options need to get there. {@link RenditionDefinition2}s need to be registered in a {@link RenditionDefinitionRegistry2}.
  *
  * @author adavis
  */
@@ -68,7 +67,6 @@ public interface RenditionDefinition2
     /** Indicates whether the aspect ratio of the image should be maintained (true or false). */
     public static final String MAINTAIN_ASPECT_RATIO = "maintainAspectRatio";
 
-
     // PdfRenderer options
 
     public static final String PAGE = "page";
@@ -80,7 +78,6 @@ public interface RenditionDefinition2
 
     /** Indicates whether the aspect ratio of the image should be maintained (true or false). */
     public static final String MAINTAIN_PDF_ASPECT_RATIO = "maintainPdfAspectRatio";
-
 
     // Video options
 
@@ -94,8 +91,7 @@ public interface RenditionDefinition2
     public static final String INCLUDE_CONTENTS = "includeContents";
 
     /**
-     * @deprecated Will be removed when local transformations are removed, as it is only used tp select
-     * SWIFTransformationOptions.
+     * @deprecated Will be removed when local transformations are removed, as it is only used tp select SWIFTransformationOptions.
      */
     @Deprecated
     String FLASH_VERSION = "flashVersion";
@@ -111,8 +107,7 @@ public interface RenditionDefinition2
     public static final String SOURCE_NODE_REF = "sourceNodeRef";
 
     /**
-     * The encoding of a Target Node is automatically added to the Transform Options if not specified and the
-     * transformer knows about it.
+     * The encoding of a Target Node is automatically added to the Transform Options if not specified and the transformer knows about it.
      */
     public static final String TARGET_ENCODING = "targetEncoding";
 

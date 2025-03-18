@@ -25,6 +25,13 @@
  */
 package org.alfresco.repo.security.authority;
 
+import java.io.Serializable;
+import java.util.*;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -36,12 +43,6 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-
-import java.io.Serializable;
-import java.util.*;
 
 public class AuthorityTypeBehaviour implements NodeServicePolicies.OnUpdatePropertiesPolicy, InitializingBean
 {
@@ -53,7 +54,6 @@ public class AuthorityTypeBehaviour implements NodeServicePolicies.OnUpdatePrope
     private PolicyComponent policyComponent;
 
     private AuthorityService authorityService;
-
 
     public AuthorityTypeBehaviour()
     {

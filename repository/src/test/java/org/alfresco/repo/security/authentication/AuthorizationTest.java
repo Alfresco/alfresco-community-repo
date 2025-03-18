@@ -27,7 +27,6 @@ package org.alfresco.repo.security.authentication;
 
 import junit.framework.TestCase;
 
-
 /**
  * Test Authorization
  */
@@ -35,7 +34,7 @@ public class AuthorizationTest extends TestCase
 {
     private static String USER = "user";
     private static String PASSWORD = "pass";
-    
+
     public void testInvalidAuthorization()
     {
         try
@@ -43,19 +42,17 @@ public class AuthorizationTest extends TestCase
             new Authorization(null);
             fail();
         }
-        catch(IllegalArgumentException e)
-        {
-        }
+        catch (IllegalArgumentException e)
+        {}
         try
         {
             new Authorization("");
             fail();
         }
-        catch(IllegalArgumentException e)
-        {
-        }
+        catch (IllegalArgumentException e)
+        {}
     }
-    
+
     public void testAuthorization()
     {
         Authorization auth1 = new Authorization(USER, PASSWORD);

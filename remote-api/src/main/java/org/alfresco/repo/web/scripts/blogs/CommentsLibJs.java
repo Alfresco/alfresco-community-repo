@@ -46,22 +46,23 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 class CommentsLibJs
 {
     // TODO It will likely be refactored into the Blog REST API class framework.
-    
+
     private static final String COMMENTS_TOPIC_NAME = "Comments";
 
     public static int getCommentsCount(NodeRef node, ServiceRegistry services)
     {
-       return getComments(node, services).size();
+        return getComments(node, services).size();
     }
-    
+
     /**
      * Returns all comment nodes for a given node.
+     * 
      * @return an array of comments.
      */
     public static List<ChildAssociationRef> getComments(NodeRef node, ServiceRegistry services)
     {
         List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>();
-        
+
         NodeRef commentsFolder = getCommentsFolder(node, services);
         if (commentsFolder != null)
         {
@@ -71,26 +72,25 @@ class CommentsLibJs
                 result = children;
             }
         }
-        
+
         return result;
     }
-    
+
     /**
      * Returns the folder that contains all the comments.
      * 
-     * We currently use the fm:discussable aspect where we
-     * add a "Comments" topic to it.
+     * We currently use the fm:discussable aspect where we add a "Comments" topic to it.
      */
     public static NodeRef getCommentsFolder(NodeRef node, ServiceRegistry services)
     {
-        //FIXME These methods are from the original JavaScript. Should use the (soon to arrive) CommentService.
+        // FIXME These methods are from the original JavaScript. Should use the (soon to arrive) CommentService.
         NodeRef result = null;
         if (services.getNodeService().hasAspect(node, ForumModel.ASPECT_DISCUSSABLE))
         {
             List<ChildAssociationRef> forumFolders = services.getNodeService().getChildAssocs(node, ForumModel.ASSOC_DISCUSSION, RegexQNamePattern.MATCH_ALL);
             // The JavaScript was retrieving the first child under this child-assoc so we'll do the same.
             NodeRef forumFolder = forumFolders.get(0).getChildRef();
-            
+
             List<ChildAssociationRef> topicFolder = services.getNodeService().getChildAssocs(forumFolder, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, COMMENTS_TOPIC_NAME));
             result = topicFolder.isEmpty() ? null : topicFolder.get(0).getChildRef();
         }

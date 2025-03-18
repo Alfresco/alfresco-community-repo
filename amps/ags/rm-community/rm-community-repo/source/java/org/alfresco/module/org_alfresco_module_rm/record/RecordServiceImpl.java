@@ -40,7 +40,6 @@ import static org.alfresco.repo.policy.annotation.BehaviourKind.ASSOCIATION;
 import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,6 +50,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -65,7 +70,6 @@ import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
-import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
@@ -77,7 +81,6 @@ import org.alfresco.module.org_alfresco_module_rm.model.security.ModelAccessDeni
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
-import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
@@ -126,11 +129,6 @@ import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Record service implementation.
@@ -140,14 +138,14 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 @BehaviourBean
 public class RecordServiceImpl extends BaseBehaviourBean
-                               implements RecordService,
-                                          RecordsManagementModel,
-                                          RecordsManagementCustomModel,
-                                          NodeServicePolicies.OnAddAspectPolicy,
-                                          NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                          NodeServicePolicies.OnRemoveAspectPolicy,
-                                          NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                          ContentServicePolicies.OnContentUpdatePolicy
+        implements RecordService,
+        RecordsManagementModel,
+        RecordsManagementCustomModel,
+        NodeServicePolicies.OnAddAspectPolicy,
+        NodeServicePolicies.OnCreateChildAssociationPolicy,
+        NodeServicePolicies.OnRemoveAspectPolicy,
+        NodeServicePolicies.OnUpdatePropertiesPolicy,
+        ContentServicePolicies.OnContentUpdatePolicy
 {
     /** Logger */
     private static final Logger LOGGER = LoggerFactory.getLogger(RecordServiceImpl.class);
@@ -171,9 +169,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private static final String MSG_CANNOT_CREATE_CHILDREN_IN_CLOSED_RECORD_FOLDER = "rm.service.add-children-to-closed-record-folder";
 
     /** Always edit property array */
-    private static final QName[] ALWAYS_EDIT_PROPERTIES = new QName[]
-    {
-       ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA
+    private static final QName[] ALWAYS_EDIT_PROPERTIES = new QName[]{
+            ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA
     };
 
     /** always edit model URI's */
@@ -185,7 +182,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private boolean checkMandatoryPropertiesEnabled = true;
 
     /**
-     * @param alwaysEditURIs the alwaysEditURIs to set
+     * @param alwaysEditURIs
+     *            the alwaysEditURIs to set
      */
     public void setAlwaysEditURIs(List<String> alwaysEditURIs)
     {
@@ -201,10 +199,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /** record model URI's */
-    private  List<String> recordModelURIs;
+    private List<String> recordModelURIs;
 
     /**
-     * @param recordModelURIs namespaces specific to records
+     * @param recordModelURIs
+     *            namespaces specific to records
      */
     public void setRecordModelURIs(List<String> recordModelURIs)
     {
@@ -212,15 +211,14 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /** non-record model URI's */
-    private static final String[] NON_RECORD_MODEL_URIS = new String[]
-    {
-        NamespaceService.AUDIO_MODEL_1_0_URI,
-        NamespaceService.CONTENT_MODEL_1_0_URI,
-        NamespaceService.EMAILSERVER_MODEL_URI,
-        NamespaceService.EXIF_MODEL_1_0_URI,
-        NamespaceService.FORUMS_MODEL_1_0_URI,
-        NamespaceService.LINKS_MODEL_1_0_URI,
-        NamespaceService.REPOSITORY_VIEW_1_0_URI
+    private static final String[] NON_RECORD_MODEL_URIS = new String[]{
+            NamespaceService.AUDIO_MODEL_1_0_URI,
+            NamespaceService.CONTENT_MODEL_1_0_URI,
+            NamespaceService.EMAILSERVER_MODEL_URI,
+            NamespaceService.EXIF_MODEL_1_0_URI,
+            NamespaceService.FORUMS_MODEL_1_0_URI,
+            NamespaceService.LINKS_MODEL_1_0_URI,
+            NamespaceService.REPOSITORY_VIEW_1_0_URI
     };
 
     /** Indentity service */
@@ -302,7 +300,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private IncompleteNodeTagger incompleteNodeTagger;
 
     /**
-     * @param identifierService identifier service
+     * @param identifierService
+     *            identifier service
      */
     public void setIdentifierService(IdentifierService identifierService)
     {
@@ -310,7 +309,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param extendedPermissionService extended permission service
+     * @param extendedPermissionService
+     *            extended permission service
      */
     public void setExtendedPermissionService(ExtendedPermissionService extendedPermissionService)
     {
@@ -318,7 +318,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param extendedSecurityService   extended security service
+     * @param extendedSecurityService
+     *            extended security service
      */
     public void setExtendedSecurityService(ExtendedSecurityService extendedSecurityService)
     {
@@ -326,7 +327,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -334,7 +336,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param notificationHelper notification helper
+     * @param notificationHelper
+     *            notification helper
      */
     public void setNotificationHelper(RecordsManagementNotificationHelper notificationHelper)
     {
@@ -342,7 +345,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param policyComponent   policy component
+     * @param policyComponent
+     *            policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -350,7 +354,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param ownableService    ownable service
+     * @param ownableService
+     *            ownable service
      */
     public void setOwnableService(OwnableService ownableService)
     {
@@ -358,7 +363,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param capabilityService capability service
+     * @param capabilityService
+     *            capability service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -366,7 +372,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param ruleService   rule service
+     * @param ruleService
+     *            rule service
      */
     public void setRuleService(RuleService ruleService)
     {
@@ -374,7 +381,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param fileFolderService file folder service
+     * @param fileFolderService
+     *            file folder service
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
@@ -382,7 +390,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param recordFolderService record folder service
+     * @param recordFolderService
+     *            record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
@@ -390,7 +399,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param filePlanRoleService file plan role service
+     * @param filePlanRoleService
+     *            file plan role service
      */
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
@@ -398,7 +408,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param permissionService permission service
+     * @param permissionService
+     *            permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -406,7 +417,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param versionService version service
+     * @param versionService
+     *            version service
      */
     public void setVersionService(VersionService versionService)
     {
@@ -414,7 +426,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param relationshipService   relationship service
+     * @param relationshipService
+     *            relationship service
      */
     public void setRelationshipService(RelationshipService relationshipService)
     {
@@ -422,7 +435,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param dispositionService    disposition service
+     * @param dispositionService
+     *            disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -430,7 +444,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param recordsManagementContainerType    records management container type
+     * @param recordsManagementContainerType
+     *            records management container type
      */
     public void setRecordsManagementContainerType(RecordsManagementContainerType recordsManagementContainerType)
     {
@@ -438,7 +453,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param recordableVersionService  recordable version service
+     * @param recordableVersionService
+     *            recordable version service
      */
     public void setRecordableVersionService(RecordableVersionService recordableVersionService)
     {
@@ -451,7 +467,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param freezeService freeze service
+     * @param freezeService
+     *            freeze service
      */
     public void setFreezeService(FreezeService freezeService)
     {
@@ -459,7 +476,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param namespaceService namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -467,7 +485,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param checkMandatoryPropertiesEnabled true if check mandatory properties is enabled, false otherwise
+     * @param checkMandatoryPropertiesEnabled
+     *            true if check mandatory properties is enabled, false otherwise
      */
     public void setCheckMandatoryPropertiesEnabled(boolean checkMandatoryPropertiesEnabled)
     {
@@ -492,16 +511,13 @@ public class RecordServiceImpl extends BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
             type = "rma:record",
-            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onAddAspect(NodeRef nodeRef, QName aspect)
     {
-        authenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        authenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -519,11 +535,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            type = "sys:noContent"
-    )
+            type = "sys:noContent")
     public void onRemoveAspect(NodeRef nodeRef, QName aspect)
     {
         if (nodeService.hasAspect(nodeRef, ASPECT_RECORD))
@@ -543,26 +557,23 @@ public class RecordServiceImpl extends BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
     @Override
-    @Behaviour
-    (
-       kind = ASSOCIATION,
-       type = "rma:recordFolder",
-       notificationFrequency = FIRST_EVENT
-    )
+    @Behaviour(
+            kind = ASSOCIATION,
+            type = "rma:recordFolder",
+            notificationFrequency = FIRST_EVENT)
     public void onCreateChildAssociation(final ChildAssociationRef childAssocRef, final boolean bNew)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
                 try
                 {
                     NodeRef nodeRef = childAssocRef.getChildRef();
-                    if (nodeService.exists(nodeRef)   &&
-                        !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) &&
-                        !nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) &&
-                        !nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY))
+                    if (nodeService.exists(nodeRef) &&
+                            !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) &&
+                            !nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) &&
+                            !nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY))
                     {
                         // store information about the 'new' record in the transaction
                         // @since 2.3
@@ -583,7 +594,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                             }
                         }
 
-                        //create and file the content as a record
+                        // create and file the content as a record
                         file(nodeRef);
                         // recalculate disposition schedule for the record when linking it
                         dispositionService.recalculateNextDispositionStep(nodeRef);
@@ -646,19 +657,17 @@ public class RecordServiceImpl extends BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             name = "onUpdateProperties",
             kind = BehaviourKind.CLASS,
-            type= "rma:record"
-    )
+            type = "rma:record")
     public void onUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
     {
         if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
-            !AuthenticationUtil.isRunAsUserTheSystemUser() &&
-            nodeService.exists(nodeRef) &&
-            isRecord(nodeRef) &&
-            !transactionalResourceHelper.getSet(KEY_IGNORE_ON_UPDATE).contains(nodeRef))
+                !AuthenticationUtil.isRunAsUserTheSystemUser() &&
+                nodeService.exists(nodeRef) &&
+                isRecord(nodeRef) &&
+                !transactionalResourceHelper.getSet(KEY_IGNORE_ON_UPDATE).contains(nodeRef))
         {
             for (Map.Entry<QName, Serializable> entry : after.entrySet())
             {
@@ -676,9 +685,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     // deal with date values, remove the seconds and milliseconds for the
                     // comparison as they are removed from the submitted for data
                     Calendar beforeCal = Calendar.getInstance();
-                    beforeCal.setTime((Date)beforeValue);
+                    beforeCal.setTime((Date) beforeValue);
                     Calendar afterCal = Calendar.getInstance();
-                    afterCal.setTime((Date)afterValue);
+                    afterCal.setTime((Date) afterValue);
                     beforeCal.set(Calendar.SECOND, 0);
                     beforeCal.set(Calendar.MILLISECOND, 0);
                     afterCal.set(Calendar.SECOND, 0);
@@ -696,14 +705,14 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 }
 
                 if (!propertyUnchanged &&
-                    !(ContentModel.PROP_CONTENT.equals(property) && beforeValue == null) &&
-                    !isPropertyEditable(nodeRef, property))
+                        !(ContentModel.PROP_CONTENT.equals(property) && beforeValue == null) &&
+                        !isPropertyEditable(nodeRef, property))
                 {
                     // the user can't edit the record property
                     throw new ModelAccessDeniedException(
                             "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
-                            " does not have the permission to edit the record property " + property.toString() +
-                            " on the node " + nodeRef.toString());
+                                    " does not have the permission to edit the record property " + property.toString() +
+                                    " on the node " + nodeRef.toString());
                 }
             }
         }
@@ -712,7 +721,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Get map containing record metadata aspects.
      *
-     * @return  {@link Map}&lt;{@link QName}, {@link Set}&lt;{@link QName} &gt;&gt;  map containing record metadata aspects
+     * @return {@link Map}&lt;{@link QName}, {@link Set}&lt;{@link QName} &gt;&gt; map containing record metadata aspects
      *
      * @since 2.2
      */
@@ -733,8 +742,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Initialises the record meta-data map.
      * <p>
-     * This is here to support backwards compatibility in case an existing
-     * customization (pre 2.2) is still using the record meta-data aspect.
+     * This is here to support backwards compatibility in case an existing customization (pre 2.2) is still using the record meta-data aspect.
      *
      * @since 2.2
      */
@@ -794,7 +802,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     *  @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isRecordMetadataAspect(org.alfresco.service.namespace.QName)
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isRecordMetadataAspect(org.alfresco.service.namespace.QName)
      */
     @Override
     public boolean isRecordMetadataAspect(QName aspect)
@@ -814,7 +822,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             ClassDefinition classDefinition = propertyDefinition.getContainerClass();
             if (classDefinition != null &&
-                getRecordMetadataAspectsMap().containsKey(classDefinition.getName()))
+                    getRecordMetadataAspectsMap().containsKey(classDefinition.getName()))
             {
                 result = true;
             }
@@ -901,8 +909,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
         invokeBeforeRecordDeclaration(nodeRef);
         // do the work of creating the record as the system user
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
@@ -991,7 +998,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Helper method to check the given file plan before trying to determine the unfiled records container.
      *
-     * @param filePlan The reference of the file plan node
+     * @param filePlan
+     *            The reference of the file plan node
      */
     private NodeRef recordCreationSanityCheckOnFilePlan(NodeRef filePlan)
     {
@@ -1001,8 +1009,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             // TODO .. eventually make the file plan parameter required
 
-            result = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-            {
+            result = AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
                 @Override
                 public NodeRef doWork()
                 {
@@ -1037,8 +1044,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Helper method to check the given destination before trying to declare a record in it.
      *
-     * @param destinationNodeRef The reference of the container in which the record will be created
-     * @param filePlan           The reference of the file plan node
+     * @param destinationNodeRef
+     *            The reference of the container in which the record will be created
+     * @param filePlan
+     *            The reference of the file plan node
      */
     private NodeRef recordCreationSanityCheckOnDestinationNode(NodeRef destinationNodeRef, final NodeRef filePlan)
     {
@@ -1079,7 +1088,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             if (freezeService.isFrozen(newRecordContainer))
             {
-                throw new IntegrityException(I18NUtil.getMessage("rm.service.add-children-to-frozen-record-folder"),null);
+                throw new IntegrityException(I18NUtil.getMessage("rm.service.add-children-to-frozen-record-folder"), null);
             }
         }
 
@@ -1089,7 +1098,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Helper method to check the given node before trying to declare it as record
      *
-     * @param nodeRef The reference of the node which will be declared as record
+     * @param nodeRef
+     *            The reference of the node which will be declared as record
      */
     private void recordCreationSanityCheckOnNode(NodeRef nodeRef)
     {
@@ -1159,8 +1169,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     @Override
     public NodeRef createRecordFromCopy(final NodeRef filePlan, final NodeRef nodeRef)
     {
-        return authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
-        {
+        return authenticationUtil.runAsSystem(new RunAsWork<NodeRef>() {
             public NodeRef doWork() throws Exception
             {
                 // get the unfiled record folder
@@ -1247,13 +1256,13 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Helper to get the latest version record for a given document (ie non-record)
      *
-     * @param nodeRef   node reference
-     * @return NodeRef  latest version record, null otherwise
+     * @param nodeRef
+     *            node reference
+     * @return NodeRef latest version record, null otherwise
      */
     private NodeRef getLatestVersionRecord(NodeRef nodeRef)
     {
         NodeRef versionRecord = null;
-
 
         recordableVersionService.createSnapshotVersion(nodeRef);
         // wire record up to previous record
@@ -1329,8 +1338,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 writer.putContent(reader);
             }
 
-            result = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
-            {
+            result = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>() {
                 public NodeRef doWork() throws Exception
                 {
                     // Check if the "record" aspect has been applied already.
@@ -1360,7 +1368,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Creates a record from the given document
      *
-     * @param document the document from which a record will be created
+     * @param document
+     *            the document from which a record will be created
      */
     @Override
     public void makeRecord(NodeRef document)
@@ -1371,8 +1380,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         disablePropertyEditableCheck();
         try
         {
-            authenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            authenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -1408,8 +1416,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
         if (isRecord(nodeRef))
         {
-            result = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
-            {
+            result = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>() {
                 public Boolean doWork() throws Exception
                 {
                     return (null != nodeService.getProperty(nodeRef, PROP_DATE_FILED));
@@ -1423,10 +1430,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Helper method to 'file' a new document that arrived in the file plan structure.
      *
-     *  TODO atm we only 'file' content as a record .. may need to consider other types if we
-     *       are to support the notion of composite records.
+     * TODO atm we only 'file' content as a record .. may need to consider other types if we are to support the notion of composite records.
      *
-     * @param record node reference to record (or soon to be record!)
+     * @param record
+     *            node reference to record (or soon to be record!)
      */
     @Override
     public void file(NodeRef record)
@@ -1436,8 +1443,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
         // we only support filling of content items
         // TODO composite record support needs to file containers too
         QName type = nodeService.getType(record);
-        if (ContentModel.TYPE_CONTENT.equals(type)  ||
-            dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
+        if (ContentModel.TYPE_CONTENT.equals(type) ||
+                dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
         {
             // fire before file record policy
             beforeFileRecord.get(getTypeAndApsects(record)).beforeFileRecord(record);
@@ -1477,8 +1484,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         invokeBeforeRecordRejection(nodeRef);
 
         // do the work of rejecting the record as the system user
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -1495,10 +1501,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                     // get record property values
                     final Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-                    final String recordId = (String)properties.get(PROP_IDENTIFIER);
-                    final String documentOwner = (String)properties.get(PROP_RECORD_ORIGINATING_USER_ID);
-                    final String originalName = (String)properties.get(PROP_ORIGIONAL_NAME);
-                    final NodeRef originatingLocation = (NodeRef)properties.get(PROP_RECORD_ORIGINATING_LOCATION);
+                    final String recordId = (String) properties.get(PROP_IDENTIFIER);
+                    final String documentOwner = (String) properties.get(PROP_RECORD_ORIGINATING_USER_ID);
+                    final String originalName = (String) properties.get(PROP_ORIGIONAL_NAME);
+                    final NodeRef originatingLocation = (NodeRef) properties.get(PROP_RECORD_ORIGINATING_LOCATION);
 
                     // we can only reject if the originating location is present
                     if (originatingLocation != null)
@@ -1528,7 +1534,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         {
                             fileFolderService.rename(nodeRef, originalName);
 
-                            String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                            String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                             LOGGER.debug("Rename {} to {}", name, originalName);
                         }
 
@@ -1584,7 +1590,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                     // Do not attempt to clean up rendition nodes which are not children of their source node.
                     final boolean renditionRequiresCleaning = nodeService.exists(renditionNode) &&
-                                                              renditionAssoc.isPrimary();
+                            renditionAssoc.isPrimary();
 
                     if (renditionRequiresCleaning)
                     {
@@ -1640,7 +1646,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             for (AccessPermission perm : perms)
             {
                 if ((perm.getPermission().contains(RMPermissionModel.EDIT_NON_RECORD_METADATA) ||
-                     perm.getPermission().contains(RMPermissionModel.EDIT_RECORD_METADATA)))
+                        perm.getPermission().contains(RMPermissionModel.EDIT_RECORD_METADATA)))
                 {
                     LOGGER.debug("     ... " + perm.getAuthority() + " - " + perm.getPermission() + " - " + perm.getAccessStatus().toString());
                 }
@@ -1673,8 +1679,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 allowNonRecordEdit = true;
             }
 
-            if (AccessStatus.ALLOWED.equals(accessRecord)  ||
-                AccessStatus.ALLOWED.equals(accessDeclaredRecord))
+            if (AccessStatus.ALLOWED.equals(accessRecord) ||
+                    AccessStatus.ALLOWED.equals(accessDeclaredRecord))
             {
                 LOGGER.debug(" ... user has edit record or declared metadata capability");
                 allowRecordEdit = true;
@@ -1719,8 +1725,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Helper method that indicates whether a property is considered record metadata or not.
      *
-     * @param property  property
-     * @return boolea   true if record metadata, false otherwise
+     * @param property
+     *            property
+     * @return boolea true if record metadata, false otherwise
      */
     private boolean isRecordMetadata(NodeRef filePlan, QName property)
     {
@@ -1772,11 +1779,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * Helper method to determine whether a property is protected at a dictionary definition
-     * level.
+     * Helper method to determine whether a property is protected at a dictionary definition level.
      *
-     * @param property  property qualified name
-     * @return booelan  true if protected, false otherwise
+     * @param property
+     *            property qualified name
+     * @return booelan true if protected, false otherwise
      */
     private boolean isProtectedProperty(QName property)
     {
@@ -1852,7 +1859,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         ParameterCheck.mandatory("recordFolder", recordFolder);
 
         // ensure we are linking a record to a record folder
-        if(isRecord(record) && isRecordFolder(recordFolder))
+        if (isRecord(record) && isRecordFolder(recordFolder))
         {
             // ensure that we are not linking a record to an existing location
             List<ChildAssociationRef> parents = nodeService.getParentAssocs(record);
@@ -1873,10 +1880,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             // create a secondary link to the record folder
             nodeService.addChild(
-                recordFolder,
-                record,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
+                    recordFolder,
+                    record,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
 
             // recalculate disposition schedule for the record when linking it
             dispositionService.recalculateNextDispositionStep(record);
@@ -1909,7 +1916,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 {
                     // we can't link a record to an incompatible disposition schedule
                     throw new RecordLinkRuntimeException("Cannot link a record to a record folder with an incompatible retention schedule.  "
-                                                     + "They must either both be record level or record folder level retentions.");
+                            + "They must either both be record level or record folder level retentions.");
                 }
             }
         }
@@ -1925,7 +1932,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         ParameterCheck.mandatory("recordFolder", recordFolder);
 
         // ensure we are unlinking a record from a record folder
-        if(isRecord(record) && isRecordFolder(recordFolder))
+        if (isRecord(record) && isRecordFolder(recordFolder))
         {
             // check that we are not trying to unlink the primary parent
             NodeRef primaryParent = nodeService.getPrimaryParent(record).getParentRef();
@@ -1947,16 +1954,12 @@ public class RecordServiceImpl extends BaseBehaviourBean
         }
     }
 
-    /*
-     * @see org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy#onContentUpdate(org.alfresco.service.cmr.repository.NodeRef, boolean)
-     */
+    /* @see org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy#onContentUpdate(org.alfresco.service.cmr.repository.NodeRef, boolean) */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
             type = "rma:record",
-            notificationFrequency = TRANSACTION_COMMIT
-    )
+            notificationFrequency = TRANSACTION_COMMIT)
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
         if (nodeService.exists(nodeRef) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
@@ -1969,7 +1972,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Invoke invokeBeforeRecordDeclaration policy
      *
-     * @param nodeRef       node reference
+     * @param nodeRef
+     *            node reference
      */
     protected void invokeBeforeRecordDeclaration(NodeRef nodeRef)
     {
@@ -1983,7 +1987,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Invoke invokeOnRecordDeclaration policy
      *
-     * @param nodeRef       node reference
+     * @param nodeRef
+     *            node reference
      */
     protected void invokeOnRecordDeclaration(NodeRef nodeRef)
     {
@@ -1997,7 +2002,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Invoke invokeBeforeRecordRejection policy
      *
-     * @param nodeRef       node reference
+     * @param nodeRef
+     *            node reference
      */
     protected void invokeBeforeRecordRejection(NodeRef nodeRef)
     {
@@ -2011,7 +2017,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Invoke invokeOnRecordRejection policy
      *
-     * @param nodeRef       node reference
+     * @param nodeRef
+     *            node reference
      */
     protected void invokeOnRecordRejection(NodeRef nodeRef)
     {
@@ -2025,16 +2032,13 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * RM-5244 - workaround to make sure the incomplete aspect is removed
      *
-     * @param nodeRef the node to reevaluate for
+     * @param nodeRef
+     *            the node to reevaluate for
      */
     private void reevaluateIncompleteTag(NodeRef nodeRef)
     {
-        /*
-         * Check if the node has the aspect because the reevaluation is expensive.
-         * If the node doesn't have the aspect it means IncompleteNodeTagger didn't load before TransactionBehaviourQueue
-         * and we don't need to reevaluate.
-         */
-        if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_INCOMPLETE))
+        /* Check if the node has the aspect because the reevaluation is expensive. If the node doesn't have the aspect it means IncompleteNodeTagger didn't load before TransactionBehaviourQueue and we don't need to reevaluate. */
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_INCOMPLETE))
         {
             incompleteNodeTagger.beforeCommit(false);
         }
@@ -2043,7 +2047,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Completes a record
      *
-     * @param nodeRef Record node reference
+     * @param nodeRef
+     *            Record node reference
      */
     @Override
     public void complete(NodeRef nodeRef)
@@ -2058,8 +2063,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
             nodeService.addAspect(nodeRef, ASPECT_DECLARED_RECORD, declaredProps);
 
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {
@@ -2078,10 +2082,13 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Helper method to validate whether the node is in a state suitable for completion
      *
-     * @param nodeRef node reference
-     * @throws Exception if node not valid for completion
+     * @param nodeRef
+     *            node reference
+     * @throws Exception
+     *             if node not valid for completion
      */
-    private void validateForCompletion(NodeRef nodeRef) {
+    private void validateForCompletion(NodeRef nodeRef)
+    {
         if (!nodeService.exists(nodeRef))
         {
             LOGGER.warn(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, nodeRef.toString()));
@@ -2148,7 +2155,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Helper method to build single string containing list of missing properties
      *
-     * @param missingProperties list of missing properties
+     * @param missingProperties
+     *            list of missing properties
      * @return String of missing properties
      */
     private String buildMissingPropertiesErrorString(List<String> missingProperties)
@@ -2166,13 +2174,16 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Helper method to check whether all the definition mandatory properties of the node have been set
      *
-     * @param classDef          the ClassDefinition defining the properties to be checked
-     * @param nodeRefProps      the properties of the node to be checked
-     * @param missingProperties the list of mandatory properties found to be missing (currently only the first one)
+     * @param classDef
+     *            the ClassDefinition defining the properties to be checked
+     * @param nodeRefProps
+     *            the properties of the node to be checked
+     * @param missingProperties
+     *            the list of mandatory properties found to be missing (currently only the first one)
      * @return boolean true if all mandatory properties are set, false otherwise
      */
     private void checkDefinitionMandatoryPropsSet(final ClassDefinition classDef, final Map<QName, Serializable> nodeRefProps,
-                                                  final List<String> missingProperties)
+            final List<String> missingProperties)
     {
         for (PropertyDefinition propDef : classDef.getProperties().values())
         {
@@ -2192,8 +2203,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /**
      * Helper method to get the custom aspect for a given nodeRef type
      *
-     * @param nodeRefType the node type for which to return custom aspect QName
-     * @return QName    custom aspect
+     * @param nodeRefType
+     *            the node type for which to return custom aspect QName
+     * @return QName custom aspect
      */
     private QName getCustomAspectImpl(QName nodeRefType)
     {

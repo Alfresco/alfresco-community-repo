@@ -28,6 +28,8 @@ package org.alfresco.rest.api.groups;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Groups;
 import org.alfresco.rest.api.model.GroupMember;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -38,10 +40,9 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
-
+ * 
  * @author cturlica
  */
 @RelationshipResource(name = "members", entityResource = GroupsEntityResource.class, title = "Group Members")

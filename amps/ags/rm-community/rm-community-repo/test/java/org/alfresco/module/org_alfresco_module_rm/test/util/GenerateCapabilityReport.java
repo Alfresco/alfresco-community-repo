@@ -44,8 +44,7 @@ public class GenerateCapabilityReport extends BaseRMTestCase
 {
     public void testGetCapability() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {

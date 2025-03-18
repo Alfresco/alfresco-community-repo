@@ -50,10 +50,12 @@ public interface BatchMonitor
 
     /**
      * Gets the total number of results.
+     * 
      * @deprecated use {@link #getTotalResultsLong()} instead
      * @return the total number of results
      */
-    @Deprecated public int getTotalResults();
+    @Deprecated
+    public int getTotalResults();
 
     /**
      * Gets the ID of the entry being processed
@@ -64,10 +66,12 @@ public interface BatchMonitor
 
     /**
      * Gets the number of successfully processed entries.
+     * 
      * @deprecated use {@link #getSuccessfullyProcessedEntriesLong()} instead
      * @return the successfully processed entries
      */
-    @Deprecated public int getSuccessfullyProcessedEntries();
+    @Deprecated
+    public int getSuccessfullyProcessedEntries();
 
     /**
      * Gets the progress expressed as a percentage.
@@ -78,10 +82,12 @@ public interface BatchMonitor
 
     /**
      * Gets the total number of errors.
+     * 
      * @deprecated use {@link #getTotalErrorsLong()} instead
      * @return the total number of errors
      */
-    @Deprecated public int getTotalErrors();
+    @Deprecated
+    public int getTotalErrors();
 
     /**
      * Gets the stack trace of the last error.

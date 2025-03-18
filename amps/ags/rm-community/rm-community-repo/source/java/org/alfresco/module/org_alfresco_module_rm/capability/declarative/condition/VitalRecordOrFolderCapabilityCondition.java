@@ -49,7 +49,7 @@ public class VitalRecordOrFolderCapabilityCondition extends AbstractCapabilityCo
         else if (recordFolderService.isRecordFolder(nodeRef))
         {
             // Check the folder for the vital record indicator
-            Boolean value = (Boolean)nodeService.getProperty(nodeRef, RecordsManagementModel.PROP_VITAL_RECORD_INDICATOR);
+            Boolean value = (Boolean) nodeService.getProperty(nodeRef, RecordsManagementModel.PROP_VITAL_RECORD_INDICATOR);
             if (value != null)
             {
                 result = value.booleanValue();

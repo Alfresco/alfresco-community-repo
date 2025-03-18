@@ -25,14 +25,16 @@
  */
 package org.alfresco.repo.transfer;
 
-import org.alfresco.service.cmr.transfer.TransferVersion;
-import org.junit.Test;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Test;
+
+import org.alfresco.service.cmr.transfer.TransferVersion;
+
 /**
  * Unit test for TransferVersionChecker
+ * 
  * @author mrogers
  */
 public class TransferVersionCheckerImplTest
@@ -43,25 +45,25 @@ public class TransferVersionCheckerImplTest
     @Test
     public void testTransferVersionCheckerImpl()
     {
-        
+
         TransferVersionChecker checker = new TransferVersionCheckerImpl();
-        
+
         String EDITION = "Ent";
-        
+
         TransferVersion e = new TransferVersionImpl("3", "3", "0", EDITION);
         TransferVersion e2 = new TransferVersionImpl("3", "3", "0", EDITION);
         TransferVersion e3 = new TransferVersionImpl("3", "3", "1", EDITION);
-        
+
         assertTrue(e.equals(e2));
         assertFalse(e.equals(e3));
-        
+
         assertTrue("same object equals", checker.checkTransferVersions(e, e));
         assertTrue("duplicate object equals", checker.checkTransferVersions(e, e2));
-        
+
         // The revision should be ignored
         assertTrue("not equals", checker.checkTransferVersions(e, new TransferVersionImpl("3", "3", "1", EDITION)));
         assertTrue("not equals", checker.checkTransferVersions(e, new TransferVersionImpl("3", "3", "2", EDITION)));
-        
+
         assertTrue("Checker should not flag minor difference", checker.checkTransferVersions(e, new TransferVersionImpl("3", "4", "0", EDITION)));
         assertFalse("Checker should flag major difference", checker.checkTransferVersions(e, new TransferVersionImpl("4", "3", "0", EDITION)));
         assertTrue("Checker should not flag edition difference", checker.checkTransferVersions(e, new TransferVersionImpl("3", "3", "0", "Whatever")));

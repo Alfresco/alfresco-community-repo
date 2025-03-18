@@ -28,17 +28,17 @@ package org.alfresco.repo.security.authentication.ldap;
 import javax.naming.NamingException;
 import javax.naming.directory.InitialDirContext;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationDiagnostic;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.sync.ldap.LDAPNameResolver;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
- * Authenticates a user by LDAP. To convert the user name to an LDAP DN, it uses the fixed format in
- * <code>userNameFormat</code> if set, or calls the {@link LDAPNameResolver} otherwise.
+ * Authenticates a user by LDAP. To convert the user name to an LDAP DN, it uses the fixed format in <code>userNameFormat</code> if set, or calls the {@link LDAPNameResolver} otherwise.
  * 
  * @author Andy Hind
  */
@@ -46,13 +46,13 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
         ActivateableBean
 {
     private boolean escapeCommasInBind = false;
-    
+
     private boolean escapeCommasInUid = false;
-    
+
     private boolean active = true;
 
     private String userNameFormat;
-    
+
     private LDAPNameResolver ldapNameResolver;
 
     private LDAPInitialDirContextFactory ldapInitialContextFactory;
@@ -71,7 +71,7 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
     {
         this.userNameFormat = userNameFormat == null || userNameFormat.length() == 0 ? null : userNameFormat;
     }
-        
+
     public void setLdapNameResolver(LDAPNameResolver ldapNameResolver)
     {
         this.ldapNameResolver = ldapNameResolver;
@@ -86,25 +86,23 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
     {
         this.escapeCommasInUid = escapeCommasInUid;
     }
-    
+
     public void setActive(boolean active)
     {
         this.active = active;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive() */
     public boolean isActive()
     {
         return this.active;
-    }        
+    }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet() */
     public void afterPropertiesSet() throws Exception
     {
         if (this.ldapNameResolver == null && this.userNameFormat == null)
@@ -124,14 +122,14 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
         }
         // Distinguished name of user.
         String userDN;
-        
+
         AuthenticationDiagnostic diagnostic = new AuthenticationDiagnostic();
-        
-        if(userNameFormat == null)
+
+        if (userNameFormat == null)
         {
             // If we aren't using a fixed name format, do a search to resolve the user DN
             userDN = ldapNameResolver.resolveDistinguishedName(userName, diagnostic);
-            
+
             Object[] params = {userName, userDN};
             diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_LOOKEDUP_USER, true, params);
         }
@@ -143,11 +141,10 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
             {
                 throw new AuthenticationException("Invalid user ID with leading or trailing whitespace");
             }
-            // we are using a fixed name format, 
+            // we are using a fixed name format,
             userDN = String.format(
-                    userNameFormat, new Object[]
-                    {
-                        escapeUserName(userName, escapeCommasInBind)
+                    userNameFormat, new Object[]{
+                            escapeUserName(userName, escapeCommasInBind)
                     });
             Object[] params = {userName, userDN, userNameFormat};
             diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_FORMAT_USER, true, params);
@@ -209,13 +206,14 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
     {
         return true;
     }
-    
+
     private String id = "default";
-    
+
     /**
      * Set the unique name of this ldap authentication component e.g. "managed,ldap1"
      * 
-     * @param id String
+     * @param id
+     *            String
      */
     public void setId(String id)
     {
@@ -224,6 +222,7 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
 
     /**
      * Get the unique name of this ldap authentication component e.g. "managed,ldap1";
+     * 
      * @return the unique name of this ldap authentication component
      */
     String getId()

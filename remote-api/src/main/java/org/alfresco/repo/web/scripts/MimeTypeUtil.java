@@ -25,24 +25,27 @@
  */
 package org.alfresco.repo.web.scripts;
 
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.MimetypeService;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 public class MimeTypeUtil
 {
 
     /**
-     * Get the file mimetype from the file ContentReader, and if its null then set the mimetype to binary by default
-     * and try to get the correct one from file extension
+     * Get the file mimetype from the file ContentReader, and if its null then set the mimetype to binary by default and try to get the correct one from file extension
      *
      *
-     * @param reader            reader of the file in the request
-     * @param req               request relating to the file
-     * @param mimetypeService   MimetypeService
+     * @param reader
+     *            reader of the file in the request
+     * @param req
+     *            request relating to the file
+     * @param mimetypeService
+     *            MimetypeService
      *
-     * @return  mimetype of the file as a string
+     * @return mimetype of the file as a string
      */
     public static String determineMimetype(ContentReader reader, WebScriptRequest req, MimetypeService mimetypeService)
     {

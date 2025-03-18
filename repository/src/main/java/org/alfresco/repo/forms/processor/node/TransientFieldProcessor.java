@@ -41,8 +41,8 @@ import org.alfresco.repo.forms.processor.FormCreationData;
 public abstract class TransientFieldProcessor extends AbstractFieldProcessor<TransientValueGetter>
 {
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.AbstractFieldProcessor#generateTypedField(java.lang.String, org.alfresco.repo.forms.processor.node.FormCreationData, java.lang.Object)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.AbstractFieldProcessor#generateTypedField(java.lang.String, org.alfresco.repo.forms.processor.node.FormCreationData, java.lang.Object) */
     @Override
     protected Field generateTypedField(String fieldName, FormCreationData formData, TransientValueGetter typedData)
     {
@@ -61,12 +61,9 @@ public abstract class TransientFieldProcessor extends AbstractFieldProcessor<Tra
         return data.getTransientValue(fieldName);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @seeorg.alfresco.repo.forms.field.processor.AbstractFieldProcessor#
-     * getExpectedDataType()
-     */
+     * @seeorg.alfresco.repo.forms.field.processor.AbstractFieldProcessor# getExpectedDataType() */
     @Override
     protected Class<TransientValueGetter> getExpectedDataType()
     {

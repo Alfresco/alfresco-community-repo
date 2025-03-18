@@ -27,6 +27,16 @@ package org.alfresco.schedule;
 
 import java.util.UUID;
 
+import com.google.common.collect.ImmutableMap;
+import org.junit.Before;
+import org.junit.Test;
+import org.quartz.JobDetail;
+import org.quartz.SchedulerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.quartz.SchedulerAccessorBean;
+import org.springframework.test.context.ContextConfiguration;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -40,16 +50,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.quartz.JobDetail;
-import org.quartz.SchedulerException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.quartz.SchedulerAccessorBean;
-import org.springframework.test.context.ContextConfiguration;
-
-import com.google.common.collect.ImmutableMap;
 
 /**
  * 

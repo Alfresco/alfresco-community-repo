@@ -26,11 +26,19 @@
 package org.alfresco.repo.security.permissions.dynamic;
 
 import static java.lang.System.currentTimeMillis;
+
 import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Properties;
+
+import org.junit.After;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -46,40 +54,32 @@ import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.alfresco.util.test.junitrules.TemporarySites;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.springframework.context.ApplicationContext;
 
 /**
- * This test class demonstrates the permissions of the service account authorities.
- * The service account authorities are used to grant permissions to service accounts.
+ * This test class demonstrates the permissions of the service account authorities. The service account authorities are used to grant permissions to service accounts.
  * <p>
- * The service account authorities are defined in the <i>alfresco-global.properties</i> file.
- * Using the following naming convention:
+ * The service account authorities are defined in the <i>alfresco-global.properties</i> file. Using the following naming convention:
+ * 
  * <pre>
  *   {@code
  *     serviceaccount.role.<service-account-name>=<service-account-role>
  *   }
  * </pre>
+ * 
  * The service account roles that currently supported are:
  * <ul>
- *   <li>{@link PermissionService#EDITOR_SVC_AUTHORITY}</li>
- *   <li>{@link PermissionService#COLLABORATOR_SVC_AUTHORITY}</li>
- *   <li>{@link PermissionService#ADMIN_SVC_AUTHORITY}</li>
+ * <li>{@link PermissionService#EDITOR_SVC_AUTHORITY}</li>
+ * <li>{@link PermissionService#COLLABORATOR_SVC_AUTHORITY}</li>
+ * <li>{@link PermissionService#ADMIN_SVC_AUTHORITY}</li>
  * </ul>
  * The test class relies on the following service accounts defined in the <i>alfresco-global.properties</i> file:
  * <ul>
- *   <li>serviceaccount.role.test-editor-sa=ROLE_EDITOR_SERVICE_ACCOUNT</li>
- *   <li>serviceaccount.role.test-collaborator-sa=ROLE_COLLABORATOR_SERVICE_ACCOUNT</li>
- *   <li>serviceaccount.role.test-admin-sa=ROLE_ADMIN_SERVICE_ACCOUNT</li>
+ * <li>serviceaccount.role.test-editor-sa=ROLE_EDITOR_SERVICE_ACCOUNT</li>
+ * <li>serviceaccount.role.test-collaborator-sa=ROLE_COLLABORATOR_SERVICE_ACCOUNT</li>
+ * <li>serviceaccount.role.test-admin-sa=ROLE_ADMIN_SERVICE_ACCOUNT</li>
  * </ul>
  * <p>
- * <b>Note:</b> There is no need to use public services (i.e., beans that start with a capital letter, such as NodeService)
- * to validate roles permissions. This is because the security enforcement of public services (i.e., ACL checks) ultimately relies on
- * the {@code permissionService.hasPermission()} method. Therefore, we can directly use the {@code permissionService.hasPermission()} method.
+ * <b>Note:</b> There is no need to use public services (i.e., beans that start with a capital letter, such as NodeService) to validate roles permissions. This is because the security enforcement of public services (i.e., ACL checks) ultimately relies on the {@code permissionService.hasPermission()} method. Therefore, we can directly use the {@code permissionService.hasPermission()} method.
  *
  * @author Jamal Kaabi-Mofrad
  */
@@ -151,8 +151,8 @@ public class ServiceAccountRoleTest
         // Create a private test site to make sure no other non-members or
         // non-site-admins can access the test site.
         return TEST_SITES.createSite("sitePreset", "saTestSite" + currentTimeMillis(), "SA Test Site",
-                                     "sa test site desc", SiteVisibility.PRIVATE,
-                                     AuthenticationUtil.getAdminUserName());
+                "sa test site desc", SiteVisibility.PRIVATE,
+                AuthenticationUtil.getAdminUserName());
     }
 
     private static void createTestFile(SiteInfo testSite)
@@ -163,11 +163,11 @@ public class ServiceAccountRoleTest
 
         final NodeRef testFolder = TEST_NODES.createFolder(docLib, "testFolder", AuthenticationUtil.getAdminUserName());
         testTextFile = TEST_NODES.createNodeWithTextContent(testFolder, TEST_TEXT_FILE_NAME, ContentModel.TYPE_CONTENT,
-                                                            AuthenticationUtil.getAdminUserName(),
-                                                            "The quick brown fox jumps over the lazy dog.");
+                AuthenticationUtil.getAdminUserName(),
+                "The quick brown fox jumps over the lazy dog.");
 
         Map<QName, Serializable> props = Map.of(ContentModel.PROP_NAME, TEST_TEXT_FILE_NAME,
-                                                ContentModel.PROP_DESCRIPTION, "Desc added by Admin.");
+                ContentModel.PROP_DESCRIPTION, "Desc added by Admin.");
         nodeService.setProperties(testTextFile, props);
     }
 

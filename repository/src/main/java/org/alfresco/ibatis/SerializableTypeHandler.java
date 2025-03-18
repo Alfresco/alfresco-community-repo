@@ -36,6 +36,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 
@@ -59,7 +60,7 @@ public class SerializableTypeHandler implements TypeHandler
     }
 
     /**
-     * @return      Returns the SQL type to use for serializable columns
+     * @return Returns the SQL type to use for serializable columns
      */
     public static int getSerializableType()
     {
@@ -67,7 +68,8 @@ public class SerializableTypeHandler implements TypeHandler
     }
 
     /**
-     * @throws DeserializationException if the object could not be deserialized
+     * @throws DeserializationException
+     *             if the object could not be deserialized
      */
     public Object getResult(ResultSet rs, String columnName) throws SQLException
     {
@@ -115,7 +117,7 @@ public class SerializableTypeHandler implements TypeHandler
         }
         return ret;
     }
-    
+
     public void setParameter(PreparedStatement ps, int i, Object parameter, JdbcType jdbcType) throws SQLException
     {
         if (parameter == null)
@@ -139,24 +141,22 @@ public class SerializableTypeHandler implements TypeHandler
             }
         }
     }
-    
-    public Object getResult(CallableStatement cs, int columnIndex) throws SQLException 
+
+    public Object getResult(CallableStatement cs, int columnIndex) throws SQLException
     {
         throw new UnsupportedOperationException("Unsupported");
     }
 
     /**
-     * @return          Returns the value given
+     * @return Returns the value given
      */
     public Object valueOf(String s)
     {
         return s;
     }
-    
+
     /**
-     * Marker exception to allow deserialization issues to be dealt with by calling code.
-     * If this exception remains uncaught, it will be very difficult to find and rectify
-     * the data issue.
+     * Marker exception to allow deserialization issues to be dealt with by calling code. If this exception remains uncaught, it will be very difficult to find and rectify the data issue.
      * 
      * @author Derek Hulley
      * @since 3.2
@@ -170,12 +170,10 @@ public class SerializableTypeHandler implements TypeHandler
             super(cause);
         }
     }
-    
+
     /**
-     * Marker exception to allow serialization issues to be dealt with by calling code.
-     * Unlike with {@link DeserializationException deserialization}, it is not important
-     * to handle this exception neatly.
-     *   
+     * Marker exception to allow serialization issues to be dealt with by calling code. Unlike with {@link DeserializationException deserialization}, it is not important to handle this exception neatly.
+     * 
      * @author Derek Hulley
      * @since 3.2
      */

@@ -25,6 +25,43 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static java.lang.Thread.sleep;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import static org.alfresco.repo.security.authentication.ResetPasswordServiceImplTest.getWorkflowIdAndKeyFromUrl;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.EmptyStackException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.apache.commons.httpclient.HttpStatus;
+import org.json.simple.JSONObject;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.core.io.ClassPathResource;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentLimitProvider;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -61,40 +98,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.email.EmailUtil;
-import org.apache.commons.httpclient.HttpStatus;
-import org.json.simple.JSONObject;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.core.io.ClassPathResource;
-
-import jakarta.mail.internet.MimeMessage;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EmptyStackException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static java.lang.Thread.sleep;
-import static org.alfresco.repo.security.authentication.ResetPasswordServiceImplTest.getWorkflowIdAndKeyFromUrl;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class TestPeople extends AbstractBaseApiTest
 {
@@ -141,7 +144,7 @@ public class TestPeople extends AbstractBaseApiTest
             account4 = createNetwork("account4");
 
             account4Admin = "admin@" + account4.getId();
-            
+
             publicApiClient.setRequestContext(new RequestContext(account4.getId(), account4Admin, "admin"));
             personAliceSmith = new Person();
             personAliceSmith.setUserName("alice@" + account4.getId());
@@ -153,7 +156,7 @@ public class TestPeople extends AbstractBaseApiTest
             personAliceSmith.setEnabled(true);
             personAliceSmith.setProperties(Collections.singletonMap("papi:lunch", "Magical sandwich"));
             people.create(personAliceSmith);
-            
+
             personAliceDavis = new Person();
             personAliceDavis.setUserName("aliced@" + account4.getId());
             personAliceDavis.setId("aliced@" + account4.getId());
@@ -179,14 +182,14 @@ public class TestPeople extends AbstractBaseApiTest
         account3Admin = "admin@" + account3.getId();
         account1PersonIt = account1.getPersonIds().iterator();
         account2PersonIt = account2.getPersonIds().iterator();
-        
+
         nodeService = applicationContext.getBean("NodeService", NodeService.class);
         personService = applicationContext.getBean("PersonService", PersonService.class);
 
         // Capture authentication pre-test, so we can restore it again afterwards.
         AuthenticationUtil.pushAuthentication();
     }
-    
+
     @After
     public void tearDown()
     {
@@ -195,7 +198,7 @@ public class TestPeople extends AbstractBaseApiTest
         {
             AuthenticationUtil.popAuthentication();
         }
-        catch(EmptyStackException e)
+        catch (EmptyStackException e)
         {
             // Nothing to do.
         }
@@ -224,7 +227,7 @@ public class TestPeople extends AbstractBaseApiTest
             Person person1Entity = repoService.getPerson(person1);
             check(person1Entity, resp);
         }
-        
+
         // should be able to see another user in the same domain, and be able to see full profile
         {
             publicApiClient.setRequestContext(new RequestContext(account1.getId(), person2));
@@ -236,7 +239,7 @@ public class TestPeople extends AbstractBaseApiTest
 
             check(person1Entity, resp);
         }
-        
+
         // "-me-" user
         {
             publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
@@ -257,7 +260,7 @@ public class TestPeople extends AbstractBaseApiTest
             people.getPerson(person1);
             fail("");
         }
-        catch(PublicApiException e)
+        catch (PublicApiException e)
         {
             assertEquals(HttpStatus.SC_UNAUTHORIZED, e.getHttpResponse().getStatusCode());
         }
@@ -278,7 +281,7 @@ public class TestPeople extends AbstractBaseApiTest
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
 
         Person person = new Person();
-        person.setUserName("myUserName00@"+account1.getId());
+        person.setUserName("myUserName00@" + account1.getId());
         person.setFirstName("Firstname");
         person.setLastName("Lastname");
         person.setDescription("my description");
@@ -298,7 +301,7 @@ public class TestPeople extends AbstractBaseApiTest
 
         Person p = people.create(person);
 
-        assertEquals("myUserName00@"+account1.getId(), p.getId());
+        assertEquals("myUserName00@" + account1.getId(), p.getId());
         assertEquals("Firstname", p.getFirstName());
         assertEquals("Lastname", p.getLastName());
         assertEquals("Firstname Lastname", p.getDisplayName());
@@ -343,7 +346,6 @@ public class TestPeople extends AbstractBaseApiTest
             }
         }
 
-
         // check for reserved authority prefixes
         person.setUserName("GROUP_EVERYONE");
         people.create(person, 400);
@@ -365,11 +367,11 @@ public class TestPeople extends AbstractBaseApiTest
         // Person disabled
         {
             publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
-            
+
             Person person = new Person();
-            person.setUserName("myUserName04@"+account1.getId());
+            person.setUserName("myUserName04@" + account1.getId());
             person.setFirstName("Firstname");
-            person.setEmail("myUserName04@"+account1.getId());
+            person.setEmail("myUserName04@" + account1.getId());
             person.setEnabled(false);
             person.setPassword("hello");
 
@@ -381,7 +383,7 @@ public class TestPeople extends AbstractBaseApiTest
             p = people.getPerson(person.getUserName());
             assertEquals(false, p.isEnabled());
             assertNull(p.getPassword());
-            
+
             // Can the new user account be used?
             publicApiClient.setRequestContext(new RequestContext(account1.getId(), person.getUserName(), "hello"));
             try
@@ -398,11 +400,11 @@ public class TestPeople extends AbstractBaseApiTest
         // Person enabled
         {
             publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
-            
+
             Person person = new Person();
-            person.setUserName("myUserName05@"+account1.getId());
+            person.setUserName("myUserName05@" + account1.getId());
             person.setFirstName("Firstname");
-            person.setEmail("myUserName05@"+account1.getId());
+            person.setEmail("myUserName05@" + account1.getId());
             person.setEnabled(true);
             person.setPassword("banana");
 
@@ -422,7 +424,7 @@ public class TestPeople extends AbstractBaseApiTest
             assertNull(p.getPassword());
         }
     }
-    
+
     @Test
     public void testCreatePerson_notAllFieldsRequired() throws Exception
     {
@@ -476,7 +478,7 @@ public class TestPeople extends AbstractBaseApiTest
         // +ve: absolute minimum
         {
             Person person = new Person();
-            person.setUserName("joe.bloggs.2@"+account1.getId());
+            person.setUserName("joe.bloggs.2@" + account1.getId());
             person.setFirstName("Joe");
             person.setEmail("joe.bloggs.2@example.com");
             person.setPassword("password-is-secret");
@@ -517,7 +519,7 @@ public class TestPeople extends AbstractBaseApiTest
         {
             // Create a person with no fields other than user ID set.
             Person person = new Person();
-            person.setUserName("joe.bloggs.2@"+account1.getId());
+            person.setUserName("joe.bloggs.2@" + account1.getId());
             people.create(person, 400);
 
             // Missing ID
@@ -527,12 +529,13 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     @Test
-    public void testCreatePerson_extraFieldsCauseError() throws Exception {
+    public void testCreatePerson_extraFieldsCauseError() throws Exception
+    {
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
 
-        String username = "joe.bloggs@"+account1.getId();
+        String username = "joe.bloggs@" + account1.getId();
 
-        String[] illegalFields = new String[] {
+        String[] illegalFields = new String[]{
                 "\"avatarId\": \"workspace://SpacesStore/\"",
                 "\"statusUpdatedAt\": \"2016-10-25T09:12:58.621Z\"",
                 "\"quota\": \"123\"",
@@ -541,14 +544,13 @@ public class TestPeople extends AbstractBaseApiTest
 
         for (String badField : illegalFields)
         {
-            String json =
-                    "{\n" +
-                            "  \"id\": \"" + username + "\",\n" +
-                            "  \"firstName\": \"Joe\",\n" +
-                            "  \"lastName\": \"Bloggs\",\n" +
-                            badField +
-                            "}";
-            people.create("people", null, null, null, json, "Illegal field test:"+badField, 400);
+            String json = "{\n" +
+                    "  \"id\": \"" + username + "\",\n" +
+                    "  \"firstName\": \"Joe\",\n" +
+                    "  \"lastName\": \"Bloggs\",\n" +
+                    badField +
+                    "}";
+            people.create("people", null, null, null, json, "Illegal field test:" + badField, 400);
         }
     }
 
@@ -556,13 +558,14 @@ public class TestPeople extends AbstractBaseApiTest
      * General error conditions not covered by other "create person" tests.
      */
     @Test
-    public void testCreatePerson_errorResponses() throws Exception {
+    public void testCreatePerson_errorResponses() throws Exception
+    {
         // -ve: authorisation required
         {
             // Invalid auth details
             publicApiClient.setRequestContext(new RequestContext(account1.getId(), GUID.generate(), "password"));
             Person person = new Person();
-            person.setUserName("myUserName01@"+account1.getId());
+            person.setUserName("myUserName01@" + account1.getId());
             person.setFirstName("Caroline");
             person.setEmail("caroline.smithson@example.com");
             person.setEnabled(true);
@@ -574,7 +577,7 @@ public class TestPeople extends AbstractBaseApiTest
             String apiUser = account2PersonIt.next();
             publicApiClient.setRequestContext(new RequestContext(account2.getId(), apiUser));
             Person person = new Person();
-            person.setUserName("myUserName02@"+account2.getId());
+            person.setUserName("myUserName02@" + account2.getId());
             person.setFirstName("Kieth");
             person.setEmail("keith.smith@example.com");
             person.setEnabled(true);
@@ -588,7 +591,7 @@ public class TestPeople extends AbstractBaseApiTest
 
         // -ve: person already exists
         {
-            String username = "myUserName03@"+account1.getId();
+            String username = "myUserName03@" + account1.getId();
             String password = "secret";
 
             Person person = new Person();
@@ -613,19 +616,19 @@ public class TestPeople extends AbstractBaseApiTest
         {
             publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
             Person person = new Person();
-            String personId = UUID.randomUUID().toString()+"@"+account1.getId();
+            String personId = UUID.randomUUID().toString() + "@" + account1.getId();
             person.setUserName(personId);
             person.setFirstName("Joe");
             person.setEmail(personId);
             person.setEnabled(true);
             person.setPassword("password123");
-            
+
             person.setProperties(Collections.singletonMap("usr:enabled", false));
             people.create(person, 400);
-            
+
             person.setProperties(Collections.singletonMap("cm:title", "hello-world"));
             people.create(person, 400);
-            
+
             person.setProperties(Collections.singletonMap("sys:locale", "en_GB"));
             people.create(person, 400);
         }
@@ -642,7 +645,7 @@ public class TestPeople extends AbstractBaseApiTest
         // The papi:lunchable aspect should be auto-added for the papi:lunch property
         nodeProps.put(PROP_LUNCH, "Falafel wrap");
         nodeProps.put(PROP_LUNCH_COMMENTS, "");
-        
+
         // These properties should not be present when a person is retrieved
         // since they are present as top-level fields.
         String userName = "docbrown@" + account1.getId();
@@ -671,24 +674,24 @@ public class TestPeople extends AbstractBaseApiTest
         nodeProps.put(ContentModel.PROP_SIZE_CURRENT, 1230);
         nodeProps.put(ContentModel.PROP_EMAIL_FEED_DISABLED, false);
         // TODO: PROP_PERSON_DESCRIPTION?
-        
+
         // Namespaces that should be filtered
         nodeProps.put(ContentModel.PROP_ENABLED, true);
         nodeProps.put(ContentModel.PROP_SYS_NAME, "name-value");
-        
+
         // Create a password and enable the user so that we can check the usr:* props aren't present later.
-        AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
+        AuthenticationUtil.setFullyAuthenticatedUser("admin@" + account1.getId());
         authService.createAuthentication(userName, "password".toCharArray());
         authService.setAuthenticationEnabled(userName, true);
         personService.createPerson(nodeProps);
 
         // Set a preference, so that we can test that we're filtering this property correctly.
         prefService.setPreferences(userName, Collections.singletonMap("olives", "green"));
-        
+
         // Get the person using the REST API
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
         Person person = people.getPerson(userName);
-        
+
         // Did we get the correct aspects/properties?
         assertEquals(userName, person.getId());
         assertEquals("Doc", person.getFirstName());
@@ -699,7 +702,7 @@ public class TestPeople extends AbstractBaseApiTest
         // null values, and will be represented the same as null
         // values (i.e. by non-existence of the property).
         assertNull(person.getProperties().get("papi:lunchcomments"));
-        
+
         // Check that no properties are present that should have been filtered by namespace.
         for (String key : person.getProperties().keySet())
         {
@@ -712,18 +715,18 @@ public class TestPeople extends AbstractBaseApiTest
             }
         }
     }
-    
+
     @Test
     public void testCreatePerson_withCustomProps() throws Exception
     {
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
         Person person = new Person();
-        person.setUserName("jbloggs@"+account1.getId());
+        person.setUserName("jbloggs@" + account1.getId());
         person.setFirstName("Joe");
-        person.setEmail("jbloggs@"+account1.getId());
+        person.setEmail("jbloggs@" + account1.getId());
         person.setEnabled(true);
         person.setPassword("password123");
-        
+
         Map<String, Object> props = new HashMap<>();
         props.put("papi:telehash", "724332b5796a8");
         person.setProperties(props);
@@ -732,24 +735,24 @@ public class TestPeople extends AbstractBaseApiTest
         List<String> aspectNames = new ArrayList<>();
         aspectNames.add("papi:lunchable");
         person.setAspectNames(aspectNames);
-        
+
         // REST API call to create person
         Person retPerson = people.create(person);
-        
+
         // Check that the response contains the expected aspects and properties
         assertEquals(2, retPerson.getAspectNames().size());
         assertTrue(retPerson.getAspectNames().contains("papi:comms"));
         assertEquals(1, retPerson.getProperties().size());
         assertEquals("724332b5796a8", retPerson.getProperties().get("papi:telehash"));
-        
+
         // Get the NodeRef
-        AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
-        NodeRef nodeRef = personService.getPerson("jbloggs@"+account1.getId(), false);
+        AuthenticationUtil.setFullyAuthenticatedUser("admin@" + account1.getId());
+        NodeRef nodeRef = personService.getPerson("jbloggs@" + account1.getId(), false);
 
         // Check the node has the properties and aspects we expect
         assertTrue(nodeService.hasAspect(nodeRef, ASPECT_COMMS));
         assertTrue(nodeService.hasAspect(nodeRef, ASPECT_LUNCHABLE));
-        
+
         Map<QName, Serializable> retProps = nodeService.getProperties(nodeRef);
         assertEquals("724332b5796a8", retProps.get(PROP_TELEHASH));
         assertEquals(null, retProps.get(PROP_LUNCH));
@@ -759,7 +762,7 @@ public class TestPeople extends AbstractBaseApiTest
     private Person createTestUpdatePerson() throws PublicApiException
     {
         Person person = new Person();
-        String personId = UUID.randomUUID().toString()+"@"+account1.getId();
+        String personId = UUID.randomUUID().toString() + "@" + account1.getId();
         person.setUserName(personId);
         person.setFirstName("Joe");
         person.setEmail(personId);
@@ -771,12 +774,12 @@ public class TestPeople extends AbstractBaseApiTest
 
         person = people.create(person);
 
-        AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
+        AuthenticationUtil.setFullyAuthenticatedUser("admin@" + account1.getId());
         NodeRef nodeRef = personService.getPerson(person.getId());
         // Add some non-custom aspects, these should be untouched by the people API.
         nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUDITABLE, null);
         nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "This is a title");
-        
+
         assertEquals("jbloggs@example.com", person.getProperties().get("papi:jabber"));
         assertEquals(2, person.getAspectNames().size());
         assertTrue(person.getAspectNames().contains("papi:comms"));
@@ -788,7 +791,7 @@ public class TestPeople extends AbstractBaseApiTest
     public void testUpdatePerson_withCustomProps() throws Exception
     {
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
-        
+
         // Add a property
         {
             Person person = createTestUpdatePerson();
@@ -799,8 +802,7 @@ public class TestPeople extends AbstractBaseApiTest
                             "    `properties`: {" +
                             "        `papi:lunch`: `Tomato soup`" +
                             "    }" +
-                            "}"
-            );
+                            "}");
             person = people.update(person.getId(), json, 200);
 
             // Property added
@@ -810,12 +812,12 @@ public class TestPeople extends AbstractBaseApiTest
             assertTrue(person.getAspectNames().contains("papi:comms"));
             assertTrue(person.getAspectNames().contains("papi:dessertable"));
         }
-        
+
         // Simple update of properties
         {
             Person person = createTestUpdatePerson();
             person = people.update(person.getId(), qjson("{`properties`: {`papi:jabber`: `updated@example.com`}}"), 200);
-            
+
             // Property updated
             assertEquals("updated@example.com", person.getProperties().get("papi:jabber"));
             // Aspects untouched
@@ -823,26 +825,26 @@ public class TestPeople extends AbstractBaseApiTest
             assertTrue(person.getAspectNames().contains("papi:comms"));
             assertTrue(person.getAspectNames().contains("papi:dessertable"));
         }
-        
+
         // Update with zero aspects - clear them all, except for protected items.
         {
             Person person = createTestUpdatePerson();
             assertEquals(2, person.getAspectNames().size());
             assertTrue(person.getAspectNames().contains("papi:comms"));
             assertTrue(person.getAspectNames().contains("papi:dessertable"));
-            
+
             person = people.update(person.getId(), qjson("{`aspectNames`: []}"), 200);
-            
+
             // Aspects should no longer be present.
             assertNull(person.getAspectNames());
-            
+
             // Check for the protected (but filtered) sys:* properties
             NodeRef nodeRef = personService.getPerson(person.getId());
             Set<QName> aspects = nodeService.getAspects(nodeRef);
             assertTrue(aspects.contains(ContentModel.ASPECT_REFERENCEABLE));
             assertTrue(aspects.contains(ContentModel.ASPECT_LOCALIZED));
         }
-        
+
         // Set aspects - all "custom" aspects will be replaced with those presented.
         {
             Person person = createTestUpdatePerson();
@@ -850,17 +852,17 @@ public class TestPeople extends AbstractBaseApiTest
             assertEquals(2, person.getAspectNames().size());
             assertTrue(person.getAspectNames().contains("papi:comms"));
             assertTrue(person.getAspectNames().contains("papi:dessertable"));
-            
+
             String json = qjson("{ `aspectNames`: [`papi:lunchable`] }");
             person = people.update(person.getId(), json, 200);
-            
+
             // Get the person's NodeRef
-            AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
+            AuthenticationUtil.setFullyAuthenticatedUser("admin@" + account1.getId());
             NodeRef nodeRef = personService.getPerson(person.getId(), false);
             // Aspects from non-custom models should still be present.
             nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUDITABLE);
             nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED);
-            
+
             // Newly added aspect should be the only one exposed by the people API.
             List<String> aspectNames = person.getAspectNames();
             assertEquals(1, aspectNames.size());
@@ -871,7 +873,7 @@ public class TestPeople extends AbstractBaseApiTest
         // Aspects and properties together
         {
             Person person = new Person();
-            String personId = UUID.randomUUID().toString()+"@"+account1.getId();
+            String personId = UUID.randomUUID().toString() + "@" + account1.getId();
             person.setUserName(personId);
             person.setFirstName("Joe");
             person.setEmail(personId);
@@ -882,7 +884,7 @@ public class TestPeople extends AbstractBaseApiTest
             person.setAspectNames(null);
 
             person = people.create(person);
-            
+
             assertNull(person.getAspectNames());
             assertNull(person.getProperties());
 
@@ -897,9 +899,8 @@ public class TestPeople extends AbstractBaseApiTest
                             "        `papi:jabber`: `another@jabber.example.com`, " +
                             "        `papi:lunch`: `sandwich` " +
                             "     }" +
-                            "}"
-            );
-            
+                            "}");
+
             person = people.update(person.getId(), json, 200);
 
             // Were both aspects set?
@@ -911,17 +912,17 @@ public class TestPeople extends AbstractBaseApiTest
             assertEquals("another@jabber.example.com", person.getProperties().get("papi:jabber"));
             assertEquals("sandwich", person.getProperties().get("papi:lunch"));
         }
-        
+
         // Remove a property by setting it to null
         {
             Person person = createTestUpdatePerson();
-            
+
             assertEquals(2, person.getAspectNames().size());
             assertTrue(person.getAspectNames().contains("papi:comms"));
             assertTrue(person.getAspectNames().contains("papi:dessertable"));
             assertEquals(1, person.getProperties().size());
             assertTrue(person.getProperties().containsKey("papi:jabber"));
-            
+
             person = people.update(person.getId(), qjson("{`properties`: {`papi:jabber`: null}}"), 200);
 
             // No properties == null
@@ -950,9 +951,9 @@ public class TestPeople extends AbstractBaseApiTest
 
             json = qjson("{ `properties`: {`sys:locale`: `en_GB`} }");
             people.update(person.getId(), json, 400);
-            
+
             // Get the person's NodeRef
-            AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
+            AuthenticationUtil.setFullyAuthenticatedUser("admin@" + account1.getId());
             NodeRef nodeRef = personService.getPerson(person.getId(), false);
             // Aspects from non-custom models should still be present.
             nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUDITABLE);
@@ -968,20 +969,19 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     /**
-     * Simple helper to make JSON literals a little easier to read in test code,
-     * by allowing values that would normally be quoted with double quotes, to be
-     * quoted with <strong>backticks</strong> instead.
+     * Simple helper to make JSON literals a little easier to read in test code, by allowing values that would normally be quoted with double quotes, to be quoted with <strong>backticks</strong> instead.
      * <p>
      * Double and single quotes may still be used as normal, if required.
      * 
-     * @param raw    The untreated JSON string to munge
-     * @return JSON String with <strong>backticks</strong> replaced with double quotes.   
+     * @param raw
+     *            The untreated JSON string to munge
+     * @return JSON String with <strong>backticks</strong> replaced with double quotes.
      */
     private String qjson(String raw)
     {
         return raw.replace("`", "\"");
     }
-    
+
     public static class PersonJSONSerializer implements JSONAble
     {
         private final Person personUpdate;
@@ -1037,15 +1037,15 @@ public class TestPeople extends AbstractBaseApiTest
 
         people.update("people", personId, null, null, "{\n" + "  \"firstName\": \"Updated firstName\"\n" + "}", null, "Expected 401 response when updating " + personId, 401);
     }
-    
+
     @Test
-    public  void testUpdatePersonNonSelfAndNonAdminDisallowed() throws PublicApiException
+    public void testUpdatePersonNonSelfAndNonAdminDisallowed() throws PublicApiException
     {
         // TODO: this is bad, it seems that the test fixture isn't unique per test!?
         final String personId = account1PersonIt.next();
         final String personToUpdateId = account1PersonIt.next();
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), personId));
-        
+
         people.update(personToUpdateId, qjson("{ `firstName`:`Updated firstName` }"), 403);
 
         // TODO: temp fix, set back to orig firstName
@@ -1054,7 +1054,7 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     @Test
-    public  void testUpdatePersonCanUpdateThemself() throws PublicApiException
+    public void testUpdatePersonCanUpdateThemself() throws PublicApiException
     {
         final String personId = account1PersonIt.next();
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), personId));
@@ -1064,7 +1064,7 @@ public class TestPeople extends AbstractBaseApiTest
             Person updatedPerson = people.update(personId, qjson("{ `firstName`: `Matt` }"), 200);
             assertEquals("Matt", updatedPerson.getFirstName());
         }
-        
+
         // "-me-" user
         {
             Person updatedPerson = people.update("-me-", qjson("{ `firstName`: `John` }"), 200);
@@ -1074,7 +1074,7 @@ public class TestPeople extends AbstractBaseApiTest
         // TODO: temp fix, set back to orig firstName
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
         people.update(personId, qjson("{ `firstName`:`Bill` }"), 200);
-        
+
         // -ve test: check that required/mandatory/non-null fields cannot be unset (or empty string)
         {
             people.update("people", personId, null, null, qjson("{ `firstName`:`` }"), null, "Expected 400 response when updating " + personId, 400);
@@ -1084,7 +1084,7 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     @Test
-    public  void testUpdatePersonNonexistentPerson() throws PublicApiException
+    public void testUpdatePersonNonexistentPerson() throws PublicApiException
     {
         final String personId = "non-existent";
         publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
@@ -1110,7 +1110,7 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     @Test
-    public  void testUpdatePersonWithRestrictedResponseFields() throws PublicApiException
+    public void testUpdatePersonWithRestrictedResponseFields() throws PublicApiException
     {
         final String personId = account3.createUser().getId();
 
@@ -1188,7 +1188,8 @@ public class TestPeople extends AbstractBaseApiTest
                         + "  \"emailNotificationsEnabled\": \"" + emailNotificationsEnabled + "\",\n"
                         + "  \"enabled\": \"" + enabled + "\"\n"
 
-                        + "}", params,
+                        + "}",
+                params,
                 "Expected 200 response when updating " + personId, 200);
 
         Person updatedPerson = Person.parsePerson((JSONObject) response.getJsonResponse().get("entry"));
@@ -1213,7 +1214,7 @@ public class TestPeople extends AbstractBaseApiTest
         assertEquals(userStatus, updatedPerson.getUserStatus());
         assertEquals(emailNotificationsEnabled, updatedPerson.isEmailNotificationsEnabled());
         assertEquals(enabled, updatedPerson.isEnabled());
-        
+
         // test ability to unset optional fields (could be one or more - here all) including individual company fields
         response = people.update("people", personId, null, null,
                 "{\n"
@@ -1238,7 +1239,8 @@ public class TestPeople extends AbstractBaseApiTest
                         + "  \"mobile\":null,\n"
                         + "  \"telephone\":null,\n"
                         + "  \"userStatus\":null\n"
-                        + "}", params,
+                        + "}",
+                params,
                 "Expected 200 response when updating " + personId, 200);
 
         updatedPerson = Person.parsePerson((JSONObject) response.getJsonResponse().get("entry"));
@@ -1272,7 +1274,8 @@ public class TestPeople extends AbstractBaseApiTest
         response = people.update("people", personId, null, null,
                 "{\n"
                         + "  \"company\": {} \n"
-                        + "}", params,
+                        + "}",
+                params,
                 "Expected 200 response when updating " + personId, 200);
 
         updatedPerson = Person.parsePerson((JSONObject) response.getJsonResponse().get("entry"));
@@ -1287,9 +1290,10 @@ public class TestPeople extends AbstractBaseApiTest
         response = people.update("people", personId, null, null,
                 "{\n"
                         + "  \"company\": {\n"
-                        + "    \"organization\":\""+updatedOrgName+"\"\n"
+                        + "    \"organization\":\"" + updatedOrgName + "\"\n"
                         + "  }\n"
-                        + "}", params,
+                        + "}",
+                params,
                 "Expected 200 response when updating " + personId, 200);
 
         updatedPerson = Person.parsePerson((JSONObject) response.getJsonResponse().get("entry"));
@@ -1301,7 +1305,8 @@ public class TestPeople extends AbstractBaseApiTest
         response = people.update("people", personId, null, null,
                 "{\n"
                         + "  \"company\": null\n"
-                        + "}", params,
+                        + "}",
+                params,
                 "Expected 200 response when updating " + personId, 200);
 
         updatedPerson = Person.parsePerson((JSONObject) response.getJsonResponse().get("entry"));
@@ -1312,7 +1317,7 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     @Test
-    public  void testUpdatePersonEnabledNonAdminNotAllowed() throws PublicApiException
+    public void testUpdatePersonEnabledNonAdminNotAllowed() throws PublicApiException
     {
         final String personId = account3.createUser().getId();
         publicApiClient.setRequestContext(new RequestContext(account3.getId(), personId));
@@ -1321,19 +1326,19 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     @Test
-    public  void testUpdatePersonEnabled() throws PublicApiException
+    public void testUpdatePersonEnabled() throws PublicApiException
     {
         // Non-admin user ID
         final String personId = account3.createUser().getId();
 
         // Use admin user credentials
         publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
-        
+
         // Admin can toggle enabled flag: false
         {
             Boolean enabled = false;
             Map<String, String> params = Collections.singletonMap("fields", "enabled");
-            Person updatedPerson = people.update(personId, qjson("{`enabled`:"+enabled+"}"), params, 200);
+            Person updatedPerson = people.update(personId, qjson("{`enabled`:" + enabled + "}"), params, 200);
 
             assertEquals(enabled, updatedPerson.isEnabled());
         }
@@ -1342,7 +1347,7 @@ public class TestPeople extends AbstractBaseApiTest
         {
             Boolean enabled = true;
             Map<String, String> params = Collections.singletonMap("fields", "enabled");
-            Person updatedPerson = people.update(personId, qjson("{`enabled`:"+enabled+"}"), params, 200);
+            Person updatedPerson = people.update(personId, qjson("{`enabled`:" + enabled + "}"), params, 200);
 
             assertEquals(enabled, updatedPerson.isEnabled());
         }
@@ -1353,16 +1358,16 @@ public class TestPeople extends AbstractBaseApiTest
 
         // Use non-admin user's own credentials
         publicApiClient.setRequestContext(new RequestContext(account3.getId(), personId, "password"));
-        
+
         // Non-admin cannot set enabled flag
         {
             boolean origEnabled = people.getPerson(personId).isEnabled();
             Boolean enabled = false;
             // The test should change that we can't change this, otherwise it isn't effective
             assertNotEquals(origEnabled, enabled);
-            
+
             Map<String, String> params = Collections.singletonMap("fields", "enabled");
-            people.update(personId, qjson("{`enabled`:"+enabled+"}"), params, 403);
+            people.update(personId, qjson("{`enabled`:" + enabled + "}"), params, 403);
 
             Person me = people.getPerson(personId);
             assertEquals("Enabled state shouldn't have changed, but did", origEnabled, me.isEnabled());
@@ -1385,7 +1390,7 @@ public class TestPeople extends AbstractBaseApiTest
     {
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
         Person me = new Person();
-        me.setId(UUID.randomUUID().toString()+"@"+account1.getId());
+        me.setId(UUID.randomUUID().toString() + "@" + account1.getId());
         me.setUserName(me.getId());
         me.setFirstName("Jo");
         me.setEmail(me.getId());
@@ -1419,7 +1424,7 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     @Test
-    public  void testUpdatePersonPasswordByAdmin() throws PublicApiException
+    public void testUpdatePersonPasswordByAdmin() throws PublicApiException
     {
         final String personId = account3.createUser().getId();
         final String networkId = account3.getId();
@@ -1500,7 +1505,7 @@ public class TestPeople extends AbstractBaseApiTest
         {
             params.put("orderBy", sortColumn + " " + (asc ? "ASC" : "DESC"));
         }
-        
+
         return listPeople(createParams(paging, params), statusCode);
     }
 
@@ -1537,13 +1542,12 @@ public class TestPeople extends AbstractBaseApiTest
             assertNull(resp.getList().get(0).getAspectNames());
             assertNull(resp.getList().get(0).getProperties());
         }
-        
+
         // Are aspectNames and properties populated when requested?
         {
             Map<String, String> parameters = Collections.singletonMap("include", "aspectNames,properties");
             PublicApiClient.ListResponse<Person> resp = listPeople(parameters, 200);
-            Person bob = resp.getList().stream().
-                    filter(p -> p.getUserName().equals(personBob.getId()))
+            Person bob = resp.getList().stream().filter(p -> p.getUserName().equals(personBob.getId()))
                     .findFirst().get();
             assertNotNull(bob.getAspectNames());
             assertTrue(bob.getAspectNames().contains("papi:lunchable"));
@@ -1551,10 +1555,9 @@ public class TestPeople extends AbstractBaseApiTest
             assertEquals("Magical sandwich", bob.getProperties().get("papi:lunch"));
         }
     }
-    
+
     /**
-     * Tests the capability to sort and paginate the list of people orderBy =
-     * firstName ASC skip = 1, count = 3
+     * Tests the capability to sort and paginate the list of people orderBy = firstName ASC skip = 1, count = 3
      *
      * @throws Exception
      */
@@ -1581,8 +1584,7 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     /**
-     * Tests the capability to sort and paginate the list of people orderBy =
-     * firstName DESC skip = 1, count = 3
+     * Tests the capability to sort and paginate the list of people orderBy = firstName DESC skip = 1, count = 3
      *
      * @throws Exception
      */
@@ -1609,8 +1611,7 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     /**
-     * Tests the capability paginate the list of people verifies default
-     * sorting, skip = 1, count = 3
+     * Tests the capability paginate the list of people verifies default sorting, skip = 1, count = 3
      *
      * @throws Exception
      */
@@ -1636,8 +1637,7 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     /**
-     * Tests the capability to sort and paginate the list of people orderBy =
-     * username DESC skip = 1, count = 3
+     * Tests the capability to sort and paginate the list of people orderBy = username DESC skip = 1, count = 3
      *
      * @throws Exception
      */
@@ -1664,8 +1664,7 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     /**
-     * Tests the capability to sort and paginate the list of people orderBy =
-     * invalid sort key ASC skip = 1, count = 3
+     * Tests the capability to sort and paginate the list of people orderBy = invalid sort key ASC skip = 1, count = 3
      *
      * @throws Exception
      */
@@ -1685,8 +1684,7 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     /**
-     * Tests the capability to sort and paginate the list of people orderBy =
-     * lastName ASC skip = 2, count = 3
+     * Tests the capability to sort and paginate the list of people orderBy = lastName ASC skip = 2, count = 3
      *
      * @throws Exception
      */
@@ -1713,8 +1711,7 @@ public class TestPeople extends AbstractBaseApiTest
     }
 
     /**
-     * Tests the capability to sort and paginate the list of people orderBy =
-     * both firstName and lastName ASC skip = 1, count = 3
+     * Tests the capability to sort and paginate the list of people orderBy = both firstName and lastName ASC skip = 1, count = 3
      *
      * @throws Exception
      */
@@ -1742,10 +1739,12 @@ public class TestPeople extends AbstractBaseApiTest
 
     /**
      * Tests reset password.
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * <ul>
-     * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userId>/request-password-reset} </li>
-     * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userId>/reset-password} </li>
+     * <li>{@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userId>/request-password-reset}</li>
+     * <li>{@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userId>/reset-password}</li>
      * </ul>
      */
     @Test
@@ -1839,10 +1838,7 @@ public class TestPeople extends AbstractBaseApiTest
             assertNotNull(loginResponse.getId());
             assertNotNull(loginResponse.getUserId());
 
-
-            /*
-             * Negative tests
-             */
+            /* Negative tests */
             // First, reset the email helper
             emailUtil.reset();
 
@@ -1956,7 +1952,6 @@ public class TestPeople extends AbstractBaseApiTest
     {
         return URL_PEOPLE + '/' + userId + "/reset-password";
     }
-
 
     @Test
     public void retrieveAvatar() throws Exception
@@ -2075,7 +2070,7 @@ public class TestPeople extends AbstractBaseApiTest
             finally
             {
                 currTime = System.currentTimeMillis();
-                System.out.println(":>>> waited "+(currTime-startTime) + "ms");
+                System.out.println(":>>> waited " + (currTime - startTime) + "ms");
             }
         }
     }
@@ -2083,10 +2078,7 @@ public class TestPeople extends AbstractBaseApiTest
     private void deleteAvatarDirect(NodeRef personRef)
     {
 
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(personRef).
-                stream().
-                filter(x -> x.getTypeQName().equals(ContentModel.ASSOC_PREFERENCE_IMAGE)).
-                collect(Collectors.toList());
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(personRef).stream().filter(x -> x.getTypeQName().equals(ContentModel.ASSOC_PREFERENCE_IMAGE)).collect(Collectors.toList());
         if (assocs.size() > 0)
         {
             nodeService.deleteNode(assocs.get(0).getChildRef());
@@ -2205,7 +2197,7 @@ public class TestPeople extends AbstractBaseApiTest
         {
             publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
             // Pre-condition: non-existent person
-            String nonPerson = "joebloggs@"+account1.getId();
+            String nonPerson = "joebloggs@" + account1.getId();
             people.getPerson(nonPerson, 404);
 
             ClassPathResource avatar = new ClassPathResource("publicapi/upload/quick.jpg");
@@ -2215,10 +2207,9 @@ public class TestPeople extends AbstractBaseApiTest
         // 413: content exceeds individual file size limit
         {
             // Test content size limit
-            final ContentLimitProvider.SimpleFixedLimitProvider limitProvider = applicationContext.
-                    getBean("defaultContentLimitProvider", ContentLimitProvider.SimpleFixedLimitProvider.class);
+            final ContentLimitProvider.SimpleFixedLimitProvider limitProvider = applicationContext.getBean("defaultContentLimitProvider", ContentLimitProvider.SimpleFixedLimitProvider.class);
             final long defaultSizeLimit = limitProvider.getSizeLimit();
-            limitProvider.setSizeLimitString("20000"); //20 KB
+            limitProvider.setSizeLimitString("20000"); // 20 KB
 
             try
             {
@@ -2248,19 +2239,18 @@ public class TestPeople extends AbstractBaseApiTest
         }
     }
 
-
     @Test
     public void removeAvatar() throws IOException, PublicApiException, InterruptedException
     {
-        
+
         final String person1 = account1PersonIt.next();
         final String person2 = account1PersonIt.next();
 
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
-        
+
         // Avatar exists
         {
-            AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
+            AuthenticationUtil.setFullyAuthenticatedUser("admin@" + account1.getId());
 
             // Create avatar - direct (i.e. not using the API, so that tests for get avatar can be separated from upload)
             // There's no significance to the image being used here, it was the most suitable I could find.
@@ -2271,31 +2261,30 @@ public class TestPeople extends AbstractBaseApiTest
 
             // Get avatar - API call
             people.getAvatar(person1, false, 200);
-            
-            //remove avatar avatar exists
-            people.deleteAvatarImage(person1,204);
-            
+
+            // remove avatar avatar exists
+            people.deleteAvatarImage(person1, 204);
+
         }
-        
-       
+
         // Non-existent person
         {
             String nonPerson = "i-do-not-exist";
             people.getPerson(nonPerson, 404); // Pre-condition of test case
             people.deleteAvatarImage(nonPerson, 404);
         }
-        
-        //Authentication failed 401
+
+        // Authentication failed 401
         {
             setRequestContext(account1.getId(), networkAdmin, "wrongPassword");
-            people.deleteAvatarImage(person1,HttpServletResponse.SC_UNAUTHORIZED);
+            people.deleteAvatarImage(person1, HttpServletResponse.SC_UNAUTHORIZED);
         }
-        
-        //No permission
+
+        // No permission
         {
             publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
-            
-            AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
+
+            AuthenticationUtil.setFullyAuthenticatedUser("admin@" + account1.getId());
 
             // Create avatar - direct (i.e. not using the API, so that tests for get avatar can be separated from upload)
             // There's no significance to the image being used here, it was the most suitable I could find.
@@ -2303,13 +2292,11 @@ public class TestPeople extends AbstractBaseApiTest
             NodeRef personRef = personService.getPerson(person1, false);
             deleteAvatarDirect(personRef);
             createAvatarDirect(personRef, thumbRes.getFile());
-            
+
             people.deleteAvatarImage(person2, 403);
 
         }
-        
 
-        
     }
 
     @Test
@@ -2372,11 +2359,10 @@ public class TestPeople extends AbstractBaseApiTest
     {
         return "public";
     }
-    
+
     private ExpectedComparison expectedFirstName(Person person)
     {
-        return new ExpectedComparison()
-        {
+        return new ExpectedComparison() {
             @Override
             public void expected(Object other)
             {

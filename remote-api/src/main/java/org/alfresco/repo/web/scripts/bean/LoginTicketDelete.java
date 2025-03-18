@@ -27,18 +27,17 @@ package org.alfresco.repo.web.scripts.bean;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.TicketComponent;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.TicketComponent;
+import org.alfresco.service.cmr.security.AuthenticationService;
 
 /**
  * Delete Login Ticket
@@ -50,9 +49,10 @@ public class LoginTicketDelete extends DeclarativeWebScript
     // dependencies
     private AuthenticationService authenticationService;
     private TicketComponent ticketComponent;
-    
+
     /**
-     * @param ticketComponent TicketComponent
+     * @param ticketComponent
+     *            TicketComponent
      */
     public void setTicketComponent(TicketComponent ticketComponent)
     {
@@ -60,17 +60,17 @@ public class LoginTicketDelete extends DeclarativeWebScript
     }
 
     /**
-     * @param authenticationService AuthenticationService
+     * @param authenticationService
+     *            AuthenticationService
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
         this.authenticationService = authenticationService;
     }
 
-    
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * 
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
@@ -80,11 +80,11 @@ public class LoginTicketDelete extends DeclarativeWebScript
         {
             throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Ticket not specified");
         }
-        
+
         // construct model for ticket
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
-        model.put("ticket",  ticket);
-        
+        model.put("ticket", ticket);
+
         try
         {
             String ticketUser = ticketComponent.validateTicket(ticket);
@@ -102,7 +102,7 @@ public class LoginTicketDelete extends DeclarativeWebScript
                 status.setMessage("Deleted Ticket " + ticket);
             }
         }
-        catch(AuthenticationException e)
+        catch (AuthenticationException e)
         {
             status.setCode(HttpServletResponse.SC_NOT_FOUND);
             status.setMessage("Ticket not found");

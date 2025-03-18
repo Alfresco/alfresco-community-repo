@@ -46,8 +46,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.SearchLanguageConversion;
 
 /**
- * Send calls that have to use the sub-system to the delegate.
- * selectNodes and selectProperties will avoid the sub-system if possible.  
+ * Send calls that have to use the sub-system to the delegate. selectNodes and selectProperties will avoid the sub-system if possible.
  * 
  * @author Andy
  *
@@ -58,12 +57,12 @@ public class SearchServiceSubSystemDelegator implements SearchService
     private SearchService subSystem;
 
     private NodeService nodeService;
-    
+
     private DictionaryService dictionaryService;
-    
 
     /**
-     * @param subSystem the subSystem to set
+     * @param subSystem
+     *            the subSystem to set
      */
     public void setSubSystem(SearchService subSystem)
     {
@@ -71,7 +70,8 @@ public class SearchServiceSubSystemDelegator implements SearchService
     }
 
     /**
-     * @param nodeService the nodeService to set
+     * @param nodeService
+     *            the nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -79,7 +79,8 @@ public class SearchServiceSubSystemDelegator implements SearchService
     }
 
     /**
-     * @param dictionaryService the dictionaryService to set
+     * @param dictionaryService
+     *            the dictionaryService to set
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -87,9 +88,12 @@ public class SearchServiceSubSystemDelegator implements SearchService
     }
 
     /**
-     * @param store StoreRef
-     * @param language String
-     * @param query String
+     * @param store
+     *            StoreRef
+     * @param language
+     *            String
+     * @param query
+     *            String
      * @return ResultSet
      * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.repository.StoreRef, java.lang.String, java.lang.String)
      */
@@ -99,10 +103,14 @@ public class SearchServiceSubSystemDelegator implements SearchService
     }
 
     /**
-     * @param store StoreRef
-     * @param language String
-     * @param query String
-     * @param queryParameterDefinitions QueryParameterDefinition[]
+     * @param store
+     *            StoreRef
+     * @param language
+     *            String
+     * @param query
+     *            String
+     * @param queryParameterDefinitions
+     *            QueryParameterDefinition[]
      * @return ResultSet
      * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.repository.StoreRef, java.lang.String, java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[])
      */
@@ -112,9 +120,12 @@ public class SearchServiceSubSystemDelegator implements SearchService
     }
 
     /**
-     * @param store StoreRef
-     * @param queryId QName
-     * @param queryParameters QueryParameter[]
+     * @param store
+     *            StoreRef
+     * @param queryId
+     *            QName
+     * @param queryParameters
+     *            QueryParameter[]
      * @return ResultSet
      * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.repository.StoreRef, org.alfresco.service.namespace.QName, org.alfresco.service.cmr.search.QueryParameter[])
      */
@@ -124,7 +135,8 @@ public class SearchServiceSubSystemDelegator implements SearchService
     }
 
     /**
-     * @param searchParameters SearchParameters
+     * @param searchParameters
+     *            SearchParameters
      * @return ResultSet
      * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.search.SearchParameters)
      */
@@ -134,11 +146,16 @@ public class SearchServiceSubSystemDelegator implements SearchService
     }
 
     /**
-     * @param contextNodeRef NodeRef
-     * @param xpath String
-     * @param parameters QueryParameterDefinition[]
-     * @param namespacePrefixResolver NamespacePrefixResolver
-     * @param followAllParentLinks boolean
+     * @param contextNodeRef
+     *            NodeRef
+     * @param xpath
+     *            String
+     * @param parameters
+     *            QueryParameterDefinition[]
+     * @param namespacePrefixResolver
+     *            NamespacePrefixResolver
+     * @param followAllParentLinks
+     *            boolean
      * @throws InvalidNodeRefException
      * @throws XPathException
      * @see org.alfresco.service.cmr.search.SearchService#selectNodes(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[], org.alfresco.service.namespace.NamespacePrefixResolver, boolean)
@@ -150,12 +167,18 @@ public class SearchServiceSubSystemDelegator implements SearchService
     }
 
     /**
-     * @param contextNodeRef NodeRef
-     * @param xpath String
-     * @param parameters QueryParameterDefinition[]
-     * @param namespacePrefixResolver NamespacePrefixResolver
-     * @param followAllParentLinks boolean
-     * @param language String
+     * @param contextNodeRef
+     *            NodeRef
+     * @param xpath
+     *            String
+     * @param parameters
+     *            QueryParameterDefinition[]
+     * @param namespacePrefixResolver
+     *            NamespacePrefixResolver
+     * @param followAllParentLinks
+     *            boolean
+     * @param language
+     *            String
      * @throws InvalidNodeRefException
      * @throws XPathException
      * @see org.alfresco.service.cmr.search.SearchService#selectNodes(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[], org.alfresco.service.namespace.NamespacePrefixResolver, boolean, java.lang.String)
@@ -168,11 +191,16 @@ public class SearchServiceSubSystemDelegator implements SearchService
     }
 
     /**
-     * @param contextNodeRef NodeRef
-     * @param xpath String
-     * @param parameters QueryParameterDefinition[]
-     * @param namespacePrefixResolver NamespacePrefixResolver
-     * @param followAllParentLinks boolean
+     * @param contextNodeRef
+     *            NodeRef
+     * @param xpath
+     *            String
+     * @param parameters
+     *            QueryParameterDefinition[]
+     * @param namespacePrefixResolver
+     *            NamespacePrefixResolver
+     * @param followAllParentLinks
+     *            boolean
      * @throws InvalidNodeRefException
      * @throws XPathException
      * @see org.alfresco.service.cmr.search.SearchService#selectProperties(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[], org.alfresco.service.namespace.NamespacePrefixResolver, boolean)
@@ -184,12 +212,18 @@ public class SearchServiceSubSystemDelegator implements SearchService
     }
 
     /**
-     * @param contextNodeRef NodeRef
-     * @param xpath String
-     * @param parameters QueryParameterDefinition[]
-     * @param namespacePrefixResolver NamespacePrefixResolver
-     * @param followAllParentLinks boolean
-     * @param language String
+     * @param contextNodeRef
+     *            NodeRef
+     * @param xpath
+     *            String
+     * @param parameters
+     *            QueryParameterDefinition[]
+     * @param namespacePrefixResolver
+     *            NamespacePrefixResolver
+     * @param followAllParentLinks
+     *            boolean
+     * @param language
+     *            String
      * @throws InvalidNodeRefException
      * @throws XPathException
      * @see org.alfresco.service.cmr.search.SearchService#selectProperties(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[], org.alfresco.service.namespace.NamespacePrefixResolver, boolean, java.lang.String)
@@ -202,9 +236,12 @@ public class SearchServiceSubSystemDelegator implements SearchService
     }
 
     /**
-     * @param nodeRef NodeRef
-     * @param propertyQName QName
-     * @param googleLikePattern String
+     * @param nodeRef
+     *            NodeRef
+     * @param propertyQName
+     *            QName
+     * @param googleLikePattern
+     *            String
      * @return boolean
      * @throws InvalidNodeRefException
      * @see org.alfresco.service.cmr.search.SearchService#contains(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.lang.String)
@@ -215,10 +252,14 @@ public class SearchServiceSubSystemDelegator implements SearchService
     }
 
     /**
-     * @param nodeRef NodeRef
-     * @param propertyQName QName
-     * @param googleLikePattern String
-     * @param defaultOperator Operator
+     * @param nodeRef
+     *            NodeRef
+     * @param propertyQName
+     *            QName
+     * @param googleLikePattern
+     *            String
+     * @param defaultOperator
+     *            Operator
      * @return boolean
      * @throws InvalidNodeRefException
      * @see org.alfresco.service.cmr.search.SearchService#contains(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.lang.String, org.alfresco.service.cmr.search.SearchParameters.Operator)
@@ -229,10 +270,14 @@ public class SearchServiceSubSystemDelegator implements SearchService
     }
 
     /**
-     * @param nodeRef NodeRef
-     * @param propertyQName QName
-     * @param sqlLikePattern String
-     * @param includeFTS boolean
+     * @param nodeRef
+     *            NodeRef
+     * @param propertyQName
+     *            QName
+     * @param sqlLikePattern
+     *            String
+     * @param includeFTS
+     *            boolean
      * @return boolean
      * @throws InvalidNodeRefException
      * @see org.alfresco.service.cmr.search.SearchService#like(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.lang.String, boolean)
@@ -264,7 +309,7 @@ public class SearchServiceSubSystemDelegator implements SearchService
                 return propertyString.toLowerCase().matches(pattern);
             }
         }
-       
+
     }
 
 }

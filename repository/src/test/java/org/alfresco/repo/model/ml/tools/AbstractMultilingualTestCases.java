@@ -26,6 +26,7 @@
 package org.alfresco.repo.model.ml.tools;
 
 import junit.framework.TestCase;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.archive.NodeArchiveService;
@@ -46,7 +47,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Base multilingual test cases
@@ -88,8 +88,7 @@ public abstract class AbstractMultilingualTestCases extends TestCase
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
 
         // Create a folder to work in
-        RetryingTransactionCallback<NodeRef> createFolderCallback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> createFolderCallback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Exception
             {
                 StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");

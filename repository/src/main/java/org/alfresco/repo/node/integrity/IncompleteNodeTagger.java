@@ -34,6 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -57,43 +60,41 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Component that tags {@link org.alfresco.model.ContentModel#ASPECT_INCOMPLETE incomplete} nodes. 
+ * Component that tags {@link org.alfresco.model.ContentModel#ASPECT_INCOMPLETE incomplete} nodes.
  * 
  * @author Derek Hulley
  */
 public class IncompleteNodeTagger
-        extends     TransactionListenerAdapter
-        implements  NodeServicePolicies.OnCreateNodePolicy,
-                    NodeServicePolicies.OnUpdatePropertiesPolicy,
-                    NodeServicePolicies.OnAddAspectPolicy,
-                    NodeServicePolicies.OnRemoveAspectPolicy,
-                    NodeServicePolicies.OnCreateChildAssociationPolicy,
-                    NodeServicePolicies.OnDeleteChildAssociationPolicy,
-                    NodeServicePolicies.OnCreateAssociationPolicy,
-                    NodeServicePolicies.OnDeleteAssociationPolicy
+        extends TransactionListenerAdapter
+        implements NodeServicePolicies.OnCreateNodePolicy,
+        NodeServicePolicies.OnUpdatePropertiesPolicy,
+        NodeServicePolicies.OnAddAspectPolicy,
+        NodeServicePolicies.OnRemoveAspectPolicy,
+        NodeServicePolicies.OnCreateChildAssociationPolicy,
+        NodeServicePolicies.OnDeleteChildAssociationPolicy,
+        NodeServicePolicies.OnCreateAssociationPolicy,
+        NodeServicePolicies.OnDeleteAssociationPolicy
 {
     private static Log logger = LogFactory.getLog(IncompleteNodeTagger.class);
-    
+
     /** key against which the set of nodes to check is stored in the current transaction */
     private static final String KEY_NODES = "IncompleteNodeTagger.Nodes";
-    
+
     private PolicyComponent policyComponent;
     private DictionaryService dictionaryService;
     private NodeService nodeService;
     private List<String> storesToIgnore = new ArrayList<String>(0);
     private Set<QName> propertiesToIgnore = new HashSet<QName>();
     private BehaviourFilter behaviourFilter;
-    
+
     public IncompleteNodeTagger()
-    {
-    }
+    {}
 
     /**
-     * @param policyComponent the component to register behaviour with
+     * @param policyComponent
+     *            the component to register behaviour with
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -101,7 +102,8 @@ public class IncompleteNodeTagger
     }
 
     /**
-     * @param dictionaryService the dictionary against which to confirm model details
+     * @param dictionaryService
+     *            the dictionary against which to confirm model details
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -109,16 +111,17 @@ public class IncompleteNodeTagger
     }
 
     /**
-     * @param nodeService the node service to use for browsing node structures
+     * @param nodeService
+     *            the node service to use for browsing node structures
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
-     * @param storesToIgnore stores (eg. workspace://version2Store) which will be 
-     *      ignored by IncompleteNodeTagger. Note: assumes associations are within a store.
+     * @param storesToIgnore
+     *            stores (eg. workspace://version2Store) which will be ignored by IncompleteNodeTagger. Note: assumes associations are within a store.
      */
     public void setStoresToIgnore(List<String> storesToIgnore)
     {
@@ -126,7 +129,8 @@ public class IncompleteNodeTagger
     }
 
     /**
-     * @param propertiesToIgnore        a list of property fully-qualified names to ignore
+     * @param propertiesToIgnore
+     *            a list of property fully-qualified names to ignore
      */
     public void setPropertiesToIgnore(List<String> propertiesToIgnore)
     {
@@ -158,37 +162,37 @@ public class IncompleteNodeTagger
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
                 this,
-                new JavaBehaviour(this, "onCreateNode"));   
+                new JavaBehaviour(this, "onCreateNode"));
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                 this,
-                new JavaBehaviour(this, "onUpdateProperties"));   
+                new JavaBehaviour(this, "onUpdateProperties"));
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"),
                 this,
-                new JavaBehaviour(this, "onAddAspect"));   
+                new JavaBehaviour(this, "onAddAspect"));
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"),
                 this,
-                new JavaBehaviour(this, "onRemoveAspect"));   
+                new JavaBehaviour(this, "onRemoveAspect"));
         policyComponent.bindAssociationBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"),
                 this,
-                new JavaBehaviour(this, "onCreateChildAssociation"));   
+                new JavaBehaviour(this, "onCreateChildAssociation"));
         policyComponent.bindAssociationBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteChildAssociation"),
                 this,
-                new JavaBehaviour(this, "onDeleteChildAssociation"));   
+                new JavaBehaviour(this, "onDeleteChildAssociation"));
         policyComponent.bindAssociationBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateAssociation"),
                 this,
-                new JavaBehaviour(this, "onCreateAssociation"));   
+                new JavaBehaviour(this, "onCreateAssociation"));
         policyComponent.bindAssociationBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteAssociation"),
                 this,
-                new JavaBehaviour(this, "onDeleteAssociation"));   
+                new JavaBehaviour(this, "onDeleteAssociation"));
     }
-    
+
     /**
      * @return Returns the set of nodes to check properties, or null if none were registered
      */
@@ -199,18 +203,18 @@ public class IncompleteNodeTagger
     }
 
     /**
-     * Ensures that this service is registered with the transaction and saves the node
-     * reference for use (property check) later.
+     * Ensures that this service is registered with the transaction and saves the node reference for use (property check) later.
      * 
-     * @param nodeRef NodeRef
+     * @param nodeRef
+     *            NodeRef
      */
     private Set<QName> save(NodeRef nodeRef)
     {
         Set<QName> assocs = null;
-        
+
         // register this service
         AlfrescoTransactionSupport.bindListener(this);
-        
+
         // get the event list
         Map<NodeRef, Set<QName>> nodes = getNodes();
         if (nodes == null)
@@ -227,22 +231,23 @@ public class IncompleteNodeTagger
         {
             nodes.put(nodeRef, null);
         }
-        
+
         // done
         if (logger.isDebugEnabled())
         {
             logger.debug("Added node reference to property set: " + nodeRef);
         }
-        
+
         return assocs;
     }
 
     /**
-     * Ensures that this service is registered with the transaction and saves the node
-     * reference for use (association check) later.
+     * Ensures that this service is registered with the transaction and saves the node reference for use (association check) later.
      * 
-     * @param nodeRef NodeRef
-     * @param assocType QName
+     * @param nodeRef
+     *            NodeRef
+     * @param assocType
+     *            QName
      */
     private void saveAssoc(NodeRef nodeRef, QName assocType)
     {
@@ -266,13 +271,13 @@ public class IncompleteNodeTagger
             logger.debug("Added association to node: " + nodeRef + ", " + assocType);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
-        if (! storesToIgnore.contains(childAssocRef.getChildRef().getStoreRef().toString()))
+        if (!storesToIgnore.contains(childAssocRef.getChildRef().getStoreRef().toString()))
         {
             NodeRef nodeRef = childAssocRef.getChildRef();
             save(nodeRef);
@@ -288,7 +293,7 @@ public class IncompleteNodeTagger
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
-        if (! storesToIgnore.contains(nodeRef.getStoreRef().toString()))
+        if (!storesToIgnore.contains(nodeRef.getStoreRef().toString()))
         {
             save(nodeRef);
         }
@@ -297,13 +302,11 @@ public class IncompleteNodeTagger
     /**
      * {@inheritDoc}
      * <p>
-     * Save the node for checking of properties.
-     * The {@link org.alfresco.model.ContentModel#ASPECT_INCOMPLETE incomplete} aspect is
-     * not processed.
+     * Save the node for checking of properties. The {@link org.alfresco.model.ContentModel#ASPECT_INCOMPLETE incomplete} aspect is not processed.
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (! storesToIgnore.contains(nodeRef.getStoreRef().toString()))
+        if (!storesToIgnore.contains(nodeRef.getStoreRef().toString()))
         {
             if (aspectTypeQName.equals(ContentModel.ASPECT_INCOMPLETE))
             {
@@ -321,7 +324,7 @@ public class IncompleteNodeTagger
      */
     public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
-        if (! storesToIgnore.contains(nodeRef.getStoreRef().toString()))
+        if (!storesToIgnore.contains(nodeRef.getStoreRef().toString()))
         {
             if (aspectTypeQName.equals(ContentModel.ASPECT_INCOMPLETE))
             {
@@ -333,16 +336,15 @@ public class IncompleteNodeTagger
             save(nodeRef);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      * <p>
-     * This only saves the node for checking if it is <i>not</i> new.  The create of the
-     * node will handle it.
+     * This only saves the node for checking if it is <i>not</i> new. The create of the node will handle it.
      */
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNew)
     {
-        if (! storesToIgnore.contains(childAssocRef.getChildRef().getStoreRef().toString()))
+        if (!storesToIgnore.contains(childAssocRef.getChildRef().getStoreRef().toString()))
         {
             if (!isNew)
             {
@@ -356,7 +358,7 @@ public class IncompleteNodeTagger
      */
     public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
-        if (! storesToIgnore.contains(childAssocRef.getChildRef().getStoreRef().toString()))
+        if (!storesToIgnore.contains(childAssocRef.getChildRef().getStoreRef().toString()))
         {
             saveAssoc(childAssocRef.getParentRef(), childAssocRef.getTypeQName());
         }
@@ -367,7 +369,7 @@ public class IncompleteNodeTagger
      */
     public void onCreateAssociation(AssociationRef nodeAssocRef)
     {
-        if (! storesToIgnore.contains(nodeAssocRef.getSourceRef().getStoreRef().toString()))
+        if (!storesToIgnore.contains(nodeAssocRef.getSourceRef().getStoreRef().toString()))
         {
             saveAssoc(nodeAssocRef.getSourceRef(), nodeAssocRef.getTypeQName());
         }
@@ -378,12 +380,12 @@ public class IncompleteNodeTagger
      */
     public void onDeleteAssociation(AssociationRef nodeAssocRef)
     {
-        if (! storesToIgnore.contains(nodeAssocRef.getSourceRef().getStoreRef().toString()))
+        if (!storesToIgnore.contains(nodeAssocRef.getSourceRef().getStoreRef().toString()))
         {
             saveAssoc(nodeAssocRef.getSourceRef(), nodeAssocRef.getTypeQName());
         }
     }
-        
+
     /**
      * Process all the nodes that require checking within the transaction.
      */
@@ -398,12 +400,11 @@ public class IncompleteNodeTagger
         }
         // clear the set out of the transaction
         // there may be processes that react to the addition/removal of the aspect,
-        //    and these will, in turn, lead to further events
+        // and these will, in turn, lead to further events
         AlfrescoTransactionSupport.unbindResource(KEY_NODES);
-        
+
         // Tag/untag the nodes as 'system' to prevent cm:lockable-related issues (ETHREEOH-3983)
-        RunAsWork<Void> processNodesWork = new RunAsWork<Void>()
-        {
+        RunAsWork<Void> processNodesWork = new RunAsWork<Void>() {
             public Void doWork() throws Exception
             {
                 // process each node
@@ -439,7 +440,7 @@ public class IncompleteNodeTagger
         Collection<PropertyDefinition> propertyDefs = typeDef.getProperties().values();
         // check them
         boolean classPropertiesOK = checkProperties(propertyDefs, nodeProperties);
-        
+
         // were there outstanding properties to check?
         if (!classPropertiesOK)
         {
@@ -447,7 +448,7 @@ public class IncompleteNodeTagger
             // no further checking required
             return;
         }
-        
+
         for (QName aspectTypeQName : aspectTypeQNames)
         {
             // get property definitions for the aspect
@@ -468,7 +469,7 @@ public class IncompleteNodeTagger
                 return;
             }
         }
-        
+
         // test associations
         if (assocTypes != null)
         {
@@ -506,14 +507,16 @@ public class IncompleteNodeTagger
                 }
             }
         }
-        
+
         // all properties and associations passed (both class- and aspect-defined) - remove aspect
         addOrRemoveTag(nodeRef, false, isTagged);
     }
-    
+
     /**
-     * @param propertyDefs the property definitions to check
-     * @param properties the properties
+     * @param propertyDefs
+     *            the property definitions to check
+     * @param properties
+     *            the properties
      * @return Returns true if the property definitions were all satisified
      */
     private boolean checkProperties(
@@ -526,7 +529,7 @@ public class IncompleteNodeTagger
             {
                 continue;
             }
-            
+
             if (!propertyDef.isMandatory())
             {
                 // The property isn't mandatory in any way
@@ -551,14 +554,16 @@ public class IncompleteNodeTagger
     }
 
     /**
-     * @param nodeRef NodeRef
-     * @param assocDef AssociationDefinition
+     * @param nodeRef
+     *            NodeRef
+     * @param assocDef
+     *            AssociationDefinition
      * @return boolean
      */
     private boolean checkAssociation(NodeRef nodeRef, AssociationDefinition assocDef)
     {
         boolean complete = true;
-        
+
         if (assocDef.isTargetMandatory() && !assocDef.isTargetMandatoryEnforced())
         {
             int actualSize = 0;
@@ -584,16 +589,16 @@ public class IncompleteNodeTagger
         }
         return complete;
     }
-    
+
     /**
-     * Adds or removes the {@link ContentModel#ASPECT_INCOMPLETE incomplete} marker aspect.
-     * This only performs the operation if the tag aspect is or is not present, depending
-     * on the operation required.
+     * Adds or removes the {@link ContentModel#ASPECT_INCOMPLETE incomplete} marker aspect. This only performs the operation if the tag aspect is or is not present, depending on the operation required.
      * 
-     * @param nodeRef the node to apply the change to
-     * @param addTag <tt>true</tt> to add the tag and <tt>false</tt> to remove the tag
-     * @param isTagged <tt>true</tt> if the node already has the tag aspect applied,
-     *      otherwise <tt>false</tt>
+     * @param nodeRef
+     *            the node to apply the change to
+     * @param addTag
+     *            <tt>true</tt> to add the tag and <tt>false</tt> to remove the tag
+     * @param isTagged
+     *            <tt>true</tt> if the node already has the tag aspect applied, otherwise <tt>false</tt>
      */
     private void addOrRemoveTag(NodeRef nodeRef, boolean addTag, boolean isTagged)
     {

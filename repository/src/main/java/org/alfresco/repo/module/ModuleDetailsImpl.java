@@ -32,14 +32,15 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
+
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.module.tool.LogOutput;
 import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
 import org.alfresco.util.VersionNumber;
-import org.alfresco.repo.module.tool.LogOutput;
 
 /**
  * Module details implementation.
@@ -67,7 +68,7 @@ public class ModuleDetailsImpl implements ModuleDetails
     private Date installDate;
     private ModuleInstallState installState;
     private LogOutput log;
-    
+
     /**
      * Private constructor to set default values.
      */
@@ -79,13 +80,12 @@ public class ModuleDetailsImpl implements ModuleDetails
         dependencies = new ArrayList<ModuleDependency>(0);
         this.installState = ModuleInstallState.UNKNOWN;
     }
-    
+
     /**
-     * Creates the instance from a set of properties.  All the property values are trimmed
-     * and empty string values are removed from the set.  In other words, zero length or
-     * whitespace strings are not supported.
+     * Creates the instance from a set of properties. All the property values are trimmed and empty string values are removed from the set. In other words, zero length or whitespace strings are not supported.
      * 
-     * @param properties        the set of properties
+     * @param properties
+     *            the set of properties
      */
     public ModuleDetailsImpl(Properties properties)
     {
@@ -93,12 +93,12 @@ public class ModuleDetailsImpl implements ModuleDetails
     }
 
     /**
-     * Creates the instance from a set of properties.  All the property values are trimmed
-     * and empty string values are removed from the set.  In other words, zero length or
-     * whitespace strings are not supported.
+     * Creates the instance from a set of properties. All the property values are trimmed and empty string values are removed from the set. In other words, zero length or whitespace strings are not supported.
      * 
-     * @param properties        the set of properties
-     * @param log               logger
+     * @param properties
+     *            the set of properties
+     * @param log
+     *            logger
      */
     public ModuleDetailsImpl(Properties properties, LogOutput log)
     {
@@ -126,7 +126,7 @@ public class ModuleDetailsImpl implements ModuleDetails
             // It is a real value
             trimmedProperties.setProperty(key, trimmedValue);
         }
-        
+
         // Check that the required properties are present
         List<String> missingProperties = new ArrayList<String>(1);
         // ID
@@ -168,10 +168,16 @@ public class ModuleDetailsImpl implements ModuleDetails
         }
         // TITLE
         title = trimmedProperties.getProperty(PROP_TITLE);
-        if (title == null) { missingProperties.add(PROP_TITLE); }
+        if (title == null)
+        {
+            missingProperties.add(PROP_TITLE);
+        }
         // DESCRIPTION
         description = trimmedProperties.getProperty(PROP_DESCRIPTION);
-        if (description == null) { missingProperties.add(PROP_DESCRIPTION); }
+        if (description == null)
+        {
+            missingProperties.add(PROP_DESCRIPTION);
+        }
         // REPO MIN
         if (trimmedProperties.getProperty(PROP_REPO_VERSION_MIN) != null)
         {
@@ -216,9 +222,9 @@ public class ModuleDetailsImpl implements ModuleDetails
         }
         // DEPENDENCIES
         this.dependencies = extractDependencies(trimmedProperties);
-        
+
         this.editions = extractEditions(trimmedProperties);
-        
+
         // INSTALL DATE
         if (trimmedProperties.getProperty(PROP_INSTALL_DATE) != null)
         {
@@ -242,7 +248,7 @@ public class ModuleDetailsImpl implements ModuleDetails
             }
             catch (Throwable e)
             {
-                throw new AlfrescoRuntimeException("Unable to parse install state: " + PROP_INSTALL_STATE +", " + installStateStr, e);
+                throw new AlfrescoRuntimeException("Unable to parse install state: " + PROP_INSTALL_STATE + ", " + installStateStr, e);
             }
         }
         // Check
@@ -263,24 +269,28 @@ public class ModuleDetailsImpl implements ModuleDetails
                     "The module ID '" + id + "' is invalid.  It may consist of valid characters, numbers, '.', '_' and '-'");
         }
     }
-    
+
     /**
-     * @param id                module id
-     * @param versionNumber     version number
-     * @param title             title   
-     * @param description       description
+     * @param id
+     *            module id
+     * @param versionNumber
+     *            version number
+     * @param title
+     *            title
+     * @param description
+     *            description
      */
     public ModuleDetailsImpl(String id, ModuleVersionNumber versionNumber, String title, String description)
     {
         // Set defaults
         this();
-        
+
         this.id = id;
         this.version = versionNumber;
         this.title = title;
         this.description = description;
     }
-    
+
     private static List<String> extractEditions(Properties trimmedProperties)
     {
         List<String> specifiedEditions = null;
@@ -300,7 +310,7 @@ public class ModuleDetailsImpl implements ModuleDetails
     private static List<ModuleDependency> extractDependencies(Properties properties)
     {
         int prefixLength = PROP_DEPENDS_PREFIX.length();
-        
+
         List<ModuleDependency> dependencies = new ArrayList<ModuleDependency>(2);
         for (Map.Entry entry : properties.entrySet())
         {
@@ -383,7 +393,7 @@ public class ModuleDetailsImpl implements ModuleDetails
         // Done
         return properties;
     }
-    
+
     @Override
     public String toString()
     {
@@ -394,7 +404,7 @@ public class ModuleDetailsImpl implements ModuleDetails
     {
         return id;
     }
-    
+
     public List<String> getAliases()
     {
         return aliases;
@@ -404,12 +414,12 @@ public class ModuleDetailsImpl implements ModuleDetails
     {
         return version;
     }
-    
+
     public String getTitle()
     {
         return title;
     }
-    
+
     public String getDescription()
     {
         return description;
@@ -444,22 +454,22 @@ public class ModuleDetailsImpl implements ModuleDetails
     {
         return installDate;
     }
-    
+
     public void setInstallDate(Date installDate)
     {
         this.installDate = installDate;
     }
-    
+
     public ModuleInstallState getInstallState()
     {
         return installState;
     }
-    
+
     public void setInstallState(ModuleInstallState installState)
     {
         this.installState = installState;
     }
-    
+
     public List<String> getEditions()
     {
         return editions;
@@ -471,48 +481,60 @@ public class ModuleDetailsImpl implements ModuleDetails
     }
 
     /**
-	 * Grateful received from Apache Commons StringUtils class
-	 * 
-	 */
-    private static String join(Object[] array, char separator) {
-       if (array == null) {
+     * Grateful received from Apache Commons StringUtils class
+     * 
+     */
+    private static String join(Object[] array, char separator)
+    {
+        if (array == null)
+        {
             return null;
-       }
-       return join(array, separator, 0, array.length);
+        }
+        return join(array, separator, 0, array.length);
     }
-    
+
     /**
-	 * Grateful received from Apache Commons StringUtils class
-	 * 
-	 * @param array Object[]
-	 * @param separator char
-	 * @param startIndex int
-	 * @param endIndex int
-	 * @return String
-	 */
-    private static String join(Object[] array, char separator, int startIndex, int endIndex) {
-		if (array == null) {
-			return null;
-		}
-		int bufSize = (endIndex - startIndex);
-		if (bufSize <= 0) {
-			return "";
-		}
+     * Grateful received from Apache Commons StringUtils class
+     * 
+     * @param array
+     *            Object[]
+     * @param separator
+     *            char
+     * @param startIndex
+     *            int
+     * @param endIndex
+     *            int
+     * @return String
+     */
+    private static String join(Object[] array, char separator, int startIndex, int endIndex)
+    {
+        if (array == null)
+        {
+            return null;
+        }
+        int bufSize = (endIndex - startIndex);
+        if (bufSize <= 0)
+        {
+            return "";
+        }
 
-		bufSize *= ((array[startIndex] == null ? 16 : array[startIndex].toString().length()) + 1);
-		StringBuffer buf = new StringBuffer(bufSize);
+        bufSize *= ((array[startIndex] == null ? 16 : array[startIndex].toString().length()) + 1);
+        StringBuffer buf = new StringBuffer(bufSize);
 
-		for (int i = startIndex; i < endIndex; i++) {
-			if (i > startIndex) {
-				buf.append(separator);
-			}
-			if (array[i] != null) {
-				buf.append(array[i]);
-			}
-		}
-		return buf.toString();
-	}
-	 
+        for (int i = startIndex; i < endIndex; i++)
+        {
+            if (i > startIndex)
+            {
+                buf.append(separator);
+            }
+            if (array[i] != null)
+            {
+                buf.append(array[i]);
+            }
+        }
+        return buf.toString();
+    }
+
     /**
      * @author Derek Hulley
      */
@@ -523,7 +545,7 @@ public class ModuleDetailsImpl implements ModuleDetails
         private String dependencyId;
         private String versionStr;
         private List<Pair<ModuleVersionNumber, ModuleVersionNumber>> versionRanges;
-        
+
         private ModuleDependencyImpl(String dependencyId, String versionStr)
         {
             this.dependencyId = dependencyId;
@@ -537,7 +559,7 @@ public class ModuleDetailsImpl implements ModuleDetails
                 throw new AlfrescoRuntimeException("Unable to interpret the module version ranges: " + versionStr, e);
             }
         }
-        
+
         @Override
         public String toString()
         {
@@ -606,10 +628,10 @@ public class ModuleDetailsImpl implements ModuleDetails
                 {
                     throw new AlfrescoRuntimeException(
                             "Valid dependency version ranges are: \n" +
-                            "   LOW  - HIGH \n" +
-                            "   *    - HIGH \n" +
-                            "   LOW  - *    \n" +
-                            "   *       ");
+                                    "   LOW  - HIGH \n" +
+                                    "   *    - HIGH \n" +
+                                    "   LOW  - *    \n" +
+                                    "   *       ");
                 }
                 else if (versionUpper == null && versionLower != null)
                 {
@@ -625,7 +647,7 @@ public class ModuleDetailsImpl implements ModuleDetails
             }
             return versionRanges;
         }
-        
+
         public String getDependencyId()
         {
             return dependencyId;
@@ -658,7 +680,7 @@ public class ModuleDetailsImpl implements ModuleDetails
                 if (checkVersion.compareTo(versionLower) < 0)
                 {
                     // The version is too low
-                    continue; 
+                    continue;
                 }
                 if (checkVersion.compareTo(versionUpper) > 0)
                 {
@@ -679,15 +701,15 @@ public class ModuleDetailsImpl implements ModuleDetails
         // lossy translation between maven version and old VersionNumber
         String mavenVersion = version.toString();
         StringBuffer b = new StringBuffer();
-        for(int i = 0; i < mavenVersion.length(); i++)
+        for (int i = 0; i < mavenVersion.length(); i++)
         {
             char c = mavenVersion.charAt(i);
-            if(Character.isDigit(c) || c == '.')
+            if (Character.isDigit(c) || c == '.')
             {
                 b.append(c);
             }
         }
-        
+
         return new VersionNumber(b.toString());
     }
 }

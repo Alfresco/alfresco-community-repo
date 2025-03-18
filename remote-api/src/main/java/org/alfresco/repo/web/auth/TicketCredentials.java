@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.web.auth;
 
-
 /**
  * {@link WebCredentials} class for holding Alfresco tickets.
  *
@@ -54,15 +53,30 @@ public class TicketCredentials implements WebCredentials
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj) { return true; }
-        if (obj == null) { return false; }
-        if (getClass() != obj.getClass()) { return false; }
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
         TicketCredentials other = (TicketCredentials) obj;
         if (this.ticket == null)
         {
-            if (other.ticket != null) { return false; }
+            if (other.ticket != null)
+            {
+                return false;
+            }
         }
-        else if (!this.ticket.equals(other.ticket)) { return false; }
+        else if (!this.ticket.equals(other.ticket))
+        {
+            return false;
+        }
         return true;
     }
 }

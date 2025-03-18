@@ -25,6 +25,10 @@
  */
 package org.alfresco.repo.security;
 
+import junit.framework.JUnit4TestAdapter;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 import org.alfresco.repo.domain.permissions.FixedAclUpdaterTest;
 import org.alfresco.repo.ownable.impl.OwnableServiceTest;
 import org.alfresco.repo.security.authentication.AlfrescoSSLSocketFactoryTest;
@@ -56,10 +60,6 @@ import org.alfresco.repo.security.permissions.impl.model.PermissionModelTest;
 import org.alfresco.repo.security.person.HomeFolderProviderSynchronizerTest;
 import org.alfresco.repo.security.person.PersonTest;
 
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 /**
  * @author Andy Hind
  *
@@ -70,9 +70,9 @@ public class SecurityTestSuite extends TestSuite
     /**
      * Creates the test suite
      * 
-     * @return  the test suite
+     * @return the test suite
      */
-    public static Test suite() 
+    public static Test suite()
     {
         TestSuite suite = new TestSuite();
         suite.addTestSuite(AuthenticationBootstrapTest.class);
@@ -90,23 +90,23 @@ public class SecurityTestSuite extends TestSuite
         suite.addTestSuite(FilteringResultSetTest.class);
         suite.addTestSuite(PermissionModelTest.class);
         suite.addTestSuite(PersonTest.class);
-        // Note  org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizerTest has its own context and runs on its own 
+        // Note org.alfresco.repo.security.sync.ChainingUserRegistrySynchronizerTest has its own context and runs on its own
         // suite.addTestSuite(ChainingUserRegistrySynchronizerTest.class);
-        suite.addTestSuite(OwnableServiceTest.class);    
-        suite.addTestSuite(ReadPermissionTest.class);    
+        suite.addTestSuite(OwnableServiceTest.class);
+        suite.addTestSuite(ReadPermissionTest.class);
         suite.addTestSuite(AuthorizationTest.class);
         suite.addTestSuite(UpgradePasswordHashTest.class);
         suite.addTestSuite(AuthorityBridgeTableAsynchronouslyRefreshedCacheTest.class);
 
         suite.addTest(new JUnit4TestAdapter(HomeFolderProviderSynchronizerTest.class));
         suite.addTest(new JUnit4TestAdapter(AlfrescoSSLSocketFactoryTest.class));
-		suite.addTest(new JUnit4TestAdapter(FixedAclUpdaterTest.class));
+        suite.addTest(new JUnit4TestAdapter(FixedAclUpdaterTest.class));
 
-		suite.addTestSuite(DefaultRemoteUserMapperTest.class);
-		suite.addTestSuite(IdentityServiceRemoteUserMapperTest.class);
+        suite.addTestSuite(DefaultRemoteUserMapperTest.class);
+        suite.addTestSuite(IdentityServiceRemoteUserMapperTest.class);
         suite.addTest(new JUnit4TestAdapter(IdentityServiceAuthenticationComponentTest.class));
-		suite.addTestSuite(SubsystemChainingFtpAuthenticatorTest.class);
-		suite.addTest(new JUnit4TestAdapter(LocalAuthenticationServiceTest.class));
+        suite.addTestSuite(SubsystemChainingFtpAuthenticatorTest.class);
+        suite.addTest(new JUnit4TestAdapter(LocalAuthenticationServiceTest.class));
 
         suite.addTest(new JUnit4TestAdapter(ResetPasswordServiceImplTest.class));
         suite.addTest(new JUnit4TestAdapter(ServiceAccountRoleTest.class));

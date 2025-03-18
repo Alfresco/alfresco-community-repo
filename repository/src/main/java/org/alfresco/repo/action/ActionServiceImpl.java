@@ -35,8 +35,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.CompositeActionExecuter;
@@ -76,11 +81,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Action service implementation
@@ -88,7 +88,7 @@ import org.springframework.context.ApplicationContextAware;
  * @author Roy Wetherall
  */
 public class ActionServiceImpl implements ActionService, RuntimeActionService, ApplicationContextAware,
-            CopyServicePolicies.OnCopyNodePolicy, CopyServicePolicies.OnCopyCompletePolicy
+        CopyServicePolicies.OnCopyNodePolicy, CopyServicePolicies.OnCopyCompletePolicy
 {
     /**
      * Transaction resource name
@@ -155,7 +155,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Set the application context
      * 
-     * @param applicationContext the application context
+     * @param applicationContext
+     *            the application context
      */
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
@@ -165,7 +166,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Set the node service
      * 
-     * @param nodeService the node service
+     * @param nodeService
+     *            the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -175,7 +177,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Set the search service
      * 
-     * @param searchService the search service
+     * @param searchService
+     *            the search service
      */
     public void setSearchService(SearchService searchService)
     {
@@ -185,7 +188,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Set the authentication component
      * 
-     * @param authenticationContext the authentication component
+     * @param authenticationContext
+     *            the authentication component
      */
     public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
@@ -195,7 +199,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Set the action tracking service
      * 
-     * @param actionTrackingService the action tracking service
+     * @param actionTrackingService
+     *            the action tracking service
      */
     public void setActionTrackingService(ActionTrackingService actionTrackingService)
     {
@@ -205,7 +210,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Set the dictionary service
      * 
-     * @param dictionaryService the dictionary service
+     * @param dictionaryService
+     *            the dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -213,15 +219,17 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * @param policyComponent used to set up the action-based policy behaviour
+     * @param policyComponent
+     *            used to set up the action-based policy behaviour
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
-     * @param monitor used to monitor running actions and execution times
+     * @param monitor
+     *            used to monitor running actions and execution times
      */
     public void setMonitor(ActionServiceMonitor monitor)
     {
@@ -231,22 +239,23 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Set the asynchronous action execution queues
      * 
-     * @param asynchronousActionExecutionQueues the asynchronous action execution
-     *            queues
-     * @deprecated Rather than inject a map, it is
-     *             preferable to inject individual {@link AsynchronousActionExecutionQueue} instances
-     *             during bean initialisation in a spring init-method.
+     * @param asynchronousActionExecutionQueues
+     *            the asynchronous action execution queues
+     * @deprecated Rather than inject a map, it is preferable to inject individual {@link AsynchronousActionExecutionQueue} instances during bean initialisation in a spring init-method.
      */
     public void setAsynchronousActionExecutionQueues(
-                Map<String, AsynchronousActionExecutionQueue> asynchronousActionExecutionQueues)
+            Map<String, AsynchronousActionExecutionQueue> asynchronousActionExecutionQueues)
     {
         this.asynchronousActionExecutionQueues = asynchronousActionExecutionQueues;
     }
-    
+
     /**
      * This method registers an {@link AsynchronousActionExecutionQueue} with the {@link ActionService}.
-     * @param key String
-     * @param asyncExecQueue AsynchronousActionExecutionQueue
+     * 
+     * @param key
+     *            String
+     * @param asyncExecQueue
+     *            AsynchronousActionExecutionQueue
      * @since Thor Phase 2 Sprint 2
      */
     public void registerAsynchronousActionExecutionQueue(String key, AsynchronousActionExecutionQueue asyncExecQueue)
@@ -259,21 +268,22 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
 
         this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
-                    ActionModel.TYPE_ACTION_PARAMETER, new JavaBehaviour(this, "getCopyCallback"));
+                ActionModel.TYPE_ACTION_PARAMETER, new JavaBehaviour(this, "getCopyCallback"));
         this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
-                    ActionModel.TYPE_ACTION_PARAMETER, new JavaBehaviour(this, "onCopyComplete"));
+                ActionModel.TYPE_ACTION_PARAMETER, new JavaBehaviour(this, "onCopyComplete"));
     }
 
     /**
      * Gets the saved action folder reference
      * 
-     * @param nodeRef the node reference
+     * @param nodeRef
+     *            the node reference
      * @return the node reference
      */
     private NodeRef getSavedActionFolderRef(NodeRef nodeRef)
     {
         List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL,
-                    ActionModel.ASSOC_ACTION_FOLDER);
+                ActionModel.ASSOC_ACTION_FOLDER);
         if (assocs.size() != 1)
         {
             throw new ActionServiceException("Unable to retrieve the saved action folder reference.");
@@ -404,8 +414,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * @see org.alfresco.service.cmr.action.ActionService#createActionCondition(java.lang.String,
-     *      java.util.Map)
+     * @see org.alfresco.service.cmr.action.ActionService#createActionCondition(java.lang.String, java.util.Map)
      */
     public ActionCondition createActionCondition(String name, Map<String, Serializable> params)
     {
@@ -423,8 +432,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * @see org.alfresco.service.cmr.action.ActionService#createAction(java.lang.String,
-     *      java.util.Map)
+     * @see org.alfresco.service.cmr.action.ActionService#createAction(java.lang.String, java.util.Map)
      */
     public Action createAction(String name, Map<String, Serializable> params)
     {
@@ -450,8 +458,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * @see org.alfresco.service.cmr.action.ActionService#evaluateAction(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.service.cmr.action.ActionService#evaluateAction(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean evaluateAction(Action action, NodeRef actionedUponNodeRef)
     {
@@ -466,7 +473,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
                 if (logger.isDebugEnabled())
                     logger.debug("\tCondition " + condition.getActionConditionDefinitionName() + " Result - "
-                                + tempresult);
+                            + tempresult);
 
                 result = result && tempresult;
             }
@@ -479,13 +486,9 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * Evaluates the actions by finding corresponding actionEvaluators in
-     * applicationContext (registered through Spring). Composite conditions are
-     * evaluated here as well. It is also possible to have composite actions
-     * inside composite actions.
+     * Evaluates the actions by finding corresponding actionEvaluators in applicationContext (registered through Spring). Composite conditions are evaluated here as well. It is also possible to have composite actions inside composite actions.
      * 
-     * @see org.alfresco.service.cmr.action.ActionService#evaluateActionCondition(org.alfresco.service.cmr.action.ActionCondition,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.service.cmr.action.ActionService#evaluateActionCondition(org.alfresco.service.cmr.action.ActionCondition, org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean evaluateActionCondition(ActionCondition condition, NodeRef actionedUponNodeRef)
     {
@@ -495,7 +498,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             if (logger.isDebugEnabled())
             {
                 logger.debug("Evaluating Composite Condition - BOOLEAN CONDITION IS "
-                            + (compositeCondition.isORCondition() ? "OR" : "AND"));
+                        + (compositeCondition.isORCondition() ? "OR" : "AND"));
             }
 
             if (!compositeCondition.hasActionConditions())
@@ -561,13 +564,12 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         }
         // Evaluate the condition
         ActionConditionEvaluator evaluator = (ActionConditionEvaluator) this.applicationContext.getBean(condition
-                    .getActionConditionDefinitionName());
+                .getActionConditionDefinitionName());
         return evaluator.evaluate(condition, actionedUponNodeRef);
     }
 
     /**
-     * @see org.alfresco.service.cmr.action.ActionService#executeAction(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef, boolean)
+     * @see org.alfresco.service.cmr.action.ActionService#executeAction(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef, boolean)
      */
     public void executeAction(Action action, NodeRef actionedUponNodeRef, boolean checkConditions)
     {
@@ -575,11 +577,10 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * @see org.alfresco.service.cmr.action.ActionService#executeAction(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef, boolean)
+     * @see org.alfresco.service.cmr.action.ActionService#executeAction(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef, boolean)
      */
     public void executeAction(Action action, NodeRef actionedUponNodeRef, boolean checkConditions,
-                boolean executeAsychronously)
+            boolean executeAsychronously)
     {
         Set<String> actionChain = this.currentActionChain.get();
 
@@ -604,13 +605,16 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
      * @see RuntimeActionService#verifyActionAccessRestrictions(Action action)
      */
     @Override
-    public void verifyActionAccessRestrictions(Action action) {
+    public void verifyActionAccessRestrictions(Action action)
+    {
         getActionExecuter(action.getActionDefinitionName())
                 .verifyActionAccessRestrictions(action);
     }
 
-    private ActionExecuter getActionExecuter(String actionDefName) {
-        if (!actionExecuters.containsKey(actionDefName)) {
+    private ActionExecuter getActionExecuter(String actionDefName)
+    {
+        if (!actionExecuters.containsKey(actionDefName))
+        {
             actionExecuters.put(actionDefName, applicationContext.getBean(actionDefName, ActionExecuter.class));
         }
 
@@ -624,7 +628,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             String actionDefinitionName = action.getActionDefinitionName();
             if (actionDefinitionName.equals(CompositeActionExecuter.NAME))
             {
-                for (Action subAction : ((CompositeAction)action).getActions())
+                for (Action subAction : ((CompositeAction) action).getActions())
                 {
                     if (isExecuteAsynchronously(subAction, actionedUponNodeRef, false))
                     {
@@ -662,7 +666,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
         // Queue the action for execution
         queue.executeAction(this, action.getAction(), action.getActionedUponNodeRef(), action.getCheckConditions(),
-                    action.getActionChain());
+                action.getActionChain());
     }
 
     /**
@@ -702,12 +706,13 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
         return queue;
     }
-    
+
     /**
      * Get whether the action should be tracked by the {@link ActionTrackingService} or not.
      * 
-     * @param action        the action, which may or may not have any say about the status tracking
-     * @return              <tt>true</tt> if the status must be tracked, otherwise <tt>false</tt>
+     * @param action
+     *            the action, which may or may not have any say about the status tracking
+     * @return <tt>true</tt> if the status must be tracked, otherwise <tt>false</tt>
      */
     private boolean getTrackStatus(Action action)
     {
@@ -721,7 +726,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         ActionDefinition actionDef = getActionDefinition(action.getActionDefinitionName());
         if (actionDef == null)
         {
-            return false;       // default to 'false' if the definition has disappeared
+            return false; // default to 'false' if the definition has disappeared
         }
         else
         {
@@ -731,7 +736,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
     @Override
     public void executeActionImpl(Action action, NodeRef actionedUponNodeRef, boolean checkConditions,
-                boolean executedAsynchronously, Set<String> actionChain)
+            boolean executedAsynchronously, Set<String> actionChain)
     {
         if (logger.isDebugEnabled() == true)
         {
@@ -752,7 +757,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         }
 
         // MNT-15365
-        if(actionedUponNodeRef != null && !this.nodeService.exists(actionedUponNodeRef))
+        if (actionedUponNodeRef != null && !this.nodeService.exists(actionedUponNodeRef))
         {
             if (logger.isDebugEnabled() == true)
             {
@@ -760,7 +765,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             }
             return;
         }
-        
+
         // get the current user early in case the process fails and we are
         // unable to do it later
         String currentUserName = this.authenticationContext.getCurrentUserName();
@@ -819,7 +824,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                         {
                             monitor.actionCompleted(runningAction);
                         }
-                        
+
                         if (getTrackStatus(action))
                         {
                             // Mark it as having worked
@@ -867,11 +872,11 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                     {
                         // Set the current user & tenant. These should be the same for the primary action and the compensating action.
                         ((ActionImpl) compensatingAction).setRunAsUser(currentUserName);
-                        ((ActionImpl) compensatingAction).setTenantId(((ActionImpl)action).getTenantId());
+                        ((ActionImpl) compensatingAction).setTenantId(((ActionImpl) action).getTenantId());
                         queueAction(compensatingAction, actionedUponNodeRef);
                     }
                 }
-                
+
                 if (getTrackStatus(action))
                 {
                     // Have the failure logged on the action
@@ -891,10 +896,9 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             }
         }
     }
-    
+
     /**
-     * @see org.alfresco.repo.action.RuntimeActionService#directActionExecution(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.RuntimeActionService#directActionExecution(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     public void directActionExecution(Action action, NodeRef actionedUponNodeRef)
     {
@@ -902,7 +906,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         if (logger.isDebugEnabled())
         {
             logger.debug("The action is being executed as the user: "
-                         + this.authenticationContext.getCurrentUserName());
+                    + this.authenticationContext.getCurrentUserName());
         }
 
         // Get the action executer and execute
@@ -911,8 +915,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * @see org.alfresco.service.cmr.action.ActionService#executeAction(org.alfresco.service.cmr.action.Action,
-     *      NodeRef)
+     * @see org.alfresco.service.cmr.action.ActionService#executeAction(org.alfresco.service.cmr.action.Action, NodeRef)
      */
     public void executeAction(Action action, NodeRef actionedUponNodeRef)
     {
@@ -948,8 +951,10 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Gets the action node ref from the action id
      * 
-     * @param nodeRef the node reference
-     * @param actionId the action id
+     * @param nodeRef
+     *            the node reference
+     * @param actionId
+     *            the action id
      * @return the action node reference
      */
     private NodeRef getActionNodeRefFromId(NodeRef nodeRef, String actionId)
@@ -960,11 +965,11 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         {
             DynamicNamespacePrefixResolver namespacePrefixResolver = new DynamicNamespacePrefixResolver();
             namespacePrefixResolver.registerNamespace(NamespaceService.SYSTEM_MODEL_PREFIX,
-                        NamespaceService.SYSTEM_MODEL_1_0_URI);
+                    NamespaceService.SYSTEM_MODEL_1_0_URI);
 
             List<NodeRef> nodeRefs = searchService.selectNodes(getSavedActionFolderRef(nodeRef), "*[@sys:"
-                        + ContentModel.PROP_NODE_UUID.getLocalName() + "='" + actionId + "']", null,
-                        namespacePrefixResolver, false);
+                    + ContentModel.PROP_NODE_UUID.getLocalName() + "='" + actionId + "']", null,
+                    namespacePrefixResolver, false);
             if (nodeRefs.size() != 0)
             {
                 result = nodeRefs.get(0);
@@ -975,8 +980,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * @see org.alfresco.service.cmr.action.ActionService#saveAction(org.alfresco.service.cmr.repository.NodeRef,
-     *      org.alfresco.service.cmr.action.Action)
+     * @see org.alfresco.service.cmr.action.ActionService#saveAction(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.action.Action)
      */
     public void saveAction(NodeRef nodeRef, Action action)
     {
@@ -991,7 +995,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
             // Create the action and reference
             actionNodeRef = createActionNodeRef(action, getSavedActionFolderRef(nodeRef), ContentModel.ASSOC_CONTAINS,
-                        ActionModel.ASSOC_NAME_ACTIONS);
+                    ActionModel.ASSOC_NAME_ACTIONS);
         }
         saveActionImpl(actionNodeRef, action);
     }
@@ -1010,21 +1014,20 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
         // Create the action node
         NodeRef actionNodeRef = this.nodeService.createNode(parentNodeRef, assocTypeName, assocName, actionType, props)
-                    .getChildRef();
+                .getChildRef();
 
         // Update the created details and the node reference
         ((ActionImpl) action).setCreator((String) this.nodeService
-                    .getProperty(actionNodeRef, ContentModel.PROP_CREATOR));
+                .getProperty(actionNodeRef, ContentModel.PROP_CREATOR));
         ((ActionImpl) action).setCreatedDate((Date) this.nodeService.getProperty(actionNodeRef,
-                    ContentModel.PROP_CREATED));
+                ContentModel.PROP_CREATED));
         ((ActionImpl) action).setNodeRef(actionNodeRef);
 
         return actionNodeRef;
     }
 
     /**
-     * @see org.alfresco.repo.action.RuntimeActionService#saveActionImpl(org.alfresco.service.cmr.repository.NodeRef,
-     *      org.alfresco.service.cmr.action.Action)
+     * @see org.alfresco.repo.action.RuntimeActionService#saveActionImpl(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.action.Action)
      */
     public void saveActionImpl(NodeRef actionNodeRef, Action action)
     {
@@ -1045,16 +1048,18 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
         // Update the modified details
         ((ActionImpl) action).setModifier((String) this.nodeService.getProperty(actionNodeRef,
-                    ContentModel.PROP_MODIFIER));
+                ContentModel.PROP_MODIFIER));
         ((ActionImpl) action).setModifiedDate((Date) this.nodeService.getProperty(actionNodeRef,
-                    ContentModel.PROP_MODIFIED));
+                ContentModel.PROP_MODIFIED));
     }
 
     /**
      * Save the action property values
      * 
-     * @param actionNodeRef the action node reference
-     * @param action the action
+     * @param actionNodeRef
+     *            the action node reference
+     * @param action
+     *            the action
      */
     private void saveActionProperties(NodeRef actionNodeRef, Action action)
     {
@@ -1067,19 +1072,19 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             props.put(ActionModel.PROP_TRACK_STATUS, action.getTrackStatus());
         }
         props.put(ActionModel.PROP_EXECUTE_ASYNCHRONOUSLY, action.getExecuteAsychronously());
-        
+
         props.put(ActionModel.PROP_EXECUTION_START_DATE, action.getExecutionStartDate());
         props.put(ActionModel.PROP_EXECUTION_END_DATE, action.getExecutionEndDate());
         props.put(ActionModel.PROP_EXECUTION_ACTION_STATUS, action.getExecutionStatus());
         props.put(ActionModel.PROP_EXECUTION_FAILURE_MESSAGE, action.getExecutionFailureMessage());
-        
+
         this.nodeService.setProperties(actionNodeRef, props);
 
         // Update the compensating action (model should enforce the singularity
         // of this association)
         Action compensatingAction = action.getCompensatingAction();
         List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(actionNodeRef, RegexQNamePattern.MATCH_ALL,
-                    ActionModel.ASSOC_COMPENSATING_ACTION);
+                ActionModel.ASSOC_COMPENSATING_ACTION);
         if (assocs.size() == 0)
         {
             if (compensatingAction != null)
@@ -1101,7 +1106,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
                 // Create the compensating node reference
                 NodeRef compensatingActionNodeRef = createActionNodeRef(compensatingAction, actionNodeRef,
-                            ActionModel.ASSOC_COMPENSATING_ACTION, ActionModel.ASSOC_COMPENSATING_ACTION);
+                        ActionModel.ASSOC_COMPENSATING_ACTION, ActionModel.ASSOC_COMPENSATING_ACTION);
                 saveActionImpl(compensatingActionNodeRef, compensatingAction);
             }
         }
@@ -1122,8 +1127,10 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Save the actions of a composite action
      * 
-     * @param compositeActionNodeRef the node reference of the composite action
-     * @param action2 the composite action
+     * @param compositeActionNodeRef
+     *            the node reference of the composite action
+     * @param action2
+     *            the composite action
      */
     private void saveCompositeActions(NodeRef compositeActionNodeRef, ActionList<?> action2)
     {
@@ -1138,7 +1145,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         }
 
         List<ChildAssociationRef> actionRefs = this.nodeService.getChildAssocs(compositeActionNodeRef,
-                    RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_ACTIONS);
+                RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_ACTIONS);
         for (ChildAssociationRef actionRef : actionRefs)
         {
             NodeRef actionNodeRef = actionRef.getChildRef();
@@ -1167,13 +1174,13 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             props.put(ContentModel.PROP_NODE_UUID, action.getId());
 
             NodeRef actionNodeRef = this.nodeService.createNode(compositeActionNodeRef, ActionModel.ASSOC_ACTIONS,
-                        ActionModel.ASSOC_ACTIONS, ActionModel.TYPE_ACTION, props).getChildRef();
+                    ActionModel.ASSOC_ACTIONS, ActionModel.TYPE_ACTION, props).getChildRef();
 
             // Update the created details and the node reference
             ((ActionImpl) action).setCreator((String) this.nodeService.getProperty(actionNodeRef,
-                        ContentModel.PROP_CREATOR));
+                    ContentModel.PROP_CREATOR));
             ((ActionImpl) action).setCreatedDate((Date) this.nodeService.getProperty(actionNodeRef,
-                        ContentModel.PROP_CREATED));
+                    ContentModel.PROP_CREATED));
             ((ActionImpl) action).setNodeRef(actionNodeRef);
 
             saveActionImpl(actionNodeRef, action);
@@ -1183,8 +1190,10 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Saves the conditions associated with an action.
      * 
-     * @param actionNodeRef the action node reference
-     * @param action the action
+     * @param actionNodeRef
+     *            the action node reference
+     * @param action
+     *            the action
      */
     private void saveConditions(NodeRef actionNodeRef, Action action)
     {
@@ -1194,11 +1203,11 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     private void saveActionConditionList(NodeRef actionNodeRef, List<ActionCondition> actionConditionsList,
-                boolean isComposite)
+            boolean isComposite)
     {
         if (logger.isDebugEnabled())
             logger.debug("SaveActionCondition list, " + actionConditionsList.size() + (isComposite ? " Composite" : "")
-                        + " conditions to be saved");
+                    + " conditions to be saved");
 
         Map<String, ActionCondition> idToCondition = new HashMap<String, ActionCondition>();
         List<String> orderedIds = new ArrayList<String>();
@@ -1210,8 +1219,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         }
 
         List<ChildAssociationRef> conditionRefs = this.nodeService.getChildAssocs(actionNodeRef,
-                    RegexQNamePattern.MATCH_ALL, !isComposite ? ActionModel.ASSOC_CONDITIONS
-                                : ActionModel.ASSOC_COMPOSITE_ACTION_CONDITION);
+                RegexQNamePattern.MATCH_ALL, !isComposite ? ActionModel.ASSOC_CONDITIONS
+                        : ActionModel.ASSOC_COMPOSITE_ACTION_CONDITION);
 
         for (ChildAssociationRef conditionRef : conditionRefs)
         {
@@ -1241,9 +1250,9 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                     logger.debug("Saving Composite Condition");
 
                 NodeRef conditionNodeRef = saveActionCondition(actionNodeRef, actionCondition,
-                            ActionModel.ASSOC_CONDITIONS, ActionModel.TYPE_COMPOSITE_ACTION_CONDITION);
+                        ActionModel.ASSOC_CONDITIONS, ActionModel.TYPE_COMPOSITE_ACTION_CONDITION);
                 saveActionConditionList(conditionNodeRef, ((CompositeActionCondition) actionCondition)
-                            .getActionConditions(), true);
+                        .getActionConditions(), true);
             }
             else
             {
@@ -1252,49 +1261,24 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
                 @SuppressWarnings("unused")
                 NodeRef conditionNodeRef = saveActionCondition(actionNodeRef, actionCondition,
-                            !isComposite ? ActionModel.ASSOC_CONDITIONS : ActionModel.ASSOC_COMPOSITE_ACTION_CONDITION,
-                            ActionModel.TYPE_ACTION_CONDITION);
+                        !isComposite ? ActionModel.ASSOC_CONDITIONS : ActionModel.ASSOC_COMPOSITE_ACTION_CONDITION,
+                        ActionModel.TYPE_ACTION_CONDITION);
             }
         }
     }
 
-    /*
-     * private void saveCompositeActionConditionList(NodeRef
-     * compositeConditionRef, List<ActionCondition> actionConditionsList) { if
-     * (logger.isDebugEnabled())
-     * logger.debug("SaveActionCondition list Composite, "+
-     * actionConditionsList.size() + " conditions to be saved"); Map<String,
-     * ActionCondition> idToCondition = new HashMap<String, ActionCondition>();
-     * List<String> orderedIds = new ArrayList<String>(); for (ActionCondition
-     * actionCondition : actionConditionsList) {
-     * idToCondition.put(actionCondition.getId(), actionCondition);
-     * orderedIds.add(actionCondition.getId()); } List<ChildAssociationRef>
-     * conditionRefs = this.nodeService.getChildAssocs(compositeConditionRef,
-     * RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_CONDITIONS); for
-     * (ChildAssociationRef conditionRef : conditionRefs) { NodeRef
-     * conditionNodeRef = conditionRef.getChildRef(); if
-     * (idToCondition.containsKey(conditionNodeRef.getId()) == false) { //
-     * Delete the condition this.nodeService.removeChild(compositeConditionRef,
-     * conditionNodeRef); } else { saveConditionProperties(conditionNodeRef,
-     * idToCondition.get(conditionNodeRef.getId())); // Update the conditions
-     * parameters saveParameters(conditionNodeRef,
-     * idToCondition.get(conditionNodeRef.getId()));
-     * orderedIds.remove(conditionNodeRef.getId()); } } // Create the conditions
-     * remaining for (String nextId : orderedIds) { ActionCondition
-     * actionCondition = idToCondition.get(nextId); NodeRef conditionNodeRef =
-     * saveActionCondition(compositeConditionRef, actionCondition,
-     * ActionModel.ASSOC_CONDITIONS, ActionModel.TYPE_ACTION_CONDITION); } }
-     */
+    /* private void saveCompositeActionConditionList(NodeRef compositeConditionRef, List<ActionCondition> actionConditionsList) { if (logger.isDebugEnabled()) logger.debug("SaveActionCondition list Composite, "+ actionConditionsList.size() + " conditions to be saved"); Map<String, ActionCondition> idToCondition = new HashMap<String, ActionCondition>(); List<String> orderedIds = new ArrayList<String>(); for (ActionCondition actionCondition : actionConditionsList) { idToCondition.put(actionCondition.getId(), actionCondition); orderedIds.add(actionCondition.getId()); } List<ChildAssociationRef> conditionRefs = this.nodeService.getChildAssocs(compositeConditionRef, RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_CONDITIONS); for (ChildAssociationRef conditionRef : conditionRefs) { NodeRef conditionNodeRef = conditionRef.getChildRef(); if (idToCondition.containsKey(conditionNodeRef.getId()) == false) { // Delete the condition this.nodeService.removeChild(compositeConditionRef,
+     * conditionNodeRef); } else { saveConditionProperties(conditionNodeRef, idToCondition.get(conditionNodeRef.getId())); // Update the conditions parameters saveParameters(conditionNodeRef, idToCondition.get(conditionNodeRef.getId())); orderedIds.remove(conditionNodeRef.getId()); } } // Create the conditions remaining for (String nextId : orderedIds) { ActionCondition actionCondition = idToCondition.get(nextId); NodeRef conditionNodeRef = saveActionCondition(compositeConditionRef, actionCondition, ActionModel.ASSOC_CONDITIONS, ActionModel.TYPE_ACTION_CONDITION); } } */
 
     private NodeRef saveActionCondition(NodeRef actionNodeRef, ActionCondition actionCondition, QName AssociationQName,
-                QName typeName)
+            QName typeName)
     {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
         props.put(ActionModel.PROP_DEFINITION_NAME, actionCondition.getActionConditionDefinitionName());
         props.put(ContentModel.PROP_NODE_UUID, actionCondition.getId());
 
         NodeRef conditionNodeRef = this.nodeService.createNode(actionNodeRef, AssociationQName, AssociationQName,
-                    typeName, props).getChildRef();
+                typeName, props).getChildRef();
 
         saveConditionProperties(conditionNodeRef, actionCondition);
         saveParameters(conditionNodeRef, actionCondition);
@@ -1304,13 +1288,15 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Save the condition properties
      * 
-     * @param conditionNodeRef NodeRef
-     * @param condition ActionCondition
+     * @param conditionNodeRef
+     *            NodeRef
+     * @param condition
+     *            ActionCondition
      */
     private void saveConditionProperties(NodeRef conditionNodeRef, ActionCondition condition)
     {
         this.nodeService.setProperty(conditionNodeRef, ActionModel.PROP_CONDITION_INVERT, condition
-                    .getInvertCondition());
+                .getInvertCondition());
 
         if (condition instanceof CompositeActionCondition)
         {
@@ -1325,8 +1311,10 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Saves the parameters associated with an action or condition
      * 
-     * @param parameterizedNodeRef the parameterized item node reference
-     * @param item the parameterized item
+     * @param parameterizedNodeRef
+     *            the parameterized item node reference
+     * @param item
+     *            the parameterized item
      */
     private void saveParameters(NodeRef parameterizedNodeRef, ParameterizedItem item)
     {
@@ -1334,7 +1322,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         parameterMap.putAll(item.getParameterValues());
 
         List<ChildAssociationRef> parameters = this.nodeService.getChildAssocs(parameterizedNodeRef,
-                    ActionModel.ASSOC_PARAMETERS, ActionModel.ASSOC_PARAMETERS);
+                ActionModel.ASSOC_PARAMETERS, ActionModel.ASSOC_PARAMETERS);
         for (ChildAssociationRef ref : parameters)
         {
             NodeRef paramNodeRef = ref.getChildRef();
@@ -1362,7 +1350,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             nodeRefProperties.put(ActionModel.PROP_PARAMETER_VALUE, entry.getValue());
 
             this.nodeService.createNode(parameterizedNodeRef, ActionModel.ASSOC_PARAMETERS,
-                        ActionModel.ASSOC_PARAMETERS, ActionModel.TYPE_ACTION_PARAMETER, nodeRefProperties);
+                    ActionModel.ASSOC_PARAMETERS, ActionModel.TYPE_ACTION_PARAMETER, nodeRefProperties);
         }
     }
 
@@ -1376,10 +1364,10 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         List<Action> result = new ArrayList<Action>();
 
         if (this.nodeService.exists(nodeRef) == true
-                    && this.nodeService.hasAspect(nodeRef, ActionModel.ASPECT_ACTIONS) == true)
+                && this.nodeService.hasAspect(nodeRef, ActionModel.ASPECT_ACTIONS) == true)
         {
             List<ChildAssociationRef> actions = this.nodeService.getChildAssocs(getSavedActionFolderRef(nodeRef),
-                        RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_NAME_ACTIONS);
+                    RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_NAME_ACTIONS);
             for (ChildAssociationRef action : actions)
             {
                 NodeRef actionNodeRef = action.getChildRef();
@@ -1393,7 +1381,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Create an action from the action node reference
      * 
-     * @param actionNodeRef the action node reference
+     * @param actionNodeRef
+     *            the action node reference
      * @return the action
      */
     public Action createAction(NodeRef actionNodeRef)
@@ -1413,7 +1402,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         {
             // Create an action
             result = new ActionImpl(actionNodeRef, actionNodeRef.getId(), (String) properties
-                        .get(ActionModel.PROP_DEFINITION_NAME));
+                    .get(ActionModel.PROP_DEFINITION_NAME));
             populateAction(actionNodeRef, result);
         }
 
@@ -1423,8 +1412,10 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Populate the details of the action from the node reference
      * 
-     * @param actionNodeRef the action node reference
-     * @param action the action
+     * @param actionNodeRef
+     *            the action node reference
+     * @param action
+     *            the action
      */
     private void populateAction(NodeRef actionNodeRef, Action action)
     {
@@ -1436,7 +1427,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
         // Set the conditions
         List<ChildAssociationRef> conditions = this.nodeService.getChildAssocs(actionNodeRef,
-                    RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_CONDITIONS);
+                RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_CONDITIONS);
 
         if (logger.isDebugEnabled())
             logger.debug("Retrieving " + (conditions == null ? " null" : conditions.size()) + " conditions");
@@ -1454,8 +1445,10 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Populates the action properties from the node reference
      * 
-     * @param actionNodeRef the action node reference
-     * @param action the action
+     * @param actionNodeRef
+     *            the action node reference
+     * @param action
+     *            the action
      */
     private void populateActionProperties(NodeRef actionNodeRef, Action action)
     {
@@ -1465,7 +1458,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         action.setDescription((String) props.get(ActionModel.PROP_ACTION_DESCRIPTION));
 
         Boolean trackStatusObj = (Boolean) props.get(ActionModel.PROP_TRACK_STATUS);
-        action.setTrackStatus(trackStatusObj);              // Allowed to be null
+        action.setTrackStatus(trackStatusObj); // Allowed to be null
 
         Boolean executeAsynchObj = (Boolean) props.get(ActionModel.PROP_EXECUTE_ASYNCHRONOUSLY);
         boolean executeAsynch = executeAsynchObj == null ? false : executeAsynchObj.booleanValue();
@@ -1475,7 +1468,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         ((ActionImpl) action).setCreatedDate((Date) props.get(ContentModel.PROP_CREATED));
         ((ActionImpl) action).setModifier((String) props.get(ContentModel.PROP_MODIFIER));
         ((ActionImpl) action).setModifiedDate((Date) props.get(ContentModel.PROP_MODIFIED));
-        
+
         ((ActionImpl) action).setExecutionStartDate((Date) props.get(ActionModel.PROP_EXECUTION_START_DATE));
         ((ActionImpl) action).setExecutionEndDate((Date) props.get(ActionModel.PROP_EXECUTION_END_DATE));
         ((ActionImpl) action).setExecutionStatus(ActionStatus.valueOf(props.get(ActionModel.PROP_EXECUTION_ACTION_STATUS)));
@@ -1483,7 +1476,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
         // Get the compensating action
         List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(actionNodeRef, RegexQNamePattern.MATCH_ALL,
-                    ActionModel.ASSOC_COMPENSATING_ACTION);
+                ActionModel.ASSOC_COMPENSATING_ACTION);
         if (assocs.size() != 0)
         {
             Action compensatingAction = createAction(assocs.get(0).getChildRef());
@@ -1492,29 +1485,31 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * Populate the parameters of a parameterized item from the parameterized
-     * item node reference
+     * Populate the parameters of a parameterized item from the parameterized item node reference
      * 
-     * @param parameterizedItemNodeRef the parameterized item node reference
-     * @param parameterizedItem the parameterized item
+     * @param parameterizedItemNodeRef
+     *            the parameterized item node reference
+     * @param parameterizedItem
+     *            the parameterized item
      */
     private void populateParameters(NodeRef parameterizedItemNodeRef, ParameterizedItem parameterizedItem)
     {
         List<ChildAssociationRef> parameters = this.nodeService.getChildAssocs(parameterizedItemNodeRef,
-                    RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_PARAMETERS);
+                RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_PARAMETERS);
         for (ChildAssociationRef parameter : parameters)
         {
             NodeRef parameterNodeRef = parameter.getChildRef();
             Map<QName, Serializable> properties = this.nodeService.getProperties(parameterNodeRef);
             parameterizedItem.setParameterValue((String) properties.get(ActionModel.PROP_PARAMETER_NAME), properties
-                        .get(ActionModel.PROP_PARAMETER_VALUE));
+                    .get(ActionModel.PROP_PARAMETER_VALUE));
         }
     }
 
     /**
      * Creates an action condition from an action condition node reference
      * 
-     * @param conditionNodeRef the condition node reference
+     * @param conditionNodeRef
+     *            the condition node reference
      * @return the action condition
      */
     private ActionCondition createActionCondition(NodeRef conditionNodeRef)
@@ -1529,7 +1524,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         if (ActionModel.TYPE_COMPOSITE_ACTION_CONDITION.equals(conditionType) == false)
         {
             condition = new ActionConditionImpl(conditionNodeRef.getId(), (String) properties
-                        .get(ActionModel.PROP_DEFINITION_NAME));
+                    .get(ActionModel.PROP_DEFINITION_NAME));
         }
         else
         {
@@ -1553,10 +1548,10 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     private void populateCompositeActionCondition(NodeRef compositeNodeRef,
-                CompositeActionCondition compositeActionCondition)
+            CompositeActionCondition compositeActionCondition)
     {
         List<ChildAssociationRef> conditions = this.nodeService.getChildAssocs(compositeNodeRef,
-                    RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_COMPOSITE_ACTION_CONDITION);
+                RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_COMPOSITE_ACTION_CONDITION);
 
         Boolean OR = (Boolean) this.nodeService.getProperty(compositeNodeRef, ActionModel.PROP_CONDITION_ANDOR);
 
@@ -1582,15 +1577,17 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Populates a composite action from a composite action node reference
      * 
-     * @param compositeNodeRef the composite action node reference
-     * @param compositeAction the composite action
+     * @param compositeNodeRef
+     *            the composite action node reference
+     * @param compositeAction
+     *            the composite action
      */
     public void populateCompositeAction(NodeRef compositeNodeRef, CompositeAction compositeAction)
     {
         populateAction(compositeNodeRef, compositeAction);
 
         List<ChildAssociationRef> actions = this.nodeService.getChildAssocs(compositeNodeRef,
-                    RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_ACTIONS);
+                RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_ACTIONS);
         for (ChildAssociationRef action : actions)
         {
             NodeRef actionNodeRef = action.getChildRef();
@@ -1599,15 +1596,14 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * @see org.alfresco.service.cmr.action.ActionService#getAction(org.alfresco.service.cmr.repository.NodeRef,
-     *      java.lang.String)
+     * @see org.alfresco.service.cmr.action.ActionService#getAction(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     public Action getAction(NodeRef nodeRef, String actionId)
     {
         Action result = null;
 
         if (this.nodeService.exists(nodeRef) == true
-                    && this.nodeService.hasAspect(nodeRef, ActionModel.ASPECT_ACTIONS) == true)
+                && this.nodeService.hasAspect(nodeRef, ActionModel.ASPECT_ACTIONS) == true)
         {
             NodeRef actionNodeRef = getActionNodeRefFromId(nodeRef, actionId);
             if (actionNodeRef != null)
@@ -1620,13 +1616,12 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * @see org.alfresco.service.cmr.action.ActionService#removeAction(org.alfresco.service.cmr.repository.NodeRef,
-     *      org.alfresco.service.cmr.action.Action)
+     * @see org.alfresco.service.cmr.action.ActionService#removeAction(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.action.Action)
      */
     public void removeAction(NodeRef nodeRef, Action action)
     {
         if (this.nodeService.exists(nodeRef) == true
-                    && this.nodeService.hasAspect(nodeRef, ActionModel.ASPECT_ACTIONS) == true)
+                && this.nodeService.hasAspect(nodeRef, ActionModel.ASPECT_ACTIONS) == true)
         {
             NodeRef actionNodeRef = getActionNodeRefFromId(nodeRef, action.getId());
             if (actionNodeRef != null)
@@ -1642,10 +1637,10 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     public void removeAllActions(NodeRef nodeRef)
     {
         if (this.nodeService.exists(nodeRef) == true
-                    && this.nodeService.hasAspect(nodeRef, ActionModel.ASPECT_ACTIONS) == true)
+                && this.nodeService.hasAspect(nodeRef, ActionModel.ASPECT_ACTIONS) == true)
         {
             List<ChildAssociationRef> actions = new ArrayList<ChildAssociationRef>(this.nodeService.getChildAssocs(
-                        getSavedActionFolderRef(nodeRef), RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_NAME_ACTIONS));
+                    getSavedActionFolderRef(nodeRef), RegexQNamePattern.MATCH_ALL, ActionModel.ASSOC_NAME_ACTIONS));
             for (ChildAssociationRef action : actions)
             {
                 this.nodeService.removeChild(getSavedActionFolderRef(nodeRef), action.getChildRef());
@@ -1654,17 +1649,18 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * Add a pending action to the list to be queued for execution once the
-     * transaction is completed.
+     * Add a pending action to the list to be queued for execution once the transaction is completed.
      * 
-     * @param action the action
-     * @param actionedUponNodeRef the actioned upon node reference
-     * @param checkConditions indicates whether to check the conditions before
-     *            execution
+     * @param action
+     *            the action
+     * @param actionedUponNodeRef
+     *            the actioned upon node reference
+     * @param checkConditions
+     *            indicates whether to check the conditions before execution
      */
     @SuppressWarnings("unchecked")
     private void addPostTransactionPendingAction(Action action, NodeRef actionedUponNodeRef, boolean checkConditions,
-                Set<String> actionChain)
+            Set<String> actionChain)
     {
         if (logger.isDebugEnabled() == true)
         {
@@ -1711,7 +1707,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
             // Add the pending action to the transaction resource
             List<PendingAction> pendingActions = (List<PendingAction>) AlfrescoTransactionSupport
-                        .getResource(POST_TRANSACTION_PENDING_ACTIONS);
+                    .getResource(POST_TRANSACTION_PENDING_ACTIONS);
             if (pendingActions == null)
             {
                 pendingActions = new ArrayList<PendingAction>();
@@ -1723,7 +1719,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             if (pendingActions.contains(pendingAction) == false)
             {
                 pendingActions.add(pendingAction);
-                
+
                 if (getTrackStatus(action))
                 {
                     actionTrackingService.recordActionPending(action, actionedUponNodeRef);
@@ -1754,8 +1750,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         private NodeRef actionedUponNodeRef;
 
         /**
-         * Indicates whether the conditions should be checked before the action
-         * is executed
+         * Indicates whether the conditions should be checked before the action is executed
          */
         private boolean checkConditions;
 
@@ -1764,13 +1759,15 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         /**
          * Constructor
          * 
-         * @param action the action
-         * @param actionedUponNodeRef the actioned upon node reference
-         * @param checkConditions indicated whether the conditions need to be
-         *            checked
+         * @param action
+         *            the action
+         * @param actionedUponNodeRef
+         *            the actioned upon node reference
+         * @param checkConditions
+         *            indicated whether the conditions need to be checked
          */
         public PendingAction(Action action, NodeRef actionedUponNodeRef, boolean checkConditions,
-                    Set<String> actionChain)
+                Set<String> actionChain)
         {
             this.action = action;
             this.actionedUponNodeRef = actionedUponNodeRef;
@@ -1855,8 +1852,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * Records any potential <b>d:noderef</d> properties for once the copy is
-     * done.
+     * Records any potential <b>d:noderef</d> properties for once the copy is done.
      * 
      * @author Derek Hulley
      * @since 3.2
@@ -1867,7 +1863,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
         @Override
         public Map<QName, Serializable> getCopyProperties(QName classQName, CopyDetails copyDetails,
-                    Map<QName, Serializable> properties)
+                Map<QName, Serializable> properties)
         {
             NodeRef sourceNodeRef = copyDetails.getSourceNodeRef();
             recordNodeRefsForRepointing(sourceNodeRef, properties, ActionModel.PROP_PARAMETER_VALUE);
@@ -1877,21 +1873,20 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * Ensures that <b>d:noderef</b> properties are repointed if the target was
-     * also copied as part of the hierarchy.
+     * Ensures that <b>d:noderef</b> properties are repointed if the target was also copied as part of the hierarchy.
      */
     public void onCopyComplete(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef, boolean copyToNewNode,
-                Map<NodeRef, NodeRef> copyMap)
+            Map<NodeRef, NodeRef> copyMap)
     {
         ActionParameterTypeCopyBehaviourCallback.INSTANCE.repointNodeRefs(sourceNodeRef, targetNodeRef,
-                    ActionModel.PROP_PARAMETER_VALUE, copyMap, nodeService);
+                ActionModel.PROP_PARAMETER_VALUE, copyMap, nodeService);
     }
-    
+
     @Override
     public boolean onLogException(Action action, Log logger, Throwable t, String message)
     {
         LoggingAwareExecuter executer = (LoggingAwareExecuter) this.applicationContext.getBean(action.getActionDefinitionName());
-        return executer.onLogException(logger,t, message);
+        return executer.onLogException(logger, t, message);
     }
-    
+
 }

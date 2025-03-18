@@ -42,18 +42,18 @@ public class AlfrescoFolder extends NetworkFile implements NetworkFileStateInter
     {
         super(path);
         setFullName(path);
-        
+
         // Set the file timestamps
-        
-        if ( fileInfo.hasCreationDateTime())
-            setCreationDate( fileInfo.getCreationDateTime());
-        
-        if ( fileInfo.hasModifyDateTime())
+
+        if (fileInfo.hasCreationDateTime())
+            setCreationDate(fileInfo.getCreationDateTime());
+
+        if (fileInfo.hasModifyDateTime())
             setModifyDate(fileInfo.getModifyDateTime());
-        
-        if ( fileInfo.hasAccessDateTime())
+
+        if (fileInfo.hasAccessDateTime())
             setAccessDate(fileInfo.getAccessDateTime());
-        
+
         // Set the file attributes
         setAttributes(fileInfo.getFileAttributes());
     }
@@ -61,7 +61,7 @@ public class AlfrescoFolder extends NetworkFile implements NetworkFileStateInter
     @Override
     public void openFile(boolean createFlag) throws IOException
     {
-        throw new AlfrescoRuntimeException("Unable to open channel for a directory network file: " + this);        
+        throw new AlfrescoRuntimeException("Unable to open channel for a directory network file: " + this);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class AlfrescoFolder extends NetworkFile implements NetworkFileStateInter
     public void writeFile(byte[] buf, int len, int pos, long fileOff)
             throws IOException
     {
-        throw new AlfrescoRuntimeException("Unable to open channel for a directory network file: " + this);        
+        throw new AlfrescoRuntimeException("Unable to open channel for a directory network file: " + this);
     }
 
     @Override
@@ -101,7 +101,7 @@ public class AlfrescoFolder extends NetworkFile implements NetworkFileStateInter
     {
         setClosed(true);
     }
-    
+
     // For JLAN file state lock manager
     public void setFileState(FileState fileState)
     {
@@ -114,5 +114,6 @@ public class AlfrescoFolder extends NetworkFile implements NetworkFileStateInter
         return fileState;
 
     }
+
     private FileState fileState;
 }

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+
 import org.apache.ibatis.executor.result.DefaultResultContext;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
@@ -38,27 +39,22 @@ import org.apache.ibatis.session.ResultHandler;
 /**
  * A {@link ResultHandler} that collapses multiple rows based on a set of properties.
  * <p/>
- * This class is derived from earlier RollupRowHandler used to workaround the <b>groupBy</b> and nested <b>ResultMap</b>
- * behaviour in iBatis (2.3.4.726) <a href=https://issues.apache.org/jira/browse/IBATIS-503>IBATIS-503</a>.
+ * This class is derived from earlier RollupRowHandler used to workaround the <b>groupBy</b> and nested <b>ResultMap</b> behaviour in iBatis (2.3.4.726) <a href=https://issues.apache.org/jira/browse/IBATIS-503>IBATIS-503</a>.
  * <p>
- * The set of properties given act as a unique key.  When the unique key <i>changes</i>, the collection
- * values from the nested <i>ResultMap<i> are coalesced and the given {@link ResultHandler} is called.  It is
- * possible to embed several instances of this handler for deeply-nested <i>ResultMap</i> declarations.
+ * The set of properties given act as a unique key. When the unique key <i>changes</i>, the collection values from the nested <i>ResultMap<i> are coalesced and the given {@link ResultHandler} is called. It is possible to embed several instances of this handler for deeply-nested <i>ResultMap</i> declarations.
  * <p>
- * Use this instance as a regular {@link ResultHandler}, but with one big exception: call {@link #processLastResults()}
- * after executing the SQL statement.  Remove the <b>groupBy</b> attribute from the iBatis <b>ResultMap</b>
- * declaration.
+ * Use this instance as a regular {@link ResultHandler}, but with one big exception: call {@link #processLastResults()} after executing the SQL statement. Remove the <b>groupBy</b> attribute from the iBatis <b>ResultMap</b> declaration.
  * <p>
- * Example iBatis 2.x (TODO migrate example to MyBatis 3.x):
- * <code><pre>
+ * Example iBatis 2.x (TODO migrate example to MyBatis 3.x): <code><pre>
     &lt;resultMap id="result_AuditQueryAllValues"
                extends="alfresco.audit.result_AuditQueryNoValues"
                class="AuditQueryResult"&gt;
         &lt;result property="auditValues" resultMap="alfresco.propval.result_PropertyIdSearchRow"/&gt;
     &lt;/resultMap&gt;
- * </code></pre>
- * Example usage:
- * <code><pre>
+ * </code>
+ * </pre>
+ * 
+ * Example usage: <code><pre>
         RowHandler rowHandler = new RowHandler()
         {
             public void handleRow(Object valueObject)
@@ -104,17 +100,20 @@ public class RollupResultHandler implements ResultHandler
     private final String collectionProperty;
     private final ResultHandler resultHandler;
     private final int maxResults;
-    
+
     private Object[] lastKeyValues;
     private List<Object> rawResults;
     private int resultCount;
-    
+
     private Configuration configuration;
-    
+
     /**
-     * @param keyProperties         the properties that make up the unique key
-     * @param collectionProperty    the property mapped using a nested <b>ResultMap</b>
-     * @param resultHandler         the result handler that will receive the rolled-up results
+     * @param keyProperties
+     *            the properties that make up the unique key
+     * @param collectionProperty
+     *            the property mapped using a nested <b>ResultMap</b>
+     * @param resultHandler
+     *            the result handler that will receive the rolled-up results
      */
     public RollupResultHandler(Configuration configuration, String[] keyProperties, String collectionProperty, ResultHandler resultHandler)
     {
@@ -122,12 +121,14 @@ public class RollupResultHandler implements ResultHandler
     }
 
     /**
-     * @param keyProperties         the properties that make up the unique key
-     * @param collectionProperty    the property mapped using a nested <b>ResultMap</b>
-     * @param resultHandler         the result handler that will receive the rolled-up results
-     * @param maxResults            the maximum number of results to retrieve (-1 for no limit).
-     *                              Make sure that the query result limit is large enough to produce this
-     *                              at least this number of results
+     * @param keyProperties
+     *            the properties that make up the unique key
+     * @param collectionProperty
+     *            the property mapped using a nested <b>ResultMap</b>
+     * @param resultHandler
+     *            the result handler that will receive the rolled-up results
+     * @param maxResults
+     *            the maximum number of results to retrieve (-1 for no limit). Make sure that the query result limit is large enough to produce this at least this number of results
      */
     public RollupResultHandler(Configuration configuration, String[] keyProperties, String collectionProperty, ResultHandler resultHandler, int maxResults)
     {
@@ -146,7 +147,7 @@ public class RollupResultHandler implements ResultHandler
         this.maxResults = maxResults;
         this.rawResults = new ArrayList<Object>(100);
     }
-    
+
     public void handleResult(ResultContext context)
     {
         // Shortcut if we have processed enough results
@@ -154,10 +155,10 @@ public class RollupResultHandler implements ResultHandler
         {
             return;
         }
-        
+
         Object valueObject = context.getResultObject();
         MetaObject probe = configuration.newMetaObject(valueObject);
-        
+
         // Check if the key has changed
         if (lastKeyValues == null)
         {
@@ -174,7 +175,7 @@ public class RollupResultHandler implements ResultHandler
             {
                 DefaultResultContext resultContext = new DefaultResultContext();
                 resultContext.nextResultObject(resultObject);
-                
+
                 resultHandler.handleResult(resultContext);
                 resultCount++;
             }
@@ -185,17 +186,12 @@ public class RollupResultHandler implements ResultHandler
         rawResults.add(valueObject);
         // Done
     }
-    
+
     /**
-     * Client code <b>must</b> call this method once the query returns so that the final results
-     * can be passed to the inner RowHandler.  If a query is limited by size, then it is
-     * possible that the unprocessed results represent an incomplete final object; in this case
-     * it would be best to ignore the last results.  If the query is complete (i.e. all results
-     * are returned) then this method should be called.
+     * Client code <b>must</b> call this method once the query returns so that the final results can be passed to the inner RowHandler. If a query is limited by size, then it is possible that the unprocessed results represent an incomplete final object; in this case it would be best to ignore the last results. If the query is complete (i.e. all results are returned) then this method should be called.
      * <p>
-     * If you want X results and each result is made up of N rows (on average), then set the query
-     * limit to: <br/>
-     *   L = X * (N+1)<br/>
+     * If you want X results and each result is made up of N rows (on average), then set the query limit to: <br/>
+     * L = X * (N+1)<br/>
      * and don't call this method.
      */
     public void processLastResults()
@@ -211,13 +207,13 @@ public class RollupResultHandler implements ResultHandler
         {
             DefaultResultContext resultContext = new DefaultResultContext();
             resultContext.nextResultObject(resultObject);
-            
+
             resultHandler.handleResult(resultContext);
             resultCount++;
-            rawResults.clear();                         // Stop it from being used again
+            rawResults.clear(); // Stop it from being used again
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     private static Object coalesceResults(Configuration configuration, List<Object> valueObjects, String collectionProperty)
     {
@@ -242,9 +238,9 @@ public class RollupResultHandler implements ResultHandler
         // Done
         return resultObject;
     }
-    
+
     /**
-     * @return          Returns the values for the {@link RollupResultHandler#keyProperties}
+     * @return Returns the values for the {@link RollupResultHandler#keyProperties}
      */
     private Object[] getKeyValues(MetaObject probe)
     {

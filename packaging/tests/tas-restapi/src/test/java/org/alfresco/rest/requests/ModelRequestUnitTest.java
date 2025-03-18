@@ -30,11 +30,12 @@ import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-import org.alfresco.rest.core.RestWrapper;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import org.alfresco.rest.core.RestWrapper;
 
 /** Unit tests for {@link ModelRequest}. */
 public class ModelRequestUnitTest
@@ -68,7 +69,6 @@ public class ModelRequestUnitTest
         then(restWrapperMock).should().withParams("include=field1");
         then(restWrapperMock).shouldHaveNoMoreInteractions();
     }
-
 
     @Test
     public void testInclude_multipleIncludes()

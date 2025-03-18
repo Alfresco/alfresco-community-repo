@@ -36,6 +36,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.logging.log4j.util.Strings;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -52,16 +57,11 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.logging.log4j.util.Strings;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 @Experimental
 public class ActionParameterConverter
 {
-    static final String ACTION_PARAMETER_SHOULD_NOT_HAVE_EMPTY_OR_NULL_VALUE =
-            "Action parameter should not have empty or null value";
+    static final String ACTION_PARAMETER_SHOULD_NOT_HAVE_EMPTY_OR_NULL_VALUE = "Action parameter should not have empty or null value";
     private final DictionaryService dictionaryService;
     private final ActionService actionService;
     private final NamespaceService namespaceService;
@@ -69,7 +69,7 @@ public class ActionParameterConverter
     private final Nodes nodes;
 
     public ActionParameterConverter(DictionaryService dictionaryService, ActionService actionService, NamespaceService namespaceService,
-                                    PermissionService permissionService, Nodes nodes)
+            PermissionService permissionService, Nodes nodes)
     {
         this.dictionaryService = dictionaryService;
         this.actionService = actionService;
@@ -97,8 +97,9 @@ public class ActionParameterConverter
 
         for (Map.Entry<String, Serializable> param : params.entrySet())
         {
-            if (Objects.toString(param.getValue(), Strings.EMPTY).isEmpty()) {
-                throw new InvalidArgumentException(ACTION_PARAMETER_SHOULD_NOT_HAVE_EMPTY_OR_NULL_VALUE, new String[] {param.getKey()});
+            if (Objects.toString(param.getValue(), Strings.EMPTY).isEmpty())
+            {
+                throw new InvalidArgumentException(ACTION_PARAMETER_SHOULD_NOT_HAVE_EMPTY_OR_NULL_VALUE, new String[]{param.getKey()});
             }
             final ParameterDefinition paramDef = definition.getParameterDefintion(param.getKey());
             if (paramDef == null && !definition.getAdhocPropertiesAllowed())

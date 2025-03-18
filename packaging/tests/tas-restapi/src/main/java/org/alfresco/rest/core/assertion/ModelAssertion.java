@@ -42,15 +42,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
-
 import io.restassured.path.json.JsonPath;
-import org.alfresco.utility.exception.TestConfigurationException;
-import org.alfresco.utility.model.TestModel;
 import org.testng.Assert;
 
+import org.alfresco.utility.exception.TestConfigurationException;
+import org.alfresco.utility.model.TestModel;
+
 /**
- * Assertion on Rest Model
- * Just pass your rest model as constructor
+ * Assertion on Rest Model Just pass your rest model as constructor
  *
  * @author Paul Brodner
  */
@@ -61,9 +60,10 @@ public class ModelAssertion<T>
     {
         if (fieldValueToBeRetuned == null)
         {
-            Assert.fail(String.format("Field {%s} was not found in returned response.",fieldNameToBeRetuned));
+            Assert.fail(String.format("Field {%s} was not found in returned response.", fieldNameToBeRetuned));
         }
     }
+
     private final Object model;
 
     public ModelAssertion(Object model)
@@ -72,16 +72,12 @@ public class ModelAssertion<T>
     }
 
     /**
-     * Use this DSL for asserting particular fields of your model if your model
-     * is like this (basic POJO)
-     * public class Person extends ModelAssertion<Person>
-     *     { private String id = "1234"; }
-     * you can use assert the id of this person as:
-     * Person p = new Person(); p.assertThat().field("id").is("1234")
+     * Use this DSL for asserting particular fields of your model if your model is like this (basic POJO) public class Person extends ModelAssertion<Person> { private String id = "1234"; } you can use assert the id of this person as: Person p = new Person(); p.assertThat().field("id").is("1234")
      *
      * @param fieldName
      * @return
-     * @throws IllegalStateException If the field cannot be converted to JSON.
+     * @throws IllegalStateException
+     *             If the field cannot be converted to JSON.
      */
     public AssertionVerbs field(String fieldName)
     {
@@ -133,8 +129,10 @@ public class ModelAssertion<T>
      *
      * WARNING: For proper work model should implement {@code toString()} and {@code equals()} methods.
      *
-     * @param expected - expected model.
-     * @param ignoreFields - fields which should be ignored during assertion.
+     * @param expected
+     *            - expected model.
+     * @param ignoreFields
+     *            - fields which should be ignored during assertion.
      * @return model.
      */
     @SuppressWarnings("unchecked")
@@ -245,8 +243,10 @@ public class ModelAssertion<T>
         /**
          * Check if the supplied field is a non-empty String, Collection or Map.
          *
-         * @throws AssertionError if the field is empty.
-         * @throws UnsupportedOperationException if the field cannot be checked for emptiness.
+         * @throws AssertionError
+         *             if the field is empty.
+         * @throws UnsupportedOperationException
+         *             if the field cannot be checked for emptiness.
          */
         public T isNotEmpty()
         {
@@ -298,8 +298,10 @@ public class ModelAssertion<T>
         /**
          * Check if the supplied field is an empty String, Collection or Map.
          *
-         * @throws AssertionError if the field is not empty.
-         * @throws UnsupportedOperationException if the field cannot be checked for emptiness.
+         * @throws AssertionError
+         *             if the field is not empty.
+         * @throws UnsupportedOperationException
+         *             if the field cannot be checked for emptiness.
          */
         public T isEmpty()
         {
@@ -358,10 +360,13 @@ public class ModelAssertion<T>
 
             return (T) model;
         }
+
         /**
          * Assert if predicate value is greater than the field value
+         * 
          * @author Michael Suzuki
-         * @param value the predicate
+         * @param value
+         *            the predicate
          * @return
          * @throws TestConfigurationException
          *
@@ -375,7 +380,7 @@ public class ModelAssertion<T>
         {
             try
             {
-                if(value == null)
+                if (value == null)
                 {
                     throw new TestConfigurationException("Input must be valid");
                 }
@@ -383,14 +388,14 @@ public class ModelAssertion<T>
                 switch (operation)
                 {
                 case Greater:
-                    if(value > b)
+                    if (value > b)
                     {
                         Assert.fail(errorMessage(String.format("The expected value %s is not greater than the actual value %s ",
                                 value, fieldValue.toString())));
                     }
                     break;
                 case Less:
-                    if(value < b)
+                    if (value < b)
                     {
                         Assert.fail(errorMessage(String.format("The expected value %s is not less than the actual value %s ",
                                 value, fieldValue.toString())));
@@ -402,7 +407,7 @@ public class ModelAssertion<T>
                     break;
                 }
             }
-            catch(NumberFormatException e)
+            catch (NumberFormatException e)
             {
                 Assert.fail(errorMessage("The field is not numeric " + fieldValue.toString()));
             }
@@ -412,10 +417,13 @@ public class ModelAssertion<T>
             }
             return (T) model;
         }
+
         /**
          * Assert if predicate value is less than the field value
+         * 
          * @author Michael Suzuki
-         * @param value the predicate
+         * @param value
+         *            the predicate
          * @return
          * @throws TestConfigurationException
          *
@@ -438,14 +446,16 @@ public class ModelAssertion<T>
             this.actual = actual;
         }
 
-        public T is(Object expected) {
+        public T is(Object expected)
+        {
             Assert.assertEquals(actual, expected, String.format("For model [%s], the expected value is not correct ",
                     model.getClass().getSimpleName(), expected.toString(), actual.toString()));
             return (T) model;
         }
     }
+
     public static enum Operation
     {
-        Less,Greater
+        Less, Greater
     }
 }

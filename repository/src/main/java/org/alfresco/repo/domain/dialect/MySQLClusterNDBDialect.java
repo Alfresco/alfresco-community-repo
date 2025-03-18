@@ -31,25 +31,20 @@ import org.apache.commons.logging.LogFactory;
 /**
  * MySQL Cluster NDB specific DAO overrides
  * 
- * WARNING: 
- * - Experimental only (unsupported) !
- * - The NDB storage engine is *not* currently supported or certified !
- * - Can be used for dev/test evaluation (please give us feedback)
- * - Should not be used for live/prod env with real data !
- * - Requires FK support (hence NDB 7.3.x or higher)
+ * WARNING: - Experimental only (unsupported) ! - The NDB storage engine is *not* currently supported or certified ! - Can be used for dev/test evaluation (please give us feedback) - Should not be used for live/prod env with real data ! - Requires FK support (hence NDB 7.3.x or higher)
  * 
  * @author janv
  *
  */
-//note: *not* a dialect of InnoDB but, for now, extends here so that we can override those scripts
+// note: *not* a dialect of InnoDB but, for now, extends here so that we can override those scripts
 public class MySQLClusterNDBDialect extends MySQLInnoDBDialect
 {
     protected Log logger = LogFactory.getLog(MySQLClusterNDBDialect.class);
-    
+
     public MySQLClusterNDBDialect()
     {
         super();
-        
+
         logger.error("Using NDB with Alfresco is experimental and unsupported (do not use for live/prod envs) !");
     }
 }

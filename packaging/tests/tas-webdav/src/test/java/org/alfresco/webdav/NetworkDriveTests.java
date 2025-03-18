@@ -1,16 +1,17 @@
 package org.alfresco.webdav;
 
+import java.io.FileNotFoundException;
+import java.nio.file.FileAlreadyExistsException;
+
+import org.apache.commons.lang3.SystemUtils;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.*;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.commons.lang3.SystemUtils;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import java.io.FileNotFoundException;
-import java.nio.file.FileAlreadyExistsException;
 
 public class NetworkDriveTests extends WebDavTest
 {
@@ -23,15 +24,15 @@ public class NetworkDriveTests extends WebDavTest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        if(SystemUtils.IS_OS_WINDOWS)
+        if (SystemUtils.IS_OS_WINDOWS)
             webDavProtocol.unmountNetworkDrive();
 
         siteManager = dataUser.getAdminUser();
         testSite = dataSite.usingUser(siteManager).createPublicRandomSite();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify admin can create folder in Alfresco root folder on mapped drive")
     public void adminCanCreateFolderInRootOnMappedDrive() throws Exception
     {
@@ -39,12 +40,12 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(dataUser.getAdminUser()).usingNetworkDrive().usingRoot().createFolder(folderModel)
                 .then()
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo();
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can create folder on mapped drive")
     public void siteManagerCanCreateFolderOnMappedDrive() throws Exception
     {
@@ -52,12 +53,12 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingSite(testSite).createFolder(folderModel)
                 .then()
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo();
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager can create folder with name that contains spaces on mapped drive")
     public void siteManagerCanCreateFolderWithSpacesInNameOnMappedDrive() throws Exception
     {
@@ -65,12 +66,12 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingSite(testSite).createFolder(folderModel)
                 .then()
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo();
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager can create folder with name that contains special characters on mapped drive")
     public void siteManagerCanCreateFolderWithSpecialCharactersInNameOnMappedDrive() throws Exception
     {
@@ -78,12 +79,12 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingSite(testSite).createFolder(folderModel)
                 .then()
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo();
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN }, expectedExceptions = FileAlreadyExistsException.class)
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN}, expectedExceptions = FileAlreadyExistsException.class)
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager cannot create folder twice on mapped drive")
     public void siteManagerCannotCreateFolderTwiceOnMappedDrive() throws Exception
     {
@@ -91,13 +92,13 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingSite(testSite).createFolder(folderModel)
                 .then()
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo()
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo()
                 .and().usingSite(testSite).createFolder(folderModel);
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can create folder inside another folder on mapped drive")
     public void siteManagerCanCreateFolderInFolderOnMappedDrive() throws Exception
     {
@@ -106,12 +107,12 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingResource(parentFolder).createFolder(folderModel)
                 .then()
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo();
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can create folder with name prefixed by dot on mapped drive")
     public void siteManagerCanCreateFolderWithNamePrefixedByDotOnMappedDrive() throws Exception
     {
@@ -119,12 +120,12 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingSite(testSite).createFolder(folderModel)
                 .then()
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo();
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can create file on mapped drive")
     public void siteManagerCanCreateFileOnMappedDrive() throws Exception
     {
@@ -132,13 +133,13 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingSite(testSite).createFile(fileModel)
                 .then()
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo()
-                    .assertThat().contentIs("");
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo()
+                .assertThat().contentIs("");
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can create file with content on mapped drive")
     public void siteManagerCanCreateFileWithContentOnMappedDrive() throws Exception
     {
@@ -146,13 +147,13 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingSite(testSite).createFile(fileModel)
                 .then()
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo()
-                    .assertThat().contentIs(fileContent);
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo()
+                .assertThat().contentIs(fileContent);
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can delete file on mapped drive")
     public void siteManagerCanDeleteFileOnMappedDrive() throws Exception
     {
@@ -160,12 +161,12 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingResource(fileModel).delete()
                 .then()
-                    .assertThat().doesNotExistInWebdav()
-                    .assertThat().doesNotExistInRepo();
+                .assertThat().doesNotExistInWebdav()
+                .assertThat().doesNotExistInRepo();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can delete folder on mapped drive")
     public void siteManagerCanDeleteFolderOnMappedDrive() throws Exception
     {
@@ -173,12 +174,12 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingResource(folderModel).delete()
                 .then()
-                    .assertThat().doesNotExistInWebdav()
-                    .assertThat().doesNotExistInRepo();
+                .assertThat().doesNotExistInWebdav()
+                .assertThat().doesNotExistInRepo();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can rename file on mapped drive")
     public void siteManagerCanRenameFileOnMappedDrive() throws Exception
     {
@@ -187,15 +188,15 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingResource(fileModel).rename("renamedFile")
                 .and()
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo()
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo()
                 .then().usingResource(originalFileModel)
-                    .assertThat().doesNotExistInWebdav()
-                    .assertThat().doesNotExistInRepo();
+                .assertThat().doesNotExistInWebdav()
+                .assertThat().doesNotExistInRepo();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can rename folder on mapped drive")
     public void siteManagerCanRenameFolderOnMappedDrive() throws Exception
     {
@@ -204,15 +205,15 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingResource(folderModel).rename("renamedFolder")
                 .and()
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo()
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo()
                 .then().usingResource(originalFolderModel)
-                    .assertThat().doesNotExistInWebdav()
-                    .assertThat().doesNotExistInRepo();
+                .assertThat().doesNotExistInWebdav()
+                .assertThat().doesNotExistInRepo();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can copy file on mapped drive")
     public void siteManagerCanCopyFileOnMappedDrive() throws Exception
     {
@@ -222,15 +223,15 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingResource(fileModel).copyTo(copiedFile)
                 .and()
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo()
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo()
                 .then().usingResource(fileModel)
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo();
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can copy folder on mapped drive")
     public void siteManagerCanCopyFolderOnMappedDrive() throws Exception
     {
@@ -242,17 +243,17 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingSite(testSite).assertThat().hasFolders(folderModel)
                 .usingResource(folderModel).copyTo(copiedFolder)
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo()
-                    .assertThat().hasChildren(fileModel)
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo()
+                .assertThat().hasChildren(fileModel)
                 .assertThat().hasFiles(fileModel)
                 .then().usingResource(folderModel)
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo();
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can move file on mapped drive")
     public void siteManagerCanMoveFileOnMappedDrive() throws Exception
     {
@@ -262,15 +263,15 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingResource(fileModel).moveTo(movedFile)
                 .and()
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo()
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo()
                 .then().usingResource(fileModel)
-                    .assertThat().doesNotExistInWebdav()
-                    .assertThat().doesNotExistInRepo();
+                .assertThat().doesNotExistInWebdav()
+                .assertThat().doesNotExistInRepo();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can move folder on mapped drive")
     public void siteManagerCanMoveFolderOnMappedDrive() throws Exception
     {
@@ -281,20 +282,20 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingSite(testSite).assertThat().hasFolders(folderModel)
                 .usingResource(folderModel).moveTo(moveFolder)
-                    .assertThat().existsInWebdav()
-                    .assertThat().existsInRepo()
-                    .assertThat().hasChildren(fileModel)
-                    .assertThat().hasFiles(fileModel)
+                .assertThat().existsInWebdav()
+                .assertThat().existsInRepo()
+                .assertThat().hasChildren(fileModel)
+                .assertThat().hasFiles(fileModel)
                 .then().usingSite(testSite).usingResource(folderModel)
-                    .assertThat().doesNotExistInWebdav()
-                    .assertThat().doesNotExistInRepo()
+                .assertThat().doesNotExistInWebdav()
+                .assertThat().doesNotExistInRepo()
                 .and().usingSite(testSite).usingResource(folderModel).usingResource(fileModel)
-                    .assertThat().doesNotExistInWebdav()
-                    .assertThat().doesNotExistInRepo();
+                .assertThat().doesNotExistInWebdav()
+                .assertThat().doesNotExistInRepo();
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can update file content on mapped drive")
     public void siteManagerCanUpdateFileContentOnMappedDrive() throws Exception
     {
@@ -302,13 +303,13 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingResource(fileModel).assertThat().contentIs("")
                 .and()
-                    .update("updated content")
+                .update("updated content")
                 .then()
-                    .assertThat().contentIs("updated content");
+                .assertThat().contentIs("updated content");
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN }, expectedExceptions = FileNotFoundException.class)
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN}, expectedExceptions = FileNotFoundException.class)
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify site manager cannot update content for a deleted file on mapped drive")
     public void siteManagerCannotUpdateFileContentForADeletedFileOnMappedDrive() throws Exception
     {
@@ -316,11 +317,11 @@ public class NetworkDriveTests extends WebDavTest
 
         webDavProtocol.authenticateUser(siteManager).usingNetworkDrive().usingResource(fileModel).delete()
                 .then()
-                    .update("updated content");
+                .update("updated content");
     }
 
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN })
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.WEBDAV }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.FULL, TestGroup.OS_WIN})
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType = ExecutionType.SANITY,
             description = "Verify that file version is incremented after file is edited on mapped drive")
     public void verifyFileVersionIsIncrementedAfterEditOnMappedDrive() throws Exception
     {

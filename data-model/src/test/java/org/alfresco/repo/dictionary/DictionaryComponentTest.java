@@ -29,21 +29,18 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.util.Arrays;
+import java.util.Locale;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.StaticMessageLookup;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
-import java.io.ByteArrayInputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Locale;
-
 /**
- * DictionaryNamespaceComponent and DictionaryComponent mostly delegate to other methods. This test is
- * really about exercising all of the public endpoints.
+ * DictionaryNamespaceComponent and DictionaryComponent mostly delegate to other methods. This test is really about exercising all of the public endpoints.
  *
  * @author Gethin James
  */
@@ -127,7 +124,7 @@ public class DictionaryComponentTest extends AbstractModelTest
         QName[] types = (QName[]) dc.getTypes(modelName).toArray(new QName[2]);
         QName text = QName.createQName(NamespaceService.DICTIONARY_MODEL_1_0_URI, "text");
         QName testAspect = QName.createQName(modelName.getNamespaceURI(), "aspect1");
-        assertTrue(types.length>0);
+        assertTrue(types.length > 0);
         assertNotNull(dc.getAnonymousType(types[0], Arrays.asList(testAspect)));
         assertNotNull(dc.getAnonymousType(types[0]));
         assertNotNull(dc.getPropertyDefs(testAspect));
@@ -144,7 +141,7 @@ public class DictionaryComponentTest extends AbstractModelTest
 
         assertNull(dc.getMessage("fred"));
         assertNull(dc.getMessage("fred", Locale.getDefault()));
-        assertNull(dc.getMessage("fred","cat"));
+        assertNull(dc.getMessage("fred", "cat"));
         assertNull(dc.getMessage("fred", Locale.getDefault(), "dog"));
 
     }

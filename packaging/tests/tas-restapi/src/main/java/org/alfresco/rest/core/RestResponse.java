@@ -41,7 +41,7 @@ public class RestResponse
     {
         this.setResponse(response);
     }
-  
+
     public String getStatusCode()
     {
         return String.valueOf(response.getStatusCode());

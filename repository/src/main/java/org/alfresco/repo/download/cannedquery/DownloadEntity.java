@@ -41,7 +41,7 @@ public class DownloadEntity extends NodeBackedEntity
     {
         super();
     }
-    
+
     public DownloadEntity(Long parentNodeId, Long nameQNameId, Long contentTypeQNameId)
     {
         super(parentNodeId, nameQNameId, contentTypeQNameId);

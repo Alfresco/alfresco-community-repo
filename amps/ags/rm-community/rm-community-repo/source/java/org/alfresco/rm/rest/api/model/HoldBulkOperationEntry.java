@@ -26,4 +26,5 @@
  */
 package org.alfresco.rm.rest.api.model;
 
-public record HoldBulkOperationEntry(String bulkStatusId, long totalItems){}
+public record HoldBulkOperationEntry(String bulkStatusId, long totalItems)
+{}

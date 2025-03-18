@@ -25,11 +25,11 @@
  */
 package org.alfresco.rest.api.search.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Collections;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * POJO class representing the FacetField
@@ -41,8 +41,8 @@ public class FacetField
     private final String field;
     private final String label;
     private final String prefix;
-    private final String sort; //actually an enum
-    private final String method; //actually an enum
+    private final String sort; // actually an enum
+    private final String method; // actually an enum
     private final Boolean missing;
     private final Integer limit;
     private final Integer offset;
@@ -52,28 +52,28 @@ public class FacetField
 
     @JsonCreator
     public FacetField(@JsonProperty("field") String field,
-                @JsonProperty("label") String label,
-                @JsonProperty("prefix") String prefix,
-                @JsonProperty("sort") String sort,
-                @JsonProperty("method") String method,
-                @JsonProperty("missing") Boolean missing,
-                @JsonProperty("limit") Integer limit,
-                @JsonProperty("offset") Integer offset,
-                @JsonProperty("mincount") Integer mincount,
-                @JsonProperty("excludeFilters") List<String> excludeFilters,
-                @JsonProperty("facetEnumCacheMinDf") Integer facetEnumCacheMinDf)
+            @JsonProperty("label") String label,
+            @JsonProperty("prefix") String prefix,
+            @JsonProperty("sort") String sort,
+            @JsonProperty("method") String method,
+            @JsonProperty("missing") Boolean missing,
+            @JsonProperty("limit") Integer limit,
+            @JsonProperty("offset") Integer offset,
+            @JsonProperty("mincount") Integer mincount,
+            @JsonProperty("excludeFilters") List<String> excludeFilters,
+            @JsonProperty("facetEnumCacheMinDf") Integer facetEnumCacheMinDf)
     {
         this.field = field;
         this.label = label;
         this.prefix = prefix;
         this.sort = sort;
         this.method = method;
-        this.missing = missing == null?false:missing;
-        this.limit = limit; //Can be null
-        this.offset = offset == null?0:offset;
-        this.mincount = mincount == null?1:mincount;
-        this.excludeFilters = excludeFilters == null? Collections.emptyList():excludeFilters;
-        this.facetEnumCacheMinDf = facetEnumCacheMinDf == null?0:facetEnumCacheMinDf;
+        this.missing = missing == null ? false : missing;
+        this.limit = limit; // Can be null
+        this.offset = offset == null ? 0 : offset;
+        this.mincount = mincount == null ? 1 : mincount;
+        this.excludeFilters = excludeFilters == null ? Collections.emptyList() : excludeFilters;
+        this.facetEnumCacheMinDf = facetEnumCacheMinDf == null ? 0 : facetEnumCacheMinDf;
     }
 
     public List<String> getExcludeFilters()

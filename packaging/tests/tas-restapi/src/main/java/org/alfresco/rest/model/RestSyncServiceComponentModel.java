@@ -32,28 +32,22 @@
 
 package org.alfresco.rest.model;
 
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Base Path {@linkplain /alfresco/healthcheck}
  * 
- * @author Meenal Bhave
- * Example:
+ * @author Meenal Bhave Example:
  * 
-    "healthCheckComponent": {
-        "healthy": true,
-        "message": "ActiveMQ connection Ok"
-    }
-}
+ *         "healthCheckComponent": { "healthy": true, "message": "ActiveMQ connection Ok" } }
  */
 public class RestSyncServiceComponentModel extends TestModel
 {
 
     public RestSyncServiceComponentModel()
-    {
-    }
+    {}
 
     @JsonProperty(required = true)
     private Boolean healthy;

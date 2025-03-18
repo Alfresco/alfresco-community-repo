@@ -31,7 +31,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -47,11 +46,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.springframework.extensions.surf.util.Content;
+import org.springframework.extensions.webscripts.Match;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.servlet.FormData;
+import org.springframework.http.HttpMethod;
+import org.springframework.mock.web.MockHttpServletRequest;
+
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
-import org.alfresco.rest.framework.core.ResourceDictionary;
 import org.alfresco.rest.framework.core.ResourceInspector;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceLookupDictionary;
@@ -74,15 +81,6 @@ import org.alfresco.rest.framework.webscripts.ResourceWebScriptGet;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptPost;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptPut;
 import org.alfresco.util.TempFileProvider;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.springframework.extensions.surf.util.Content;
-import org.springframework.extensions.webscripts.Match;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.servlet.FormData;
-import org.springframework.http.HttpMethod;
-import org.springframework.mock.web.MockHttpServletRequest;
-
 
 /**
  * Tests extracting of params from req
@@ -119,16 +117,16 @@ public class ParamsExtractorTests
         Map<String, String> templateVars = new HashMap<String, String>();
         WebScriptRequest request = mock(WebScriptRequest.class);
         when(request.getServiceMatch()).thenReturn(new Match(null, templateVars, null));
-        
+
         Params params = extractor.extractParams(mockEntity(), request);
-        assertNull("For getting a Collection there should be no entity params.",params.getEntityId());
-        assertNull("For getting a Collection there should be no passed params.",params.getPassedIn());
-        assertNull("For getting a Collection there should be no relationshipId params.",params.getRelationshipId());
+        assertNull("For getting a Collection there should be no entity params.", params.getEntityId());
+        assertNull("For getting a Collection there should be no passed params.", params.getPassedIn());
+        assertNull("For getting a Collection there should be no relationshipId params.", params.getRelationshipId());
         assertEquals(Paging.DEFAULT_SKIP_COUNT, params.getPaging().getSkipCount());
         assertEquals(Paging.DEFAULT_MAX_ITEMS, params.getPaging().getMaxItems());
         assertNotNull(params.getFilter());
         assertTrue("Default filter is BeanPropertiesFilter.AllProperties", BeanPropertiesFilter.AllProperties.class.equals(params.getFilter().getClass()));
-        
+
         templateVars.put(ResourceLocator.ENTITY_ID, "1234");
         params = extractor.extractParams(mockEntity(), request);
         assertNotNull(params);
@@ -138,7 +136,7 @@ public class ParamsExtractorTests
         templateVars.put(ResourceLocator.RELATIONSHIP_RESOURCE, "codfish");
         params = extractor.extractParams(mockRelationship(), request);
         assertNotNull(params);
-        assertNull("For getting a Collection there should be no relationshipId params.",params.getRelationshipId());
+        assertNull("For getting a Collection there should be no relationshipId params.", params.getRelationshipId());
 
         templateVars.put(ResourceLocator.RELATIONSHIP_ID, "45678");
         params = extractor.extractParams(mockRelationship(), request);
@@ -170,12 +168,12 @@ public class ParamsExtractorTests
         assertTrue(params.hasBinaryProperty("monkFish"));
         return params;
     }
-    
+
     @SuppressWarnings("unchecked")
     @Test
     public void testPostExtractor() throws IOException
     {
-        //Put together the stubs
+        // Put together the stubs
         ResourceWebScriptPost extractor = new ResourceWebScriptPost();
         extractor.setAssistant(assistant);
         extractor.setLocator(locator);
@@ -187,22 +185,22 @@ public class ParamsExtractorTests
         WebScriptRequest request = mock(WebScriptRequest.class);
         when(request.getServiceMatch()).thenReturn(new Match(null, templateVars, null));
         when(request.getContent()).thenReturn(content);
-        
+
         Params params = extractor.extractParams(mockEntity(), request);
         assertNotNull(params);
-        
+
         assertNotNull(params.getFilter());
         assertTrue("Default filter is BeanPropertiesFilter.AllProperties", BeanPropertiesFilter.AllProperties.class.equals(params.getFilter().getClass()));
-        
-        Object passed =  params.getPassedIn();
+
+        Object passed = params.getPassedIn();
         assertNotNull(passed);
-        
+
         assertTrue(List.class.isAssignableFrom(passed.getClass()));
         List<Object> passedObjs = (List<Object>) passed;
         assertTrue(passedObjs.size() == 1);
-        assertTrue("A Farmer was passed in.", Farmer.class.equals(passedObjs.get(0).getClass()));    
-        
-        //No entity id for POST
+        assertTrue("A Farmer was passed in.", Farmer.class.equals(passedObjs.get(0).getClass()));
+
+        // No entity id for POST
         templateVars.put(ResourceLocator.ENTITY_ID, "1234");
         try
         {
@@ -211,47 +209,47 @@ public class ParamsExtractorTests
         }
         catch (UnsupportedResourceOperationException uoe)
         {
-            assertNotNull(uoe);  //Must throw this exception
+            assertNotNull(uoe); // Must throw this exception
         }
-    
-        when(content.getReader()).thenReturn(new StringReader(JsonJacksonTests.FARMER_JSON));  //reset the reader
+
+        when(content.getReader()).thenReturn(new StringReader(JsonJacksonTests.FARMER_JSON)); // reset the reader
         params = extractor.extractParams(mockRelationship(), request);
         assertNotNull(params);
         assertEquals("1234", params.getEntityId());
-        passed =  params.getPassedIn();
+        passed = params.getPassedIn();
         assertNotNull(passed);
         passedObjs = (List<Object>) passed;
         assertTrue(passedObjs.size() == 1);
-        assertTrue("A Farmer was passed in.", Farmer.class.equals(passedObjs.get(0).getClass()));      
-        
+        assertTrue("A Farmer was passed in.", Farmer.class.equals(passedObjs.get(0).getClass()));
+
         try
         {
-            when(content.getReader()).thenReturn(new StringReader(JsonJacksonTests.FARMER_JSON));  //reset the reader
+            when(content.getReader()).thenReturn(new StringReader(JsonJacksonTests.FARMER_JSON)); // reset the reader
             templateVars.put(ResourceLocator.RELATIONSHIP_ID, "45678");
             params = extractor.extractParams(mockRelationship(), request);
             fail("Should not get here.");
         }
         catch (UnsupportedResourceOperationException iae)
-        { 
-            assertNotNull("POSTING to a relationship collection by id is not correct.",iae);  //Must throw this exception
+        {
+            assertNotNull("POSTING to a relationship collection by id is not correct.", iae); // Must throw this exception
         }
 
         templateVars.clear();
-        when(content.getReader()).thenReturn(new StringReader(JsonJacksonTests.FARMER_JSON));  //reset the reader
+        when(content.getReader()).thenReturn(new StringReader(JsonJacksonTests.FARMER_JSON)); // reset the reader
         templateVars.put(ResourceLocator.ENTITY_ID, "1234");
         templateVars.put(ResourceLocator.RELATIONSHIP_ID, "codfish");
         try
         {
-            //POST does not support addressed parameters.
+            // POST does not support addressed parameters.
             params = extractor.extractParams(mockEntity(), request);
             fail("Should not get here.");
         }
         catch (UnsupportedResourceOperationException uoe)
         {
-            assertNotNull(uoe);  //Must throw this exception
+            assertNotNull(uoe); // Must throw this exception
         }
         testExtractOperationParams(templateVars, request, extractor);
-        
+
         templateVars.clear();
         Method aMethod = ResourceInspector.findMethod(EntityResourceAction.Create.class, GrassEntityResource.class);
         ResourceOperation op = ResourceInspector.inspectOperation(GrassEntityResource.class, aMethod, HttpMethod.POST);
@@ -281,7 +279,7 @@ public class ParamsExtractorTests
         templateVars.put(ResourceLocator.RELATIONSHIP_RESOURCE, "codfish");
         Params params = extractor.extractParams(mockOperation(), request);
         assertNotNull(params);
-        assertNull("For a Collection there should be no relationshipId params.",params.getRelationshipId());
+        assertNull("For a Collection there should be no relationshipId params.", params.getRelationshipId());
 
         templateVars.put(ResourceLocator.RELATIONSHIP_ID, "9865");
         templateVars.put(ResourceLocator.PROPERTY, "monkFish");
@@ -310,8 +308,8 @@ public class ParamsExtractorTests
         writer.close();
 
         MultiPartRequest reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(file.getName(), file, MimetypeMap.MIMETYPE_TEXT_PLAIN))
-                    .build();
+                .setFileData(new FileData(file.getName(), file, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                .build();
 
         MockHttpServletRequest mockRequest = new MockHttpServletRequest("POST", "");
         mockRequest.setContent(reqBody.getBody());
@@ -353,7 +351,7 @@ public class ParamsExtractorTests
     @Test
     public void testPutExtractor() throws IOException
     {
-        //Put together the stubs
+        // Put together the stubs
         ResourceWebScriptPut extractor = new ResourceWebScriptPut();
         extractor.setAssistant(assistant);
         extractor.setLocator(locator);
@@ -375,9 +373,9 @@ public class ParamsExtractorTests
         }
         catch (UnsupportedResourceOperationException uoe)
         {
-            assertNotNull(uoe);  //Must throw this exception
+            assertNotNull(uoe); // Must throw this exception
         }
-        
+
         templateVars.put(ResourceLocator.ENTITY_ID, "1234");
         try
         {
@@ -386,45 +384,44 @@ public class ParamsExtractorTests
         }
         catch (UnsupportedResourceOperationException uoe)
         {
-            assertNotNull(uoe);  //Must throw this exception
+            assertNotNull(uoe); // Must throw this exception
         }
-        
-        
+
         templateVars.put(ResourceLocator.ENTITY_ID, "1234");
-        //Put single entity wrapped in array
+        // Put single entity wrapped in array
         params = extractor.extractParams(mockEntity(), request);
         assertNotNull(params);
-        Object passed =  params.getPassedIn();
+        Object passed = params.getPassedIn();
         assertNotNull(passed);
         assertTrue("A Farmer was passed in.", Farmer.class.equals(passed.getClass()));
-        
+
         assertNotNull(params.getFilter());
         assertTrue("Default filter is BeanPropertiesFilter.AllProperties", BeanPropertiesFilter.AllProperties.class.equals(params.getFilter().getClass()));
-        
-        when(content.getReader()).thenReturn(new StringReader(JsonJacksonTests.FARMER_JSON));  //reset the reader
+
+        when(content.getReader()).thenReturn(new StringReader(JsonJacksonTests.FARMER_JSON)); // reset the reader
         params = extractor.extractParams(mockEntity(), request);
         assertNotNull(params);
         assertEquals("1234", params.getEntityId());
-        passed =  params.getPassedIn();
+        passed = params.getPassedIn();
         assertNotNull(passed);
-        
-        when(content.getReader()).thenReturn(new StringReader(JsonJacksonTests.FARMER_JSON));  //reset the reader
+
+        when(content.getReader()).thenReturn(new StringReader(JsonJacksonTests.FARMER_JSON)); // reset the reader
         templateVars.put(ResourceLocator.RELATIONSHIP_ID, "67890");
         params = extractor.extractParams(mockRelationship(), request);
         assertNotNull(params);
         assertEquals("1234", params.getEntityId());
-        passed =  params.getPassedIn();
+        passed = params.getPassedIn();
         assertNotNull(passed);
         assertTrue("A Farmer was passed in.", Farmer.class.equals(passed.getClass()));
         Farmer aFarmer = (Farmer) passed;
         assertEquals("Relationship id should be automatically set on the object passed in.", aFarmer.getId(), "67890");
-        
-        when(content.getReader()).thenReturn(new StringReader(JsonJacksonTests.FARMER_JSON));  //reset the reader
+
+        when(content.getReader()).thenReturn(new StringReader(JsonJacksonTests.FARMER_JSON)); // reset the reader
         params = testExtractAddressedParams(templateVars, request, extractor);
         assertEquals("UTF-16BE", params.getContentInfo().getEncoding());
         assertEquals(MimetypeMap.MIMETYPE_PDF, params.getContentInfo().getMimeType());
     }
-    
+
     @Test
     public void testDeleteExtractor() throws IOException
     {
@@ -432,7 +429,7 @@ public class ParamsExtractorTests
         extractor.setLocator(locator);
 
         Map<String, String> templateVars = new HashMap<String, String>();
-        
+
         WebScriptRequest request = mock(WebScriptRequest.class);
         when(request.getServiceMatch()).thenReturn(new Match(null, templateVars, null));
 
@@ -443,7 +440,7 @@ public class ParamsExtractorTests
         assertNull(params.getRelationshipId());
         assertNotNull(params.getFilter());
         assertTrue("Default filter is BeanPropertiesFilter.AllProperties", BeanPropertiesFilter.AllProperties.class.equals(params.getFilter().getClass()));
-        
+
         templateVars.put(ResourceLocator.ENTITY_ID, "1234");
         params = extractor.extractParams(mockRelationship(), request);
         assertNotNull(params);
@@ -451,7 +448,7 @@ public class ParamsExtractorTests
         assertNull(params.getRelationshipId());
         assertNotNull(params.getFilter());
         assertTrue("Default filter is BeanPropertiesFilter.AllProperties", BeanPropertiesFilter.AllProperties.class.equals(params.getFilter().getClass()));
-        
+
         templateVars.put(ResourceLocator.RELATIONSHIP_ID, "45678");
         params = extractor.extractParams(mockRelationship(), request);
         assertNotNull(params);
@@ -459,56 +456,57 @@ public class ParamsExtractorTests
         assertEquals("45678", params.getRelationshipId());
         assertNotNull(params.getFilter());
         assertTrue("Default filter is BeanPropertiesFilter.AllProperties", BeanPropertiesFilter.AllProperties.class.equals(params.getFilter().getClass()));
-        
+
         testExtractAddressedParams(templateVars, request, extractor);
     }
 
     @Test
     public void testSpecialChars() throws IOException
     {
-       String specialChars = new String(new char[] { (char) '香' }) + " 香蕉";
-       ResourceWebScriptPost extractor = new ResourceWebScriptPost();
-       extractor.setAssistant(assistant);
-       extractor.setLocator(locator);
+        String specialChars = new String(new char[]{(char) '香'}) + " 香蕉";
+        ResourceWebScriptPost extractor = new ResourceWebScriptPost();
+        extractor.setAssistant(assistant);
+        extractor.setLocator(locator);
 
-       Map<String, String> templateVars = new HashMap<String, String>();
-       String mockMe = "{\"name\":\""+specialChars+"\",\"created\":\"2012-03-23T15:56:18.552+0000\",\"age\":54,\"id\":\"1234A3\",\"farm\":\"LARGE\"}";
-       Content content = mock(Content.class);
-       when(content.getReader()).thenReturn(new StringReader(mockMe));
-       WebScriptRequest request = mock(WebScriptRequest.class);
-       when(request.getServiceMatch()).thenReturn(new Match(null, templateVars, null));
-       when(request.getContent()).thenReturn(content);
-       
-       Params params = extractor.extractParams(mockEntity(), request);
-       assertNotNull(params);
-       Object passed =  params.getPassedIn();
-       assertTrue(List.class.isAssignableFrom(passed.getClass()));
-       @SuppressWarnings("unchecked")
-       List<Object> passedObjs = (List<Object>) passed;
-       assertTrue(passedObjs.size() == 1);
-       assertTrue("A Farmer was passed in.", Farmer.class.equals(passedObjs.get(0).getClass()));   
-       Farmer f = (Farmer)passedObjs.get(0);
-       assertTrue(f.getName().equals("香 香蕉"));
-       
-       //Test passing in special characters as a param.
-       ResourceWebScriptGet getExtractor = new ResourceWebScriptGet();
-       getExtractor.setAssistant(assistant);
-       getExtractor.setLocator(locator);
+        Map<String, String> templateVars = new HashMap<String, String>();
+        String mockMe = "{\"name\":\"" + specialChars + "\",\"created\":\"2012-03-23T15:56:18.552+0000\",\"age\":54,\"id\":\"1234A3\",\"farm\":\"LARGE\"}";
+        Content content = mock(Content.class);
+        when(content.getReader()).thenReturn(new StringReader(mockMe));
+        WebScriptRequest request = mock(WebScriptRequest.class);
+        when(request.getServiceMatch()).thenReturn(new Match(null, templateVars, null));
+        when(request.getContent()).thenReturn(content);
 
-       Map<String, String> getTemplateVars = new HashMap<String, String>();
-       WebScriptRequest getRequest = mock(WebScriptRequest.class);
-       when(getRequest.getServiceMatch()).thenReturn(new Match(null, getTemplateVars, null));
-       when(getRequest.getParameterNames()).thenReturn(new String[] { "aParam" });
-       when(getRequest.getParameterValues("aParam")).thenReturn(new String[] { specialChars });
-       Params pGet = getExtractor.extractParams(mockEntity(), getRequest);
-       assertNotNull(pGet);
-       String pVal = pGet.getParameter("aParam");
-       assertTrue(pVal.equals("香 香蕉"));
-       
+        Params params = extractor.extractParams(mockEntity(), request);
+        assertNotNull(params);
+        Object passed = params.getPassedIn();
+        assertTrue(List.class.isAssignableFrom(passed.getClass()));
+        @SuppressWarnings("unchecked")
+        List<Object> passedObjs = (List<Object>) passed;
+        assertTrue(passedObjs.size() == 1);
+        assertTrue("A Farmer was passed in.", Farmer.class.equals(passedObjs.get(0).getClass()));
+        Farmer f = (Farmer) passedObjs.get(0);
+        assertTrue(f.getName().equals("香 香蕉"));
+
+        // Test passing in special characters as a param.
+        ResourceWebScriptGet getExtractor = new ResourceWebScriptGet();
+        getExtractor.setAssistant(assistant);
+        getExtractor.setLocator(locator);
+
+        Map<String, String> getTemplateVars = new HashMap<String, String>();
+        WebScriptRequest getRequest = mock(WebScriptRequest.class);
+        when(getRequest.getServiceMatch()).thenReturn(new Match(null, getTemplateVars, null));
+        when(getRequest.getParameterNames()).thenReturn(new String[]{"aParam"});
+        when(getRequest.getParameterValues("aParam")).thenReturn(new String[]{specialChars});
+        Params pGet = getExtractor.extractParams(mockEntity(), getRequest);
+        assertNotNull(pGet);
+        String pVal = pGet.getParameter("aParam");
+        assertTrue(pVal.equals("香 香蕉"));
+
     }
 
     /**
      * Mocks a Entity Resource
+     * 
      * @return ResourceMetadata a Entity
      */
     private static ResourceMetadata mockEntity()
@@ -520,22 +518,24 @@ public class ParamsExtractorTests
         when(resourceMock.getObjectType(notNull())).thenReturn(Farmer.class);
         return resourceMock;
     }
- 
+
     /**
      * Mocks a Property Resource
+     * 
      * @return ResourceMetadata a Entity
      */
     private static ResourceMetadata mockProperty()
     {
         ResourceMetadata resourceMock = mock(ResourceMetadata.class);
         when(resourceMock.getType()).thenReturn(ResourceMetadata.RESOURCE_TYPE.PROPERTY);
-        //when(resourceMock.getObjectType(HttpMethod.PUT)).thenReturn(Farmer.class);
-        //when(resourceMock.getObjectType(HttpMethod.POST)).thenReturn(Farmer.class);
+        // when(resourceMock.getObjectType(HttpMethod.PUT)).thenReturn(Farmer.class);
+        // when(resourceMock.getObjectType(HttpMethod.POST)).thenReturn(Farmer.class);
         return resourceMock;
     }
 
     /**
      * Mocks an operation
+     * 
      * @return ResourceMetadata a Entity
      */
     private static ResourceMetadata mockOperation()
@@ -547,6 +547,7 @@ public class ParamsExtractorTests
 
     /**
      * Mocks a Relationship Resource
+     * 
      * @return ResourceMetadata a Relationship
      */
     private static ResourceMetadata mockRelationship()
@@ -558,5 +559,5 @@ public class ParamsExtractorTests
         when(resourceMock.getObjectType(notNull())).thenReturn(Farmer.class);
         return resourceMock;
     }
-    
+
 }

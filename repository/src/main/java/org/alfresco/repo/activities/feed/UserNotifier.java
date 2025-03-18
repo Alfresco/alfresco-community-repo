@@ -37,6 +37,6 @@ import org.alfresco.util.Pair;
  */
 public interface UserNotifier
 {
-	public Pair<Integer, Long> notifyUser(final NodeRef personNodeRef, String subjectText, Object[] subjectParams, Map<String, String> siteNames,
-			String shareUrl, int repeatIntervalMins, String templateNodeRef);
+    public Pair<Integer, Long> notifyUser(final NodeRef personNodeRef, String subjectText, Object[] subjectParams, Map<String, String> siteNames,
+            String shareUrl, int repeatIntervalMins, String templateNodeRef);
 }

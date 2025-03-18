@@ -52,11 +52,9 @@ public class RecordableVersionPolicyAuditEvent extends AuditEvent implements OnU
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       type = "cm:cmobject"
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            type = "cm:cmobject")
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         if (before.get(PROP_RECORDABLE_VERSION_POLICY) != after.get(PROP_RECORDABLE_VERSION_POLICY))

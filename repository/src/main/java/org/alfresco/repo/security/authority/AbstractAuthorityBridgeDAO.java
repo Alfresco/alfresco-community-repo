@@ -75,10 +75,9 @@ public abstract class AbstractAuthorityBridgeDAO implements AuthorityBridgeDAO
         this.tenantService = tenantService;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.authority.AuthorityBridgeDAO#getAuthorityBridgeLinks()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.authority.AuthorityBridgeDAO#getAuthorityBridgeLinks() */
     @Override
     public List<AuthorityBridgeLink> getAuthorityBridgeLinks()
     {
@@ -118,11 +117,9 @@ public abstract class AbstractAuthorityBridgeDAO implements AuthorityBridgeDAO
         return selectAuthorityBridgeLinks(authorityContainerTypeQNameId, memberAssocQNameId, authorityNameQNameId, storeId);
     }
 
-    
-    
     /* (non-Javadoc)
-     * @see org.alfresco.repo.security.authority.AuthorityBridgeDAO#getDirectAuthoritiesForUser(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.repo.security.authority.AuthorityBridgeDAO#getDirectAuthoritiesForUser(java.lang.String) */
     @Override
     public List<AuthorityBridgeLink> getDirectAuthoritiesForUser(NodeRef authRef)
     {
@@ -160,24 +157,32 @@ public abstract class AbstractAuthorityBridgeDAO implements AuthorityBridgeDAO
         }
 
         Pair<Long, NodeRef> pair = (authRef == null) ? null : nodeDAO.getNodePair(tenantService.getName(authRef));
-        
+
         return selectDirectAuthoritiesForUser(authorityContainerTypeQNameId, memberAssocQNameId, authorityNameQNameId, storeId, (pair == null) ? -1L : pair.getFirst());
     }
 
     /**
-     * @param authorityContainerTypeQNameId Long
-     * @param memberAssocQNameId Long
-     * @param authorityNameQNameId Long
-     * @param storeId Long
+     * @param authorityContainerTypeQNameId
+     *            Long
+     * @param memberAssocQNameId
+     *            Long
+     * @param authorityNameQNameId
+     *            Long
+     * @param storeId
+     *            Long
      */
     protected abstract List<AuthorityBridgeLink> selectDirectAuthoritiesForUser(Long authorityContainerTypeQNameId, Long memberAssocQNameId, Long authorityNameQNameId, Long storeId,
             Long nodeId);
 
     /**
-     * @param authorityContainerTypeQNameId Long
-     * @param memberAssocQNameId Long
-     * @param authorityNameQNameId Long
-     * @param storeId Long
+     * @param authorityContainerTypeQNameId
+     *            Long
+     * @param memberAssocQNameId
+     *            Long
+     * @param authorityNameQNameId
+     *            Long
+     * @param storeId
+     *            Long
      */
     protected abstract List<AuthorityBridgeLink> selectAuthorityBridgeLinks(Long authorityContainerTypeQNameId, Long memberAssocQNameId, Long authorityNameQNameId, Long storeId);
 

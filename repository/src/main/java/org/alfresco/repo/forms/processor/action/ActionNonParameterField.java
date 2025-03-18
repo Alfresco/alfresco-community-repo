@@ -47,11 +47,11 @@ public class ActionNonParameterField implements Field
     {
         this.name = name;
         this.fieldDef = new PropertyFieldDefinition(this.name, type.getLocalName());
-        
+
         this.fieldDef.setLabel(this.name);
         this.fieldDef.setDataKeyName(this.name);
     }
-    
+
     @Override
     public FieldDefinition getFieldDefinition()
     {

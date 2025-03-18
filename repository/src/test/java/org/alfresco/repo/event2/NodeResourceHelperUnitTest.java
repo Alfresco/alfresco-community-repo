@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.event2;
 
-import static org.alfresco.repo.event2.NodeResourceHelper.getLocalizedPropertiesBefore;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -35,13 +34,12 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
+import static org.alfresco.repo.event2.NodeResourceHelper.getLocalizedPropertiesBefore;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,6 +47,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NodeResourceHelperUnitTest
@@ -68,33 +70,29 @@ public class NodeResourceHelperUnitTest
     @Test
     public void shouldExtractOnlyRelevantPropertiesForBeforeNode()
     {
-        final Map<String, Map<String, String>> before =
-                Map.of(
-                        "unchanged-empty", locValues(),
-                        "unchanged-non-empty", locValues("pl", "Kiełbasa", "en", "Sausage"),
-                        "changed-added", locValues("pl", "Kiełbasa"),
-                        "changed-modified", locValues("pl", "XYZ", "en", "Sausage"),
-                        "changed-deleted", locValues("pl", "Kiełbasa", "en", "Sausage"),
-                        "changed-added-modified-deleted", locValues("pl", "XYZ", "en", "Sausage"),
-                        "changed-to-empty", locValues("pl", "Kiełbasa", "en", "Sausage"),
-                        "changed-from-empty", locValues(),
-                        "removed-empty", locValues(),
-                        "removed-non-empty", locValues("pl", "Kiełbasa", "en", "Sausage")
-                      );
+        final Map<String, Map<String, String>> before = Map.of(
+                "unchanged-empty", locValues(),
+                "unchanged-non-empty", locValues("pl", "Kiełbasa", "en", "Sausage"),
+                "changed-added", locValues("pl", "Kiełbasa"),
+                "changed-modified", locValues("pl", "XYZ", "en", "Sausage"),
+                "changed-deleted", locValues("pl", "Kiełbasa", "en", "Sausage"),
+                "changed-added-modified-deleted", locValues("pl", "XYZ", "en", "Sausage"),
+                "changed-to-empty", locValues("pl", "Kiełbasa", "en", "Sausage"),
+                "changed-from-empty", locValues(),
+                "removed-empty", locValues(),
+                "removed-non-empty", locValues("pl", "Kiełbasa", "en", "Sausage"));
 
-        final Map<String, Map<String, String>> after =
-                Map.of(
-                        "unchanged-empty", locValues(),
-                        "unchanged-non-empty", locValues("pl", "Kiełbasa", "en", "Sausage"),
-                        "changed-added", locValues("pl", "Kiełbasa", "en", "Sausage"),
-                        "changed-modified", locValues("pl", "Kiełbasa", "en", "Sausage"),
-                        "changed-deleted", locValues("en", "Sausage"),
-                        "changed-added-modified-deleted", locValues("pl", "Kiełbasa", "de", "Würst"),
-                        "changed-to-empty", locValues(),
-                        "changed-from-empty", locValues("pl", "Kiełbasa", "en", "Sausage"),
-                        "new-empty", locValues(),
-                        "new-non-empty", locValues("de", "Würst")
-                      );
+        final Map<String, Map<String, String>> after = Map.of(
+                "unchanged-empty", locValues(),
+                "unchanged-non-empty", locValues("pl", "Kiełbasa", "en", "Sausage"),
+                "changed-added", locValues("pl", "Kiełbasa", "en", "Sausage"),
+                "changed-modified", locValues("pl", "Kiełbasa", "en", "Sausage"),
+                "changed-deleted", locValues("en", "Sausage"),
+                "changed-added-modified-deleted", locValues("pl", "Kiełbasa", "de", "Würst"),
+                "changed-to-empty", locValues(),
+                "changed-from-empty", locValues("pl", "Kiełbasa", "en", "Sausage"),
+                "new-empty", locValues(),
+                "new-non-empty", locValues("de", "Würst"));
 
         final Map<String, Map<String, String>> diff = getLocalizedPropertiesBefore(before, after);
 

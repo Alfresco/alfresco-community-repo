@@ -51,7 +51,7 @@ import org.alfresco.repo.service.ServiceDescriptorRegistry;
  */
 @SuppressWarnings("deprecation")
 public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegistry
-                                                  implements RecordsManagementServiceRegistry
+        implements RecordsManagementServiceRegistry
 {
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementActionService()

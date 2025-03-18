@@ -36,7 +36,7 @@ import java.io.Serializable;
 public class NodeVersionKey implements Serializable
 {
     private static final long serialVersionUID = 2241045540959490539L;
-    
+
     private final Long nodeId;
     private final Long version;
 
@@ -57,24 +57,24 @@ public class NodeVersionKey implements Serializable
         {
             return false;
         }
-        NodeVersionKey o = (NodeVersionKey)other;
+        NodeVersionKey o = (NodeVersionKey) other;
         return nodeId.equals(o.nodeId) && version.equals(o.version);
     }
-    
+
     @Override
     public int hashCode()
     {
-        return nodeId.hashCode() + version.hashCode()*37;
+        return nodeId.hashCode() + version.hashCode() * 37;
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
         builder.append("NodeVersionKey ")
-               .append("[nodeId=").append(nodeId)
-               .append(", version=").append(version)
-               .append("]");
+                .append("[nodeId=").append(nodeId)
+                .append(", version=").append(version)
+                .append("]");
         return builder.toString();
     }
 

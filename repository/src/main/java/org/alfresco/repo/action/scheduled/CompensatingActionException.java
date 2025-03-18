@@ -45,9 +45,9 @@ public class CompensatingActionException extends AlfrescoRuntimeException
 
     List<Pair<Action, NodeRef>> compensatingActions;
 
-    
     /**
-     * @param msgId String
+     * @param msgId
+     *            String
      */
     public CompensatingActionException(String msgId)
     {
@@ -56,8 +56,10 @@ public class CompensatingActionException extends AlfrescoRuntimeException
 
     /**
      * 
-     * @param msgId String
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param cause
+     *            Throwable
      */
     public CompensatingActionException(String msgId, Throwable cause, List<Pair<Action, NodeRef>> compensatingActions)
     {
@@ -77,8 +79,10 @@ public class CompensatingActionException extends AlfrescoRuntimeException
 
     /**
      * 
-     * @param msgId String
-     * @param msgParams Object[]
+     * @param msgId
+     *            String
+     * @param msgParams
+     *            Object[]
      */
     public CompensatingActionException(String msgId, Object[] msgParams)
     {
@@ -87,8 +91,10 @@ public class CompensatingActionException extends AlfrescoRuntimeException
 
     /**
      * 
-     * @param msgId String
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param cause
+     *            Throwable
      */
     public CompensatingActionException(String msgId, Throwable cause)
     {
@@ -97,9 +103,12 @@ public class CompensatingActionException extends AlfrescoRuntimeException
 
     /**
      * 
-     * @param msgId String
-     * @param msgParams Object[]
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param msgParams
+     *            Object[]
+     * @param cause
+     *            Throwable
      */
     public CompensatingActionException(String msgId, Object[] msgParams, Throwable cause)
     {

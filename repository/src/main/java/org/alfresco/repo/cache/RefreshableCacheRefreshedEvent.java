@@ -40,8 +40,10 @@ public class RefreshableCacheRefreshedEvent extends AbstractRefreshableCacheEven
     private static final long serialVersionUID = 2352511592269578075L;
 
     /**
-     * @param cacheId String
-     * @param tenantId String
+     * @param cacheId
+     *            String
+     * @param tenantId
+     *            String
      */
     RefreshableCacheRefreshedEvent(String cacheId, String tenantId)
     {

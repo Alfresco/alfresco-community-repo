@@ -32,10 +32,7 @@ import org.alfresco.util.schemacomp.DiffContext;
 import org.alfresco.util.schemacomp.model.DbObject;
 
 /**
- * Allows a complete DbObject to be ignored during differencing. In other
- * words if an object that has this validator applied to it is found to be
- * missing from or unexpectedly in the database then that will not be reported
- * as a difference.
+ * Allows a complete DbObject to be ignored during differencing. In other words if an object that has this validator applied to it is found to be missing from or unexpectedly in the database then that will not be reported as a difference.
  * 
  * @author Matt Ward
  */

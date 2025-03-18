@@ -25,21 +25,26 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.StatsParameters;
 import org.alfresco.service.cmr.search.StatsResultSet;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.InitializingBean;
+
 /**
  * Solr client interface
+ * 
  * @author Michael Suzuki
  *
  */
 public interface SolrQueryClient extends BeanFactoryAware, InitializingBean
 {
     public ResultSet executeQuery(final SearchParameters searchParameters, String language);
-    //TODO deprecate this method and separate stats into its own SolrStatsQueryHttpClient with an executeQuery() 
+
+    // TODO deprecate this method and separate stats into its own SolrStatsQueryHttpClient with an executeQuery()
     public StatsResultSet executeStatsQuery(StatsParameters searchParameters);
+
     public boolean isSharded();
 }

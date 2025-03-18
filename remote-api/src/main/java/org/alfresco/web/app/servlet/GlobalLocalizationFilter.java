@@ -28,7 +28,6 @@ package org.alfresco.web.app.servlet;
 import java.io.IOException;
 import java.util.Locale;
 import java.util.StringTokenizer;
-
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -44,16 +43,19 @@ import org.springframework.extensions.surf.util.I18NUtil;
 /**
  * @author Stas Sokolovsky
  * 
- * Servlet filter responsible for setting a fallback default locale for ALL requests. 
+ *         Servlet filter responsible for setting a fallback default locale for ALL requests.
  */
 public class GlobalLocalizationFilter implements Filter
 {
     /**
      * Run the filter
      * 
-     * @param request ServletRequest
-     * @param response ServletResponse
-     * @param chain FilterChain
+     * @param request
+     *            ServletRequest
+     * @param response
+     *            ServletResponse
+     * @param chain
+     *            FilterChain
      * @exception IOException
      * @exception ServletException
      */
@@ -62,14 +64,14 @@ public class GlobalLocalizationFilter implements Filter
         // Clear content locale from this thread (it may be set later)
         I18NUtil.setContentLocale(null);
 
-        setLanguageFromRequestHeader((HttpServletRequest) request);        
+        setLanguageFromRequestHeader((HttpServletRequest) request);
 
         // continue filter chaining
-        chain.doFilter(request, new HttpServletResponseWrapper((HttpServletResponse) response){
+        chain.doFilter(request, new HttpServletResponseWrapper((HttpServletResponse) response) {
 
             /* (non-Javadoc)
-             * @see jakarta.servlet.ServletResponseWrapper#setContentType(java.lang.String)
-             */
+             * 
+             * @see jakarta.servlet.ServletResponseWrapper#setContentType(java.lang.String) */
             @Override
             public void setContentType(String type)
             {
@@ -81,29 +83,29 @@ public class GlobalLocalizationFilter implements Filter
                 int length = type.length();
                 while (startIndex != 0 && startIndex < length)
                 {
-                  int endIndex = type.indexOf(';', startIndex);
-                  if (endIndex == -1)
-                  {
-                      endIndex = length;
-                  }
-                  String param = type.substring(startIndex, endIndex);
-                  int sepIndex = param.indexOf('=');
-                  if (sepIndex != -1)
-                  {
-                      String name = param.substring(0, sepIndex).trim();
-                      if (name.equalsIgnoreCase("charset"))
-                      {
-                          String charset = param.substring(sepIndex + 1).trim();
-                          if ((null != charset) && ((charset.startsWith("\"") && charset.endsWith("\"")) || (charset.startsWith("'") && charset.endsWith("'"))))
-                          {
-                              charset = charset.substring(1, (charset.length() - 1));
-                          }
-                          setCharacterEncoding(charset);
-                          break;
-                      }
-                  }
-                  startIndex = endIndex + 1;
-                }                        
+                    int endIndex = type.indexOf(';', startIndex);
+                    if (endIndex == -1)
+                    {
+                        endIndex = length;
+                    }
+                    String param = type.substring(startIndex, endIndex);
+                    int sepIndex = param.indexOf('=');
+                    if (sepIndex != -1)
+                    {
+                        String name = param.substring(0, sepIndex).trim();
+                        if (name.equalsIgnoreCase("charset"))
+                        {
+                            String charset = param.substring(sepIndex + 1).trim();
+                            if ((null != charset) && ((charset.startsWith("\"") && charset.endsWith("\"")) || (charset.startsWith("'") && charset.endsWith("'"))))
+                            {
+                                charset = charset.substring(1, (charset.length() - 1));
+                            }
+                            setCharacterEncoding(charset);
+                            break;
+                        }
+                    }
+                    startIndex = endIndex + 1;
+                }
             }
         });
 
@@ -112,7 +114,8 @@ public class GlobalLocalizationFilter implements Filter
     /**
      * Apply Client and Repository language locale based on the 'Accept-Language' request header
      *
-     * @param req HttpServletRequest
+     * @param req
+     *            HttpServletRequest
      */
     public void setLanguageFromRequestHeader(HttpServletRequest req)
     {
@@ -135,7 +138,7 @@ public class GlobalLocalizationFilter implements Filter
 
     public void init(FilterConfig filterConfig) throws ServletException
     {
-        // Nothing to do        
+        // Nothing to do
     }
 
     public void destroy()

@@ -43,9 +43,9 @@ public class ModelAccessDeniedException extends AccessDeniedException
     {
         super(msg);
     }
-    
+
     public ModelAccessDeniedException(String msg, Throwable cause)
     {
-        super(msg, cause);        
-    }        
+        super(msg, cause);
+    }
 }

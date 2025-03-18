@@ -29,13 +29,12 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.alfresco.repo.management.subsystems.ActivateableBean;
-
 import net.sf.acegisecurity.Authentication;
 
+import org.alfresco.repo.management.subsystems.ActivateableBean;
+
 /**
- * A base class for chaining authentication components. Where appropriate, methods will 'chain' across multiple
- * {@link AuthenticationComponent} instances, as returned by {@link #getUsableAuthenticationComponents()}.
+ * A base class for chaining authentication components. Where appropriate, methods will 'chain' across multiple {@link AuthenticationComponent} instances, as returned by {@link #getUsableAuthenticationComponents()}.
  * 
  * @author dward
  */
@@ -49,10 +48,12 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
     {
         super();
     }
-    
+
     /**
      * Get the authentication component with the specified name
-     * @param name String
+     * 
+     * @param name
+     *            String
      * @return the authentication component or null if it does not exist
      */
     protected abstract AuthenticationComponent getAuthenticationComponent(String name);
@@ -71,8 +72,8 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
      *            the user name
      * @param password
      *            the password
-     *            
-     * @throws AuthenticationException           
+     * 
+     * @throws AuthenticationException
      */
     @Override
     protected void authenticateImpl(String userName, char[] password)
@@ -99,7 +100,7 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
         }
         throw new AuthenticationException("Failed to authenticate");
     }
-    
+
     /**
      * Test authenticate with a specific authenticator and user name and password.
      * 
@@ -109,25 +110,26 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
      *            the user name
      * @param password
      *            the password
-     * @throws AuthenticationException including diagnostic information about the failure          
+     * @throws AuthenticationException
+     *             including diagnostic information about the failure
      */
     public void testAuthenticate(String authenticatorName, String userName, char[] password)
     {
-        
+
         AuthenticationComponent authenticationComponent = getAuthenticationComponent(authenticatorName);
-        if(authenticationComponent != null)
+        if (authenticationComponent != null)
         {
             if (authenticationComponent instanceof ActivateableBean)
             {
-                if(!((ActivateableBean) authenticationComponent).isActive())
+                if (!((ActivateableBean) authenticationComponent).isActive())
                 {
                     AuthenticationDiagnostic diagnostic = new AuthenticationDiagnostic();
                     Object[] args = {authenticatorName};
                     diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_VALIDATION_AUTHENTICATOR_NOT_ACTIVE, false, args);
-                    throw new AuthenticationException("authentication.err.validation.authenticator.notactive", args , diagnostic);
+                    throw new AuthenticationException("authentication.err.validation.authenticator.notactive", args, diagnostic);
                 }
             }
-            
+
             authenticationComponent.authenticate(userName, password);
             return;
         }
@@ -135,7 +137,7 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
         AuthenticationDiagnostic diagnostic = new AuthenticationDiagnostic();
         Object[] args = {authenticatorName};
         diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_VALIDATION_AUTHENTICATOR_NOT_FOUND, false, args);
-        throw new AuthenticationException("authentication.err.validation.authenticator.notfound", args , diagnostic);
+        throw new AuthenticationException("authentication.err.validation.authenticator.notfound", args, diagnostic);
     }
 
     /**
@@ -156,11 +158,9 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.authentication.AbstractAuthenticationComponent#setCurrentUser(java.lang.String,
-     * org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.authentication.AbstractAuthenticationComponent#setCurrentUser(java.lang.String, org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode) */
     @Override
     public Authentication setCurrentUser(String userName, UserNameValidationMode validationMode)
     {

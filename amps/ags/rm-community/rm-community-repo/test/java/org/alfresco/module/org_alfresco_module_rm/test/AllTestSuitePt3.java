@@ -62,17 +62,17 @@ import org.junit.runner.RunWith;
         "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\..*Test",
 
         // The following packages 'should' be run by Pt3
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\.rm3314\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.record\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.recordfolder\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.relationship\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.report\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.rule\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.transfer\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.version\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.system\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\.bdt\\..*Test",
+        // "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\.rm3314\\..*Test",
+        // "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.record\\..*Test",
+        // "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.recordfolder\\..*Test",
+        // "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.relationship\\..*Test",
+        // "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.report\\..*Test",
+        // "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.rule\\..*Test",
+        // "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.transfer\\..*Test",
+        // "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.version\\..*Test",
+        // "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.system\\..*Test",
+        // "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\..*Test",
+        // "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\.bdt\\..*Test",
 
         // Exclude all UnitTests
         "!.*UnitTest",
@@ -95,5 +95,4 @@ import org.junit.runner.RunWith;
         "!.*EmailMapScriptTest"
 })
 public class AllTestSuitePt3
-{
-}
+{}

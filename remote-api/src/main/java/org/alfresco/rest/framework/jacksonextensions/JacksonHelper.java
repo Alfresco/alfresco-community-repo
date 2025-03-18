@@ -25,6 +25,14 @@
  */
 package org.alfresco.rest.framework.jacksonextensions;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.TimeZone;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -37,39 +45,31 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.TimeZone;
-
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+
 /**
- * Helper Class for outputting Jackson content, makes use of the RestJsonModule (main Jackson config).
- * Default settings : Date format is ISO8601, only serializes non-empty / non-null values.
+ * Helper Class for outputting Jackson content, makes use of the RestJsonModule (main Jackson config). Default settings : Date format is ISO8601, only serializes non-empty / non-null values.
  *
  * @author Gethin James
  */
 public class JacksonHelper implements InitializingBean
 {
-    private static Log logger = LogFactory.getLog(JacksonHelper.class);  
-    
+    private static Log logger = LogFactory.getLog(JacksonHelper.class);
+
     private Module module;
     private ObjectMapper objectMapper = null;
     private JsonEncoding encoding = JsonEncoding.UTF8;
     public static final String DEFAULT_FILTER_NAME = "defaultFilterName";
-    
 
     /**
      * Sets the Jackson Module to be used.
      * 
-     * @param module Module
+     * @param module
+     *            Module
      */
     public void setModule(Module module)
     {
@@ -79,22 +79,25 @@ public class JacksonHelper implements InitializingBean
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        //Configure the objectMapper ready for use
+        // Configure the objectMapper ready for use
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(module);
         objectMapper.setDefaultPropertyInclusion(
-            JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, JsonInclude.Include.ALWAYS));
+                JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, JsonInclude.Include.ALWAYS));
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         DateFormat DATE_FORMAT_ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         DATE_FORMAT_ISO8601.setTimeZone(TimeZone.getTimeZone("UTC"));
         objectMapper.setDateFormat(DATE_FORMAT_ISO8601);
         objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
     }
-    
+
     /**
      * A callback so a JsonGenerator can be used inline but exception are handled here
-     * @param outStream OutputStream
-     * @param writer The writer interface
+     * 
+     * @param outStream
+     *            OutputStream
+     * @param writer
+     *            The writer interface
      * @throws IOException
      */
     public void withWriter(OutputStream outStream, Writer writer) throws IOException
@@ -109,10 +112,12 @@ public class JacksonHelper implements InitializingBean
             throw new IOException("Failed to write Json output", error);
         }
     }
-       
+
     /**
      * Constructs the object based on the content.
-     * @param content Reader
+     * 
+     * @param content
+     *            Reader
      * @return T
      */
     public <T> T construct(Reader content, Class<T> requiredType)
@@ -124,13 +129,15 @@ public class JacksonHelper implements InitializingBean
         }
         catch (IOException error)
         {
-            throw new InvalidArgumentException("Could not read content from HTTP request body: "+error.getMessage());
+            throw new InvalidArgumentException("Could not read content from HTTP request body: " + error.getMessage());
         }
     }
-    
+
     /**
      * Constructs the object based on the content as a List, the JSON can be an array or just a single value without the [] symbols
-     * @param content Reader
+     * 
+     * @param content
+     *            Reader
      * @return A collection of the specified type
      */
     public <T> List<T> constructList(Reader content, Class<T> requiredType)
@@ -141,16 +148,16 @@ public class JacksonHelper implements InitializingBean
             List<T> toReturn = reader.readValue(content);
             if (toReturn == null || toReturn.isEmpty())
             {
-              throw new InvalidArgumentException("Could not read content from HTTP request body, the list is empty");
+                throw new InvalidArgumentException("Could not read content from HTTP request body, the list is empty");
             }
             return toReturn;
         }
         catch (IOException error)
         {
-            throw new InvalidArgumentException("Could not read content from HTTP request body: "+error.getMessage());
+            throw new InvalidArgumentException("Could not read content from HTTP request body: " + error.getMessage());
         }
     }
-    
+
     /**
      * A callback interface for use with the withWriter() method
      */
@@ -159,9 +166,7 @@ public class JacksonHelper implements InitializingBean
         public void writeContents(JsonGenerator generator, ObjectMapper objectMapper) throws JsonGenerationException, JsonMappingException, IOException;
     }
 
-    /*
-     * Always returns all properties
-     */
+    /* Always returns all properties */
     public static class ReturnAllBeanProperties extends SimpleBeanPropertyFilter
     {
 

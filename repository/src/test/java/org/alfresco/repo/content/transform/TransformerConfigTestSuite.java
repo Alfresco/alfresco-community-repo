@@ -25,11 +25,12 @@
  */
 package org.alfresco.repo.content.transform;
 
-import org.alfresco.util.LogAdapterTest;
-import org.alfresco.util.LogTeeTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
+
+import org.alfresco.util.LogAdapterTest;
+import org.alfresco.util.LogTeeTest;
 
 /**
  * @author adavis
@@ -37,16 +38,16 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-    LogAdapterTest.class,
-    LogTeeTest.class,
-    
-    TransformerLoggerTest.class,
-    TransformerLogTest.class,
-    TransformerDebugLogTest.class,
+        LogAdapterTest.class,
+        LogTeeTest.class,
 
-    LocalTransformServiceRegistryTest.class,
+        TransformerLoggerTest.class,
+        TransformerLogTest.class,
+        TransformerDebugLogTest.class,
 
-    TransformerConfigMBeanImplTest.class})
+        LocalTransformServiceRegistryTest.class,
+
+        TransformerConfigMBeanImplTest.class})
 
 /**
  * Test classes in the Transformers subsystem
@@ -54,5 +55,4 @@ import org.junit.runners.Suite.SuiteClasses;
  * @author Alan Davis
  */
 public class TransformerConfigTestSuite
-{
-}
+{}

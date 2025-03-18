@@ -26,8 +26,6 @@
 
 package org.alfresco.rest.categories;
 
-import static org.alfresco.utility.constants.UserRole.SiteManager;
-import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -35,9 +33,17 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
-import jakarta.json.Json;
+import static org.alfresco.utility.constants.UserRole.SiteManager;
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import java.util.Collections;
 import java.util.List;
+import jakarta.json.Json;
+
+import org.apache.commons.lang3.StringUtils;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.model.RestCategoryLinkBodyModel;
@@ -51,10 +57,6 @@ import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.apache.commons.lang3.StringUtils;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 public class LinkToCategoriesTests extends CategoriesRestTest
 {
@@ -87,7 +89,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Link content to category and verify if this category is present in node's properties
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkContentToCategory()
     {
         STEP("Check if file is not linked to any category");
@@ -114,7 +116,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Link content to two categories and verify if both are present in node's properties
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkContentToMultipleCategories()
     {
         STEP("Check if file is not linked to any category");
@@ -128,9 +130,8 @@ public class LinkToCategoriesTests extends CategoriesRestTest
 
         STEP("Link content to created categories and expect 201");
         final List<RestCategoryLinkBodyModel> categoryLinkModels = List.of(
-            createCategoryLinkModelWithId(category.getId()),
-            createCategoryLinkModelWithId(secondCategory.getId())
-        );
+                createCategoryLinkModelWithId(category.getId()),
+                createCategoryLinkModelWithId(secondCategory.getId()));
         final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategories(categoryLinkModels);
 
         restClient.assertStatusCodeIs(CREATED);
@@ -149,7 +150,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Try to link file to three categories, two of which are the same, and expect two distinct categories in output.
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkContentToCategory_withRepeatedCategory()
     {
         STEP("Check if file is not linked to any category");
@@ -161,10 +162,9 @@ public class LinkToCategoriesTests extends CategoriesRestTest
         STEP("Link content to three (one repeated) categories and expect 201");
         final RestCategoryModel secondCategory = prepareCategoryUnderRoot();
         final List<RestCategoryLinkBodyModel> categoryLinkModels = List.of(
-            createCategoryLinkModelWithId(category.getId()),
-            createCategoryLinkModelWithId(secondCategory.getId()),
-            createCategoryLinkModelWithId(category.getId())
-        );
+                createCategoryLinkModelWithId(category.getId()),
+                createCategoryLinkModelWithId(secondCategory.getId()),
+                createCategoryLinkModelWithId(category.getId()));
         final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategories(categoryLinkModels);
 
         restClient.assertStatusCodeIs(CREATED);
@@ -182,7 +182,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Try to link file to already linked category and expect distinct categories in response.
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkContentToCategory_usingAlreadyLinkedCategory()
     {
         STEP("Create second category under root");
@@ -198,9 +198,8 @@ public class LinkToCategoriesTests extends CategoriesRestTest
 
         STEP("Link content to two categories using one already linked before to and expect 201");
         final List<RestCategoryLinkBodyModel> categoryLinkModels = List.of(
-            createCategoryLinkModelWithId(category.getId()),
-            createCategoryLinkModelWithId(secondCategory.getId())
-        );
+                createCategoryLinkModelWithId(category.getId()),
+                createCategoryLinkModelWithId(secondCategory.getId()));
         final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategories(categoryLinkModels);
 
         restClient.assertStatusCodeIs(CREATED);
@@ -218,7 +217,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Link content, which already has some linked category to new ones and verify if all categories are present in node's properties
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkContentToCategory_usingContentWithAlreadyLinkedCategories()
     {
         STEP("Link content to created category");
@@ -230,9 +229,8 @@ public class LinkToCategoriesTests extends CategoriesRestTest
         final RestCategoryModel secondCategory = prepareCategoryUnderRoot();
         final RestCategoryModel thirdCategory = prepareCategoryUnderRoot();
         final List<RestCategoryLinkBodyModel> categoryLinkModels = List.of(
-            createCategoryLinkModelWithId(secondCategory.getId()),
-            createCategoryLinkModelWithId(thirdCategory.getId())
-        );
+                createCategoryLinkModelWithId(secondCategory.getId()),
+                createCategoryLinkModelWithId(thirdCategory.getId()));
         final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategories(categoryLinkModels);
 
         restClient.assertStatusCodeIs(CREATED);
@@ -252,7 +250,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Try to link content to category as a user without read permission and expect 403 (Forbidden)
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkContentToCategory_asUserWithoutReadPermissionAndExpect403()
     {
         STEP("Try to link content to a category using user without read permission and expect 403");
@@ -266,7 +264,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Try to link content to category as a user without change and expect 403 (Forbidden)
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkContentToCategory_asUserWithoutChangePermissionAndExpect403()
     {
         STEP("Create another user as a consumer for file");
@@ -283,7 +281,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Try to link content to category as owner and expect 201
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkContentToCategory_asOwner()
     {
         STEP("Use admin to create a private site");
@@ -305,7 +303,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Try to link content to category using non-existing category and expect 404 (Not Found)
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkContentToCategory_usingNonExistingCategoryAndExpect404()
     {
         STEP("Try to link content to non-existing category and expect 404");
@@ -319,7 +317,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Try to link content to category passing empty list as input and expect 400 (Bad Request)
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkContentToCategory_passingEmptyListAndExpect400()
     {
         STEP("Try to call link content API with empty list and expect 400");
@@ -331,7 +329,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Try to link content to category passing invalid ID in input list and expect 400 (Bad Request)
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkContentToCategory_passingEmptyIdAndExpect400()
     {
         STEP("Try to call link content API with empty category ID and expect 400");
@@ -345,7 +343,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Link folder node to category and expect 201 (Created)
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkFolderToCategory()
     {
         STEP("Link folder node to category");
@@ -358,7 +356,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Try to link non-content node to category and expect 422 (Unprocessable Entity)
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkContentToCategory_usingTagInsteadOfContentAndExpect422()
     {
         STEP("Add tag to file");
@@ -375,7 +373,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Try to link content to non-category node and expect 400 (Bad Request)
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkContentToCategory_usingFolderInsteadOfCategoryAndExpect400()
     {
         STEP("Try to link content to non-category and expect 400");
@@ -388,7 +386,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Try to link content to root category and expect 400 (Bad Request)
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testLinkContentToCategory_usingRootCategoryAndExpect400()
     {
         STEP("Try to link content to root category and expect 400");
@@ -431,8 +429,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     }
 
     /**
-     * Try to link content to multiple categories and try to unlink content from a single category
-     * Other categories should remain intact and file should keep having "cm:generalclassifiable" aspect
+     * Try to link content to multiple categories and try to unlink content from a single category Other categories should remain intact and file should keep having "cm:generalclassifiable" aspect
      */
     @Test(groups = {TestGroup.REST_API})
     public void testUnlinkContentFromCategory_multipleLinkedCategories()
@@ -443,8 +440,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
         STEP("Link content to created categories and expect 201");
         final List<RestCategoryLinkBodyModel> categoryLinks = List.of(
                 createCategoryLinkModelWithId(category.getId()),
-                createCategoryLinkModelWithId(secondCategory.getId())
-        );
+                createCategoryLinkModelWithId(secondCategory.getId()));
         restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategories(categoryLinks);
         restClient.assertStatusCodeIs(CREATED);
 
@@ -486,7 +482,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Try to unlink content from a category that the node isn't assigned to and expect 404
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testUnlinkContentFromCategory_unlinkFromNonLinkedToNodeCategory()
     {
         STEP("Try to unlink content from a category that the node isn't assigned to");
@@ -498,7 +494,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     /**
      * Try to unlink content from category using non-existing category id and expect 404 (Not Found)
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = {TestGroup.REST_API})
     public void testUnlinkContentFromCategory_usingNonExistingCategoryAndExpect404()
     {
         STEP("Try to unlink content from non-existent category and expect 404");
@@ -511,12 +507,12 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     {
         final String putPermissionsBody = Json.createObjectBuilder().add("permissions",
                 Json.createObjectBuilder()
-                    .add("isInheritanceEnabled", true)
-                    .add("locallySet", Json.createObjectBuilder()
-                        .add("authorityId", username)
-                        .add("name", role)
-                        .add("accessStatus", "ALLOWED")))
-            .build().toString();
+                        .add("isInheritanceEnabled", true)
+                        .add("locallySet", Json.createObjectBuilder()
+                                .add("authorityId", username)
+                                .add("name", role)
+                                .add("accessStatus", "ALLOWED")))
+                .build().toString();
         restClient.authenticateUser(user).withCoreAPI().usingNode(file).updateNode(putPermissionsBody);
     }
 }

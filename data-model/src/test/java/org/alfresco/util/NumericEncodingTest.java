@@ -29,6 +29,7 @@ import junit.framework.TestCase;
 
 /**
  * Tests for string encoding
+ * 
  * @author andyh
  *
  */
@@ -46,7 +47,8 @@ public class NumericEncodingTest extends TestCase
 
     /**
      * 
-     * @param arg0 String
+     * @param arg0
+     *            String
      */
     public NumericEncodingTest(String arg0)
     {
@@ -167,14 +169,14 @@ public class NumericEncodingTest extends TestCase
         assertEquals("8000000000000000", NumericEncoder.encode(0L));
         assertEquals("8000000000000001", NumericEncoder.encode(1L));
         assertEquals("fffffffffffffffe", NumericEncoder.encode(Long.MAX_VALUE - 1));
-        assertEquals("ffffffffffffffff", NumericEncoder.encode(Long.MAX_VALUE));      
-        
+        assertEquals("ffffffffffffffff", NumericEncoder.encode(Long.MAX_VALUE));
+
         assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(Long.MIN_VALUE)), Long.MIN_VALUE);
-        assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(Long.MIN_VALUE + 1)),Long.MIN_VALUE + 1);
+        assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(Long.MIN_VALUE + 1)), Long.MIN_VALUE + 1);
         assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(-1L)), -1L);
         assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(0L)), 0L);
         assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(1L)), 1L);
-        assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(Long.MAX_VALUE - 1)),Long.MAX_VALUE - 1);
+        assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(Long.MAX_VALUE - 1)), Long.MAX_VALUE - 1);
         assertEquals(NumericEncoder.decodeLong(NumericEncoder.encode(Long.MAX_VALUE)), Long.MAX_VALUE);
     }
 
@@ -211,12 +213,10 @@ public class NumericEncodingTest extends TestCase
         assertEquals("ffefffffffffffff", NumericEncoder.encode(Double.MAX_VALUE));
         assertEquals("fff0000000000000", NumericEncoder.encode(Double.POSITIVE_INFINITY));
         assertEquals("fff8000000000000", NumericEncoder.encode(Double.NaN));
-        
-        assertTrue( NumericEncoder.encode(-0.9).compareTo(NumericEncoder.encode(0.88)) < 0);
-        assertTrue( NumericEncoder.encode(-0.9).compareTo(NumericEncoder.encode(0.91)) < 0);
-        assertTrue( NumericEncoder.encode(0.88).compareTo(NumericEncoder.encode(0.91)) < 0);
 
-        
-        
+        assertTrue(NumericEncoder.encode(-0.9).compareTo(NumericEncoder.encode(0.88)) < 0);
+        assertTrue(NumericEncoder.encode(-0.9).compareTo(NumericEncoder.encode(0.91)) < 0);
+        assertTrue(NumericEncoder.encode(0.88).compareTo(NumericEncoder.encode(0.91)) < 0);
+
     }
 }

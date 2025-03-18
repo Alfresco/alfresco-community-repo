@@ -34,14 +34,11 @@ package org.alfresco.repo.management;
 public class DummyManagedResource implements ManagedBean
 {
     public void setBeanName(String name)
-    {
-    }
+    {}
 
     public void setObjectName(String objectName)
-    {
-    }
-    
+    {}
+
     public void setResource(Object resource)
-    {
-    }
+    {}
 }

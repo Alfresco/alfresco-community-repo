@@ -27,15 +27,15 @@ package org.alfresco.repo.web.scripts.rating;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.service.cmr.rating.Rating;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.service.cmr.rating.Rating;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * This class is the controller for the rating.delete web script.
@@ -56,7 +56,7 @@ public class RatingDelete extends AbstractRatingWebScript
 
         NodeRef nodeRef = parseRequestForNodeRef(req);
         String ratingSchemeName = parseRequestForScheme(req);
-        
+
         Rating deletedRating = ratingService.removeRatingByCurrentUser(nodeRef, ratingSchemeName);
         if (deletedRating == null)
         {
@@ -64,15 +64,15 @@ public class RatingDelete extends AbstractRatingWebScript
             throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "Unable to delete non-existent rating: "
                     + ratingSchemeName + " from " + nodeRef.toString());
         }
-        
+
         model.put(NODE_REF, nodeRef.toString());
         model.put(AVERAGE_RATING, ratingService.getAverageRating(nodeRef, ratingSchemeName));
         model.put(RATINGS_TOTAL, ratingService.getTotalRating(nodeRef, ratingSchemeName));
         model.put(RATINGS_COUNT, ratingService.getRatingsCount(nodeRef, ratingSchemeName));
-      
+
         return model;
     }
-    
+
     private String parseRequestForScheme(WebScriptRequest req)
     {
         // We know the 'scheme' URL element is there because if it wasn't

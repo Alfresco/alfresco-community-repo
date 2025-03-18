@@ -33,6 +33,14 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.RuleChain;
+import org.junit.runners.MethodSorters;
+
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.domain.mimetype.MimetypeDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO.ResultHandler;
@@ -44,13 +52,6 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.testing.category.DBTests;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.RuleChain;
-import org.junit.runners.MethodSorters;
 
 /**
  * @see CannedQueryDAO
@@ -66,34 +67,35 @@ public class CannedQueryDAOTest
     private static final String QUERY_SELECT_MIMETYPE_COUNT = "select_CountMimetypes";
     private static final String QUERY_SELECT_MIMETYPES = "select_Mimetypes";
     public static final String IBATIS_TEST_CONTEXT = "classpath*:alfresco/ibatis/ibatis-test-context.xml";
-    
+
     // Rule to initialise the default Alfresco spring configuration
     public static ApplicationContextInit APP_CONTEXT_INIT = ApplicationContextInit.createStandardContextWithOverrides(IBATIS_TEST_CONTEXT);
 
     // Tie them together in a static Rule Chain
-    @ClassRule public static RuleChain staticRuleChain = RuleChain.outerRule(APP_CONTEXT_INIT);
-    
+    @ClassRule
+    public static RuleChain staticRuleChain = RuleChain.outerRule(APP_CONTEXT_INIT);
+
     private static TransactionService transactionService;
     private static RetryingTransactionHelper txnHelper;
     private static CannedQueryDAO cannedQueryDAO;
     private static CannedQueryDAO cannedQueryDAOForTesting;
     private static MimetypeDAO mimetypeDAO;
-    
+
     private static String mimetypePrefix;
-    
-    @BeforeClass public static void setup() throws Exception
+
+    @BeforeClass
+    public static void setup() throws Exception
     {
 
         ServiceRegistry serviceRegistry = (ServiceRegistry) APP_CONTEXT_INIT.getApplicationContext().getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();
-        
+
         cannedQueryDAO = (CannedQueryDAO) APP_CONTEXT_INIT.getApplicationContext().getBean("cannedQueryDAO");
         cannedQueryDAOForTesting = (CannedQueryDAO) APP_CONTEXT_INIT.getApplicationContext().getBean("cannedQueryDAOForTesting");
         mimetypeDAO = (MimetypeDAO) APP_CONTEXT_INIT.getApplicationContext().getBean("mimetypeDAO");
 
-        RetryingTransactionCallback<String> createMimetypeCallback = new RetryingTransactionCallback<String>()
-        {
+        RetryingTransactionCallback<String> createMimetypeCallback = new RetryingTransactionCallback<String>() {
             @Override
             public String execute() throws Throwable
             {
@@ -108,36 +110,43 @@ public class CannedQueryDAOTest
 
     /**
      * Helper parameter class for testing
+     * 
      * @author Derek Hulley
      */
     public static class TestOneParams
     {
         private final String mimetypeMatch;
         private final boolean exact;
-        private boolean forceFail;          // Trigger a SQL exception
+        private boolean forceFail; // Trigger a SQL exception
+
         public TestOneParams(String mimetypeMatch, boolean exact)
         {
             this.mimetypeMatch = mimetypeMatch;
             this.exact = exact;
             this.forceFail = false;
         }
+
         @Override
         public String toString()
         {
             return "TestOneParams [mimetypeMatch=" + mimetypeMatch + ", exact=" + exact + "]";
         }
+
         public String getMimetypeMatch()
         {
             return mimetypeMatch;
         }
+
         public boolean isExact()
         {
             return exact;
         }
+
         public boolean isForceFail()
         {
             return forceFail;
         }
+
         public void setForceFail(boolean forceFail)
         {
             this.forceFail = forceFail;
@@ -147,10 +156,10 @@ public class CannedQueryDAOTest
     /**
      * Force a failure and ensure that the connection is not tarnished
      */
-    @Test public void testExecute_FailureRecovery() throws Throwable
+    @Test
+    public void testExecute_FailureRecovery() throws Throwable
     {
-        RetryingTransactionCallback<Void> failCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> failCallback = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -158,7 +167,7 @@ public class CannedQueryDAOTest
                 params.setForceFail(true);
                 try
                 {
-                	cannedQueryDAOForTesting.executeCountQuery(QUERY_NS, QUERY_SELECT_MIMETYPE_COUNT, params);
+                    cannedQueryDAOForTesting.executeCountQuery(QUERY_NS, QUERY_SELECT_MIMETYPE_COUNT, params);
                     fail("Expected bad SQL");
                 }
                 catch (Throwable e)
@@ -173,10 +182,10 @@ public class CannedQueryDAOTest
         txnHelper.doInTransaction(failCallback, false);
     }
 
-    @Test public void testExecute_CountAllMimetypes() throws Throwable
+    @Test
+    public void testExecute_CountAllMimetypes() throws Throwable
     {
-        RetryingTransactionCallback<Long> selectCallback = new RetryingTransactionCallback<Long>()
-        {
+        RetryingTransactionCallback<Long> selectCallback = new RetryingTransactionCallback<Long>() {
             @Override
             public Long execute() throws Throwable
             {
@@ -192,10 +201,10 @@ public class CannedQueryDAOTest
     /**
      * Ensures that no results returns 0 since SQL will return a <tt>null</tt> count.
      */
-    @Test public void testExecute_CountNoResults() throws Throwable
+    @Test
+    public void testExecute_CountNoResults() throws Throwable
     {
-        RetryingTransactionCallback<Long> selectCallback = new RetryingTransactionCallback<Long>()
-        {
+        RetryingTransactionCallback<Long> selectCallback = new RetryingTransactionCallback<Long>() {
             @Override
             public Long execute() throws Throwable
             {
@@ -208,10 +217,10 @@ public class CannedQueryDAOTest
         assertEquals("Incorrect result count.", 0L, count.longValue());
     }
 
-    @Test public void testExecute_CountMimetypeExact() throws Throwable
+    @Test
+    public void testExecute_CountMimetypeExact() throws Throwable
     {
-        RetryingTransactionCallback<Long> selectCallback = new RetryingTransactionCallback<Long>()
-        {
+        RetryingTransactionCallback<Long> selectCallback = new RetryingTransactionCallback<Long>() {
             @Override
             public Long execute() throws Throwable
             {
@@ -224,10 +233,10 @@ public class CannedQueryDAOTest
         assertEquals("Incorrect result count.", 1L, count.longValue());
     }
 
-    @Test public void testExecute_CountMimetypeWildcard() throws Throwable
+    @Test
+    public void testExecute_CountMimetypeWildcard() throws Throwable
     {
-        RetryingTransactionCallback<Long> selectCallback = new RetryingTransactionCallback<Long>()
-        {
+        RetryingTransactionCallback<Long> selectCallback = new RetryingTransactionCallback<Long>() {
             @Override
             public Long execute() throws Throwable
             {
@@ -238,15 +247,16 @@ public class CannedQueryDAOTest
         };
         Long count = txnHelper.doInTransaction(selectCallback, true);
         assertNotNull(count);
-        //Two values -aaa, -bbb
+        // Two values -aaa, -bbb
         assertEquals("Incorrect result count.", 2L, count.longValue());
     }
-    
-    @Test public void testExecute_BadBounds() throws Throwable
+
+    @Test
+    public void testExecute_BadBounds() throws Throwable
     {
         try
         {
-        	cannedQueryDAOForTesting.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, null, -1, 10);
+            cannedQueryDAOForTesting.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, null, -1, 10);
             fail("Illegal parameter not detected");
         }
         catch (IllegalArgumentException e)
@@ -255,29 +265,29 @@ public class CannedQueryDAOTest
         }
         try
         {
-        	cannedQueryDAOForTesting.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, null, 0, -1);
+            cannedQueryDAOForTesting.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, null, 0, -1);
             fail("Illegal parameter not detected");
         }
         catch (IllegalArgumentException e)
         {
             // Expected
         }
-// TODO MyBatis workaround - temporarily support unlimited for nested result maps (see also below)
-//        try
-//        {
-//            cannedQueryDAO.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, null, 0, Integer.MAX_VALUE);
-//            fail("Illegal parameter not detected");
-//        }
-//        catch (IllegalArgumentException e)
-//        {
-//            // Expected
-//        }
+        // TODO MyBatis workaround - temporarily support unlimited for nested result maps (see also below)
+        // try
+        // {
+        // cannedQueryDAO.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, null, 0, Integer.MAX_VALUE);
+        // fail("Illegal parameter not detected");
+        // }
+        // catch (IllegalArgumentException e)
+        // {
+        // // Expected
+        // }
     }
-    
-    @Test public void testExecute_ListMimetypes() throws Throwable
+
+    @Test
+    public void testExecute_ListMimetypes() throws Throwable
     {
-        RetryingTransactionCallback<List<String>> selectCallback = new RetryingTransactionCallback<List<String>>()
-        {
+        RetryingTransactionCallback<List<String>> selectCallback = new RetryingTransactionCallback<List<String>>() {
             @Override
             public List<String> execute() throws Throwable
             {
@@ -289,27 +299,26 @@ public class CannedQueryDAOTest
         assertNotNull(mimetypes);
         assertTrue("Too many results", mimetypes.size() <= 2);
     }
-    
-    @Test public void testExecute_ResultHandlerWithError() throws Throwable
+
+    @Test
+    public void testExecute_ResultHandlerWithError() throws Throwable
     {
-        final ResultHandler<String> resultHandler = new ResultHandler<String>()
-        {
+        final ResultHandler<String> resultHandler = new ResultHandler<String>() {
             @Override
             public boolean handleResult(String result)
             {
                 throw new UnsupportedOperationException();
             }
         };
-        
-        RetryingTransactionCallback<List<String>> selectCallback = new RetryingTransactionCallback<List<String>>()
-        {
+
+        RetryingTransactionCallback<List<String>> selectCallback = new RetryingTransactionCallback<List<String>>() {
             @Override
             public List<String> execute() throws Throwable
             {
                 TestOneParams params = new TestOneParams(null, false);
                 try
                 {
-                	cannedQueryDAOForTesting.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, params, 0, 2, resultHandler);
+                    cannedQueryDAOForTesting.executeQuery(QUERY_NS, QUERY_SELECT_MIMETYPES, params, 0, 2, resultHandler);
                     fail("Expected UnsupportedOperationException");
                 }
                 catch (Exception e)
@@ -329,12 +338,12 @@ public class CannedQueryDAOTest
         assertNotNull(mimetypes);
         assertTrue("Too many results", mimetypes.size() <= 2);
     }
-    
-    @Test public void testExecute_ResultHandlerWithEarlyTermination() throws Throwable
+
+    @Test
+    public void testExecute_ResultHandlerWithEarlyTermination() throws Throwable
     {
         final List<String> results = new ArrayList<String>();
-        final ResultHandler<String> resultHandler = new ResultHandler<String>()
-        {
+        final ResultHandler<String> resultHandler = new ResultHandler<String>() {
             @Override
             public boolean handleResult(String result)
             {
@@ -343,9 +352,8 @@ public class CannedQueryDAOTest
                 return false;
             }
         };
-        
-        RetryingTransactionCallback<Void> selectCallback = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> selectCallback = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {

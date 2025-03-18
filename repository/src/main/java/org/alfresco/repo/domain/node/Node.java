@@ -41,22 +41,24 @@ public interface Node extends NodeIdAndAclId
      * Helper method to get a key that includes the node and its current version number
      */
     NodeVersionKey getNodeVersionKey();
-    
+
     /**
      * Helper method to force the instance to be read-only
      */
     void lock();
-    
+
     NodeRef getNodeRef();
 
     NodeRef.Status getNodeStatus(QNameDAO qnameDAO);
-    
+
     Pair<Long, NodeRef> getNodePair();
-    
+
     /**
      * Checks the {@link #getTypeQNameId() type} of the node to determine if the node is deleted
-     * @param qnameDAO          DAO to work out type IDs
-     * @return                  <tt>true</tt> if the node is {@link ContentModel#TYPE_DELETED}
+     * 
+     * @param qnameDAO
+     *            DAO to work out type IDs
+     * @return <tt>true</tt> if the node is {@link ContentModel#TYPE_DELETED}
      */
     boolean getDeleted(QNameDAO qnameDAO);
 
@@ -67,13 +69,13 @@ public interface Node extends NodeIdAndAclId
     String getUuid();
 
     Long getTypeQNameId();
-    
+
     Long getLocaleId();
 
     TransactionEntity getTransaction();
 
     AuditablePropertiesEntity getAuditableProperties();
-    
+
     String getShardKey();
 
     Integer getExplicitShardId();

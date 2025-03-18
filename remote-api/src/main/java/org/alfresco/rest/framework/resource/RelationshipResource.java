@@ -45,6 +45,8 @@ import org.springframework.stereotype.Component;
 public @interface RelationshipResource
 {
     String name();
+
     String title();
+
     Class<?> entityResource();
 }

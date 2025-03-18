@@ -26,11 +26,10 @@
  */
 package org.alfresco.rest.core;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-
-import lombok.Getter;
 
 /**
  * Extends {@link RestProperties} to be able to change/add properties
@@ -45,18 +44,18 @@ import lombok.Getter;
 @PropertySource(value = "classpath:local.properties", ignoreResourceNotFound = true)
 public class RMRestProperties extends RestProperties
 {
-    @Value ("${alfresco.scheme}")
+    @Value("${alfresco.scheme}")
     private String scheme;
 
-    @Value ("${alfresco.server}")
+    @Value("${alfresco.server}")
     private String server;
 
-    @Value ("${alfresco.port}")
+    @Value("${alfresco.port}")
     private String port;
 
-    @Value ("${rest.rmPath}")
+    @Value("${rest.rmPath}")
     private String restRmPath;
 
-    @Value ("${docker.host}")
+    @Value("${docker.host}")
     private String dockerHost;
 }

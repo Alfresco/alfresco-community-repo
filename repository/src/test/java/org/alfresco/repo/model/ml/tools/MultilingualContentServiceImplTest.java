@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.junit.experimental.categories.Category;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -39,8 +42,6 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
-import org.junit.experimental.categories.Category;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @see org.alfresco.repo.model.ml.MultilingualContentServiceImpl
@@ -154,28 +155,29 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
         NodeRef mlContainerNodeRef = multilingualContentService.getTranslationContainer(chineseContentNodeRef);
 
-        //  make sure that the pivot language is set
+        // make sure that the pivot language is set
         assertNotNull("Pivot language not set", nodeService.getProperty(mlContainerNodeRef, ContentModel.PROP_LOCALE));
 
-        //  make sure that the pivot language is correctly set
+        // make sure that the pivot language is correctly set
         assertEquals("Pivot language not correctly set", Locale.CHINESE, nodeService.getProperty(mlContainerNodeRef, ContentModel.PROP_LOCALE));
 
         NodeRef frenchContentNodeRef = createContent();
         multilingualContentService.addTranslation(frenchContentNodeRef, chineseContentNodeRef, Locale.FRENCH);
 
-        //  make sure that the pivot noderef is correct
+        // make sure that the pivot noderef is correct
         assertEquals("Unable to get pivot from container", chineseContentNodeRef, multilingualContentService.getPivotTranslation(mlContainerNodeRef));
         assertEquals("Unable to get pivot from translation", chineseContentNodeRef, multilingualContentService.getPivotTranslation(frenchContentNodeRef));
 
         // modify the pivot language
         nodeService.setProperty(mlContainerNodeRef, ContentModel.PROP_LOCALE, Locale.FRENCH);
 
-        //  make sure that the modified pivot noderef is correct
+        // make sure that the modified pivot noderef is correct
         assertEquals("Pivot node ref not correct", frenchContentNodeRef, multilingualContentService.getPivotTranslation(mlContainerNodeRef));
     }
 
     /**
      * Testing unmakeTranslation
+     * 
      * @throws Exception
      */
     public void testUnmakeTranslation() throws Exception
@@ -183,26 +185,27 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         NodeRef frenchContentNodeRef = createContent();
         multilingualContentService.makeTranslation(frenchContentNodeRef, Locale.FRENCH);
         NodeRef mlContainerNodeRef = multilingualContentService.getTranslationContainer(frenchContentNodeRef);
-        
+
         NodeRef englishContentNodeRef = createContent();
         multilingualContentService.addTranslation(englishContentNodeRef, frenchContentNodeRef, Locale.ENGLISH);
-        
+
         NodeRef germanContentNodeRef = createContent();
         multilingualContentService.addTranslation(germanContentNodeRef, frenchContentNodeRef, Locale.GERMAN);
-        
+
         multilingualContentService.unmakeTranslation(englishContentNodeRef);
         multilingualContentService.unmakeTranslation(germanContentNodeRef);
-        //multilingualContentService.unmakeTranslation(frenchContentNodeRef);
-        
-        //calling unmakeTranslation() dissolves the multiligual document.
-        //none of the documents composing the multilingual document
+        // multilingualContentService.unmakeTranslation(frenchContentNodeRef);
+
+        // calling unmakeTranslation() dissolves the multiligual document.
+        // none of the documents composing the multilingual document
         assertTrue("The document should not be multilingual!",
                 !multilingualContentService.isTranslation(englishContentNodeRef) &&
-                !multilingualContentService.isTranslation(germanContentNodeRef));
-    }   
-    
+                        !multilingualContentService.isTranslation(germanContentNodeRef));
+    }
+
     /**
      * Testing unmakeTranslation() on pivot
+     * 
      * @throws Exception
      */
     public void testUnmakeTranslationOnPivot() throws Exception
@@ -210,23 +213,23 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         NodeRef frenchContentNodeRef = createContent();
         multilingualContentService.makeTranslation(frenchContentNodeRef, Locale.FRENCH);
         NodeRef mlContainerNodeRef = multilingualContentService.getTranslationContainer(frenchContentNodeRef);
-        
+
         NodeRef englishContentNodeRef = createContent();
         multilingualContentService.addTranslation(englishContentNodeRef, frenchContentNodeRef, Locale.ENGLISH);
-        
+
         NodeRef germanContentNodeRef = createContent();
         multilingualContentService.addTranslation(germanContentNodeRef, frenchContentNodeRef, Locale.GERMAN);
-        
+
         multilingualContentService.unmakeTranslation(frenchContentNodeRef);
-        
-        //calling unmakeTranslation() dissolves the multiligual document.
-        //none of the documents composing the multilingual document
+
+        // calling unmakeTranslation() dissolves the multiligual document.
+        // none of the documents composing the multilingual document
         assertTrue("The document should not be multilingual!",
                 !multilingualContentService.isTranslation(frenchContentNodeRef) &&
-                !multilingualContentService.isTranslation(englishContentNodeRef) &&
-                !multilingualContentService.isTranslation(germanContentNodeRef));
+                        !multilingualContentService.isTranslation(englishContentNodeRef) &&
+                        !multilingualContentService.isTranslation(germanContentNodeRef));
     }
-    
+
     @SuppressWarnings("unused")
     public void testCreateEmptyTranslation() throws Exception
     {
@@ -260,56 +263,48 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         multilingualContentService.makeTranslation(chineseContentNodeRef, Locale.CHINESE);
         NodeRef koreanContentNodeRef = createContent("Document_ko.txt");
         multilingualContentService.addTranslation(koreanContentNodeRef, chineseContentNodeRef, Locale.KOREAN);
-        
-        
+
         // The pivot translation (base language) is Chinese
         // (It won't matter which language we query to check this)
         assertEquals(
-              "The wrong language was set as the pivot translation",
-              chineseContentNodeRef,
-              multilingualContentService.getPivotTranslation(chineseContentNodeRef)
-        );
+                "The wrong language was set as the pivot translation",
+                chineseContentNodeRef,
+                multilingualContentService.getPivotTranslation(chineseContentNodeRef));
         assertEquals(
-              "The wrong language was set as the pivot translation",
-              chineseContentNodeRef,
-              multilingualContentService.getPivotTranslation(koreanContentNodeRef)
-        );
-        
-        
+                "The wrong language was set as the pivot translation",
+                chineseContentNodeRef,
+                multilingualContentService.getPivotTranslation(koreanContentNodeRef));
+
         // Create with a null name, and off a non-pivot just to be sure
-        // The locale will be added to the pivot's file name to create a unique one 
+        // The locale will be added to the pivot's file name to create a unique one
         NodeRef nullNameNodeRef = multilingualContentService.addEmptyTranslation(
                 koreanContentNodeRef,
                 null,
                 Locale.CANADA);
         String nullName = fileFolderService.getFileInfo(nullNameNodeRef).getName();
         assertEquals("Empty translation name not generated correctly.", "Document_en_CA.txt", nullName);
-        
+
         // This will be referencing the same pivot still
         assertEquals(
-              "The wrong language was set as the pivot translation",
-              chineseContentNodeRef,
-              multilingualContentService.getPivotTranslation(nullNameNodeRef)
-        );
-        
-        
+                "The wrong language was set as the pivot translation",
+                chineseContentNodeRef,
+                multilingualContentService.getPivotTranslation(nullNameNodeRef));
+
         // Create with the same name as the document we're the translation of
-        // The locale will be added to the supplied file name to create a unique one 
+        // The locale will be added to the supplied file name to create a unique one
         NodeRef sameNameNodeRef = multilingualContentService.addEmptyTranslation(
                 chineseContentNodeRef,
                 "Document.txt",
                 Locale.CANADA_FRENCH);
         String sameName = fileFolderService.getFileInfo(sameNameNodeRef).getName();
         assertEquals("Empty translation name not generated correctly.", "Document_fr_CA.txt", sameName);
-        
+
         // Still correctly referencing the pivot
         assertEquals(
-              "The wrong language was set as the pivot translation",
-              chineseContentNodeRef,
-              multilingualContentService.getPivotTranslation(sameNameNodeRef)
-        );
-        
-        
+                "The wrong language was set as the pivot translation",
+                chineseContentNodeRef,
+                multilingualContentService.getPivotTranslation(sameNameNodeRef));
+
         // Create with a different name
         // As there's no clash, the locale won't be added
         NodeRef differentNameNodeRef = multilingualContentService.addEmptyTranslation(
@@ -318,20 +313,23 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
                 Locale.JAPANESE);
         String differentName = fileFolderService.getFileInfo(differentNameNodeRef).getName();
         assertEquals("Empty translation name not generated correctly.", "Document2.txt", differentName);
-        
+
         // If we tried to add a 2nd language with the different name,
-        //  it would fail as the name isn't used
+        // it would fail as the name isn't used
         // (The automatic appending of the locale to avoid duplicates only
-        //  works on the Pivot version's name, it isn't allowed for
-        //  the names of non-pivot versions)
-        try {
-           multilingualContentService.addEmptyTranslation(
-                 chineseContentNodeRef,
-                 "Document2.txt",
-                 Locale.FRENCH);
-           fail("A duplicate translation filename was created");
-        } catch(FileExistsException e) {
-           // Good, this was spotted
+        // works on the Pivot version's name, it isn't allowed for
+        // the names of non-pivot versions)
+        try
+        {
+            multilingualContentService.addEmptyTranslation(
+                    chineseContentNodeRef,
+                    "Document2.txt",
+                    Locale.FRENCH);
+            fail("A duplicate translation filename was created");
+        }
+        catch (FileExistsException e)
+        {
+            // Good, this was spotted
         }
     }
 
@@ -441,9 +439,9 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         assertFalse("The empty document can't be archived: " + Locale.GERMAN, nodeService.exists(archivedEmptyGermanContentNodeRef));
 
         // Ensure that the mlDocument aspect is removed
-        assertFalse("The " + ContentModel.ASPECT_MULTILINGUAL_DOCUMENT +  " aspect must be removed for " + Locale.CHINESE, nodeService.hasAspect(archivedChineseContentNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
-        assertFalse("The " + ContentModel.ASPECT_MULTILINGUAL_DOCUMENT +  " aspect must be removed for " + Locale.JAPANESE, nodeService.hasAspect(archivedJapaneseContentNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
-        assertFalse("The " + ContentModel.ASPECT_MULTILINGUAL_DOCUMENT +  " aspect must be removed for " + Locale.FRENCH, nodeService.hasAspect(archivedFrenchContentNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
+        assertFalse("The " + ContentModel.ASPECT_MULTILINGUAL_DOCUMENT + " aspect must be removed for " + Locale.CHINESE, nodeService.hasAspect(archivedChineseContentNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
+        assertFalse("The " + ContentModel.ASPECT_MULTILINGUAL_DOCUMENT + " aspect must be removed for " + Locale.JAPANESE, nodeService.hasAspect(archivedJapaneseContentNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
+        assertFalse("The " + ContentModel.ASPECT_MULTILINGUAL_DOCUMENT + " aspect must be removed for " + Locale.FRENCH, nodeService.hasAspect(archivedFrenchContentNodeRef, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
 
     }
 
@@ -482,11 +480,11 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         // Ensure that a new mlContainer is created
         assertTrue("The new mlContainer is not created ", nodeService.exists(newMLContainer));
         // Ensure that the newMLContainer is a copy of the source mlContainer
-        assertFalse("The newMLContainer is not a copy of the source mlContainer, the ref is the same " + newMLContainer , newMLContainer.equals(mlContainerNodeRef));
-        assertEquals("The newMLContainer is not a copy of the source mlContainer, the locales are not the same " + newMLContainer ,
-                        nodeService.getProperty(mlContainerNodeRef, ContentModel.PROP_LOCALE),
-                        nodeService.getProperty(newMLContainer, ContentModel.PROP_LOCALE));
-        assertEquals("The newMLContainer is not a copy of the source mlContainer, the authors are not the same " + newMLContainer ,
+        assertFalse("The newMLContainer is not a copy of the source mlContainer, the ref is the same " + newMLContainer, newMLContainer.equals(mlContainerNodeRef));
+        assertEquals("The newMLContainer is not a copy of the source mlContainer, the locales are not the same " + newMLContainer,
+                nodeService.getProperty(mlContainerNodeRef, ContentModel.PROP_LOCALE),
+                nodeService.getProperty(newMLContainer, ContentModel.PROP_LOCALE));
+        assertEquals("The newMLContainer is not a copy of the source mlContainer, the authors are not the same " + newMLContainer,
                 nodeService.getProperty(mlContainerNodeRef, ContentModel.PROP_AUTHOR),
                 nodeService.getProperty(newMLContainer, ContentModel.PROP_AUTHOR));
 
@@ -498,7 +496,7 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         // Ensure that the translations are copies from the source translations
         assertEquals("They are not the same number of translation in the source mlContainer and in its copy", sourceTranslations.size(), copyTranslations.size());
 
-        for(Map.Entry<Locale, NodeRef> entry : sourceTranslations.entrySet())
+        for (Map.Entry<Locale, NodeRef> entry : sourceTranslations.entrySet())
         {
             Locale locale = entry.getKey();
 
@@ -514,13 +512,12 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
 
             // Ensure that the copy has the mlDocument aspect
             assertTrue("The copy must have the mlDocument aspect",
-                            nodeService.hasAspect(copyTranslation, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
+                    nodeService.hasAspect(copyTranslation, ContentModel.ASPECT_MULTILINGUAL_DOCUMENT));
 
             // Ensure that the copy is an empty translation if the source too
             assertEquals("The call of nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION) must return the same result for the source and the copy",
-                            nodeService.hasAspect(sourceNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION),
-                            nodeService.hasAspect(copyTranslation, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION));
-
+                    nodeService.hasAspect(sourceNodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION),
+                    nodeService.hasAspect(copyTranslation, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION));
 
             // Ensure that the copy and the source are different
             assertNotSame("The copy has the same ref as the source", sourceNodeRef, copyTranslation);
@@ -561,7 +558,7 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
 
             fail("The copy of the mlContainer in the same space would faile");
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             // test asserted
         }
@@ -595,14 +592,14 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         // Ensure that the new space is created
         assertTrue("The destiation space is not created " + destinationSpace, nodeService.exists(destinationSpace));
 
-        String PREFIX = "COPY OF " ;
+        String PREFIX = "COPY OF ";
 
         NodeRef newMLContainer = multilingualContentService.copyTranslationContainer(mlContainerNodeRef, destinationSpace, PREFIX);
 
         // Ensure that a new mlContainer is created
         assertTrue("The new mlContainer is not created ", nodeService.exists(newMLContainer));
         // Ensure that the newMLContainer is a copy of the source mlContainer
-        assertFalse("The newMLContainer is not a copy of the source mlContainer, the ref is the same " + newMLContainer , newMLContainer.equals(mlContainerNodeRef));
+        assertFalse("The newMLContainer is not a copy of the source mlContainer, the ref is the same " + newMLContainer, newMLContainer.equals(mlContainerNodeRef));
 
         // get the source translations
         Map<Locale, NodeRef> sourceTranslations = multilingualContentService.getTranslations(mlContainerNodeRef);
@@ -612,7 +609,7 @@ public class MultilingualContentServiceImplTest extends AbstractMultilingualTest
         // Ensure that the translations are copies from the source translations
         assertEquals("They are not the same number of translation in the source mlContainer and in its copy", sourceTranslations.size(), copyTranslations.size());
 
-        for(Map.Entry<Locale, NodeRef> entry : sourceTranslations.entrySet())
+        for (Map.Entry<Locale, NodeRef> entry : sourceTranslations.entrySet())
         {
             Locale locale = entry.getKey();
 

@@ -25,39 +25,38 @@
  */
 package org.alfresco.rest.api.tests;
 
-import org.alfresco.repo.web.util.AbstractJettyComponent;
-import org.alfresco.rest.api.PublicApiWebScriptServlet;
 import org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 
+import org.alfresco.repo.web.util.AbstractJettyComponent;
+import org.alfresco.rest.api.PublicApiWebScriptServlet;
+
 /**
- * Manages an embedded jetty server, hooking it up to the repository spring context and providing 
- * authenticated, tenant-based access through the tenant servlet.
+ * Manages an embedded jetty server, hooking it up to the repository spring context and providing authenticated, tenant-based access through the tenant servlet.
  * 
  * @author steveglover
  *
  */
 public class PublicApiJettyComponent extends AbstractJettyComponent
 {
-	public PublicApiJettyComponent(int port, String contextPath, String[] configLocations, String[] classLocations)
-	{
-		super(port, contextPath, configLocations, classLocations);
-	}
-	
-	@Override
-	protected void configureWebAppContext(WebAppContext webAppContext)
-	{
+    public PublicApiJettyComponent(int port, String contextPath, String[] configLocations, String[] classLocations)
+    {
+        super(port, contextPath, configLocations, classLocations);
+    }
 
-	    // the tenant servlet with alfresco managed authentication
-	    ServletHolder servletHolder = new ServletHolder(PublicApiWebScriptServlet.class);
-	    servletHolder.setInitParameter("authenticator", "publicapi.authenticator");
-	    webAppContext.addServlet(servletHolder, "/" + publicApiServletName + "/*");
+    @Override
+    protected void configureWebAppContext(WebAppContext webAppContext)
+    {
 
+        // the tenant servlet with alfresco managed authentication
+        ServletHolder servletHolder = new ServletHolder(PublicApiWebScriptServlet.class);
+        servletHolder.setInitParameter("authenticator", "publicapi.authenticator");
+        webAppContext.addServlet(servletHolder, "/" + publicApiServletName + "/*");
 
-	    // the tenant servlet with alfresco managed authentication
-	    servletHolder = new ServletHolder(CmisAtomPubServlet.class);
-	    servletHolder.setInitParameter("callContextHandler", "org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler");
-		webAppContext.addServlet(servletHolder, "/cmisatom/*");
-	}
+        // the tenant servlet with alfresco managed authentication
+        servletHolder = new ServletHolder(CmisAtomPubServlet.class);
+        servletHolder.setInitParameter("callContextHandler", "org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler");
+        webAppContext.addServlet(servletHolder, "/cmisatom/*");
+    }
 }

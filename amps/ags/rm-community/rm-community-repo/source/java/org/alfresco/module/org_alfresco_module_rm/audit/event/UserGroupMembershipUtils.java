@@ -56,8 +56,10 @@ public class UserGroupMembershipUtils
     /**
      * Create a properties map from the given cm:member association.
      *
-     * @param childAssocRef The association to use.
-     * @param nodeService The node service.
+     * @param childAssocRef
+     *            The association to use.
+     * @param nodeService
+     *            The node service.
      * @return A map containing the names of the parent and child.
      */
     public static Map<QName, Serializable> makePropertiesMap(ChildAssociationRef childAssocRef, NodeService nodeService)

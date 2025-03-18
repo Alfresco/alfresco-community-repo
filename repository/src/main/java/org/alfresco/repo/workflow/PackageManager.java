@@ -33,6 +33,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -46,65 +50,59 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * This helper class is used to manage a workflow package. The manager is a
- * stateful object which accumulates all the changes to be made to the package
- * (such as adding and removing package items). These changes are then applied
- * to the package when either the create() or update() method is called.
+ * This helper class is used to manage a workflow package. The manager is a stateful object which accumulates all the changes to be made to the package (such as adding and removing package items). These changes are then applied to the package when either the create() or update() method is called.
  * 
  * @author Nick Smith
  * @since 3.4
  */
 public class PackageManager
 {
-    
+
     private static final QName PCKG_CONTAINS = WorkflowModel.ASSOC_PACKAGE_CONTAINS;
-    private static final QName PCKG_ASPECT= WorkflowModel.ASPECT_WORKFLOW_PACKAGE;
+    private static final QName PCKG_ASPECT = WorkflowModel.ASPECT_WORKFLOW_PACKAGE;
     private static final String CM_URL = NamespaceService.CONTENT_MODEL_1_0_URI;
 
     /** Default Log */
     private final static Log LOGGER = LogFactory.getLog(PackageManager.class);
-    
+
     private final WorkflowService workflowService;
     private final NodeService nodeService;
     private final Log logger;
     private final BehaviourFilter behaviourFilter;
-    
+
     private final Set<NodeRef> addItems = new HashSet<NodeRef>();
     private final Set<NodeRef> removeItems = new HashSet<NodeRef>();
 
     public PackageManager(WorkflowService workflowService,
-                NodeService nodeService,
-                BehaviourFilter behaviourFilter,
-                Log logger)
+            NodeService nodeService,
+            BehaviourFilter behaviourFilter,
+            Log logger)
     {
         this.workflowService = workflowService;
         this.nodeService = nodeService;
-        this.behaviourFilter =behaviourFilter;
-        this.logger = logger ==null ? LOGGER : logger;
+        this.behaviourFilter = behaviourFilter;
+        this.logger = logger == null ? LOGGER : logger;
     }
-    
+
     public void addItems(List<NodeRef> items)
     {
         addItems.addAll(items);
     }
 
     /**
-     * Takes a comma-separated list of {@link NodeRef} ids and adds the
-     * specified NodeRefs to the package.
+     * Takes a comma-separated list of {@link NodeRef} ids and adds the specified NodeRefs to the package.
      * 
-     * @param items String
+     * @param items
+     *            String
      */
     public void addItems(String items)
     {
         List<NodeRef> nodes = NodeRef.getNodeRefs(items);
         addItems(nodes);
     }
-    
+
     public void addItemsAsStrings(List<String> itemStrs)
     {
         for (String itemStr : itemStrs)
@@ -117,7 +115,7 @@ public class PackageManager
     {
         addItems.add(item);
     }
-    
+
     public void addItem(String itemStr)
     {
         addItem(new NodeRef(itemStr));
@@ -129,17 +127,17 @@ public class PackageManager
     }
 
     /**
-     * Takes a comma-separated list of {@link NodeRef} ids and adds the
-     * specified NodeRefs to the package.
+     * Takes a comma-separated list of {@link NodeRef} ids and adds the specified NodeRefs to the package.
      * 
-     * @param items String
+     * @param items
+     *            String
      */
     public void removeItems(String items)
     {
         List<NodeRef> nodes = NodeRef.getNodeRefs(items);
         removeItems(nodes);
     }
-    
+
     public void removeItemsAsStrings(List<String> itemStrs)
     {
         for (String itemStr : itemStrs)
@@ -152,19 +150,20 @@ public class PackageManager
     {
         removeItems.add(item);
     }
-    
+
     public void removeItem(String itemStr)
     {
         removeItem(new NodeRef(itemStr));
     }
 
     /**
-     * Creates a new Workflow package using the specified <code>container</code>.
-     * If the <code>container</code> is null then a new container node is created.
-     * Applies the specified updates to the package after it is created.
-     * @param container NodeRef
+     * Creates a new Workflow package using the specified <code>container</code>. If the <code>container</code> is null then a new container node is created. Applies the specified updates to the package after it is created.
+     * 
+     * @param container
+     *            NodeRef
      * @return the package {@link NodeRef}.
-     * @throws WorkflowException if the specified container is already package.
+     * @throws WorkflowException
+     *             if the specified container is already package.
      */
     public NodeRef create(NodeRef container) throws WorkflowException
     {
@@ -172,18 +171,19 @@ public class PackageManager
         update(packageRef);
         return packageRef;
     }
-    
+
     /**
      * Applies the specified modifications to the package.
-     * @param packageRef NodeRef
+     * 
+     * @param packageRef
+     *            NodeRef
      */
     public void update(final NodeRef packageRef)
     {
         if (addItems.isEmpty() && removeItems.isEmpty())
             return;
 
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             public Void doWork() throws Exception
             {
                 checkPackage(packageRef);
@@ -241,7 +241,7 @@ public class PackageManager
     private List<NodeRef> getCurrentItems(NodeRef packageRef)
     {
         List<ChildAssociationRef> children = nodeService.getChildAssocs(
-                    packageRef, PCKG_CONTAINS, RegexQNamePattern.MATCH_ALL);
+                packageRef, PCKG_CONTAINS, RegexQNamePattern.MATCH_ALL);
         ArrayList<NodeRef> results = new ArrayList<NodeRef>(children.size());
         for (ChildAssociationRef child : children)
         {
@@ -249,7 +249,7 @@ public class PackageManager
         }
         return results;
     }
-    
+
     @SuppressWarnings("unchecked")
     private void checkPackageItems(NodeRef packageRef)
     {
@@ -260,7 +260,7 @@ public class PackageManager
         for (NodeRef node : intersection)
         {
             if (logger.isDebugEnabled())
-                logger.debug("Item was added and removed from package! Ignoring item: "+ node);
+                logger.debug("Item was added and removed from package! Ignoring item: " + node);
         }
         checkAddedItems(currentitems);
         checkRemovedItems(currentitems);
@@ -270,7 +270,7 @@ public class PackageManager
     {
         for (Iterator<NodeRef> iter = removeItems.iterator(); iter.hasNext();)
         {
-            NodeRef removeItem= iter.next();
+            NodeRef removeItem = iter.next();
             if (currentitems.contains(removeItem) == false)
             {
                 iter.remove();
@@ -284,7 +284,7 @@ public class PackageManager
     {
         for (Iterator<NodeRef> iter = addItems.iterator(); iter.hasNext();)
         {
-            NodeRef addItem= iter.next();
+            NodeRef addItem = iter.next();
             if (currentitems.contains(addItem))
             {
                 iter.remove();

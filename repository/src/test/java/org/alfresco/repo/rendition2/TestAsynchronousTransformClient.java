@@ -25,18 +25,18 @@
  */
 package org.alfresco.repo.rendition2;
 
+import static org.alfresco.model.ContentModel.PROP_CONTENT;
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.doTest;
+import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.isATest;
+
+import java.io.ByteArrayInputStream;
+
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-
-import java.io.ByteArrayInputStream;
-
-import static org.alfresco.model.ContentModel.PROP_CONTENT;
-import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.doTest;
-import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.isATest;
 
 /**
  * @author adavis
@@ -48,7 +48,7 @@ public class TestAsynchronousTransformClient<T> implements TransformClient
     private RenditionService2Impl renditionService2;
 
     public TestAsynchronousTransformClient(ContentService contentService, TransformClient delegate,
-                                           RenditionService2Impl renditionService2)
+            RenditionService2Impl renditionService2)
     {
         this.contentService = contentService;
         this.delegate = delegate;
@@ -57,7 +57,7 @@ public class TestAsynchronousTransformClient<T> implements TransformClient
 
     @Override
     public void checkSupported(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String sourceMimetype,
-                               long sourceSizeInBytes, String contentUrl)
+            long sourceSizeInBytes, String contentUrl)
     {
         String targetMimetype = renditionDefinition.getTargetMimetype();
         if (!isATest(sourceMimetype, targetMimetype))
@@ -68,7 +68,7 @@ public class TestAsynchronousTransformClient<T> implements TransformClient
 
     @Override
     public void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user,
-                   int sourceContentHashCode)
+            int sourceContentHashCode)
             throws UnsupportedTransformationException, ContentIOException
     {
         ContentReader reader = contentService.getReader(sourceNodeRef, PROP_CONTENT);
@@ -79,8 +79,7 @@ public class TestAsynchronousTransformClient<T> implements TransformClient
             ContentWriter writer = contentService.getTempWriter();
             writer.setMimetype(targetMimetype);
             doTest(sourceMimetype, targetMimetype, writer,
-                    new TestSynchronousTransformClient.TestTransformClientCallback()
-                    {
+                    new TestSynchronousTransformClient.TestTransformClientCallback() {
                         @Override
                         public void successfulTransform(ContentWriter writer)
                         {

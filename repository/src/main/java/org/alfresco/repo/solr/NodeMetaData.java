@@ -58,124 +58,153 @@ public class NodeMetaData
     private List<Long> childIds;
     private Long txnId;
     private String tenantDomain;
-    
+
     public String getOwner()
     {
         return owner;
     }
+
     public void setOwner(String owner)
     {
         this.owner = owner;
     }
+
     public NodeRef getNodeRef()
     {
         return nodeRef;
     }
+
     public void setNodeRef(NodeRef nodeRef)
     {
         this.nodeRef = nodeRef;
     }
+
     public Collection<Pair<Path, QName>> getPaths()
     {
         return paths;
     }
+
     public void setPaths(Collection<Pair<Path, QName>> paths)
     {
         this.paths = paths;
     }
+
     public Collection<Collection<String>> getNamePaths()
     {
         return namePaths;
     }
+
     public void setNamePaths(Collection<Collection<String>> namePaths)
     {
         this.namePaths = namePaths;
     }
+
     public QName getNodeType()
     {
         return nodeType;
     }
+
     public void setNodeType(QName nodeType)
     {
         this.nodeType = nodeType;
     }
+
     public Long getNodeId()
     {
         return nodeId;
     }
+
     public void setNodeId(Long nodeId)
     {
         this.nodeId = nodeId;
     }
+
     public Long getAclId()
     {
         return aclId;
     }
+
     public void setAclId(Long aclId)
     {
         this.aclId = aclId;
     }
+
     public Map<QName, Serializable> getProperties()
     {
         return properties;
     }
+
     public void setProperties(Map<QName, Serializable> properties)
     {
         this.properties = properties;
     }
+
     public Set<QName> getAspects()
     {
         return aspects;
     }
+
     public void setAspects(Set<QName> aspects)
     {
         this.aspects = aspects;
     }
+
     public List<ChildAssociationRef> getChildAssocs()
     {
         return childAssocs;
     }
+
     public void setChildAssocs(List<ChildAssociationRef> childAssocs)
     {
         this.childAssocs = childAssocs;
     }
+
     /**
-     * @param parentAssocsCrc Long
+     * @param parentAssocsCrc
+     *            Long
      */
     public void setParentAssocs(List<ChildAssociationRef> parentAssocs, Long parentAssocsCrc)
     {
         this.parentAssocs = parentAssocs;
         this.parentAssocsCrc = parentAssocsCrc;
-        
+
     }
+
     public List<ChildAssociationRef> getParentAssocs()
     {
         return parentAssocs;
     }
+
     public Long getParentAssocsCrc()
     {
         return parentAssocsCrc;
     }
+
     public List<Long> getChildIds()
     {
         return childIds;
     }
+
     public void setChildIds(List<Long> childIds)
     {
         this.childIds = childIds;
     }
+
     public Long getTxnId()
     {
         return txnId;
     }
+
     public void setTxnId(Long txnId)
     {
         this.txnId = txnId;
     }
+
     public String getTenantDomain()
     {
         return tenantDomain;
     }
+
     public void setTenantDomain(String tenantDomain)
     {
         this.tenantDomain = tenantDomain;

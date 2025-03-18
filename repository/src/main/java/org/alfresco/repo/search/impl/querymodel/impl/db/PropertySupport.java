@@ -55,7 +55,7 @@ public class PropertySupport implements DBQueryBuilderComponent
     private DBQueryBuilderJoinCommandType joinCommandType = DBQueryBuilderJoinCommandType.PROPERTY;
 
     private QName propertyQName;
-    
+
     private DataTypeDefinition propertyDataType;
 
     private String fieldName;
@@ -67,7 +67,7 @@ public class PropertySupport implements DBQueryBuilderComponent
     LuceneFunction luceneFunction;
 
     private boolean leftOuter;
-    
+
     /**
      * @param pair
      *            the pair to set
@@ -95,9 +95,9 @@ public class PropertySupport implements DBQueryBuilderComponent
         this.values = values;
     }
 
-  
     /**
-     * @param joinCommandType the joinCommandType to set
+     * @param joinCommandType
+     *            the joinCommandType to set
      */
     public void setJoinCommandType(DBQueryBuilderJoinCommandType joinCommandType)
     {
@@ -130,33 +130,28 @@ public class PropertySupport implements DBQueryBuilderComponent
     {
         this.commandType = commandType;
     }
-    
+
     /**
-     * @param propertyDataType the propertyDataType to set
+     * @param propertyDataType
+     *            the propertyDataType to set
      */
     public void setPropertyDataType(DataTypeDefinition propertyDataType)
     {
         this.propertyDataType = propertyDataType;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported() */
     @Override
     public boolean isSupported()
     {
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace
-     * .NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService,
-     * org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map,
-     * org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace .NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext) */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
@@ -164,17 +159,15 @@ public class PropertySupport implements DBQueryBuilderComponent
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map,
-     * java.util.List)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map, java.util.List) */
     @Override
     public void buildJoins(Map<QName, DBQueryBuilderJoinCommand> singleJoins, List<DBQueryBuilderJoinCommand> multiJoins)
     {
         // JOIN is only required for ordering - predicts are done via semi-join
         alias = "PROP";
-        if(commandType == DBQueryBuilderPredicatePartCommandType.ORDER)
+        if (commandType == DBQueryBuilderPredicatePartCommandType.ORDER)
         {
             DBQueryBuilderJoinCommand join = singleJoins.get(propertyQName);
             if (join == null)
@@ -195,30 +188,28 @@ public class PropertySupport implements DBQueryBuilderComponent
                 }
             }
 
-            if(join != null)
+            if (join != null)
             {
                 alias = join.getAlias();
-                if(leftOuter)
+                if (leftOuter)
                 {
                     join.setOuter(true);
                 }
             }
         }
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util
-     * .List)
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util .List) */
     @Override
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
-    {   
+    {
         if (pair == null)
         {
             DBQueryBuilderPredicatePartCommand command = new DBQueryBuilderPredicatePartCommand();
             command.setJoinCommandType(DBQueryBuilderJoinCommandType.NODE);
-            switch(joinCommandType)
+            switch (joinCommandType)
             {
             case NODE:
                 command.setAlias("node");
@@ -240,7 +231,7 @@ public class PropertySupport implements DBQueryBuilderComponent
                 predicatePartCommands.add(command);
                 break;
             }
-            
+
             command.setQName(propertyQName);
         }
         else
@@ -248,7 +239,7 @@ public class PropertySupport implements DBQueryBuilderComponent
             DBQueryBuilderPredicatePartCommand command = new DBQueryBuilderPredicatePartCommand();
             command.setJoinCommandType(joinCommandType);
             command.setQnameId(pair.getFirst());
-            switch(joinCommandType)
+            switch (joinCommandType)
             {
             case NODE:
                 command.setAlias("node");
@@ -259,7 +250,7 @@ public class PropertySupport implements DBQueryBuilderComponent
             case PROPERTY:
                 command.setAlias(alias);
                 command.setType(commandType);
-                if(propertyDataType != null)
+                if (propertyDataType != null)
                 {
                     if (propertyDataType.getName().equals(DataTypeDefinition.ASSOC_REF))
                     {
@@ -322,16 +313,16 @@ public class PropertySupport implements DBQueryBuilderComponent
             case CONTENT_MIMETYPE:
                 command.setAlias(alias);
                 command.setType(commandType);
-                
+
                 // Good for order and predicates
                 command.setValue(value);
                 command.setValues(values);
-                
+
                 break;
             case CONTENT_URL:
                 command.setAlias(alias);
                 command.setType(commandType);
-                if(commandType == DBQueryBuilderPredicatePartCommandType.ORDER)
+                if (commandType == DBQueryBuilderPredicatePartCommandType.ORDER)
                 {
                     command.setValue(value);
                     command.setValues(values);
@@ -339,34 +330,36 @@ public class PropertySupport implements DBQueryBuilderComponent
                 else
                 {
                     command.setValue(DefaultTypeConverter.INSTANCE.convert(Long.class, value));
-                    command.setValues(values == null ? null : DefaultTypeConverter.INSTANCE.convert(Integer.class,  Arrays.asList(values)).toArray(new Integer[]{}));
+                    command.setValues(values == null ? null : DefaultTypeConverter.INSTANCE.convert(Integer.class, Arrays.asList(values)).toArray(new Integer[]{}));
                 }
                 break;
-            default:                
+            default:
                 command.setType(commandType.propertyNotFound());
                 command.setValue(value);
                 command.setValues(values);
                 break;
             }
-            
+
             command.setFieldName(fieldName);
             command.setFunction(luceneFunction);
             command.setQName(propertyQName);
             predicatePartCommands.add(command);
-        }       
-        
+        }
+
     }
 
     /**
-     * @param luceneFunction LuceneFunction
+     * @param luceneFunction
+     *            LuceneFunction
      */
     public void setLuceneFunction(LuceneFunction luceneFunction)
     {
         this.luceneFunction = luceneFunction;
     }
-    
+
     /**
-     * @param leftOuter boolean
+     * @param leftOuter
+     *            boolean
      */
     public void setLeftOuter(boolean leftOuter)
     {

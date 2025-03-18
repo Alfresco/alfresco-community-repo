@@ -62,72 +62,72 @@ public class GetAuthoritiesCannedQueryFactory extends AbstractCannedQueryFactory
     private CannedQueryDAO cannedQueryDAO;
     private TenantService tenantService;
     private MethodSecurityBean<AuthorityInfo> methodSecurity;
-    
+
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
     }
-    
+
     public void setQnameDAO(QNameDAO qnameDAO)
     {
         this.qnameDAO = qnameDAO;
     }
-    
-    public void setCannedQueryDAO(CannedQueryDAO cannedQueryDAO) 
+
+    public void setCannedQueryDAO(CannedQueryDAO cannedQueryDAO)
     {
         this.cannedQueryDAO = cannedQueryDAO;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
-    }    
-    
+    }
+
     public void setMethodSecurity(MethodSecurityBean<AuthorityInfo> methodSecurity)
     {
         this.methodSecurity = methodSecurity;
     }
-    
+
     @Override
     public CannedQuery<AuthorityInfo> getCannedQuery(CannedQueryParameters parameters)
     {
         return (CannedQuery<AuthorityInfo>) new GetAuthoritiesCannedQuery(cannedQueryDAO, tenantService, methodSecurity, parameters);
     }
-    
+
     public CannedQuery<AuthorityInfo> getCannedQuery(AuthorityType type, NodeRef containerRef, String displayNameFilter, String sortBy, boolean sortAscending, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("containerRef", containerRef);
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
-        
+
         int requestTotalCountMax = pagingRequest.getRequestTotalCountMax();
-        
+
         Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(tenantService.getName(containerRef));
         if (nodePair == null)
         {
             throw new InvalidNodeRefException("Container ref does not exist: " + containerRef, containerRef);
         }
-        
+
         Long containerNodeId = nodePair.getFirst();
-        
-        Long qnameAuthDisplayNameId = Long.MIN_VALUE;           // We query but using a value that won't return results
+
+        Long qnameAuthDisplayNameId = Long.MIN_VALUE; // We query but using a value that won't return results
         Pair<Long, QName> qnameAuthDisplayNamePair = qnameDAO.getQName(ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
         if (qnameAuthDisplayNamePair != null)
         {
             qnameAuthDisplayNameId = qnameAuthDisplayNamePair.getFirst();
         }
-        
+
         // this can be null, in which case, there is no filtering on type, done at the database level
         Long typeQNameId = getQNameIdForType(type);
         // specific query params
         GetAuthoritiesCannedQueryParams paramBean = new GetAuthoritiesCannedQueryParams(type,
-                                                                                        typeQNameId,
-                                                                                        containerNodeId,
-                                                                                        qnameAuthDisplayNameId,
-                                                                                        displayNameFilter);
-        
+                typeQNameId,
+                containerNodeId,
+                qnameAuthDisplayNameId,
+                displayNameFilter);
+
         // page details
         CannedQueryPageDetails cqpd = new CannedQueryPageDetails(pagingRequest.getSkipCount(), pagingRequest.getMaxItems(), CannedQueryPageDetails.DEFAULT_PAGE_NUMBER, CannedQueryPageDetails.DEFAULT_PAGE_COUNT);
-        
+
         // sort details
         CannedQuerySortDetails cqsd = null;
         if (sortBy != null)
@@ -136,10 +136,10 @@ public class GetAuthoritiesCannedQueryFactory extends AbstractCannedQueryFactory
             sortPairs.add(new Pair<String, SortOrder>(sortBy, (sortAscending ? SortOrder.ASCENDING : SortOrder.DESCENDING)));
             cqsd = new CannedQuerySortDetails(sortPairs);
         }
-        
+
         // create query params holder
         CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, requestTotalCountMax, pagingRequest.getQueryExecutionId());
-        
+
         // return canned query instance
         return getCannedQuery(params);
     }
@@ -170,7 +170,7 @@ public class GetAuthoritiesCannedQueryFactory extends AbstractCannedQueryFactory
     public void afterPropertiesSet() throws Exception
     {
         super.afterPropertiesSet();
-        
+
         PropertyCheck.mandatory(this, "tenantService", tenantService);
         PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
         PropertyCheck.mandatory(this, "qnameDAO", qnameDAO);

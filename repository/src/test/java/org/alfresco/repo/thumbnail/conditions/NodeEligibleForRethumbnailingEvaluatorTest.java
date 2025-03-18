@@ -28,6 +28,12 @@ package org.alfresco.repo.thumbnail.conditions;
 import java.util.Date;
 import java.util.Map;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -43,11 +49,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * This class tests {@link NodeEligibleForRethumbnailingEvaluator}.
@@ -63,19 +64,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class NodeEligibleForRethumbnailingEvaluatorTest extends BaseSpringTest
 {
     private final QName thumbnailDef1 = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "thumbDef1");
-    
+
     private NodeService nodeService;
     private ThumbnailService thumbnailService;
     private StoreRef testStoreRef;
     private NodeRef rootNodeRef;
-    
+
     private FailureHandlingOptions failureHandlingOptions;
 
     /**
      * A node with no thumbnails on it & no previous attempts to produce thumbnails.
      */
     private NodeRef newUnthumbnailedNodeRef;
-    
+
     /**
      * No thumbnails. 1 failed attempt 2 seconds ago.
      */
@@ -86,13 +87,13 @@ public class NodeEligibleForRethumbnailingEvaluatorTest extends BaseSpringTest
     {
         final Date now = new Date();
         final Date twoSecondsAgo = new Date(now.getTime() - 2000);
-        
-        this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
-        this.thumbnailService = (ThumbnailService)this.applicationContext.getBean("thumbnailService");
+
+        this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
+        this.thumbnailService = (ThumbnailService) this.applicationContext.getBean("thumbnailService");
         this.failureHandlingOptions = (FailureHandlingOptions) this.applicationContext.getBean("standardFailureOptions");
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        
+
         // Create the store and get the root node
         this.testStoreRef = this.nodeService.createStore(
                 StoreRef.PROTOCOL_WORKSPACE, "Test_"
@@ -114,13 +115,13 @@ public class NodeEligibleForRethumbnailingEvaluatorTest extends BaseSpringTest
                 ContentModel.TYPE_CONTENT).getChildRef();
         nodeService.addAspect(recentlyFailedNodeRef, ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE, null);
         NodeRef thumbDef1FailureNode = nodeService.createNode(recentlyFailedNodeRef,
-                                                             ContentModel.ASSOC_FAILED_THUMBNAIL,
-                                                             thumbnailDef1,
-                                                             ContentModel.TYPE_FAILED_THUMBNAIL).getChildRef();
+                ContentModel.ASSOC_FAILED_THUMBNAIL,
+                thumbnailDef1,
+                ContentModel.TYPE_FAILED_THUMBNAIL).getChildRef();
         nodeService.setProperty(thumbDef1FailureNode, ContentModel.PROP_FAILED_THUMBNAIL_TIME, twoSecondsAgo);
         nodeService.setProperty(thumbDef1FailureNode, ContentModel.PROP_FAILURE_COUNT, 1);
     }
-    
+
     @After
     public void after()
     {
@@ -141,8 +142,7 @@ public class NodeEligibleForRethumbnailingEvaluatorTest extends BaseSpringTest
         condition.setParameterValue(NodeEligibleForRethumbnailingEvaluator.PARAM_QUIET_PERIOD, 0L);
         condition.setParameterValue(NodeEligibleForRethumbnailingEvaluator.PARAM_QUIET_PERIOD_RETRIES_ENABLED, true);
 
-        NodeEligibleForRethumbnailingEvaluator evaluator =
-            (NodeEligibleForRethumbnailingEvaluator)this.applicationContext.getBean(NodeEligibleForRethumbnailingEvaluator.NAME);
+        NodeEligibleForRethumbnailingEvaluator evaluator = (NodeEligibleForRethumbnailingEvaluator) this.applicationContext.getBean(NodeEligibleForRethumbnailingEvaluator.NAME);
 
         assertTrue(evaluator.evaluate(condition, newUnthumbnailedNodeRef));
     }
@@ -153,10 +153,9 @@ public class NodeEligibleForRethumbnailingEvaluatorTest extends BaseSpringTest
         // A "non-difficult" node is one which is not yet known to be difficult to thumbnail.
         // In other words it is one which has previously failed to thumbnail, but which has not yet
         // hit the retryCount limit for initial retries.
-        
-        NodeEligibleForRethumbnailingEvaluator evaluator =
-            (NodeEligibleForRethumbnailingEvaluator)this.applicationContext.getBean(NodeEligibleForRethumbnailingEvaluator.NAME);
-        
+
+        NodeEligibleForRethumbnailingEvaluator evaluator = (NodeEligibleForRethumbnailingEvaluator) this.applicationContext.getBean(NodeEligibleForRethumbnailingEvaluator.NAME);
+
         // Evaluate the thumbnail definition which has failed.
         //
         // 1. A node that has failed once - and more recently than the limit.
@@ -167,37 +166,34 @@ public class NodeEligibleForRethumbnailingEvaluatorTest extends BaseSpringTest
         condition.setParameterValue(NodeEligibleForRethumbnailingEvaluator.PARAM_RETRY_COUNT,
                 failureHandlingOptions.getRetryCount());
         condition.setParameterValue(NodeEligibleForRethumbnailingEvaluator.PARAM_QUIET_PERIOD,
-                                     failureHandlingOptions.getQuietPeriod() * 1000);
+                failureHandlingOptions.getQuietPeriod() * 1000);
         condition.setParameterValue(NodeEligibleForRethumbnailingEvaluator.PARAM_QUIET_PERIOD_RETRIES_ENABLED, true);
-        
+
         assertFalse(evaluator.evaluate(condition, recentlyFailedNodeRef));
 
         // 2. A node that has failed once - but longer ago than the lower limit.
         Map<String, FailedThumbnailInfo> failures = thumbnailService.getFailedThumbnails(recentlyFailedNodeRef);
         assertFalse(failures.isEmpty());
         final FailedThumbnailInfo failedThumbnailInfo = failures.get(thumbnailDef1.getLocalName());
-        
+
         final long timeBeforeTheLimit = new Date().getTime() - (failureHandlingOptions.getRetryPeriod() * 1000l) - 5000l;
         nodeService.setProperty(failedThumbnailInfo.getFailedThumbnailNode(), ContentModel.PROP_FAILED_THUMBNAIL_TIME, timeBeforeTheLimit);
-        
+
         assertTrue(evaluator.evaluate(condition, recentlyFailedNodeRef));
-        
-        
-        
+
         // 3. If the same node had failed retryCount times, it would not be eligible.
         // At this point it would be a "difficult" document.
         nodeService.setProperty(failedThumbnailInfo.getFailedThumbnailNode(), ContentModel.PROP_FAILURE_COUNT, failureHandlingOptions.getRetryCount());
-        
+
         assertFalse(evaluator.evaluate(condition, recentlyFailedNodeRef));
-        
 
         // 4. If it had failed retryCount times, but its last failure time was more than
-        //    quietPeriod seconds ago, then it would be eligible.
+        // quietPeriod seconds ago, then it would be eligible.
         final long timeBeforeTheLongLimit = new Date().getTime() - (failureHandlingOptions.getQuietPeriod() * 1000l) - 5000l;
         nodeService.setProperty(failedThumbnailInfo.getFailedThumbnailNode(), ContentModel.PROP_FAILED_THUMBNAIL_TIME, timeBeforeTheLongLimit);
 
         assertTrue(evaluator.evaluate(condition, recentlyFailedNodeRef));
-        
+
         // 5. Unless the retries during the quiet period are disabled...
         condition.setParameterValue(NodeEligibleForRethumbnailingEvaluator.PARAM_QUIET_PERIOD_RETRIES_ENABLED, false);
 

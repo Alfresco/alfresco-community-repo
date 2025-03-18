@@ -35,12 +35,10 @@ public abstract class DBScriptUtil
     private static final String DEFAULT_SCRIPT_COMMENT_PREFIX = "--";
 
     /**
-     * Read a script from the provided EncodedResource and build a String containing
-     * the lines.
+     * Read a script from the provided EncodedResource and build a String containing the lines.
      *
      * @param resource
-     *            the resource (potentially associated with a specific encoding) to
-     *            load the SQL script from
+     *            the resource (potentially associated with a specific encoding) to load the SQL script from
      * @return a String containing the script lines
      */
     public static String readScript(EncodedResource resource) throws IOException
@@ -49,15 +47,12 @@ public abstract class DBScriptUtil
     }
 
     /**
-     * Read a script from the provided EncodedResource, using the supplied line
-     * comment prefix, and build a String containing the lines.
+     * Read a script from the provided EncodedResource, using the supplied line comment prefix, and build a String containing the lines.
      *
      * @param resource
-     *            the resource (potentially associated with a specific encoding) to
-     *            load the SQL script from
+     *            the resource (potentially associated with a specific encoding) to load the SQL script from
      * @param lineCommentPrefix
-     *            the prefix that identifies comments in the SQL script (typically
-     *            "--")
+     *            the prefix that identifies comments in the SQL script (typically "--")
      * @return a String containing the script lines
      */
     private static String readScript(EncodedResource resource, String lineCommentPrefix) throws IOException
@@ -74,14 +69,12 @@ public abstract class DBScriptUtil
     }
 
     /**
-     * Read a script from the provided LineNumberReader, using the supplied line
-     * comment prefix, and build a String containing the lines.
+     * Read a script from the provided LineNumberReader, using the supplied line comment prefix, and build a String containing the lines.
      *
      * @param lineNumberReader
      *            the LineNumberReader containing the script to be processed
      * @param lineCommentPrefix
-     *            the prefix that identifies comments in the SQL script (typically
-     *            "--")
+     *            the prefix that identifies comments in the SQL script (typically "--")
      * @return a String containing the script lines
      */
     private static String readScript(LineNumberReader lineNumberReader, String lineCommentPrefix) throws IOException

@@ -44,6 +44,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import org.alfresco.rest.api.model.Comment;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
@@ -51,8 +54,6 @@ import org.alfresco.rest.framework.jacksonextensions.JacksonHelper.ReturnAllBean
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper.Writer;
 import org.alfresco.rest.framework.jacksonextensions.RestJsonModule;
 import org.alfresco.rest.framework.tests.api.mocks.Farmer;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * Tests Jackson Json logic
@@ -69,8 +70,7 @@ public class JsonJacksonTests
     public static final String COLLECTION_START = "[ ";
     public static final String COLLECTION_END = " ]";
     public static final String FARMERS_COLLECTION_JSON = COLLECTION_START + FARMER_JSON + "," + FARMER_JSON + "," + FARMER_JSON + COLLECTION_END;
-    
-    
+
     @BeforeClass
     public static void setupTests() throws Exception
     {
@@ -79,7 +79,7 @@ public class JsonJacksonTests
         jsonHelper.setModule(module);
         jsonHelper.afterPropertiesSet();
     }
-    
+
     @Test
     public void testDeserializeFarmer() throws IOException
     {
@@ -88,7 +88,7 @@ public class JsonJacksonTests
         assertEquals("Giles", aFarmer.getName());
         assertEquals(54, aFarmer.getAge());
         assertEquals(Farmer.size.LARGE, aFarmer.getFarm());
-        
+
         try
         {
             aFarmer = jsonHelper.construct(new StringReader(""), Farmer.class);
@@ -99,22 +99,22 @@ public class JsonJacksonTests
             assertNotNull(iae); // Must throw this exception
         }
     }
-    
+
     @Test
     public void testDeserializeFarmersAsList() throws IOException
     {
-        List<Farmer> aFarmer = jsonHelper.constructList(new StringReader(COLLECTION_START+FARMER_JSON+COLLECTION_END), Farmer.class);
+        List<Farmer> aFarmer = jsonHelper.constructList(new StringReader(COLLECTION_START + FARMER_JSON + COLLECTION_END), Farmer.class);
         assertTrue(Collection.class.isAssignableFrom(aFarmer.getClass()));
         assertEquals(1, aFarmer.size());
-        
+
         aFarmer = jsonHelper.constructList(new StringReader(FARMERS_COLLECTION_JSON), Farmer.class);
         assertTrue(Collection.class.isAssignableFrom(aFarmer.getClass()));
         assertEquals(3, aFarmer.size());
-        
+
         aFarmer = jsonHelper.constructList(new StringReader(FARMER_JSON), Farmer.class);
         assertTrue(Collection.class.isAssignableFrom(aFarmer.getClass()));
         assertEquals(1, aFarmer.size());
-        
+
         try
         {
             aFarmer = jsonHelper.constructList(new StringReader(""), Farmer.class);
@@ -124,7 +124,7 @@ public class JsonJacksonTests
         {
             assertNotNull(iae); // Must throw this exception
         }
-        
+
         try
         {
             aFarmer = jsonHelper.constructList(new StringReader("rubbish"), Farmer.class);
@@ -134,7 +134,7 @@ public class JsonJacksonTests
         {
             assertNotNull(iae); // Must throw this exception
         }
-        
+
         try
         {
             aFarmer = jsonHelper.constructList(new StringReader("[]"), Farmer.class);
@@ -144,9 +144,9 @@ public class JsonJacksonTests
         {
             assertNotNull(iae); // Must throw this exception
         }
-        
+
     }
-    
+
     @Test
     public void testDeserializeComment() throws IOException
     {
@@ -164,14 +164,13 @@ public class JsonJacksonTests
         aComment.setContent("<b>There it is</b>");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        jsonHelper.withWriter(out, new Writer()
-        {
+        jsonHelper.withWriter(out, new Writer() {
             @Override
             public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
-                        throws JsonGenerationException, JsonMappingException, IOException
+                    throws JsonGenerationException, JsonMappingException, IOException
             {
                 FilterProvider fp = new SimpleFilterProvider().addFilter(
-                            JacksonHelper.DEFAULT_FILTER_NAME, new ReturnAllBeanProperties());
+                        JacksonHelper.DEFAULT_FILTER_NAME, new ReturnAllBeanProperties());
                 objectMapper.writer(fp).writeValue(generator, aComment);
             }
         });
@@ -191,14 +190,13 @@ public class JsonJacksonTests
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        jsonHelper.withWriter(out, new Writer()
-        {
+        jsonHelper.withWriter(out, new Writer() {
             @Override
             public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
-                        throws JsonGenerationException, JsonMappingException, IOException
+                    throws JsonGenerationException, JsonMappingException, IOException
             {
                 FilterProvider fp = new SimpleFilterProvider().addFilter(
-                            JacksonHelper.DEFAULT_FILTER_NAME, new ReturnAllBeanProperties());
+                        JacksonHelper.DEFAULT_FILTER_NAME, new ReturnAllBeanProperties());
                 objectMapper.writer(fp).writeValue(generator, allComments);
             }
         });
@@ -213,18 +211,17 @@ public class JsonJacksonTests
         aComment.setContent(null);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        jsonHelper.withWriter(out, new Writer()
-        {
+        jsonHelper.withWriter(out, new Writer() {
             @Override
             public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
-                        throws JsonGenerationException, JsonMappingException, IOException
+                    throws JsonGenerationException, JsonMappingException, IOException
             {
                 FilterProvider fp = new SimpleFilterProvider().addFilter(
-                            JacksonHelper.DEFAULT_FILTER_NAME, new ReturnAllBeanProperties());
+                        JacksonHelper.DEFAULT_FILTER_NAME, new ReturnAllBeanProperties());
                 objectMapper.writer(fp).writeValue(generator, aComment);
             }
         });
         assertEquals("Null values should not be output.", "{\"canEdit\":false,\"canDelete\":false}",
-                    out.toString());
+                out.toString());
     }
 }

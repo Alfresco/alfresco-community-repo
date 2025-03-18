@@ -1,5 +1,9 @@
 package org.alfresco.rest.people.activities;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActivityModel;
@@ -15,9 +19,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * 
@@ -39,14 +40,14 @@ public class GetPeopleActivitiesFullTests extends RestTest
         userModel = dataUser.createRandomTestUser();
         siteModel1 = dataSite.usingUser(userModel).createPublicRandomSite();
         fileInSite1 = dataContent.usingUser(userModel).usingSite(siteModel1).createContent(DocumentType.TEXT_PLAIN);
-        
+
         siteModel2 = dataSite.usingUser(userModel).createPublicRandomSite();
-        folderInSite2 = dataContent.usingUser(userModel).usingSite(siteModel2).createFolder(); 
-        fileInSite2 = dataContent.usingAdmin().usingSite(siteModel2).createContent(DocumentType.TEXT_PLAIN);   
-        
+        folderInSite2 = dataContent.usingUser(userModel).usingSite(siteModel2).createFolder();
+        fileInSite2 = dataContent.usingAdmin().usingSite(siteModel2).createContent(DocumentType.TEXT_PLAIN);
+
         managerUser = dataUser.createRandomTestUser();
         dataUser.usingUser(userModel).addUserToSite(managerUser, siteModel2, UserRole.SiteManager);
-        
+
         // only once the activity list is checked with retry in order not to wait the entire list in each test
         // after repo-4250 a file is created first and then update it with content, so there are more entries than previously
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().getPersonActivitiesUntilEntriesCountIs(6);
@@ -54,8 +55,8 @@ public class GetPeopleActivitiesFullTests extends RestTest
         restActivityModelsCollection.assertThat().paginationField("count").is("6");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify activity summary from user gets activities response with Rest API")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES}, executionType = ExecutionType.REGRESSION, description = "Verify activity summary from user gets activities response with Rest API")
     public void userGetPeopleActivitiesWithActivitySummaryCheck() throws Exception
     {
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().usingParams(String.format("siteId=%s", siteModel1.getId())).getPersonActivities();
@@ -70,22 +71,22 @@ public class GetPeopleActivitiesFullTests extends RestTest
     }
 
     @Bug(id = "REPO-1911")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE,TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get activities for empty user with Rest API and response is 400")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES}, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get activities for empty user with Rest API and response is 400")
     public void userCannotGetPeopleActivitiesForEmptyPersonId() throws Exception
     {
         UserModel emptyUserName = new UserModel("", "password");
-        
+
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingUser(emptyUserName).getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
-                                .containsSummary(RestErrorModel.LOCAL_NAME_CONSISTANCE)
-                                .stackTraceIs(RestErrorModel.STACKTRACE)
-                                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
+                .assertLastError().containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
+                .containsSummary(RestErrorModel.LOCAL_NAME_CONSISTANCE)
+                .stackTraceIs(RestErrorModel.STACKTRACE)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE,TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets its activities for siteId specified in siteId parameter using me with Rest API and response is successful")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES}, executionType = ExecutionType.REGRESSION, description = "Verify user gets its activities for siteId specified in siteId parameter using me with Rest API and response is successful")
     public void userGetItsPeopleActivitiesForASpecificSite() throws Exception
     {
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingUser(userModel).usingParams(String.format("siteId=%s", siteModel1.getId())).getPersonActivities();
@@ -96,32 +97,32 @@ public class GetPeopleActivitiesFullTests extends RestTest
                 .and().entriesListDoesNotContain("siteId", siteModel2.getId());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities for user with no activities with Rest API and response is successful")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES}, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities for user with no activities with Rest API and response is successful")
     public void userGetPeopleActivitiesForUserWithNoActivities() throws Exception
     {
         UserModel userNoActivities = dataUser.createRandomTestUser();
         dataSite.usingUser(userNoActivities).createPublicRandomSite();
-        
+
         restActivityModelsCollection = restClient.authenticateUser(adminUser).withCoreAPI().usingUser(userNoActivities).getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restActivityModelsCollection.assertThat().paginationField("count").is("0");
         restActivityModelsCollection.assertThat().entriesListIsEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get activities for siteId that user doesn't have access to with Rest API and response is not found")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES}, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get activities for siteId that user doesn't have access to with Rest API and response is not found")
     public void userGetPeopleActivitiesForASiteWithNoAccess() throws Exception
     {
         SiteModel siteNoAccess = dataSite.usingUser(managerUser).createPrivateRandomSite();
-        
+
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingUser(userModel).usingParams(String.format("siteId=%s", siteNoAccess.getId())).getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
         restClient.assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, siteNoAccess.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get activities for another user with Rest API and response is permission denied")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES}, executionType = ExecutionType.REGRESSION, description = "Verify user cannot get activities for another user with Rest API and response is permission denied")
     public void userGetPeopleActivitiesForAnotherUser() throws Exception
     {
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingUser(managerUser).getPersonActivities();
@@ -129,8 +130,8 @@ public class GetPeopleActivitiesFullTests extends RestTest
         restClient.assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API,  TestGroup.PEOPLE,TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities with properties parameter applied with Rest API and response is successful")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES}, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities with properties parameter applied with Rest API and response is successful")
     public void userGetPeopleActivitiesUsingPropertiesParameter() throws Exception
     {
         // after repo-4250 a file is created first and then update it with content, so there are more entries than previously
@@ -148,8 +149,8 @@ public class GetPeopleActivitiesFullTests extends RestTest
                 .and().entriesListDoesNotContain("activityType");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities with skipCount parameter applied with Rest API and response is successful")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES}, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities with skipCount parameter applied with Rest API and response is successful")
     public void userGetPeopleActivitiesUsingSkipCountParameter() throws Exception
     {
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().getPersonActivities();
@@ -158,7 +159,7 @@ public class GetPeopleActivitiesFullTests extends RestTest
         restActivityModelsCollection.assertThat().paginationField("count").is("6");
         RestActivityModel expectedRestActivity3 = restActivityModelsCollection.getEntries().get(2).onModel();
         RestActivityModel expectedRestActivity4 = restActivityModelsCollection.getEntries().get(3).onModel();
-        
+
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().usingParams("skipCount=2").getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restActivityModelsCollection.assertThat().paginationField("count").is("4");
@@ -168,8 +169,8 @@ public class GetPeopleActivitiesFullTests extends RestTest
                 .and().field("activityType").is(expectedRestActivity4.getActivityType());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES }, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities with maxItems parameter applied with Rest API and response is successful")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.ACTIVITIES}, executionType = ExecutionType.REGRESSION, description = "Verify user gets activities with maxItems parameter applied with Rest API and response is successful")
     public void userGetPeopleActivitiesUsingMaxItemsParameter() throws Exception
     {
         // after repo-4250 a file is created first and then update it with content, so there are more entries than previously
@@ -178,7 +179,7 @@ public class GetPeopleActivitiesFullTests extends RestTest
         restActivityModelsCollection.assertThat().paginationField("count").is("6");
         RestActivityModel expectedRestActivity1 = restActivityModelsCollection.getEntries().get(0).onModel();
         RestActivityModel expectedRestActivity2 = restActivityModelsCollection.getEntries().get(1).onModel();
-        
+
         restActivityModelsCollection = restClient.authenticateUser(userModel).withCoreAPI().usingMe().usingParams("maxItems=2").getPersonActivities();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restActivityModelsCollection.assertThat().paginationField("count").is("2");

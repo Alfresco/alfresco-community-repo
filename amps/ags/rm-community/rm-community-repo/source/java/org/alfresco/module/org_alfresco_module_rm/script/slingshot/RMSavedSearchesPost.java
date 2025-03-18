@@ -31,11 +31,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchParameters;
-import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
-import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetailsCompatibility;
-import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -44,6 +39,12 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchParameters;
+import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
+import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetailsCompatibility;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.namespace.NamespaceService;
 
 /**
  * Records management saved search POST web script.
@@ -62,7 +63,8 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
     protected NamespaceService namespaceService;
 
     /**
-     * @param recordsManagementSearchService    records management search service
+     * @param recordsManagementSearchService
+     *            records management search service
      */
     public void setRecordsManagementSearchService(RecordsManagementSearchService recordsManagementSearchService)
     {
@@ -70,7 +72,8 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
     }
 
     /**
-     * @param siteService   site service
+     * @param siteService
+     *            site service
      */
     public void setSiteService(SiteService siteService)
     {
@@ -78,7 +81,8 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
     }
 
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -86,9 +90,7 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *          org.springframework.extensions.webscripts.Status,
-     *          org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -114,7 +116,7 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
             if (!json.has("name"))
             {
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                                             "Mandatory 'name' parameter was not provided in request body");
+                        "Mandatory 'name' parameter was not provided in request body");
             }
             String name = json.getString("name");
             String description = null;
@@ -131,7 +133,7 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
             if (!json.has("params"))
             {
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                                             "Mandatory 'params' parameter was not provided in request body");
+                        "Mandatory 'params' parameter was not provided in request body");
             }
             String params = json.getString("params");
             String sort = null;
@@ -145,7 +147,7 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
             if (search == null)
             {
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                "Mandatory 'terms' was not provided in 'params' parameter found in the request body");
+                        "Mandatory 'terms' was not provided in 'params' parameter found in the request body");
             }
             RecordsManagementSearchParameters searchParameters = SavedSearchDetailsCompatibility.createSearchParameters(params, sort, namespaceService);
             recordsManagementSearchService.saveSearch(siteId, name, description, search, searchParameters, isPublic);
@@ -159,7 +161,7 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
         catch (JSONException je)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+                    "Could not parse JSON from req.", je);
         }
 
         // Indicate success in the model

@@ -95,10 +95,10 @@ public interface DictionaryDAO extends ModelQuery
     Collection<TypeDefinition> getTypes(QName model);
 
     /**
-     * @param superType QName
+     * @param superType
+     *            QName
      * @param follow
-     *            true => follow up the super-class hierarchy, false =>
-     *            immediate sub types only
+     *            true => follow up the super-class hierarchy, false => immediate sub types only
      */
     Collection<QName> getSubTypes(QName superType, boolean follow);
 
@@ -117,10 +117,10 @@ public interface DictionaryDAO extends ModelQuery
     Collection<AssociationDefinition> getAssociations(QName model);
 
     /**
-     * @param superAspect QName
+     * @param superAspect
+     *            QName
      * @param follow
-     *            true => follow up the super-class hierarchy, false =>
-     *            immediate sub aspects only
+     *            true => follow up the super-class hierarchy, false => immediate sub aspects only
      */
     Collection<QName> getSubAspects(QName superAspect, boolean follow);
 
@@ -132,8 +132,7 @@ public interface DictionaryDAO extends ModelQuery
     Collection<PropertyDefinition> getProperties(QName model);
 
     /**
-     * Construct an anonymous type that combines a primary type definition and
-     * and one or more aspects
+     * Construct an anonymous type that combines a primary type definition and and one or more aspects
      * 
      * @param type
      *            the primary type
@@ -155,13 +154,9 @@ public interface DictionaryDAO extends ModelQuery
     // QName putCustomModel(M2Model model);
 
     /**
-     * Adds a model to the dictionary. The model is compiled and validated.
-     * Constraints are not loaded.
+     * Adds a model to the dictionary. The model is compiled and validated. Constraints are not loaded.
      * 
-     * This method should only be used to load models where the enforcement of
-     * constraints is never required. For example, SOLR read only use of the
-     * index where contraints are not required and thier definitions may not be
-     * available.
+     * This method should only be used to load models where the enforcement of constraints is never required. For example, SOLR read only use of the index where contraints are not required and thier definitions may not be available.
      * 
      * @param model
      *            the model to add
@@ -170,8 +165,7 @@ public interface DictionaryDAO extends ModelQuery
     QName putModelIgnoringConstraints(M2Model model);
 
     /**
-     * Removes a model from the dictionary. The types and aspect in the model
-     * will no longer be available.
+     * Removes a model from the dictionary. The types and aspect in the model will no longer be available.
      * 
      * @param model
      *            the qname of the model to remove
@@ -179,8 +173,7 @@ public interface DictionaryDAO extends ModelQuery
     void removeModel(QName model);
 
     /**
-     * Get all properties for the model and that are of the given data type. If
-     * dataType is null then the all properties will be returned.
+     * Get all properties for the model and that are of the given data type. If dataType is null then the all properties will be returned.
      * 
      * @param modelName
      *            the name of the model
@@ -193,7 +186,8 @@ public interface DictionaryDAO extends ModelQuery
     /**
      * Get all properties for all models of the given data type.
      * 
-     * @param dataType QName
+     * @param dataType
+     *            QName
      */
     Collection<PropertyDefinition> getPropertiesOfDataType(QName dataType);
 
@@ -206,16 +200,14 @@ public interface DictionaryDAO extends ModelQuery
 
     /**
      * @param model
-     *            the model to retrieve constraint defs (including property
-     *            constaint refs)
+     *            the model to retrieve constraint defs (including property constaint refs)
      * @return the constraints of the model
      */
     Collection<ConstraintDefinition> getConstraints(QName model);
 
     /**
      * @param model
-     *            the model to retrieve constraint defs (optionally only
-     *            referenceable constraints)
+     *            the model to retrieve constraint defs (optionally only referenceable constraints)
      * @return the constraints of the model
      */
     Collection<ConstraintDefinition> getConstraints(QName model,
@@ -224,10 +216,10 @@ public interface DictionaryDAO extends ModelQuery
     /**
      * Return diffs between input model and model in the Dictionary.
      * 
-     * If the input model does not exist in the Dictionary then no diffs will be
-     * returned.
+     * If the input model does not exist in the Dictionary then no diffs will be returned.
      * 
-     * @param model M2Model
+     * @param model
+     *            M2Model
      * @return model diffs (if any)
      */
     List<M2ModelDiff> diffModel(M2Model model);
@@ -237,8 +229,9 @@ public interface DictionaryDAO extends ModelQuery
     /**
      * Register listener with the Dictionary
      * <p>
-     *     This method is <b>deprecated</b>, use {@link #registerListener(DictionaryListener dictionaryListener)} instead.
+     * This method is <b>deprecated</b>, use {@link #registerListener(DictionaryListener dictionaryListener)} instead.
      * </p>
+     * 
      * @param dictionaryListener
      */
     @Deprecated
@@ -248,32 +241,25 @@ public interface DictionaryDAO extends ModelQuery
      * 
      * Register listener with the Dictionary
      * 
-     * @param dictionaryListener DictionaryListener
+     * @param dictionaryListener
+     *            DictionaryListener
      */
     void registerListener(DictionaryListener dictionaryListener);
 
     /**
-     * Reset the Dictionary for the current tenant.
-     * The current dictionary will be discarded <b>and reloaded</b> before the method returns
-     * i.e. upon return the dictionary will be current.
+     * Reset the Dictionary for the current tenant. The current dictionary will be discarded <b>and reloaded</b> before the method returns i.e. upon return the dictionary will be current.
      */
     void reset();
 
     /**
-     * Initialise a reload of the dictionary for the current tenant.  The current version of
-     * the dictionary will be accessible during this call, however it will only return once
-     * the dictionary has undergone a reload for the current tenant.
+     * Initialise a reload of the dictionary for the current tenant. The current version of the dictionary will be accessible during this call, however it will only return once the dictionary has undergone a reload for the current tenant.
      */
     void init();
 
     /**
-     * Destroy the Dictionary.  After this call, there will be no dictionary available for the current
-     * tenant; reloading will be done lazily as required.
+     * Destroy the Dictionary. After this call, there will be no dictionary available for the current tenant; reloading will be done lazily as required.
      * <p>
-     * <strong>WARNING: </strong>This method can cause 'stutter' on user threads as they wait for
-     * the dictionary to reload.  It is safer to call {@link #init()}, which will also rebuild the
-     * dictionary but will not destroy the old one, thereby allowing other threads to continue
-     * operating.
+     * <strong>WARNING: </strong>This method can cause 'stutter' on user threads as they wait for the dictionary to reload. It is safer to call {@link #init()}, which will also rebuild the dictionary but will not destroy the old one, thereby allowing other threads to continue operating.
      */
     void destroy();
 
@@ -286,7 +272,8 @@ public interface DictionaryDAO extends ModelQuery
     ClassLoader getResourceClassLoader();
 
     /**
-     * @param resourceClassLoader ClassLoader
+     * @param resourceClassLoader
+     *            ClassLoader
      */
     void setResourceClassLoader(ClassLoader resourceClassLoader);
 }

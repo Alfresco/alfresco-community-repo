@@ -29,11 +29,12 @@ import static org.alfresco.rest.core.JsonBodyGenerator.arrayToJson;
 
 import java.util.List;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.rest.model.RestCategoryModelsCollection;
-import org.springframework.http.HttpMethod;
 
 public class Categories extends ModelRequest<Categories>
 {
@@ -60,10 +61,12 @@ public class Categories extends ModelRequest<Categories>
     /**
      * Create several categories in one request.
      *
-     * @param restCategoryModels The list of categories to create.
+     * @param restCategoryModels
+     *            The list of categories to create.
      * @return The list of created categories with additional data populated by the repository.
      */
-    public RestCategoryModelsCollection createCategoriesList(List<RestCategoryModel> restCategoryModels) {
+    public RestCategoryModelsCollection createCategoriesList(List<RestCategoryModel> restCategoryModels)
+    {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, arrayToJson(restCategoryModels), "categories/{categoryId}/subcategories", category.getId());
         return restWrapper.processModels(RestCategoryModelsCollection.class, request);
     }
@@ -71,7 +74,8 @@ public class Categories extends ModelRequest<Categories>
     /**
      * Create single category.
      *
-     * @param restCategoryModel The category to create.
+     * @param restCategoryModel
+     *            The category to create.
      * @return Created category with additional data populated by the repository.
      */
     public RestCategoryModel createSingleCategory(RestCategoryModel restCategoryModel)
@@ -93,10 +97,10 @@ public class Categories extends ModelRequest<Categories>
     }
 
     /**
-     * Update single category.
-     * - PUT /categories/{categoryId}
+     * Update single category. - PUT /categories/{categoryId}
      *
-     * @param restCategoryModel The categories to update.
+     * @param restCategoryModel
+     *            The categories to update.
      * @return Created category with additional data populated by the repository.
      */
     public RestCategoryModel updateCategory(RestCategoryModel restCategoryModel)
@@ -104,14 +108,13 @@ public class Categories extends ModelRequest<Categories>
         RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, restCategoryModel.toJson(), "categories/{categoryId}", category.getId());
         return restWrapper.processModel(RestCategoryModel.class, request);
     }
+
     /**
-     * Delete category.
-     * - DELETE /categories/{categoryId}
+     * Delete category. - DELETE /categories/{categoryId}
      */
     public void deleteCategory()
     {
-        RestRequest request = RestRequest.
-                simpleRequest(HttpMethod.DELETE, "/categories/{categoryId}", category.getId());
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "/categories/{categoryId}", category.getId());
         restWrapper.processEmptyModel(request);
     }
 

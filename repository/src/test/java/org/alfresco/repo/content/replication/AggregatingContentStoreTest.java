@@ -25,9 +25,27 @@
  */
 package org.alfresco.repo.content.replication;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentContext;
@@ -41,23 +59,6 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 /**
  * Tests read and write functionality for the aggregating store.
@@ -117,21 +118,18 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
     {
         return aggregatingStore;
     }
-    
+
     /**
-     * Get a writer into the store.  This test class assumes that the store is writable and
-     * that it therefore supports the ability to write content.
+     * Get a writer into the store. This test class assumes that the store is writable and that it therefore supports the ability to write content.
      * 
-     * @return
-     *      Returns a writer for new content
+     * @return Returns a writer for new content
      */
     protected ContentWriter getWriter()
     {
         ContentStore store = getStore();
         return store.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
     }
-    
-    
+
     /**
      * {@inheritDoc}
      * <p>
@@ -143,36 +141,38 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
         writer.putContent("Content for getExistingContentUrl");
         return writer.getContentUrl();
     }
-    
+
     public void testAddContent() throws Exception
     {
         ContentWriter writer = getWriter();
         writer.putContent(SOME_CONTENT);
         String contentUrl = writer.getContentUrl();
-        
+
         checkForUrl(contentUrl, true);
     }
-    
+
     /**
      * Checks that the url is present in each of the stores
      * 
-     * @param contentUrl String
-     * @param mustExist true if the content must exist, false if it must <b>not</b> exist
+     * @param contentUrl
+     *            String
+     * @param mustExist
+     *            true if the content must exist, false if it must <b>not</b> exist
      */
     private void checkForUrl(String contentUrl, boolean mustExist)
     {
         ContentReader reader = getReader(contentUrl);
         assertEquals("Reader state differs from expected: " + reader, mustExist, reader.exists());
     }
-    
+
     public void testDelete() throws Exception
     {
-        
+
         // write some content
         ContentWriter writer = getWriter();
         writer.putContent(SOME_CONTENT);
         String contentUrl = writer.getContentUrl();
-        
+
         ContentReader reader = primaryStore.getReader(contentUrl);
         assertTrue("Content was not in the primary store", reader.exists());
         assertEquals("The content was incorrect", SOME_CONTENT, reader.getContentString());
@@ -180,7 +180,7 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
         getStore().delete(contentUrl);
         checkForUrl(contentUrl, false);
     }
-    
+
     public void testReadFromSecondaryStore()
     {
         // pick a secondary store and write some content to it
@@ -188,7 +188,7 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
         ContentWriter writer = secondaryStore.getWriter(ContentContext.NULL_CONTEXT);
         writer.putContent(SOME_CONTENT);
         String contentUrl = writer.getContentUrl();
-        
+
         checkForUrl(contentUrl, true);
     }
 

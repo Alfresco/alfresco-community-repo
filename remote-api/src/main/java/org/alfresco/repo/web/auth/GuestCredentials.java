@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.web.auth;
 
-
 /**
  * {@link WebCredentials} representing a guest user.
  *
@@ -47,5 +46,4 @@ public class GuestCredentials implements WebCredentials
         return getClass().hashCode();
     }
 
-    
 }

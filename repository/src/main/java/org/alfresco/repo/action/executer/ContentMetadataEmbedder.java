@@ -29,6 +29,9 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.metadata.MetadataEmbedder;
 import org.alfresco.repo.content.metadata.MetadataExtracterRegistry;
@@ -40,14 +43,11 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Embed metadata in any content.
  * <p>
- * The metadata is embedded in the content from the current
- * property values.
+ * The metadata is embedded in the content from the current property values.
  *
  * @author Jesper Steen Møller, Ray Gauss II
  */
@@ -62,7 +62,8 @@ public class ContentMetadataEmbedder extends ActionExecuterAbstractBase
     private MetadataExtracterRegistry metadataExtracterRegistry;
 
     /**
-     * @param nodeService the node service
+     * @param nodeService
+     *            the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -70,7 +71,8 @@ public class ContentMetadataEmbedder extends ActionExecuterAbstractBase
     }
 
     /**
-     * @param contentService The contentService to set.
+     * @param contentService
+     *            The contentService to set.
      */
     public void setContentService(ContentService contentService)
     {
@@ -78,7 +80,8 @@ public class ContentMetadataEmbedder extends ActionExecuterAbstractBase
     }
 
     /**
-     * @param metadataExtracterRegistry The metadataExtracterRegistry to set.
+     * @param metadataExtracterRegistry
+     *            The metadataExtracterRegistry to set.
      */
     public void setMetadataExtracterRegistry(MetadataExtracterRegistry metadataExtracterRegistry)
     {
@@ -99,7 +102,7 @@ public class ContentMetadataEmbedder extends ActionExecuterAbstractBase
         // The reader may be null, e.g. for folders and the like
         if (reader == null || reader.getMimetype() == null)
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("no content or mimetype - do nothing");
             }
@@ -111,19 +114,19 @@ public class ContentMetadataEmbedder extends ActionExecuterAbstractBase
         MetadataEmbedder embedder = metadataExtracterRegistry.getEmbedder(mimetype, sourceSizeInBytes);
         if (embedder == null)
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("no embedder for mimetype:" + mimetype);
             }
             // There is no embedder to use
             return;
         }
-        
+
         ContentWriter writer = contentService.getWriter(actionedUponNodeRef, ContentModel.PROP_CONTENT, true);
         // The writer may be null, e.g. for folders and the like
         if (writer == null || writer.getMimetype() == null)
         {
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("no content or mimetype - do nothing");
             }
@@ -141,25 +144,25 @@ public class ContentMetadataEmbedder extends ActionExecuterAbstractBase
         catch (Throwable e)
         {
             // Extracters should attempt to handle all error conditions and embed
-            // as much as they can.  If, however, one should fail, we don't want the
-            // action itself to fail.  We absorb and report the exception here.
+            // as much as they can. If, however, one should fail, we don't want the
+            // action itself to fail. We absorb and report the exception here.
             if (logger.isDebugEnabled())
             {
                 logger.debug(
                         "Metadata embedding failed: \n" +
-                        "   Extracter: " + this + "\n" +
-                        "   Node:      " + actionedUponNodeRef + "\n" +
-                        "   Content:   " + writer,
+                                "   Extracter: " + this + "\n" +
+                                "   Node:      " + actionedUponNodeRef + "\n" +
+                                "   Content:   " + writer,
                         e);
             }
             else
             {
                 logger.warn(
                         "Metadata embedding failed (turn on DEBUG for full error): \n" +
-                        "   Extracter: " + this + "\n" +
-                        "   Node:      " + actionedUponNodeRef + "\n" +
-                        "   Content:   " + writer + "\n" +
-                        "   Failure:   " + e.getMessage());
+                                "   Extracter: " + this + "\n" +
+                                "   Node:      " + actionedUponNodeRef + "\n" +
+                                "   Content:   " + writer + "\n" +
+                                "   Failure:   " + e.getMessage());
             }
         }
     }

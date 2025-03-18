@@ -46,11 +46,9 @@ public class MoveToAuditEvent extends AuditEvent implements OnMoveNodePolicy
      * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            type = "rma:filePlanComponent"
-    )
+            type = "rma:filePlanComponent")
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
         recordsManagementAuditService.auditEvent(newChildAssocRef.getChildRef(), getName());

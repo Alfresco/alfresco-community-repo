@@ -29,6 +29,12 @@ import jakarta.transaction.RollbackException;
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.dao.TransientDataAccessResourceException;
+import org.springframework.transaction.PlatformTransactionManager;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.repo.domain.dialect.PostgreSQLDialect;
@@ -45,11 +51,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.ReadOnlyServerException;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.PropertyMap;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
-import org.springframework.dao.TransientDataAccessResourceException;
-import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * @see org.alfresco.repo.transaction.TransactionServiceImpl
@@ -207,12 +208,14 @@ public class TransactionServiceImplTest extends BaseSpringTest
             {
                 txn.rollback();
             }
-            catch (Throwable e) {}
+            catch (Throwable e)
+            {}
         }
     }
 
     /**
      * Test the write veto
+     * 
      * @throws Exception
      */
     @Test
@@ -242,7 +245,6 @@ public class TransactionServiceImplTest extends BaseSpringTest
             transactionService.setAllowWrite(true, v3);
             assertTrue("v3 veto", transactionService.getAllowWrite());
 
-
         }
         finally
         {
@@ -255,8 +257,7 @@ public class TransactionServiceImplTest extends BaseSpringTest
     @Test
     public void testGetRetryingTransactionHelper()
     {
-        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 return null;
@@ -332,8 +333,7 @@ public class TransactionServiceImplTest extends BaseSpringTest
         transactionService.setAllowWrite(false, vetoName);
         try
         {
-            Boolean isReadOnly = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
-            {
+            Boolean isReadOnly = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>() {
                 public Boolean doWork() throws Exception
                 {
                     return transactionService.isReadOnly();

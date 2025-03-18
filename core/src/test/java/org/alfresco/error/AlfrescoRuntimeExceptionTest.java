@@ -23,7 +23,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import junit.framework.TestCase;
-
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -43,7 +42,7 @@ public class AlfrescoRuntimeExceptionTest extends TestCase
     private static final String VALUE_FR_PARAMS = "Que non " + PARAM_VALUE + "?";
     private static final String NON_I18NED_MSG = "This is a non i18ned error message.";
     private static final String NON_EXISTING_MSG = "non.existing.msgId";
-   
+
     @Override
     protected void setUp() throws Exception
     {
@@ -51,46 +50,45 @@ public class AlfrescoRuntimeExceptionTest extends TestCase
         Locale.setDefault(Locale.ENGLISH);
         I18NUtil.setLocale(Locale.getDefault());
     }
-    
+
     public void testI18NBehaviour()
     {
         // Ensure that the bundle is present on the classpath
         String baseResourceAsProperty = BASE_RESOURCE_NAME.replace('.', '/') + ".properties";
         URL baseResourceURL = AlfrescoRuntimeExceptionTest.class.getClassLoader().getResource(baseResourceAsProperty);
         assertNotNull(baseResourceURL);
-        
+
         baseResourceAsProperty = BASE_RESOURCE_NAME.replace('.', '/') + "_fr_FR" + ".properties";
         baseResourceURL = AlfrescoRuntimeExceptionTest.class.getClassLoader().getResource(baseResourceAsProperty);
         assertNotNull(baseResourceURL);
-        
+
         // Ensure we can load it as a resource bundle
         ResourceBundle properties = ResourceBundle.getBundle(BASE_RESOURCE_NAME);
         assertNotNull(properties);
         properties = ResourceBundle.getBundle(BASE_RESOURCE_NAME, new Locale("fr", "FR"));
         assertNotNull(properties);
-       
 
         // From here on in, we use Spring
-       
+
         // Register the bundle
         I18NUtil.registerResourceBundle(BASE_RESOURCE_NAME);
-        
+
         AlfrescoRuntimeException exception1 = new AlfrescoRuntimeException(MSG_PARAMS, new Object[]{PARAM_VALUE});
         assertTrue(exception1.getMessage().contains(VALUE_PARAMS));
         AlfrescoRuntimeException exception3 = new AlfrescoRuntimeException(MSG_ERROR);
         assertTrue(exception3.getMessage().contains(VALUE_ERROR));
-        
+
         // Change the locale and re-test
         I18NUtil.setLocale(new Locale("fr", "FR"));
-        
+
         AlfrescoRuntimeException exception2 = new AlfrescoRuntimeException(MSG_PARAMS, new Object[]{PARAM_VALUE});
-        assertTrue(exception2.getMessage().contains(VALUE_FR_PARAMS));   
+        assertTrue(exception2.getMessage().contains(VALUE_FR_PARAMS));
         AlfrescoRuntimeException exception4 = new AlfrescoRuntimeException(MSG_ERROR);
-        assertTrue(exception4.getMessage().contains(VALUE_FR_ERROR));  
-        
+        assertTrue(exception4.getMessage().contains(VALUE_FR_ERROR));
+
         AlfrescoRuntimeException exception5 = new AlfrescoRuntimeException(NON_I18NED_MSG);
         assertTrue(exception5.getMessage().contains(NON_I18NED_MSG));
-        
+
         // MNT-13028
         String param1 = PARAM_VALUE + "_1";
         String param2 = PARAM_VALUE + "_2";
@@ -102,13 +100,13 @@ public class AlfrescoRuntimeExceptionTest extends TestCase
         assertTrue(message6.contains(param2));
         assertTrue(message6.contains(param3));
     }
-    
+
     public void testMakeRuntimeException()
     {
         Throwable e = new RuntimeException("sfsfs");
         RuntimeException ee = AlfrescoRuntimeException.makeRuntimeException(e, "Test");
         assertTrue("Exception should not have been changed", ee == e);
-        
+
         e = new Exception();
         ee = AlfrescoRuntimeException.makeRuntimeException(e, "Test");
         assertTrue("Expected an AlfrescoRuntimeException instance", ee instanceof AlfrescoRuntimeException);

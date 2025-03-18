@@ -3,14 +3,15 @@ package org.alfresco.cmis.search;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.utility.Utility;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FileType;
-import org.alfresco.utility.model.FolderModel;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
+import org.alfresco.utility.Utility;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
+import org.alfresco.utility.model.FolderModel;
 
 public class SearchInFolderTests extends AbstractCmisE2ETest
 {
@@ -19,6 +20,7 @@ public class SearchInFolderTests extends AbstractCmisE2ETest
 
     /**
      * Create test data in the following format:
+     * 
      * <pre>
      * testSite
      * +- parentFolder
@@ -40,7 +42,7 @@ public class SearchInFolderTests extends AbstractCmisE2ETest
         subFolder1 = FolderModel.getRandomFolderModel();
         subFolder2 = FolderModel.getRandomFolderModel();
         subFolder3 = new FolderModel("subFolder");
-        subFile5 = new FileModel("fifthFile.txt",FileType.TEXT_PLAIN, "fifthFile content");
+        subFile5 = new FileModel("fifthFile.txt", FileType.TEXT_PLAIN, "fifthFile content");
         subFile1 = new FileModel("firstFile", FileType.MSEXCEL);
         subFile2 = FileModel.getRandomFileModel(FileType.MSPOWERPOINT2007);
         subFile3 = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);

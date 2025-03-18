@@ -39,7 +39,7 @@ public class TargetContainer
 
     public TargetContainer()
     {
-        //Default constructor
+        // Default constructor
     }
 
     public String getTargetParentId()

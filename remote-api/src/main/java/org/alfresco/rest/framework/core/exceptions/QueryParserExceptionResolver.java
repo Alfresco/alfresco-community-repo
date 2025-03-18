@@ -37,12 +37,12 @@ public class QueryParserExceptionResolver implements ExceptionResolver<QueryPars
     public ErrorResponse resolveException(QueryParserException ex)
     {
         return new ErrorResponse(
-            DefaultExceptionResolver.DEFAULT_MESSAGE_ID,
-            // Mapping the original HTTP Status code returned by Search Services
-            ex.getHttpStatusCode(),
-            ex.getLocalizedMessage(),
-            ex.getStackTrace(),
-            null);
+                DefaultExceptionResolver.DEFAULT_MESSAGE_ID,
+                // Mapping the original HTTP Status code returned by Search Services
+                ex.getHttpStatusCode(),
+                ex.getLocalizedMessage(),
+                ex.getStackTrace(),
+                null);
     }
 
 }

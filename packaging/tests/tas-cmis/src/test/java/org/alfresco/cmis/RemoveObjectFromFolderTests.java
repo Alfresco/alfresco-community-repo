@@ -1,5 +1,11 @@
 package org.alfresco.cmis;
 
+import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
@@ -7,15 +13,8 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Created by Claudia Agache on 10/3/2016.
@@ -50,9 +49,9 @@ public class RemoveObjectFromFolderTests extends CmisTest
                 .createFolder(parentFolder).assertThat().existsInRepo();
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to remove a document from folder in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS})
     public void siteManagerShouldRemoveFileToFolder() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -63,9 +62,9 @@ public class RemoveObjectFromFolderTests extends CmisTest
                 .usingResource(testFile).assertThat().existsInRepo();
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to leave a document without parent folder with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisInvalidArgumentException.class, expectedExceptionsMessageRegExp = "^Object is not a document!$")
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisInvalidArgumentException.class, expectedExceptionsMessageRegExp = "^Object is not a document!$")
     public void siteManagerShouldNotRemoveFolderFromFolder() throws Exception
     {
         FolderModel subFolder = FolderModel.getRandomFolderModel();
@@ -74,9 +73,9 @@ public class RemoveObjectFromFolderTests extends CmisTest
                 .when().removeDocumentFromFolder(testFolder).assertThat().doesNotExistInRepo();
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is not able to remove a document without parent folder with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisObjectNotFoundException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisObjectNotFoundException.class)
     public void siteManagerShouldNotRemoveInvalidFileFromFolder() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -86,9 +85,9 @@ public class RemoveObjectFromFolderTests extends CmisTest
                 .usingResource(testFile).assertThat().existsInRepo();
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is not able to remove valid document from invalid folder with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions=CmisObjectNotFoundException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisObjectNotFoundException.class)
     public void siteManagerShouldNotRemoveFileToInvalidFolder() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -102,26 +101,26 @@ public class RemoveObjectFromFolderTests extends CmisTest
                 .usingResource(testFile).assertThat().existsInRepo();
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to remove a checked out document from folder in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteManagerShouldRemovePWCFileToFolder() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
         cmisApi.authenticateUser(siteManager).usingResource(parentFolder)
                 .createFile(testFile).assertThat().existsInRepo()
-                    .then().checkOut().and().assertThat().documentIsCheckedOut()
+                .then().checkOut().and().assertThat().documentIsCheckedOut()
                 .usingPWCDocument().addDocumentToFolder(testFolder, true)
-                    .then().assertThat().existsInRepo()
-                    .and().assertThat().documentIsCheckedOut()
+                .then().assertThat().existsInRepo()
+                .and().assertThat().documentIsCheckedOut()
                 .when().removeDocumentFromFolder(testFolder).assertThat().doesNotExistInRepo()
                 .usingResource(testFile).assertThat().existsInRepo()
                 .and().assertThat().documentIsCheckedOut();
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify unauthorized user is not able to remove a document from folder")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserShouldNotRemoveFileToFolder() throws Exception
     {
         UserModel unauthorizedUser = dataUser.createRandomTestUser();
@@ -133,9 +132,9 @@ public class RemoveObjectFromFolderTests extends CmisTest
                 .removeDocumentFromFolder(testFolder);
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify contributor can remove document from folder created by self")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void contributorCanRemoveDocumentFromFolderCreatedBySelf() throws Exception
     {
         parentFolder = dataContent.usingUser(contributorUser).usingSite(publicSite).createFolder();
@@ -149,9 +148,9 @@ public class RemoveObjectFromFolderTests extends CmisTest
                 .usingResource(testFile).assertThat().existsInRepo();
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify contributor can remove document from folder created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void contributorCannotRemoveDocumentFromFolderCreatedByManager() throws Exception
     {
         parentFolder = dataContent.usingUser(siteManager).usingSite(publicSite).createFolder();
@@ -164,9 +163,9 @@ public class RemoveObjectFromFolderTests extends CmisTest
         cmisApi.authenticateUser(contributorUser).usingResource(testFile).removeDocumentFromFolder(testFolder);
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify collaborator can remove document from folder created by self")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorCanRemoveDocumentFromFolderCreatedBySelf() throws Exception
     {
         parentFolder = dataContent.usingUser(collaboratorUser).usingSite(publicSite).createFolder();
@@ -180,9 +179,9 @@ public class RemoveObjectFromFolderTests extends CmisTest
                 .usingResource(testFile).assertThat().existsInRepo();
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify collaborator can remove document from folder created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void collaboratorCannotRemoveDocumentFromFolderCreatedByManager() throws Exception
     {
         parentFolder = dataContent.usingUser(siteManager).usingSite(publicSite).createFolder();
@@ -195,9 +194,9 @@ public class RemoveObjectFromFolderTests extends CmisTest
         cmisApi.authenticateUser(collaboratorUser).usingResource(testFile).removeDocumentFromFolder(testFolder);
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify consumer cannot remove document from folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotRemoveDocumentFromFolder() throws Exception
     {
         parentFolder = dataContent.usingUser(siteManager).usingSite(publicSite).createFolder();
@@ -210,9 +209,9 @@ public class RemoveObjectFromFolderTests extends CmisTest
         cmisApi.authenticateUser(consumerUser).usingResource(testFile).removeDocumentFromFolder(testFolder);
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify remove document from folder by user that is outside a private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotRemoveDocumentFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(siteManager).createPrivateRandomSite();
@@ -226,9 +225,9 @@ public class RemoveObjectFromFolderTests extends CmisTest
         cmisApi.authenticateUser(unauthorizedUser).usingResource(testFile).removeDocumentFromFolder(testFolder);
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify remove document from folder by user that is outside a moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotRemoveDocumentFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(siteManager).createModeratedRandomSite();

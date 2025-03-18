@@ -42,22 +42,18 @@ package org.alfresco.rest.search;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import org.alfresco.utility.model.TestModel;
-import org.alfresco.utility.model.UserModel;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.utility.model.TestModel;
+import org.alfresco.utility.model.UserModel;
 
 /**
  * Search SQL Query object for JDBC connection.
  * 
  * @author Meenal Bhave
  * 
- * Request POST
- * End point: /sql
- * PostBody:
- * {
- *   "stmt":"Select SITE from alfresco where SITE = 'swsdp' limit 2"
- * }
+ *         Request POST End point: /sql PostBody: { "stmt":"Select SITE from alfresco where SITE = 'swsdp' limit 2" }
  */
 public class SearchSqlJDBCRequest extends TestModel
 {
@@ -79,7 +75,7 @@ public class SearchSqlJDBCRequest extends TestModel
     {
         this.sql = sql;
     }
-    
+
     public Statement getStmt()
     {
         return stmt;
@@ -118,7 +114,7 @@ public class SearchSqlJDBCRequest extends TestModel
     public void setAuthUser(UserModel usermodel)
     {
         this.authUser = usermodel;
-    }  
+    }
 
     public String getErrorDetails()
     {
@@ -131,6 +127,5 @@ public class SearchSqlJDBCRequest extends TestModel
     }
 
     public SearchSqlJDBCRequest()
-    {
-    }
+    {}
 }

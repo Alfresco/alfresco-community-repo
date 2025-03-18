@@ -50,31 +50,25 @@ public abstract class BaseFunction implements Function
         this.argumentDefinitions = argumentDefinitions;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Function#getArgumentDefinitions()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Function#getArgumentDefinitions() */
     public LinkedHashMap<String, ArgumentDefinition> getArgumentDefinitions()
     {
         return argumentDefinitions;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Function#getName()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Function#getName() */
     public String getName()
     {
         return name;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Function#getReturnType()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Function#getReturnType() */
     public QName getReturnType()
     {
         return returnType;

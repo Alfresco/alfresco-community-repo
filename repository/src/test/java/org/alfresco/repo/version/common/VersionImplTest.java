@@ -30,14 +30,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import junit.framework.TestCase;
+
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.service.cmr.version.VersionType;
-
-import junit.framework.TestCase;
 
 /**
  * VersionImpl Unit Test
@@ -54,16 +54,16 @@ public class VersionImplTest extends TestCase
     private final static String PROP_3 = "prop3";
     private final static String VALUE_1 = "value1";
     private final static String VALUE_2 = "value2";
-    private final static String VALUE_3 = "value3";  
+    private final static String VALUE_3 = "value3";
     private final static String VALUE_DESCRIPTION = "This string describes the version details.";
     private final static VersionType VERSION_TYPE = VersionType.MINOR;
     private final static String USER_NAME = "userName";
-    
+
     /**
      * Version labels
      */
     private final static String VERSION_1 = "1";
-    
+
     /**
      * Data used during tests
      */
@@ -78,11 +78,11 @@ public class VersionImplTest extends TestCase
     protected void setUp() throws Exception
     {
         super.setUp();
-        
+
         // Create the node reference
         this.nodeRef = new NodeRef(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "testWS"), "testID");
         assertNotNull(this.nodeRef);
-        
+
         // Create the version property map
         this.versionProperties = new HashMap<String, Serializable>();
         this.versionProperties.put(VersionModel.PROP_VERSION_LABEL, VERSION_1);
@@ -93,12 +93,11 @@ public class VersionImplTest extends TestCase
         this.versionProperties.put(PROP_1, VALUE_1);
         this.versionProperties.put(PROP_2, VALUE_2);
         this.versionProperties.put(PROP_3, VALUE_3);
-        
+
         // Create the root version
         this.version = new VersionImpl(this.versionProperties, this.nodeRef);
         assertNotNull(this.version);
     }
-    
 
     /**
      * Test getCreatedDate()
@@ -108,7 +107,7 @@ public class VersionImplTest extends TestCase
         Date createdDate1 = this.version.getCreatedDate();
         assertEquals(this.createdDate, createdDate1);
     }
-    
+
     /**
      * Test getCreator
      */
@@ -125,7 +124,7 @@ public class VersionImplTest extends TestCase
         String versionLabel1 = this.version.getVersionLabel();
         assertEquals(VersionImplTest.VERSION_1, versionLabel1);
     }
-    
+
     /**
      * Test getDescription
      */
@@ -134,7 +133,7 @@ public class VersionImplTest extends TestCase
         String description = this.version.getDescription();
         assertEquals(VALUE_DESCRIPTION, description);
     }
-    
+
     /**
      * Test getVersionType
      */
@@ -143,7 +142,7 @@ public class VersionImplTest extends TestCase
         VersionType versionType = this.version.getVersionType();
         assertEquals(VERSION_TYPE, versionType);
     }
-    
+
     /**
      * Test getVersionProperties
      *
@@ -160,13 +159,13 @@ public class VersionImplTest extends TestCase
      */
     public void testGetVersionProperty()
     {
-        String value1 = (String)version.getVersionProperty(VersionImplTest.PROP_1);
+        String value1 = (String) version.getVersionProperty(VersionImplTest.PROP_1);
         assertEquals(value1, VersionImplTest.VALUE_1);
-        
-        String value2 = (String)version.getVersionProperty(VersionImplTest.PROP_2);
+
+        String value2 = (String) version.getVersionProperty(VersionImplTest.PROP_2);
         assertEquals(value2, VersionImplTest.VALUE_2);
-        
-        String value3 = (String)version.getVersionProperty(VersionImplTest.PROP_3);
+
+        String value3 = (String) version.getVersionProperty(VersionImplTest.PROP_3);
         assertEquals(value3, VersionImplTest.VALUE_3);
     }
 
@@ -179,7 +178,7 @@ public class VersionImplTest extends TestCase
         assertNotNull(nodeRef);
         assertEquals(nodeRef.toString(), this.nodeRef.toString());
     }
-    
+
     /**
      * Exception case - no node ref supplied when creating a verison
      */
@@ -191,7 +190,6 @@ public class VersionImplTest extends TestCase
             fail("It is invalid to create a version object without a node ref specified.");
         }
         catch (VersionServiceException exception)
-        {
-        }
-    }    
+        {}
+    }
 }

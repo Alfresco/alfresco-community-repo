@@ -28,12 +28,13 @@ package org.alfresco.repo.transfer;
 
 import java.io.InputStream;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferProgress.Status;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author brian
@@ -42,9 +43,10 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
 {
     private static final Log log = LogFactory.getLog(LoggingTransferProgressMonitorImpl.class);
     private TransferProgressMonitor delegate;
-    
+
     /**
-     * @param delegate the delegate to set
+     * @param delegate
+     *            the delegate to set
      */
     public void setDelegate(TransferProgressMonitor delegate)
     {
@@ -52,7 +54,8 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
     }
 
     /**
-     * @param transferId String
+     * @param transferId
+     *            String
      * @return TransferProgress
      * @throws TransferException
      * @see org.alfresco.repo.transfer.TransferProgressMonitor#getProgress(java.lang.String)
@@ -63,9 +66,12 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
     }
 
     /**
-     * @param transferId String
-     * @param obj Object
-     * @param ex Throwable
+     * @param transferId
+     *            String
+     * @param obj
+     *            Object
+     * @param ex
+     *            Throwable
      * @throws TransferException
      * @see org.alfresco.repo.transfer.TransferProgressMonitor#logException(java.lang.String, java.lang.Object, java.lang.Throwable)
      */
@@ -76,8 +82,10 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
     }
 
     /**
-     * @param transferId String
-     * @param obj Object
+     * @param transferId
+     *            String
+     * @param obj
+     *            Object
      * @throws TransferException
      * @see org.alfresco.repo.transfer.TransferProgressMonitor#logComment(java.lang.String, java.lang.Object)
      */
@@ -86,40 +94,43 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
         localLog(transferId, obj, null);
         delegate.logComment(transferId, obj);
     }
-    
+
     @Override
     public void logCreated(String transferId, NodeRef sourceNode,
             NodeRef destNode, NodeRef parentNode, String parentPath, boolean orphan)
     {
         delegate.logCreated(transferId, sourceNode, destNode, parentNode, parentPath, orphan);
     }
-    
+
     @Override
     public void logUpdated(String transferId, NodeRef sourceNode,
             NodeRef destNode, String parentPath)
     {
         delegate.logUpdated(transferId, sourceNode, destNode, parentPath);
     }
-    
+
     @Override
     public void logMoved(String transferId, NodeRef sourceNode,
             NodeRef destNode, String oldPath, NodeRef parentNodeRef, String parentPath)
     {
         delegate.logMoved(transferId, sourceNode, destNode, oldPath, parentNodeRef, parentPath);
     }
-    
+
     @Override
     public void logDeleted(String transferId, NodeRef sourceNode,
             NodeRef destNode, String parentPath)
     {
         delegate.logDeleted(transferId, sourceNode, destNode, parentPath);
-        
+
     }
 
     /**
-     * @param transferId String
-     * @param currPos int
-     * @param endPos int
+     * @param transferId
+     *            String
+     * @param currPos
+     *            int
+     * @param endPos
+     *            int
      * @throws TransferException
      * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateProgress(java.lang.String, int, int)
      */
@@ -133,8 +144,10 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
     }
 
     /**
-     * @param transferId String
-     * @param currPos int
+     * @param transferId
+     *            String
+     * @param currPos
+     *            int
      * @throws TransferException
      * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateProgress(java.lang.String, int)
      */
@@ -148,8 +161,10 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
     }
 
     /**
-     * @param transferId String
-     * @param status Status
+     * @param transferId
+     *            String
+     * @param status
+     *            Status
      * @throws TransferException
      * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateStatus(java.lang.String, org.alfresco.service.cmr.transfer.TransferProgress.Status)
      */
@@ -162,16 +177,16 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
         delegate.updateStatus(transferId, status);
     }
 
-    private boolean loggingEnabled() 
+    private boolean loggingEnabled()
     {
         return log.isInfoEnabled();
     }
-    
+
     private void localLog(String transferId, Object obj, Throwable ex)
     {
-        if (loggingEnabled()) 
+        if (loggingEnabled())
         {
-            String message = "Transfer Log (" + transferId +"): " + obj.toString(); 
+            String message = "Transfer Log (" + transferId + "): " + obj.toString();
             if (ex == null)
             {
                 log.info(message);
@@ -188,10 +203,5 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
     {
         return delegate.getLogInputStream(transferId);
     }
-
-
-
-
-
 
 }

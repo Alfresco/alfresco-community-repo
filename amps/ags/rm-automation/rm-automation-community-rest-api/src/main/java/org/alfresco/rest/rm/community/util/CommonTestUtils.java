@@ -44,12 +44,10 @@ public class CommonTestUtils
 
     /** Private constructor to prevent instantiation. */
     private CommonTestUtils()
-    {
-    }
+    {}
 
     /**
-     * Generate a prefix to namespace the objects in a test class. Note that four random hex digits should be good enough to avoid
-     * collisions when running locally and should also be short enough to maintain readability.
+     * Generate a prefix to namespace the objects in a test class. Note that four random hex digits should be good enough to avoid collisions when running locally and should also be short enough to maintain readability.
      */
     public static String generateTestPrefix(Class<?> clazz)
     {

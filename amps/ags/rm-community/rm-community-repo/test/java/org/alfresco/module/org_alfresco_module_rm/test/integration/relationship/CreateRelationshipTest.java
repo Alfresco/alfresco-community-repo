@@ -46,11 +46,10 @@ import org.alfresco.util.GUID;
  */
 public class CreateRelationshipTest extends BaseRMTestCase
 {
-	public void testReadOnlyPermissionOnSource() throws Exception
+    public void testReadOnlyPermissionOnSource() throws Exception
     {
-    	doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
-        {
-    	    /** test data */
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class) {
+            /** test data */
             private String roleName = GUID.generate();
             private String user = GUID.generate();
             private NodeRef sourceRecordCategory;
@@ -59,7 +58,7 @@ public class CreateRelationshipTest extends BaseRMTestCase
             private NodeRef targetRecordFolder;
             private NodeRef sourceRecord;
             private NodeRef targetRecord;
-            
+
             public void given() throws Exception
             {
                 // test entities
@@ -69,7 +68,7 @@ public class CreateRelationshipTest extends BaseRMTestCase
                 targetRecordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 targetRecordFolder = recordFolderService.createRecordFolder(targetRecordCategory, GUID.generate());
                 targetRecord = utils.createRecord(targetRecordFolder, GUID.generate());
-                
+
                 // create role
                 Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
@@ -86,9 +85,8 @@ public class CreateRelationshipTest extends BaseRMTestCase
                 // assign permissions
                 filePlanPermissionService.setPermission(sourceRecord, user, RMPermissionModel.READ_RECORDS);
                 filePlanPermissionService.setPermission(targetRecord, user, RMPermissionModel.FILING);
-                
-                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-                {
+
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         relationshipService.addRelationship("crossreference", sourceRecord, targetRecord);
@@ -98,11 +96,10 @@ public class CreateRelationshipTest extends BaseRMTestCase
             }
         });
     }
-	
-	public void testReadOnlyPermissionOnTarget() throws Exception
+
+    public void testReadOnlyPermissionOnTarget() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class) {
             /** test data */
             private String roleName = GUID.generate();
             private String user = GUID.generate();
@@ -112,7 +109,7 @@ public class CreateRelationshipTest extends BaseRMTestCase
             private NodeRef targetRecordFolder;
             private NodeRef sourceRecord;
             private NodeRef targetRecord;
-            
+
             public void given() throws Exception
             {
                 // test entities
@@ -122,7 +119,7 @@ public class CreateRelationshipTest extends BaseRMTestCase
                 targetRecordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 targetRecordFolder = recordFolderService.createRecordFolder(targetRecordCategory, GUID.generate());
                 targetRecord = utils.createRecord(targetRecordFolder, GUID.generate());
-                
+
                 // create role
                 Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
@@ -140,9 +137,8 @@ public class CreateRelationshipTest extends BaseRMTestCase
                 // assign permissions
                 filePlanPermissionService.setPermission(sourceRecord, user, RMPermissionModel.FILING);
                 filePlanPermissionService.setPermission(targetRecord, user, RMPermissionModel.READ_RECORDS);
-                
-                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-                {
+
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         relationshipService.addRelationship("crossreference", sourceRecord, targetRecord);
@@ -152,11 +148,10 @@ public class CreateRelationshipTest extends BaseRMTestCase
             }
         });
     }
-	
-	public void testFillingPermissionOnSourceAndTarget() throws Exception
+
+    public void testFillingPermissionOnSourceAndTarget() throws Exception
     {
-	    doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             /** test data */
             private String roleName = GUID.generate();
             private String user = GUID.generate();
@@ -166,7 +161,7 @@ public class CreateRelationshipTest extends BaseRMTestCase
             private NodeRef targetRecordFolder;
             private NodeRef sourceRecord;
             private NodeRef targetRecord;
-            
+
             public void given() throws Exception
             {
                 // test entities
@@ -176,26 +171,25 @@ public class CreateRelationshipTest extends BaseRMTestCase
                 targetRecordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 targetRecordFolder = recordFolderService.createRecordFolder(targetRecordCategory, GUID.generate());
                 targetRecord = utils.createRecord(targetRecordFolder, GUID.generate());
-                
+
                 // create role
                 Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
                 capabilities.add(capabilityService.getCapability("ChangeOrDeleteReferences"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
-    
+
                 // create user and assign to role
                 createPerson(user, true);
-                filePlanRoleService.assignRoleToAuthority(filePlan, roleName, user);    
+                filePlanRoleService.assignRoleToAuthority(filePlan, roleName, user);
             }
-    
+
             public void when()
             {
                 // assign permissions
                 filePlanPermissionService.setPermission(sourceRecordCategory, user, RMPermissionModel.FILING);
                 filePlanPermissionService.setPermission(targetRecordCategory, user, RMPermissionModel.FILING);
-                
-                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-                {
+
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         relationshipService.addRelationship("crossreference", sourceRecord, targetRecord);
@@ -203,7 +197,7 @@ public class CreateRelationshipTest extends BaseRMTestCase
                     }
                 }, user);
             }
-            
+
             @Override
             public void then() throws Exception
             {

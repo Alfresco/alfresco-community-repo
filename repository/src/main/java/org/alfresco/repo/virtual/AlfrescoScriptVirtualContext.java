@@ -69,8 +69,7 @@ public class AlfrescoScriptVirtualContext extends BaseScopableProcessorExtension
     }
 
     /**
-     * @return an array containing the plain qname path at index 0 and the
-     *         ISO9075 element-encoded qname path at index 1
+     * @return an array containing the plain qname path at index 0 and the ISO9075 element-encoded qname path at index 1
      */
     private String[] createQNamePaths()
     {
@@ -95,7 +94,7 @@ public class AlfrescoScriptVirtualContext extends BaseScopableProcessorExtension
                         Collection<String> prefixes = ns.getPrefixes(qname.getNamespaceURI());
                         prefix = prefixes.size() != 0 ? prefixes.iterator().next() : "";
                         cache.put(qname.getNamespaceURI(),
-                                  prefix);
+                                prefix);
                     }
                     bufISO9075.append('/').append(prefix).append(':').append(ISO9075.encode(qname.getLocalName()));
                     bufPlain.append('/').append(prefix).append(':').append(qname.getLocalName());
@@ -107,7 +106,7 @@ public class AlfrescoScriptVirtualContext extends BaseScopableProcessorExtension
                 bufPlain.append('/').append(e.toString());
             }
         }
-        String[] qnamePaths = new String[] { bufPlain.toString(), bufISO9075.toString() };
+        String[] qnamePaths = new String[]{bufPlain.toString(), bufISO9075.toString()};
 
         return qnamePaths;
     }
@@ -120,14 +119,14 @@ public class AlfrescoScriptVirtualContext extends BaseScopableProcessorExtension
         String user = AuthenticationUtil.getFullyAuthenticatedUser();
 
         newPlaceholders.put(CURRENT_USER_PH,
-                            user);
+                user);
 
         String[] paths = createQNamePaths();
 
         // the actual path will contain the ISO9075 encoded qname path
         // this was reverted from a dual placeholder implementation (see CM-523)
         newPlaceholders.put(ACTUAL_PATH_PH,
-                            paths[1]);
+                paths[1]);
 
         // newPlaceholders.put(ACTUAL_ISO9075_PATH_PH,
         // paths[1]);
@@ -143,8 +142,8 @@ public class AlfrescoScriptVirtualContext extends BaseScopableProcessorExtension
     public synchronized ScriptNode getActualNode()
     {
         return new ScriptNode(context.getActualNodeRef(),
-                              serviceRegistry,
-                              getScope());
+                serviceRegistry,
+                getScope());
     }
 
     public Object getParameter(String param)

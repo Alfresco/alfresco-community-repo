@@ -28,15 +28,16 @@ package org.alfresco.repo.web.scripts.admin;
 import java.util.Collections;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.admin.RepoUsage;
 import org.alfresco.service.cmr.admin.RepoUsageStatus.RepoUsageLevel;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.license.LicenseDescriptor;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
 
 /**
  * Abstract implementation for scripts that access the {@link RepoAdminService}.
@@ -62,12 +63,13 @@ public abstract class AbstractAdminWebScript extends DeclarativeWebScript
      * Logger that can be used by subclasses.
      */
     protected final Log logger = LogFactory.getLog(this.getClass());
-    
+
     protected RepoAdminService repoAdminService;
     protected DescriptorService descriptorService;
 
     /**
-     * @param repoAdminService  the service that provides the functionality
+     * @param repoAdminService
+     *            the service that provides the functionality
      */
     public void setRepoAdminService(RepoAdminService repoAdminService)
     {
@@ -75,7 +77,8 @@ public abstract class AbstractAdminWebScript extends DeclarativeWebScript
     }
 
     /**
-     * @param descriptorService  the service that provides the functionality
+     * @param descriptorService
+     *            the service that provides the functionality
      */
     public void setDescriptorService(DescriptorService descriptorService)
     {
@@ -85,13 +88,14 @@ public abstract class AbstractAdminWebScript extends DeclarativeWebScript
     /**
      * Return an I18N'd message for the given key or the key itself if not present
      * 
-     * @param args              arguments to replace the variables in the message
+     * @param args
+     *            arguments to replace the variables in the message
      */
-    protected String getI18NMessage(String key, Object ... args)
+    protected String getI18NMessage(String key, Object... args)
     {
         return I18NUtil.getMessage(key, args);
     }
-    
+
     /**
      * Helper to assign JSON return variables based on the repository usage data.
      */

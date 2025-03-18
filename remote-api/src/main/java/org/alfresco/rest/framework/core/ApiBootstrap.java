@@ -27,14 +27,15 @@ package org.alfresco.rest.framework.core;
 
 import java.util.Map;
 
-import org.alfresco.rest.framework.resource.EntityResource;
-import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
+import org.alfresco.rest.framework.resource.EntityResource;
+import org.alfresco.rest.framework.resource.RelationshipResource;
 
 /**
  * Bootstraps the restful API
@@ -44,15 +45,15 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class ApiBootstrap extends AbstractLifecycleBean
 {
 
-    private static Log logger = LogFactory.getLog(ApiBootstrap.class);  
-    
+    private static Log logger = LogFactory.getLog(ApiBootstrap.class);
+
     ResourceLookupDictionary apiDictionary;
 
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
         logger.info("Bootstapping the API");
-        ContextRefreshedEvent refreshEvent = (ContextRefreshedEvent)event;
+        ContextRefreshedEvent refreshEvent = (ContextRefreshedEvent) event;
         ApplicationContext ac = refreshEvent.getApplicationContext();
         Map<String, Object> entityResourceBeans = ac.getBeansWithAnnotation(EntityResource.class);
         Map<String, Object> relationResourceBeans = ac.getBeansWithAnnotation(RelationshipResource.class);

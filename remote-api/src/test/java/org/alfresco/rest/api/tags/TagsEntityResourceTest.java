@@ -25,23 +25,25 @@
  */
 package org.alfresco.rest.api.tags;
 
-import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
+import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+
 import java.util.List;
 
-import org.alfresco.rest.api.Tags;
-import org.alfresco.rest.api.model.Tag;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.rest.api.Tags;
+import org.alfresco.rest.api.model.Tag;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TagsEntityResourceTest
@@ -66,13 +68,13 @@ public class TagsEntityResourceTest
         given(tagsMock.createTags(any(), any())).willCallRealMethod();
         given(tagsMock.createTags(any(), any(), any())).willReturn(List.of(Tag.builder().nodeRef(TAG_NODE_REF).tag(TAG_NAME).create()));
 
-        //when
+        // when
         final List<Tag> actualCreatedTags = tagsEntityResource.create(tags, parametersMock);
 
         then(tagsMock).should().createTags(STORE_REF_WORKSPACE_SPACESSTORE, tags, parametersMock);
         final List<Tag> expectedTags = List.of(Tag.builder().nodeRef(TAG_NODE_REF).tag(TAG_NAME).create());
         assertThat(actualCreatedTags)
-            .isNotEmpty()
-            .isEqualTo(expectedTags);
+                .isNotEmpty()
+                .isEqualTo(expectedTags);
     }
 }

@@ -38,6 +38,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -46,14 +53,14 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.CustomModelDefinition;
-import org.alfresco.service.cmr.dictionary.CustomModelService;
-import org.alfresco.service.cmr.dictionary.ModelDefinition;
-import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
-import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.dictionary.CustomModelException.ActiveModelConstraintException;
 import org.alfresco.service.cmr.dictionary.CustomModelException.InvalidNamespaceException;
 import org.alfresco.service.cmr.dictionary.CustomModelException.ModelDoesNotExistException;
 import org.alfresco.service.cmr.dictionary.CustomModelException.NamespaceConstraintException;
+import org.alfresco.service.cmr.dictionary.CustomModelService;
+import org.alfresco.service.cmr.dictionary.ModelDefinition;
+import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.download.DownloadStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -63,12 +70,6 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
 
 /**
  * Integration tests for {@link CustomModelServiceImpl}
@@ -117,8 +118,7 @@ public class CustomModelServiceImplTest
         final List<String> activeModels = new ArrayList<>();
         for (final String model : modelNames)
         {
-            transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
                 public Void execute() throws Exception
                 {
                     try
@@ -131,28 +131,26 @@ public class CustomModelServiceImplTest
                     }
                     catch (Exception e)
                     {
-                     // Ignore
+                        // Ignore
                     }
                     return null;
                 }
             });
         }
 
-        for(final String am: activeModels)
+        for (final String am : activeModels)
         {
             // Try to deactivate and delete again
             try
             {
-                transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-                {
+                transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
                     public Void execute() throws Exception
                     {
                         customModelService.deactivateCustomModel(am);
                         return null;
                     }
                 });
-                transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-                {
+                transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
                     public Void execute() throws Exception
                     {
                         customModelService.deleteCustomModel(am);
@@ -185,7 +183,7 @@ public class CustomModelServiceImplTest
 
         assertNotNull(modelDefinition);
         assertEquals(modelName1, modelDefinition.getName().getLocalName());
-        assertTrue("There is no imported namespace." ,modelDefinition.getImportedNamespaces().isEmpty());
+        assertTrue("There is no imported namespace.", modelDefinition.getImportedNamespaces().isEmpty());
 
         NamespaceDefinition namespaceDefinition = modelDefinition.getNamespaces().iterator().next();
         assertNotNull(namespaceDefinition);
@@ -196,7 +194,7 @@ public class CustomModelServiceImplTest
         assertEquals("John Doe", modelDefinition.getAuthor());
 
         final String modelName2 = makeUniqueName("testCustomModel2");
-        model = M2Model.createModel(namespacePair.getSecond()  + QName.NAMESPACE_PREFIX + modelName2);
+        model = M2Model.createModel(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + modelName2);
         model.createNamespace(namespacePair.getFirst(), "newTestPrefix");
 
         // Create the 2nd model - duplicate namespace URI
@@ -211,7 +209,7 @@ public class CustomModelServiceImplTest
         }
 
         final String modelName3 = makeUniqueName("testCustomModel3");
-        model = M2Model.createModel(namespacePair.getSecond()  + QName.NAMESPACE_PREFIX + modelName3);
+        model = M2Model.createModel(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + modelName3);
         model.createNamespace(getTestNamespacePrefixPair().getFirst(), namespacePair.getSecond());
 
         // Create the 2nd model - duplicate namespace Prefix
@@ -226,7 +224,7 @@ public class CustomModelServiceImplTest
         }
 
         namespacePair = getTestNamespacePrefixPair();
-        model = M2Model.createModel(namespacePair.getSecond()  + QName.NAMESPACE_PREFIX + modelName2);
+        model = M2Model.createModel(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + modelName2);
         model.createNamespace(namespacePair.getFirst(), namespacePair.getSecond());
         modelDefinition = createModel(model, false);
         assertNotNull(modelDefinition);
@@ -270,11 +268,10 @@ public class CustomModelServiceImplTest
             // Expected
         }
         final PagingRequest pagingRequest = new PagingRequest(0, Integer.MAX_VALUE);
-        PagingResults<CustomModelDefinition> result = transactionHelper.doInTransaction(new RetryingTransactionCallback<PagingResults<CustomModelDefinition>>()
-        {
+        PagingResults<CustomModelDefinition> result = transactionHelper.doInTransaction(new RetryingTransactionCallback<PagingResults<CustomModelDefinition>>() {
             public PagingResults<CustomModelDefinition> execute() throws Exception
             {
-                    return customModelService.getCustomModels(pagingRequest);
+                return customModelService.getCustomModels(pagingRequest);
             }
         });
 
@@ -318,8 +315,7 @@ public class CustomModelServiceImplTest
         testUser.put(ContentModel.PROP_LASTNAME, "Doe");
         testUser.put(ContentModel.PROP_PASSWORD, "password");
 
-        final NodeRef personNodeRef = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-        {
+        final NodeRef personNodeRef = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Exception
             {
                 NodeRef nodeRef = personService.createPerson(testUser);
@@ -335,8 +331,7 @@ public class CustomModelServiceImplTest
         });
 
         // Cleanup
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Exception
             {
                 personService.deletePerson(personNodeRef);
@@ -364,8 +359,7 @@ public class CustomModelServiceImplTest
         assertEquals(modelName, modelDefinition.getName().getLocalName());
         assertFalse(modelDefinition.isActive());
 
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Exception
             {
                 // Activate the model
@@ -408,8 +402,7 @@ public class CustomModelServiceImplTest
         assertNotNull(modelDefinition);
         assertEquals(modelName, modelDefinition.getName().getLocalName());
 
-        ModelDefinition modelDefinitionByUri = transactionHelper.doInTransaction(new RetryingTransactionCallback<ModelDefinition>()
-        {
+        ModelDefinition modelDefinitionByUri = transactionHelper.doInTransaction(new RetryingTransactionCallback<ModelDefinition>() {
             @Override
             public ModelDefinition execute() throws Throwable
             {
@@ -486,8 +479,7 @@ public class CustomModelServiceImplTest
                 // Expected
             }
             final PagingRequest pagingRequest = new PagingRequest(0, Integer.MAX_VALUE);
-            PagingResults<TypeDefinition> allTypes = transactionHelper.doInTransaction(new RetryingTransactionCallback<PagingResults<TypeDefinition>>()
-            {
+            PagingResults<TypeDefinition> allTypes = transactionHelper.doInTransaction(new RetryingTransactionCallback<PagingResults<TypeDefinition>>() {
                 public PagingResults<TypeDefinition> execute() throws Exception
                 {
                     return customModelService.getAllCustomTypes(pagingRequest);
@@ -495,11 +487,10 @@ public class CustomModelServiceImplTest
             });
             assertTrue(allTypes.getTotalResultCount().getFirst() >= 1);
 
-            PagingResults<AspectDefinition> allAspects = transactionHelper.doInTransaction(new RetryingTransactionCallback<PagingResults<AspectDefinition>>()
-            {
+            PagingResults<AspectDefinition> allAspects = transactionHelper.doInTransaction(new RetryingTransactionCallback<PagingResults<AspectDefinition>>() {
                 public PagingResults<AspectDefinition> execute() throws Exception
                 {
-                      return  customModelService.getAllCustomAspects(pagingRequest);
+                    return customModelService.getAllCustomAspects(pagingRequest);
                 }
             });
             assertTrue(allAspects.getTotalResultCount().getFirst() >= 1);
@@ -513,7 +504,7 @@ public class CustomModelServiceImplTest
         assertEquals(1, getModel(modelName).getAspectDefinitions().size());
 
         // Retrieve the type by the type QName
-        QName typeQName = QName.createQName("{" + namespacePair.getFirst()+ "}" + typeName);
+        QName typeQName = QName.createQName("{" + namespacePair.getFirst() + "}" + typeName);
         TypeDefinition typeDefinition = getType(typeQName);
         assertNotNull(typeDefinition);
         assertEquals(1, getModel(modelName).getTypeDefinitions().size());
@@ -580,8 +571,7 @@ public class CustomModelServiceImplTest
         customModelService.deactivateCustomModel(modelName);
 
         // Retrieve the model
-        modelDefinition = transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>()
-        {
+        modelDefinition = transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>() {
             public CustomModelDefinition execute() throws Exception
             {
                 return customModelService.getCustomModel(modelName);
@@ -620,8 +610,7 @@ public class CustomModelServiceImplTest
         assertEquals(modelName, modelDefinition.getName().getLocalName());
         assertFalse(modelDefinition.isActive());
 
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Exception
             {
                 // delete non-existing model
@@ -638,8 +627,7 @@ public class CustomModelServiceImplTest
             }
         });
 
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Exception
             {
                 // Activate the model
@@ -662,8 +650,7 @@ public class CustomModelServiceImplTest
         // Deactivate the model
         customModelService.deactivateCustomModel(modelName);
 
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Exception
             {
                 customModelService.deleteCustomModel(modelName);
@@ -793,8 +780,7 @@ public class CustomModelServiceImplTest
         AspectDefinition aspectDefinition = getAspect(aspectQName);
         assertNull(aspectDefinition);
 
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Exception
             {
                 // Activate the model
@@ -956,8 +942,7 @@ public class CustomModelServiceImplTest
     @Test
     public void testModelsInfo() throws Exception
     {
-        CustomModelsInfo info = transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelsInfo>()
-        {
+        CustomModelsInfo info = transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelsInfo>() {
             public CustomModelsInfo execute() throws Exception
             {
                 return customModelService.getCustomModelsInfo();
@@ -984,8 +969,7 @@ public class CustomModelServiceImplTest
         // Create the model
         createModel(model, true);
 
-        CustomModelsInfo newInfo = transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelsInfo>()
-        {
+        CustomModelsInfo newInfo = transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelsInfo>() {
             public CustomModelsInfo execute() throws Exception
             {
                 return customModelService.getCustomModelsInfo();
@@ -1003,8 +987,7 @@ public class CustomModelServiceImplTest
         updateModel(modelName, model, true);
 
         // Get the models' info
-        newInfo = transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelsInfo>()
-        {
+        newInfo = transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelsInfo>() {
             public CustomModelsInfo execute() throws Exception
             {
                 return customModelService.getCustomModelsInfo();
@@ -1035,8 +1018,7 @@ public class CustomModelServiceImplTest
 
     private CustomModelDefinition createModel(final M2Model m2Model, final boolean activate)
     {
-        return transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>()
-        {
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>() {
             public CustomModelDefinition execute() throws Exception
             {
                 return customModelService.createCustomModel(m2Model, activate);
@@ -1046,8 +1028,7 @@ public class CustomModelServiceImplTest
 
     private CustomModelDefinition updateModel(final String modelName, final M2Model m2Model, final boolean activate)
     {
-        return transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>()
-        {
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>() {
             public CustomModelDefinition execute() throws Exception
             {
                 return customModelService.updateCustomModel(modelName, m2Model, activate);
@@ -1057,8 +1038,7 @@ public class CustomModelServiceImplTest
 
     private CustomModelDefinition getModel(final String modelName)
     {
-        return transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>()
-        {
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>() {
             public CustomModelDefinition execute() throws Exception
             {
                 return customModelService.getCustomModel(modelName);
@@ -1068,8 +1048,7 @@ public class CustomModelServiceImplTest
 
     private NodeRef createDownload(final String modelName, final boolean withShareExtModule)
     {
-        return transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-        {
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Exception
             {
                 NodeRef nodeRef = customModelService.createDownloadNode(modelName, withShareExtModule);
@@ -1080,8 +1059,7 @@ public class CustomModelServiceImplTest
 
     private AspectDefinition getAspect(final QName aspectQName)
     {
-        return transactionHelper.doInTransaction(new RetryingTransactionCallback<AspectDefinition>()
-        {
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<AspectDefinition>() {
             @Override
             public AspectDefinition execute() throws Throwable
             {
@@ -1092,8 +1070,7 @@ public class CustomModelServiceImplTest
 
     private TypeDefinition getType(final QName typeQName)
     {
-        return transactionHelper.doInTransaction(new RetryingTransactionCallback<TypeDefinition>()
-        {
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<TypeDefinition>() {
             @Override
             public TypeDefinition execute() throws Throwable
             {

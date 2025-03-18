@@ -30,25 +30,24 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.apache.ibatis.session.RowBounds;
+import org.mybatis.spring.SqlSessionTemplate;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.registry.RegistryServiceImpl;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.solr.AclEntity;
 import org.alfresco.repo.domain.solr.NodeParametersEntity;
-import org.alfresco.repo.domain.solr.SearchDAO;
 import org.alfresco.repo.domain.solr.SOLRTrackingParameters;
-import org.alfresco.repo.search.impl.QueryParserUtils;
+import org.alfresco.repo.domain.solr.SearchDAO;
 import org.alfresco.repo.solr.Acl;
 import org.alfresco.repo.solr.AclChangeSet;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.Transaction;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-import org.apache.ibatis.session.RowBounds;
-import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * DAO support for SOLR web scripts.
@@ -61,12 +60,12 @@ public class SearchDAOImpl implements SearchDAO
     private static final String SELECT_ACLS_BY_CHANGESET_IDS = "alfresco.solr.select_AclsByChangeSetIds";
     private static final String SELECT_TRANSACTIONS = "alfresco.solr.select_Txns";
     private static final String SELECT_NODES = "alfresco.solr.select_Txn_Nodes";
-    
+
     private SqlSessionTemplate template;
     private QNameDAO qnameDAO;
     private RegistryServiceImpl dictionaryService;
 
-    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate)
     {
         this.template = sqlSessionTemplate;
     }
@@ -78,17 +77,17 @@ public class SearchDAOImpl implements SearchDAO
 
     /**
      * Initialize
-     */    
+     */
     public void init()
     {
         PropertyCheck.mandatory(this, "template", template);
         PropertyCheck.mandatory(this, "qnameDAO", qnameDAO);
     }
-    
+
     /**
      * {@inheritDoc}
      */
-	@Override
+    @Override
     @SuppressWarnings("unchecked")
     public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, Long maxAclChangeSetId, Long toCommitTime, int maxResults)
     {
@@ -100,7 +99,7 @@ public class SearchDAOImpl implements SearchDAO
         // We simulate an ID for the sys:deleted type
         Pair<Long, QName> deletedTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_DELETED);
         Long deletedTypeQNameId = deletedTypeQNamePair == null ? -1L : deletedTypeQNamePair.getFirst();
-     
+
         SOLRTrackingParameters params = new SOLRTrackingParameters(deletedTypeQNameId);
         params.setFromIdInclusive(minAclChangeSetId);
         params.setFromCommitTimeInclusive(fromCommitTime);
@@ -117,7 +116,7 @@ public class SearchDAOImpl implements SearchDAO
     @SuppressWarnings("unchecked")
     public List<Acl> getAcls(List<Long> aclChangeSetIds, Long minAclId, int maxResults)
     {
-        
+
         if (aclChangeSetIds == null || aclChangeSetIds.size() == 0)
         {
             throw new IllegalArgumentException("'aclChangeSetIds' must contain IDs.");
@@ -126,7 +125,7 @@ public class SearchDAOImpl implements SearchDAO
         {
             throw new IllegalArgumentException("'aclChangeSetIds' cannot have more than 512 entries.");
         }
-        
+
         // We simulate an ID for the sys:deleted type
         Pair<Long, QName> deletedTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_DELETED);
         Long deletedTypeQNameId = deletedTypeQNamePair == null ? -1L : deletedTypeQNamePair.getFirst();
@@ -147,16 +146,16 @@ public class SearchDAOImpl implements SearchDAO
         // Add any unlinked shared ACLs from defining nodes to index them now
         TreeSet<Acl> sorted = new TreeSet<Acl>(source);
         HashSet<Long> found = new HashSet<Long>();
-        for(Acl acl : source)
+        for (Acl acl : source)
         {
             found.add(acl.getId());
         }
-        
-        for(Acl acl : source)
+
+        for (Acl acl : source)
         {
-            if(acl.getInheritedId() != null)
+            if (acl.getInheritedId() != null)
             {
-                if(!found.contains(acl.getInheritedId()))
+                if (!found.contains(acl.getInheritedId()))
                 {
                     AclEntity shared = new AclEntity();
                     shared.setId(acl.getInheritedId());
@@ -177,8 +176,8 @@ public class SearchDAOImpl implements SearchDAO
      */
     @Override
     @SuppressWarnings("unchecked")
-	public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, Long maxTxnId, Long toCommitTime, int maxResults)
-	{
+    public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, Long maxTxnId, Long toCommitTime, int maxResults)
+    {
         if (maxResults <= 0 || maxResults == Integer.MAX_VALUE)
         {
             throw new IllegalArgumentException("Maximum results must be a reasonable number.");
@@ -189,13 +188,13 @@ public class SearchDAOImpl implements SearchDAO
         Long deletedTypeQNameId = deletedTypeQNamePair == null ? -1L : deletedTypeQNamePair.getFirst();
 
         SOLRTrackingParameters params = new SOLRTrackingParameters(deletedTypeQNameId);
-	    params.setFromIdInclusive(minTxnId);
-	    params.setFromCommitTimeInclusive(fromCommitTime);
-	    params.setToIdExclusive(maxTxnId);
+        params.setFromIdInclusive(minTxnId);
+        params.setFromCommitTimeInclusive(fromCommitTime);
+        params.setToIdExclusive(maxTxnId);
         params.setToCommitTimeExclusive(toCommitTime);
 
         return template.selectList(SELECT_TRANSACTIONS, params, new RowBounds(0, maxResults));
-	}
+    }
 
     /**
      * {@inheritDoc}
@@ -205,9 +204,9 @@ public class SearchDAOImpl implements SearchDAO
     {
         NodeParametersEntity params = new NodeParametersEntity(nodeParameters, qnameDAO);
 
-        if(shardPropertyQName != null && shardPropertyTypeName != null)
+        if (shardPropertyQName != null && shardPropertyTypeName != null)
         {
-            if(shardPropertyQName.equals(ContentModel.PROP_CREATED))
+            if (shardPropertyQName.equals(ContentModel.PROP_CREATED))
             {
                 params.setShardPropertyQNameId(-1L);
             }
@@ -226,7 +225,7 @@ public class SearchDAOImpl implements SearchDAO
             else
             {
                 Pair<Long, QName> propertyQNamePair = qnameDAO.getQName(shardPropertyQName);
-                if(propertyQNamePair != null)
+                if (propertyQNamePair != null)
                 {
                     params.setShardPropertyQNameId(propertyQNamePair.getFirst());
                     params.setShardPropertyType(shardPropertyTypeName.getLocalName());
@@ -234,15 +233,15 @@ public class SearchDAOImpl implements SearchDAO
             }
         }
 
-	    if(nodeParameters.getMaxResults() != 0 && nodeParameters.getMaxResults() != Integer.MAX_VALUE)
-	    {
-	        return template.selectList(
-	                SELECT_NODES, params,
-	                new RowBounds(0, nodeParameters.getMaxResults()));
-	    }
-	    else
-	    {
-	        return template.selectList(SELECT_NODES, params);
-	    }
-	}
+        if (nodeParameters.getMaxResults() != 0 && nodeParameters.getMaxResults() != Integer.MAX_VALUE)
+        {
+            return template.selectList(
+                    SELECT_NODES, params,
+                    new RowBounds(0, nodeParameters.getMaxResults()));
+        }
+        else
+        {
+            return template.selectList(SELECT_NODES, params);
+        }
+    }
 }

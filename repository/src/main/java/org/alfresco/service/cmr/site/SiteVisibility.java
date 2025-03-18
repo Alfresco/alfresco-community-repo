@@ -35,7 +35,7 @@ import org.alfresco.api.AlfrescoPublicApi;
 @AlfrescoPublicApi
 public enum SiteVisibility
 {
-    PUBLIC,             // Public site.  Visible and accessible by all
-    MODERATED,          // Moderated site.  Visible to all, but only accessible via moderated invitation.
-    PRIVATE             // Private site.  Visible and accessible only to members of the site.
+    PUBLIC, // Public site. Visible and accessible by all
+    MODERATED, // Moderated site. Visible to all, but only accessible via moderated invitation.
+    PRIVATE // Private site. Visible and accessible only to members of the site.
 }

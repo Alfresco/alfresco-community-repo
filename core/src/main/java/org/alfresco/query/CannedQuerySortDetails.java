@@ -34,17 +34,17 @@ public class CannedQuerySortDetails
 {
     /**
      * Sort ordering for the sort pairs.
+     * 
      * @author Derek Hulley
      * @since 4.0
      */
     public static enum SortOrder
     {
-        ASCENDING,
-        DESCENDING
+        ASCENDING, DESCENDING
     }
-    
+
     private final List<Pair<? extends Object, SortOrder>> sortPairs;
-    
+
     /**
      * Construct the sort details with a variable number of sort pairs.
      * <p/>
@@ -52,13 +52,14 @@ public class CannedQuerySortDetails
      * <b>key:</b> the key type to sort on<br/>
      * <b>sortOrder:</b> the ordering of values associated with the key<br/>
      * 
-     * @param sortPairs             the sort pairs, which will be applied in order
+     * @param sortPairs
+     *            the sort pairs, which will be applied in order
      */
-    public CannedQuerySortDetails(Pair<? extends Object, SortOrder> ... sortPairs)
+    public CannedQuerySortDetails(Pair<? extends Object, SortOrder>... sortPairs)
     {
         this.sortPairs = Collections.unmodifiableList(Arrays.asList(sortPairs));
     }
-    
+
     /**
      * Construct the sort details from a list of sort pairs.
      * <p/>
@@ -66,13 +67,14 @@ public class CannedQuerySortDetails
      * <b>key:</b> the key type to sort on<br/>
      * <b>sortOrder:</b> the ordering of values associated with the key<br/>
      * 
-     * @param sortPairs             the sort pairs, which will be applied in order
+     * @param sortPairs
+     *            the sort pairs, which will be applied in order
      */
     public CannedQuerySortDetails(List<Pair<? extends Object, SortOrder>> sortPairs)
     {
         this.sortPairs = Collections.unmodifiableList(sortPairs);
     }
-    
+
     @Override
     public String toString()
     {
@@ -80,7 +82,7 @@ public class CannedQuerySortDetails
     }
 
     /**
-     * Get the sort definitions.  The instance will become unmodifiable after this has been called.
+     * Get the sort definitions. The instance will become unmodifiable after this has been called.
      */
     public List<Pair<? extends Object, SortOrder>> getSortPairs()
     {

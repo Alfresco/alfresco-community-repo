@@ -33,10 +33,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 
 /**
- * Constraint implementation that ensures that the value is a numeric value bewteen a given
- * minimum and maximum value.  If a minimum or maximum value are not provided, then the JAVA
- * Double's {@link Double#MIN_VALUE minimum value} or {@link Double#MAX_VALUE maximum value}
- * are assumed.
+ * Constraint implementation that ensures that the value is a numeric value bewteen a given minimum and maximum value. If a minimum or maximum value are not provided, then the JAVA Double's {@link Double#MIN_VALUE minimum value} or {@link Double#MAX_VALUE maximum value} are assumed.
  * 
  * @see #setMinValue(double)
  * @see #setMaxValue(double)
@@ -50,7 +47,7 @@ public class NumericRangeConstraint extends AbstractConstraint
     private static final String ERR_INVALID_MAX_VALUE = "d_dictionary.constraint.numeric_range.invalid_max_value";
     private static final String ERR_NON_NUMERIC = "d_dictionary.constraint.numeric_range.non_numeric";
     private static final String ERR_OUT_OF_RANGE = "d_dictionary.constraint.numeric_range.out_of_range";
-    
+
     private double minValue = Double.MIN_VALUE;
     private double maxValue = Double.MAX_VALUE;
 
@@ -59,15 +56,15 @@ public class NumericRangeConstraint extends AbstractConstraint
     {
         return "MINMAX";
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(80);
         sb.append("NumericRangeConstraint")
-          .append("[ minValue=").append(minValue)
-          .append(", maxValue=").append(maxValue)
-          .append("]");
+                .append("[ minValue=").append(minValue)
+                .append(", maxValue=").append(maxValue)
+                .append("]");
         return sb.toString();
     }
 
@@ -80,10 +77,10 @@ public class NumericRangeConstraint extends AbstractConstraint
     }
 
     /**
-     * Set the minimum value allowed, which can be any value between
-     * {@link Double#MIN_VALUE} and {@link Double#MAX_VALUE}.
+     * Set the minimum value allowed, which can be any value between {@link Double#MIN_VALUE} and {@link Double#MAX_VALUE}.
      * 
-     * @param minValue the minimum value allowed by the constraint
+     * @param minValue
+     *            the minimum value allowed by the constraint
      */
     public void setMinValue(double minValue)
     {
@@ -103,10 +100,10 @@ public class NumericRangeConstraint extends AbstractConstraint
     }
 
     /**
-     * Set the maximum value allowed, which can be any value between
-     * {@link Double#MIN_VALUE} and {@link Double#MAX_VALUE}.
+     * Set the maximum value allowed, which can be any value between {@link Double#MIN_VALUE} and {@link Double#MAX_VALUE}.
      * 
-     * @param maxValue the minimum value allowed by the constraint
+     * @param maxValue
+     *            the minimum value allowed by the constraint
      */
     public void setMaxValue(double maxValue)
     {
@@ -121,13 +118,13 @@ public class NumericRangeConstraint extends AbstractConstraint
     public Map<String, Object> getParameters()
     {
         Map<String, Object> params = new HashMap<String, Object>(2);
-        
+
         params.put("minValue", this.minValue);
         params.put("maxValue", this.maxValue);
-        
+
         return params;
     }
-    
+
     protected void evaluateSingleValue(Object value)
     {
         // ensure that the value can be converted to a double
@@ -140,13 +137,13 @@ public class NumericRangeConstraint extends AbstractConstraint
         {
             throw new ConstraintException(ERR_NON_NUMERIC, value);
         }
-        
+
         // Infinity and NaN cannot match
         if (Double.isInfinite(checkValue) || Double.isNaN(checkValue))
         {
             throw new ConstraintException(ERR_OUT_OF_RANGE, checkValue, minValue, maxValue);
         }
-        
+
         // Check that the value is in range
         if (checkValue > maxValue || checkValue < minValue)
         {

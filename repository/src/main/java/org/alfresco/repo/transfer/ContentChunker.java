@@ -31,15 +31,14 @@ import org.alfresco.service.cmr.transfer.TransferException;
 /**
  * The Content Chunker Splits Content into "Chunks" of a given size.
  * 
- * So, for example, if the chunk size is 10MB and there are 6 files of 2MB then 
- * there will be one chunk containing 5 chunks and the remaining 2MB will remain.
+ * So, for example, if the chunk size is 10MB and there are 6 files of 2MB then there will be one chunk containing 5 chunks and the remaining 2MB will remain.
  * <p>
  * Call the addContent method to add ContentData to the chunker.
  * <p>
  * Call the setHandler method to set the handler to process chunks of content.
  * <p>
- * Call the flush() method after the last call to addContent to flush the remaining 
- * buffered content.
+ * Call the flush() method after the last call to addContent to flush the remaining buffered content.
+ * 
  * @author Mark
  */
 public interface ContentChunker
@@ -48,7 +47,7 @@ public interface ContentChunker
      * add content data to the chunker
      */
     public void addContent(ContentData data) throws TransferException;
-    
+
     /**
      * flush any remaining content data
      */
@@ -56,7 +55,8 @@ public interface ContentChunker
 
     /**
      * 
-     * @param chunkSize long
+     * @param chunkSize
+     *            long
      */
     public void setChunkSize(long chunkSize);
 
@@ -68,7 +68,8 @@ public interface ContentChunker
 
     /**
      * 
-     * @param handler ContentChunkProcessor
+     * @param handler
+     *            ContentChunkProcessor
      */
     public void setHandler(ContentChunkProcessor handler);
 

@@ -30,6 +30,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -60,14 +64,10 @@ import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.dao.DataIntegrityViolationException;
 
 /**
- * Model change validation covering model deletes, model constituent changes e.g. property deletes,
- * additions, etc.
- *  
+ * Model change validation covering model deletes, model constituent changes e.g. property deletes, additions, etc.
+ * 
  * @author sglover
  */
 public class ModelValidatorImpl implements ModelValidator
@@ -137,13 +137,13 @@ public class ModelValidatorImpl implements ModelValidator
 
     private void checkCustomModelNamespace(M2Model model, String tenantDomain)
     {
-        if(tenantDomain != null && !tenantDomain.equals("") && enforceTenantInNamespace)
+        if (tenantDomain != null && !tenantDomain.equals("") && enforceTenantInNamespace)
         {
             // check only for "real" tenants
-            for(M2Namespace namespace : model.getNamespaces())
+            for (M2Namespace namespace : model.getNamespaces())
             {
                 String namespaceURI = namespace.getUri();
-                if(namespaceURI.indexOf(tenantDomain) == -1)
+                if (namespaceURI.indexOf(tenantDomain) == -1)
                 {
                     throw new DictionaryException("Namespace " + namespaceURI + " does not contain the tenant " + tenantDomain);
                 }
@@ -157,10 +157,10 @@ public class ModelValidatorImpl implements ModelValidator
         boolean canDelete = true;
 
         String tenantDomain = "for tenant ["
-              + (tenant == null ? TenantService.DEFAULT_DOMAIN : tenant.getTenantDomain()) + "]";
+                + (tenant == null ? TenantService.DEFAULT_DOMAIN : tenant.getTenantDomain()) + "]";
 
         List<WorkflowDefinition> workflowDefs = workflowService.getDefinitions();
-        
+
         if (workflowDefs.size() > 0)
         {
             if (namespaceDefs.size() > 0)
@@ -169,7 +169,7 @@ public class ModelValidatorImpl implements ModelValidator
                 for (WorkflowDefinition workflowDef : workflowDefs)
                 {
                     String workflowDefName = workflowDef.getName();
-                    
+
                     String workflowNamespaceURI = null;
                     try
                     {
@@ -177,10 +177,10 @@ public class ModelValidatorImpl implements ModelValidator
                     }
                     catch (NamespaceException ne)
                     {
-                        logger.warn("Skipped workflow when validating model delete - unknown namespace: "+ne);
+                        logger.warn("Skipped workflow when validating model delete - unknown namespace: " + ne);
                         continue;
                     }
-                    
+
                     for (NamespaceDefinition namespaceDef : namespaceDefs)
                     {
                         if (workflowNamespaceURI.equals(namespaceDef.getUri()))
@@ -193,39 +193,38 @@ public class ModelValidatorImpl implements ModelValidator
                 }
             }
         }
-        
+
         // check for type usages
-        outer:
-        for (TypeDefinition type : typeDefs)
+        outer: for (TypeDefinition type : typeDefs)
         {
             try
             {
                 validateDeleteClass(tenant, type);
             }
-            catch(ModelInUseException e)
+            catch (ModelInUseException e)
             {
                 canDelete = false;
                 break outer;
             }
-            catch(ModelNotInUseException e)
+            catch (ModelNotInUseException e)
             {
                 // ok, continue
             }
         }
-        
+
         // check for aspect usages
-        outer:
-        for (AspectDefinition aspect : aspectDefs)
+        outer: for (AspectDefinition aspect : aspectDefs)
         {
             try
             {
                 validateDeleteClass(tenant, aspect);
-            } catch(ModelInUseException e)
+            }
+            catch (ModelInUseException e)
             {
                 canDelete = false;
                 break outer;
             }
-            catch(ModelNotInUseException e)
+            catch (ModelNotInUseException e)
             {
                 // ok, continue
             }
@@ -243,8 +242,7 @@ public class ModelValidatorImpl implements ModelValidator
                 + (tenant == null ? TenantService.DEFAULT_DOMAIN : tenant.getTenantDomain()) + "]";
 
         // We need a separate transaction to do the qname delete "check"
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -253,13 +251,13 @@ public class ModelValidatorImpl implements ModelValidator
                     // The class QName may not have been created in the database if no
                     // properties have been created that use it, so check first and then
                     // try to delete it.
-                    if(qnameDAO.getQName(className) != null)
+                    if (qnameDAO.getQName(className) != null)
                     {
                         qnameDAO.deleteQName(className);
                     }
                     throw new ModelNotInUseException("Class " + className + " not in use");
                 }
-                catch(DataIntegrityViolationException e)
+                catch (DataIntegrityViolationException e)
                 {
                     // catch data integrity violation e.g. foreign key constraint exception
                     logger.debug(e);
@@ -269,7 +267,6 @@ public class ModelValidatorImpl implements ModelValidator
             }
         }, false, true);
 
-
         // check against workflow task usage
         for (WorkflowDefinition workflowDef : workflowService.getDefinitions())
         {
@@ -278,7 +275,7 @@ public class ModelValidatorImpl implements ModelValidator
                 TypeDefinition workflowTypeDef = workflowTaskDef.metadata;
                 if (workflowTypeDef.getName().equals(className))
                 {
-                    throw new AlfrescoRuntimeException("Failed to validate model delete" + tenantDomain + " - found task definition in workflow " 
+                    throw new AlfrescoRuntimeException("Failed to validate model delete" + tenantDomain + " - found task definition in workflow "
                             + workflowDef.getName() + " with " + classType + " '" + className + "'");
                 }
             }
@@ -294,7 +291,7 @@ public class ModelValidatorImpl implements ModelValidator
         }
 
         PropertyDefinition prop = dictionaryDAO.getProperty(propertyQName);
-        if(prop != null && prop.getName().equals(propertyQName) && prop.getModel().getName().equals(modelName))
+        if (prop != null && prop.getName().equals(propertyQName) && prop.getModel().getName().equals(modelName))
         {
             validateDeleteProperty(tenantDomain, prop);
         }
@@ -310,13 +307,11 @@ public class ModelValidatorImpl implements ModelValidator
         final QName propName = propDef.getName();
 
         // We need a separate transaction to do the qname delete "check"
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
-                return TenantUtil.runAsTenant(new TenantRunAsWork<Void>()
-                {
+                return TenantUtil.runAsTenant(new TenantRunAsWork<Void>() {
                     @Override
                     public Void doWork() throws Exception
                     {
@@ -325,12 +320,12 @@ public class ModelValidatorImpl implements ModelValidator
                             // The property QName may not have been created in the database if no
                             // properties have been created that use it, so check first and then
                             // try to delete it.
-                            if(qnameDAO.getQName(propName) != null)
+                            if (qnameDAO.getQName(propName) != null)
                             {
                                 qnameDAO.deleteQName(propName);
                             }
                         }
-                        catch(DataIntegrityViolationException e)
+                        catch (DataIntegrityViolationException e)
                         {
                             // catch data integrity violation e.g. foreign key constraint exception
                             logger.debug(e);
@@ -352,9 +347,9 @@ public class ModelValidatorImpl implements ModelValidator
         {
             tenantDomain = " for tenant [" + tenantService.getCurrentUserDomain() + "]";
         }
-        
+
         Set<QName> referencedBy = new HashSet<QName>(0);
-        
+
         // check for references to constraint definition
         // note: could be anon prop constraint (if no referenceable constraint)
         Collection<QName> allModels = dictionaryDAO.getModels();
@@ -370,7 +365,7 @@ public class ModelValidatorImpl implements ModelValidator
             {
                 propDefs = dictionaryDAO.getProperties(model);
             }
-            
+
             for (PropertyDefinition propDef : propDefs)
             {
                 for (ConstraintDefinition conDef : propDef.getConstraints())
@@ -382,7 +377,7 @@ public class ModelValidatorImpl implements ModelValidator
                 }
             }
         }
-        
+
         if (referencedBy.size() == 1)
         {
             throw new AlfrescoRuntimeException("Failed to validate constraint delete" + tenantDomain + " - constraint definition '" + constraintName + "' is being referenced by '" + referencedBy.toArray()[0] + "' property constraint");
@@ -401,13 +396,13 @@ public class ModelValidatorImpl implements ModelValidator
     {
         boolean canDeleteModel = true;
 
-        // TODO add model locking during delete (would need to be tenant-aware & cluster-aware) to avoid potential 
-        //      for concurrent addition of new content/workflow as model is being deleted
-        
+        // TODO add model locking during delete (would need to be tenant-aware & cluster-aware) to avoid potential
+        // for concurrent addition of new content/workflow as model is being deleted
+
         final Collection<NamespaceDefinition> namespaceDefs;
         final Collection<TypeDefinition> typeDefs;
         final Collection<AspectDefinition> aspectDefs;
-        
+
         try
         {
             namespaceDefs = dictionaryDAO.getNamespaces(modelName);
@@ -416,7 +411,7 @@ public class ModelValidatorImpl implements ModelValidator
 
             // TODO - in case of MT we do not currently allow deletion of an overridden model (with usages) ... but could allow if (re-)inherited model is equivalent to an incremental update only ?
             canDeleteModel &= canDeleteModel(namespaceDefs, typeDefs, aspectDefs, null);
-            if(canDeleteModel)
+            if (canDeleteModel)
             {
                 if (tenantService.isEnabled() && tenantService.isTenantUser() == false)
                 {
@@ -426,8 +421,7 @@ public class ModelValidatorImpl implements ModelValidator
                     for (final Tenant tenant : tenants)
                     {
                         // validate model delete within context of tenant domain
-                        canDeleteModel &= AuthenticationUtil.runAs(new RunAsWork<Boolean>()
-                        {
+                        canDeleteModel &= AuthenticationUtil.runAs(new RunAsWork<Boolean>() {
                             public Boolean doWork()
                             {
                                 boolean canDelete = canDeleteModel(namespaceDefs, typeDefs, aspectDefs, tenant);
@@ -435,7 +429,7 @@ public class ModelValidatorImpl implements ModelValidator
                             }
                         }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenant.getTenantDomain()));
 
-                        if(!canDeleteModel)
+                        if (!canDeleteModel)
                         {
                             break;
                         }
@@ -449,7 +443,7 @@ public class ModelValidatorImpl implements ModelValidator
             {
                 logger.debug("Dictionary model '" + modelName + "' does not exist ... skip delete validation : " + e);
             }
-            // we must return true here - there is no model 
+            // we must return true here - there is no model
             canDeleteModel = true;
         }
 
@@ -469,7 +463,7 @@ public class ModelValidatorImpl implements ModelValidator
         checkCustomModelNamespace(model, TenantUtil.getCurrentDomain());
 
         List<M2ModelDiff> modelDiffs = dictionaryDAO.diffModel(model);
-        
+
         for (M2ModelDiff modelDiff : modelDiffs)
         {
             if (modelDiff.getDiffType().equals(M2ModelDiff.DIFF_DELETED))
@@ -485,15 +479,11 @@ public class ModelValidatorImpl implements ModelValidator
                 }
                 else
                 {
-                    /*
-                     * As the M2Model#compile method will detect and throw exception for any missing namespace which
-                     * is required to define any Type, Aspect or Property, we can safely add this extra check.
-                     * See APPSREPO-59 comment for details.
-                     */
+                    /* As the M2Model#compile method will detect and throw exception for any missing namespace which is required to define any Type, Aspect or Property, we can safely add this extra check. See APPSREPO-59 comment for details. */
                     if (!modelDiff.getElementType().equals(M2ModelDiff.TYPE_NAMESPACE))
                     {
                         throw new AlfrescoRuntimeException("Failed to validate model update - found deleted " + modelDiff.getElementType() + " '" + modelDiff
-                                                .getElementName() + "'");
+                                .getElementName() + "'");
                     }
                 }
             }
@@ -503,19 +493,19 @@ public class ModelValidatorImpl implements ModelValidator
                 throw new AlfrescoRuntimeException("Failed to validate model update - found non-incrementally updated " + modelDiff.getElementType() + " '" + modelDiff.getElementName() + "'");
             }
 
-            if(modelDiff.getDiffType().equals(M2ModelDiff.DIFF_CREATED))
+            if (modelDiff.getDiffType().equals(M2ModelDiff.DIFF_CREATED))
             {
                 if (modelDiff.getElementType().equals(M2ModelDiff.TYPE_NAMESPACE))
                 {
                     ModelDefinition importedModel = dictionaryService.getModelByNamespaceUri(modelDiff.getNamespaceDefinition().getUri());
-                    if(importedModel != null && !model.getNamespaces().isEmpty())
+                    if (importedModel != null && !model.getNamespaces().isEmpty())
                     {
                         checkCircularDependency(importedModel, model, importedModel.getName().getLocalName());
                     }
                 }
             }
         }
-        
+
         // TODO validate that any deleted constraints are not being referenced - else currently will become anon - or push down into model compilation (check backwards compatibility ...)
     }
 

@@ -31,30 +31,26 @@ public abstract class TransactionListenerAdapter implements TransactionListener
      */
     @Override
     public void beforeCommit(boolean readOnly)
-    {
-    }
+    {}
 
     /**
      * {@inheritDoc}
      */
     @Override
     public void beforeCompletion()
-    {
-    }
+    {}
 
     /**
      * {@inheritDoc}
      */
     @Override
     public void afterCommit()
-    {
-    }
+    {}
 
     /**
      * {@inheritDoc}
      */
     @Override
     public void afterRollback()
-    {
-    }
+    {}
 }

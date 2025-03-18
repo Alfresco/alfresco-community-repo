@@ -25,11 +25,11 @@
  */
 package org.alfresco.rest.api.search.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Collections;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * POJO class representing Localization parameters
@@ -41,10 +41,10 @@ public class Localization
 
     @JsonCreator
     public Localization(@JsonProperty("timezone") String timezone,
-                        @JsonProperty("locales") List<String> locales)
+            @JsonProperty("locales") List<String> locales)
     {
         this.timezone = timezone;
-        this.locales = locales == null? Collections.emptyList():locales;
+        this.locales = locales == null ? Collections.emptyList() : locales;
     }
 
     public String getTimezone()

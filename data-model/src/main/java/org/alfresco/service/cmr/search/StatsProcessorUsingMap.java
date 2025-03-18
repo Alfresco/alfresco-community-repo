@@ -28,8 +28,7 @@ package org.alfresco.service.cmr.search;
 import java.util.Map;
 
 /**
- * Post-Processors the results of a Stats query using a Map of values.
- * Looks up the value by Map.key and replaces it with Map.value
+ * Post-Processors the results of a Stats query using a Map of values. Looks up the value by Map.key and replaces it with Map.value
  * 
  * If its not found then returns the existing value.
  *
@@ -39,12 +38,12 @@ import java.util.Map;
 public class StatsProcessorUsingMap implements StatsProcessor
 {
     Map<String, String> mapping;
-    
+
     public StatsProcessorUsingMap()
     {
         super();
     }
-    
+
     public StatsProcessorUsingMap(Map<String, String> mapping)
     {
         super();
@@ -54,12 +53,18 @@ public class StatsProcessorUsingMap implements StatsProcessor
     @Override
     public StatsResultSet process(StatsResultSet input)
     {
-        if (input == null || input.getStats() == null){ return null; }
-        
+        if (input == null || input.getStats() == null)
+        {
+            return null;
+        }
+
         for (StatsResultStat aStat : input.getStats())
         {
             String processed = mapping.get(aStat.getName());
-            if (processed != null) { aStat.setName(processed); }
+            if (processed != null)
+            {
+                aStat.setName(processed);
+            }
         }
         return input;
     }
@@ -68,6 +73,5 @@ public class StatsProcessorUsingMap implements StatsProcessor
     {
         this.mapping = mapping;
     }
-
 
 }

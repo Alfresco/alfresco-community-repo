@@ -26,15 +26,16 @@
 
 package org.alfresco.repo.forms.processor.node;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.processor.FieldProcessor;
 import org.alfresco.service.cmr.dictionary.ClassAttributeDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Default {@link FieldProcessor} implementation, used when an explicit FieldProcessor can not be located.
@@ -50,13 +51,13 @@ public class DefaultFieldProcessor extends QNameFieldProcessor<ClassAttributeDef
     private final PropertyFieldProcessor propProcessor = new PropertyFieldProcessor();
 
     @Override
-    protected Log getLogger() 
+    protected Log getLogger()
     {
         return logger;
     }
 
     @Override
-    protected QName getFullName(String name) 
+    protected QName getFullName(String name)
     {
         String[] parts = name.split(FormFieldConstants.FIELD_NAME_SEPARATOR);
         int position = parts.length - 1;
@@ -69,10 +70,10 @@ public class DefaultFieldProcessor extends QNameFieldProcessor<ClassAttributeDef
     }
 
     @Override
-    public Field generateField(QName fullName, ContentModelItemData<?> itemData, boolean isForcedField) 
+    public Field generateField(QName fullName, ContentModelItemData<?> itemData, boolean isForcedField)
     {
         Field fieldInfo = propProcessor.generateField(fullName, itemData, isForcedField);
-        if (fieldInfo == null) 
+        if (fieldInfo == null)
         {
             fieldInfo = assocProcessor.generateField(fullName, itemData, isForcedField);
         }
@@ -96,8 +97,8 @@ public class DefaultFieldProcessor extends QNameFieldProcessor<ClassAttributeDef
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.node.QNameFieldProcessor#getGroup(org.alfresco.service.cmr.dictionary.ClassAttributeDefinition)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.node.QNameFieldProcessor#getGroup(org.alfresco.service.cmr.dictionary.ClassAttributeDefinition) */
     @Override
     protected FieldGroup getGroup(ClassAttributeDefinition typeDef)
     {
@@ -105,8 +106,8 @@ public class DefaultFieldProcessor extends QNameFieldProcessor<ClassAttributeDef
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.node.QNameFieldProcessor#getTypeDefinition(org.alfresco.service.namespace.QName, org.alfresco.repo.forms.processor.node.ItemData, boolean)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.node.QNameFieldProcessor#getTypeDefinition(org.alfresco.service.namespace.QName, org.alfresco.repo.forms.processor.node.ItemData, boolean) */
     @Override
     protected ClassAttributeDefinition getTypeDefinition(QName fullName, ContentModelItemData<?> itemData, boolean isForcedField)
     {
@@ -114,8 +115,8 @@ public class DefaultFieldProcessor extends QNameFieldProcessor<ClassAttributeDef
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.node.QNameFieldProcessor#getValue(org.alfresco.service.namespace.QName, org.alfresco.repo.forms.processor.node.ItemData)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.node.QNameFieldProcessor#getValue(org.alfresco.service.namespace.QName, org.alfresco.repo.forms.processor.node.ItemData) */
     @Override
     protected Object getValue(QName fullName, ContentModelItemData<?> itemData)
     {
@@ -123,8 +124,8 @@ public class DefaultFieldProcessor extends QNameFieldProcessor<ClassAttributeDef
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.node.QNameFieldProcessor#makeField(org.alfresco.service.cmr.dictionary.ClassAttributeDefinition, java.lang.Object, org.alfresco.repo.forms.FieldGroup)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.node.QNameFieldProcessor#makeField(org.alfresco.service.cmr.dictionary.ClassAttributeDefinition, java.lang.Object, org.alfresco.repo.forms.FieldGroup) */
     @Override
     protected Field makeField(ClassAttributeDefinition typeDef, Object value, FieldGroup group)
     {

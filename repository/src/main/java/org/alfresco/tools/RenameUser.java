@@ -42,6 +42,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
@@ -55,21 +58,18 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.VmShutdownListener;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Rename user tool. This tool provides minimal support for renaming users.
- * See {@link #displayHelp} message for restrictions.
+ * Rename user tool. This tool provides minimal support for renaming users. See {@link #displayHelp} message for restrictions.
+ * 
  * <pre>
  * Usage: renameUser -user username [options] oldUsername newUsername");
  *        renameUser -user username [options] -file filename");
  * </pre>
- * The csv file has a simple comma separated list, with
- * a pair of usernames on each line. Comments and blank
- * lines may also be included. For example:
+ * 
+ * The csv file has a simple comma separated list, with a pair of usernames on each line. Comments and blank lines may also be included. For example:
+ * 
  * <pre>
  * # List of usernames to change
  * 
@@ -83,11 +83,11 @@ import org.apache.commons.logging.LogFactory;
 public class RenameUser extends Tool
 {
     private static Log logger = LogFactory.getLog(RenameUser.class);
-    
+
     /** User Rename Tool Context */
     protected RenameUserToolContext context;
     private boolean login = true;
-    
+
     PersonService personService;
     NodeService nodeService;
 
@@ -108,7 +108,7 @@ public class RenameUser extends Tool
         }
         return nodeService;
     }
-    
+
     public void setLogin(boolean login)
     {
         this.login = login;
@@ -124,14 +124,13 @@ public class RenameUser extends Tool
         Tool tool = new RenameUser();
         tool.start(args);
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.tools.Tool#processArgs(java.lang.String[])
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.tools.Tool#processArgs(java.lang.String[]) */
     @Override
     protected ToolContext processArgs(String[] args)
-        throws ToolArgumentException
+            throws ToolArgumentException
     {
         context = new RenameUserToolContext();
         context.setLogin(login);
@@ -174,7 +173,7 @@ public class RenameUser extends Tool
                     context.encoding = Charset.forName(args[i]);
                 }
                 catch (IllegalCharsetNameException e)
-                { 
+                {
                     throw new ToolArgumentException("The value <encoding> is not recognised");
                 }
                 catch (UnsupportedCharsetException e)
@@ -202,16 +201,16 @@ public class RenameUser extends Tool
             else if (!args[i].startsWith("-"))
             {
                 i++;
-                if (i == args.length || args[i-1].trim().length() == 0 || args[i].trim().length() == 0)
+                if (i == args.length || args[i - 1].trim().length() == 0 || args[i].trim().length() == 0)
                 {
                     throw new ToolArgumentException("Both <oldUsername> <newUsername> must be specified");
                 }
                 if (context.userCount() > 0)
                 {
                     throw new ToolArgumentException("Only one <oldUsername> <newUsername> pair may be " +
-                    		"specified on the command line. See the -file option");
+                            "specified on the command line. See the -file option");
                 }
-                String oldUsername = args[i-1].trim();
+                String oldUsername = args[i - 1].trim();
                 String newUsername = args[i].trim();
                 String error = context.add(-1, null, oldUsername, newUsername);
                 if (error != null)
@@ -230,12 +229,12 @@ public class RenameUser extends Tool
 
         return context;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.tools.Tool#displayHelp()
-     */
+     * 
+     * @see org.alfresco.tools.Tool#displayHelp() */
     protected @Override
-    /*package*/ void displayHelp()
+    /* package */ void displayHelp()
     {
         logError("This tool provides minimal support for renaming users. It fixes");
         logError("authorities, group memberships and current zone (older versions");
@@ -262,33 +261,29 @@ public class RenameUser extends Tool
         logError(" -quiet do not display any messages during rename");
         logError(" -verbose report rename progress");
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.tools.Tool#getToolName()
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.tools.Tool#getToolName() */
     @Override
     protected String getToolName()
     {
         return "Alfresco Rename User";
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.tools.Tool#execute()
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.tools.Tool#execute() */
     @Override
     protected int execute() throws ToolException
     {
         // Used for ability to be final and have a set
         final AtomicInteger status = new AtomicInteger(0);
 
-        BatchProcessWorker<User> worker = new BatchProcessWorkerAdaptor<User>()
-        {
+        BatchProcessWorker<User> worker = new BatchProcessWorkerAdaptor<User>() {
             public void process(final User user) throws Throwable
             {
-                RunAsWork<Void> runAsWork = new RunAsWork<Void>()
-                {
+                RunAsWork<Void> runAsWork = new RunAsWork<Void>() {
                     @Override
                     public Void doWork() throws Exception
                     {
@@ -306,7 +301,7 @@ public class RenameUser extends Tool
                 AuthenticationUtil.runAs(runAsWork, context.getUsername());
             }
         };
-        
+
         // Use 2 threads, 20 User objects per transaction. Log every 100 entries.
         BatchProcessor<User> processor = new BatchProcessor<User>(
                 "HomeFolderProviderSynchronizer",
@@ -319,14 +314,14 @@ public class RenameUser extends Tool
 
         return status.get();
     }
-    
+
     private void renameUser(String oldUsername, String newUsername)
     {
-        logInfo("\""+oldUsername+"\" --> \""+newUsername+"\""); 
+        logInfo("\"" + oldUsername + "\" --> \"" + newUsername + "\"");
         try
         {
             NodeRef person = getPersonService().getPerson(oldUsername, false);
-            
+
             // Allow us to update the username just like the LDAP process
             AlfrescoTransactionSupport.bindResource(PersonServiceImpl.KEY_ALLOW_UID_UPDATE, Boolean.TRUE);
 
@@ -336,15 +331,15 @@ public class RenameUser extends Tool
         }
         catch (NoSuchPersonException e)
         {
-            logError("User does not exist: "+oldUsername);
+            logError("User does not exist: " + oldUsername);
         }
     }
-    
+
     public class User
     {
         private final String oldUsername;
         private final String newUsername;
-        
+
         public User(String oldUsername, String newUsername)
         {
             this.oldUsername = oldUsername;
@@ -361,32 +356,32 @@ public class RenameUser extends Tool
             return newUsername;
         }
     }
-    
+
     public class RenameUserToolContext extends ToolContext
     {
         /**
          * Old and new usernames to change.
          */
         private List<User> usernames = new ArrayList<User>();
-        
+
         // Internal - used check the name has not been used before.
         private Set<String> uniqueNames = new HashSet<String>();
-        
+
         /**
          * Source filename of usernames.
          */
         private String filename;
-        
+
         /**
          * Encoding of filename of usernames.
          */
         private Charset encoding = Charset.defaultCharset();
-        
+
         public void setFilename(String filename)
         {
             this.filename = filename;
         }
-        
+
         public String add(int lineNumber, String line, String oldUsername, String newUsername)
         {
             String error = null;
@@ -394,19 +389,19 @@ public class RenameUser extends Tool
             {
                 error = "Old and new usernames are the same";
                 if (line != null)
-                    error = "Error on line " + lineNumber + " ("+error+"): " + line;
+                    error = "Error on line " + lineNumber + " (" + error + "): " + line;
             }
             else if (uniqueNames.contains(oldUsername))
             {
                 error = "Old username already specified";
                 if (line != null)
-                    error = "Error on line " + lineNumber + " ("+error+"): " + line;
+                    error = "Error on line " + lineNumber + " (" + error + "): " + line;
             }
             else if (uniqueNames.contains(newUsername))
             {
                 error = "New username already specified";
                 if (line != null)
-                    error = "Error on line " + lineNumber + " ("+error+"): " + line;
+                    error = "Error on line " + lineNumber + " (" + error + "): " + line;
             }
             else
             {
@@ -421,26 +416,25 @@ public class RenameUser extends Tool
             uniqueNames.add(user.getOldUsername());
             uniqueNames.add(user.getNewUsername());
         }
-        
+
         public int userCount()
         {
             return usernames.size();
         }
-        
+
         public Iterator<User> iterator()
         {
             return usernames.iterator();
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.tools.ToolContext#validate()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.tools.ToolContext#validate() */
         @Override
-        /*package*/ void validate()
+        /* package */ void validate()
         {
             super.validate();
-            
+
             if (filename != null)
             {
                 if (userCount() > 0)
@@ -458,7 +452,7 @@ public class RenameUser extends Tool
                     throw new ToolArgumentException("File " + filename + " contained errors.");
                 }
             }
-            
+
             if (userCount() == 0)
             {
                 throw new ToolArgumentException("No old and new usernames have been specified.");
@@ -467,7 +461,9 @@ public class RenameUser extends Tool
 
         /**
          * Read the user names out of the file.
-         * @param file to be read
+         * 
+         * @param file
+         *            to be read
          * @return {@code true} if there were no problems found with the file contents.
          */
         private boolean readFile(File file)
@@ -476,7 +472,7 @@ public class RenameUser extends Tool
             boolean noErrors = true;
             try
             {
-                in  = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding.name()));
+                in = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding.name()));
                 int lineNumber = 1;
                 for (String line = in.readLine(); line != null; line = in.readLine(), lineNumber++)
                 {
@@ -518,7 +514,8 @@ public class RenameUser extends Tool
                     try
                     {
                         in.close();
-                    } catch (IOException e)
+                    }
+                    catch (IOException e)
                     {
                         // ignore
                     }
@@ -532,11 +529,11 @@ public class RenameUser extends Tool
     private class WorkProvider implements BatchProcessWorkProvider<User>
     {
         private static final int BATCH_SIZE = 100;
-        
+
         private final VmShutdownListener vmShutdownLister = new VmShutdownListener("getRenameUserWorkProvider");
         private final Iterator<User> iterator;
         private final int size;
-        
+
         public WorkProvider(RenameUserToolContext context)
         {
             iterator = context.iterator();
@@ -562,7 +559,7 @@ public class RenameUser extends Tool
             {
                 return Collections.emptyList();
             }
-            
+
             Collection<User> results = new ArrayList<User>(BATCH_SIZE);
             while (results.size() < BATCH_SIZE && iterator.hasNext())
             {

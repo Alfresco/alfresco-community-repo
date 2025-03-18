@@ -27,6 +27,8 @@ package org.alfresco.rest.requests.workflowAPI;
 
 import jakarta.json.JsonObject;
 
+import io.restassured.RestAssured;
+
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestDeploymentModel;
@@ -45,11 +47,8 @@ import org.alfresco.utility.model.ProcessModel;
 import org.alfresco.utility.model.TaskModel;
 import org.alfresco.utility.model.UserModel;
 
-import io.restassured.RestAssured;
-
 /**
- * Defines the entire Rest Workflow API
- * {@link https://api-explorer.alfresco.com/api-explorer/} select "Workflow API"
+ * Defines the entire Rest Workflow API {@link https://api-explorer.alfresco.com/api-explorer/} select "Workflow API"
  */
 public class RestWorkflowAPI extends ModelRequest<RestWorkflowAPI>
 {
@@ -69,7 +68,7 @@ public class RestWorkflowAPI extends ModelRequest<RestWorkflowAPI>
     {
         return new Processes(restWrapper).addProcess(processDefinitionKey, assignee, sendEmailNotifications, priority);
     }
-    
+
     /**
      * Provides DSL on all REST calls under <code>/processes/{processId}/...</code> API path
      * 

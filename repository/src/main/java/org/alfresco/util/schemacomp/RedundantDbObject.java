@@ -28,12 +28,12 @@ package org.alfresco.util.schemacomp;
 import java.util.List;
 import java.util.Locale;
 
-import org.alfresco.util.schemacomp.model.DbObject;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import org.alfresco.util.schemacomp.model.DbObject;
+
 /**
- * If more than one DB item in the target schema matches a reference DB item
- * then this result will be issued.
+ * If more than one DB item in the target schema matches a reference DB item then this result will be issued.
  * 
  * @author Matt Ward
  */
@@ -42,7 +42,7 @@ public class RedundantDbObject extends Result
     private final static int SHOW_MAX_MATCHES = 3;
     private DbObject dbObject;
     private List<DbObject> matches;
-    
+
     public RedundantDbObject(DbObject dbObject, List<DbObject> matches)
     {
         this.dbObject = dbObject;
@@ -66,27 +66,29 @@ public class RedundantDbObject extends Result
         if (matches.size() > SHOW_MAX_MATCHES)
         {
             return I18NUtil.getMessage(
-                        "system.schema_comp.redundant_obj.many_matches",
-                        matches.size(),
-                        dbObject,
-                        describeMatches(),
-                        matches.size() - SHOW_MAX_MATCHES);            
+                    "system.schema_comp.redundant_obj.many_matches",
+                    matches.size(),
+                    dbObject,
+                    describeMatches(),
+                    matches.size() - SHOW_MAX_MATCHES);
         }
         else
         {
             return I18NUtil.getMessage(
-                        "system.schema_comp.redundant_obj",
-                        matches.size(),
-                        dbObject,
-                        describeMatches());
+                    "system.schema_comp.redundant_obj",
+                    matches.size(),
+                    dbObject,
+                    describeMatches());
         }
     }
 
     /**
      * Produces a comma separated list of matching redundant database objects. For example:
+     * 
      * <pre>
      *    MyDbObject[name=match1], MyDbObject[name=match2], MyDbObject[name=match3]
      * </pre>
+     * 
      * At most {@link #SHOW_MAX_MATCHES} will be included.
      * 
      * @return String

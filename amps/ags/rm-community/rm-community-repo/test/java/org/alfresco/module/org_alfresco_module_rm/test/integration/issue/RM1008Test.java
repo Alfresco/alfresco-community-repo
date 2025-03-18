@@ -45,7 +45,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 
-
 /**
  * Test for RM-1008
  *
@@ -80,8 +79,7 @@ public class RM1008Test extends BaseRMTestCase
 
     public void testContainers() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -103,8 +101,7 @@ public class RM1008Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -129,8 +126,7 @@ public class RM1008Test extends BaseRMTestCase
 
     public void testHold()
     {
-        final NodeRef hold = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef hold = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -141,8 +137,7 @@ public class RM1008Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -156,8 +151,7 @@ public class RM1008Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -171,8 +165,7 @@ public class RM1008Test extends BaseRMTestCase
             }
         }, myUser);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -182,8 +175,7 @@ public class RM1008Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -198,8 +190,7 @@ public class RM1008Test extends BaseRMTestCase
             }
         }, myUser);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -209,8 +200,7 @@ public class RM1008Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -227,8 +217,7 @@ public class RM1008Test extends BaseRMTestCase
 
     public void testTransfer()
     {
-        final NodeRef transferFolder = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef transferFolder = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -258,8 +247,7 @@ public class RM1008Test extends BaseRMTestCase
             }
         });
 
-        final NodeRef transfer = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef transfer = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -279,8 +267,7 @@ public class RM1008Test extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -294,8 +281,7 @@ public class RM1008Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -309,8 +295,7 @@ public class RM1008Test extends BaseRMTestCase
             }
         }, myUser);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -320,8 +305,7 @@ public class RM1008Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -336,8 +320,7 @@ public class RM1008Test extends BaseRMTestCase
             }
         }, myUser);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -347,8 +330,7 @@ public class RM1008Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -361,7 +343,6 @@ public class RM1008Test extends BaseRMTestCase
                 return null;
             }
         }, myUser);
-
 
     }
 

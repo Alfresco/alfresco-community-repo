@@ -34,25 +34,25 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.alfresco.repo.content.AbstractContentReader;
-import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.textgen.TextGenerator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import org.alfresco.repo.content.AbstractContentReader;
+import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.textgen.TextGenerator;
+
 /**
  * Provides access to text data that is generated when requested.
  * <p/>
  * The URL has the format: spoofed://{locale=en_GB,seed=12345,length=1024,strings=["Alfresco", "Cloud"]}
  * <p/>
- * The lexicon for the given locale is found by taking the language part of the locale (<b>en</b> in <b>en_GB</b>)
- * and finding the resource <b>alfresco/textgen/lexicon-stem-en.txt</b>.
+ * The lexicon for the given locale is found by taking the language part of the locale (<b>en</b> in <b>en_GB</b>) and finding the resource <b>alfresco/textgen/lexicon-stem-en.txt</b>.
  * 
  * @see TextGenerator
  * 
@@ -66,21 +66,22 @@ public class SpoofedTextContentReader extends AbstractContentReader
     public static final String KEY_SEED = "seed";
     public static final String KEY_SIZE = "size";
     public static final String KEY_WORDS = "words";
-    
+
     private static Map<Locale, TextGenerator> textGeneratorsByLocale = new HashMap<Locale, TextGenerator>();
     private static ReentrantReadWriteLock textGeneratorsLock = new ReentrantReadWriteLock();
-    
+
     private static final Log logger = LogFactory.getLog(SpoofedTextContentReader.class);
-    
+
     private final TextGenerator textGenerator;
     private final long seed;
     private final long size;
     private final String[] words;
-    
+
     /**
      * Get a text generator for the given locale
      * 
-     * @throws RuntimeException         if the locale has no lexicon exists for the locale
+     * @throws RuntimeException
+     *             if the locale has no lexicon exists for the locale
      */
     public static TextGenerator getTextGenerator(Locale locale)
     {
@@ -121,34 +122,39 @@ public class SpoofedTextContentReader extends AbstractContentReader
             textGeneratorsLock.writeLock().unlock();
         }
     }
-    
+
     /**
      * Helper to create a content URL that represents spoofed text
      * 
-     * @param locale                    the text local (must be supported by an appropriate lexicon config resource)
-     * @param seed                      numerical seed to ensure repeatable sequences of random text
-     * @param size                      the size (bytes) of the text to generate
-     * @param words                     additional words with decreasing frequency
-     * @return                          the content URL
+     * @param locale
+     *            the text local (must be supported by an appropriate lexicon config resource)
+     * @param seed
+     *            numerical seed to ensure repeatable sequences of random text
+     * @param size
+     *            the size (bytes) of the text to generate
+     * @param words
+     *            additional words with decreasing frequency
+     * @return the content URL
      * 
-     * @throws IllegalArgumentException if the resulting URL exceeds 255 characters
+     * @throws IllegalArgumentException
+     *             if the resulting URL exceeds 255 characters
      */
     @SuppressWarnings("unchecked")
-    public static String createContentUrl(Locale locale, long seed, long size, String ... words)
+    public static String createContentUrl(Locale locale, long seed, long size, String... words)
     {
         if (locale == null || size < 0L)
         {
             throw new IllegalArgumentException("Locale must be supplied and size must be zero or greater.");
         }
-        
+
         // Make sure that there is a text generator available
         SpoofedTextContentReader.getTextGenerator(locale);
-        
+
         // Build map
         String url = null;
         try
         {
-             JSONObject jsonObj = new JSONObject();
+            JSONObject jsonObj = new JSONObject();
             jsonObj.put(KEY_LOCALE, locale.toString());
             jsonObj.put(KEY_SEED, Long.valueOf(seed).toString());
             jsonObj.put(KEY_SIZE, Long.valueOf(size).toString());
@@ -162,7 +168,7 @@ public class SpoofedTextContentReader extends AbstractContentReader
                 jsonWords.add(word);
             }
             jsonObj.put(KEY_WORDS, jsonWords);
-            
+
             url = FileContentStore.SPOOF_PROTOCOL + "://" + jsonObj.toString();
             if (url.length() > 255)
             {
@@ -180,9 +186,10 @@ public class SpoofedTextContentReader extends AbstractContentReader
             throw new RuntimeException("Unable to create content URL using " + locale + ", " + seed + ", " + size + ", " + words, e);
         }
     }
-    
+
     /**
-     * @param url           a URL describing the type of text to produce (see class comments)
+     * @param url
+     *            a URL describing the type of text to produce (see class comments)
      */
     public SpoofedTextContentReader(String url)
     {
@@ -227,11 +234,11 @@ public class SpoofedTextContentReader extends AbstractContentReader
         {
             throw new RuntimeException("Unable to interpret URL: " + url, e);
         }
-        
+
     }
-    
+
     /**
-     * @return              <tt>true</tt> always
+     * @return <tt>true</tt> always
      */
     public boolean exists()
     {
@@ -239,7 +246,7 @@ public class SpoofedTextContentReader extends AbstractContentReader
     }
 
     /**
-     * @return          the text generator that will make the spoofed text
+     * @return the text generator that will make the spoofed text
      */
     public TextGenerator getTextGenerator()
     {
@@ -247,7 +254,7 @@ public class SpoofedTextContentReader extends AbstractContentReader
     }
 
     /**
-     * @return          the random seed for the spoofed text
+     * @return the random seed for the spoofed text
      */
     public long getSeed()
     {
@@ -255,7 +262,7 @@ public class SpoofedTextContentReader extends AbstractContentReader
     }
 
     /**
-     * @return          the words to add to the spoofed text
+     * @return the words to add to the spoofed text
      */
     public String[] getWords()
     {
@@ -263,7 +270,7 @@ public class SpoofedTextContentReader extends AbstractContentReader
     }
 
     /**
-     * @return          spoofed text size
+     * @return spoofed text size
      */
     public long getSize()
     {
@@ -279,8 +286,7 @@ public class SpoofedTextContentReader extends AbstractContentReader
     }
 
     /**
-     * The URL of the write is known from the start and this method contract states
-     * that no consideration needs to be taken w.r.t. the stream state.
+     * The URL of the write is known from the start and this method contract states that no consideration needs to be taken w.r.t. the stream state.
      */
     @Override
     protected ContentReader createReader() throws ContentIOException
@@ -288,7 +294,7 @@ public class SpoofedTextContentReader extends AbstractContentReader
         SpoofedTextContentReader reader = new SpoofedTextContentReader(getContentUrl());
         return reader;
     }
-    
+
     @Override
     protected ReadableByteChannel getDirectReadableChannel() throws ContentIOException
     {
@@ -309,7 +315,7 @@ public class SpoofedTextContentReader extends AbstractContentReader
             throw new ContentIOException("Failed to read channel: " + this, e);
         }
     }
-    
+
     @Override
     protected final void setContentUrl(String contentUrl)
     {

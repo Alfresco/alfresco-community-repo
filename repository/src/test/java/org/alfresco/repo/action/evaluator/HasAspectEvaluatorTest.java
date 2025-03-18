@@ -25,6 +25,10 @@
  */
 package org.alfresco.repo.action.evaluator;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.service.cmr.action.ActionCondition;
@@ -34,9 +38,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Is sub class evaluator test
@@ -51,14 +52,14 @@ public class HasAspectEvaluatorTest extends BaseSpringTest
     private NodeRef rootNodeRef;
     private NodeRef nodeRef;
     private HasAspectEvaluator evaluator;
-    
+
     private final static String ID = GUID.generate();
 
     @Before
     public void before() throws Exception
     {
-        this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
-        
+        this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
+
         // Create the store and get the root node
         this.testStoreRef = this.nodeService.createStore(
                 StoreRef.PROTOCOL_WORKSPACE, "Test_"
@@ -71,15 +72,15 @@ public class HasAspectEvaluatorTest extends BaseSpringTest
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}testnode"),
                 ContentModel.TYPE_CONTENT).getChildRef();
-        
-        this.evaluator = (HasAspectEvaluator)this.applicationContext.getBean(HasAspectEvaluator.NAME);
+
+        this.evaluator = (HasAspectEvaluator) this.applicationContext.getBean(HasAspectEvaluator.NAME);
     }
-    
+
     @Test
     public void testMandatoryParamsMissing()
     {
         ActionCondition condition = new ActionConditionImpl(ID, HasAspectEvaluator.NAME, null);
-        
+
         try
         {
             this.evaluator.evaluate(condition, this.nodeRef);
@@ -90,7 +91,7 @@ public class HasAspectEvaluatorTest extends BaseSpringTest
             // Do nothing since this is correct
         }
     }
-    
+
     @Test
     public void testPass()
     {
@@ -99,7 +100,7 @@ public class HasAspectEvaluatorTest extends BaseSpringTest
         condition.setParameterValue(HasAspectEvaluator.PARAM_ASPECT, ContentModel.ASPECT_VERSIONABLE);
         assertTrue(this.evaluator.evaluate(condition, this.nodeRef));
     }
-    
+
     @Test
     public void testFail()
     {

@@ -85,20 +85,17 @@ public class RM3993Test extends BaseRMTestCase
     }
 
     /**
-     * Given that I have auto declare configured And that I have auto file configured to a path where only the record
-     * folder needs to be created When I add lots of documents in the same transaction Then the rules should fire And
-     * the documents should be filed in the new record folder
+     * Given that I have auto declare configured And that I have auto file configured to a path where only the record folder needs to be created When I add lots of documents in the same transaction Then the rules should fire And the documents should be filed in the new record folder
      */
     public void testAutoDeclareAutoFileCreateRecordFolderOnly() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
                 // create the folder
                 ruleFolder = fileFolderService.create(documentLibrary, "mytestfolder", ContentModel.TYPE_FOLDER)
-                            .getNodeRef();
+                        .getNodeRef();
 
                 // create record category
                 nodeRefCategory1 = filePlanService.createRecordCategory(filePlan, "category1");
@@ -115,7 +112,7 @@ public class RM3993Test extends BaseRMTestCase
 
                 Action fileAction = actionService.createAction(FileToAction.NAME);
                 fileAction.setParameterValue(FileToAction.PARAM_PATH,
-                            "/category1/{node.cm:description}");
+                        "/category1/{node.cm:description}");
                 fileAction.setParameterValue(FileToAction.PARAM_CREATE_RECORD_PATH, true);
 
                 Rule fileRule = new Rule();
@@ -140,20 +137,19 @@ public class RM3993Test extends BaseRMTestCase
         for (int i = 0; i < NUMBER_OF_BATCHES; i++)
         {
             final int finali = i;
-            records.addAll(doTestInTransaction(new Test<List<NodeRef>>()
-            {
+            records.addAll(doTestInTransaction(new Test<List<NodeRef>>() {
                 @Override
                 public List<NodeRef> run() throws Exception
                 {
                     List<NodeRef> records = new ArrayList<>(NUMBER_IN_BATCH);
                     for (int j = 0; j < NUMBER_IN_BATCH; j++)
                     {
-                        int count = (finali)* NUMBER_IN_BATCH + (j + 1);
+                        int count = (finali) * NUMBER_IN_BATCH + (j + 1);
                         String name = "content" + count + ".txt";
                         System.out.println(name + " - creating");
 
                         Random rand = new Random();
-                        int descInt = rand.nextInt(2)+1;
+                        int descInt = rand.nextInt(2) + 1;
                         NodeRef record = createFile(ruleFolder, name, Integer.toString(descInt), ContentModel.TYPE_CONTENT);
                         records.add(record);
                     }
@@ -169,8 +165,7 @@ public class RM3993Test extends BaseRMTestCase
                 Thread.sleep(1000);
 
                 final Iterator<NodeRef> temp = records.iterator();
-                doTestInTransaction(new Test<Void>()
-                {
+                doTestInTransaction(new Test<Void>() {
                     @Override
                     public Void run() throws Exception
                     {
@@ -196,15 +191,14 @@ public class RM3993Test extends BaseRMTestCase
             throw exception;
         }
 
-        Integer numberOfRecords = AuthenticationUtil.runAsSystem(new RunAsWork<Integer>()
-        {
+        Integer numberOfRecords = AuthenticationUtil.runAsSystem(new RunAsWork<Integer>() {
 
             @Override
             public Integer doWork() throws Exception
             {
                 List<NodeRef> containedRecordFolders = filePlanService.getContainedRecordFolders(nodeRefCategory1);
                 int numberOfRecords = 0;
-                for(NodeRef recordFolder : containedRecordFolders)
+                for (NodeRef recordFolder : containedRecordFolders)
                 {
                     numberOfRecords = numberOfRecords + fileFolderService.list(recordFolder).size();
                 }
@@ -220,14 +214,14 @@ public class RM3993Test extends BaseRMTestCase
         properties.put(ContentModel.PROP_NAME, (Serializable) name);
         properties.put(ContentModel.PROP_DESCRIPTION, (Serializable) descrption);
         QName assocQName = QName.createQName(
-                    NamespaceService.CONTENT_MODEL_1_0_URI,
-                    QName.createValidLocalName(name));
+                NamespaceService.CONTENT_MODEL_1_0_URI,
+                QName.createValidLocalName(name));
         ChildAssociationRef assocRef = nodeService.createNode(
-                    parentNodeRef,
-                    ContentModel.ASSOC_CONTAINS,
-                    assocQName,
-                    typeQName,
-                    properties);
+                parentNodeRef,
+                ContentModel.ASSOC_CONTAINS,
+                assocQName,
+                typeQName,
+                properties);
         NodeRef nodeRef = assocRef.getChildRef();
         return nodeRef;
     }

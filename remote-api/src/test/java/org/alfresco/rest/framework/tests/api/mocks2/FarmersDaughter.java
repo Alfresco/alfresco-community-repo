@@ -26,15 +26,14 @@
 package org.alfresco.rest.framework.tests.api.mocks2;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.rest.framework.tests.api.mocks.Farmer;
 import org.alfresco.rest.framework.tests.api.mocks.GrassEntityResource;
 
 /**
- * This inherits all Farmer's properties and ANNOTATIONS
- * It adds a new embedded entity which is fine, but it adds another @UniqueId annotation
- * which is invalid because its already on Farmer
+ * This inherits all Farmer's properties and ANNOTATIONS It adds a new embedded entity which is fine, but it adds another @UniqueId annotation which is invalid because its already on Farmer
  *
  * @author Gethin James
  */
@@ -48,8 +47,8 @@ public class FarmersDaughter extends Farmer
         super(id);
         likesFlowers = true;
     }
-    
-    @EmbeddedEntityResource(propertyName = "specialgrass", entityResource=GrassEntityResource.class)
+
+    @EmbeddedEntityResource(propertyName = "specialgrass", entityResource = GrassEntityResource.class)
     public String getGrassId()
     {
         return this.grassId;
@@ -66,7 +65,8 @@ public class FarmersDaughter extends Farmer
     }
 
     /**
-     * @param likesFlowers the likesFlowers to set
+     * @param likesFlowers
+     *            the likesFlowers to set
      */
     public void setLikesFlowers(boolean likesFlowers)
     {
@@ -74,7 +74,8 @@ public class FarmersDaughter extends Farmer
     }
 
     /**
-     * @param grassId the grassId to set
+     * @param grassId
+     *            the grassId to set
      */
     public void setGrassId(String grassId)
     {

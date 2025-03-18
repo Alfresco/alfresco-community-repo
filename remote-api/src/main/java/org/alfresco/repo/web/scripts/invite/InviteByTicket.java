@@ -29,6 +29,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.invitation.site.InviteInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -47,10 +52,6 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Web Script which returns invite information given an inviteId and inviteTicket.
@@ -63,47 +64,41 @@ public class InviteByTicket extends DeclarativeWebScript
 {
     // request parameter names
     private static final String PARAM_INVITEE_USER_NAME = "inviteeUserName";
-    
+
     // service instances
     private ServiceRegistry serviceRegistry;
     private SiteService siteService;
     private InvitationService invitationService;
     private TenantService tenantService;
-    
-    
+
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
     }
-    
+
     public void setInvitationService(InvitationService invitationService)
     {
         this.invitationService = invitationService;
     }
-    
+
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
-    /*
-     * (non-Javadoc)
+
+    /* (non-Javadoc)
      * 
-     * @see
-     * org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco
-     * .web.scripts.WebScriptRequest,
-     * org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco .web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     @Override
     protected Map<String, Object> executeImpl(final WebScriptRequest req, final Status status)
     {
         String tenantDomain = TenantService.DEFAULT_DOMAIN;
-        
+
         if (tenantService.isEnabled())
         {
             String inviteeUserName = req.getParameter(PARAM_INVITEE_USER_NAME);
@@ -112,42 +107,41 @@ public class InviteByTicket extends DeclarativeWebScript
                 tenantDomain = tenantService.getUserDomain(inviteeUserName);
             }
         }
-        
+
         // run as system user
         String mtAwareSystemUser = tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
-        
-        Map<String, Object> ret = TenantUtil.runAsSystemTenant(new TenantRunAsWork<Map<String, Object>>()
-        {
+
+        Map<String, Object> ret = TenantUtil.runAsSystemTenant(new TenantRunAsWork<Map<String, Object>>() {
             public Map<String, Object> doWork() throws Exception
             {
                 return execute(req, status);
             }
         }, tenantDomain);
-        
+
         // authenticate as system for the rest of the webscript
         AuthenticationUtil.setRunAsUser(mtAwareSystemUser);
-        
+
         return ret;
     }
-    
+
     private Map<String, Object> execute(WebScriptRequest req, Status status)
     {
         // initialise model to pass on for template to render
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         // get inviteId and inviteTicket
         String inviteId = req.getServiceMatch().getTemplateVars().get("inviteId");
         String inviteTicket = req.getServiceMatch().getTemplateVars().get("inviteTicket");
-        
-        try 
+
+        try
         {
             Invitation invitation = invitationService.getInvitation(inviteId);
-            
+
             if (invitation instanceof NominatedInvitation)
             {
-                NominatedInvitation theInvitation = (NominatedInvitation)invitation;
+                NominatedInvitation theInvitation = (NominatedInvitation) invitation;
                 String ticket = theInvitation.getTicket();
-                if (ticket == null || (! ticket.equals(inviteTicket)))
+                if (ticket == null || (!ticket.equals(inviteTicket)))
                 {
                     throw new WebScriptException(Status.STATUS_NOT_FOUND, "Ticket mismatch");
                 }
@@ -164,25 +158,25 @@ public class InviteByTicket extends DeclarativeWebScript
         catch (InvitationExceptionNotFound nfe)
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND,
-            "No invite found for given id");
+                    "No invite found for given id");
         }
     }
-    
+
     private InviteInfo toInviteInfo(NominatedInvitation invitation)
     {
         final PersonService personService = serviceRegistry.getPersonService();
-        
+
         // get the site info
         SiteInfo siteInfo = siteService.getSite(invitation.getResourceName());
         String invitationStatus = getInvitationStatus(invitation);
-        
+
         NodeRef inviterRef = personService.getPerson(invitation.getInviterUserName());
         TemplateNode inviterPerson = null;
         if (inviterRef != null)
         {
-            inviterPerson = new TemplateNode(inviterRef, serviceRegistry, null); 
+            inviterPerson = new TemplateNode(inviterRef, serviceRegistry, null);
         }
-        
+
         // fetch the person node for the invitee
         NodeRef inviteeRef = personService.getPerson(invitation.getInviteeUserName());
         TemplateNode inviteePerson = null;
@@ -190,32 +184,32 @@ public class InviteByTicket extends DeclarativeWebScript
         {
             inviteePerson = new TemplateNode(inviteeRef, serviceRegistry, null);
         }
-        
-        InviteInfo ret = new InviteInfo(invitationStatus, 
-                    invitation.getInviterUserName(), 
-                    inviterPerson,
-                    invitation.getInviteeUserName(), 
-                    inviteePerson, 
-                    invitation.getRoleName(),
-                    invitation.getResourceName(), 
-                    siteInfo, 
-                    invitation.getSentInviteDate(),
-                    invitation.getInviteId());
-         
-         return ret;
+
+        InviteInfo ret = new InviteInfo(invitationStatus,
+                invitation.getInviterUserName(),
+                inviterPerson,
+                invitation.getInviteeUserName(),
+                inviteePerson,
+                invitation.getRoleName(),
+                invitation.getResourceName(),
+                siteInfo,
+                invitation.getSentInviteDate(),
+                invitation.getInviteId());
+
+        return ret;
     }
-    
+
     private String getInvitationStatus(NominatedInvitation invitation)
     {
         String invitee = invitation.getInviteeUserName();
         String site = invitation.getResourceName();
         // check is invitee is site member
         boolean isUserMember = serviceRegistry.getSiteService().isMember(site, invitee);
-        
+
         WorkflowTaskQuery query = new WorkflowTaskQuery();
         query.setTaskName(WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING);
         query.setProcessId(invitation.getInviteId());
-        // query current workflow's task activitiInvitePendingTask 
+        // query current workflow's task activitiInvitePendingTask
         List<WorkflowTask> pendingInvitationTasks = serviceRegistry.getWorkflowService().queryTasks(query, false);
         // if it's here - pending invitation
         if (!pendingInvitationTasks.isEmpty())

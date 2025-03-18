@@ -27,14 +27,15 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.action;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.module.org_alfresco_module_rm.action.impl.FileReportAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.webscripts.GUID;
 
 /**
  * File report action unit test
@@ -64,35 +65,33 @@ public class FileReportActionTest extends BaseRMTestCase
     private void fileReport(final String mimeType)
     {
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        
+
         // create record folder
         final NodeRef recordFolder = recordFolderService.createRecordFolder(rmContainer, GUID.generate());
-        
+
         // close the record folder
         recordFolderService.closeRecordFolder(recordFolder);
-        
+
         // create hold
         final NodeRef hold = holdService.createHold(filePlan, "holdName", "holdReason", "holdDescription");
 
-        doTestInTransaction(new FailureTest()
-        {
+        doTestInTransaction(new FailureTest() {
             @Override
             public void run() throws Exception
-            {                
+            {
                 // execute action
                 executeAction(mimeType, recordFolder, hold);
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 // reopen the record folder
                 rmActionService.executeRecordsManagementAction(recordFolder, "openRecordFolder");
                 return null;
             }
-            
+
             @Override
             public void test(Void result) throws Exception
             {

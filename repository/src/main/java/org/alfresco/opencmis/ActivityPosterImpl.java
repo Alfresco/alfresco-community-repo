@@ -27,9 +27,11 @@ package org.alfresco.opencmis;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.model.ContentModel;
-import org.alfresco.sync.repo.Client;
-import org.alfresco.sync.repo.Client.ClientType;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -46,10 +48,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.sync.repo.Client;
+import org.alfresco.sync.repo.Client.ClientType;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * OpenCMIS methods may use an instance of this class to post activity data.
@@ -78,8 +79,7 @@ public class ActivityPosterImpl implements CmisActivityPoster, InitializingBean
      * Constructor
      */
     public ActivityPosterImpl()
-    {
-    }
+    {}
 
     public void setHiddenAspect(HiddenAspect hiddenAspect)
     {
@@ -105,7 +105,7 @@ public class ActivityPosterImpl implements CmisActivityPoster, InitializingBean
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setActivitiesEnabled(boolean activitiesEnabled)
     {
         this.activitiesEnabled = activitiesEnabled;
@@ -115,20 +115,20 @@ public class ActivityPosterImpl implements CmisActivityPoster, InitializingBean
     {
         this.poster = poster;
     }
-    
+
     private final String getPathFromNode(NodeRef rootNodeRef, NodeRef nodeRef) throws FileNotFoundException
     {
         // Check if the nodes are valid, or equal
         if (rootNodeRef == null || nodeRef == null)
             throw new IllegalArgumentException("Invalid node(s) in getPathFromNode call");
-        
+
         // short cut if the path node is the root node
         if (rootNodeRef.equals(nodeRef))
             return "";
-        
+
         // get the path elements
         List<FileInfo> pathInfos = fileFolderService.getNamePath(rootNodeRef, nodeRef);
-        
+
         // build the path string
         StringBuilder sb = new StringBuilder(pathInfos.size() * 20);
         for (FileInfo fileInfo : pathInfos)
@@ -147,10 +147,9 @@ public class ActivityPosterImpl implements CmisActivityPoster, InitializingBean
         return sb.toString();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet() */
     public void afterPropertiesSet() throws Exception
     {
         PropertyCheck.mandatory(this, "poster", poster);
@@ -169,7 +168,7 @@ public class ActivityPosterImpl implements CmisActivityPoster, InitializingBean
         }
         return tenantDomain;
     }
-    
+
     private boolean isFolder(NodeRef nodeRef)
     {
         QName typeQName = nodeService.getType(nodeRef);
@@ -184,21 +183,21 @@ public class ActivityPosterImpl implements CmisActivityPoster, InitializingBean
     @Override
     public void postFileFolderAdded(NodeRef nodeRef)
     {
-        if(activitiesEnabled && !hiddenAspect.hasHiddenAspect(nodeRef))
+        if (activitiesEnabled && !hiddenAspect.hasHiddenAspect(nodeRef))
         {
             SiteInfo siteInfo = siteService.getSite(nodeRef);
             String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
-            
-            if(siteId != null && !siteId.equals(""))
+
+            if (siteId != null && !siteId.equals(""))
             {
                 // post only for nodes within sites
                 NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
 
                 String path = null;
                 boolean isFolder = isFolder(nodeRef);
-                String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
 
-                if(isFolder)
+                if (isFolder)
                 {
                     NodeRef documentLibrary = siteService.getContainer(siteId, SiteService.DOCUMENT_LIBRARY);
                     path = "/";
@@ -216,8 +215,8 @@ public class ActivityPosterImpl implements CmisActivityPoster, InitializingBean
                 }
                 FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef);
                 poster.postFileFolderActivity((isFolder ? ActivityType.FOLDER_ADDED : ActivityType.FILE_ADDED), path, getCurrentTenantDomain(),
-                                               siteId, parentNodeRef, nodeRef, name, APP_TOOL, Client.asType(ClientType.cmis), fileInfo);
-                
+                        siteId, parentNodeRef, nodeRef, name, APP_TOOL, Client.asType(ClientType.cmis), fileInfo);
+
             }
         }
     }
@@ -228,35 +227,35 @@ public class ActivityPosterImpl implements CmisActivityPoster, InitializingBean
     @Override
     public void postFileFolderUpdated(boolean isFolder, NodeRef nodeRef)
     {
-        if(activitiesEnabled && !hiddenAspect.hasHiddenAspect(nodeRef))
+        if (activitiesEnabled && !hiddenAspect.hasHiddenAspect(nodeRef))
         {
             SiteInfo siteInfo = getSiteAsSystem(nodeRef);
             String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
-            if(siteId != null && !siteId.equals(""))
+            if (siteId != null && !siteId.equals(""))
             {
                 // post only for nodes within sites
-                String fileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                
+                String fileName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+
                 if (!isFolder)
                 {
                     FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef);
                     poster.postFileFolderActivity(ActivityType.FILE_UPDATED, null, getCurrentTenantDomain(),
-                                                  siteId, null, nodeRef, fileName, APP_TOOL, Client.asType(ClientType.cmis), fileInfo);
+                            siteId, null, nodeRef, fileName, APP_TOOL, Client.asType(ClientType.cmis), fileInfo);
                 }
             }
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @Override
     public void postFileFolderDeleted(ActivityInfo activityInfo)
     {
-        if(activitiesEnabled && activityInfo.getSiteId() != null)
+        if (activitiesEnabled && activityInfo.getSiteId() != null)
         {
             poster.postFileFolderActivity((activityInfo.isFolder() ? ActivityType.FOLDER_DELETED : ActivityType.FILE_DELETED), activityInfo.getParentPath(), getCurrentTenantDomain(),
-                                           activityInfo.getSiteId(), activityInfo.getParentNodeRef(), activityInfo.getNodeRef(), activityInfo.getFileName(), APP_TOOL, Client.asType(ClientType.cmis), null);
+                    activityInfo.getSiteId(), activityInfo.getParentNodeRef(), activityInfo.getNodeRef(), activityInfo.getFileName(), APP_TOOL, Client.asType(ClientType.cmis), null);
         }
     }
 
@@ -264,13 +263,13 @@ public class ActivityPosterImpl implements CmisActivityPoster, InitializingBean
     {
         SiteInfo siteInfo = siteService.getSite(nodeRef);
         String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
-        if(siteId != null && !siteId.equals(""))
+        if (siteId != null && !siteId.equals(""))
         {
             NodeRef parentNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
             FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef);
             String name = fileInfo.getName();
             boolean isFolder = fileInfo.isFolder();
-                
+
             NodeRef documentLibrary = siteService.getContainer(siteId, SiteService.DOCUMENT_LIBRARY);
             String parentPath = "/";
             try
@@ -284,7 +283,7 @@ public class ActivityPosterImpl implements CmisActivityPoster, InitializingBean
                     logger.debug("No " + SiteService.DOCUMENT_LIBRARY + " container found.");
                 }
             }
-            
+
             return new ActivityInfo(nodeRef, parentPath, parentNodeRef, siteId, name, isFolder);
         }
         else
@@ -292,11 +291,10 @@ public class ActivityPosterImpl implements CmisActivityPoster, InitializingBean
             return null;
         }
     }
-    
+
     private SiteInfo getSiteAsSystem(NodeRef nodeRef)
     {
-        return AuthenticationUtil.runAsSystem(new RunAsWork<SiteInfo>()
-        {
+        return AuthenticationUtil.runAsSystem(new RunAsWork<SiteInfo>() {
             @Override
             public SiteInfo doWork() throws Exception
             {

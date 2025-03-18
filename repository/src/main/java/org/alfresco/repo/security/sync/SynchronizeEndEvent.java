@@ -34,17 +34,18 @@ package org.alfresco.repo.security.sync;
 public class SynchronizeEndEvent extends SynchronizeEvent
 {
     Exception e;
+
     public SynchronizeEndEvent(Object source)
     {
         super(source);
     }
-    
+
     public SynchronizeEndEvent(Object source, Exception e)
     {
         super(source);
         this.e = e;
     }
-    
+
     /**
      * 
      */

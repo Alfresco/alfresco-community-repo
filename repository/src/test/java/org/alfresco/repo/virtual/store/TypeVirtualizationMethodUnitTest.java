@@ -30,15 +30,16 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 
-import org.alfresco.repo.site.SiteModel;
-import org.alfresco.service.namespace.NamespaceException;
-import org.alfresco.service.namespace.NamespacePrefixResolver;
-import org.alfresco.service.namespace.NamespaceService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.internal.stubbing.answers.ThrowsException;
+
+import org.alfresco.repo.site.SiteModel;
+import org.alfresco.service.namespace.NamespaceException;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespaceService;
 
 public class TypeVirtualizationMethodUnitTest
 {

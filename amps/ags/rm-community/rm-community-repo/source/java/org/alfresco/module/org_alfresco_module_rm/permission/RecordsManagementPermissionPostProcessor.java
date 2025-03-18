@@ -49,26 +49,38 @@ public class RecordsManagementPermissionPostProcessor extends PermissionPostProc
 {
     /** node service */
     private NodeService nodeService;
-    public void setNodeService(NodeService nodeService) {this.nodeService=nodeService;}
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
 
     /** permission service */
     private PermissionService permissionService;
-    public void setPermissionService(PermissionService permissionService) {this.permissionService=permissionService;}
+
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
 
     /** The permission model DAO. */
     private PermissionModel permissionModel;
-    public void setPermissionModel(PermissionModel permissionModel) {this.permissionModel=permissionModel;}
+
+    public void setPermissionModel(PermissionModel permissionModel)
+    {
+        this.permissionModel = permissionModel;
+    }
 
     /**
      * @see org.alfresco.repo.security.permissions.processor.PermissionPostProcessor#process(AccessStatus, NodeRef, String, List, List)
      */
     @Override
     public AccessStatus process(AccessStatus accessStatus, NodeRef nodeRef, String perm,
-                                List<String> configuredReadPermissions, List<String> configuredFilePermissions)
+            List<String> configuredReadPermissions, List<String> configuredFilePermissions)
     {
         AccessStatus result = accessStatus;
         if (AccessStatus.DENIED.equals(accessStatus) &&
-            nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
+                nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
         {
             // if read denied on rm artifact
             if (PermissionService.READ.equals(perm) || isPermissionContained(perm, configuredReadPermissions))
@@ -91,8 +103,10 @@ public class RecordsManagementPermissionPostProcessor extends PermissionPostProc
     /**
      * Check if a given permission is implied by a list of permission groups.
      *
-     * @param perm The name of the permission in question.
-     * @param configuredPermissions The list of permission group names.
+     * @param perm
+     *            The name of the permission in question.
+     * @param configuredPermissions
+     *            The list of permission group names.
      * @return true if the permission is contained or implied by the list of permissions.
      */
     private boolean isPermissionContained(String perm, List<String> configuredPermissions)

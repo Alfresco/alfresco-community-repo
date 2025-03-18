@@ -27,13 +27,14 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
+import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
+
 import org.alfresco.repo.search.adaptor.QueryParserAdaptor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
 
 /**
  * A simple 1-1 property lucene builder mapping from a CMIS property name to an alfresco property
@@ -44,13 +45,13 @@ public class DirectLuceneBuilder extends AbstractSimpleLuceneBuilder
 {
     private DictionaryService dictionaryService;
     private QName alfrescoName;
-    
+
     public DirectLuceneBuilder(DictionaryService dictionaryService, QName alfrescoName)
     {
         this.dictionaryService = dictionaryService;
         this.alfrescoName = alfrescoName;
     }
-    
+
     @Override
     public <Q, S, E extends Throwable> String getLuceneSortField(QueryParserAdaptor<Q, S, E> lqpa) throws E
     {
@@ -69,7 +70,7 @@ public class DirectLuceneBuilder extends AbstractSimpleLuceneBuilder
         else if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME))
         {
             field = lqpa.getDatetimeSortField(field, propertyDef);
-        }        
+        }
 
         return field;
     }
@@ -108,11 +109,11 @@ public class DirectLuceneBuilder extends AbstractSimpleLuceneBuilder
     @Override
     protected String getRangeMax()
     {
-        if(getInDataType().getName().equals(DataTypeDefinition.DATE))
+        if (getInDataType().getName().equals(DataTypeDefinition.DATE))
         {
             return "MAX";
         }
-        else if(getInDataType().getName().equals(DataTypeDefinition.DATETIME))
+        else if (getInDataType().getName().equals(DataTypeDefinition.DATETIME))
         {
             return "MAX";
         }
@@ -121,16 +122,15 @@ public class DirectLuceneBuilder extends AbstractSimpleLuceneBuilder
             return super.getRangeMax();
         }
     }
-    
-    
+
     @Override
     protected String getRangeMin()
     {
-        if(getInDataType().getName().equals(DataTypeDefinition.DATE))
+        if (getInDataType().getName().equals(DataTypeDefinition.DATE))
         {
             return "MIN";
         }
-        else if(getInDataType().getName().equals(DataTypeDefinition.DATETIME))
+        else if (getInDataType().getName().equals(DataTypeDefinition.DATETIME))
         {
             return "MIN";
         }
@@ -139,5 +139,5 @@ public class DirectLuceneBuilder extends AbstractSimpleLuceneBuilder
             return super.getRangeMin();
         }
     }
-    
+
 }

@@ -40,7 +40,7 @@ public class Rating
     private final String ratingAppliedBy;
     private final Date ratingAppliedAt;
     private final RatingScheme ratingScheme;
-    
+
     public Rating(RatingScheme scheme, float score, String appliedBy, Date appliedAt)
     {
         this.ratingScheme = scheme;
@@ -50,8 +50,7 @@ public class Rating
     }
 
     /**
-     * Gets the score applied as part of this rating. In normal circumstances a score
-     * should always lie within the bounds defined by the {@link RatingScheme}.
+     * Gets the score applied as part of this rating. In normal circumstances a score should always lie within the bounds defined by the {@link RatingScheme}.
      * 
      * @return the score.
      */

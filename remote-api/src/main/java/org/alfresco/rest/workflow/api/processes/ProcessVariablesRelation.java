@@ -41,11 +41,11 @@ import org.alfresco.rest.workflow.api.model.Variable;
  *
  */
 @RelationshipResource(name = "variables", entityResource = ProcessesRestEntityResource.class, title = "Variables for the current process")
-public class ProcessVariablesRelation implements RelationshipResourceAction.Read<Variable>, RelationshipResourceAction.Create<Variable>, 
-    RelationshipResourceAction.Update<Variable>, RelationshipResourceAction.Delete
+public class ProcessVariablesRelation implements RelationshipResourceAction.Read<Variable>, RelationshipResourceAction.Create<Variable>,
+        RelationshipResourceAction.Update<Variable>, RelationshipResourceAction.Delete
 {
     protected Processes processes;
-    
+
     public void setProcesses(Processes processes)
     {
         this.processes = processes;
@@ -60,7 +60,7 @@ public class ProcessVariablesRelation implements RelationshipResourceAction.Read
     {
         return processes.getVariables(processId, parameters.getPaging());
     }
-    
+
     /**
      * Creates or updates multiple variables. If the variable name doesn't exist yet it will be created
      */

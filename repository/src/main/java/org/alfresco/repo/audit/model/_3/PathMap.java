@@ -31,11 +31,12 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for PathMap complex type.
+ * <p>
+ * Java class for PathMap complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
  * &lt;complexType name="PathMap">
@@ -52,7 +53,8 @@ import jakarta.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PathMap")
-public class PathMap {
+public class PathMap
+{
 
     @XmlAttribute(required = true)
     protected String source;
@@ -62,12 +64,11 @@ public class PathMap {
     /**
      * Gets the value of the source property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * @return possible object is {@link String }
+     * 
      */
-    public String getSource() {
+    public String getSource()
+    {
         return source;
     }
 
@@ -75,23 +76,22 @@ public class PathMap {
      * Sets the value of the source property.
      * 
      * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *            allowed object is {@link String }
+     * 
      */
-    public void setSource(String value) {
+    public void setSource(String value)
+    {
         this.source = value;
     }
 
     /**
      * Gets the value of the target property.
      * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     * @return possible object is {@link String }
+     * 
      */
-    public String getTarget() {
+    public String getTarget()
+    {
         return target;
     }
 
@@ -99,11 +99,11 @@ public class PathMap {
      * Sets the value of the target property.
      * 
      * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *            allowed object is {@link String }
+     * 
      */
-    public void setTarget(String value) {
+    public void setTarget(String value)
+    {
         this.target = value;
     }
 

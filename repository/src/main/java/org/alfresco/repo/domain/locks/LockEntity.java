@@ -30,8 +30,7 @@ import org.alfresco.util.EqualsHelper;
 /**
  * Entity bean for <b>alf_lock</b> table.
  * <p>
- * These are unique (see {@link #equals(Object) equals} and {@link #hashCode() hashCode}) based
- * on the shared and exclusive resource ID combination.
+ * These are unique (see {@link #equals(Object) equals} and {@link #hashCode() hashCode}) based on the shared and exclusive resource ID combination.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -39,22 +38,22 @@ import org.alfresco.util.EqualsHelper;
 public class LockEntity
 {
     public static final Long CONST_LONG_ZERO = Long.valueOf(0L);
-    
+
     private Long id;
     private Long version;
     private Long sharedResourceId;
     private Long exclusiveResourceId;
     private String lockToken;
     private Long startTime;
-    private Long expiryTime = Long.MIN_VALUE;           // 'expired' unless set 
-    
+    private Long expiryTime = Long.MIN_VALUE; // 'expired' unless set
+
     @Override
     public int hashCode()
     {
         return (sharedResourceId == null ? 0 : sharedResourceId.hashCode()) +
                 (exclusiveResourceId == null ? 0 : exclusiveResourceId.hashCode());
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -66,31 +65,30 @@ public class LockEntity
         {
             LockEntity that = (LockEntity) obj;
             return EqualsHelper.nullSafeEquals(this.sharedResourceId, that.sharedResourceId) &&
-                   EqualsHelper.nullSafeEquals(this.exclusiveResourceId, that.exclusiveResourceId);
+                    EqualsHelper.nullSafeEquals(this.exclusiveResourceId, that.exclusiveResourceId);
         }
         else
         {
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("LockEntity")
-          .append("[ ID=").append(id)
-          .append(", sharedResourceId=").append(sharedResourceId)
-          .append(", exclusiveResourceId=").append(exclusiveResourceId)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", sharedResourceId=").append(sharedResourceId)
+                .append(", exclusiveResourceId=").append(exclusiveResourceId)
+                .append("]");
         return sb.toString();
     }
 
     /**
-     * Determine if the lock is logically exclusive.  A lock is <b>exclusive</b> if the
-     * shared lock resource matches the exclusive lock resource.
+     * Determine if the lock is logically exclusive. A lock is <b>exclusive</b> if the shared lock resource matches the exclusive lock resource.
      * 
-     * @return      Returns <tt>true</tt> if the lock is exclusive or <tt>false</tt> if it is not
+     * @return Returns <tt>true</tt> if the lock is exclusive or <tt>false</tt> if it is not
      */
     public boolean isExclusive()
     {
@@ -100,12 +98,12 @@ public class LockEntity
         }
         return sharedResourceId.equals(exclusiveResourceId);
     }
-    
+
     public boolean hasExpired()
     {
         return System.currentTimeMillis() > expiryTime;
     }
-    
+
     public Long getId()
     {
         return id;
@@ -125,7 +123,7 @@ public class LockEntity
     {
         this.version = version;
     }
-    
+
     /**
      * Increments the version number or resets it if it reaches a large number
      */
@@ -143,7 +141,7 @@ public class LockEntity
     }
 
     /**
-     * @return                  Returns the ID of the shared lock resource
+     * @return Returns the ID of the shared lock resource
      */
     public Long getSharedResourceId()
     {
@@ -152,7 +150,8 @@ public class LockEntity
 
     /**
      * 
-     * @param sharedResourceId  the ID of the shared lock resource
+     * @param sharedResourceId
+     *            the ID of the shared lock resource
      */
     public void setSharedResourceId(Long sharedResourceId)
     {
@@ -170,7 +169,7 @@ public class LockEntity
     }
 
     /**
-     * @return              Returns the token assigned when the lock was created
+     * @return Returns the token assigned when the lock was created
      */
     public String getLockToken()
     {
@@ -178,7 +177,8 @@ public class LockEntity
     }
 
     /**
-     * @param lockToken     the token assigned when the lock was created
+     * @param lockToken
+     *            the token assigned when the lock was created
      */
     public void setLockToken(String lockToken)
     {
@@ -187,7 +187,7 @@ public class LockEntity
 
     /**
      * 
-     * @return              Returns the time when the lock was started
+     * @return Returns the time when the lock was started
      */
     public Long getStartTime()
     {

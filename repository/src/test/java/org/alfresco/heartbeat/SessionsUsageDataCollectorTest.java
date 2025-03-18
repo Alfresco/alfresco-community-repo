@@ -25,23 +25,24 @@
  */
 package org.alfresco.heartbeat;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.admin.RepoServerMgmtMBean;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.service.descriptor.Descriptor;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class SessionsUsageDataCollectorTest
 {
@@ -67,7 +68,7 @@ public class SessionsUsageDataCollectorTest
         when(mockDescriptor.getId()).thenReturn("mock_id");
         when(mockDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
 
-        sessionsUsageDataCollector = new SessionsUsageDataCollector("acs.repository.usage.sessions","1.0","0 0 0/1 ? * *", mockScheduler);
+        sessionsUsageDataCollector = new SessionsUsageDataCollector("acs.repository.usage.sessions", "1.0", "0 0 0/1 ? * *", mockScheduler);
         sessionsUsageDataCollector.setHbDataCollectorService(mockCollectorService);
         sessionsUsageDataCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
         sessionsUsageDataCollector.setRepoServerMgmt(repoServerMgmtMBean);
@@ -94,7 +95,7 @@ public class SessionsUsageDataCollectorTest
         HBData sessionsUsage = grabDataByCollectorId(sessionsUsageDataCollector.getCollectorId());
         assertNotNull("Sessions usage data missing.", sessionsUsage);
 
-        Map<String,Object> data = sessionsUsage.getData();
+        Map<String, Object> data = sessionsUsage.getData();
         assertTrue(data.containsKey("activeTickets"));
         assertEquals("Wrong number of active tickets", TICKET_NON_EXPIRED, data.get("activeTickets"));
     }

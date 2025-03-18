@@ -30,38 +30,44 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 
 /**
- * This class provides some simple utility methods for dealing with {@link QName QNames}
- * within the faceted search feature. The whole thing should be considered a hack to handle 'special cases'.
+ * This class provides some simple utility methods for dealing with {@link QName QNames} within the faceted search feature. The whole thing should be considered a hack to handle 'special cases'.
  * <p/>
  * These are not intended for general use, or else they'd be in the {@link QName} class.
+ * 
  * @since 5.0
  */
 public abstract class FacetQNameUtils
 {
     /**
-     * This method converts the supplied qname string into a {@link QName} object.
-     * It accepts both short and long form qname strings.
+     * This method converts the supplied qname string into a {@link QName} object. It accepts both short and long form qname strings.
      * 
-     * @param s a qname string, such as "cm:name" or "{http://www.alfresco.org/model/content/1.0}name"
-     * @param resolver this is needed to convert any qname prefixes into their long form.
+     * @param s
+     *            a qname string, such as "cm:name" or "{http://www.alfresco.org/model/content/1.0}name"
+     * @param resolver
+     *            this is needed to convert any qname prefixes into their long form.
      * @return the QName instance.
-     * @throws NullPointerException if the provided string is {@code null}.
-     * @throws IllegalArgumentException if the provided string could not be recognised as a valid QName.
+     * @throws NullPointerException
+     *             if the provided string is {@code null}.
+     * @throws IllegalArgumentException
+     *             if the provided string could not be recognised as a valid QName.
      */
     public static QName createQName(String s, NamespacePrefixResolver resolver)
     {
         final QName result;
-        
-        if (s.length() < 2) { throw new IllegalArgumentException("Cannot convert string '" + s + "'"); }
-        
+
+        if (s.length() < 2)
+        {
+            throw new IllegalArgumentException("Cannot convert string '" + s + "'");
+        }
+
         if (s.charAt(0) == QName.NAMESPACE_BEGIN &&
-            s.substring(1).contains(Character.toString(QName.NAMESPACE_END)))
+                s.substring(1).contains(Character.toString(QName.NAMESPACE_END)))
         {
             // Assume it's a long-form qname.
             result = QName.createQName(s);
         }
-        else if ( !s.contains(Character.toString(QName.NAMESPACE_BEGIN)) &&
-                 s.contains(Character.toString(QName.NAMESPACE_PREFIX)))
+        else if (!s.contains(Character.toString(QName.NAMESPACE_BEGIN)) &&
+                s.contains(Character.toString(QName.NAMESPACE_PREFIX)))
         {
             // Assume it's a short-form qname.
             result = QName.createQName(s, resolver);
@@ -78,7 +84,7 @@ public abstract class FacetQNameUtils
             // We're not sure what sort of qname this is supposed to be.
             throw new IllegalArgumentException("Cannot convert string '" + s + "'");
         }
-        
+
         return result;
     }
 }

@@ -26,10 +26,6 @@
 
 package org.alfresco.rest.api.impl.rules;
 
-import static org.alfresco.repo.action.executer.CopyActionExecuter.PARAM_DESTINATION_FOLDER;
-import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
-import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
-import static org.alfresco.service.cmr.security.AccessStatus.DENIED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
@@ -40,9 +36,22 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 
+import static org.alfresco.repo.action.executer.CopyActionExecuter.PARAM_DESTINATION_FOLDER;
+import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
+import static org.alfresco.service.cmr.security.AccessStatus.DENIED;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.logging.log4j.util.Strings;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.CheckInActionExecuter;
@@ -68,13 +77,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.logging.log4j.util.Strings;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 @Experimental
 @RunWith(MockitoJUnitRunner.class)
@@ -148,7 +150,7 @@ public class ActionParameterConverterTest
         given(dictionaryService.getDataType(qname)).willReturn(dataTypeDefinition1);
         given(namespaceService.getNamespaceURI(any())).willReturn(NamespaceService.DICTIONARY_MODEL_1_0_URI);
 
-        //when
+        // when
         final Map<String, Serializable> convertedParams = objectUnderTest.getConvertedParams(params, name);
 
         then(actionService).should().getActionDefinition(name);
@@ -187,7 +189,7 @@ public class ActionParameterConverterTest
         given(dictionaryService.getDataType(bool)).willReturn(dataTypeDefinition2);
         given(dataTypeDefinition2.getJavaClassName()).willReturn(Boolean.class.getName());
 
-        //when
+        // when
         final Map<String, Serializable> convertedParams = objectUnderTest.getConvertedParams(params, name);
 
         then(actionService).should().getActionDefinition(name);
@@ -222,7 +224,7 @@ public class ActionParameterConverterTest
 
         given(dictionaryService.getDataType(scriptNodeRef)).willReturn(dataTypeDefinition1);
 
-        //when
+        // when
         final Map<String, Serializable> convertedParams = objectUnderTest.getConvertedParams(params, name);
 
         then(actionService).should().getActionDefinition(name);
@@ -252,7 +254,7 @@ public class ActionParameterConverterTest
 
         given(dictionaryService.getDataType(nodeRef)).willReturn(dataTypeDefinition1);
 
-        //when
+        // when
         final Map<String, Serializable> convertedParams = objectUnderTest.getConvertedParams(params, name);
 
         then(actionService).should().getActionDefinition(name);
@@ -290,7 +292,7 @@ public class ActionParameterConverterTest
         given(dictionaryService.getDataType(bool)).willReturn(dataTypeDefinition2);
         given(dataTypeDefinition2.getJavaClassName()).willReturn(Boolean.class.getName());
 
-        //when
+        // when
         final Map<String, Serializable> convertedParams = objectUnderTest.getConvertedParams(params, name);
 
         then(actionService).should().getActionDefinition(name);
@@ -318,8 +320,7 @@ public class ActionParameterConverterTest
         final String destinationFolderKey = CheckOutActionExecuter.PARAM_DESTINATION_FOLDER;
         final String assocNameKey = CheckOutActionExecuter.PARAM_ASSOC_QNAME;
         final String assocTypeKey = CheckOutActionExecuter.PARAM_ASSOC_TYPE_QNAME;
-        final Map<String, Serializable> params =
-                Map.of(destinationFolderKey, DUMMY_FOLDER_NODE_ID, assocNameKey, CHECKOUT_ASPECT, assocTypeKey, CONTAINS_ASPECT);
+        final Map<String, Serializable> params = Map.of(destinationFolderKey, DUMMY_FOLDER_NODE_ID, assocNameKey, CHECKOUT_ASPECT, assocTypeKey, CONTAINS_ASPECT);
 
         given(actionService.getActionDefinition(name)).willReturn(actionDefinition);
         given(actionDefinition.getParameterDefintion(destinationFolderKey)).willReturn(actionDefinitionParam1);
@@ -335,7 +336,7 @@ public class ActionParameterConverterTest
         given(dictionaryService.getDataType(qname)).willReturn(dataTypeDefinition2);
         given(namespaceService.getNamespaceURI(any())).willReturn(NamespaceService.DICTIONARY_MODEL_1_0_URI);
 
-        //when
+        // when
         final Map<String, Serializable> convertedParams = objectUnderTest.getConvertedParams(params, name);
 
         then(actionService).should().getActionDefinition(name);
@@ -385,7 +386,7 @@ public class ActionParameterConverterTest
         given(dictionaryService.getDataType(qname)).willReturn(dataTypeDefinition2);
         given(namespaceService.getNamespaceURI(any())).willReturn(NamespaceService.DICTIONARY_MODEL_1_0_URI);
 
-        //when
+        // when
         final Map<String, Serializable> convertedParams = objectUnderTest.getConvertedParams(params, name);
 
         then(actionService).should().getActionDefinition(name);
@@ -423,7 +424,7 @@ public class ActionParameterConverterTest
         given(dictionaryService.getDataType(qname)).willReturn(dataTypeDefinition1);
         given(namespaceService.getNamespaceURI(any())).willReturn(NamespaceService.DICTIONARY_MODEL_1_0_URI);
 
-        //when
+        // when
         final Map<String, Serializable> convertedParams = objectUnderTest.getConvertedParams(params, name);
 
         then(actionService).should().getActionDefinition(name);
@@ -454,9 +455,8 @@ public class ActionParameterConverterTest
         final String rejectMoveKey = SimpleWorkflowActionExecuter.PARAM_REJECT_MOVE;
         final String approve = "Approve";
         final String reject = "Reject";
-        final Map<String, Serializable> params =
-                Map.of(approveStepKey, approve, approveFolderKey, DUMMY_FOLDER_NODE_ID, approveMoveKey, true,
-                        rejectStepKey, reject, rejectFolderKey, DUMMY_FOLDER_NODE_ID, rejectMoveKey, true);
+        final Map<String, Serializable> params = Map.of(approveStepKey, approve, approveFolderKey, DUMMY_FOLDER_NODE_ID, approveMoveKey, true,
+                rejectStepKey, reject, rejectFolderKey, DUMMY_FOLDER_NODE_ID, rejectMoveKey, true);
 
         given(actionService.getActionDefinition(name)).willReturn(actionDefinition);
         given(actionDefinition.getParameterDefintion(rejectStepKey)).willReturn(actionDefinitionParam1);
@@ -478,7 +478,7 @@ public class ActionParameterConverterTest
         given(dictionaryService.getDataType(bool)).willReturn(dataTypeDefinition3);
         given(dataTypeDefinition3.getJavaClassName()).willReturn(Boolean.class.getName());
 
-        //when
+        // when
         final Map<String, Serializable> convertedParams = objectUnderTest.getConvertedParams(params, name);
 
         then(actionService).should().getActionDefinition(name);
@@ -525,8 +525,7 @@ public class ActionParameterConverterTest
         final String propertyTypeKey = "prop_type";
         final String dummy_key_value = "dummy_key_value";
         final String propType = "d:text";
-        final Map<String, Serializable> params =
-                Map.of(propertyNameKey, IDENTIFIER_ASPECT, propertyValueKey, dummy_key_value, propertyTypeKey, propType);
+        final Map<String, Serializable> params = Map.of(propertyNameKey, IDENTIFIER_ASPECT, propertyValueKey, dummy_key_value, propertyTypeKey, propType);
 
         given(actionService.getActionDefinition(name)).willReturn(actionDefinition);
         given(actionDefinition.getParameterDefintion(propertyNameKey)).willReturn(actionDefinitionParam1);
@@ -543,7 +542,7 @@ public class ActionParameterConverterTest
         given(dataTypeDefinition2.getJavaClassName()).willReturn(Object.class.getName());
         given(namespaceService.getNamespaceURI(any())).willReturn(NamespaceService.DICTIONARY_MODEL_1_0_URI);
 
-        //when
+        // when
         final Map<String, Serializable> convertedParams = objectUnderTest.getConvertedParams(params, name);
 
         then(actionService).should().getActionDefinition(name);
@@ -586,7 +585,7 @@ public class ActionParameterConverterTest
 
         given(dictionaryService.getDataType(nodeRef)).willReturn(dataTypeDefinition1);
 
-        //when
+        // when
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> objectUnderTest.getConvertedParams(params, name));
     }
 
@@ -607,7 +606,7 @@ public class ActionParameterConverterTest
 
         given(dictionaryService.getDataType(nodeRef)).willReturn(dataTypeDefinition1);
 
-        //when
+        // when
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> objectUnderTest.getConvertedParams(params, name));
     }
 
@@ -618,13 +617,12 @@ public class ActionParameterConverterTest
         final String destinationFolderKey = CheckOutActionExecuter.PARAM_DESTINATION_FOLDER;
         final String assocNameKey = CheckOutActionExecuter.PARAM_ASSOC_QNAME;
         final String assocTypeKey = CheckOutActionExecuter.PARAM_ASSOC_TYPE_QNAME;
-        final Map<String, Serializable> params =
-                Map.of(destinationFolderKey, Strings.EMPTY, assocNameKey, Strings.EMPTY, assocTypeKey, Strings.EMPTY);
+        final Map<String, Serializable> params = Map.of(destinationFolderKey, Strings.EMPTY, assocNameKey, Strings.EMPTY, assocTypeKey, Strings.EMPTY);
 
         given(actionService.getActionDefinition(name)).willReturn(actionDefinition);
 
-        //when
-        assertThrows(InvalidArgumentException.class, () ->objectUnderTest.getConvertedParams(params, name));
+        // when
+        assertThrows(InvalidArgumentException.class, () -> objectUnderTest.getConvertedParams(params, name));
 
         then(actionService).should().getActionDefinition(name);
         then(actionService).shouldHaveNoMoreInteractions();
@@ -634,25 +632,27 @@ public class ActionParameterConverterTest
     }
 
     @Test
-    public void testInvalidActionDefinitionConversion() {
+    public void testInvalidActionDefinitionConversion()
+    {
         final String invalidName = "dummy-definition";
         final Map<String, Serializable> params = Map.of("dummy-key", "dummy-value");
         given(actionService.getActionDefinition(invalidName)).willReturn(null);
-        //when-then
-        assertThrows(NotFoundException.class, () ->objectUnderTest.getConvertedParams(params, invalidName));
+        // when-then
+        assertThrows(NotFoundException.class, () -> objectUnderTest.getConvertedParams(params, invalidName));
 
         given(actionService.getActionDefinition(invalidName)).willThrow(NotFoundException.class);
-        //when-then
-        assertThrows(NotFoundException.class, () ->objectUnderTest.getConvertedParams(params, invalidName));
+        // when-then
+        assertThrows(NotFoundException.class, () -> objectUnderTest.getConvertedParams(params, invalidName));
     }
 
     @Test
-    public void testQnameServiceModelParamConversion() {
+    public void testQnameServiceModelParamConversion()
+    {
         given(namespaceService.getPrefixes(any())).willReturn(List.of("cm"));
         final String qname = "{cm-dummy-prefix}audio";
         final Serializable qnameParam = QName.createQName(qname);
 
-        //when
+        // when
         final Serializable convertedParam = objectUnderTest.convertParamFromServiceModel(qnameParam);
 
         then(namespaceService).should().getPrefixes(any());
@@ -661,11 +661,12 @@ public class ActionParameterConverterTest
     }
 
     @Test
-    public void testNodeRefServiceModelParamConversion() {
-        //given
+    public void testNodeRefServiceModelParamConversion()
+    {
+        // given
         final Serializable nodeRefParam = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_FOLDER_NODE_ID);
 
-        //when
+        // when
         final Serializable convertedParam = objectUnderTest.convertParamFromServiceModel(nodeRefParam);
 
         then(namespaceService).shouldHaveNoInteractions();
@@ -673,10 +674,11 @@ public class ActionParameterConverterTest
     }
 
     @Test
-    public void testOtherServiceModelParamConversion() {
-        //given
+    public void testOtherServiceModelParamConversion()
+    {
+        // given
         final Serializable dummyStringParam = "dummy-param";
-        //when
+        // when
         final Serializable convertedParam = objectUnderTest.convertParamFromServiceModel(dummyStringParam);
 
         then(namespaceService).shouldHaveNoInteractions();

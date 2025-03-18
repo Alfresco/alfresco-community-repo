@@ -29,10 +29,11 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.alfresco.repo.security.authentication.AbstractAuthenticationService;
-import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.repo.security.authentication.AbstractAuthenticationService;
+import org.alfresco.repo.transaction.TransactionServiceImpl;
 
 public class RepoServerMgmt implements RepoServerMgmtMBean
 {
@@ -41,7 +42,7 @@ public class RepoServerMgmt implements RepoServerMgmtMBean
     private TransactionServiceImpl transactionService;
 
     private AbstractAuthenticationService authenticationService;
-    
+
     private ClassLoader managedResourceClassLoader = Thread.currentThread().getContextClassLoader();
 
     public void setTransactionService(TransactionServiceImpl transactionService)
@@ -64,23 +65,21 @@ public class RepoServerMgmt implements RepoServerMgmtMBean
 
     public int getTicketCountNonExpired()
     {
-        return useManagedResourceClassloader(new Work<Integer>()
-        {
+        return useManagedResourceClassloader(new Work<Integer>() {
             @Override
             Integer doWork()
             {
-                return authenticationService.countTickets(true);                
+                return authenticationService.countTickets(true);
             }
         });
     }
 
     public int getTicketCountAll()
     {
-        return useManagedResourceClassloader(new Work<Integer>()
-        {
+        return useManagedResourceClassloader(new Work<Integer>() {
             @Override
             Integer doWork()
-            {                
+            {
                 return authenticationService.countTickets(false);
             }
         });
@@ -88,11 +87,10 @@ public class RepoServerMgmt implements RepoServerMgmtMBean
 
     public int getUserCountNonExpired()
     {
-        return useManagedResourceClassloader(new Work<Integer>()
-        {
+        return useManagedResourceClassloader(new Work<Integer>() {
             @Override
             Integer doWork()
-            {                
+            {
                 return authenticationService.getUsersWithTickets(true).size();
             }
         });
@@ -108,22 +106,20 @@ public class RepoServerMgmt implements RepoServerMgmtMBean
 
     public String[] listUserNamesNonExpired()
     {
-        return useManagedResourceClassloader(new Work<String[]>()
-        {
+        return useManagedResourceClassloader(new Work<String[]>() {
             @Override
             String[] doWork()
             {
                 Set<String> userSet = authenticationService.getUsersWithTickets(true);
                 SortedSet<String> sorted = new TreeSet<String>(userSet);
-                return sorted.toArray(new String[0]);        
+                return sorted.toArray(new String[0]);
             }
         });
     }
 
     public String[] listUserNamesAll()
     {
-        return useManagedResourceClassloader(new Work<String[]>()
-        {
+        return useManagedResourceClassloader(new Work<String[]>() {
             @Override
             String[] doWork()
             {
@@ -136,25 +132,23 @@ public class RepoServerMgmt implements RepoServerMgmtMBean
 
     public int invalidateTicketsExpired()
     {
-        return useManagedResourceClassloader(new Work<Integer>()
-        {
+        return useManagedResourceClassloader(new Work<Integer>() {
             @Override
             Integer doWork()
-            {                
+            {
                 int count = authenticationService.invalidateTickets(true);
                 log.info("Expired tickets invalidated: " + count);
-                return count;           
+                return count;
             }
         });
     }
 
     public int invalidateTicketsAll()
     {
-        return useManagedResourceClassloader(new Work<Integer>()
-        {
+        return useManagedResourceClassloader(new Work<Integer>() {
             @Override
             Integer doWork()
-            {           
+            {
                 int count = authenticationService.invalidateTickets(false);
                 log.info("All tickets invalidated: " + count);
                 return count;
@@ -164,14 +158,13 @@ public class RepoServerMgmt implements RepoServerMgmtMBean
 
     public void invalidateUser(final String username)
     {
-        useManagedResourceClassloader(new Work<Void>()
-        {
+        useManagedResourceClassloader(new Work<Void>() {
             @Override
             Void doWork()
             {
                 authenticationService.invalidateUserSession(username);
                 log.info("User invalidated: " + username);
-                return null;                
+                return null;
             }
         });
     }
@@ -180,16 +173,14 @@ public class RepoServerMgmt implements RepoServerMgmtMBean
     {
         return authenticationService.getMaxUsers();
     }
-    
-    
+
     /**
-     * TODO: This is the same as the classloader related portion of the {@link MBeanSupport} class
-     * in the enterprise repository. Review whether this code should be factored out somewhere common.
+     * TODO: This is the same as the classloader related portion of the {@link MBeanSupport} class in the enterprise repository. Review whether this code should be factored out somewhere common.
      * 
-     * This method allows a unit of work to be executed under the same class loader used
-     * to load this managed reosource.
+     * This method allows a unit of work to be executed under the same class loader used to load this managed reosource.
      * 
-     * @param work The unit of work to perform.
+     * @param work
+     *            The unit of work to perform.
      * @return Parameterized return type.
      */
     private <T> T useManagedResourceClassloader(Work<T> work)
@@ -202,10 +193,10 @@ public class RepoServerMgmt implements RepoServerMgmtMBean
         }
         finally
         {
-            Thread.currentThread().setContextClassLoader(origClassLoader);            
+            Thread.currentThread().setContextClassLoader(origClassLoader);
         }
     }
-    
+
     private abstract static class Work<T>
     {
         abstract T doWork();

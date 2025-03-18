@@ -57,7 +57,8 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
 {
     private static final Logger LOG = LoggerFactory.getLogger(NodeSizeDetailsServiceImpl.class);
     private static final String FIELD_FACET = "content.size";
-    private static final String FACET_QUERY = "{!afts key='extra large'}content.size:[0 TO " + Integer.MAX_VALUE + "]";
+    private static final String FACET_QUERY = "{!afts}content.size:[0 TO " + Integer.MAX_VALUE + "]";
+    private static final int DEFAULT_FACET_LIMIT = 100;
     private SearchService searchService;
     private SimpleCache<Serializable, NodeSizeDetails> simpleCache;
     private TransactionService transactionService;
@@ -214,7 +215,11 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             }
             searchParameters.addFacetQuery(FACET_QUERY);
             FieldFacet fieldFacet = new FieldFacet(FIELD_FACET);
-            fieldFacet.setLimitOrNull((int) resultsWithoutFacet.getNumberFound());
+            int numberFound = Optional.ofNullable(resultsWithoutFacet.getNumberFound())
+                        .map(Long::intValue)
+                        .filter(n -> n > 0)
+                        .orElse(DEFAULT_FACET_LIMIT);
+            fieldFacet.setLimitOrNull(numberFound);
             searchParameters.addFieldFacet(fieldFacet);
             resultsWithoutFacet.close();
             return searchService.query(searchParameters);

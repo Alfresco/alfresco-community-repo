@@ -36,6 +36,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.util.StringUtils;
+
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.dictionary.constraint.RegisteredConstraint;
 import org.alfresco.repo.domain.node.NodePropertyValue;
@@ -55,9 +59,6 @@ import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.util.StringUtils;
 
 /**
  * {@link FieldProcessor} implementation that handles properties.
@@ -80,7 +81,7 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
     }
 
     @Override
-    protected Log getLogger() 
+    protected Log getLogger()
     {
         return logger;
     }
@@ -100,7 +101,7 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
     }
 
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     public Field makeField(PropertyDefinition propDef, Object value, FieldGroup group)
@@ -124,7 +125,7 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
         {
             return getDefaultValue(name, data);
         }
-        
+
         if (value instanceof Collection<?>)
         {
             // temporarily add repeating field data as a comma
@@ -132,25 +133,25 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
             // a separate field for each value once we have full
             // UI support in place.
             Collection<?> values = (Collection<?>) value;
-            
-            // if the non empty collection is a List of Date objects 
-            // we need to convert each date to a ISO8601 format 
+
+            // if the non empty collection is a List of Date objects
+            // we need to convert each date to a ISO8601 format
             if (value instanceof List<?> && !values.isEmpty())
             {
-                List<?> list = (List<?>)values;
+                List<?> list = (List<?>) values;
                 if (list.get(0) instanceof Date)
                 {
                     List<String> isoDates = new ArrayList<String>(list.size());
                     for (Object date : list)
                     {
-                        isoDates.add(ISO8601DateFormat.format((Date)date));
+                        isoDates.add(ISO8601DateFormat.format((Date) date));
                     }
-                    
-                    // return the ISO formatted dates as a comma delimited string 
+
+                    // return the ISO formatted dates as a comma delimited string
                     return StringUtils.collectionToCommaDelimitedString(isoDates);
                 }
             }
-            
+
             // return everything else using toString()
             return StringUtils.collectionToCommaDelimitedString(values);
         }
@@ -158,14 +159,14 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
         {
             // for content properties retrieve the info URL rather than the
             // the object value itself
-            ContentData contentData = (ContentData)value;
+            ContentData contentData = (ContentData) value;
             return contentData.getInfoUrl();
         }
         else if (value instanceof NodeRef)
         {
-            return ((NodeRef)value).toString();
+            return ((NodeRef) value).toString();
         }
-        
+
         return value;
     }
 
@@ -192,7 +193,7 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
         String name = getPrefixedName(propDef);
         QName dataType = propDef.getDataType().getName();
         PropertyFieldDefinition fieldDef = new PropertyFieldDefinition(name, dataType.getLocalName());
-        
+
         populateFieldDefinition(propDef, fieldDef, group, PROP_DATA_PREFIX);
 
         fieldDef.setDefaultValue(propDef.getDefaultValue());
@@ -235,22 +236,21 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
                 Constraint constraint = constraintDef.getConstraint();
                 String type = constraint.getType();
                 Map<String, Object> params = constraint.getParameters();
-                
-                
-                //ListOfValuesConstraints have special handling for localising their allowedValues.
-                //If the constraint that we are currently handling is a registered constraint then
-                //we need to examine the underlying constraint to see if it is a LIST constraint
+
+                // ListOfValuesConstraints have special handling for localising their allowedValues.
+                // If the constraint that we are currently handling is a registered constraint then
+                // we need to examine the underlying constraint to see if it is a LIST constraint
                 if (RegisteredConstraint.class.isAssignableFrom(constraint.getClass()))
                 {
-                    constraint = ((RegisteredConstraint)constraint).getRegisteredConstraint();
+                    constraint = ((RegisteredConstraint) constraint).getRegisteredConstraint();
                 }
-                
+
                 if (ListOfValuesConstraint.class.isAssignableFrom(constraint.getClass()))
                 {
                     ListOfValuesConstraint lovConstraint = (ListOfValuesConstraint) constraint;
                     List<String> allowedValues = lovConstraint.getAllowedValues();
                     List<String> localisedValues = new ArrayList<String>(allowedValues.size());
-                    
+
                     // Look up each localised display-label in turn.
                     for (String value : allowedValues)
                     {
@@ -259,7 +259,7 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
                         // If there is no localisation defined for any value, then this will give us "value|value".
                         localisedValues.add(value + "|" + displayLabel);
                     }
-                    
+
                     // Now replace the allowedValues param with our localised version.
                     params.put(ListOfValuesConstraint.ALLOWED_VALUES_PARAM, localisedValues);
                 }
@@ -269,7 +269,7 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
         }
         return fieldConstraints;
     }
-    
+
     private PeriodDataTypeParameters getPeriodOptions()
     {
         PeriodDataTypeParameters periodOptions = new PeriodDataTypeParameters();
@@ -280,9 +280,9 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
         }
         return periodOptions;
     }
-    
+
     @Override
-    protected String getRegistryKey() 
+    protected String getRegistryKey()
     {
         return FormFieldConstants.PROP;
     }

@@ -41,25 +41,33 @@ public interface IdentityServiceFacade
 {
     /**
      * Returns {@link AccessToken} based authorization for provided {@link AuthorizationGrant}.
-     * @param grant the OAuth2 grant provided by the Resource Owner.
+     * 
+     * @param grant
+     *            the OAuth2 grant provided by the Resource Owner.
      * @return {@link AccessTokenAuthorization} containing access token and optional refresh token.
-     * @throws {@link AuthorizationException} when provided grant cannot be exchanged for the access token.
+     * @throws {@link
+     *             AuthorizationException} when provided grant cannot be exchanged for the access token.
      */
     AccessTokenAuthorization authorize(AuthorizationGrant grant) throws AuthorizationException;
 
     /**
      * Decodes the access token into the {@link DecodedAccessToken} which contains claims connected with a given token.
-     * @param token {@link String} with encoded access token value.
+     * 
+     * @param token
+     *            {@link String} with encoded access token value.
      * @return {@link DecodedAccessToken} containing decoded claims.
-     * @throws {@link TokenDecodingException} when token decoding failed.
+     * @throws {@link
+     *             TokenDecodingException} when token decoding failed.
      */
     DecodedAccessToken decodeToken(String token) throws TokenDecodingException;
 
     /**
-     * Gets claims about the authenticated user,
-     * such as name and email address, via the UserInfo endpoint of the OpenID provider.
-     * @param token {@link String} with encoded access token value.
-     * @param principalAttribute {@link String} the attribute name used to access the user's name from the user info response.
+     * Gets claims about the authenticated user, such as name and email address, via the UserInfo endpoint of the OpenID provider.
+     * 
+     * @param token
+     *            {@link String} with encoded access token value.
+     * @param principalAttribute
+     *            {@link String} the attribute name used to access the user's name from the user info response.
      * @return {@link OIDCUserInfo} containing user claims.
      */
     Optional<OIDCUserInfo> getUserInfo(String token, String principalAttribute);
@@ -129,19 +137,23 @@ public interface IdentityServiceFacade
     {
         /**
          * Required {@link AccessToken}
+         * 
          * @return {@link AccessToken}
          */
         AccessToken getAccessToken();
 
         /**
          * Optional refresh token.
+         * 
          * @return Refresh token or {@code null}
          */
         String getRefreshTokenValue();
     }
 
-    interface AccessToken {
+    interface AccessToken
+    {
         String getTokenValue();
+
         Instant getExpiresAt();
     }
 
@@ -150,7 +162,8 @@ public interface IdentityServiceFacade
         Object getClaim(String claim);
     }
 
-    class AuthorizationGrant {
+    class AuthorizationGrant
+    {
         private final String username;
         private final String password;
         private final String refreshToken;

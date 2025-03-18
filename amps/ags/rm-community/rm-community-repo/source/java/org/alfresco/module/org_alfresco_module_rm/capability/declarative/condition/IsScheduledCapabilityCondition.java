@@ -42,7 +42,8 @@ public class IsScheduledCapabilityCondition extends AbstractCapabilityCondition
     private String dispositionAction;
 
     /**
-     * @param dispositionAction     disposition action
+     * @param dispositionAction
+     *            disposition action
      */
     public void setDispositionAction(String dispositionAction)
     {
@@ -63,7 +64,7 @@ public class IsScheduledCapabilityCondition extends AbstractCapabilityCondition
             // Get the disposition actions name
             String actionName = nextDispositionAction.getName();
             if (actionName.equals(dispositionAction) &&
-                dispositionService.isNextDispositionActionEligible(nodeRef))
+                    dispositionService.isNextDispositionActionEligible(nodeRef))
             {
                 result = true;
             }

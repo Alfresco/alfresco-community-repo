@@ -26,13 +26,13 @@
 
 package org.alfresco.repo.forms.processor.workflow;
 
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.*;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.*;
 
 /**
  * Utility class used for matching data keys.
@@ -43,17 +43,12 @@ import static org.alfresco.repo.forms.processor.node.FormFieldConstants.*;
 public class DataKeyMatcher
 {
     /**
-     * A regular expression which can be used to match property names. These
-     * names will look like <code>"prop_cm_name"</code>. The pattern can also be
-     * used to extract the "cm" and the "name" parts.
+     * A regular expression which can be used to match property names. These names will look like <code>"prop_cm_name"</code>. The pattern can also be used to extract the "cm" and the "name" parts.
      */
     private final static Pattern propertyNamePattern = Pattern.compile("(^[a-zA-Z0-9-]+)_([a-zA-Z0-9_]+$)");
 
     /**
-     * A regular expression which can be used to match association names. These
-     * names will look like <code>"assoc_cm_references_added"</code>. The
-     * pattern can also be used to extract the "cm", the "name" and the suffix
-     * parts.
+     * A regular expression which can be used to match association names. These names will look like <code>"assoc_cm_references_added"</code>. The pattern can also be used to extract the "cm", the "name" and the suffix parts.
      */
     private final static Pattern associationNamePattern = Pattern.compile("(^[a-zA-Z0-9-]+)_([a-zA-Z0-9_]+)(_[a-zA-Z]+$)");
 
@@ -65,11 +60,12 @@ public class DataKeyMatcher
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
-     * Attempts to match the <code>dataKey</code> to either a property or association pattern.
-     * If no match can be found then returns <code>null</code>.
-     * @param dataKey the dataKey to be matched.
+     * Attempts to match the <code>dataKey</code> to either a property or association pattern. If no match can be found then returns <code>null</code>.
+     * 
+     * @param dataKey
+     *            the dataKey to be matched.
      * @return a {@link DataKeyInfo} representation or <code>null</code>.
      */
     public DataKeyInfo match(String dataKey)

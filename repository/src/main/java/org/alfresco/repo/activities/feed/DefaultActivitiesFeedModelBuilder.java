@@ -32,8 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.json.JSONException;
+
+import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 
 /**
  * @since 4.0
@@ -44,7 +45,7 @@ public class DefaultActivitiesFeedModelBuilder implements ActivitiesFeedModelBui
 {
     protected List<Map<String, Object>> activityFeedModels = new ArrayList<Map<String, Object>>();
     protected Set<String> ignoredActivityTypes = Collections.emptySet();
-    
+
     protected long maxFeedId = -1L;
 
     /**
@@ -59,23 +60,23 @@ public class DefaultActivitiesFeedModelBuilder implements ActivitiesFeedModelBui
     public Map<String, Object> buildModel()
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         model.put("activities", activityFeedModels);
         model.put("feedItemsCount", activityFeedModels.size());
-        
+
         return model;
     }
 
     @Override
     public void addActivityFeedEntry(ActivityFeedEntity feedEntry) throws JSONException
     {
-        if (ignore(feedEntry) == true) 
+        if (ignore(feedEntry) == true)
         {
             return;
         }
-        
+
         this.activityFeedModels.add(feedEntry.getModel());
-        
+
         final long feedId = feedEntry.getId();
         if (feedId > this.maxFeedId)
         {
@@ -94,7 +95,7 @@ public class DefaultActivitiesFeedModelBuilder implements ActivitiesFeedModelBui
     {
         return this.maxFeedId;
     }
-    
+
     protected boolean ignore(ActivityFeedEntity feedEntry)
     {
         return this.ignoredActivityTypes.contains(feedEntry.getActivityType());

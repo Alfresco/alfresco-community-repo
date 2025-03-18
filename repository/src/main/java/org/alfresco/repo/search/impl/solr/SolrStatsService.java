@@ -43,7 +43,7 @@ import org.alfresco.service.cmr.search.StatsService;
 public class SolrStatsService implements StatsService
 {
     private IndexerAndSearcher searcher;
-    
+
     public void setSearcher(IndexerAndSearcher searcher)
     {
         this.searcher = searcher;
@@ -53,7 +53,7 @@ public class SolrStatsService implements StatsService
     public StatsResultSet query(StatsParameters searchParameters)
     {
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        
+
         LuceneQueryLanguageSPI language = searcher.getQueryLanguages().get(searchParameters.getLanguage().toLowerCase());
         if (language != null && SearchService.LANGUAGE_INDEX_FTS_ALFRESCO.equals(language.getName()))
         {
@@ -64,6 +64,6 @@ public class SolrStatsService implements StatsService
         {
             throw new SearcherException("Unknown stats query language: " + searchParameters.getLanguage());
         }
-    }   
-    
+    }
+
 }

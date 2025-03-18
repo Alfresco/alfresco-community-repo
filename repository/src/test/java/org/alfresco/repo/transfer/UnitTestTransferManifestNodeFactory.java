@@ -44,8 +44,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
 /**
- * This is a test class to enable unit testing on a single machine. Since the single machine will already have the
- * target node.
+ * This is a test class to enable unit testing on a single machine. Since the single machine will already have the target node.
  * 
  * @author Mark Rogers
  */
@@ -106,7 +105,6 @@ public class UnitTestTransferManifestNodeFactory implements TransferManifestNode
                 primaryParentAssoc.getQName(), mappedNodeRef, primaryParentAssoc.isPrimary(),
                 primaryParentAssoc.getNthSibling()));
 
-        
         /**
          * Fiddle with the parent assocs
          */
@@ -123,7 +121,7 @@ public class UnitTestTransferManifestNodeFactory implements TransferManifestNode
             }
             normalNode.setParentAssocs(mappedParentAssocs);
         }
-        
+
         /**
          * Fiddle with the child assocs
          */
@@ -136,7 +134,7 @@ public class UnitTestTransferManifestNodeFactory implements TransferManifestNode
             {
                 NodeRef before = assoc.getChildRef();
                 NodeRef mappedChildNodeRef = mapNodeRef(before);
-                
+
                 ChildAssociationRef replace = new ChildAssociationRef(assoc.getTypeQName(), mappedParentNodeRef,
                         assoc.getQName(), mappedChildNodeRef, assoc.isPrimary(), assoc.getNthSibling());
                 mappedChildAssocs.add(replace);
@@ -157,32 +155,31 @@ public class UnitTestTransferManifestNodeFactory implements TransferManifestNode
                 props.put(ContentModel.PROP_NODE_UUID, mappedNodeRef.getId());
             }
         }
-        
+
         /**
          * Fiddle with the Peer Assocs property
          */
         if (newNode instanceof TransferManifestNormalNode)
         {
             TransferManifestNormalNode normalNode = (TransferManifestNormalNode) newNode;
-           
+
             List<AssociationRef> source = normalNode.getSourceAssocs();
             List<AssociationRef> target = normalNode.getTargetAssocs();
-            
+
             List<AssociationRef> mappedSourceAssocs = new ArrayList<AssociationRef>();
             List<AssociationRef> mappedTargetAssocs = new ArrayList<AssociationRef>();
-            
-            for(AssociationRef ref :source)
+
+            for (AssociationRef ref : source)
             {
                 mappedSourceAssocs.add(new AssociationRef(6L, getMappedNodeRef(ref.getSourceRef()), ref.getTypeQName(), getMappedNodeRef(ref.getTargetRef())));
             }
-            
-            for(AssociationRef ref: target)
+
+            for (AssociationRef ref : target)
             {
                 mappedTargetAssocs.add(new AssociationRef(6L, getMappedNodeRef(ref.getSourceRef()), ref.getTypeQName(), getMappedNodeRef(ref.getTargetRef())));
             }
             normalNode.setSourceAssocs(mappedSourceAssocs);
             normalNode.setTargetAssocs(mappedTargetAssocs);
-
 
         }
 
@@ -241,8 +238,7 @@ public class UnitTestTransferManifestNodeFactory implements TransferManifestNode
         if (mappedNodeRef == null)
         {
             /**
-             * Map the node ref by replacing the 36th digit with a Z. The existing UUID could have 0-9 1-F in the 36th
-             * digit
+             * Map the node ref by replacing the 36th digit with a Z. The existing UUID could have 0-9 1-F in the 36th digit
              */
             String nodeRef = in.getId();
             if (nodeRef.length() == 36)

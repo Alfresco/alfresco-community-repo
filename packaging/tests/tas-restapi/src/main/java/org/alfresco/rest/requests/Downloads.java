@@ -25,17 +25,18 @@
  */
 package org.alfresco.rest.requests;
 
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestDownloadsModel;
-import org.springframework.http.HttpMethod;
-
 
 /**
  * Methods for Rest API under the /downloads path
  */
 
-public class Downloads extends ModelRequest<Downloads> {
+public class Downloads extends ModelRequest<Downloads>
+{
 
     RestDownloadsModel downloadsModel;
 
@@ -74,6 +75,7 @@ public class Downloads extends ModelRequest<Downloads> {
     public void cancelDownload()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "downloads/{downloadId}", downloadsModel.getId());
-        restWrapper.processEmptyModel(request);;
+        restWrapper.processEmptyModel(request);
+        ;
     }
 }

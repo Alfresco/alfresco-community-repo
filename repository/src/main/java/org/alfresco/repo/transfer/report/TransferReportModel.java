@@ -42,6 +42,6 @@ public interface TransferReportModel extends TransferModel
     static final String LOCALNAME_TRANSFER_PRIMARY_PATH = "primaryPath";
     static final String LOCALNAME_TRANSFER_PRIMARY_PARENT = "primaryParent";
     static final String REPORT_PREFIX = "report";
-    
+
     static final String TRANSFER_REPORT_MODEL_1_0_URI = "http://www.alfresco.org/model/transferReport/1.0";
 }

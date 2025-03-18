@@ -42,6 +42,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
@@ -96,8 +99,6 @@ import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Centralises access to site services and maps between representations.
@@ -123,26 +124,26 @@ public class SitesImpl implements Sites
     private static final String DEFAULT_SITE_PRESET = "site-dashboard";
     private static final String PARAM_IS_MEMBER_OF_GROUP = "isMemberOfGroup";
 
-    private final static Map<String,QName> SORT_PARAMS_TO_QNAMES;
+    private final static Map<String, QName> SORT_PARAMS_TO_QNAMES;
     static
     {
-        Map<String,QName> aMap = new HashMap<>(3);
+        Map<String, QName> aMap = new HashMap<>(3);
         aMap.put(PARAM_SITE_TITLE, ContentModel.PROP_TITLE);
         aMap.put(PARAM_SITE_ID, ContentModel.PROP_NAME);
         aMap.put(PARAM_SITE_DESCRIPTION, ContentModel.PROP_DESCRIPTION);
         SORT_PARAMS_TO_QNAMES = Collections.unmodifiableMap(aMap);
     }
 
-    private final static Map<String,SiteService.SortFields> SORT_SITE_MEMBERSHIP;
+    private final static Map<String, SiteService.SortFields> SORT_SITE_MEMBERSHIP;
     static
     {
-        Map<String,SiteService.SortFields> aMap = new HashMap<>(3);
+        Map<String, SiteService.SortFields> aMap = new HashMap<>(3);
         aMap.put(PARAM_SITE_TITLE, SiteService.SortFields.SiteTitle);
         aMap.put(SiteService.SortFields.SiteTitle.toString(), SiteService.SortFields.SiteTitle); // for backwards compat'
         aMap.put(PARAM_SITE_ID, SiteService.SortFields.SiteShortName);
         aMap.put(SiteService.SortFields.SiteShortName.toString(), SiteService.SortFields.SiteShortName); // for backwards compat'
         aMap.put(PARAM_SITE_ROLE, SiteService.SortFields.Role);
-        aMap.put(SiteService.SortFields.Role.toString(), SiteService.SortFields.Role);  // for backwards compat'
+        aMap.put(SiteService.SortFields.Role.toString(), SiteService.SortFields.Role); // for backwards compat'
         SORT_SITE_MEMBERSHIP = Collections.unmodifiableMap(aMap);
     }
 
@@ -231,17 +232,17 @@ public class SitesImpl implements Sites
     {
         SiteInfo siteInfo = null;
 
-        if(guid == null)
+        if (guid == null)
         {
             throw new InvalidArgumentException("guid is null");
         }
         nodes.validateNode(guid);
         QName type = nodeService.getType(guid);
         boolean isSiteNodeRef = dictionaryService.isSubClass(type, SiteModel.TYPE_SITE);
-        if(isSiteNodeRef)
+        if (isSiteNodeRef)
         {
             siteInfo = siteService.getSite(guid);
-            if(siteInfo == null)
+            if (siteInfo == null)
             {
                 // not a site
                 throw new InvalidArgumentException(guid.getId() + " is not a site");
@@ -258,7 +259,7 @@ public class SitesImpl implements Sites
 
     public SiteInfo validateSite(String siteId)
     {
-        if(siteId == null)
+        if (siteId == null)
         {
             throw new InvalidArgumentException("siteId is null");
         }
@@ -269,7 +270,7 @@ public class SitesImpl implements Sites
     public CollectionWithPagingInfo<SiteMember> getSiteMembers(String siteId, Parameters parameters)
     {
         SiteInfo siteInfo = validateSite(siteId);
-        if(siteInfo == null)
+        if (siteInfo == null)
         {
             // site does not exist
             throw new EntityNotFoundException(siteId);
@@ -281,12 +282,14 @@ public class SitesImpl implements Sites
         PagingRequest pagingRequest = Util.getPagingRequest(paging);
         pagingRequest.setRequestTotalCountMax(100);
 
-        MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(new HashSet<>(Collections.singletonList(PARAM_IS_MEMBER_OF_GROUP)), null);;
+        MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(new HashSet<>(Collections.singletonList(PARAM_IS_MEMBER_OF_GROUP)), null);
+        ;
         QueryHelper.walk(parameters.getQuery(), propertyWalker);
 
         Boolean expandGroups = propertyWalker.getProperty(PARAM_IS_MEMBER_OF_GROUP, WhereClauseParser.EQUALS, Boolean.class);
 
-        if (expandGroups == null) {
+        if (expandGroups == null)
+        {
             expandGroups = true;
         }
 
@@ -304,18 +307,18 @@ public class SitesImpl implements Sites
 
         return CollectionWithPagingInfo.asPaged(paging, ret, pagedResults.hasMoreItems(), pagedResults.getTotalResultCount().getFirst());
     }
-    
+
     public String getSiteRole(String siteId)
     {
         String personId = AuthenticationUtil.getFullyAuthenticatedUser();
         return getSiteRole(siteId, personId);
     }
-    
+
     public String getSiteRole(String siteId, String personId)
     {
         return siteService.getMembersRole(siteId, personId);
     }
-    
+
     public Site getSite(String siteId)
     {
         return getSite(siteId, true);
@@ -324,7 +327,7 @@ public class SitesImpl implements Sites
     public Site getSite(String siteId, boolean includeRole)
     {
         SiteInfo siteInfo = validateSite(siteId);
-        if(siteInfo == null)
+        if (siteInfo == null)
         {
             // site does not exist
             throw new EntityNotFoundException(siteId);
@@ -337,18 +340,20 @@ public class SitesImpl implements Sites
         // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
         String siteId = siteInfo.getShortName();
         String role = null;
-        if(includeRole)
+        if (includeRole)
         {
             role = getSiteRole(siteId);
         }
         return new Site(siteInfo, role);
     }
-    
+
     /**
      * people/<personId>/sites/<siteId>
      *
-     * @param siteId String
-     * @param personId String
+     * @param siteId
+     *            String
+     * @param personId
+     *            String
      * @return MemberOfSite
      */
     public MemberOfSite getMemberOfSite(String personId, String siteId)
@@ -357,7 +362,7 @@ public class SitesImpl implements Sites
 
         personId = people.validatePerson(personId);
         SiteInfo siteInfo = validateSite(siteId);
-        if(siteInfo == null)
+        if (siteInfo == null)
         {
             // site does not exist
             throw new RelationshipResourceNotFoundException(personId, siteId);
@@ -366,7 +371,7 @@ public class SitesImpl implements Sites
         siteId = siteInfo.getShortName();
 
         String roleStr = siteService.getMembersRole(siteInfo.getShortName(), personId);
-        if(roleStr != null)
+        if (roleStr != null)
         {
             Site site = new Site(siteInfo, roleStr);
             siteMember = new MemberOfSite(site.getId(), siteInfo.getNodeRef(), roleStr);
@@ -383,62 +388,62 @@ public class SitesImpl implements Sites
     {
         SiteMember siteMember = null;
 
-		personId = people.validatePerson(personId);
-    	SiteInfo siteInfo = validateSite(siteId);
-    	if(siteInfo == null)
-    	{
-    		// site does not exist
-            logger.debug("Site does not exist: "+siteId);            
-    		throw new RelationshipResourceNotFoundException(personId, siteId);
-    	}
-    	siteId = siteInfo.getShortName();
+        personId = people.validatePerson(personId);
+        SiteInfo siteInfo = validateSite(siteId);
+        if (siteInfo == null)
+        {
+            // site does not exist
+            logger.debug("Site does not exist: " + siteId);
+            throw new RelationshipResourceNotFoundException(personId, siteId);
+        }
+        siteId = siteInfo.getShortName();
 
-        logger.debug("Getting member role for "+siteId+ " person "+personId);
-    	String role = siteService.getMembersRole(siteId, personId);
-    	if(role != null)
-    	{
-	    	siteMember = new SiteMember(personId, role);
-    	}
-    	else
-    	{
+        logger.debug("Getting member role for " + siteId + " person " + personId);
+        String role = siteService.getMembersRole(siteId, personId);
+        if (role != null)
+        {
+            siteMember = new SiteMember(personId, role);
+        }
+        else
+        {
             logger.debug("Getting member role but role is null");
-    		throw new RelationshipResourceNotFoundException(personId, siteId);
-    	}
-        
+            throw new RelationshipResourceNotFoundException(personId, siteId);
+        }
+
         return siteMember;
     }
 
-	public SiteMember addSiteMember(String siteId, SiteMember siteMember)
-	{
-		String personId = people.validatePerson(siteMember.getPersonId());
-    	SiteInfo siteInfo = validateSite(siteId);
-    	if(siteInfo == null)
-    	{
-    		// site does not exist
-			logger.debug("addSiteMember:  site does not exist "+siteId+ " person "+personId);
-    		throw new EntityNotFoundException(siteId);
-    	}
-    	// set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
-    	siteId = siteInfo.getShortName();
-    	
-    	String role = siteMember.getRole();
-    	if(role == null)
-    	{
-			logger.debug("addSiteMember:  Must provide a role "+siteMember);
-    		throw new InvalidArgumentException("Must provide a role");
-    	}
-    	
-    	if(siteService.isMember(siteId, personId))
-    	{
-			logger.debug("addSiteMember:  "+ personId + " is already a member of site " + siteId);
-    		throw new ConstraintViolatedException(personId + " is already a member of site " + siteId);
-    	}
+    public SiteMember addSiteMember(String siteId, SiteMember siteMember)
+    {
+        String personId = people.validatePerson(siteMember.getPersonId());
+        SiteInfo siteInfo = validateSite(siteId);
+        if (siteInfo == null)
+        {
+            // site does not exist
+            logger.debug("addSiteMember:  site does not exist " + siteId + " person " + personId);
+            throw new EntityNotFoundException(siteId);
+        }
+        // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
+        siteId = siteInfo.getShortName();
 
-    	if(!siteService.canAddMember(siteId, personId, role))
-    	{
-			logger.debug("addSiteMember:  PermissionDeniedException "+siteId+ " person "+personId+ " role "+role);
-    		throw new PermissionDeniedException();
-    	}
+        String role = siteMember.getRole();
+        if (role == null)
+        {
+            logger.debug("addSiteMember:  Must provide a role " + siteMember);
+            throw new InvalidArgumentException("Must provide a role");
+        }
+
+        if (siteService.isMember(siteId, personId))
+        {
+            logger.debug("addSiteMember:  " + personId + " is already a member of site " + siteId);
+            throw new ConstraintViolatedException(personId + " is already a member of site " + siteId);
+        }
+
+        if (!siteService.canAddMember(siteId, personId, role))
+        {
+            logger.debug("addSiteMember:  PermissionDeniedException " + siteId + " person " + personId + " role " + role);
+            throw new PermissionDeniedException();
+        }
 
         try
         {
@@ -446,7 +451,7 @@ public class SitesImpl implements Sites
         }
         catch (UnknownAuthorityException e)
         {
-			logger.debug("addSiteMember:  UnknownAuthorityException "+siteId+ " person "+personId+ " role "+role);
+            logger.debug("addSiteMember:  UnknownAuthorityException " + siteId + " person " + personId + " role " + role);
             throw new InvalidArgumentException("Unknown role '" + role + "'");
         }
         return siteMember;
@@ -456,7 +461,7 @@ public class SitesImpl implements Sites
     {
         personId = people.validatePerson(personId);
         SiteInfo siteInfo = validateSite(siteId);
-        if(siteInfo == null)
+        if (siteInfo == null)
         {
             // site does not exist
             throw new RelationshipResourceNotFoundException(personId, siteId);
@@ -465,17 +470,17 @@ public class SitesImpl implements Sites
         siteId = siteInfo.getShortName();
 
         boolean isMember = siteService.isMember(siteId, personId);
-        if(!isMember)
+        if (!isMember)
         {
             throw new InvalidArgumentException();
         }
         String role = siteService.getMembersRole(siteId, personId);
-        if(role != null)
+        if (role != null)
         {
-            if(role.equals(SiteModel.SITE_MANAGER))
+            if (role.equals(SiteModel.SITE_MANAGER))
             {
                 int numAuthorities = siteService.countAuthoritiesWithRole(siteId, SiteModel.SITE_MANAGER);
-                if(numAuthorities <= 1)
+                if (numAuthorities <= 1)
                 {
                     throw new InvalidArgumentException("Can't remove last manager of site " + siteId);
                 }
@@ -495,20 +500,20 @@ public class SitesImpl implements Sites
     public SiteMember updateSiteMember(String siteId, SiteMember siteMember)
     {
         String siteMemberId = siteMember.getPersonId();
-        if(siteMemberId == null)
+        if (siteMemberId == null)
         {
             throw new InvalidArgumentException("Member id is null");
         }
         siteMemberId = people.validatePerson(siteMemberId);
         SiteInfo siteInfo = validateSite(siteId);
-        if(siteInfo == null)
+        if (siteInfo == null)
         {
             // site does not exist
             throw new EntityNotFoundException(siteId);
         }
         siteId = siteInfo.getShortName();
         String siteRole = siteMember.getRole();
-        if(siteRole == null)
+        if (siteRole == null)
         {
             throw new InvalidArgumentException("Must provide a role");
         }
@@ -549,7 +554,7 @@ public class SitesImpl implements Sites
                 SiteService.SortFields sortProp = SORT_SITE_MEMBERSHIP.get(sortCol.column);
                 if (sortProp == null)
                 {
-                    throw new InvalidArgumentException("Invalid sort field: "+sortCol.column);
+                    throw new InvalidArgumentException("Invalid sort field: " + sortCol.column);
                 }
                 sortPairs.add(new Pair<>(sortProp, (sortCol.asc ? SortOrder.ASCENDING : SortOrder.DESCENDING)));
             }
@@ -559,7 +564,7 @@ public class SitesImpl implements Sites
             // default sort order
             sortPairs.add(new Pair<SiteService.SortFields, SortOrder>(
                     SiteService.SortFields.SiteTitle,
-                    SortOrder.ASCENDING ));
+                    SortOrder.ASCENDING));
         }
 
         // get the unsorted list of site memberships
@@ -569,8 +574,8 @@ public class SitesImpl implements Sites
         int totalSize = siteMembers.size();
         final List<SiteMembership> sortedSiteMembers = new ArrayList<>(siteMembers);
         Collections.sort(sortedSiteMembers, new SiteMembershipComparator(
-                    sortPairs,
-                    SiteMembershipComparator.Type.SITES));
+                sortPairs,
+                SiteMembershipComparator.Type.SITES));
 
         PageDetails pageDetails = PageDetails.getPageDetails(pagingRequest, totalSize);
         List<MemberOfSite> ret = new ArrayList<>(totalSize);
@@ -580,7 +585,7 @@ public class SitesImpl implements Sites
         int counter;
         int totalItems = 0;
         Iterator<SiteMembership> it = sortedSiteMembers.iterator();
-        for(counter = 0; it.hasNext();)
+        for (counter = 0; it.hasNext();)
         {
             SiteMembership siteMember = it.next();
 
@@ -589,13 +594,13 @@ public class SitesImpl implements Sites
                 continue;
             }
 
-            if(counter < pageDetails.getSkipCount())
+            if (counter < pageDetails.getSkipCount())
             {
                 totalItems++;
                 counter++;
                 continue;
             }
-            
+
             if (counter <= pageDetails.getEnd() - 1)
             {
                 SiteInfo siteInfo = siteMember.getSiteInfo();
@@ -615,7 +620,7 @@ public class SitesImpl implements Sites
     {
         // check site and container node validity
         SiteInfo siteInfo = validateSite(siteId);
-        if(siteInfo == null)
+        if (siteInfo == null)
         {
             // site does not exist
             throw new RelationshipResourceNotFoundException(siteId, containerId);
@@ -624,26 +629,26 @@ public class SitesImpl implements Sites
         siteId = siteInfo.getShortName();
 
         NodeRef containerNodeRef = siteService.getContainer(siteId, containerId);
-        if(containerNodeRef == null)
+        if (containerNodeRef == null)
         {
             throw new RelationshipResourceNotFoundException(siteId, containerId);
         }
 
         // check that the containerId is actually a container for the specified site
         SiteInfo testSiteInfo = siteService.getSite(containerNodeRef);
-        if(testSiteInfo == null)
+        if (testSiteInfo == null)
         {
             throw new RelationshipResourceNotFoundException(siteId, containerId);
         }
         else
         {
-            if(!testSiteInfo.getShortName().equals(siteId))
+            if (!testSiteInfo.getShortName().equals(siteId))
             {
                 throw new RelationshipResourceNotFoundException(siteId, containerId);
             }
         }
 
-        String folderId = (String)nodeService.getProperty(containerNodeRef, SiteModel.PROP_COMPONENT_ID);
+        String folderId = (String) nodeService.getProperty(containerNodeRef, SiteModel.PROP_COMPONENT_ID);
 
         SiteContainer siteContainer = new SiteContainer(folderId, containerNodeRef);
         return siteContainer;
@@ -652,7 +657,7 @@ public class SitesImpl implements Sites
     public PagingResults<SiteContainer> getSiteContainers(String siteId, Paging paging)
     {
         SiteInfo siteInfo = validateSite(siteId);
-        if(siteInfo == null)
+        if (siteInfo == null)
         {
             // site does not exist
             throw new EntityNotFoundException(siteId);
@@ -661,16 +666,15 @@ public class SitesImpl implements Sites
         final PagingResults<FileInfo> pagingResults = siteService.listContainers(siteInfo.getShortName(), Util.getPagingRequest(paging));
         List<FileInfo> containerFileInfos = pagingResults.getPage();
         final List<SiteContainer> siteContainers = new ArrayList<SiteContainer>(containerFileInfos.size());
-        for(FileInfo containerFileInfo : containerFileInfos)
+        for (FileInfo containerFileInfo : containerFileInfos)
         {
             NodeRef nodeRef = containerFileInfo.getNodeRef();
-            String containerId = (String)nodeService.getProperty(nodeRef, SiteModel.PROP_COMPONENT_ID);
+            String containerId = (String) nodeService.getProperty(nodeRef, SiteModel.PROP_COMPONENT_ID);
             SiteContainer siteContainer = new SiteContainer(containerId, nodeRef);
             siteContainers.add(siteContainer);
         }
 
-        return new PagingResults<SiteContainer>()
-        {
+        return new PagingResults<SiteContainer>() {
             @Override
             public List<SiteContainer> getPage()
             {
@@ -696,15 +700,15 @@ public class SitesImpl implements Sites
             }
         };
     }
-    
+
     public CollectionWithPagingInfo<Site> getSites(final Parameters parameters)
     {
         final BeanPropertiesFilter filter = parameters.getFilter();
 
         Paging paging = parameters.getPaging();
         PagingRequest pagingRequest = Util.getPagingRequest(paging);
-//    	pagingRequest.setRequestTotalCountMax(requestTotalCountMax)
-        
+        // pagingRequest.setRequestTotalCountMax(requestTotalCountMax)
+
         List<Pair<QName, Boolean>> sortProps = new ArrayList<Pair<QName, Boolean>>();
         List<SortColumn> sortCols = parameters.getSorting();
         if ((sortCols != null) && (sortCols.size() > 0))
@@ -714,7 +718,7 @@ public class SitesImpl implements Sites
                 QName sortPropQName = SORT_PARAMS_TO_QNAMES.get(sortCol.column);
                 if (sortPropQName == null)
                 {
-                    throw new InvalidArgumentException("Invalid sort field: "+sortCol.column);
+                    throw new InvalidArgumentException("Invalid sort field: " + sortCol.column);
                 }
                 sortProps.add(new Pair<>(sortPropQName, (sortCol.asc ? Boolean.TRUE : Boolean.FALSE)));
             }
@@ -731,15 +735,14 @@ public class SitesImpl implements Sites
         final List<SiteInfo> sites = pagingResult.getPage();
         int totalItems = pagingResult.getTotalResultCount().getFirst();
         final String personId = AuthenticationUtil.getFullyAuthenticatedUser();
-        List<Site> page = new AbstractList<Site>()
-        {
+        List<Site> page = new AbstractList<Site>() {
             @Override
             public Site get(int index)
             {
                 SiteInfo siteInfo = sites.get(index);
 
                 String role = null;
-                if(filter.isAllowed(Site.ROLE))
+                if (filter.isAllowed(Site.ROLE))
                 {
                     role = siteService.getMembersRole(siteInfo.getShortName(), personId);
                 }
@@ -817,10 +820,10 @@ public class SitesImpl implements Sites
             {
                 if ((filterProp instanceof FilterPropString) && (propVal instanceof String))
                 {
-                    String val = (String)propVal;
-                    String filter = (String)filterProp.getPropVal();
+                    String val = (String) propVal;
+                    String filter = (String) filterProp.getPropVal();
 
-                    switch ((FilterPropString.FilterTypeString)filterProp.getFilterType())
+                    switch ((FilterPropString.FilterTypeString) filterProp.getFilterType())
                     {
                     case STARTSWITH:
                         if (val.startsWith(filter))
@@ -877,8 +880,8 @@ public class SitesImpl implements Sites
 
             if ((filterProp instanceof FilterPropBoolean) && (propVal instanceof Boolean))
             {
-                Boolean val = (Boolean)propVal;
-                Boolean filter = (Boolean)filterProp.getPropVal();
+                Boolean val = (Boolean) propVal;
+                Boolean filter = (Boolean) filterProp.getPropVal();
 
                 return (val == filter);
             }
@@ -891,7 +894,7 @@ public class SitesImpl implements Sites
     {
         personId = people.validatePerson(personId);
         SiteInfo siteInfo = validateSite(siteId);
-        if(siteInfo == null)
+        if (siteInfo == null)
         {
             // site does not exist
             throw new RelationshipResourceNotFoundException(personId, siteId);
@@ -900,7 +903,7 @@ public class SitesImpl implements Sites
         siteId = siteInfo.getShortName();
         NodeRef nodeRef = siteInfo.getNodeRef();
 
-        if(favouritesService.isFavourite(personId, nodeRef))
+        if (favouritesService.isFavourite(personId, nodeRef))
         {
             String role = getSiteRole(siteId, personId);
             return new FavouriteSite(siteInfo, role);
@@ -910,13 +913,13 @@ public class SitesImpl implements Sites
             throw new RelationshipResourceNotFoundException(personId, siteId);
         }
     }
-    
+
     public void addFavouriteSite(String personId, FavouriteSite favouriteSite)
     {
         personId = people.validatePerson(personId);
         String siteId = favouriteSite.getId();
         SiteInfo siteInfo = validateSite(siteId);
-        if(siteInfo == null)
+        if (siteInfo == null)
         {
             // site does not exist
             throw new EntityNotFoundException(siteId);
@@ -926,10 +929,10 @@ public class SitesImpl implements Sites
 
         StringBuilder prefKey = new StringBuilder(FAVOURITE_SITES_PREFIX);
         prefKey.append(siteId);
-        String value = (String)preferenceService.getPreference(personId, prefKey.toString());
+        String value = (String) preferenceService.getPreference(personId, prefKey.toString());
         boolean isFavouriteSite = (value != null && value.equalsIgnoreCase("true"));
 
-        if(isFavouriteSite)
+        if (isFavouriteSite)
         {
             throw new ConstraintViolatedException("Site " + siteId + " is already a favourite site");
         }
@@ -941,12 +944,12 @@ public class SitesImpl implements Sites
         preferences.put(prefKey.toString(), Boolean.TRUE);
         preferenceService.setPreferences(personId, preferences);
     }
-    
+
     public void removeFavouriteSite(String personId, String siteId)
     {
         personId = people.validatePerson(personId);
         SiteInfo siteInfo = validateSite(siteId);
-        if(siteInfo == null)
+        if (siteInfo == null)
         {
             // site does not exist
             throw new RelationshipResourceNotFoundException(personId, siteId);
@@ -955,23 +958,22 @@ public class SitesImpl implements Sites
 
         StringBuilder prefKey = new StringBuilder(FAVOURITE_SITES_PREFIX);
         prefKey.append(siteId);
-        String value = (String)preferenceService.getPreference(personId, prefKey.toString());
+        String value = (String) preferenceService.getPreference(personId, prefKey.toString());
         boolean isFavouriteSite = (value != null && value.equalsIgnoreCase("true"));
 
-        if(!isFavouriteSite)
+        if (!isFavouriteSite)
         {
             throw new NotFoundException("Site " + siteId + " is not a favourite site");
         }
 
         preferenceService.clearPreferences(personId, prefKey.toString());
     }
-    
+
     private PagingResults<SiteInfo> getFavouriteSites(String userName, PagingRequest pagingRequest)
     {
         final Collator collator = Collator.getInstance();
 
-        final Set<SiteInfo> sortedFavouriteSites = new TreeSet<SiteInfo>(new Comparator<SiteInfo>()
-        {
+        final Set<SiteInfo> sortedFavouriteSites = new TreeSet<SiteInfo>(new Comparator<SiteInfo>() {
             @Override
             public int compare(SiteInfo o1, SiteInfo o2)
             {
@@ -980,19 +982,19 @@ public class SitesImpl implements Sites
         });
 
         Map<String, Serializable> prefs = preferenceService.getPreferences(userName, FAVOURITE_SITES_PREFIX);
-        for(Entry<String, Serializable> entry : prefs.entrySet())
+        for (Entry<String, Serializable> entry : prefs.entrySet())
         {
             boolean isFavourite = false;
             Serializable s = entry.getValue();
-            if(s instanceof Boolean)
+            if (s instanceof Boolean)
             {
-                isFavourite = (Boolean)s;
+                isFavourite = (Boolean) s;
             }
-            if(isFavourite)
+            if (isFavourite)
             {
                 String siteShortName = entry.getKey().substring(FAVOURITE_SITES_PREFIX_LENGTH).replace(".favourited", "");
                 SiteInfo siteInfo = siteService.getSite(siteShortName);
-                if(siteInfo != null)
+                if (siteInfo != null)
                 {
                     sortedFavouriteSites.add(siteInfo);
                 }
@@ -1004,16 +1006,16 @@ public class SitesImpl implements Sites
 
         final List<SiteInfo> page = new ArrayList<SiteInfo>(pageDetails.getPageSize());
         Iterator<SiteInfo> it = sortedFavouriteSites.iterator();
-        for(int counter = 0; counter < pageDetails.getEnd() && it.hasNext(); counter++)
+        for (int counter = 0; counter < pageDetails.getEnd() && it.hasNext(); counter++)
         {
             SiteInfo favouriteSite = it.next();
 
-            if(counter < pageDetails.getSkipCount())
+            if (counter < pageDetails.getSkipCount())
             {
                 continue;
             }
 
-            if(counter > pageDetails.getEnd() - 1)
+            if (counter > pageDetails.getEnd() - 1)
             {
                 break;
             }
@@ -1021,8 +1023,7 @@ public class SitesImpl implements Sites
             page.add(favouriteSite);
         }
 
-        return new PagingResults<SiteInfo>()
-        {
+        return new PagingResults<SiteInfo>() {
             @Override
             public List<SiteInfo> getPage()
             {
@@ -1059,10 +1060,10 @@ public class SitesImpl implements Sites
 
         PagingResults<SiteInfo> favouriteSites = getFavouriteSites(personId, Util.getPagingRequest(paging));
         List<FavouriteSite> favourites = new ArrayList<FavouriteSite>(favouriteSites.getPage().size());
-        for(SiteInfo favouriteSite : favouriteSites.getPage())
+        for (SiteInfo favouriteSite : favouriteSites.getPage())
         {
             String role = null;
-            if(filter.isAllowed(Site.ROLE))
+            if (filter.isAllowed(Site.ROLE))
             {
                 role = getSiteRole(favouriteSite.getShortName(), personId);
             }
@@ -1112,9 +1113,7 @@ public class SitesImpl implements Sites
     /**
      * Uses site service for creating site info
      *
-     * Extracted this call in a separate method because it might be needed to
-     * call different site service method when creating site info (e.g.
-     * siteService.createSite(String, String, String, String, SiteVisibility, QName))
+     * Extracted this call in a separate method because it might be needed to call different site service method when creating site info (e.g. siteService.createSite(String, String, String, String, SiteVisibility, QName))
      * 
      * @param site
      * @return
@@ -1127,7 +1126,7 @@ public class SitesImpl implements Sites
         }
         return siteService.createSite(DEFAULT_SITE_PRESET, site.getId(), site.getTitle(), site.getDescription(), site.getVisibility());
     }
-        
+
     /**
      * Create default/fixed preset (Share) site - with DocLib container/component
      *
@@ -1186,7 +1185,7 @@ public class SitesImpl implements Sites
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("Updating site, ID: "+siteId+", site data: "+update+", parameters: "+parameters);
+            logger.debug("Updating site, ID: " + siteId + ", site data: " + update + ", parameters: " + parameters);
         }
 
         // Get the site by ID (aka short name)
@@ -1226,33 +1225,32 @@ public class SitesImpl implements Sites
         String siteTitle = site.getTitle();
         if ((siteTitle == null) || siteTitle.isEmpty())
         {
-            throw new InvalidArgumentException("Site title is expected: "+siteTitle);
+            throw new InvalidArgumentException("Site title is expected: " + siteTitle);
         }
         else if (siteTitle.length() > SITE_MAXLEN_TITLE)
         {
-            throw new InvalidArgumentException("Site title exceeds max length of "+SITE_MAXLEN_TITLE+" characters");
+            throw new InvalidArgumentException("Site title exceeds max length of " + SITE_MAXLEN_TITLE + " characters");
         }
 
         SiteVisibility siteVisibility = site.getVisibility();
         if (siteVisibility == null)
         {
-            throw new InvalidArgumentException("Site visibility is expected: "+siteTitle+" (eg. PUBLIC, PRIVATE, MODERATED)");
+            throw new InvalidArgumentException("Site visibility is expected: " + siteTitle + " (eg. PUBLIC, PRIVATE, MODERATED)");
         }
 
         String siteId = site.getId();
         if (siteId == null)
         {
             // generate a site id from title (similar to Share create site dialog)
-            siteId = siteTitle.
-                    trim(). // trim leading & trailing whitespace
-                    replaceAll("[^"+SITE_ID_VALID_CHARS_PARTIAL_REGEX+" ]",""). // remove special characters (except spaces)
+            siteId = siteTitle.trim(). // trim leading & trailing whitespace
+                    replaceAll("[^" + SITE_ID_VALID_CHARS_PARTIAL_REGEX + " ]", ""). // remove special characters (except spaces)
                     replaceAll(" +", " "). // collapse multiple spaces to single space
-                    replace(" ","-"). // replaces spaces with dashs
+                    replace(" ", "-"). // replaces spaces with dashs
                     toLowerCase(); // lowercase :-)
         }
         else
         {
-            if (! siteId.matches("^["+SITE_ID_VALID_CHARS_PARTIAL_REGEX+"]+"))
+            if (!siteId.matches("^[" + SITE_ID_VALID_CHARS_PARTIAL_REGEX + "]+"))
             {
                 throw new InvalidArgumentException("Invalid site id - should consist of alphanumeric/dash characters");
             }
@@ -1275,7 +1273,7 @@ public class SitesImpl implements Sites
 
         if ((siteDescription != null) && (siteDescription.length() > SITE_MAXLEN_DESCRIPTION))
         {
-            throw new InvalidArgumentException("Site description exceeds max length of "+SITE_MAXLEN_DESCRIPTION+" characters");
+            throw new InvalidArgumentException("Site description exceeds max length of " + SITE_MAXLEN_DESCRIPTION + " characters");
         }
 
         return site;
@@ -1285,8 +1283,7 @@ public class SitesImpl implements Sites
     {
         ImportPackageHandler acpHandler = new SiteImportPackageHandler(siteSurfConfig, siteId);
         Location location = new Location(siteNodeRef);
-        ImporterBinding binding = new ImporterBinding()
-        {
+        ImporterBinding binding = new ImporterBinding() {
             @Override
             public String getValue(String key)
             {
@@ -1340,7 +1337,7 @@ public class SitesImpl implements Sites
     public SiteGroup addSiteGroupMembership(String siteId, SiteGroup group)
     {
         SiteInfo siteInfo = validateSite(siteId);
-        if(siteInfo == null)
+        if (siteInfo == null)
         {
             logger.debug("Site does not exist: " + siteId);
             throw new EntityNotFoundException(siteId);
@@ -1349,12 +1346,12 @@ public class SitesImpl implements Sites
         validateGroup(group.getId());
 
         SiteMemberInfo groupInfo = siteService.getMembersRoleInfo(siteId, group.getId());
-        if(groupInfo != null)
+        if (groupInfo != null)
         {
-            logger.debug("addSiteGroupMembership:  "+ group.getId() + " is already a member of site " + siteId);
+            logger.debug("addSiteGroupMembership:  " + group.getId() + " is already a member of site " + siteId);
             throw new ConstraintViolatedException(group.getId() + " is already a member of site " + siteId);
         }
-        if(group.getRole() == null)
+        if (group.getRole() == null)
         {
             logger.debug("Getting member role but role is null");
             throw new RelationshipResourceNotFoundException(group.getId(), siteId);
@@ -1384,12 +1381,12 @@ public class SitesImpl implements Sites
     {
         isMemberOfSite(siteId, groupId);
         String role = this.siteService.getMembersRole(siteId, groupId);
-        if(role != null)
+        if (role != null)
         {
-            if(role.equals(SiteModel.SITE_MANAGER))
+            if (role.equals(SiteModel.SITE_MANAGER))
             {
                 int numAuthorities = this.siteService.countAuthoritiesWithRole(siteId, SiteModel.SITE_MANAGER);
-                if(numAuthorities <= 1)
+                if (numAuthorities <= 1)
                 {
                     throw new InvalidArgumentException("Can't remove last manager of site " + siteId);
                 }
@@ -1411,7 +1408,7 @@ public class SitesImpl implements Sites
     {
 
         SiteInfo siteInfo = validateSite(siteId);
-        if(siteInfo == null)
+        if (siteInfo == null)
         {
             logger.debug("Site does not exist: " + siteId);
             throw new EntityNotFoundException(siteId);
@@ -1420,23 +1417,23 @@ public class SitesImpl implements Sites
         validateGroup(id);
 
         SiteMemberInfo memberInfo = this.siteService.getMembersRoleInfo(siteId, id);
-        if(memberInfo == null)
+        if (memberInfo == null)
         {
             logger.debug("Given authority is not a member of the site");
             throw new InvalidArgumentException("Given authority is not a member of the site");
         }
-        if(memberInfo.getMemberRole() == null)
+        if (memberInfo.getMemberRole() == null)
         {
             logger.debug("Getting authority role but role is null");
             throw new RelationshipResourceNotFoundException(memberInfo.getMemberName(), siteId);
         }
-        return  memberInfo;
+        return memberInfo;
     }
 
     private void validateGroup(String groupId) throws EntityNotFoundException
     {
         String authorityName = authorityService.getName(AuthorityType.GROUP, groupId);
-        if(authorityName == null)
+        if (authorityName == null)
         {
             logger.debug("AuthorityName does not exist: " + groupId);
             throw new EntityNotFoundException(groupId);

@@ -34,7 +34,10 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.text.MessageFormat;
 
-import org.alfresco.api.AlfrescoPublicApi;    
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
@@ -42,8 +45,6 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Provides direct access to a local file.
@@ -54,49 +55,49 @@ import org.apache.commons.logging.LogFactory;
  */
 @AlfrescoPublicApi
 public class FileContentReader extends AbstractContentReader
-    implements org.alfresco.service.cmr.repository.FileContentReader
+        implements org.alfresco.service.cmr.repository.FileContentReader
 {
     /**
-     * message key for missing content.  Parameters are
+     * message key for missing content. Parameters are
      * <ul>
-     *    <li>{@link org.alfresco.service.cmr.repository.NodeRef NodeRef}</li>
-     *    <li>{@link ContentReader ContentReader}</li>
+     * <li>{@link org.alfresco.service.cmr.repository.NodeRef NodeRef}</li>
+     * <li>{@link ContentReader ContentReader}</li>
      * </ul>
      */
     public static final String MSG_MISSING_CONTENT = "content.content_missing";
-    
+
     private static final Log logger = LogFactory.getLog(FileContentReader.class);
-    
+
     private File file;
     private boolean allowRandomAccess;
-    
+
     /**
-     * Checks the existing reader provided and replaces it with a reader onto some
-     * fake content if required.  If the existing reader is invalid, an debug message
-     * will be logged under this classname category.
+     * Checks the existing reader provided and replaces it with a reader onto some fake content if required. If the existing reader is invalid, an debug message will be logged under this classname category.
      * <p>
-     * It is a convenience method that clients can use to cheaply get a reader that
-     * is valid, regardless of whether the initial reader is valid.
+     * It is a convenience method that clients can use to cheaply get a reader that is valid, regardless of whether the initial reader is valid.
      * 
-     * @param existingReader a potentially invalid reader or null
-     * @param msgTemplate the template message that will used to format the final <i>fake</i> content
-     * @param args arguments to put into the <i>fake</i> content
+     * @param existingReader
+     *            a potentially invalid reader or null
+     * @param msgTemplate
+     *            the template message that will used to format the final <i>fake</i> content
+     * @param args
+     *            arguments to put into the <i>fake</i> content
      * @return Returns a the existing reader or a new reader onto some generated text content
      */
-    public static ContentReader getSafeContentReader(ContentReader existingReader, String msgTemplate, Object ... args)
+    public static ContentReader getSafeContentReader(ContentReader existingReader, String msgTemplate, Object... args)
     {
         ContentReader reader = existingReader;
         if (existingReader == null || !existingReader.exists())
         {
             // the content was never written to the node or the underlying content is missing
             String fakeContent = MessageFormat.format(msgTemplate, args);
-            
+
             // log it
             if (logger.isDebugEnabled())
             {
                 logger.debug(fakeContent);
             }
-            
+
             // fake the content
             File tempFile = TempFileProvider.createTempFile("getSafeContentReader_", ".txt");
             ContentWriter writer = new FileContentWriter(tempFile);
@@ -115,12 +116,12 @@ public class FileContentReader extends AbstractContentReader
         }
         return reader;
     }
-    
+
     /**
      * Constructor that builds a URL based on the absolute path of the file.
      * 
-     * @param file the file for reading.  This will most likely be directly
-     *      related to the content URL.
+     * @param file
+     *            the file for reading. This will most likely be directly related to the content URL.
      */
     public FileContentReader(File file)
     {
@@ -128,27 +129,28 @@ public class FileContentReader extends AbstractContentReader
                 file,
                 FileContentStore.STORE_PROTOCOL + ContentStore.PROTOCOL_DELIMITER + file.getAbsolutePath());
     }
-    
+
     /**
      * Constructor that explicitely sets the URL that the reader represents.
      * 
-     * @param file the file for reading.  This will most likely be directly
-     *      related to the content URL.
-     * @param url the relative url that the reader represents
+     * @param file
+     *            the file for reading. This will most likely be directly related to the content URL.
+     * @param url
+     *            the relative url that the reader represents
      */
     public FileContentReader(File file, String url)
     {
         super(url);
-        
+
         this.file = file;
         allowRandomAccess = true;
     }
-    
+
     /* package */ void setAllowRandomAccess(boolean allow)
     {
         this.allowRandomAccess = allow;
     }
-    
+
     /**
      * @return Returns the file that this reader accesses
      */
@@ -179,7 +181,7 @@ public class FileContentReader extends AbstractContentReader
             return file.length();
         }
     }
-    
+
     /**
      * @see File#lastModified()
      */
@@ -196,8 +198,7 @@ public class FileContentReader extends AbstractContentReader
     }
 
     /**
-     * The URL of the write is known from the start and this method contract states
-     * that no consideration needs to be taken w.r.t. the stream state.
+     * The URL of the write is known from the start and this method contract states that no consideration needs to be taken w.r.t. the stream state.
      */
     @Override
     protected ContentReader createReader() throws ContentIOException
@@ -206,7 +207,7 @@ public class FileContentReader extends AbstractContentReader
         reader.setAllowRandomAccess(this.allowRandomAccess);
         return reader;
     }
-    
+
     @Override
     protected ReadableByteChannel getDirectReadableChannel() throws ContentIOException
     {
@@ -221,7 +222,7 @@ public class FileContentReader extends AbstractContentReader
             ReadableByteChannel channel = null;
             if (allowRandomAccess)
             {
-                RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");  // won't create it
+                RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r"); // won't create it
                 channel = randomAccessFile.getChannel();
             }
             else
@@ -246,11 +247,11 @@ public class FileContentReader extends AbstractContentReader
 
     /**
      * @return Returns false as this is a reader
-     * @deprecated Since 5.1.  This method has no value: a file reader can never write (DH: 2015/02/17)
+     * @deprecated Since 5.1. This method has no value: a file reader can never write (DH: 2015/02/17)
      */
     @Deprecated
     public boolean canWrite()
     {
-        return false;   // we only allow reading
+        return false; // we only allow reading
     }
 }

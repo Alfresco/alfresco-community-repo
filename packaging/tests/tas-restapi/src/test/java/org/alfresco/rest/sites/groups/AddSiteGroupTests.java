@@ -1,5 +1,10 @@
 package org.alfresco.rest.sites.groups;
 
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestErrorModel;
@@ -12,10 +17,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class AddSiteGroupTests extends RestTest
 {
@@ -24,7 +25,7 @@ public class AddSiteGroupTests extends RestTest
     private ListUserWithRoles publicSiteUsersWithRoles;
     private String addMemberJson, addMembersJson;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
@@ -39,8 +40,8 @@ public class AddSiteGroupTests extends RestTest
         addMembersJson = "{\"role\":\"%s\",\"id\":\"%s\"}, {\"role\":\"%s\",\"id\":\"%s\"}";
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that user can not be added to an inexistent site and gets status code 404")
     public void notAbleToAddGroupToAnInExistentSite() throws Exception
     {
@@ -50,8 +51,8 @@ public class AddSiteGroupTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, inexistentSite.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that inexistent group can not be added to site and gets status code 404")
     public void notAbleToAddInExistentGroupToSite() throws Exception
     {
@@ -64,8 +65,8 @@ public class AddSiteGroupTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that user can not add group that is already present and gets status code 409")
     public void notAbleToAddGroupThatIsAlreadyAPresent() throws Exception
     {
@@ -75,8 +76,8 @@ public class AddSiteGroupTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CONFLICT).assertLastError().containsSummary(String.format(RestErrorModel.ALREADY_Site_MEMBER, getId(group), moderatedSiteModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that several groups with different roles can be added once in a row to a site and gets status code 201")
     public void addSeveralGroupsWithDifferentRolesToASite() throws Exception
     {
@@ -89,8 +90,8 @@ public class AddSiteGroupTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that several groups with same roles can be added once in a row to a site and gets status code 201")
     public void addSeveralGroupsWithSameRolesToASite() throws Exception
     {
@@ -103,8 +104,8 @@ public class AddSiteGroupTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that several users that are already added to the site can not be added once in a row and gets status code 400")
     public void addSeveralGroupsThatAreAlreadyAddedToASite() throws Exception
     {
@@ -115,11 +116,11 @@ public class AddSiteGroupTests extends RestTest
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, json, "sites/{siteId}/group-members?{parameters}", publicSiteModel.getId(), restClient.getParameters());
         restClient.processModel(RestSiteGroupModel.class, request);
         restClient.processModel(RestSiteGroupModel.class, request);
-        restClient.assertStatusCodeIs(HttpStatus.CONFLICT).assertLastError().containsSummary(String.format(RestErrorModel.ALREADY_Site_MEMBER, getId(firstGroup), publicSiteModel.getId())) ;
+        restClient.assertStatusCodeIs(HttpStatus.CONFLICT).assertLastError().containsSummary(String.format(RestErrorModel.ALREADY_Site_MEMBER, getId(firstGroup), publicSiteModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Add new site group membership request by providing an empty body")
     public void addSiteGroupsUsingEmptyBody() throws Exception
     {
@@ -133,8 +134,8 @@ public class AddSiteGroupTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Check lower and upper case letters for role field")
     public void checkLowerUpperCaseLettersForRole() throws Exception
     {
@@ -158,8 +159,8 @@ public class AddSiteGroupTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Check empty value for user role")
     public void checkEmptyValueForRole() throws Exception
     {
@@ -175,8 +176,8 @@ public class AddSiteGroupTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.SANITY,
             description = "Verify that manager is able to add site group membership and gets status code CREATED (201)")
     public void managerIsAbleToAddSiteGroup() throws Exception
     {
@@ -190,8 +191,8 @@ public class AddSiteGroupTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that site collaborator is not able to add site group membership and gets status code FORBIDDEN (403)")
     public void collaboratorIsNotAbleToAddSiteGroup() throws Exception
     {
@@ -203,8 +204,8 @@ public class AddSiteGroupTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that site contributor is not able to add site group membership and gets status code FORBIDDEN (403)")
     public void contributorIsNotAbleToAddSiteGroup() throws Exception
     {
@@ -216,21 +217,22 @@ public class AddSiteGroupTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that site consumer is not able to add site group membership and gets status code FORBIDDEN (403)")
     public void consumerIsNotAbleToAddSiteGroup() throws Exception
     {
         GroupModel group = dataGroup.createRandomGroup();
         restClient.authenticateUser(publicSiteUsersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                .withCoreAPI().usingSite(publicSiteModel).addSiteGroup(getId(group), UserRole.SiteConsumer);;
+                .withCoreAPI().usingSite(publicSiteModel).addSiteGroup(getId(group), UserRole.SiteConsumer);
+        ;
 
         restClient.assertLastError().containsSummary("The current user does not have permissions to modify the membership details of the site");
         restClient.assertStatusCodeIs(HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.SANITY,
             description = "Verify that admin user is able to add site group membership and gets status code CREATED (201)")
     public void adminIsAbleToAddSiteGroup() throws Exception
     {
@@ -244,8 +246,8 @@ public class AddSiteGroupTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.SANITY,
             description = "Verify that unauthenticated user is not able to add site group membership")
     public void unauthenticatedUserIsNotAuthorizedToAddSiteGroup() throws Exception
     {
@@ -260,8 +262,8 @@ public class AddSiteGroupTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that manager can add another user as manager to a public site and gets status code CREATED (201)")
     public void addManagerToPublicSite() throws Exception
     {
@@ -274,7 +276,8 @@ public class AddSiteGroupTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
-    String getId(GroupModel group) {
+    String getId(GroupModel group)
+    {
         return "GROUP_" + group.getGroupIdentifier();
     }
 }

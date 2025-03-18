@@ -25,7 +25,7 @@
  */
 package org.alfresco.model;
 
-import org.alfresco.api.AlfrescoPublicApi;     
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -36,20 +36,17 @@ import org.alfresco.service.namespace.QName;
 public interface RenditionModel
 {
     /**
-     * Aspect added to renditions created by RenditionService2.
-     * Initially used to avoid duplicate rendition requests via the original RenditionService and the new one.
+     * Aspect added to renditions created by RenditionService2. Initially used to avoid duplicate rendition requests via the original RenditionService and the new one.
      */
     static final QName ASPECT_RENDITION2 = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "rendition2");
 
     /**
-     * The source node's content hash code. Used to work out if a transform should replace the existing rendition,
-     * as transforms may be provided out of order.
+     * The source node's content hash code. Used to work out if a transform should replace the existing rendition, as transforms may be provided out of order.
      */
     static final QName PROP_RENDITION_CONTENT_HASH_CODE = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "contentHashCode");
 
     /**
-     * @deprecated This rendition aspect will no longger be needed once the original RenditionService has been
-     * replaced by RenditionService2 which additionally uses a rendition2 aspect to mark its renditions.
+     * @deprecated This rendition aspect will no longger be needed once the original RenditionService has been replaced by RenditionService2 which additionally uses a rendition2 aspect to mark its renditions.
      */
     @Deprecated
     static final QName ASPECT_RENDITION = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "rendition");
@@ -68,7 +65,7 @@ public interface RenditionModel
 
     static final QName ASPECT_RENDITIONED = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "renditioned");
     static final QName ASSOC_RENDITION = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "rendition");
-    
+
     /**
      * @since 4.0.1
      */

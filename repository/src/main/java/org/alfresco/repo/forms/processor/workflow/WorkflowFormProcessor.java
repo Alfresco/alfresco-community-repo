@@ -31,18 +31,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.forms.processor.node.ContentModelItemData;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * FormProcessor implementation that can generate and persist 
- * Form objects for workflow definitions.
+ * FormProcessor implementation that can generate and persist Form objects for workflow definitions.
  *
  * @since 3.4
  * @author Nick Smith
@@ -51,10 +51,10 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
 {
     /** Logger */
     private final static Log logger = LogFactory.getLog(WorkflowFormProcessor.class);
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getAssociationValues(java.lang.Object)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getAssociationValues(java.lang.Object) */
     @Override
     protected Map<QName, Serializable> getAssociationValues(WorkflowDefinition item)
     {
@@ -62,8 +62,8 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getBaseType(java.lang.Object)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getBaseType(java.lang.Object) */
     @Override
     protected TypeDefinition getBaseType(WorkflowDefinition item)
     {
@@ -73,8 +73,8 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getPropertyValues(java.lang.Object)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getPropertyValues(java.lang.Object) */
     @Override
     protected Map<QName, Serializable> getPropertyValues(WorkflowDefinition item)
     {
@@ -82,18 +82,18 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getTransientValues(java.lang.Object)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getTransientValues(java.lang.Object) */
     @Override
     protected Map<String, Object> getTransientValues(WorkflowDefinition item)
     {
-        return Collections.<String, Object>singletonMap(
-                    PackageItemsFieldProcessor.KEY, Collections.emptyList());
+        return Collections.<String, Object> singletonMap(
+                PackageItemsFieldProcessor.KEY, Collections.emptyList());
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemType(java.lang.Object)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemType(java.lang.Object) */
     @Override
     protected String getItemType(WorkflowDefinition item)
     {
@@ -101,36 +101,32 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemURI(java.lang.Object)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemURI(java.lang.Object) */
     @Override
     protected String getItemURI(WorkflowDefinition item)
     {
-        return "api/workflow-definitions/"+item.getId();
+        return "api/workflow-definitions/" + item.getId();
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getLogger()
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getLogger() */
     @Override
     protected Log getLogger()
     {
         return logger;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see
-     * org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor
-     * #getTypedItemForDecodedId(java.lang.String)
-     */
+     * @see org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor #getTypedItemForDecodedId(java.lang.String) */
     @Override
     protected WorkflowDefinition getTypedItemForDecodedId(String itemId)
     {
         WorkflowDefinition workflowDef = workflowService.getDefinitionByName(itemId);
-        if (workflowDef == null) 
-        { 
+        if (workflowDef == null)
+        {
             String msg = "Workflow definition does not exist: " + itemId;
             throw new IllegalArgumentException(msg);
         }
@@ -138,8 +134,8 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor#makeFormPersister(java.lang.Object)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor#makeFormPersister(java.lang.Object) */
     @Override
     protected ContentModelFormPersister<WorkflowInstance> makeFormPersister(WorkflowDefinition item)
     {
@@ -147,25 +143,23 @@ public class WorkflowFormProcessor extends AbstractWorkflowFormProcessor<Workflo
         return new WorkflowFormPersister(itemData, namespaceService, dictionaryService, workflowService, nodeService, behaviourFilter, logger);
     }
 
-    /*
-     * @see org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor#getDefaultIgnoredFields()
-     */
+    /* @see org.alfresco.repo.forms.processor.workflow.AbstractWorkflowFormProcessor#getDefaultIgnoredFields() */
     @Override
     protected List<String> getDefaultIgnoredFields()
     {
         List<String> fields = super.getDefaultIgnoredFields();
-        
+
         if (fields == null)
         {
             fields = new ArrayList<String>(3);
         }
-        
+
         // for the workflow form processor also hide the task specific
         // description, due date and priority fields
         fields.add("bpm:description");
         fields.add("bpm:dueDate");
         fields.add("bpm:priority");
-        
+
         return fields;
     }
 }

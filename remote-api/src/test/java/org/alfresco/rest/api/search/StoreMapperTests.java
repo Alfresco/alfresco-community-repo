@@ -27,11 +27,13 @@ package org.alfresco.rest.api.search;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNull;
+
+import org.junit.Test;
+
 import org.alfresco.rest.api.search.impl.StoreMapper;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.junit.Test;
 
 /**
  * Tests the StoreMapper class

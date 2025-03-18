@@ -37,7 +37,7 @@ import java.util.Date;
 public class SystemTimeDataGenerator extends AbstractDataGenerator
 {
     /**
-     * @return              Returns the current time
+     * @return Returns the current time
      */
     public Serializable getData() throws Throwable
     {

@@ -2,11 +2,6 @@ package org.alfresco.cmis;
 
 import java.lang.reflect.Method;
 
-import org.alfresco.utility.LogFactory;
-import org.alfresco.utility.data.DataContent;
-import org.alfresco.utility.data.DataSite;
-import org.alfresco.utility.data.DataUserAIS;
-import org.alfresco.utility.network.ServerHealth;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -16,6 +11,12 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
+
+import org.alfresco.utility.LogFactory;
+import org.alfresco.utility.data.DataContent;
+import org.alfresco.utility.data.DataSite;
+import org.alfresco.utility.data.DataUserAIS;
+import org.alfresco.utility.network.ServerHealth;
 
 @ContextConfiguration("classpath:alfresco-cmis-context.xml")
 @Component
@@ -43,7 +44,7 @@ public abstract class CmisTest extends AbstractTestNGSpringContextTests
 
     @BeforeSuite(alwaysRun = true)
     public void checkServerHealth() throws Exception
-    {        
+    {
         super.springTestContextPrepareTestInstance();
         serverHealth.assertServerIsOnline();
     }
@@ -59,7 +60,7 @@ public abstract class CmisTest extends AbstractTestNGSpringContextTests
     {
         LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
     }
-    
+
     public Integer getSolrWaitTimeInSeconds()
     {
         return cmisApi.cmisProperties.envProperty().getSolrWaitTimeInSeconds();

@@ -68,19 +68,19 @@ public class PermissionServiceNOOPImpl implements PermissionServiceSPI
     @Override
     public Set<AccessPermission> getPermissions(NodeRef nodeRef)
     {
-        return Collections.<AccessPermission>emptySet();
+        return Collections.<AccessPermission> emptySet();
     }
 
     @Override
     public Set<AccessPermission> getAllSetPermissions(NodeRef nodeRef)
     {
-        return Collections.<AccessPermission>emptySet();
+        return Collections.<AccessPermission> emptySet();
     }
 
     @Override
     public Set<String> getSettablePermissions(NodeRef nodeRef)
     {
-        return getSettablePermissions((QName)null);
+        return getSettablePermissions((QName) null);
     }
 
     @Override
@@ -161,7 +161,7 @@ public class PermissionServiceNOOPImpl implements PermissionServiceSPI
     @Override
     public NodePermissionEntry explainPermission(NodeRef nodeRef, PermissionReference perm)
     {
-       throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -191,19 +191,19 @@ public class PermissionServiceNOOPImpl implements PermissionServiceSPI
     @Override
     public NodePermissionEntry getSetPermissions(NodeRef nodeRef)
     {
-        return new SimpleNodePermissionEntry(nodeRef, true, Collections.<PermissionEntry>emptyList());
+        return new SimpleNodePermissionEntry(nodeRef, true, Collections.<PermissionEntry> emptyList());
     }
 
     @Override
     public Set<PermissionReference> getSettablePermissionReferences(NodeRef nodeRef)
     {
-        return Collections.<PermissionReference>emptySet();
+        return Collections.<PermissionReference> emptySet();
     }
 
     @Override
     public Set<PermissionReference> getSettablePermissionReferences(QName type)
     {
-        return Collections.<PermissionReference>emptySet();
+        return Collections.<PermissionReference> emptySet();
     }
 
     @Override
@@ -275,7 +275,7 @@ public class PermissionServiceNOOPImpl implements PermissionServiceSPI
     @Override
     public NodePermissionEntry getSetPermissions(StoreRef storeRef)
     {
-        return new SimpleNodePermissionEntry(null, true, Collections.<PermissionEntry>emptyList());
+        return new SimpleNodePermissionEntry(null, true, Collections.<PermissionEntry> emptyList());
     }
 
     @Override
@@ -285,8 +285,8 @@ public class PermissionServiceNOOPImpl implements PermissionServiceSPI
     }
 
     @Override
-	public Set<String> getAuthorisations()
-	{
-		return new HashSet<String>();
-	}
+    public Set<String> getAuthorisations()
+    {
+        return new HashSet<String>();
+    }
 }

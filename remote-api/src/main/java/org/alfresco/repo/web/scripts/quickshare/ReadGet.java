@@ -27,11 +27,8 @@ package org.alfresco.repo.web.scripts.quickshare;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
@@ -39,6 +36,8 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 
 /**
  * QuickShare/PublicView
@@ -50,15 +49,15 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class ReadGet extends AbstractQuickShareContent
 {
     private static final Log logger = LogFactory.getLog(ReadGet.class);
-    
+
     @Override
     protected Map<String, Object> executeImpl(final WebScriptRequest req, Status status, Cache cache)
     {
-        if (! isEnabled())
+        if (!isEnabled())
         {
             throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "QuickShare is disabled system-wide");
         }
-        
+
         // create map of params (template vars)
         Map<String, String> params = req.getServiceMatch().getTemplateVars();
         final String sharedId = params.get("shared_id");
@@ -66,23 +65,23 @@ public class ReadGet extends AbstractQuickShareContent
         {
             throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "A valid sharedId must be specified !");
         }
-        
+
         try
         {
             boolean canRead = quickShareService.canRead(sharedId);
             Map<String, Object> result = new HashMap<String, Object>();
             result.put("canRead", canRead);
-            return result;            
+            return result;
         }
         catch (InvalidSharedIdException ex)
         {
-            logger.error("Unable to find: "+sharedId);
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find: "+sharedId);
+            logger.error("Unable to find: " + sharedId);
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find: " + sharedId);
         }
         catch (InvalidNodeRefException inre)
         {
-            logger.error("Unable to find: "+sharedId+" ["+inre.getNodeRef()+"]");
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find: "+sharedId);
+            logger.error("Unable to find: " + sharedId + " [" + inre.getNodeRef() + "]");
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find: " + sharedId);
         }
     }
 }

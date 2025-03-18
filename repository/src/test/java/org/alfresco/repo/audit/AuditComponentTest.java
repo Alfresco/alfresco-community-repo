@@ -30,6 +30,13 @@ import java.net.URL;
 import java.util.*;
 
 import junit.framework.TestCase;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.util.ResourceUtils;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -63,13 +70,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.util.ResourceUtils;
 
 /**
  * Tests component-level auditing i.e. audit sessions and audit logging.
@@ -88,15 +88,15 @@ public class AuditComponentTest extends TestCase
     private static final String APPLICATION_API_TEST = "Test AuthenticationService";
     private static final String APPLICATION_ALF12638_TEST = "Test ALF-12638";
     private static final String APPLICATION_MNT10767_TEST = "Test MNT-10767";
-    
+
     private static final String APPLICATION_ONE = "app1";
     private static final String APPLICATION_TWO = "app2";
     private static final String APPLICATION_THREE = "app3";
-    
+
     private static final Log logger = LogFactory.getLog(AuditComponentTest.class);
-    
+
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    
+
     private AuditModelRegistryImpl auditModelRegistry;
     private AuditComponentImpl auditComponent;
     private AuditService auditService;
@@ -105,15 +105,15 @@ public class AuditComponentTest extends TestCase
     private TransactionServiceImpl transactionServiceImpl;
     private NodeService nodeService;
     private FileFolderService fileFolderService;
-    
+
     private NodeRef nodeRef;
     private String user;
-    
+
     @Override
     public void setUp() throws Exception
     {
         auditModelRegistry = (AuditModelRegistryImpl) ctx.getBean("auditModel.modelRegistry");
-        //MNT-10807 : Auditing does not take into account audit.filter.alfresco-access.transaction.user
+        // MNT-10807 : Auditing does not take into account audit.filter.alfresco-access.transaction.user
         UserAuditFilter userAuditFilter = new UserAuditFilter();
         userAuditFilter.setUserFilterPattern("~System;~null;.*");
         userAuditFilter.afterPropertiesSet();
@@ -125,14 +125,13 @@ public class AuditComponentTest extends TestCase
         transactionServiceImpl = (TransactionServiceImpl) ctx.getBean("transactionService");
         nodeService = serviceRegistry.getNodeService();
         fileFolderService = serviceRegistry.getFileFolderService();
-        
+
         // Register the test model
         URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test.xml");
         auditModelRegistry.registerModel(testModelUrl);
         auditModelRegistry.loadAuditModels();
-        
-        RunAsWork<NodeRef> testRunAs = new RunAsWork<NodeRef>()
-        {
+
+        RunAsWork<NodeRef> testRunAs = new RunAsWork<NodeRef>() {
             public NodeRef doWork() throws Exception
             {
                 return nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
@@ -144,8 +143,7 @@ public class AuditComponentTest extends TestCase
         user = "User-" + getName();
         AuthenticationUtil.setFullyAuthenticatedUser(user);
 
-        final RetryingTransactionCallback<Void> resetDisabledPathsCallback = new RetryingTransactionCallback<Void>()
-        {
+        final RetryingTransactionCallback<Void> resetDisabledPathsCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 auditComponent.resetDisabledPaths(APPLICATION_TEST);
@@ -155,7 +153,7 @@ public class AuditComponentTest extends TestCase
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(resetDisabledPathsCallback);
     }
-    
+
     @Override
     public void tearDown() throws Exception
     {
@@ -163,12 +161,12 @@ public class AuditComponentTest extends TestCase
         // Throw away the reconfigured registry state
         auditModelRegistry.destroy();
     }
-    
+
     public void testSetUp()
     {
         // Just here to fail if the basic startup fails
     }
-    
+
     public void testAreAuditValuesRequired()
     {
         boolean auditRequiredAtAll = auditComponent.areAuditValuesRequired();
@@ -178,14 +176,13 @@ public class AuditComponentTest extends TestCase
         boolean auditRequiredForTest = auditComponent.areAuditValuesRequired("/test");
         assertTrue("'test' is recording audit values", auditRequiredForTest);
     }
-    
+
     public void testAuditWithBadPath() throws Exception
     {
         // Should start an appropriate txn
-        auditComponent.recordAuditValues("/test", Collections.<String, Serializable>emptyMap());
-        
-        RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
-        {
+        auditComponent.recordAuditValues("/test", Collections.<String, Serializable> emptyMap());
+
+        RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 try
@@ -209,20 +206,19 @@ public class AuditComponentTest extends TestCase
                 Map<String, Serializable> auditedValues = auditComponent.recordAuditValues("/bogus", null);
                 assertNotNull(auditedValues);
                 assertTrue("Invalid application should not audit anything", auditedValues.isEmpty());
-                
+
                 return null;
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(testCallback);
     }
-    
+
     /**
      * Start a session and use it within a single txn
      */
     public void testAudit_Basic() throws Exception
     {
-        final RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
-        {
+        final RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 Map<String, Serializable> values = new HashMap<String, Serializable>(13);
@@ -231,14 +227,13 @@ public class AuditComponentTest extends TestCase
                 values.put("/3.1/4.3", new Date());
                 values.put("/3.1/4.4", "");
                 values.put("/3.1/4.5", null);
-                
+
                 auditComponent.recordAuditValues("/test/one.one/two.one", values);
-                
+
                 return null;
             }
         };
-        RunAsWork<Void> testRunAs = new RunAsWork<Void>()
-        {
+        RunAsWork<Void> testRunAs = new RunAsWork<Void>() {
             public Void doWork() throws Exception
             {
                 return transactionService.getRetryingTransactionHelper().doInTransaction(testCallback);
@@ -246,7 +241,7 @@ public class AuditComponentTest extends TestCase
         };
         AuthenticationUtil.runAs(testRunAs, "SomeOtherUser");
     }
-    
+
     private Map<String, Serializable> auditTestAction(
             final String action,
             NodeRef nodeRef,
@@ -262,20 +257,18 @@ public class AuditComponentTest extends TestCase
             String path = AuditApplication.buildPath(action, "params", paramName);
             adjustedValues.put(path, entry.getValue());
         }
-        
-        RetryingTransactionCallback<Map<String, Serializable>> auditCallback =
-                new RetryingTransactionCallback<Map<String, Serializable>>()
-        {
+
+        RetryingTransactionCallback<Map<String, Serializable>> auditCallback = new RetryingTransactionCallback<Map<String, Serializable>>() {
             public Map<String, Serializable> execute() throws Throwable
             {
                 String actionPath = AuditApplication.buildPath("actions-test/actions");
-                
+
                 return auditComponent.recordAuditValues(actionPath, adjustedValues);
             }
         };
         return transactionService.getRetryingTransactionHelper().doInTransaction(auditCallback, true, false);
     }
-    
+
     /**
      * Utility method to compare a 'results' map with a map of expected values
      */
@@ -287,7 +280,7 @@ public class AuditComponentTest extends TestCase
             fail(failure);
         }
     }
-    
+
     /**
      * Test auditing of something resembling real-world data
      */
@@ -296,7 +289,7 @@ public class AuditComponentTest extends TestCase
         Serializable valueA = new Date();
         Serializable valueB = "BBB-value-here";
         Serializable valueC = Float.valueOf(16.0F);
-        
+
         final Map<String, Serializable> parameters = new HashMap<String, Serializable>(13);
         parameters.put("A", valueA);
         parameters.put("B", valueB);
@@ -305,20 +298,20 @@ public class AuditComponentTest extends TestCase
         parameters.put("a", valueA);
         parameters.put("b", valueB);
         parameters.put("c", valueC);
-        
+
         Map<String, Serializable> result = auditTestAction(actionName, nodeRef, parameters);
-        
+
         Map<String, Serializable> expected = new HashMap<String, Serializable>();
         expected.put("/actions-test/actions/user", AuthenticationUtil.getFullyAuthenticatedUser());
         expected.put("/actions-test/actions/context-node/noderef", nodeRef);
         expected.put("/actions-test/actions/action-01/params/A/value", valueA);
         expected.put("/actions-test/actions/action-01/params/B/value", valueB);
         expected.put("/actions-test/actions/action-01/params/C/value", valueC);
-        
+
         // Check
         checkAuditMaps(result, expected);
     }
-    
+
     /**
      * Test auditing of something resembling real-world data
      */
@@ -326,7 +319,7 @@ public class AuditComponentTest extends TestCase
     {
         auditAction01("action-01");
     }
-    
+
     /**
      * Test auditing of something resembling real-world data
      */
@@ -334,7 +327,7 @@ public class AuditComponentTest extends TestCase
     {
         auditAction01("action-01-mapped");
     }
-    
+
     /**
      * Test auditing of something resembling real-world data
      */
@@ -343,7 +336,7 @@ public class AuditComponentTest extends TestCase
         Serializable valueA = new Date();
         Serializable valueB = "BBB-value-here";
         Serializable valueC = Float.valueOf(16.0F);
-        
+
         final Map<String, Serializable> parameters = new HashMap<String, Serializable>(13);
         parameters.put("A", valueA);
         parameters.put("B", valueB);
@@ -352,20 +345,20 @@ public class AuditComponentTest extends TestCase
         parameters.put("a", valueA);
         parameters.put("b", valueB);
         parameters.put("c", valueC);
-        
+
         Map<String, Serializable> result = auditTestAction(actionName, nodeRef, parameters);
-        
+
         Map<String, Serializable> expected = new HashMap<String, Serializable>();
         expected.put("/actions-test/actions/user", AuthenticationUtil.getFullyAuthenticatedUser());
         expected.put("/actions-test/actions/context-node/noderef", nodeRef);
         expected.put("/actions-test/actions/action-02/valueA", valueA);
         expected.put("/actions-test/actions/action-02/valueB", valueB);
         expected.put("/actions-test/actions/action-02/valueC", valueC);
-        
+
         // Check
         checkAuditMaps(result, expected);
     }
-    
+
     /**
      * Test auditing using alternative data sources
      */
@@ -373,19 +366,18 @@ public class AuditComponentTest extends TestCase
     {
         auditAction02("action-02-sourced");
     }
-    
+
     public void testQuery_Action01() throws Exception
     {
         final Long beforeTime = Long.valueOf(System.currentTimeMillis());
-        
+
         // Make sure that we have something to search for
         testAudit_Action01();
-        
+
         final StringBuilder sb = new StringBuilder();
         final MutableInt rowCount = new MutableInt();
-        
-        AuditQueryCallback callback = new AuditQueryCallback()
-        {            
+
+        AuditQueryCallback callback = new AuditQueryCallback() {
             public boolean valuesRequired()
             {
                 return true;
@@ -396,15 +388,15 @@ public class AuditComponentTest extends TestCase
             {
                 assertNotNull(applicationName);
                 assertNotNull(user);
-                
+
                 sb.append("Row: ")
-                  .append(entryId).append(" | ")
-                  .append(applicationName).append(" | ")
-                  .append(user).append(" | ")
-                  .append(new Date(time)).append(" | ")
-                  .append(values).append(" | ")
-                  .append("\n");
-                  ;
+                        .append(entryId).append(" | ")
+                        .append(applicationName).append(" | ")
+                        .append(user).append(" | ")
+                        .append(new Date(time)).append(" | ")
+                        .append(values).append(" | ")
+                        .append("\n");
+                ;
                 rowCount.setValue(rowCount.intValue() + 1);
                 return true;
             }
@@ -414,25 +406,25 @@ public class AuditComponentTest extends TestCase
                 throw new AlfrescoRuntimeException(errorMsg, error);
             }
         };
-        
+
         AuditQueryParameters params = new AuditQueryParameters();
         params.setForward(true);
         params.setApplicationName(APPLICATION_ACTIONS_TEST);
-        
+
         sb.delete(0, sb.length());
         rowCount.setValue(0);
         auditComponent.auditQuery(callback, params, Integer.MAX_VALUE);
         assertTrue("Expected some data", rowCount.intValue() > 0);
         logger.debug(sb.toString());
         int allResults = rowCount.intValue();
-        
+
         // Limit by count
         sb.delete(0, sb.length());
         rowCount.setValue(0);
         auditComponent.auditQuery(callback, params, 1);
         assertEquals("Expected to limit data", 1, rowCount.intValue());
         logger.debug(sb.toString());
-        
+
         // Limit by time and query up to and excluding the 'before' time
         sb.delete(0, sb.length());
         rowCount.setValue(0);
@@ -441,7 +433,7 @@ public class AuditComponentTest extends TestCase
         params.setToTime(null);
         logger.debug(sb.toString());
         int resultsBefore = rowCount.intValue();
-        
+
         // Limit by time and query from and including the 'before' time
         sb.delete(0, sb.length());
         rowCount.setValue(0);
@@ -450,7 +442,7 @@ public class AuditComponentTest extends TestCase
         params.setFromTime(null);
         logger.debug(sb.toString());
         int resultsAfter = rowCount.intValue();
-        
+
         assertEquals(
                 "Time-limited queries did not get all results before and after a time",
                 allResults, (resultsBefore + resultsAfter));
@@ -462,7 +454,7 @@ public class AuditComponentTest extends TestCase
         params.setUser(null);
         assertTrue("Expected some data for specific user", rowCount.intValue() > 0);
         logger.debug(sb.toString());
-        
+
         sb.delete(0, sb.length());
         rowCount.setValue(0);
         params.setUser("Numpty");
@@ -470,9 +462,9 @@ public class AuditComponentTest extends TestCase
         params.setUser(null);
         assertTrue("Expected no data for bogus user", rowCount.intValue() == 0);
         logger.debug(sb.toString());
-        
+
     }
-    
+
     /**
      * Test disabling of audit using audit paths
      */
@@ -490,22 +482,21 @@ public class AuditComponentTest extends TestCase
         parameters.put("a", valueA);
         parameters.put("b", valueB);
         parameters.put("c", valueC);
-        
+
         Map<String, Serializable> result = auditTestAction("action-01", nodeRef, parameters);
-        
+
         final Map<String, Serializable> expected = new HashMap<String, Serializable>();
         expected.put("/actions-test/actions/user", AuthenticationUtil.getFullyAuthenticatedUser());
         expected.put("/actions-test/actions/context-node/noderef", nodeRef);
         expected.put("/actions-test/actions/action-01/params/A/value", valueA);
         expected.put("/actions-test/actions/action-01/params/B/value", valueB);
         expected.put("/actions-test/actions/action-01/params/C/value", valueC);
-        
+
         // Check
         checkAuditMaps(result, expected);
-        
-        // Good.  Now disable a path and recheck
-        RetryingTransactionCallback<Void> disableAuditCallback = new RetryingTransactionCallback<Void>()
-        {
+
+        // Good. Now disable a path and recheck
+        RetryingTransactionCallback<Void> disableAuditCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 Map<String, Serializable> expectedInner = new HashMap<String, Serializable>(expected);
@@ -514,12 +505,12 @@ public class AuditComponentTest extends TestCase
                 expectedInner.remove("/actions-test/actions/action-01/params/A/value");
                 Map<String, Serializable> result = auditTestAction("action-01", nodeRef, parameters);
                 checkAuditMaps(result, expectedInner);
-                
+
                 auditComponent.disableAudit(APPLICATION_ACTIONS_TEST, "/actions-test/actions/action-01/params/B");
                 expectedInner.remove("/actions-test/actions/action-01/params/B/value");
                 result = auditTestAction("action-01", nodeRef, parameters);
                 checkAuditMaps(result, expectedInner);
-                
+
                 auditComponent.disableAudit(APPLICATION_ACTIONS_TEST, "/actions-test");
                 expectedInner.clear();
                 result = auditTestAction("action-01", nodeRef, parameters);
@@ -554,22 +545,21 @@ public class AuditComponentTest extends TestCase
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(disableAuditCallback, false);
     }
-    
+
     public void testAuditAuthenticationService() throws Exception
     {
         AuditQueryParameters params = new AuditQueryParameters();
         params.setForward(true);
         params.setApplicationName(APPLICATION_API_TEST);
-        
+
         // Load in the config for this specific test: alfresco-audit-test-authenticationservice.xml
         URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test-authenticationservice.xml");
         auditModelRegistry.registerModel(testModelUrl);
         auditModelRegistry.loadAuditModels();
-        
+
         final List<Long> results = new ArrayList<Long>(5);
         final StringBuilder sb = new StringBuilder();
-        AuditQueryCallback auditQueryCallback = new AuditQueryCallback()
-        {
+        AuditQueryCallback auditQueryCallback = new AuditQueryCallback() {
             public boolean valuesRequired()
             {
                 return true;
@@ -587,16 +577,16 @@ public class AuditComponentTest extends TestCase
                 {
                     logger.debug(
                             "Audit Entry " + entryId + ": " + applicationName + ", " + user + ", " + new Date(time) + "\n" +
-                            "   Data: " + values);
+                                    "   Data: " + values);
                 }
                 sb.append("Row: ")
-                  .append(entryId).append(" | ")
-                  .append(applicationName).append(" | ")
-                  .append(user).append(" | ")
-                  .append(new Date(time)).append(" | ")
-                  .append(values).append(" | ")
-                  .append("\n");
-                  ;
+                        .append(entryId).append(" | ")
+                        .append(applicationName).append(" | ")
+                        .append(user).append(" | ")
+                        .append(new Date(time)).append(" | ")
+                        .append(values).append(" | ")
+                        .append("\n");
+                ;
                 return true;
             }
 
@@ -605,18 +595,17 @@ public class AuditComponentTest extends TestCase
                 throw new AlfrescoRuntimeException(errorMsg, error);
             }
         };
-        
+
         clearAuditLog(APPLICATION_API_TEST);
         results.clear();
         sb.delete(0, sb.length());
         queryAuditLog(auditQueryCallback, params, Integer.MAX_VALUE);
         logger.debug(sb.toString());
         assertTrue("There should be no audit entries for the API test after a clear", results.isEmpty());
-        
+
         final MutableAuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
         // Create a good authentication
-        RunAsWork<Void> createAuthenticationWork = new RunAsWork<Void>()
-        {
+        RunAsWork<Void> createAuthenticationWork = new RunAsWork<Void>() {
             public Void doWork() throws Exception
             {
                 if (!authenticationService.authenticationExists(getName()))
@@ -627,7 +616,7 @@ public class AuditComponentTest extends TestCase
             }
         };
         AuthenticationUtil.runAs(createAuthenticationWork, AuthenticationUtil.getSystemUserName());
-        
+
         // Clear everything out and do a successful authentication
         clearAuditLog(APPLICATION_API_TEST);
         try
@@ -639,7 +628,7 @@ public class AuditComponentTest extends TestCase
         {
             AuthenticationUtil.popAuthentication();
         }
-        
+
         // Check that the call was audited
         results.clear();
         sb.delete(0, sb.length());
@@ -670,21 +659,20 @@ public class AuditComponentTest extends TestCase
 
         // ALF-3055 : auditing of failures is now asynchronous, so loop up to 60 times with
         // a 5 second sleep to ensure that the audit is processed
-        for(int i = 0; i < 60; i++)
+        for (int i = 0; i < 60; i++)
         {
             results.clear();
             sb.delete(0, sb.length());
             queryAuditLog(auditQueryCallback, params, Integer.MAX_VALUE);
-	        if(results.size() == iterations)
-	        {
-	        	break;
-	        }
-        	Thread.sleep(5000);
+            if (results.size() == iterations)
+            {
+                break;
+            }
+            Thread.sleep(5000);
         }
 
         logger.debug(sb.toString());
         assertEquals("Incorrect number of audit entries after failed login", iterations, results.size());
-
 
         Collections.sort(results);
         long minId = results.get(0);
@@ -719,8 +707,7 @@ public class AuditComponentTest extends TestCase
 
     public void testAuditQuery_MinId() throws Exception
     {
-        AuditQueryCallback auditQueryCallback = new AuditQueryCallback()
-        {
+        AuditQueryCallback auditQueryCallback = new AuditQueryCallback() {
             public boolean valuesRequired()
             {
                 return true;
@@ -737,7 +724,7 @@ public class AuditComponentTest extends TestCase
                 {
                     logger.debug(
                             "Audit Entry " + entryId + ": " + applicationName + ", " + user + ", " + new Date(time) + "\n" +
-                            "   Data: " + values);
+                                    "   Data: " + values);
                 }
                 return true;
             }
@@ -747,7 +734,7 @@ public class AuditComponentTest extends TestCase
                 throw new AlfrescoRuntimeException(errorMsg, error);
             }
         };
-        
+
         AuditQueryParameters params = new AuditQueryParameters();
         params.setApplicationName(APPLICATION_API_TEST);
         params.setForward(false);
@@ -757,8 +744,7 @@ public class AuditComponentTest extends TestCase
 
     public void testAuditQuery_MaxId() throws Exception
     {
-        AuditQueryCallback auditQueryCallback = new AuditQueryCallback()
-        {
+        AuditQueryCallback auditQueryCallback = new AuditQueryCallback() {
             public boolean valuesRequired()
             {
                 return true;
@@ -775,7 +761,7 @@ public class AuditComponentTest extends TestCase
                 {
                     logger.debug(
                             "Audit Entry " + entryId + ": " + applicationName + ", " + user + ", " + new Date(time) + "\n" +
-                            "   Data: " + values);
+                                    "   Data: " + values);
                 }
                 return true;
             }
@@ -785,14 +771,14 @@ public class AuditComponentTest extends TestCase
                 throw new AlfrescoRuntimeException(errorMsg, error);
             }
         };
-        
+
         AuditQueryParameters params = new AuditQueryParameters();
         params.setApplicationName(APPLICATION_API_TEST);
         params.setForward(false);
         params.setToId(Long.MAX_VALUE);
         queryAuditLog(auditQueryCallback, params, 1);
     }
-    
+
     /**
      * See <a href="https://issues.alfresco.com/jira/browse/ALF-12638">ALF-12638</a>
      */
@@ -801,17 +787,16 @@ public class AuditComponentTest extends TestCase
         AuditQueryParameters params = new AuditQueryParameters();
         params.setForward(true);
         params.setApplicationName(APPLICATION_ALF12638_TEST);
-        
+
         // Load in the config for this specific test: alfresco-audit-test-authenticationservice.xml
         URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test-alf-12638.xml");
         auditModelRegistry.registerModel(testModelUrl);
         auditModelRegistry.loadAuditModels();
-        
+
         // There should be a log entry for the application
         final List<Long> results = new ArrayList<Long>(5);
         final StringBuilder sb = new StringBuilder();
-        AuditQueryCallback auditQueryCallback = new AuditQueryCallback()
-        {
+        AuditQueryCallback auditQueryCallback = new AuditQueryCallback() {
             public boolean valuesRequired()
             {
                 return true;
@@ -826,13 +811,13 @@ public class AuditComponentTest extends TestCase
             {
                 results.add(entryId);
                 sb.append("Row: ")
-                  .append(entryId).append(" | ")
-                  .append(applicationName).append(" | ")
-                  .append(user).append(" | ")
-                  .append(new Date(time)).append(" | ")
-                  .append(values).append(" | ")
-                  .append("\n");
-                  ;
+                        .append(entryId).append(" | ")
+                        .append(applicationName).append(" | ")
+                        .append(user).append(" | ")
+                        .append(new Date(time)).append(" | ")
+                        .append(values).append(" | ")
+                        .append("\n");
+                ;
                 return true;
             }
 
@@ -841,13 +826,13 @@ public class AuditComponentTest extends TestCase
                 throw new AlfrescoRuntimeException(errorMsg, error);
             }
         };
-        
+
         clearAuditLog(APPLICATION_ALF12638_TEST);
         results.clear();
         sb.delete(0, sb.length());
         queryAuditLog(auditQueryCallback, params, Integer.MAX_VALUE);
         assertTrue("There should be no audit entries for the API test after a clear", results.isEmpty());
-        
+
         try
         {
             nodeService.getRootNode(new StoreRef("system://system"));
@@ -868,9 +853,14 @@ public class AuditComponentTest extends TestCase
                 success = true;
                 break;
             }
-            synchronized(this)
+            synchronized (this)
             {
-                try { this.wait(1000L); } catch (InterruptedException e) {}
+                try
+                {
+                    this.wait(1000L);
+                }
+                catch (InterruptedException e)
+                {}
             }
         }
         assertTrue("There should be exactly one audit entry for the API test", success);
@@ -885,7 +875,7 @@ public class AuditComponentTest extends TestCase
         URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test-mnt-10070.xml");
         auditModelRegistry.registerModel(testModelUrl);
         auditModelRegistry.loadAuditModels();
-        
+
         auditModelRegistry.setProperty("audit.enabled", "true");
 
         auditModelRegistry.setProperty("audit.app1.enabled", "true");
@@ -899,9 +889,9 @@ public class AuditComponentTest extends TestCase
         auditModelRegistry.setProperty("audit.app3.enabled", "true");
         auditModelRegistry.setProperty("audit.filter.app3.default.enabled", "true");
         auditModelRegistry.setProperty("audit.filter.app3.login.user", "~System;~null;.*");
-        
-        auditModelRegistry.afterPropertiesSet();  
-        
+
+        auditModelRegistry.afterPropertiesSet();
+
         AuthenticationUtil.setRunAsUserSystem();
         AuditApplication applicationOne = auditModelRegistry.getAuditApplicationByName(APPLICATION_ONE);
         assertNotNull("Application 'app1' dosn't exist", applicationOne);
@@ -952,8 +942,8 @@ public class AuditComponentTest extends TestCase
             fail(failure);
         }
     }
-    
-   /**
+
+    /**
      * See <a href="https://issues.alfresco.com/jira/browse/MNT-10767">MNT-10767</a>
      */
     public void testAuditSubordinateCall() throws Exception
@@ -971,8 +961,7 @@ public class AuditComponentTest extends TestCase
         // There should be a log entry for the application
         final List<Long> results = new ArrayList<Long>(5);
         final StringBuilder sb = new StringBuilder();
-        AuditQueryCallback auditQueryCallback = new AuditQueryCallback()
-        {
+        AuditQueryCallback auditQueryCallback = new AuditQueryCallback() {
             public boolean valuesRequired()
             {
                 return true;
@@ -1004,7 +993,7 @@ public class AuditComponentTest extends TestCase
                 OnCreateNodePolicy.QNAME,
                 ContentModel.TYPE_FOLDER,
                 new JavaBehaviour(this, "onCreateFolderMNT10767"));
-        
+
         NodeRef workingRootNodeRef = null;
         try
         {
@@ -1029,8 +1018,7 @@ public class AuditComponentTest extends TestCase
                         this.wait(1000L);
                     }
                     catch (InterruptedException e)
-                    {
-                    }
+                    {}
                 }
             }
             assertTrue("There should be audit entry for the API test", success);
@@ -1042,8 +1030,8 @@ public class AuditComponentTest extends TestCase
                 nodeService.deleteNode(workingRootNodeRef);
             }
         }
-    }	
-	
+    }
+
     public void onCreateFolderMNT10767(ChildAssociationRef childAssocRef)
     {
         NodeRef newFolderRef = childAssocRef.getChildRef();
@@ -1053,8 +1041,7 @@ public class AuditComponentTest extends TestCase
     public void testAuditOverlimitProperties() throws Exception
     {
         final int OVERLIMIT_SIZE = 1500;
-        final RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
-        {
+        final RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 StringBuilder sb = new StringBuilder();
@@ -1065,7 +1052,7 @@ public class AuditComponentTest extends TestCase
 
                 MLText mlTextValue = new MLText();
                 mlTextValue.put(Locale.ENGLISH, sb.toString());
-                
+
                 HashMap<String, Serializable> map = new HashMap<String, Serializable>();
                 map.put("String", sb.toString());
                 MLText mlTextValue1 = new MLText();
@@ -1077,7 +1064,7 @@ public class AuditComponentTest extends TestCase
                 MLText mlTextValue2 = new MLText();
                 mlTextValue2.put(Locale.ENGLISH, sb.toString());
                 list.add(mlTextValue2);
-                
+
                 Map<String, Serializable> values = new HashMap<String, Serializable>(13);
                 values.put("/3.1/4.1", sb.toString());
                 values.put("/3.1/4.2", mlTextValue);
@@ -1090,8 +1077,7 @@ public class AuditComponentTest extends TestCase
                 return null;
             }
         };
-        RunAsWork<Void> testRunAs = new RunAsWork<Void>()
-        {
+        RunAsWork<Void> testRunAs = new RunAsWork<Void>() {
             public Void doWork() throws Exception
             {
                 return transactionService.getRetryingTransactionHelper().doInTransaction(testCallback);
@@ -1099,14 +1085,13 @@ public class AuditComponentTest extends TestCase
         };
         AuthenticationUtil.runAs(testRunAs, "SomeOtherUser");
     }
-    
+
     /**
      * Clear the audit log as 'admin'
      */
     private void clearAuditLog(final String applicationName)
     {
-        RunAsWork<Void> work = new RunAsWork<Void>()
-        {
+        RunAsWork<Void> work = new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -1122,8 +1107,7 @@ public class AuditComponentTest extends TestCase
      */
     private void deleteAuditEntries(final List<Long> auditEntryIds)
     {
-        RunAsWork<Void> work = new RunAsWork<Void>()
-        {
+        RunAsWork<Void> work = new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -1139,8 +1123,7 @@ public class AuditComponentTest extends TestCase
      */
     private Integer deleteAuditEntries(final String applicationName, final long fromId, final long toId)
     {
-        RunAsWork<Integer> work = new RunAsWork<Integer>()
-        {
+        RunAsWork<Integer> work = new RunAsWork<Integer>() {
             @Override
             public Integer doWork() throws Exception
             {
@@ -1148,15 +1131,14 @@ public class AuditComponentTest extends TestCase
             }
         };
         return AuthenticationUtil.runAs(work, AuthenticationUtil.getAdminRoleName());
-    }    
+    }
 
     /**
      * Query the audit log as 'admin'
      */
     private void queryAuditLog(final AuditQueryCallback callback, final AuditQueryParameters parameters, final int maxResults)
     {
-        RunAsWork<Void> work = new RunAsWork<Void>()
-        {
+        RunAsWork<Void> work = new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -1166,10 +1148,11 @@ public class AuditComponentTest extends TestCase
         };
         AuthenticationUtil.runAs(work, AuthenticationUtil.getAdminRoleName());
     }
-    
+
     /**
      * Test for <a href="https://issues.alfresco.com/jira/browse/MNT-11072">MNT-11072</a>
-     * @throws Exception 
+     * 
+     * @throws Exception
      */
     public void testAuditInReadOnly() throws Exception
     {
@@ -1181,7 +1164,7 @@ public class AuditComponentTest extends TestCase
         }
         finally
         {
-            transactionServiceImpl.setAllowWrite(true, veto);   
+            transactionServiceImpl.setAllowWrite(true, veto);
         }
     }
 
@@ -1194,8 +1177,7 @@ public class AuditComponentTest extends TestCase
         final MLText mlTextValue = new MLText();
         mlTextValue.put(Locale.ENGLISH, stringValue);
 
-        final RetryingTransactionCallback<Map<String, Serializable>> testCallback = new RetryingTransactionCallback<Map<String, Serializable>>()
-        {
+        final RetryingTransactionCallback<Map<String, Serializable>> testCallback = new RetryingTransactionCallback<Map<String, Serializable>>() {
             public Map<String, Serializable> execute() throws Throwable
             {
                 final Map<String, Serializable> values = new HashMap<>();
@@ -1205,8 +1187,7 @@ public class AuditComponentTest extends TestCase
                 return auditComponent.recordAuditValues(rootPath, values);
             }
         };
-        RunAsWork<Map<String, Serializable>> testRunAs = new RunAsWork< Map<String, Serializable>>()
-        {
+        RunAsWork<Map<String, Serializable>> testRunAs = new RunAsWork<Map<String, Serializable>>() {
             public Map<String, Serializable> doWork() throws Exception
             {
                 return transactionService.getRetryingTransactionHelper().doInTransaction(testCallback);

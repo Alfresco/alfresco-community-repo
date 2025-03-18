@@ -42,64 +42,63 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 
 /**
- * The server side implementation of RepoRemoteTransport. It
- * handles ticket validation, and expiration of idle streams.
+ * The server side implementation of RepoRemoteTransport. It handles ticket validation, and expiration of idle streams.
+ * 
  * @author britt
  */
 public class RepoRemoteTransportService implements RepoRemoteTransport,
-        Runnable 
+        Runnable
 {
     /**
      * The map of handles to open input streams.
      */
     private Map<String, InputStream> fInputStreams;
-    
+
     /**
      * The map of handles to last accesses for input streams.
      */
     private Map<String, Long> fInputLastAccessTimes;
-    
+
     /**
      * The map of handles to busy flags.
      */
     private Map<String, Boolean> fInputBusy;
-    
+
     /**
      * The map of handles to open output streams.
      */
     private Map<String, OutputStream> fOutputStreams;
-    
+
     /**
      * The map of handles to last accesses for output streams.
      */
     private Map<String, Long> fOutputLastAccessTimes;
-    
+
     /**
      * The map of handles to busy flags.
      */
     private Map<String, Boolean> fOutputBusy;
-    
+
     /**
-     * The stale handle time.  This is the maximum time a handle
-     * can stay idle in milliseconds.
+     * The stale handle time. This is the maximum time a handle can stay idle in milliseconds.
      */
     private long fIdleTimeout;
-    
+
     /**
      * The thread for this Runnable.
      */
     private Thread fThread;
-    
+
     /**
      * Flag for whether this Runnable is done.
      */
     private boolean fDone;
-    
+
     /**
      * The RepoRemote instance.
      */
     private RepoRemote fRepoRemote;
-    
+
     /**
      * The AuthenticationService instance.
      */
@@ -121,7 +120,9 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
 
     /**
      * Set the Idle Timeout value.
-     * @param timeout The value to set.
+     * 
+     * @param timeout
+     *            The value to set.
      */
     public void setIdleTimeout(long timeout)
     {
@@ -135,7 +136,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
     {
         fRepoRemote = remote;
     }
-    
+
     /**
      * Set the AuthenticationService instance.
      */
@@ -145,8 +146,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
     }
 
     /**
-     * The init method. This fires up a thread to check 
-     * for closable streams.
+     * The init method. This fires up a thread to check for closable streams.
      */
     public void init()
     {
@@ -154,7 +154,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
         fDone = false;
         fThread.start();
     }
-    
+
     /**
      * The body of this Runnable.
      */
@@ -225,7 +225,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
             }
         }
     }
-    
+
     /**
      * Shutdown the Runnable cleanly.
      */
@@ -245,11 +245,11 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
             // Do nothing.
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#closeInputHandle(java.lang.String, java.lang.String)
-     */
-    public synchronized void closeInputHandle(String ticket, String handle) 
+     * 
+     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#closeInputHandle(java.lang.String, java.lang.String) */
+    public synchronized void closeInputHandle(String ticket, String handle)
     {
         fAuthService.validate(ticket);
         InputStream in = fInputStreams.get(handle);
@@ -270,9 +270,9 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#closeOutputHandle(java.lang.String, java.lang.String)
-     */
-    public synchronized void closeOutputHandle(String ticket, String handle) 
+     * 
+     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#closeOutputHandle(java.lang.String, java.lang.String) */
+    public synchronized void closeOutputHandle(String ticket, String handle)
     {
         fAuthService.validate(ticket);
         OutputStream out = fOutputStreams.get(handle);
@@ -293,18 +293,18 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#createDirectory(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    public NodeRef createDirectory(String ticket, NodeRef base, String path) 
+     * 
+     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#createDirectory(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String) */
+    public NodeRef createDirectory(String ticket, NodeRef base, String path)
     {
         fAuthService.validate(ticket);
         return fRepoRemote.createDirectory(base, path);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#createFile(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    public String createFile(String ticket, NodeRef base, String path) 
+     * 
+     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#createFile(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String) */
+    public String createFile(String ticket, NodeRef base, String path)
     {
         fAuthService.validate(ticket);
         OutputStream out = fRepoRemote.createFile(base, path);
@@ -312,36 +312,36 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#getListing(java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public Map<String, Pair<NodeRef, Boolean>> getListing(String ticket, NodeRef dir) 
+     * 
+     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#getListing(java.lang.String, org.alfresco.service.cmr.repository.NodeRef) */
+    public Map<String, Pair<NodeRef, Boolean>> getListing(String ticket, NodeRef dir)
     {
         fAuthService.validate(ticket);
         return fRepoRemote.getListing(dir);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#getRoot(java.lang.String)
-     */
-    public NodeRef getRoot(String ticket) 
+     * 
+     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#getRoot(java.lang.String) */
+    public NodeRef getRoot(String ticket)
     {
         fAuthService.validate(ticket);
         return fRepoRemote.getRoot();
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#lookup(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    public Pair<NodeRef, Boolean> lookup(String ticket, NodeRef base, String path) 
+     * 
+     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#lookup(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String) */
+    public Pair<NodeRef, Boolean> lookup(String ticket, NodeRef base, String path)
     {
         fAuthService.validate(ticket);
         return fRepoRemote.lookup(base, path);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#readFile(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    public String readFile(String ticket, NodeRef base, String path) 
+     * 
+     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#readFile(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String) */
+    public String readFile(String ticket, NodeRef base, String path)
     {
         fAuthService.validate(ticket);
         InputStream in = fRepoRemote.readFile(base, path);
@@ -349,9 +349,9 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#readFile(java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public String readFile(String ticket, NodeRef fileRef) 
+     * 
+     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#readFile(java.lang.String, org.alfresco.service.cmr.repository.NodeRef) */
+    public String readFile(String ticket, NodeRef fileRef)
     {
         fAuthService.validate(ticket);
         InputStream in = fRepoRemote.readFile(fileRef);
@@ -359,9 +359,9 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#readInput(java.lang.String, java.lang.String, int)
-     */
-    public byte[] readInput(String ticket, String handle, int count) 
+     * 
+     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#readInput(java.lang.String, java.lang.String, int) */
+    public byte[] readInput(String ticket, String handle, int count)
     {
         fAuthService.validate(ticket);
         InputStream in = null;
@@ -375,7 +375,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
             fInputBusy.put(handle, true);
             fInputLastAccessTimes.put(handle, System.currentTimeMillis());
         }
-        byte [] buff = new byte[count];
+        byte[] buff = new byte[count];
         try
         {
             int read = in.read(buff);
@@ -385,7 +385,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
             }
             if (read != count)
             {
-                byte [] newBuff = new byte[read];
+                byte[] newBuff = new byte[read];
                 for (int i = 0; i < read; i++)
                 {
                     newBuff[i] = buff[i];
@@ -408,36 +408,36 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#removeNode(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    public void removeNode(String ticket, NodeRef base, String path) 
+     * 
+     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#removeNode(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String) */
+    public void removeNode(String ticket, NodeRef base, String path)
     {
         fAuthService.validate(ticket);
         fRepoRemote.removeNode(base, path);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#removeNode(java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public void removeNode(String ticket, NodeRef toRemove) 
+     * 
+     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#removeNode(java.lang.String, org.alfresco.service.cmr.repository.NodeRef) */
+    public void removeNode(String ticket, NodeRef toRemove)
     {
         fAuthService.validate(ticket);
         fRepoRemote.removeNode(toRemove);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#rename(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
-     */
-    public void rename(String ticket, NodeRef base, String src, String dst) 
+     * 
+     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#rename(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String) */
+    public void rename(String ticket, NodeRef base, String src, String dst)
     {
         fAuthService.validate(ticket);
         fRepoRemote.rename(base, src, dst);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#writeFile(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    public String writeFile(String ticket, NodeRef base, String path) 
+     * 
+     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#writeFile(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, java.lang.String) */
+    public String writeFile(String ticket, NodeRef base, String path)
     {
         fAuthService.validate(ticket);
         OutputStream out = fRepoRemote.writeFile(base, path);
@@ -445,9 +445,9 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#writeOutput(java.lang.String, java.lang.String, byte[], int)
-     */
-    public void writeOutput(String ticket, String handle, byte[] buff, int count) 
+     * 
+     * @see org.alfresco.service.cmr.remote.RepoRemoteTransport#writeOutput(java.lang.String, java.lang.String, byte[], int) */
+    public void writeOutput(String ticket, String handle, byte[] buff, int count)
     {
         fAuthService.validate(ticket);
         OutputStream out = null;
@@ -477,7 +477,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
             }
         }
     }
-    
+
     private synchronized String getOutputHandle(OutputStream out)
     {
         String handle = GUID.generate();
@@ -486,7 +486,7 @@ public class RepoRemoteTransportService implements RepoRemoteTransport,
         fOutputBusy.put(handle, false);
         return handle;
     }
-    
+
     private synchronized String getInputHandle(InputStream in)
     {
         String handle = GUID.generate();

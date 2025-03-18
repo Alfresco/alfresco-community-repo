@@ -29,6 +29,8 @@ package org.alfresco.module.org_alfresco_module_rm.action;
 
 import java.util.List;
 
+import org.springframework.beans.factory.BeanNameAware;
+
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -37,7 +39,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
-import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * Records management action condition evaluator abstract base implementation.
@@ -46,8 +47,8 @@ import org.springframework.beans.factory.BeanNameAware;
  * @since 2.1
  */
 public abstract class RecordsManagementActionConditionEvaluatorAbstractBase extends ActionConditionEvaluatorAbstractBase
-                                                                            implements RecordsManagementActionCondition,
-                                                                                       BeanNameAware
+        implements RecordsManagementActionCondition,
+        BeanNameAware
 {
     /** records management action service */
     private RecordsManagementActionService recordsManagementActionService;
@@ -80,7 +81,8 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     }
 
     /**
-     * @param recordsManagementActionService    records management action service
+     * @param recordsManagementActionService
+     *            records management action service
      */
     public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
     {
@@ -88,15 +90,17 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     }
 
     /**
-     * @param filePlanService	file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
+        this.filePlanService = filePlanService;
+    }
 
     /**
-     * @param retryingTransactionHelper retrying transaction helper
+     * @param retryingTransactionHelper
+     *            retrying transaction helper
      */
     public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
@@ -112,12 +116,10 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
         // override to prevent condition being registered with the core action service
 
         // run the following code as System
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork()
             {
-                RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-                {
+                RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
                     public Void execute()
                     {
                         getRecordsManagementActionService().register(RecordsManagementActionConditionEvaluatorAbstractBase.this);
@@ -176,8 +178,7 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     /**
      * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#getActionConditionDefintion()
      *
-     * TODO base class should provide "createActionDefinition" method that can be over-ridden like the ActionExecuter
-     * base class to prevent duplication of code and a cleaner extension.
+     *      TODO base class should provide "createActionDefinition" method that can be over-ridden like the ActionExecuter base class to prevent duplication of code and a cleaner extension.
      */
     @Override
     public ActionConditionDefinition getActionConditionDefintion()
@@ -185,11 +186,11 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
         if (this.actionConditionDefinition == null)
         {
             this.actionConditionDefinition = new RecordsManagementActionConditionDefinitionImpl(beanName);
-            ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setTitleKey(getTitleKey());
-            ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setDescriptionKey(getDescriptionKey());
-            ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setAdhocPropertiesAllowed(getAdhocPropertiesAllowed());
-            ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setConditionEvaluator(beanName);
-            ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setLocalizedParameterDefinitions(getLocalizedParameterDefinitions());
+            ((RecordsManagementActionConditionDefinitionImpl) actionConditionDefinition).setTitleKey(getTitleKey());
+            ((RecordsManagementActionConditionDefinitionImpl) actionConditionDefinition).setDescriptionKey(getDescriptionKey());
+            ((RecordsManagementActionConditionDefinitionImpl) actionConditionDefinition).setAdhocPropertiesAllowed(getAdhocPropertiesAllowed());
+            ((RecordsManagementActionConditionDefinitionImpl) actionConditionDefinition).setConditionEvaluator(beanName);
+            ((RecordsManagementActionConditionDefinitionImpl) actionConditionDefinition).setLocalizedParameterDefinitions(getLocalizedParameterDefinitions());
         }
         return this.actionConditionDefinition;
     }
@@ -218,7 +219,7 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     @Override
     public RecordsManagementActionConditionDefinition getRecordsManagementActionConditionDefinition()
     {
-        return (RecordsManagementActionConditionDefinition)getActionConditionDefintion();
+        return (RecordsManagementActionConditionDefinition) getActionConditionDefintion();
     }
 
 }

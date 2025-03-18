@@ -37,6 +37,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -68,8 +71,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Function;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * @author Nick Smith
@@ -107,7 +108,7 @@ public class WorkflowModelBuilder
     public static final String TASK_DEFINITION_NODE = "node";
 
     public static final String TASK_WORKFLOW_INSTANCE = "workflowInstance";
-    
+
     public static final String TASK_WORKFLOW_INSTANCE_ID = "id";
     public static final String TASK_WORKFLOW_INSTANCE_URL = "url";
     public static final String TASK_WORKFLOW_INSTANCE_NAME = "name";
@@ -131,7 +132,7 @@ public class WorkflowModelBuilder
     public static final String TASK_WORKFLOW_INSTANCE_INITIATOR_USERNAME = "userName";
     public static final String TASK_WORKFLOW_INSTANCE_INITIATOR_FIRSTNAME = "firstName";
     public static final String TASK_WORKFLOW_INSTANCE_INITIATOR_LASTNAME = "lastName";
-    
+
     public static final String TYPE_DEFINITION_NAME = "name";
     public static final String TYPE_DEFINITION_TITLE = "title";
     public static final String TYPE_DEFINITION_DESCRIPTION = "description";
@@ -158,7 +159,7 @@ public class WorkflowModelBuilder
     public static final String WORKFLOW_DEFINITION_START_TASK_DEFINITION_URL = "startTaskDefinitionUrl";
     public static final String WORKFLOW_DEFINITION_START_TASK_DEFINITION_TYPE = "startTaskDefinitionType";
     public static final String WORKFLOW_DEFINITION_TASK_DEFINITIONS = "taskDefinitions";
-    
+
     public static final String TASK_OUTCOME_MESSAGE_PREFIX = "workflowtask.outcome.";
 
     private final NodeService nodeService;
@@ -167,10 +168,10 @@ public class WorkflowModelBuilder
     private final DictionaryService dictionaryService;
     private final AuthenticationService authenticationService;
     private final WorkflowQNameConverter qNameConverter;
-    
-    public WorkflowModelBuilder(NamespaceService namespaceService, NodeService nodeService, 
-                AuthenticationService authenticationService, PersonService personService, 
-                WorkflowService workflowService, DictionaryService dictionaryService)
+
+    public WorkflowModelBuilder(NamespaceService namespaceService, NodeService nodeService,
+            AuthenticationService authenticationService, PersonService personService,
+            WorkflowService workflowService, DictionaryService dictionaryService)
     {
         this.nodeService = nodeService;
         this.personService = personService;
@@ -182,15 +183,18 @@ public class WorkflowModelBuilder
 
     /**
      * Returns a simple representation of a {@link WorkflowTask}.
-     * @param task The task to be represented.
-     * @param propertyFilters Specify which properties to include.
+     * 
+     * @param task
+     *            The task to be represented.
+     * @param propertyFilters
+     *            Specify which properties to include.
      * @return Map
      */
     public Map<String, Object> buildSimple(WorkflowTask task, Collection<String> propertyFilters)
     {
         // get current username
         String currentUser = this.authenticationService.getCurrentUserName();
-        
+
         HashMap<String, Object> model = new HashMap<String, Object>();
         model.put(TASK_ID, task.getId());
         model.put(TASK_URL, getUrl(task));
@@ -205,7 +209,7 @@ public class WorkflowModelBuilder
         model.put(TASK_IS_REASSIGNABLE, this.workflowService.isTaskReassignable(task, currentUser, false));
         model.put(TASK_IS_CLAIMABLE, this.workflowService.isTaskClaimable(task, currentUser, false));
         model.put(TASK_IS_RELEASABLE, this.workflowService.isTaskReleasable(task, currentUser, false));
-        
+
         Serializable owner = task.getProperties().get(ContentModel.PROP_OWNER);
         model.put(TASK_OWNER, getPersonModel(owner));
 
@@ -216,16 +220,18 @@ public class WorkflowModelBuilder
         Map<String, Object> propertyModel = buildProperties(task, propertyFilters);
         model.put(TASK_PROPERTIES, propertyModel);
         model.put(TASK_PROPERTIY_LABELS, buildPropertyLabels(task, propertyModel));
-        
+
         // workflow instance part
         model.put(TASK_WORKFLOW_INSTANCE, buildSimple(task.getPath().getInstance()));
-        
+
         return model;
     }
 
     /**
      * Returns a detailed representation of a {@link WorkflowTask}.
-     * @param workflowTask The task to be represented.     
+     * 
+     * @param workflowTask
+     *            The task to be represented.
      * @return Map
      */
     public Map<String, Object> buildDetailed(WorkflowTask workflowTask)
@@ -240,7 +246,9 @@ public class WorkflowModelBuilder
 
     /**
      * Returns a simple representation of a {@link WorkflowInstance}.
-     * @param workflowInstance The workflow instance to be represented.          
+     * 
+     * @param workflowInstance
+     *            The workflow instance to be represented.
      * @return Map
      */
     public Map<String, Object> buildSimple(WorkflowInstance workflowInstance)
@@ -261,12 +269,12 @@ public class WorkflowModelBuilder
         {
             model.put(TASK_WORKFLOW_INSTANCE_PACKAGE, workflowInstance.getWorkflowPackage().toString());
         }
-        
+
         if (workflowInstance.getContext() != null)
         {
             model.put(TASK_WORKFLOW_INSTANCE_CONTEXT, workflowInstance.getContext().toString());
         }
-        
+
         if (workflowInstance.getStartDate() == null)
         {
             model.put(TASK_WORKFLOW_INSTANCE_START_DATE, workflowInstance.getStartDate());
@@ -275,7 +283,7 @@ public class WorkflowModelBuilder
         {
             model.put(TASK_WORKFLOW_INSTANCE_START_DATE, ISO8601DateFormat.format(workflowInstance.getStartDate()));
         }
-        
+
         if (workflowInstance.getDueDate() == null)
         {
             model.put(TASK_WORKFLOW_INSTANCE_DUE_DATE, workflowInstance.getDueDate());
@@ -305,11 +313,14 @@ public class WorkflowModelBuilder
 
         return model;
     }
-    
+
     /**
      * Returns a detailed representation of a {@link WorkflowInstance}.
-     * @param workflowInstance The workflow instance to be represented.
-     * @param includeTasks should we include task in model?     
+     * 
+     * @param workflowInstance
+     *            The workflow instance to be represented.
+     * @param includeTasks
+     *            should we include task in model?
      * @return Map
      */
     public Map<String, Object> buildDetailed(WorkflowInstance workflowInstance, boolean includeTasks)
@@ -322,12 +333,12 @@ public class WorkflowModelBuilder
         {
             startTaskId = startTask.getId();
         }
-        
+
         if (workflowService.hasWorkflowImage(workflowInstance.getId()))
         {
             model.put(TASK_WORKFLOW_INSTANCE_DIAGRAM_URL, getDiagramUrl(workflowInstance));
         }
-        
+
         model.put(TASK_WORKFLOW_INSTANCE_START_TASK_INSTANCE_ID, startTaskId);
         model.put(TASK_WORKFLOW_INSTANCE_DEFINITION, buildDetailed(workflowInstance.getDefinition()));
 
@@ -356,7 +367,8 @@ public class WorkflowModelBuilder
     /**
      * Returns a simple representation of a {@link WorkflowDefinition}.
      * 
-     * @param workflowDefinition the WorkflowDefinition object to be represented.
+     * @param workflowDefinition
+     *            the WorkflowDefinition object to be represented.
      * @return Map
      */
     public Map<String, Object> buildSimple(WorkflowDefinition workflowDefinition)
@@ -376,7 +388,8 @@ public class WorkflowModelBuilder
     /**
      * Returns a detailed representation of a {@link WorkflowDefinition}.
      * 
-     * @param workflowDefinition the WorkflowDefinition object to be represented.
+     * @param workflowDefinition
+     *            the WorkflowDefinition object to be represented.
      * @return Map
      */
     public Map<String, Object> buildDetailed(WorkflowDefinition workflowDefinition)
@@ -405,7 +418,7 @@ public class WorkflowModelBuilder
 
         return model;
     }
-    
+
     private Object isPooled(Map<QName, Serializable> properties)
     {
         Collection<?> actors = (Collection<?>) properties.get(WorkflowModel.ASSOC_POOLED_ACTORS);
@@ -432,9 +445,9 @@ public class WorkflowModelBuilder
         {
             keys = buildQNameKeys(propertyFilters);
         }
-        
+
         Map<String, Object> result = buildQNameProperties(properties, keys, task);
-        
+
         // ALF-18092: Special handling for the "hiddenTransitions" property, as it can be an empty string
         if (keys.contains(WorkflowModel.PROP_HIDDEN_TRANSITIONS))
         {
@@ -451,14 +464,13 @@ public class WorkflowModelBuilder
     {
         TypeDefinition taskType = task.getDefinition().getMetadata();
         final Map<QName, PropertyDefinition> propDefs = taskType.getProperties();
-        return CollectionUtils.transform(properties, new Function<Entry<String, Object>, Pair<String, String>>()
-        {
+        return CollectionUtils.transform(properties, new Function<Entry<String, Object>, Pair<String, String>>() {
             @Override
             public Pair<String, String> apply(Entry<String, Object> entry)
             {
                 String propName = entry.getKey();
                 PropertyDefinition propDef = propDefs.get(qNameConverter.mapNameToQName(propName));
-                if(propDef != null )
+                if (propDef != null)
                 {
                     List<ConstraintDefinition> constraints = propDef.getConstraints();
                     for (ConstraintDefinition constraintDef : constraints)
@@ -502,7 +514,7 @@ public class WorkflowModelBuilder
         {
             return value;
         }
-        
+
         if (value instanceof Collection<?>)
         {
             Collection<?> collection = (Collection<?>) value;
@@ -513,14 +525,13 @@ public class WorkflowModelBuilder
             }
             return results;
         }
-        
+
         return DefaultTypeConverter.INSTANCE.convert(String.class, value);
     }
 
     private Collection<QName> buildQNameKeys(Collection<String> keys)
     {
-        return CollectionUtils.transform(keys, new Function<String, QName>()
-        {
+        return CollectionUtils.transform(keys, new Function<String, QName>() {
             @Override
             public QName apply(String name)
             {
@@ -539,14 +550,14 @@ public class WorkflowModelBuilder
         // TODO Person URL?
         Map<String, Object> model = new HashMap<String, Object>();
         model.put(PERSON_USER_NAME, name);
-        
+
         if (personService.personExists(name))
         {
             NodeRef person = personService.getPerson(name);
             Map<QName, Serializable> properties = nodeService.getProperties(person);
             model.put(PERSON_FIRST_NAME, properties.get(ContentModel.PROP_FIRSTNAME));
             model.put(PERSON_LAST_NAME, properties.get(ContentModel.PROP_LASTNAME));
-            
+
             // add the avatar, id present
             List<AssociationRef> avatar = nodeService.getTargetAssocs(person, ContentModel.ASSOC_AVATAR);
             if (avatar != null && !avatar.isEmpty())
@@ -554,7 +565,7 @@ public class WorkflowModelBuilder
                 model.put(PERSON_AVATAR, getAvatarUrl(avatar.get(0).getTargetRef()));
             }
         }
-        
+
         return model;
     }
 
@@ -615,7 +626,8 @@ public class WorkflowModelBuilder
     }
 
     /**
-     * @param properties Map<QName, Serializable>
+     * @param properties
+     *            Map<QName, Serializable>
      * @return List
      */
     private List<?> getHiddenTransitions(Map<QName, Serializable> properties)
@@ -627,15 +639,15 @@ public class WorkflowModelBuilder
         }
         else if (hiddenSer instanceof String)
         {
-        	if(((String) hiddenSer).isEmpty())
-        	{
-        		return Collections.emptyList();
-        	}
-        	else
-        	{
-        		String hiddenStr = (String) hiddenSer;
-        		return Arrays.asList(hiddenStr.split(","));
-        	}
+            if (((String) hiddenSer).isEmpty())
+            {
+                return Collections.emptyList();
+            }
+            else
+            {
+                String hiddenStr = (String) hiddenSer;
+                return Arrays.asList(hiddenStr.split(","));
+            }
         }
         else if (hiddenSer == null)
         {
@@ -643,23 +655,23 @@ public class WorkflowModelBuilder
         }
         return null;
     }
-    
+
     private boolean isHiddenTransition(String transitionId, List<?> hiddenTransitions)
     {
         if (hiddenTransitions == null)
             return false;
-        
+
         return hiddenTransitions.contains(transitionId);
     }
 
     private String getOutcome(WorkflowTask task)
     {
         String outcomeLabel = null;
-        
+
         // there will only be an outcome if the task is completed
         if (task.getState().equals(WorkflowTaskState.COMPLETED))
         {
-            String outcomeId = (String)task.getProperties().get(WorkflowModel.PROP_OUTCOME);
+            String outcomeId = (String) task.getProperties().get(WorkflowModel.PROP_OUTCOME);
             if (outcomeId != null)
             {
                 // find the transition with the matching id and get the label
@@ -674,19 +686,19 @@ public class WorkflowModelBuilder
                 }
                 if (outcomeLabel == null)
                 {
-                    String translatedOutcome = I18NUtil.getMessage(TASK_OUTCOME_MESSAGE_PREFIX+outcomeId);
+                    String translatedOutcome = I18NUtil.getMessage(TASK_OUTCOME_MESSAGE_PREFIX + outcomeId);
                     if (translatedOutcome != null)
                     {
                         outcomeLabel = translatedOutcome;
-                    } 
-                    else 
+                    }
+                    else
                     {
                         outcomeLabel = outcomeId;
                     }
                 }
             }
         }
-        
+
         return outcomeLabel;
     }
 
@@ -719,7 +731,7 @@ public class WorkflowModelBuilder
     {
         return "api/workflow-instances/" + workflowInstance.getId();
     }
-    
+
     private String getDiagramUrl(WorkflowInstance workflowInstance)
     {
         return "api/workflow-instances/" + workflowInstance.getId() + "/diagram";

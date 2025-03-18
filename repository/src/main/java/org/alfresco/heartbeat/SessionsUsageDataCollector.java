@@ -25,29 +25,28 @@
  */
 package org.alfresco.heartbeat;
 
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.admin.RepoServerMgmtMBean;
 import org.alfresco.repo.descriptor.DescriptorDAO;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Date;
-
-
 
 /**
  * <ul>
- *  <li>Collector ID: <b>acs.repository.usage.sessions</b></li>
- *  <li>Data:
- *      <ul>
- *          <li><b>activeTickets:</b> int - The number of non-expired tickets. {@link RepoServerMgmtMBean#getTicketCountNonExpired()}</li>
- *      </ul>
- *  </li>
+ * <li>Collector ID: <b>acs.repository.usage.sessions</b></li>
+ * <li>Data:
+ * <ul>
+ * <li><b>activeTickets:</b> int - The number of non-expired tickets. {@link RepoServerMgmtMBean#getTicketCountNonExpired()}</li>
+ * </ul>
+ * </li>
  * </ul>
  *
  * @author eknizat

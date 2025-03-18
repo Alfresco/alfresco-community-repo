@@ -26,6 +26,22 @@
 
 package org.alfresco.repo.thumbnail;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
@@ -52,21 +68,6 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Thumbnail service implementation unit test
@@ -93,8 +94,7 @@ public class ThumbnailServiceImplParameterTest
     @Before
     public void initMockObjects()
     {
-        renditionService = new RenditionServiceImpl()
-        {
+        renditionService = new RenditionServiceImpl() {
             @Override
             public RenditionDefinition loadRenditionDefinition(QName renditionDefinitionName)
             {
@@ -108,17 +108,16 @@ public class ThumbnailServiceImplParameterTest
         renditionService.setRenditionService2(mockRenditionService2);
         when(mockRenditionService2.isCreatedByRenditionService2(any(), any())).thenReturn(false);
 
-        ThumbnailServiceImpl thumbs = new ThumbnailServiceImpl()
-        {
+        ThumbnailServiceImpl thumbs = new ThumbnailServiceImpl() {
             @Override
             public NodeRef getThumbnailByName(NodeRef node,
                     QName contentProperty, String thumbnailName)
             {
                 return null;
             }
+
             /**
-             * In this test the thumbnailRef will be null, so we need to ensure
-             * it is not dereferenced here.
+             * In this test the thumbnailRef will be null, so we need to ensure it is not dereferenced here.
              */
             @Override
             public NodeRef getThumbnailNode(ChildAssociationRef thumbnailRef)
@@ -135,15 +134,14 @@ public class ThumbnailServiceImplParameterTest
             }
         });
         thumbs.setNodeService(mock(NodeService.class));
-        
-        TransactionServiceImpl transactionServiceImpl = new TransactionServiceImpl()
-        {
+
+        TransactionServiceImpl transactionServiceImpl = new TransactionServiceImpl() {
             @Override
             public boolean getAllowWrite()
             {
                 return true;
             }
-            
+
             @Override
             public boolean isReadOnly()
             {
@@ -153,8 +151,7 @@ public class ThumbnailServiceImplParameterTest
             @Override
             public RetryingTransactionHelper getRetryingTransactionHelper()
             {
-                RetryingTransactionHelper rth = new RetryingTransactionHelper()
-                {
+                RetryingTransactionHelper rth = new RetryingTransactionHelper() {
                     @Override
                     public <R> R doInTransaction(RetryingTransactionCallback<R> cb, boolean readOnly, boolean requiresNew)
                     {
@@ -178,8 +175,7 @@ public class ThumbnailServiceImplParameterTest
     }
 
     /**
-     * This test method ensures that the parameters on thumbnail-create are
-     * passed through the RenditionService to the ActionService
+     * This test method ensures that the parameters on thumbnail-create are passed through the RenditionService to the ActionService
      */
     @Test
     public void createThumbnailPassesParametersToActionService()
@@ -198,11 +194,10 @@ public class ThumbnailServiceImplParameterTest
         parametersUnderTest.put(PagedSourceOptionsSerializer.PARAM_SOURCE_START_PAGE, Integer.valueOf(2));
         parametersUnderTest.put(PagedSourceOptionsSerializer.PARAM_SOURCE_END_PAGE, Integer.valueOf(2));
         parametersUnderTest.put(TemporalSourceOptionsSerializer.PARAM_SOURCE_TIME_OFFSET, "00:00:00.5");
-        
 
         ImageTransformationOptions imageTransOpts = new ImageTransformationOptions();
         imageTransOpts.setTargetNodeRef(dummyNodeRef2);
-        
+
         imageTransOpts.setTargetContentProperty((QName) parametersUnderTest.get(ImageRenderingEngine.PARAM_TARGET_CONTENT_PROPERTY));
         imageTransOpts.setCommandOptions((String) parametersUnderTest.get(ImageRenderingEngine.PARAM_COMMAND_OPTIONS));
 
@@ -213,31 +208,30 @@ public class ThumbnailServiceImplParameterTest
         resizeOptions.setResizeToThumbnail((Boolean) parametersUnderTest.get(ImageRenderingEngine.PARAM_RESIZE_TO_THUMBNAIL));
         resizeOptions.setAllowEnlargement((Boolean) parametersUnderTest.get(ImageRenderingEngine.PARAM_ALLOW_ENLARGEMENT));
         imageTransOpts.setResizeOptions(resizeOptions);
-        
+
         PagedSourceOptions pagedSourceOptions = new PagedSourceOptions();
         pagedSourceOptions.setStartPageNumber((Integer) parametersUnderTest.get(PagedSourceOptionsSerializer.PARAM_SOURCE_START_PAGE));
         pagedSourceOptions.setEndPageNumber((Integer) parametersUnderTest.get(PagedSourceOptionsSerializer.PARAM_SOURCE_END_PAGE));
         imageTransOpts.addSourceOptions(pagedSourceOptions);
-        
+
         TemporalSourceOptions temporalSourceOptions = new TemporalSourceOptions();
         temporalSourceOptions.setOffset((String) parametersUnderTest.get(TemporalSourceOptionsSerializer.PARAM_SOURCE_TIME_OFFSET));
         imageTransOpts.addSourceOptions(temporalSourceOptions);
-        
+
         ThumbnailParentAssociationDetails assocDetails = new ThumbnailParentAssociationDetails(dummyNodeRef3,
-                    ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                "homerSimpson"));
-        
+                ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                        "homerSimpson"));
+
         // Now request the creation of the the thumbnail.
         thumbnailService.createThumbnail(dummyNodeRef1, ContentModel.PROP_CONTENT, MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                    imageTransOpts, "bartSimpson", assocDetails);
+                imageTransOpts, "bartSimpson", assocDetails);
 
-        
         ArgumentCaptor<Action> argument = ArgumentCaptor.forClass(Action.class);
         verify(mockActionService).executeAction(argument.capture(), any(NodeRef.class), anyBoolean(), anyBoolean());
         final Action action = argument.getValue();
-        final RenditionDefinition renditionDefn = (RenditionDefinition)action;
+        final RenditionDefinition renditionDefn = (RenditionDefinition) action;
         Map<String, Serializable> parameters = renditionDefn.getParameterValues();
-        
+
         for (String s : parametersUnderTest.keySet())
         {
             if (parameters.keySet().contains(s) == false || parameters.get(s) == null || parameters.get(s).toString().length() == 0)

@@ -34,26 +34,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
 import org.alfresco.repo.content.metadata.MetadataExtracter;
 import org.alfresco.repo.content.selector.ContentWorkerSelector;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.alfresco.util.PropertyCheck;
 
 /**
  * A metadata extractor that selects an appropiate workder for the extraction.
  * <p>
- * The {@linkplain #setSelectors(List) selectors} are used to find an extracter
- * most appropriate of a given XML document. The chosen extracter is then asked
- * to extract the values, passing through the
- * {@code MetadataExtracter.OverwritePolicy} as
- * {@linkplain #setOverwritePolicy(org.alfresco.repo.content.metadata.MetadataExtracter.OverwritePolicy)} on this instance. The overwrite
- * policy of the embedded extracters is not relevant unless they are used
- * separately in another context.
+ * The {@linkplain #setSelectors(List) selectors} are used to find an extracter most appropriate of a given XML document. The chosen extracter is then asked to extract the values, passing through the {@code MetadataExtracter.OverwritePolicy} as {@linkplain #setOverwritePolicy(org.alfresco.repo.content.metadata.MetadataExtracter.OverwritePolicy)} on this instance. The overwrite policy of the embedded extracters is not relevant unless they are used separately in another context.
  * 
  * @see ContentWorkerSelector
  * @see MetadataExtracter
@@ -63,7 +58,7 @@ import org.alfresco.util.PropertyCheck;
 @Deprecated
 public class XmlMetadataExtracter extends AbstractMappingMetadataExtracter
 {
-    public static String[] SUPPORTED_MIMETYPES = new String[] { MimetypeMap.MIMETYPE_XML };
+    public static String[] SUPPORTED_MIMETYPES = new String[]{MimetypeMap.MIMETYPE_XML};
 
     private static Log logger = LogFactory.getLog(XPathMetadataExtracter.class);
 
@@ -78,11 +73,10 @@ public class XmlMetadataExtracter extends AbstractMappingMetadataExtracter
     }
 
     /**
-     * Sets the list of metadata selectors to use to find the extracter to use,
-     * given some content. The evaluations are done in the order that they occur
-     * in the list.
+     * Sets the list of metadata selectors to use to find the extracter to use, given some content. The evaluations are done in the order that they occur in the list.
      * 
-     * @param selectors A list of selectors
+     * @param selectors
+     *            A list of selectors
      */
     public void setSelectors(List<ContentWorkerSelector<MetadataExtracter>> selectors)
     {
@@ -98,8 +92,7 @@ public class XmlMetadataExtracter extends AbstractMappingMetadataExtracter
     }
 
     /**
-     * It is not possible to have any default mappings, but something has to be
-     * returned.
+     * It is not possible to have any default mappings, but something has to be returned.
      * 
      * @return Returns an empty map
      */
@@ -114,7 +107,7 @@ public class XmlMetadataExtracter extends AbstractMappingMetadataExtracter
      */
     @Override
     public Map<QName, Serializable> extract(ContentReader reader, OverwritePolicy overwritePolicy,
-                Map<QName, Serializable> destination, Map<String, Set<QName>> mapping)
+            Map<QName, Serializable> destination, Map<String, Set<QName>> mapping)
     {
         // Check the content length
         if (reader.getSize() == 0)
@@ -124,7 +117,7 @@ public class XmlMetadataExtracter extends AbstractMappingMetadataExtracter
             if (logger.isDebugEnabled())
             {
                 logger.debug("\n" + "XML document has zero length, so bypassing extraction: \n" + "   Document: "
-                            + reader);
+                        + reader);
             }
             return destination;
         }
@@ -147,7 +140,7 @@ public class XmlMetadataExtracter extends AbstractMappingMetadataExtracter
                 if (reader.isChannelOpen())
                 {
                     logger.error("Content reader not closed by MetadataExtractor selector: \n" + "   reader:   "
-                                + reader + "\n" + "   selector: " + selector);
+                            + reader + "\n" + "   selector: " + selector);
                 }
             }
             // Just take the first successful one
@@ -156,7 +149,7 @@ public class XmlMetadataExtracter extends AbstractMappingMetadataExtracter
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("\n" + "Found metadata extracter to process XML document: \n" + "   Selector: "
-                                + selector + "\n" + "   Document: " + reader);
+                            + selector + "\n" + "   Document: " + reader);
                 }
                 break;
             }
@@ -184,7 +177,7 @@ public class XmlMetadataExtracter extends AbstractMappingMetadataExtracter
                 if (reader.isChannelOpen())
                 {
                     logger.error("Content reader not closed by MetadataExtractor: \n" + "   Reader:   " + reader + "\n"
-                                + "   extracter: " + extracter);
+                            + "   extracter: " + extracter);
                 }
             }
         }
@@ -192,7 +185,7 @@ public class XmlMetadataExtracter extends AbstractMappingMetadataExtracter
         if (logger.isDebugEnabled())
         {
             logger.debug("\n" + "XML metadata extractor redirected: \n" + "   Reader:    " + reader + "\n"
-                        + "   Extracter: " + extracter + "\n" + "   Metadata: " + modifiedProperties);
+                    + "   Extracter: " + extracter + "\n" + "   Metadata: " + modifiedProperties);
         }
         return modifiedProperties;
     }

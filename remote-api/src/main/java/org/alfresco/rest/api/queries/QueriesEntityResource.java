@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.queries;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Queries;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
@@ -33,7 +35,6 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * An implementation of an Entity Resource for Queries.
@@ -41,7 +42,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author janv
  * @author Alan Davis
  */
-@EntityResource(name="queries", title = "Queries")
+@EntityResource(name = "queries", title = "Queries")
 public class QueriesEntityResource implements
         EntityResourceAction.ReadById<CollectionWithPagingInfo<? extends Object>>,
         InitializingBean
@@ -65,7 +66,7 @@ public class QueriesEntityResource implements
 
     // hmm - a little unorthodox
     @Override
-    @WebApiDescription(title="Find results", description = "Find & list search results for given query id")
+    @WebApiDescription(title = "Find results", description = "Find & list search results for given query id")
     public CollectionWithPagingInfo<? extends Object> readById(String queryId, Parameters parameters)
     {
         switch (queryId)

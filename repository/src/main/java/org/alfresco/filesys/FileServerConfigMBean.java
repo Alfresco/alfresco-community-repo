@@ -28,23 +28,26 @@ package org.alfresco.filesys;
 /**
  * File Server Configuration MBean Interface
  * 
- * <p>Provides file server configuration details to remote virtualization servers.
+ * <p>
+ * Provides file server configuration details to remote virtualization servers.
  * 
  * @author gkspencer
  */
-public interface FileServerConfigMBean {
+public interface FileServerConfigMBean
+{
 
-	/**
-	 * Check if the FTP server is enabled
-	 * 
-	 * @return boolean
-	 */
-	public boolean isFTPServerEnabled();
-	
-	/**
-	 * Enable/disable FTP server
-	 * 
-	 * @param enabled  true to enable, false to disable
-	 */	
-	public void setFTPServerEnabled(boolean enabled) throws Exception;
+    /**
+     * Check if the FTP server is enabled
+     * 
+     * @return boolean
+     */
+    public boolean isFTPServerEnabled();
+
+    /**
+     * Enable/disable FTP server
+     * 
+     * @param enabled
+     *            true to enable, false to disable
+     */
+    public void setFTPServerEnabled(boolean enabled) throws Exception;
 }

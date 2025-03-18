@@ -25,6 +25,16 @@
  */
 package org.alfresco.heartbeat.jobs;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.quartz.Job;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+
 import org.alfresco.heartbeat.HBBaseDataCollector;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
@@ -33,21 +43,10 @@ import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.quartz.Job;
-import org.quartz.JobDataMap;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  *
- * This Heartbeat job collects data and passes it to the {@link HBDataSenderService}.
- * Collectors using this job will collect data in one cluster node per execution, this is achieved by a job lock on collector id.
- * The job lock is obtained by the first repository node which requests it for its collector id.
+ * This Heartbeat job collects data and passes it to the {@link HBDataSenderService}. Collectors using this job will collect data in one cluster node per execution, this is achieved by a job lock on collector id. The job lock is obtained by the first repository node which requests it for its collector id.
  */
 public class LockingJob implements Job
 {

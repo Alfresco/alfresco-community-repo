@@ -24,8 +24,16 @@
  * #L%
  */
 package org.alfresco.rest.api.search;
+
 import java.io.IOException;
 import java.util.Locale;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.QueryParserException;
@@ -48,24 +56,17 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.webscripts.AbstractWebScript;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
-
 
 /**
- * Search SQL API end point.
- * An implementation of the {{baseUrl}}/{{networkId}}/public/search/versions/1/sql
+ * Search SQL API end point. An implementation of the {{baseUrl}}/{{networkId}}/public/search/versions/1/sql
+ * 
  * @author Michael Suzuki
  *
  */
 public class SearchSQLApiWebscript extends AbstractWebScript implements RecognizedParamsExtractor,
-                                                                        RequestReader,
-                                                                        ResponseWriter,
-                                                                        InitializingBean
+        RequestReader,
+        ResponseWriter,
+        InitializingBean
 {
     private ServiceRegistry serviceRegistry;
     private SearchService searchService;
@@ -73,21 +74,21 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
     private ResultMapper resultMapper;
     protected ApiAssistant assistant;
     protected ResourceWebScriptHelper helper;
-    
+
     @Override
     public void execute(WebScriptRequest webScriptRequest, WebScriptResponse res) throws IOException
     {
         try
         {
-            //Turn JSON into a Java object representation
+            // Turn JSON into a Java object representation
             SearchSQLQuery searchQuery = extractJsonContent(webScriptRequest, assistant.getJsonHelper(), SearchSQLQuery.class);
             SearchParameters sparams = buildSearchParameters(searchQuery);
 
             ResultSet results = searchService.query(sparams);
             FilteringResultSet frs = (FilteringResultSet) results;
             SolrSQLJSONResultSet ssjr = (SolrSQLJSONResultSet) frs.getUnFilteredResultSet();
-            //When solr format is requested pass the solr output directly.
-            if(searchQuery.getFormat().equalsIgnoreCase("solr"))
+            // When solr format is requested pass the solr output directly.
+            if (searchQuery.getFormat().equalsIgnoreCase("solr"))
             {
                 res.getWriter().write(ssjr.getSolrResponse());
             }
@@ -98,11 +99,11 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
             }
             setResponse(res, DEFAULT_SUCCESS);
         }
-        catch (Exception exception) 
+        catch (Exception exception)
         {
             if (exception instanceof QueryParserException)
             {
-                renderException(exception,res,webScriptRequest,assistant);
+                renderException(exception, res, webScriptRequest, assistant);
             }
             else
             {
@@ -110,6 +111,7 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
             }
         }
     }
+
     @Override
     public void afterPropertiesSet() throws Exception
     {
@@ -119,35 +121,35 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
         ParameterCheck.mandatory("searchMapper", this.searchMapper);
         ParameterCheck.mandatory("resultMapper", this.resultMapper);
     }
-    
+
     public SearchParameters buildSearchParameters(SearchSQLQuery searchQuery)
     {
         SearchParameters sparams = new SearchParameters();
         sparams.setLanguage(SearchService.LANGUAGE_INDEX_SQL);
         sparams.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        if(StringUtils.isEmpty(searchQuery.getStmt()))
+        if (StringUtils.isEmpty(searchQuery.getStmt()))
         {
             throw new AlfrescoRuntimeException("Required stmt parameter is missing.");
         }
-        if(searchQuery.getFormat().equalsIgnoreCase("solr"))
+        if (searchQuery.getFormat().equalsIgnoreCase("solr"))
         {
             sparams.addExtraParameter("format", "solr");
         }
-        if(!StringUtils.isEmpty(searchQuery.getTimezone()))
+        if (!StringUtils.isEmpty(searchQuery.getTimezone()))
         {
             sparams.setTimezone(searchQuery.getTimezone());
         }
         sparams.setQuery(searchQuery.getStmt());
-        searchQuery.getLocales().forEach(action->{
+        searchQuery.getLocales().forEach(action -> {
             Locale locale = new Locale(action);
             sparams.addLocale(locale);
         });
         searchQuery.getFilterQueries().forEach(sparams::addFilterQuery);
-        
+
         sparams.setIncludeMetadata(searchQuery.isIncludeMetadata());
         return sparams;
     }
-    
+
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;

@@ -36,6 +36,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Path;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.sync.events.types.Event;
 import org.alfresco.sync.events.types.NodeAddedEvent;
 import org.alfresco.sync.events.types.NodeCheckOutCancelledEvent;
@@ -68,22 +83,8 @@ import org.alfresco.sync.events.types.recordsmanagement.FileClassifiedEvent;
 import org.alfresco.sync.events.types.recordsmanagement.FileUnclassifiedEvent;
 import org.alfresco.sync.events.types.recordsmanagement.RecordCreatedEvent;
 import org.alfresco.sync.events.types.recordsmanagement.RecordRejectedEvent;
-import org.alfresco.model.ContentModel;
 import org.alfresco.sync.repo.Client;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.FileFilterMode;
-import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Event service implementation. Generates events and sends them to an event queue.
@@ -135,7 +136,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
         Client alfrescoClient = getAlfrescoClient(nodeInfo.getClient());
 
         NodeRenamedEvent event = new NodeRenamedEvent(nextSequenceNumber(), oldName, newName, txnId, timestamp, networkId, siteId, objectId, nodeType,
-                paths, parentNodeIds, username, modificationTime, newPaths, alfrescoClient,aspects, properties);
+                paths, parentNodeIds, username, modificationTime, newPaths, alfrescoClient, aspects, properties);
         return event;
     }
 
@@ -144,7 +145,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     {
         NodeRef nodeRef = newChildAssocRef.getChildRef();
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeMovedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -161,15 +162,15 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             NodeRef oldNodeRef = oldChildAssocRef.getChildRef();
             NodeRef newNodeRef = newChildAssocRef.getChildRef();
 
-            String oldParentNodeName = (String)nodeService.getProperty(oldParentNodeRef, ContentModel.PROP_NAME);
-            String newParentNodeName = (String)nodeService.getProperty(newParentNodeRef, ContentModel.PROP_NAME);
-            String oldNodeName = (String)nodeService.getProperty(oldNodeRef, ContentModel.PROP_NAME);
-            String newNodeName = (String)nodeService.getProperty(newNodeRef, ContentModel.PROP_NAME);
+            String oldParentNodeName = (String) nodeService.getProperty(oldParentNodeRef, ContentModel.PROP_NAME);
+            String newParentNodeName = (String) nodeService.getProperty(newParentNodeRef, ContentModel.PROP_NAME);
+            String oldNodeName = (String) nodeService.getProperty(oldNodeRef, ContentModel.PROP_NAME);
+            String newNodeName = (String) nodeService.getProperty(newNodeRef, ContentModel.PROP_NAME);
             List<Path> newParentPaths = nodeService.getPaths(newParentNodeRef, false);
             List<String> newPaths = getPaths(newParentPaths, Arrays.asList(newParentNodeName, newNodeName));
 
             // renames are handled by an onUpdateProperties callback, we just deal with real moves here.
-            if(!oldParentNodeRef.equals(newParentNodeRef))
+            if (!oldParentNodeRef.equals(newParentNodeRef))
             {
                 List<List<String>> toParentNodeIds = getNodeIds(newParentPaths);
                 List<Path> oldParentPaths = nodeService.getPaths(oldParentNodeRef, false);
@@ -178,10 +179,10 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
 
                 Set<String> aspects = nodeInfo.getAspectsAsStrings();
                 Map<String, Serializable> properties = nodeInfo.getProperties();
-               
+
                 Client alfrescoClient = getAlfrescoClient(nodeInfo.getClient());
 
-                Event event = new NodeMovedEvent(nextSequenceNumber(), oldNodeName, newNodeName, txnId, timestamp, networkId, siteId, objectId, nodeType, 
+                Event event = new NodeMovedEvent(nextSequenceNumber(), oldNodeName, newNodeName, txnId, timestamp, networkId, siteId, objectId, nodeType,
                         previousPaths, previousParentNodeIds, username, modificationTime, newPaths, toParentNodeIds, alfrescoClient,
                         aspects, properties);
                 sendEvent(event);
@@ -193,7 +194,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void nodeRenamed(NodeRef nodeRef, String oldName, String newName)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeRenamedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             NodeRenamedEvent nodeRenamedEvent = nodeRenamedEvent(nodeInfo, oldName, newName);
             sendEvent(nodeRenamedEvent);
@@ -204,7 +205,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void nodeTagged(final NodeRef nodeRef, final String tag)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeTaggedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -234,7 +235,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void nodeTagRemoved(final NodeRef nodeRef, final String tag)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeUnTaggedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -264,7 +265,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void nodeLiked(final NodeRef nodeRef)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeLikedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -294,7 +295,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void nodeUnLiked(final NodeRef nodeRef)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeUnLikedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -324,7 +325,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void nodeFavourited(NodeRef nodeRef)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeFavouritedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -354,7 +355,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void nodeUnFavourited(NodeRef nodeRef)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeUnFavouritedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -363,7 +364,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             String objectId = nodeInfo.getNodeId();
             String siteId = nodeInfo.getSiteId();
             String txnId = AlfrescoTransactionSupport.getTransactionId();
-            List<String> nodePaths  = nodeInfo.getPaths();
+            List<String> nodePaths = nodeInfo.getPaths();
             List<List<String>> pathNodeIds = nodeInfo.getParentNodeIds();
             long timestamp = System.currentTimeMillis();
             Long modificationTime = nodeInfo.getModificationTimestamp();
@@ -384,7 +385,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void nodeCreated(final NodeRef nodeRef)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeAddedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -408,12 +409,12 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             sendEvent(event);
         }
     }
-    
+
     @Override
     public void secondaryAssociationCreated(final ChildAssociationRef secAssociation)
     {
         NodeInfo nodeInfo = getNodeInfo(secAssociation.getChildRef(), NodeAddedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -422,13 +423,13 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             String objectId = nodeInfo.getNodeId();
             String siteId = nodeInfo.getSiteId();
             String txnId = AlfrescoTransactionSupport.getTransactionId();
-            
+
             NodeRef secParentNodeRef = secAssociation.getParentRef();
-            String secParentNodeName = (String)nodeService.getProperty(secAssociation.getParentRef(), ContentModel.PROP_NAME);
+            String secParentNodeName = (String) nodeService.getProperty(secAssociation.getParentRef(), ContentModel.PROP_NAME);
             List<Path> secParentPath = nodeService.getPaths(secParentNodeRef, true);
             List<String> nodePaths = getPaths(secParentPath, Arrays.asList(secParentNodeName, name));
             List<List<String>> pathNodeIds = this.getNodeIds(secParentPath);
-            
+
             long timestamp = System.currentTimeMillis();
             Long modificationTime = nodeInfo.getModificationTimestamp();
             String nodeType = nodeInfo.getType().toPrefixString(namespaceService);
@@ -442,12 +443,12 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             sendEvent(event);
         }
     }
-    
+
     @Override
     public void secondaryAssociationDeleted(final ChildAssociationRef secAssociation)
     {
         NodeInfo nodeInfo = getNodeInfo(secAssociation.getChildRef(), NodeRemovedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -456,13 +457,13 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             String objectId = nodeInfo.getNodeId();
             String siteId = nodeInfo.getSiteId();
             String txnId = AlfrescoTransactionSupport.getTransactionId();
-            
+
             NodeRef secParentNodeRef = secAssociation.getParentRef();
-            String secParentNodeName = (String)nodeService.getProperty(secAssociation.getParentRef(), ContentModel.PROP_NAME);
+            String secParentNodeName = (String) nodeService.getProperty(secAssociation.getParentRef(), ContentModel.PROP_NAME);
             List<Path> secParentPath = nodeService.getPaths(secParentNodeRef, true);
             List<String> nodePaths = getPaths(secParentPath, Arrays.asList(secParentNodeName, name));
             List<List<String>> pathNodeIds = this.getNodeIds(secParentPath);
-            
+
             long timestamp = System.currentTimeMillis();
             Long modificationTime = nodeInfo.getModificationTimestamp();
             String nodeType = nodeInfo.getType().toPrefixString(namespaceService);
@@ -481,7 +482,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void nodeDeleted(final NodeRef nodeRef)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeRemovedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -510,7 +511,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void nodeCommented(final NodeRef nodeRef, final String comment)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeCommentedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -541,7 +542,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             final Set<String> aspectsAdded, final Set<String> aspectsRemoved)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeUpdatedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -571,7 +572,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void contentGet(NodeRef nodeRef)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeContentGetEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -601,7 +602,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void contentWrite(NodeRef nodeRef, QName propertyQName, ContentData value)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeContentPutEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -645,7 +646,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void nodeCheckedOut(NodeRef workingCopyNodeRef)
     {
         NodeInfo workingCopyNodeInfo = getNodeInfo(workingCopyNodeRef, NodeCheckedOutEvent.EVENT_TYPE);
-        if(workingCopyNodeInfo.checkNodeInfo())
+        if (workingCopyNodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -675,7 +676,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void nodeCheckOutCancelled(NodeRef nodeRef)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeCheckOutCancelledEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -704,7 +705,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void nodeCheckedIn(NodeRef nodeRef)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, NodeCheckedInEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             String networkId = TenantUtil.getCurrentDomain();
@@ -719,7 +720,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             Long modificationTime = nodeInfo.getModificationTimestamp();
             String nodeType = nodeInfo.getType().toPrefixString(namespaceService);
             Client alfrescoClient = getAlfrescoClient(nodeInfo.getClient());
-            
+
             Set<String> aspects = nodeInfo.getAspectsAsStrings();
             Map<String, Serializable> properties = nodeInfo.getProperties();
 
@@ -732,7 +733,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
 
     @Override
     public void authorityRemovedFromGroup(String parentGroup, String childAuthority)
-    {        
+    {
         if (includeEventType(AuthorityRemovedFromGroupEvent.EVENT_TYPE))
         {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
@@ -740,10 +741,10 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             String txnId = AlfrescoTransactionSupport.getTransactionId();
             long timestamp = System.currentTimeMillis();
             Client client = getAlfrescoClient(ClientUtil.from(FileFilterMode.getClient()));
-            
+
             Event event = AuthorityRemovedFromGroupEvent.builder().parentGroup(parentGroup).authorityName(childAuthority)
                     .seqNumber(nextSequenceNumber()).txnId(txnId).networkId(networkId).timestamp(timestamp).username(username).client(client).build();
-            
+
             sendEvent(event);
         }
     }
@@ -758,14 +759,14 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             String txnId = AlfrescoTransactionSupport.getTransactionId();
             long timestamp = System.currentTimeMillis();
             Client client = getAlfrescoClient(ClientUtil.from(FileFilterMode.getClient()));
-            
+
             Event event = AuthorityAddedToGroupEvent.builder().parentGroup(parentGroup).authorityName(childAuthority).seqNumber(nextSequenceNumber())
                     .txnId(txnId).networkId(networkId).timestamp(timestamp).username(username).client(client).build();
-                    
+
             sendEvent(event);
         }
     }
-    
+
     @Override
     public void groupDeleted(String groupName, boolean cascade)
     {
@@ -776,12 +777,12 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             String txnId = AlfrescoTransactionSupport.getTransactionId();
             long timestamp = System.currentTimeMillis();
             Client client = getAlfrescoClient(ClientUtil.from(FileFilterMode.getClient()));
-            
+
             Event event = GroupDeletedEvent.builder().authorityName(groupName).cascade(cascade).seqNumber(nextSequenceNumber()).txnId(txnId)
                     .networkId(networkId).timestamp(timestamp).username(username).client(client).build();
-            
+
             sendEvent(event);
-        }        
+        }
     }
 
     @Override
@@ -809,8 +810,8 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             Event event = InheritPermissionsEnabledEvent.builder().seqNumber(nextSequenceNumber()).name(name).txnId(txnId).timestamp(timestamp)
                     .networkId(networkId).siteId(siteId).nodeId(nodeId).nodeType(nodeType).paths(nodePaths).parentNodeIds(pathNodeIds)
                     .username(username).nodeModificationTime(modificationTime).client(alfrescoClient).aspects(aspects).nodeProperties(properties)
-                    .build();         
-                   
+                    .build();
+
             sendEvent(event);
         }
     }
@@ -840,7 +841,7 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             Event event = InheritPermissionsDisabledEvent.builder().async(async).seqNumber(nextSequenceNumber()).name(name).txnId(txnId)
                     .timestamp(timestamp).networkId(networkId).siteId(siteId).nodeId(nodeId).nodeType(nodeType).paths(nodePaths)
                     .parentNodeIds(pathNodeIds).username(username).nodeModificationTime(modificationTime).client(alfrescoClient).aspects(aspects)
-                    .nodeProperties(properties).build();      
+                    .nodeProperties(properties).build();
             sendEvent(event);
         }
     }
@@ -869,10 +870,10 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
 
             Event event = LocalPermissionRevokedEvent.builder().authority(authority).permission(permission).seqNumber(nextSequenceNumber()).name(name)
                     .txnId(txnId).timestamp(timestamp).networkId(networkId).siteId(siteId).nodeId(nodeId).nodeType(nodeType).paths(nodePaths).parentNodeIds(pathNodeIds)
-                    .username(username).nodeModificationTime(modificationTime).client(alfrescoClient).aspects(aspects).nodeProperties(properties).build();                  
+                    .username(username).nodeModificationTime(modificationTime).client(alfrescoClient).aspects(aspects).nodeProperties(properties).build();
             sendEvent(event);
         }
-        
+
     }
 
     @Override
@@ -903,32 +904,32 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
                     .aspects(aspects).nodeProperties(properties).build();
             sendEvent(event);
         }
-        
+
     }
 
     @Override
     public void fileUnclassified(NodeRef nodeRef)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, FileUnclassifiedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             Event event = FileUnclassifiedEvent.builder()
-                              .seqNumber(nextSequenceNumber())
-                              .name(nodeInfo.getName())
-                              .txnId(AlfrescoTransactionSupport.getTransactionId())
-                              .timestamp(System.currentTimeMillis())
-                              .networkId(TenantUtil.getCurrentDomain())
-                              .siteId(nodeInfo.getSiteId())
-                              .nodeId(nodeInfo.getNodeId())
-                              .nodeType(nodeInfo.getType().toPrefixString(namespaceService))
-                              .paths(nodeInfo.getPaths())
-                              .parentNodeIds(nodeInfo.getParentNodeIds())
-                              .username(AuthenticationUtil.getFullyAuthenticatedUser())
-                              .nodeModificationTime(nodeInfo.getModificationTimestamp())
-                              .client(getAlfrescoClient(nodeInfo.getClient()))
-                              .aspects(nodeInfo.getAspectsAsStrings())
-                              .nodeProperties(nodeInfo.getProperties())
-                              .build();
+                    .seqNumber(nextSequenceNumber())
+                    .name(nodeInfo.getName())
+                    .txnId(AlfrescoTransactionSupport.getTransactionId())
+                    .timestamp(System.currentTimeMillis())
+                    .networkId(TenantUtil.getCurrentDomain())
+                    .siteId(nodeInfo.getSiteId())
+                    .nodeId(nodeInfo.getNodeId())
+                    .nodeType(nodeInfo.getType().toPrefixString(namespaceService))
+                    .paths(nodeInfo.getPaths())
+                    .parentNodeIds(nodeInfo.getParentNodeIds())
+                    .username(AuthenticationUtil.getFullyAuthenticatedUser())
+                    .nodeModificationTime(nodeInfo.getModificationTimestamp())
+                    .client(getAlfrescoClient(nodeInfo.getClient()))
+                    .aspects(nodeInfo.getAspectsAsStrings())
+                    .nodeProperties(nodeInfo.getProperties())
+                    .build();
             sendEvent(event);
         }
     }
@@ -937,25 +938,25 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void fileClassified(NodeRef nodeRef)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, FileClassifiedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
             Event event = FileClassifiedEvent.builder()
-                              .seqNumber(nextSequenceNumber())
-                              .name(nodeInfo.getName())
-                              .txnId(AlfrescoTransactionSupport.getTransactionId())
-                              .timestamp(System.currentTimeMillis())
-                              .networkId(TenantUtil.getCurrentDomain())
-                              .siteId(nodeInfo.getSiteId())
-                              .nodeId(nodeInfo.getNodeId())
-                              .nodeType(nodeInfo.getType().toPrefixString(namespaceService))
-                              .paths(nodeInfo.getPaths())
-                              .parentNodeIds(nodeInfo.getParentNodeIds())
-                              .username(AuthenticationUtil.getFullyAuthenticatedUser())
-                              .nodeModificationTime(nodeInfo.getModificationTimestamp())
-                              .client(getAlfrescoClient(nodeInfo.getClient()))
-                              .aspects(nodeInfo.getAspectsAsStrings())
-                              .nodeProperties(nodeInfo.getProperties())
-                              .build();
+                    .seqNumber(nextSequenceNumber())
+                    .name(nodeInfo.getName())
+                    .txnId(AlfrescoTransactionSupport.getTransactionId())
+                    .timestamp(System.currentTimeMillis())
+                    .networkId(TenantUtil.getCurrentDomain())
+                    .siteId(nodeInfo.getSiteId())
+                    .nodeId(nodeInfo.getNodeId())
+                    .nodeType(nodeInfo.getType().toPrefixString(namespaceService))
+                    .paths(nodeInfo.getPaths())
+                    .parentNodeIds(nodeInfo.getParentNodeIds())
+                    .username(AuthenticationUtil.getFullyAuthenticatedUser())
+                    .nodeModificationTime(nodeInfo.getModificationTimestamp())
+                    .client(getAlfrescoClient(nodeInfo.getClient()))
+                    .aspects(nodeInfo.getAspectsAsStrings())
+                    .nodeProperties(nodeInfo.getProperties())
+                    .build();
             sendEvent(event);
         }
     }
@@ -964,11 +965,11 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void recordRejected(NodeRef nodeRef)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, RecordRejectedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
-            //The event should contain the path that points to the original location of the file.
-            //Since the record creation, the record might've been hidden on the collaboration site, thus removing the secondary parent-child association, 
-            //we'll use a RM specific property that stores the original location of the file.
+            // The event should contain the path that points to the original location of the file.
+            // Since the record creation, the record might've been hidden on the collaboration site, thus removing the secondary parent-child association,
+            // we'll use a RM specific property that stores the original location of the file.
             if (PROP_RMA_RECORD_ORIGINATING_LOCATION == null)
             {
                 logger.error(format("Could not generate %s event for node %s because %s property is not found.", RecordRejectedEvent.EVENT_TYPE, nodeRef, RM_MODEL_PROP_NAME_RECORD_ORIGINATING_LOCATION));
@@ -977,24 +978,24 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             NodeRef recordOriginatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RMA_RECORD_ORIGINATING_LOCATION);
             String recordOriginatingParentName = (String) nodeService.getProperty(recordOriginatingLocation, ContentModel.PROP_NAME);
             Path originatingParentPath = nodeService.getPath(recordOriginatingLocation);
-            
+
             Event event = RecordRejectedEvent.builder()
-                              .seqNumber(nextSequenceNumber())
-                              .name(nodeInfo.getName())
-                              .txnId(AlfrescoTransactionSupport.getTransactionId())
-                              .timestamp(System.currentTimeMillis())
-                              .networkId(TenantUtil.getCurrentDomain())
-                              .siteId(nodeInfo.getSiteId())
-                              .nodeId(nodeInfo.getNodeId())
-                              .nodeType(nodeInfo.getType().toPrefixString(namespaceService))
-                              .paths(getPaths(singletonList(originatingParentPath), asList(recordOriginatingParentName, nodeInfo.getName())))
-                              .parentNodeIds(this.getNodeIds(singletonList(originatingParentPath)))
-                              .username(AuthenticationUtil.getFullyAuthenticatedUser())
-                              .nodeModificationTime(nodeInfo.getModificationTimestamp())
-                              .client(getAlfrescoClient(nodeInfo.getClient()))
-                              .aspects(nodeInfo.getAspectsAsStrings())
-                              .nodeProperties(nodeInfo.getProperties())
-                              .build();
+                    .seqNumber(nextSequenceNumber())
+                    .name(nodeInfo.getName())
+                    .txnId(AlfrescoTransactionSupport.getTransactionId())
+                    .timestamp(System.currentTimeMillis())
+                    .networkId(TenantUtil.getCurrentDomain())
+                    .siteId(nodeInfo.getSiteId())
+                    .nodeId(nodeInfo.getNodeId())
+                    .nodeType(nodeInfo.getType().toPrefixString(namespaceService))
+                    .paths(getPaths(singletonList(originatingParentPath), asList(recordOriginatingParentName, nodeInfo.getName())))
+                    .parentNodeIds(this.getNodeIds(singletonList(originatingParentPath)))
+                    .username(AuthenticationUtil.getFullyAuthenticatedUser())
+                    .nodeModificationTime(nodeInfo.getModificationTimestamp())
+                    .client(getAlfrescoClient(nodeInfo.getClient()))
+                    .aspects(nodeInfo.getAspectsAsStrings())
+                    .nodeProperties(nodeInfo.getProperties())
+                    .build();
             sendEvent(event);
         }
     }
@@ -1017,8 +1018,8 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
         }
         catch (ClassNotFoundException | IllegalAccessException e)
         {
-            logger.info(format("Could not retrieve property %s from class %s. Maybe RM isn't installed, the property %s will be null.", 
-                                RM_MODEL_PROP_NAME_RECORD_ORIGINATING_LOCATION, RECORDS_MANAGEMENT_MODEL, "PROP_RMA_RECORD_ORIGINATING_LOCATION"));
+            logger.info(format("Could not retrieve property %s from class %s. Maybe RM isn't installed, the property %s will be null.",
+                    RM_MODEL_PROP_NAME_RECORD_ORIGINATING_LOCATION, RECORDS_MANAGEMENT_MODEL, "PROP_RMA_RECORD_ORIGINATING_LOCATION"));
         }
         return originatingLocation;
     }
@@ -1027,37 +1028,37 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     public void recordCreated(NodeRef nodeRef)
     {
         NodeInfo nodeInfo = getNodeInfo(nodeRef, RecordCreatedEvent.EVENT_TYPE);
-        if(nodeInfo.checkNodeInfo())
+        if (nodeInfo.checkNodeInfo())
         {
-            //The event should contain the path that points to the original location of the file.
-            //When a node is declared as a record, a secondary association is created for the original location, hence use just that.
+            // The event should contain the path that points to the original location of the file.
+            // When a node is declared as a record, a secondary association is created for the original location, hence use just that.
             List<Path> allPaths = nodeService.getPaths(nodeRef, false);
             Path primaryPath = nodeService.getPath(nodeRef);
-            
+
             if (allPaths.size() >= 2)
             {
                 allPaths.remove(primaryPath);
             }
 
             List<Path> recordPath = Collections.singletonList(allPaths.get(0));
-                        
+
             Event event = RecordCreatedEvent.builder()
-                              .seqNumber(nextSequenceNumber())
-                              .name(nodeInfo.getName())
-                              .txnId(AlfrescoTransactionSupport.getTransactionId())
-                              .timestamp(System.currentTimeMillis())
-                              .networkId(TenantUtil.getCurrentDomain())
-                              .siteId(nodeInfo.getSiteId())
-                              .nodeId(nodeInfo.getNodeId())
-                              .nodeType(nodeInfo.getType().toPrefixString(namespaceService))
-                              .paths(getPaths(recordPath, Arrays.asList(nodeInfo.getName())))
-                              .parentNodeIds(this.getNodeIdsFromParent(recordPath))
-                              .username(AuthenticationUtil.getFullyAuthenticatedUser())
-                              .nodeModificationTime(nodeInfo.getModificationTimestamp())
-                              .client(getAlfrescoClient(nodeInfo.getClient()))
-                              .aspects(nodeInfo.getAspectsAsStrings())
-                              .nodeProperties(nodeInfo.getProperties())
-                              .build();
+                    .seqNumber(nextSequenceNumber())
+                    .name(nodeInfo.getName())
+                    .txnId(AlfrescoTransactionSupport.getTransactionId())
+                    .timestamp(System.currentTimeMillis())
+                    .networkId(TenantUtil.getCurrentDomain())
+                    .siteId(nodeInfo.getSiteId())
+                    .nodeId(nodeInfo.getNodeId())
+                    .nodeType(nodeInfo.getType().toPrefixString(namespaceService))
+                    .paths(getPaths(recordPath, Arrays.asList(nodeInfo.getName())))
+                    .parentNodeIds(this.getNodeIdsFromParent(recordPath))
+                    .username(AuthenticationUtil.getFullyAuthenticatedUser())
+                    .nodeModificationTime(nodeInfo.getModificationTimestamp())
+                    .client(getAlfrescoClient(nodeInfo.getClient()))
+                    .aspects(nodeInfo.getAspectsAsStrings())
+                    .nodeProperties(nodeInfo.getProperties())
+                    .build();
             sendEvent(event);
         }
     }

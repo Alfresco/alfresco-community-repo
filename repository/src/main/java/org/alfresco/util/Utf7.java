@@ -36,18 +36,17 @@ import com.beetstra.jutf7.CharsetProvider;
  * @author Mike Shavnev
  *
  */
-public class Utf7 
+public class Utf7
 {
-    public static final String UTF7   = "UTF-7";
+    public static final String UTF7 = "UTF-7";
     public static final String UTF7_OPTIONAL = "X-UTF-7-OPTIONAL";
     public static final String UTF7_MODIFIED = "X-MODIFIED-UTF-7";
-    
-    
-    
+
     /**
      * Convert string from UTF-7 characters
      * 
-     * @param string Input string for decoding
+     * @param string
+     *            Input string for decoding
      * @return Decoded string
      */
     public static String decode(String string, String charsetName)
@@ -65,7 +64,8 @@ public class Utf7
     /**
      * Convert string to UTF-7 characters
      * 
-     * @param string Input string for decoding
+     * @param string
+     *            Input string for decoding
      * @return Encoded string
      */
     public static String encode(String string, String charsetName)

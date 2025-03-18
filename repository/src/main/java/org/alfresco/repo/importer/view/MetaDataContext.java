@@ -30,7 +30,6 @@ import java.util.Map;
 
 import org.alfresco.service.namespace.QName;
 
-
 /**
  * Represents View Meta Data
  * 
@@ -38,46 +37,47 @@ import org.alfresco.service.namespace.QName;
  */
 public class MetaDataContext extends ElementContext
 {
-    
+
     private Map<QName, String> properties = new HashMap<QName, String>();
-    
-    
+
     /**
      * Construct
      * 
-     * @param elementName QName
-     * @param context ElementContext
+     * @param elementName
+     *            QName
+     * @param context
+     *            ElementContext
      */
     public MetaDataContext(QName elementName, ElementContext context)
     {
         super(elementName, context.getDictionaryService(), context.getImporter());
     }
-    
-    
+
     /**
      * Set meta-data property
      * 
-     * @param property  property name
-     * @param value  property value
+     * @param property
+     *            property name
+     * @param value
+     *            property value
      */
     public void setProperty(QName property, String value)
     {
         properties.put(property, value);
     }
-    
-    
+
     /**
      * Get meta-data property
      * 
-     * @param property  property name
-     * @return  property value
+     * @param property
+     *            property name
+     * @return property value
      */
     public String getProperty(QName property)
     {
         return properties.get(property);
     }
-    
-    
+
     /**
      * Get all meta-data properties
      * 
@@ -87,16 +87,14 @@ public class MetaDataContext extends ElementContext
     {
         return properties;
     }
-    
 
     /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+     * 
+     * @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
         return "MetaDataContext[properties=" + properties.size() + "]";
     }
- 
-    
+
 }

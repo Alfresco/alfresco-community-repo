@@ -65,9 +65,9 @@ public class RuleSetting
     {
         return "RuleSetting{"
                 + new StringJoiner(", ")
-                    .add("key=" + key)
-                    .add("value=" + value.toString())
-                    .toString()
+                        .add("key=" + key)
+                        .add("value=" + value.toString())
+                        .toString()
                 + "}";
     }
 

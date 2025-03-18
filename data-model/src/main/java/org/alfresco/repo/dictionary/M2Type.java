@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.dictionary;
 
-
 /**
  * Type Definition
  * 
@@ -34,7 +33,7 @@ package org.alfresco.repo.dictionary;
  */
 public class M2Type extends M2Class
 {
-    /*package*/ M2Type()
+    /* package */ M2Type()
     {
         super();
     }

@@ -25,16 +25,15 @@
  */
 package org.alfresco.transform.registry;
 
+import static org.alfresco.transform.common.RequestParamMap.ENDPOINT_TRANSFORM_CONFIG_LATEST;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Collections;
+import java.util.List;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.httpclient.HttpClient4Factory;
-import org.alfresco.httpclient.HttpClientConfig;
-import org.alfresco.repo.content.transform.LocalPassThroughTransform;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.transform.config.TransformConfig;
-import org.alfresco.transform.config.Transformer;
-import org.alfresco.util.ConfigFileFinder;
 import org.apache.commons.logging.Log;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
@@ -43,20 +42,20 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Collections;
-import java.util.List;
-
-import static org.alfresco.transform.common.RequestParamMap.ENDPOINT_TRANSFORM_CONFIG_LATEST;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.httpclient.HttpClient4Factory;
+import org.alfresco.httpclient.HttpClientConfig;
+import org.alfresco.repo.content.transform.LocalPassThroughTransform;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.transform.config.TransformConfig;
+import org.alfresco.transform.config.Transformer;
+import org.alfresco.util.ConfigFileFinder;
 
 /**
- * This class reads multiple T-Engine config and local files and registers as if they were all
- * in one file. Transform options are shared between all sources.<p>
+ * This class reads multiple T-Engine config and local files and registers as if they were all in one file. Transform options are shared between all sources.
+ * <p>
  *
- * The caller should make calls to {@link #addRemoteConfig(List, String)}, {@link #addLocalConfig(String)} or
- * {@link CombinedTransformConfig#addTransformConfig(TransformConfig, String, String, AbstractTransformRegistry)}
- * followed by a call to {@link #register(TransformServiceRegistryImpl)}.
+ * The caller should make calls to {@link #addRemoteConfig(List, String)}, {@link #addLocalConfig(String)} or {@link CombinedTransformConfig#addTransformConfig(TransformConfig, String, String, AbstractTransformRegistry)} followed by a call to {@link #register(TransformServiceRegistryImpl)}.
  *
  * @author adavis
  */
@@ -76,8 +75,7 @@ public class CombinedConfig extends CombinedTransformConfig
         this.httpClientConfig = httpClientConfig;
         this.log = log;
 
-        configFileFinder = new ConfigFileFinder(jsonObjectMapper)
-        {
+        configFileFinder = new ConfigFileFinder(jsonObjectMapper) {
             @Override
             protected void readJson(JsonNode jsonNode, String readFrom, String baseUrl)
             {
@@ -94,7 +92,7 @@ public class CombinedConfig extends CombinedTransformConfig
 
     public boolean addRemoteConfig(List<String> urls, String remoteType) throws IOException
     {
-        try(CloseableHttpClient httpclient = HttpClient4Factory.createHttpClient(httpClientConfig))
+        try (CloseableHttpClient httpclient = HttpClient4Factory.createHttpClient(httpClientConfig))
         {
             boolean successReadingConfig = true;
             for (String url : urls)
@@ -102,7 +100,8 @@ public class CombinedConfig extends CombinedTransformConfig
                 if (addRemoteConfig(httpclient, url, remoteType))
                 {
                     tEngineCount++;
-                } else
+                }
+                else
                 {
                     successReadingConfig = false;
                 }
@@ -123,7 +122,7 @@ public class CombinedConfig extends CombinedTransformConfig
                 StatusLine statusLine = response.getStatusLine();
                 if (statusLine == null)
                 {
-                    throw new AlfrescoRuntimeException(remoteType+" on " + url+" returned no status ");
+                    throw new AlfrescoRuntimeException(remoteType + " on " + url + " returned no status ");
                 }
                 HttpEntity resEntity = response.getEntity();
                 if (resEntity != null)
@@ -137,7 +136,7 @@ public class CombinedConfig extends CombinedTransformConfig
                             try (StringReader reader = new StringReader(content))
                             {
                                 int transformCount = transformerCount();
-                                configFileFinder.readFile(reader, remoteType+" on "+baseUrl, "json", baseUrl, log);
+                                configFileFinder.readFile(reader, remoteType + " on " + baseUrl, "json", baseUrl, log);
                                 if (transformCount == transformerCount() || response.containsHeader(X_ALFRESCO_RETRY_NEEDED_HEADER))
                                 {
                                     successReadingConfig = false;
@@ -148,25 +147,25 @@ public class CombinedConfig extends CombinedTransformConfig
                         }
                         catch (IOException e)
                         {
-                            throw new AlfrescoRuntimeException("Failed to read the returned content from "+
-                                    remoteType+" on " + url, e);
+                            throw new AlfrescoRuntimeException("Failed to read the returned content from " +
+                                    remoteType + " on " + url, e);
                         }
                     }
                     else
                     {
                         String message = getErrorMessage(resEntity);
-                        throw new AlfrescoRuntimeException(remoteType+" on " + url+" returned a " + statusCode +
+                        throw new AlfrescoRuntimeException(remoteType + " on " + url + " returned a " + statusCode +
                                 " status " + message);
                     }
                 }
                 else
                 {
-                    throw new AlfrescoRuntimeException(remoteType+" on " + url+" did not return an entity " + url);
+                    throw new AlfrescoRuntimeException(remoteType + " on " + url + " did not return an entity " + url);
                 }
             }
             catch (IOException e)
             {
-                throw new AlfrescoRuntimeException("Failed to connect or to read the response from "+remoteType+
+                throw new AlfrescoRuntimeException("Failed to connect or to read the response from " + remoteType +
                         " on " + url, e);
             }
 
@@ -202,7 +201,7 @@ public class CombinedConfig extends CombinedTransformConfig
             int j = content.indexOf("\",\"path\":", i);
             if (j != -1)
             {
-                message = content.substring(i+11, j);
+                message = content.substring(i + 11, j);
             }
         }
         return message;
@@ -215,9 +214,10 @@ public class CombinedConfig extends CombinedTransformConfig
     }
 
     /**
-     * Adds a PassThrough transform where the source and target mimetypes are identical, or transforms to "text/plain"
-     * from selected text based types.
-     * @param mimetypeService to find all the mimetypes
+     * Adds a PassThrough transform where the source and target mimetypes are identical, or transforms to "text/plain" from selected text based types.
+     * 
+     * @param mimetypeService
+     *            to find all the mimetypes
      */
     public void addPassThroughTransformer(MimetypeService mimetypeService, AbstractTransformRegistry registry)
     {

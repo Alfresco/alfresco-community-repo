@@ -33,12 +33,11 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.ExecutionListener;
 import org.activiti.engine.delegate.Expression;
 import org.activiti.engine.delegate.VariableScope;
+
 import org.alfresco.util.ISO8601DateFormat;
 
 /**
- * An {@link ExecutionListener} that converts a variable of type date to a ISO-8601 date.
- * The variable that should be converted can be set using field "source", the output string
- * will be written in field configured in "target".
+ * An {@link ExecutionListener} that converts a variable of type date to a ISO-8601 date. The variable that should be converted can be set using field "source", the output string will be written in field configured in "target".
  *
  * @author Frederik Heremans
  * @since 4.0
@@ -47,58 +46,58 @@ public class ConvertDateToISO8601 implements ExecutionListener
 {
     protected Expression source;
     protected Expression target;
-    
+
     public void setSource(Expression source)
     {
         this.source = source;
     }
-    
+
     public void setTarget(Expression target)
     {
         this.target = target;
-    }    
-    
+    }
+
     @Override
     public void notify(DelegateExecution execution) throws Exception
     {
         String sourceVarName = getExpressionString(source, execution);
         String targetVarName = getExpressionString(target, execution);
-        
-        if (sourceVarName == null || targetVarName == null) 
+
+        if (sourceVarName == null || targetVarName == null)
         {
             throw new IllegalArgumentException("Both fields 'source' and 'target' shoudl be set");
         }
-        
+
         Object dateVar = execution.getVariable(sourceVarName);
         Date dateToConvert = null;
-        
+
         // Accept null, Date or Calendar as value
-        if (dateVar != null) 
+        if (dateVar != null)
         {
-            if (dateVar instanceof Date) 
+            if (dateVar instanceof Date)
             {
                 dateToConvert = (Date) execution.getVariable(sourceVarName);
-            } 
-            else if (dateVar instanceof Calendar) 
+            }
+            else if (dateVar instanceof Calendar)
             {
                 dateToConvert = ((Calendar) execution.getVariable(sourceVarName)).getTime();
-            } 
-            else 
+            }
+            else
             {
                 throw new IllegalArgumentException("Variable with name: " + sourceVarName + " must be a Date or a Calendar");
             }
         }
-        if (dateToConvert != null) 
+        if (dateToConvert != null)
         {
             // Convert the date to ISO-8601 format
             String convertedDate = ISO8601DateFormat.format(dateToConvert);
             execution.setVariable(targetVarName, convertedDate);
         }
     }
-    
-    protected String getExpressionString(Expression expression, VariableScope variableScope) 
+
+    protected String getExpressionString(Expression expression, VariableScope variableScope)
     {
-        if (expression != null) 
+        if (expression != null)
         {
             return (String) expression.getValue(variableScope);
         }

@@ -50,11 +50,10 @@ public class SiteState
     private boolean currentUserSiteManager;
 
     private SiteState()
-    {
-    }
+    {}
 
     public static SiteState create(SiteInfo siteInfo, Map<String, String> members, String currentUser,
-                NodeService nodeService, PersonService personService)
+            NodeService nodeService, PersonService personService)
     {
         SiteState result = new SiteState();
         result.members = new ArrayList<MemberState>(members.size());
@@ -72,7 +71,7 @@ public class SiteState
                 String lastName = (String) nodeService.getProperty(person, ContentModel.PROP_LASTNAME);
                 result.members.add(new MemberState(userName, firstName, lastName));
             }
-            
+
             if (!found && userName.equals(currentUser))
             {
                 found = true;

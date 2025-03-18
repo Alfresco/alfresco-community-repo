@@ -42,10 +42,10 @@ public class UserHomeNodeLocator extends AbstractNodeLocator
 {
     public static final String NAME = "userhome";
     private Repository repositoryHelper;
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public NodeRef getNode(NodeRef source, Map<String, Serializable> params)
     {
@@ -58,8 +58,8 @@ public class UserHomeNodeLocator extends AbstractNodeLocator
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public String getName()
     {
@@ -67,7 +67,8 @@ public class UserHomeNodeLocator extends AbstractNodeLocator
     }
 
     /**
-     * @param repositoryHelper the repositoryHelper to set
+     * @param repositoryHelper
+     *            the repositoryHelper to set
      */
     public void setRepositoryHelper(Repository repositoryHelper)
     {

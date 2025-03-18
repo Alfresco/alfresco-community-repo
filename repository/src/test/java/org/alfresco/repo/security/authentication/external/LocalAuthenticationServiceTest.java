@@ -25,6 +25,18 @@
  */
 package org.alfresco.repo.security.authentication.external;
 
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertFalse;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
@@ -35,21 +47,9 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.context.ApplicationContext;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 /**
- * The test designed for local {@link org.alfresco.service.cmr.security.AuthenticationService}
- * declared in external authentication context file
+ * The test designed for local {@link org.alfresco.service.cmr.security.AuthenticationService} declared in external authentication context file
  *
  * @author alex.mukha
  */
@@ -108,6 +108,6 @@ public class LocalAuthenticationServiceTest
         assertFalse("The isEnabed flag should be set to false for the disabled user",
                 localAuthenticationService.getAuthenticationEnabled(username));
         assertFalse("External authentication should not protect against brute force attacks",
-            ((AuthenticationServiceImpl) localAuthenticationService).isProtectionEnabled());
+                ((AuthenticationServiceImpl) localAuthenticationService).isProtectionEnabled());
     }
 }

@@ -25,10 +25,11 @@
  */
 package org.alfresco.repo.tenant;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 
 /**
  * @since 4.2
@@ -37,32 +38,30 @@ public class RunAsTenantInterceptor implements MethodInterceptor
 {
     public enum TENANT_TYPE
     {
-        Default,
-        RealUser
+        Default, RealUser
     }
-    
+
     private TENANT_TYPE tenantType;
-    
+
     public RunAsTenantInterceptor(TENANT_TYPE tenantType)
     {
         this.tenantType = tenantType;
     }
-    
+
     @Override
     public Object invoke(final MethodInvocation mi) throws Throwable
     {
-        TenantRunAsWork<Object> runAs = new TenantRunAsWork<Object>()
-        {
+        TenantRunAsWork<Object> runAs = new TenantRunAsWork<Object>() {
             public Object doWork() throws Exception
             {
                 try
                 {
                     return mi.proceed();
                 }
-                catch(Throwable e)
+                catch (Throwable e)
                 {
                     e.printStackTrace();
-                    
+
                     // Re-throw the exception
                     if (e instanceof RuntimeException)
                     {
@@ -72,7 +71,7 @@ public class RunAsTenantInterceptor implements MethodInterceptor
                 }
             }
         };
-        
+
         if (tenantType == TENANT_TYPE.Default)
         {
             return TenantUtil.runAsDefaultTenant(runAs);

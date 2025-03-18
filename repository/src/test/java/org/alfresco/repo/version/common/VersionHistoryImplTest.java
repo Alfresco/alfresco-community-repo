@@ -40,6 +40,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import junit.framework.TestCase;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
 
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -48,8 +50,6 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionDoesNotExistException;
 import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.util.TempFileProvider;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
 
 /**
  * VersionHistoryImpl Unit Test Class
@@ -62,20 +62,20 @@ public class VersionHistoryImplTest extends TestCase
      * Data used in the tests
      */
     private NodeRef nodeRef;
-    private Version rootVersion = null;    
+    private Version rootVersion = null;
     private Version childVersion1 = null;
     private Version childVersion2 = null;
-    
+
     /**
      * Set up
      */
     protected void setUp() throws Exception
     {
         super.setUp();
-        
+
         // Create dummy node ref
         nodeRef = new NodeRef(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "test"), "test");
-        
+
         this.rootVersion = newVersion(nodeRef, "1");
         this.childVersion1 = newVersion(nodeRef, "2");
         this.childVersion2 = newVersion(nodeRef, "3");
@@ -89,7 +89,7 @@ public class VersionHistoryImplTest extends TestCase
         versionProperties1.put("testProperty", "testValue");
         return new VersionImpl(versionProperties1, nodeRef);
     }
-    
+
     /**
      * Test constructor
      */
@@ -97,7 +97,7 @@ public class VersionHistoryImplTest extends TestCase
     {
         testContructorImpl();
     }
-    
+
     /**
      * Test construtor helper
      * 
@@ -107,13 +107,12 @@ public class VersionHistoryImplTest extends TestCase
     {
         VersionHistoryImpl vh = new VersionHistoryImpl(this.rootVersion, null);
         assertNotNull(vh);
-        
+
         return vh;
     }
-    
+
     /**
-     * Exception case - a root version must be specified when creating a 
-     *                  version history object
+     * Exception case - a root version must be specified when creating a version history object
      */
     public void testRootVersionSpecified()
     {
@@ -122,9 +121,8 @@ public class VersionHistoryImplTest extends TestCase
             new VersionHistoryImpl(null, null);
             fail();
         }
-        catch(VersionServiceException exception)
-        {
-        }
+        catch (VersionServiceException exception)
+        {}
     }
 
     /**
@@ -133,33 +131,32 @@ public class VersionHistoryImplTest extends TestCase
     public void testGetRootVersion()
     {
         VersionHistoryImpl vh = testContructorImpl();
-        
+
         Version rootVersion = vh.getRootVersion();
         assertNotNull(rootVersion);
-        assertEquals(rootVersion, this.rootVersion);        
+        assertEquals(rootVersion, this.rootVersion);
     }
-    
+
     /**
      * Test getAllVersions
      */
     public void testGetAllVersions()
     {
         VersionHistoryImpl vh = testAddVersionImpl();
-        
+
         Collection<Version> allVersions = vh.getAllVersions();
         assertNotNull(allVersions);
         assertEquals(3, allVersions.size());
     }
-    
+
     /**
-     * Test getAllVersions using a comparator to resort versions which are in the
-     * wrong order.
+     * Test getAllVersions using a comparator to resort versions which are in the wrong order.
      */
     public void testGetAllVersionsComparator()
     {
-        String[] labels = new String[] { "1.0", "1.1", "1.2", "2.0", "2.1" };
+        String[] labels = new String[]{"1.0", "1.1", "1.2", "2.0", "2.1"};
         List<Version> versions = new ArrayList<Version>(labels.length);
-        for (String label: labels)
+        for (String label : labels)
         {
             versions.add(newVersion(nodeRef, label));
         }
@@ -181,12 +178,12 @@ public class VersionHistoryImplTest extends TestCase
         assertNotNull(allVersions);
         assertEquals(labels.length, allVersions.size());
         itr = allVersions.iterator();
-        for (String label: labels)
+        for (String label : labels)
         {
             assertEquals(label, itr.next().getVersionLabel());
         }
     }
-    
+
     /**
      * Test addVersion
      */
@@ -194,7 +191,7 @@ public class VersionHistoryImplTest extends TestCase
     {
         testAddVersionImpl();
     }
-    
+
     /**
      * Test addVersion helper
      * 
@@ -204,37 +201,37 @@ public class VersionHistoryImplTest extends TestCase
     {
         VersionHistoryImpl vh = testContructorImpl();
         Version rootVersion = vh.getRootVersion();
-        
+
         vh.addVersion(this.childVersion1, rootVersion);
         vh.addVersion(this.childVersion2, rootVersion);
-        
+
         return vh;
     }
-    
+
     /**
      * TODO Exception case - add version that has already been added
      */
-    
+
     /**
      * TODO Exception case - add a version with a duplicate version label
      */
-    
+
     /**
      * Test getPredecessor
      */
     public void testGetPredecessor()
     {
         VersionHistoryImpl vh = testAddVersionImpl();
-        
+
         Version version1 = vh.getPredecessor(this.childVersion1);
         assertEquals(version1.getVersionLabel(), this.rootVersion.getVersionLabel());
-        
+
         Version version2 = vh.getPredecessor(this.childVersion2);
         assertEquals(version2.getVersionLabel(), this.rootVersion.getVersionLabel());
-        
+
         Version version3 = vh.getPredecessor(this.rootVersion);
         assertNull(version3);
-        
+
         try
         {
             Version version4 = vh.getPredecessor(null);
@@ -245,18 +242,18 @@ public class VersionHistoryImplTest extends TestCase
             fail("Should continue by returning null.");
         }
     }
-    
+
     /**
      * Test getSuccessors
      */
     public void testGetSuccessors()
     {
         VersionHistoryImpl vh = testAddVersionImpl();
-        
+
         Collection<Version> versions1 = vh.getSuccessors(this.rootVersion);
         assertNotNull(versions1);
         assertEquals(versions1.size(), 2);
-        
+
         for (Version version : versions1)
         {
             String versionLabel = version.getVersionLabel();
@@ -265,26 +262,25 @@ public class VersionHistoryImplTest extends TestCase
                 fail("There is a version in this collection that should not be here.");
             }
         }
-        
+
         Collection<Version> versions2 = vh.getSuccessors(this.childVersion1);
         assertNotNull(versions2);
         assertTrue(versions2.isEmpty());
-        
+
         Collection<Version> versions3 = vh.getSuccessors(this.childVersion2);
         assertNotNull(versions3);
         assertTrue(versions3.isEmpty());
     }
-    
+
     /**
-     * Test getSuccessors using a comparator to resort versions which are in the
-     * wrong order.
+     * Test getSuccessors using a comparator to resort versions which are in the wrong order.
      */
     public void testGetSuccessorsComparator()
     {
         rootVersion = newVersion(nodeRef, "1.0");
-        String[] labels = new String[] { "1.1", "1.2", "2.0", "2.1" };
+        String[] labels = new String[]{"1.1", "1.2", "2.0", "2.1"};
         List<Version> versions = new ArrayList<Version>(labels.length);
-        for (String label: labels)
+        for (String label : labels)
         {
             versions.add(newVersion(nodeRef, label));
         }
@@ -303,7 +299,7 @@ public class VersionHistoryImplTest extends TestCase
         assertNotNull(allVersions);
         assertEquals(labels.length, allVersions.size());
         itr = allVersions.iterator();
-        for (String label: labels)
+        for (String label : labels)
         {
             assertEquals(label, itr.next().getVersionLabel());
         }
@@ -315,16 +311,16 @@ public class VersionHistoryImplTest extends TestCase
     public void testGetVersion()
     {
         VersionHistoryImpl vh = testAddVersionImpl();
-       
+
         Version version1 = vh.getVersion("1");
         assertEquals(version1.getVersionLabel(), this.rootVersion.getVersionLabel());
-        
+
         Version version2 = vh.getVersion("2");
         assertEquals(version2.getVersionLabel(), this.childVersion1.getVersionLabel());
-        
+
         Version version3 = vh.getVersion("3");
         assertEquals(version3.getVersionLabel(), this.childVersion2.getVersionLabel());
-        
+
         try
         {
             vh.getVersion("invalidLabel");
@@ -334,8 +330,8 @@ public class VersionHistoryImplTest extends TestCase
         {
             System.out.println("Error message: " + exception.getMessage());
         }
-    }    
-    
+    }
+
     /**
      * Checks that the current version can be serialized and deserialized.
      */
@@ -352,7 +348,12 @@ public class VersionHistoryImplTest extends TestCase
         }
         finally
         {
-            try { os.close(); } catch (Throwable e) {}
+            try
+            {
+                os.close();
+            }
+            catch (Throwable e)
+            {}
         }
         ObjectInputStream is = new ObjectInputStream(new FileInputStream(file));
         VersionHistoryImpl vhObj;
@@ -362,7 +363,12 @@ public class VersionHistoryImplTest extends TestCase
         }
         finally
         {
-            try { is.close(); } catch (Throwable e) {}
+            try
+            {
+                is.close();
+            }
+            catch (Throwable e)
+            {}
         }
         assertNotNull(vhObj);
         assertNotNull("No root version", vhObj.getRootVersion());
@@ -371,10 +377,11 @@ public class VersionHistoryImplTest extends TestCase
                 vh.getRootVersion().getFrozenStateNodeRef(),
                 vhObj.getRootVersion().getFrozenStateNodeRef());
     }
-    
+
     public static final String DESERIALIZE_V22SP4 = "classpath:version-history/VersionHistoryImplTest-testSerialize-V2.2.4.bin";
     public static final String DESERIALIZE_V310_DEV = "classpath:version-history/VersionHistoryImplTest-testSerialize-V3.1.0-dev.bin";
     public static final String DESERIALIZE_V310 = "classpath:version-history/VersionHistoryImplTest-testSerialize-V3.1.0.bin";
+
     /**
      * @see {@link #DESERIALIZE_V22SP4}
      * @see {@link #DESERIALIZE_V310_DEV}
@@ -382,7 +389,7 @@ public class VersionHistoryImplTest extends TestCase
      */
     public void testDeserializeV22SP4() throws Exception
     {
-        String[] resourceLocations = new String[] {
+        String[] resourceLocations = new String[]{
                 DESERIALIZE_V22SP4,
                 DESERIALIZE_V310_DEV,
                 DESERIALIZE_V310
@@ -402,7 +409,12 @@ public class VersionHistoryImplTest extends TestCase
             }
             finally
             {
-                try { is.close(); } catch (Throwable e) {}
+                try
+                {
+                    is.close();
+                }
+                catch (Throwable e)
+                {}
             }
         }
     }

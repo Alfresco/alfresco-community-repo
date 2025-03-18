@@ -34,50 +34,57 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author gkspencer
  */
-public class DeleteNodeEvent extends NodeEvent {
+public class DeleteNodeEvent extends NodeEvent
+{
 
-	// Deleted node path and confirmation
-	
-	private String m_path;
-	
-	/**
-	 * Class constructor
-	 * 
-	 * @param fType FileFolderServiceTtype
-	 * @param nodeRef NodeRef
-	 * @param path String
-	 */
-	public DeleteNodeEvent( FileFolderServiceType fType, NodeRef nodeRef, String path) {
-		super( fType, nodeRef);
-		
-		m_path = path;
-	}
-	
-	/**
-	 * Return the relative path of the target node
-	 * 
-	 * @return String
-	 */
-	public final String getPath() {
-		return m_path;
-	}
-	
-	/**
-	 * Return the node event as a string
-	 * 
-	 * @return String
-	 */
-	public String toString() {
-		StringBuilder str = new StringBuilder();
-		
-		str.append("[Delete:fType=");
-		str.append(getFileType());
-		str.append(",nodeRef=");
-		str.append(getNodeRef());
-		str.append(",path=");
-		str.append(getPath());
-		str.append("]");
-		
-		return str.toString();
-	}
+    // Deleted node path and confirmation
+
+    private String m_path;
+
+    /**
+     * Class constructor
+     * 
+     * @param fType
+     *            FileFolderServiceTtype
+     * @param nodeRef
+     *            NodeRef
+     * @param path
+     *            String
+     */
+    public DeleteNodeEvent(FileFolderServiceType fType, NodeRef nodeRef, String path)
+    {
+        super(fType, nodeRef);
+
+        m_path = path;
+    }
+
+    /**
+     * Return the relative path of the target node
+     * 
+     * @return String
+     */
+    public final String getPath()
+    {
+        return m_path;
+    }
+
+    /**
+     * Return the node event as a string
+     * 
+     * @return String
+     */
+    public String toString()
+    {
+        StringBuilder str = new StringBuilder();
+
+        str.append("[Delete:fType=");
+        str.append(getFileType());
+        str.append(",nodeRef=");
+        str.append(getNodeRef());
+        str.append(",path=");
+        str.append(getPath());
+        str.append("]");
+
+        return str.toString();
+    }
 }

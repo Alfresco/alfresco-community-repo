@@ -50,12 +50,12 @@ public class FileIOTest extends TestCase
     private static final String TEST_CONTENT = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     private File file;
-    
+
     public FileIOTest(String name)
     {
         super(name);
     }
-    
+
     public void setUp() throws Exception
     {
         file = TempFileProvider.createTempFile(getName(), ".txt");
@@ -64,7 +64,7 @@ public class FileIOTest extends TestCase
         os.flush();
         os.close();
     }
-    
+
     /**
      * Attempt to read the same file using multiple channels concurrently
      */
@@ -73,15 +73,15 @@ public class FileIOTest extends TestCase
         // open the file for a read
         FileInputStream isA = new FileInputStream(file);
         FileInputStream isB = new FileInputStream(file);
-        
+
         // get the channels
         FileChannel channelA = isA.getChannel();
         FileChannel channelB = isB.getChannel();
-        
+
         // buffers for reading
         ByteBuffer bufferA = ByteBuffer.allocate(10);
         ByteBuffer bufferB = ByteBuffer.allocate(10);
-        
+
         // read file into both buffers
         int countA = 0;
         int countB = 0;
@@ -93,42 +93,42 @@ public class FileIOTest extends TestCase
             countB = channelB.read(bufferB);
             assertEquals("Should read same number of bytes", countA, countB);
         } while (countA > 6);
-        
+
         // both buffers should be at the same marker 6
         assertEquals("BufferA marker incorrect", 6, bufferA.position());
         assertEquals("BufferB marker incorrect", 6, bufferB.position());
     }
-    
+
     public void testConcurrentReadWrite() throws Exception
     {
         // open file for a read
         FileInputStream isRead = new FileInputStream(file);
         // open file for write
         FileOutputStream osWrite = new FileOutputStream(file);
-        
+
         // get channels
         FileChannel channelRead = isRead.getChannel();
         FileChannel channelWrite = osWrite.getChannel();
-        
+
         // buffers
         ByteBuffer bufferRead = ByteBuffer.allocate(26);
         ByteBuffer bufferWrite = ByteBuffer.wrap(TEST_CONTENT.getBytes());
-        
+
         // read - nothing will be read
         int countRead = channelRead.read(bufferRead);
         assertEquals("Expected nothing to be read", -1, countRead);
         // write
         int countWrite = channelWrite.write(bufferWrite);
         assertEquals("Not all characters written", 26, countWrite);
-        
+
         // close the write side
         channelWrite.close();
-        
+
         // reread
         countRead = channelRead.read(bufferRead);
         assertEquals("Expected full read", 26, countRead);
     }
-    
+
     public void testCrcPerformance() throws Exception
     {
         long before = System.nanoTime();
@@ -151,7 +151,7 @@ public class FileIOTest extends TestCase
         }
         long after = System.nanoTime();
         long delta = after - before;
-        double aveNs = (double)delta / (double)count;
+        double aveNs = (double) delta / (double) count;
         System.out.println(String.format("CRC32: %10.2f ns per item.  Negatives=" + negatives, aveNs));
     }
 }

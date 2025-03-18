@@ -46,38 +46,39 @@ public class HasVersionHistoryEvaluator extends ActionConditionEvaluatorAbstract
      * Evaluator constants
      */
     public static final String NAME = "has-version-history";
-    
+
     /**
      * The node service
      */
     private NodeService nodeService;
-    
+
     private VersionService versionService;
-    
+
     /**
      * Set node service
      * 
-     * @param nodeService  the node service
+     * @param nodeService
+     *            the node service
      */
-    public void setNodeService(NodeService nodeService) 
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setVersionService(VersionService versionService)
     {
         this.versionService = versionService;
     }
-    
+
     /**
      * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#evaluateImpl(org.alfresco.service.cmr.action.ActionCondition, org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean evaluateImpl(ActionCondition ruleCondition, NodeRef actionedUponNodeRef)
     {
         boolean result = false;
-        
-        if (this.nodeService.exists(actionedUponNodeRef) == true && 
-            this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
+
+        if (this.nodeService.exists(actionedUponNodeRef) == true &&
+                this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
         {
             VersionHistory versionHistory = this.versionService.getVersionHistory(actionedUponNodeRef);
             if (versionHistory != null && versionHistory.getAllVersions().size() != 0)
@@ -85,7 +86,7 @@ public class HasVersionHistoryEvaluator extends ActionConditionEvaluatorAbstract
                 result = true;
             }
         }
-        
+
         return result;
     }
 
@@ -93,7 +94,6 @@ public class HasVersionHistoryEvaluator extends ActionConditionEvaluatorAbstract
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-    {
-    }
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
+    {}
 }

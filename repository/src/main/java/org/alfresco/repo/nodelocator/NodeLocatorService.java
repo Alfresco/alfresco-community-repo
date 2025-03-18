@@ -45,12 +45,15 @@ public interface NodeLocatorService
     /**
      * Locates and returns a {@link NodeRef} using the specified {@link NodeLocator}.
      * 
-     * @param locatorName the name of the {@link NodeLocator} to use.
-     * @param source the source node. Can be <code>null</code>.
-     * @param params An arbitrary set of parameters. Can be <code>null</code>.
+     * @param locatorName
+     *            the name of the {@link NodeLocator} to use.
+     * @param source
+     *            the source node. Can be <code>null</code>.
+     * @param params
+     *            An arbitrary set of parameters. Can be <code>null</code>.
      * @return the node to be found or <code>null</code>.
      */
     NodeRef getNode(String locatorName, NodeRef source, Map<String, Serializable> params);
-    
+
     void register(String locatorName, NodeLocator locator);
 }

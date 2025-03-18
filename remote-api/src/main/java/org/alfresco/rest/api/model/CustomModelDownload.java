@@ -36,8 +36,7 @@ public class CustomModelDownload implements Comparable<CustomModelDownload>
     private String nodeRef;
 
     public CustomModelDownload()
-    {
-    }
+    {}
 
     public CustomModelDownload(NodeRef nodeRef)
     {

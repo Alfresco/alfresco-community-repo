@@ -82,7 +82,7 @@ public class RestInstanceModel
 
     /** Transactions remaining */
     private Long transactionsRemaining;
-    
+
     /** Sharding Parameters */
     private String shardParams;
 
@@ -95,7 +95,8 @@ public class RestInstanceModel
     }
 
     /**
-     * @param baseUrl the baseUrl to set
+     * @param baseUrl
+     *            the baseUrl to set
      */
     public void setBaseUrl(String baseUrl)
     {
@@ -111,7 +112,8 @@ public class RestInstanceModel
     }
 
     /**
-     * @param host the host to set
+     * @param host
+     *            the host to set
      */
     public void setHost(String host)
     {
@@ -127,7 +129,8 @@ public class RestInstanceModel
     }
 
     /**
-     * @param lastIndexedChangesetDate the lastIndexedChangesetDate to set
+     * @param lastIndexedChangesetDate
+     *            the lastIndexedChangesetDate to set
      */
     public void setLastIndexedChangesetDate(String lastIndexedChangesetDate)
     {
@@ -143,7 +146,8 @@ public class RestInstanceModel
     }
 
     /**
-     * @param lastIndexedChangesetId the lastIndexedChangesetId to set
+     * @param lastIndexedChangesetId
+     *            the lastIndexedChangesetId to set
      */
     public void setLastIndexedChangesetId(Long lastIndexedChangesetId)
     {
@@ -159,7 +163,8 @@ public class RestInstanceModel
     }
 
     /**
-     * @param lastIndexedTransactionDate the lastIndexedTransactionDate to set
+     * @param lastIndexedTransactionDate
+     *            the lastIndexedTransactionDate to set
      */
     public void setLastIndexedTransactionDate(String lastIndexedTransactionDate)
     {
@@ -175,7 +180,8 @@ public class RestInstanceModel
     }
 
     /**
-     * @param lastIndexedTransactionId the lastIndexedTransactionId to set
+     * @param lastIndexedTransactionId
+     *            the lastIndexedTransactionId to set
      */
     public void setLastIndexedTransactionId(Long lastIndexedTransactionId)
     {
@@ -191,7 +197,8 @@ public class RestInstanceModel
     }
 
     /**
-     * @param lastUpdateDate the lastUpdateDate to set
+     * @param lastUpdateDate
+     *            the lastUpdateDate to set
      */
     public void setLastUpdateDate(String lastUpdateDate)
     {
@@ -207,7 +214,8 @@ public class RestInstanceModel
     }
 
     /**
-     * @param port the port to set
+     * @param port
+     *            the port to set
      */
     public void setPort(Integer port)
     {
@@ -223,7 +231,8 @@ public class RestInstanceModel
     }
 
     /**
-     * @param state the state to set
+     * @param state
+     *            the state to set
      */
     public void setState(String state)
     {
@@ -239,7 +248,8 @@ public class RestInstanceModel
     }
 
     /**
-     * @param mode the mode to set
+     * @param mode
+     *            the mode to set
      */
     public void setMode(String mode)
     {
@@ -255,13 +265,14 @@ public class RestInstanceModel
     }
 
     /**
-     * @param transactionsRemaining the transactionsRemaining to set
+     * @param transactionsRemaining
+     *            the transactionsRemaining to set
      */
     public void setTransactionsRemaining(Long transactionsRemaining)
     {
         this.transactionsRemaining = transactionsRemaining;
     }
-    
+
     /**
      * @return the shardParams
      */
@@ -271,7 +282,8 @@ public class RestInstanceModel
     }
 
     /**
-     * @param shardParams the shardParams to set
+     * @param shardParams
+     *            the shardParams to set
      */
     public void setShardParams(String shardParams)
     {

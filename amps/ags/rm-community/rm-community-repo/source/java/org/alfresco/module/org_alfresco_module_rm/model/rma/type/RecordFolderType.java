@@ -30,6 +30,9 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -49,8 +52,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:recordFolder behaviour bean
@@ -58,13 +59,11 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:recordFolder"
-)
-public class RecordFolderType extends    AbstractDisposableItem
-                              implements NodeServicePolicies.OnMoveNodePolicy,
-                                         NodeServicePolicies.OnCreateChildAssociationPolicy
+@BehaviourBean(
+        defaultType = "rma:recordFolder")
+public class RecordFolderType extends AbstractDisposableItem
+        implements NodeServicePolicies.OnMoveNodePolicy,
+        NodeServicePolicies.OnCreateChildAssociationPolicy
 {
 
     /** vital record service */
@@ -79,7 +78,8 @@ public class RecordFolderType extends    AbstractDisposableItem
     private static final String MSG_CANNOT_CREATE_CHILDREN_IN_CLOSED_RECORD_FOLDER = "rm.service.add-children-to-closed-record-folder";
 
     /**
-     * @param vitalRecordService    vital record service
+     * @param vitalRecordService
+     *            vital record service
      */
     public void setVitalRecordService(VitalRecordService vitalRecordService)
     {
@@ -97,11 +97,9 @@ public class RecordFolderType extends    AbstractDisposableItem
      * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
         if (!nodeService.getType(newChildAssocRef.getParentRef()).equals(TYPE_RECORD_FOLDER))
@@ -120,17 +118,14 @@ public class RecordFolderType extends    AbstractDisposableItem
     /**
      * Record folder copy callback
      */
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            policy = "alf:getCopyCallback"
-    )
+            policy = "alf:getCopyCallback")
     public CopyBehaviourCallback getCopyCallback(final QName classRef, final CopyDetails copyDetails)
     {
-        return new DefaultCopyBehaviourCallback()
-        {
+        return new DefaultCopyBehaviourCallback() {
             @Override
-            public Map<QName, Serializable> getCopyProperties(QName classRef, CopyDetails copyDetails,  Map<QName, Serializable> properties)
+            public Map<QName, Serializable> getCopyProperties(QName classRef, CopyDetails copyDetails, Map<QName, Serializable> properties)
             {
                 Map<QName, Serializable> sourceProperties = super.getCopyProperties(classRef, copyDetails, properties);
 
@@ -154,7 +149,7 @@ public class RecordFolderType extends    AbstractDisposableItem
             public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
             {
                 boolean targetParentIsRecordFolder = nodeService.getType(copyDetails.getTargetParentNodeRef())
-                            .equals(TYPE_RECORD_FOLDER);
+                        .equals(TYPE_RECORD_FOLDER);
                 boolean containsUnwantedAspect = ArrayUtils.contains(unwantedAspects, classQName);
                 return !(targetParentIsRecordFolder || containsUnwantedAspect);
             }
@@ -165,11 +160,9 @@ public class RecordFolderType extends    AbstractDisposableItem
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
     @Override
-    @Behaviour
-    (
-             kind = BehaviourKind.ASSOCIATION,
-             notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
+    @Behaviour(
+            kind = BehaviourKind.ASSOCIATION,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
@@ -177,9 +170,9 @@ public class RecordFolderType extends    AbstractDisposableItem
         if (nodeService.exists(nodeRef))
         {
             boolean notFolderOrRmFolderSubType = !instanceOf(nodeRef, ContentModel.TYPE_FOLDER) ||
-                                              instanceOf(nodeRef, RecordsManagementModel.TYPE_RECORDS_MANAGEMENT_CONTAINER) ||
-                                              instanceOf(nodeRef, RecordsManagementModel.TYPE_RECORD_FOLDER) ||
-                                              instanceOf(nodeRef, RecordsManagementModel.TYPE_TRANSFER);
+                    instanceOf(nodeRef, RecordsManagementModel.TYPE_RECORDS_MANAGEMENT_CONTAINER) ||
+                    instanceOf(nodeRef, RecordsManagementModel.TYPE_RECORD_FOLDER) ||
+                    instanceOf(nodeRef, RecordsManagementModel.TYPE_TRANSFER);
 
             if (!instanceOf(nodeRef, ContentModel.TYPE_CONTENT) && notFolderOrRmFolderSubType)
             {
@@ -200,17 +193,15 @@ public class RecordFolderType extends    AbstractDisposableItem
      *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
-    @Behaviour
-    (
-       kind = BehaviourKind.ASSOCIATION,
-       policy = "alf:onCreateChildAssociation",
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+    @Behaviour(
+            kind = BehaviourKind.ASSOCIATION,
+            policy = "alf:onCreateChildAssociation",
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, boolean bNew)
     {
         final NodeRef child = childAssocRef.getChildRef();
 
-        if(!nodeService.exists(child))
+        if (!nodeService.exists(child))
         {
             return;
         }
@@ -224,8 +215,7 @@ public class RecordFolderType extends    AbstractDisposableItem
         behaviourFilter.disableBehaviour();
         try
         {
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {

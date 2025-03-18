@@ -64,7 +64,8 @@ public class RecordTypeParameterConstraint extends BaseParameterConstraint
     private FilePlanService filePlanService;
 
     /**
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -72,7 +73,8 @@ public class RecordTypeParameterConstraint extends BaseParameterConstraint
     }
 
     /**
-     * @param dictionaryService dictionary service
+     * @param dictionaryService
+     *            dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -80,7 +82,8 @@ public class RecordTypeParameterConstraint extends BaseParameterConstraint
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -92,8 +95,7 @@ public class RecordTypeParameterConstraint extends BaseParameterConstraint
      */
     protected Map<String, String> getAllowableValuesImpl()
     {
-        return AuthenticationUtil.runAsSystem(new RunAsWork<Map<String, String>>()
-        {
+        return AuthenticationUtil.runAsSystem(new RunAsWork<Map<String, String>>() {
             @SuppressWarnings("unchecked")
             public Map<String, String> doWork()
             {
@@ -101,7 +103,7 @@ public class RecordTypeParameterConstraint extends BaseParameterConstraint
 
                 // get the file plan
                 // TODO we will likely have to re-implement as a custom control so that context of the file
-                //      plan can be correctly determined when setting the rule up
+                // plan can be correctly determined when setting the rule up
                 NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
 
                 if (filePlan != null)

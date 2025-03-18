@@ -38,21 +38,20 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Simple action to increment an integer value. The runtime NodeService is used so any user
- * can increment the counter value on a node.
+ * Simple action to increment an integer value. The runtime NodeService is used so any user can increment the counter value on a node.
  * 
  * @author Kevin Roast
  */
 public class CounterIncrementActionExecuter extends ActionExecuterAbstractBase
 {
     public static final String NAME = "counter";
-    
+
     /** Runtime NodeService with no permissions protection */
     private NodeService nodeService;
-    
-    
+
     /**
-     * @param nodeService   The Runtime NodeService to set.
+     * @param nodeService
+     *            The Runtime NodeService to set.
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -76,7 +75,7 @@ public class CounterIncrementActionExecuter extends ActionExecuterAbstractBase
         {
             // increment the value and handle possibility that no value has been set yet
             int resultValue = 1;
-            Integer value = (Integer)this.nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_COUNTER);
+            Integer value = (Integer) this.nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_COUNTER);
             if (value != null)
             {
                 resultValue = value.intValue() + 1;

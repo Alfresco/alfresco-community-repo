@@ -39,6 +39,7 @@ import org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext;
 
 /**
  * Wild Card
+ * 
  * @author andyh
  *
  */
@@ -53,13 +54,9 @@ public class LuceneFTSWildTerm<Q, S, E extends Throwable> extends FTSWildTerm im
         super();
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery,
-     *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
-     *      java.lang.String)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService, java.lang.String) */
     public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
             throws E
     {
@@ -69,7 +66,7 @@ public class LuceneFTSWildTerm<Q, S, E extends Throwable> extends FTSWildTerm im
 
         argument = functionArgs.get(ARG_TOKENISATION_MODE);
         AnalysisMode mode = (AnalysisMode) argument.getValue(functionContext);
-        
+
         PropertyArgument propArg = (PropertyArgument) functionArgs.get(ARG_PROPERTY);
         Q query;
         if (propArg != null)
@@ -80,10 +77,9 @@ public class LuceneFTSWildTerm<Q, S, E extends Throwable> extends FTSWildTerm im
         else
         {
             query = lqpa.getWildcardQuery(lqpa.getField(), term, mode);
-            
+
         }
         return query;
     }
-
 
 }

@@ -38,6 +38,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -56,12 +63,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
 @Category(LuceneTests.class)
 @RunWith(MockitoJUnitRunner.class)
@@ -99,57 +100,57 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
         // we set our own virtual user permissions in order to be context xml
         // independent
         smartStore = ctx.getBean("smartStore",
-                                                                       VirtualStoreImpl.class);
+                VirtualStoreImpl.class);
 
         permissionService = ctx.getBean("permissionServiceImpl",
-                                                                              PermissionServiceSPI.class);
+                PermissionServiceSPI.class);
         siteService = ctx.getBean("siteService",
-                                                                        SiteService.class);
+                SiteService.class);
 
         user1 = "user1";
 
         user2 = "user2";
 
         vf1Node2 = nodeService.getChildByName(this.virtualFolder1NodeRef,
-                                              ContentModel.ASSOC_CONTAINS,
-                                              "Node2");
+                ContentModel.ASSOC_CONTAINS,
+                "Node2");
 
         virtualContent = createContent(vf1Node2,
-                                       "virtualContent").getChildRef();
+                "virtualContent").getChildRef();
 
         this.permissionService.setPermission(this.virtualFolder1NodeRef,
-                                             user1,
-                                             PermissionService.DELETE_CHILDREN,
-                                             true);
+                user1,
+                PermissionService.DELETE_CHILDREN,
+                true);
 
         this.permissionService.setPermission(this.virtualFolder1NodeRef,
-                                             user2,
-                                             PermissionService.DELETE_CHILDREN,
-                                             false);
+                user2,
+                PermissionService.DELETE_CHILDREN,
+                false);
 
         this.permissionService.setPermission(this.virtualFolder1NodeRef,
-                                             user1,
-                                             PermissionService.READ_PERMISSIONS,
-                                             true);
+                user1,
+                PermissionService.READ_PERMISSIONS,
+                true);
         this.permissionService.setPermission(this.virtualFolder1NodeRef,
-                                             user2,
-                                             PermissionService.READ_PERMISSIONS,
-                                             true);
+                user2,
+                PermissionService.READ_PERMISSIONS,
+                true);
 
         this.permissionService.setPermission(this.virtualFolder1NodeRef,
-                                             user1,
-                                             PermissionService.READ_PROPERTIES,
-                                             true);
+                user1,
+                PermissionService.READ_PROPERTIES,
+                true);
 
         this.permissionService.setPermission(this.virtualFolder1NodeRef,
-                                             user1,
-                                             PermissionService.CREATE_CHILDREN,
-                                             false);
+                user1,
+                PermissionService.CREATE_CHILDREN,
+                false);
 
         this.permissionService.setPermission(this.virtualFolder1NodeRef,
-                                             user1,
-                                             PermissionService.DELETE,
-                                             true);
+                user1,
+                PermissionService.DELETE,
+                true);
 
     }
 
@@ -185,19 +186,18 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
 
     private AccessStatus hasPermissionAs(final NodeRef nodeRef, final String permission, String asUser)
     {
-        RunAsWork<AccessStatus> hasPermissionAs = new RunAsWork<AccessStatus>()
-        {
+        RunAsWork<AccessStatus> hasPermissionAs = new RunAsWork<AccessStatus>() {
 
             @Override
             public AccessStatus doWork() throws Exception
             {
                 return permissionService.hasPermission(nodeRef,
-                                                       permission);
+                        permission);
             }
 
         };
         return AuthenticationUtil.runAs(hasPermissionAs,
-                                        asUser);
+                asUser);
     }
 
     @Test
@@ -208,49 +208,49 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
         // or the actual path is specified
 
         assertEquals(AccessStatus.ALLOWED,
-                     hasPermissionAs(this.virtualFolder1NodeRef,
-                                     PermissionService.DELETE_CHILDREN,
-                                     user1));
+                hasPermissionAs(this.virtualFolder1NodeRef,
+                        PermissionService.DELETE_CHILDREN,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(this.virtualFolder1NodeRef,
-                                     PermissionService.DELETE_CHILDREN,
-                                     user2));
+                hasPermissionAs(this.virtualFolder1NodeRef,
+                        PermissionService.DELETE_CHILDREN,
+                        user2));
 
         assertEquals(AccessStatus.ALLOWED,
-                     hasPermissionAs(vf1Node2,
-                                     PermissionService.DELETE_CHILDREN,
-                                     user1));
+                hasPermissionAs(vf1Node2,
+                        PermissionService.DELETE_CHILDREN,
+                        user1));
 
         assertEquals(AccessStatus.ALLOWED,
-                     hasPermissionAs(virtualContent,
-                                     PermissionService.DELETE_CHILDREN,
-                                     user1));
+                hasPermissionAs(virtualContent,
+                        PermissionService.DELETE_CHILDREN,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(vf1Node2,
-                                     PermissionService.DELETE_CHILDREN,
-                                     user2));
+                hasPermissionAs(vf1Node2,
+                        PermissionService.DELETE_CHILDREN,
+                        user2));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(virtualContent,
-                                     PermissionService.DELETE_CHILDREN,
-                                     user2));
+                hasPermissionAs(virtualContent,
+                        PermissionService.DELETE_CHILDREN,
+                        user2));
 
         this.permissionService.setPermission(this.virtualFolder1NodeRef,
-                                             user1,
-                                             PermissionService.DELETE_CHILDREN,
-                                             false);
+                user1,
+                PermissionService.DELETE_CHILDREN,
+                false);
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(vf1Node2,
-                                     PermissionService.DELETE_CHILDREN,
-                                     user1));
+                hasPermissionAs(vf1Node2,
+                        PermissionService.DELETE_CHILDREN,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(virtualContent,
-                                     PermissionService.DELETE_CHILDREN,
-                                     user1));
+                hasPermissionAs(virtualContent,
+                        PermissionService.DELETE_CHILDREN,
+                        user1));
 
     }
 
@@ -259,32 +259,32 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
     {
 
         NodeRef virtualFolderT5 = createVirtualizedFolder(testRootFolder.getNodeRef(),
-                                                          "VirtualFolderT5",
-                                                          TEST_TEMPLATE_5_JSON_SYS_PATH);
+                "VirtualFolderT5",
+                TEST_TEMPLATE_5_JSON_SYS_PATH);
 
         NodeRef filingFolderVirtualNodeRef = nodeService.getChildByName(virtualFolderT5,
-                                                                        ContentModel.ASSOC_CONTAINS,
-                                                                        "FilingFolder_filing_path");
+                ContentModel.ASSOC_CONTAINS,
+                "FilingFolder_filing_path");
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderVirtualNodeRef,
-                                     PermissionService.DELETE,
-                                     user1));
+                hasPermissionAs(filingFolderVirtualNodeRef,
+                        PermissionService.DELETE,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderVirtualNodeRef,
-                                     asTypedPermission(PermissionService.DELETE),
-                                     user1));
+                hasPermissionAs(filingFolderVirtualNodeRef,
+                        asTypedPermission(PermissionService.DELETE),
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderVirtualNodeRef,
-                                     PermissionService.CREATE_CHILDREN,
-                                     user1));
+                hasPermissionAs(filingFolderVirtualNodeRef,
+                        PermissionService.CREATE_CHILDREN,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderVirtualNodeRef,
-                                     asTypedPermission(PermissionService.CREATE_CHILDREN),
-                                     user1));
+                hasPermissionAs(filingFolderVirtualNodeRef,
+                        asTypedPermission(PermissionService.CREATE_CHILDREN),
+                        user1));
 
     }
 
@@ -297,121 +297,121 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
         // when specified
 
         NodeRef virtualFolderT5 = createVirtualizedFolder(testRootFolder.getNodeRef(),
-                                                          "VirtualFolderT5",
-                                                          TEST_TEMPLATE_5_JSON_SYS_PATH);
+                "VirtualFolderT5",
+                TEST_TEMPLATE_5_JSON_SYS_PATH);
 
         NodeRef filingFolderVirtualNodeRef = nodeService.getChildByName(virtualFolderT5,
-                                                                        ContentModel.ASSOC_CONTAINS,
-                                                                        "FilingFolder_filing_path");
+                ContentModel.ASSOC_CONTAINS,
+                "FilingFolder_filing_path");
 
         ChildAssociationRef filingFolderChildAssoc = createFolder(rootNodeRef,
-                                                                  "FilingFolder");
+                "FilingFolder");
 
         NodeRef filingFolderNodeRef = filingFolderChildAssoc.getChildRef();
 
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user1,
-                                             PermissionService.READ_PERMISSIONS,
-                                             true);
+                user1,
+                PermissionService.READ_PERMISSIONS,
+                true);
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user1,
-                                             PermissionService.CREATE_CHILDREN,
-                                             true);
+                user1,
+                PermissionService.CREATE_CHILDREN,
+                true);
 
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user2,
-                                             PermissionService.CREATE_CHILDREN,
-                                             false);
+                user2,
+                PermissionService.CREATE_CHILDREN,
+                false);
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderNodeRef,
-                                     PermissionService.DELETE,
-                                     user1));
+                hasPermissionAs(filingFolderNodeRef,
+                        PermissionService.DELETE,
+                        user1));
 
         assertEquals(AccessStatus.ALLOWED,
-                     hasPermissionAs(filingFolderNodeRef,
-                                     PermissionService.CREATE_CHILDREN,
-                                     user1));
+                hasPermissionAs(filingFolderNodeRef,
+                        PermissionService.CREATE_CHILDREN,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderNodeRef,
-                                     PermissionService.CREATE_CHILDREN,
-                                     user2));
+                hasPermissionAs(filingFolderNodeRef,
+                        PermissionService.CREATE_CHILDREN,
+                        user2));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderVirtualNodeRef,
-                                     PermissionService.DELETE,
-                                     user1));
+                hasPermissionAs(filingFolderVirtualNodeRef,
+                        PermissionService.DELETE,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderVirtualNodeRef,
-                                     asTypedPermission(PermissionService.DELETE),
-                                     user1));
+                hasPermissionAs(filingFolderVirtualNodeRef,
+                        asTypedPermission(PermissionService.DELETE),
+                        user1));
 
         assertEquals(AccessStatus.ALLOWED,
-                     hasPermissionAs(filingFolderVirtualNodeRef,
-                                     PermissionService.CREATE_CHILDREN,
-                                     user1));
+                hasPermissionAs(filingFolderVirtualNodeRef,
+                        PermissionService.CREATE_CHILDREN,
+                        user1));
 
         assertEquals(AccessStatus.ALLOWED,
-                     hasPermissionAs(filingFolderVirtualNodeRef,
-                                     asTypedPermission(PermissionService.CREATE_CHILDREN),
-                                     user1));
+                hasPermissionAs(filingFolderVirtualNodeRef,
+                        asTypedPermission(PermissionService.CREATE_CHILDREN),
+                        user1));
 
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user1,
-                                             PermissionService.DELETE_CHILDREN,
-                                             true);
+                user1,
+                PermissionService.DELETE_CHILDREN,
+                true);
 
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user2,
-                                             PermissionService.DELETE_CHILDREN,
-                                             false);
+                user2,
+                PermissionService.DELETE_CHILDREN,
+                false);
 
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user1,
-                                             PermissionService.READ_PROPERTIES,
-                                             true);
+                user1,
+                PermissionService.READ_PROPERTIES,
+                true);
 
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user1,
-                                             PermissionService.CREATE_CHILDREN,
-                                             false);
+                user1,
+                PermissionService.CREATE_CHILDREN,
+                false);
 
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user1,
-                                             PermissionService.DELETE,
-                                             true);
+                user1,
+                PermissionService.DELETE,
+                true);
 
         assertEquals(AccessStatus.ALLOWED,
-                     hasPermissionAs(filingFolderNodeRef,
-                                     PermissionService.DELETE,
-                                     user1));
+                hasPermissionAs(filingFolderNodeRef,
+                        PermissionService.DELETE,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderNodeRef,
-                                     PermissionService.CREATE_CHILDREN,
-                                     user1));
+                hasPermissionAs(filingFolderNodeRef,
+                        PermissionService.CREATE_CHILDREN,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderVirtualNodeRef,
-                                     PermissionService.DELETE,
-                                     user1));
+                hasPermissionAs(filingFolderVirtualNodeRef,
+                        PermissionService.DELETE,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderVirtualNodeRef,
-                                     asTypedPermission(PermissionService.DELETE),
-                                     user1));
+                hasPermissionAs(filingFolderVirtualNodeRef,
+                        asTypedPermission(PermissionService.DELETE),
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderVirtualNodeRef,
-                                     PermissionService.CREATE_CHILDREN,
-                                     user1));
+                hasPermissionAs(filingFolderVirtualNodeRef,
+                        PermissionService.CREATE_CHILDREN,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderVirtualNodeRef,
-                                     asTypedPermission(PermissionService.CREATE_CHILDREN),
-                                     user1));
+                hasPermissionAs(filingFolderVirtualNodeRef,
+                        asTypedPermission(PermissionService.CREATE_CHILDREN),
+                        user1));
 
     }
 
@@ -423,34 +423,34 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
         // virtual permission should override actual permissions
 
         assertEquals(AccessStatus.ALLOWED,
-                     hasPermissionAs(this.virtualFolder1NodeRef,
-                                     PermissionService.DELETE,
-                                     user1));
+                hasPermissionAs(this.virtualFolder1NodeRef,
+                        PermissionService.DELETE,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(this.virtualFolder1NodeRef,
-                                     PermissionService.CREATE_CHILDREN,
-                                     user1));
+                hasPermissionAs(this.virtualFolder1NodeRef,
+                        PermissionService.CREATE_CHILDREN,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(vf1Node2,
-                                     PermissionService.DELETE,
-                                     user1));
+                hasPermissionAs(vf1Node2,
+                        PermissionService.DELETE,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(vf1Node2,
-                                     asTypedPermission(PermissionService.DELETE),
-                                     user1));
+                hasPermissionAs(vf1Node2,
+                        asTypedPermission(PermissionService.DELETE),
+                        user1));
 
         assertEquals(AccessStatus.ALLOWED,
-                     hasPermissionAs(vf1Node2,
-                                     PermissionService.CREATE_CHILDREN,
-                                     user1));
+                hasPermissionAs(vf1Node2,
+                        PermissionService.CREATE_CHILDREN,
+                        user1));
 
         assertEquals(AccessStatus.ALLOWED,
-                     hasPermissionAs(vf1Node2,
-                                     asTypedPermission(PermissionService.CREATE_CHILDREN),
-                                     user1));
+                hasPermissionAs(vf1Node2,
+                        asTypedPermission(PermissionService.CREATE_CHILDREN),
+                        user1));
 
     }
 
@@ -460,23 +460,23 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
 
         // virtual permission should override actual permissions
         NodeRef aVFTestTemplate2 = createVirtualizedFolder(testRootFolder.getNodeRef(),
-                                                           "aVFTestTemplate2",
-                                                           TEST_TEMPLATE_2_JSON_SYS_PATH);
+                "aVFTestTemplate2",
+                TEST_TEMPLATE_2_JSON_SYS_PATH);
         NodeRef vf2Node2 = nodeService.getChildByName(aVFTestTemplate2,
-                                                      ContentModel.ASSOC_CONTAINS,
-                                                      "Node2");
+                ContentModel.ASSOC_CONTAINS,
+                "Node2");
 
-        final String[] deniedReadOnly = new String[] { PermissionService.UNLOCK, PermissionService.CANCEL_CHECK_OUT,
-                    PermissionService.CHANGE_PERMISSIONS, PermissionService.CREATE_CHILDREN, PermissionService.DELETE,
-                    PermissionService.WRITE, PermissionService.DELETE_NODE, PermissionService.WRITE_PROPERTIES,
-                    PermissionService.WRITE_CONTENT, PermissionService.CREATE_ASSOCIATIONS };
+        final String[] deniedReadOnly = new String[]{PermissionService.UNLOCK, PermissionService.CANCEL_CHECK_OUT,
+                PermissionService.CHANGE_PERMISSIONS, PermissionService.CREATE_CHILDREN, PermissionService.DELETE,
+                PermissionService.WRITE, PermissionService.DELETE_NODE, PermissionService.WRITE_PROPERTIES,
+                PermissionService.WRITE_CONTENT, PermissionService.CREATE_ASSOCIATIONS};
 
         StringBuilder nonDeniedTrace = new StringBuilder();
         for (int i = 0; i < deniedReadOnly.length; i++)
         {
             AccessStatus accessStatus = hasPermissionAs(vf2Node2,
-                                                        deniedReadOnly[i],
-                                                        user1);
+                    deniedReadOnly[i],
+                    user1);
             if (!AccessStatus.DENIED.equals(accessStatus))
             {
                 if (nonDeniedTrace.length() > 0)
@@ -488,7 +488,7 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
         }
 
         assertTrue("Non-denied permissions on RO virtual nodes : " + nonDeniedTrace,
-                   nonDeniedTrace.length() == 0);
+                nonDeniedTrace.length() == 0);
     }
 
     @SuppressWarnings("unchecked")
@@ -503,7 +503,7 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
             {
                 permissions = new ArrayList<>();
                 nameMap.put(name,
-                            permissions);
+                        permissions);
             }
             permissions.add(permissionEntry);
         }
@@ -522,7 +522,7 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
             {
                 permissions = new ArrayList<>();
                 nameMap.put(name,
-                            permissions);
+                        permissions);
             }
             permissions.add(accessPermission);
         }
@@ -531,9 +531,7 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
     }
 
     /**
-     * Asserts that the permission with the given name uniquely found in the
-     * given permission entries list has the given access status for the given
-     * authority.
+     * Asserts that the permission with the given name uniquely found in the given permission entries list has the given access status for the given authority.
      * 
      * @param permissionName
      * @param accessStatus
@@ -541,25 +539,23 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
      * @param permissionEntries
      */
     protected void assertUniquePermission(String permissionName, AccessStatus accessStatus, String authority,
-                List<? extends PermissionEntry> permissionEntries)
+            List<? extends PermissionEntry> permissionEntries)
     {
         Map<String, List<? extends PermissionEntry>> entriesByName = mapPermissionsByName((List<? extends PermissionEntry>) permissionEntries);
         assertNotNull("Not null permission " + permissionName + " expected.",
-                      entriesByName.get(permissionName));
+                entriesByName.get(permissionName));
         assertEquals(1,
-                     entriesByName.get(permissionName).size());
+                entriesByName.get(permissionName).size());
 
         PermissionEntry permission = entriesByName.get(permissionName).get(0);
         assertEquals(accessStatus,
-                     permission.getAccessStatus());
+                permission.getAccessStatus());
         assertEquals(authority,
-                     permission.getAuthority());
+                permission.getAuthority());
     }
 
     /**
-     * Asserts that the permission with the given name uniquely found in the
-     * given permission entries list has the given access status for the given
-     * authority.
+     * Asserts that the permission with the given name uniquely found in the given permission entries list has the given access status for the given authority.
      * 
      * @param permissionName
      * @param accessStatus
@@ -567,21 +563,21 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
      * @param permissionEntries
      */
     protected void assertUniqueAccessPermission(String permissionName, AccessStatus accessStatus, String authority,
-                Set<AccessPermission> accessPermissions)
+            Set<AccessPermission> accessPermissions)
     {
         Map<String, List<AccessPermission>> apByName = mapAccessPermissionsByName(accessPermissions);
         assertNotNull("Not null permission " + permissionName + " expected.",
-                      apByName.get(permissionName));
+                apByName.get(permissionName));
         List<AccessPermission> oneAccessPermission = apByName.get(permissionName);
         assertEquals("Expected single AccessPermission but found " + oneAccessPermission,
-                     1,
-                     oneAccessPermission.size());
+                1,
+                oneAccessPermission.size());
 
         AccessPermission permission = apByName.get(permissionName).get(0);
         assertEquals(accessStatus,
-                     permission.getAccessStatus());
+                permission.getAccessStatus());
         assertEquals(authority,
-                     permission.getAuthority());
+                permission.getAuthority());
     }
 
     @Test
@@ -592,33 +588,33 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
         Set<AccessPermission> allVf1SetPermissions = permissionService.getAllSetPermissions(this.virtualFolder1NodeRef);
 
         AccessPermission vf1ReadProperties = mapAccessPermissionsByName(allVf1SetPermissions)
-                    .get(PermissionService.READ_PROPERTIES)
-                        .get(0);
+                .get(PermissionService.READ_PROPERTIES)
+                .get(0);
 
         assertUniqueAccessPermission(PermissionService.DELETE,
-                                     AccessStatus.ALLOWED,
-                                     user1,
-                                     allVf1SetPermissions);
+                AccessStatus.ALLOWED,
+                user1,
+                allVf1SetPermissions);
         assertUniqueAccessPermission(PermissionService.CREATE_CHILDREN,
-                                     AccessStatus.DENIED,
-                                     user1,
-                                     allVf1SetPermissions);
+                AccessStatus.DENIED,
+                user1,
+                allVf1SetPermissions);
 
         Set<AccessPermission> allNode2SetPermissions = permissionService.getAllSetPermissions(vf1Node2);
 
         assertUniqueAccessPermission(PermissionService.DELETE,
-                                     AccessStatus.DENIED,
-                                     PermissionService.ALL_AUTHORITIES,
-                                     allNode2SetPermissions);
+                AccessStatus.DENIED,
+                PermissionService.ALL_AUTHORITIES,
+                allNode2SetPermissions);
         assertUniqueAccessPermission(PermissionService.CREATE_CHILDREN,
-                                     AccessStatus.ALLOWED,
-                                     PermissionService.ALL_AUTHORITIES,
-                                     allNode2SetPermissions);
+                AccessStatus.ALLOWED,
+                PermissionService.ALL_AUTHORITIES,
+                allNode2SetPermissions);
         // adhere to actual node
         assertUniqueAccessPermission(PermissionService.READ_PROPERTIES,
-                                     vf1ReadProperties.getAccessStatus(),
-                                     vf1ReadProperties.getAuthority(),
-                                     allNode2SetPermissions);
+                vf1ReadProperties.getAccessStatus(),
+                vf1ReadProperties.getAuthority(),
+                allNode2SetPermissions);
 
     }
 
@@ -629,84 +625,84 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
 
         NodePermissionEntry vf1SetPermissions = permissionService.getSetPermissions(this.virtualFolder1NodeRef);
         assertEquals(virtualFolder1NodeRef,
-                     vf1SetPermissions.getNodeRef());
+                vf1SetPermissions.getNodeRef());
         List<? extends PermissionEntry> vf1Entries = vf1SetPermissions.getPermissionEntries();
         assertUniquePermission(PermissionService.DELETE,
-                               AccessStatus.ALLOWED,
-                               user1,
-                               vf1Entries);
+                AccessStatus.ALLOWED,
+                user1,
+                vf1Entries);
         assertUniquePermission(PermissionService.CREATE_CHILDREN,
-                               AccessStatus.DENIED,
-                               user1,
-                               vf1Entries);
+                AccessStatus.DENIED,
+                user1,
+                vf1Entries);
 
         NodePermissionEntry node2SetPermissions = permissionService.getSetPermissions(vf1Node2);
 
         assertEquals(vf1Node2,
-                     node2SetPermissions.getNodeRef());
+                node2SetPermissions.getNodeRef());
 
         List<? extends PermissionEntry> node2Entries = node2SetPermissions.getPermissionEntries();
         assertUniquePermission(PermissionService.DELETE,
-                               AccessStatus.DENIED,
-                               PermissionService.ALL_AUTHORITIES,
-                               node2Entries);
+                AccessStatus.DENIED,
+                PermissionService.ALL_AUTHORITIES,
+                node2Entries);
         assertUniquePermission(PermissionService.CREATE_CHILDREN,
-                               AccessStatus.ALLOWED,
-                               PermissionService.ALL_AUTHORITIES,
-                               node2Entries);
+                AccessStatus.ALLOWED,
+                PermissionService.ALL_AUTHORITIES,
+                node2Entries);
 
     }
 
     @Test
     public void testNodes_WithfilingPath_withNoReadPermissions_hasReadonlyPermission() throws Exception
     {
-        final String[] deniedReadOnly = new String[] { PermissionService.UNLOCK, PermissionService.CANCEL_CHECK_OUT,
-                    PermissionService.CHANGE_PERMISSIONS, PermissionService.CREATE_CHILDREN, PermissionService.DELETE,
-                    PermissionService.WRITE, PermissionService.DELETE_NODE, PermissionService.WRITE_PROPERTIES,
-                    PermissionService.WRITE_CONTENT, PermissionService.CREATE_ASSOCIATIONS };
+        final String[] deniedReadOnly = new String[]{PermissionService.UNLOCK, PermissionService.CANCEL_CHECK_OUT,
+                PermissionService.CHANGE_PERMISSIONS, PermissionService.CREATE_CHILDREN, PermissionService.DELETE,
+                PermissionService.WRITE, PermissionService.DELETE_NODE, PermissionService.WRITE_PROPERTIES,
+                PermissionService.WRITE_CONTENT, PermissionService.CREATE_ASSOCIATIONS};
 
         NodeRef virtualFolderT5 = createVirtualizedFolder(testRootFolder.getNodeRef(),
-                                                          "VirtualFolderT5",
-                                                          TEST_TEMPLATE_5_JSON_SYS_PATH);
+                "VirtualFolderT5",
+                TEST_TEMPLATE_5_JSON_SYS_PATH);
 
         NodeRef filingFolderVirtualNodeRef = nodeService.getChildByName(virtualFolderT5,
-                                                                        ContentModel.ASSOC_CONTAINS,
-                                                                        "FilingFolder_filing_path");
+                ContentModel.ASSOC_CONTAINS,
+                "FilingFolder_filing_path");
 
         ChildAssociationRef filingFolderChildAssoc = createFolder(rootNodeRef,
-                                                                  "FilingFolder");
+                "FilingFolder");
 
         NodeRef filingFolderNodeRef = filingFolderChildAssoc.getChildRef();
 
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user1,
-                                             PermissionService.READ_PERMISSIONS,
-                                             false);
+                user1,
+                PermissionService.READ_PERMISSIONS,
+                false);
 
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user1,
-                                             PermissionService.CREATE_CHILDREN,
-                                             true);
+                user1,
+                PermissionService.CREATE_CHILDREN,
+                true);
 
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user2,
-                                             PermissionService.CREATE_CHILDREN,
-                                             false);
+                user2,
+                PermissionService.CREATE_CHILDREN,
+                false);
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderNodeRef,
-                                     PermissionService.DELETE,
-                                     user1));
+                hasPermissionAs(filingFolderNodeRef,
+                        PermissionService.DELETE,
+                        user1));
 
         assertEquals(AccessStatus.ALLOWED,
-                     hasPermissionAs(filingFolderNodeRef,
-                                     PermissionService.CREATE_CHILDREN,
-                                     user1));
+                hasPermissionAs(filingFolderNodeRef,
+                        PermissionService.CREATE_CHILDREN,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderNodeRef,
-                                     PermissionService.CREATE_CHILDREN,
-                                     user2));
+                hasPermissionAs(filingFolderNodeRef,
+                        PermissionService.CREATE_CHILDREN,
+                        user2));
 
         // for virtual folder
 
@@ -714,8 +710,8 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
         for (int i = 0; i < deniedReadOnly.length; i++)
         {
             AccessStatus accessStatus = hasPermissionAs(filingFolderVirtualNodeRef,
-                                                        deniedReadOnly[i],
-                                                        user1);
+                    deniedReadOnly[i],
+                    user1);
             if (!AccessStatus.DENIED.equals(accessStatus))
             {
                 if (nonDeniedTrace.length() > 0)
@@ -727,49 +723,49 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
         }
 
         assertTrue("Non-denied permissions on RO virtual nodes : " + nonDeniedTrace,
-                   nonDeniedTrace.length() == 0);
+                nonDeniedTrace.length() == 0);
 
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user1,
-                                             PermissionService.DELETE_CHILDREN,
-                                             true);
+                user1,
+                PermissionService.DELETE_CHILDREN,
+                true);
 
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user2,
-                                             PermissionService.DELETE_CHILDREN,
-                                             false);
+                user2,
+                PermissionService.DELETE_CHILDREN,
+                false);
 
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user1,
-                                             PermissionService.READ_PROPERTIES,
-                                             true);
+                user1,
+                PermissionService.READ_PROPERTIES,
+                true);
 
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user1,
-                                             PermissionService.CREATE_CHILDREN,
-                                             false);
+                user1,
+                PermissionService.CREATE_CHILDREN,
+                false);
 
         this.permissionService.setPermission(filingFolderNodeRef,
-                                             user1,
-                                             PermissionService.DELETE,
-                                             true);
+                user1,
+                PermissionService.DELETE,
+                true);
 
         assertEquals(AccessStatus.ALLOWED,
-                     hasPermissionAs(filingFolderNodeRef,
-                                     PermissionService.DELETE,
-                                     user1));
+                hasPermissionAs(filingFolderNodeRef,
+                        PermissionService.DELETE,
+                        user1));
 
         assertEquals(AccessStatus.DENIED,
-                     hasPermissionAs(filingFolderNodeRef,
-                                     PermissionService.CREATE_CHILDREN,
-                                     user1));
+                hasPermissionAs(filingFolderNodeRef,
+                        PermissionService.CREATE_CHILDREN,
+                        user1));
 
         StringBuilder nonDeniedTrace1 = new StringBuilder();
         for (int i = 0; i < deniedReadOnly.length; i++)
         {
             AccessStatus accessStatus = hasPermissionAs(filingFolderVirtualNodeRef,
-                                                        deniedReadOnly[i],
-                                                        user1);
+                    deniedReadOnly[i],
+                    user1);
             if (!AccessStatus.DENIED.equals(accessStatus))
             {
                 if (nonDeniedTrace1.length() > 0)
@@ -781,49 +777,49 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
         }
 
         assertTrue("Non-denied permissions on RO virtual nodes : " + nonDeniedTrace1,
-                   nonDeniedTrace1.length() == 0);
+                nonDeniedTrace1.length() == 0);
 
     }
 
     @Test
     public void testPerm_ace_5162() throws Exception
     {
-        final String[] deniedReadOnly = new String[] { PermissionService.UNLOCK, PermissionService.CANCEL_CHECK_OUT,
-                    PermissionService.CHANGE_PERMISSIONS, PermissionService.CREATE_CHILDREN, PermissionService.DELETE,
-                    PermissionService.WRITE, PermissionService.DELETE_NODE, PermissionService.WRITE_PROPERTIES,
-                    PermissionService.WRITE_CONTENT, PermissionService.CREATE_ASSOCIATIONS };
+        final String[] deniedReadOnly = new String[]{PermissionService.UNLOCK, PermissionService.CANCEL_CHECK_OUT,
+                PermissionService.CHANGE_PERMISSIONS, PermissionService.CREATE_CHILDREN, PermissionService.DELETE,
+                PermissionService.WRITE, PermissionService.DELETE_NODE, PermissionService.WRITE_PROPERTIES,
+                PermissionService.WRITE_CONTENT, PermissionService.CREATE_ASSOCIATIONS};
 
         try
         {
             // Create a public site
 
             siteService.createSite("testSitePreset",
-                                   sName,
-                                   sName,
-                                   sName,
-                                   SiteVisibility.PUBLIC);
+                    sName,
+                    sName,
+                    sName,
+                    SiteVisibility.PUBLIC);
 
             testSiteFolder = siteService.createContainer(sName,
-                                                         "TestSiteFolder",
-                                                         ContentModel.TYPE_FOLDER,
-                                                         null);
+                    "TestSiteFolder",
+                    ContentModel.TYPE_FOLDER,
+                    null);
 
             smartFolder = createVirtualizedFolder(testSiteFolder,
-                                                  "SmartFolder",
-                                                  "C" + TEST_TEMPLATE_CLASSPATH + "testTemplate7.json");
+                    "SmartFolder",
+                    "C" + TEST_TEMPLATE_CLASSPATH + "testTemplate7.json");
             contributionDocsFolder = createFolder(testSiteFolder,
-                                                  "Contribution Docs").getChildRef();
+                    "Contribution Docs").getChildRef();
             permissionService.setInheritParentPermissions(contributionDocsFolder,
-                                                          false);
+                    false);
 
             myContentSMF = nodeService.getChildByName(smartFolder,
-                                                      ContentModel.ASSOC_CONTAINS,
-                                                      "My content");
+                    ContentModel.ASSOC_CONTAINS,
+                    "My content");
             assertNotNull(myContentSMF);
 
             contributionsSMF = nodeService.getChildByName(myContentSMF,
-                                                          ContentModel.ASSOC_CONTAINS,
-                                                          "Contributions");
+                    ContentModel.ASSOC_CONTAINS,
+                    "Contributions");
             assertNotNull(contributionsSMF);
 
             // test that the all denied permissions for read only virtual nodes
@@ -833,8 +829,8 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
             for (int i = 0; i < deniedReadOnly.length; i++)
             {
                 AccessStatus accessStatus = hasPermissionAs(contributionsSMF,
-                                                            deniedReadOnly[i],
-                                                            user1);
+                        deniedReadOnly[i],
+                        user1);
                 if (!AccessStatus.DENIED.equals(accessStatus))
                 {
                     if (nonDeniedTrace.length() > 0)
@@ -846,27 +842,26 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
             }
 
             assertTrue("Non-denied permissions on RO virtual nodes : " + nonDeniedTrace,
-                       nonDeniedTrace.length() == 0);
+                    nonDeniedTrace.length() == 0);
 
             // test that the admin user can see documents from virtual nodes
             // with filing path with no inherited parent permissions
             FileInfo t1File = fileAndFolderService.create(contributionsSMF,
-                                        "T1",
-                                        ContentModel.TYPE_CONTENT);
-            //"cm:Contribution" taken from testTemplate7.json smart folder query
+                    "T1",
+                    ContentModel.TYPE_CONTENT);
+            // "cm:Contribution" taken from testTemplate7.json smart folder query
             prepareMocks("cm:Contribution", smartStore.materializeIfPossible(t1File.getNodeRef()));
 
             NodeRef childContet = nodeService.getChildByName(contributionsSMF,
-                                                             ContentModel.ASSOC_CONTAINS,
-                                                             "T1");
+                    ContentModel.ASSOC_CONTAINS,
+                    "T1");
             assertNotNull(childContet);
 
             assertTrue(nodeService.getChildAssocs(contributionsSMF).size() > 0);
 
             // test that the user1 can't see documents from virtual nodes with
             // filing path with no inherited parent permissions
-            RunAsWork<Boolean> hasChildAssocs = new RunAsWork<Boolean>()
-            {
+            RunAsWork<Boolean> hasChildAssocs = new RunAsWork<Boolean>() {
                 @Override
                 public Boolean doWork() throws Exception
                 {
@@ -875,7 +870,7 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
             };
 
             boolean value = AuthenticationUtil.runAs(hasChildAssocs,
-                                                     user1);
+                    user1);
             assertFalse(value);
         }
         finally

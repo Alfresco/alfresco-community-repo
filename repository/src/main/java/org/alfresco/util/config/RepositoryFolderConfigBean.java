@@ -42,17 +42,15 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.PropertyCheck;
 
 /**
- * Composite property bean to identify a folder in the repository.  This uses the
- * {@link #getFolderPath() path} to identify a root and then a
- * folder-name path to identify a folder.
+ * Composite property bean to identify a folder in the repository. This uses the {@link #getFolderPath() path} to identify a root and then a folder-name path to identify a folder.
  * 
  * @author Derek Hulley
- * @since 3.2 
+ * @since 3.2
  */
 public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
 {
     private String folderPath;
-    
+
     public RepositoryFolderConfigBean()
     {
         folderPath = "";
@@ -68,7 +66,7 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
 
     /**
      * 
-     * @return          Returns the string representation of the folder path
+     * @return Returns the string representation of the folder path
      */
     public String getFolderPath()
     {
@@ -78,7 +76,8 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
     /**
      * Set the folder name path <b>relative to the {@link #getFolderPath() path}</b>.
      * 
-     * @param folderPath            a folder-name path using the '<b>/</b>' path separator e.g. '<b>IMAP HOME/MAIL-1</b>'
+     * @param folderPath
+     *            a folder-name path using the '<b>/</b>' path separator e.g. '<b>IMAP HOME/MAIL-1</b>'
      */
     public void setFolderPath(String folderPath)
     {
@@ -103,16 +102,15 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
         }
         this.folderPath = pathBuff.toString();
     }
-    
+
     /**
-     * Helper method to find the folder path referenced by this bean.
-     * The {@link #getFolderPath() path} to the start of the folder path
-     * must exist.
+     * Helper method to find the folder path referenced by this bean. The {@link #getFolderPath() path} to the start of the folder path must exist.
      * <p>
      * Authentication and transactions are the client's responsibility.
      * 
      * @return Returns an existing folder reference
-     * @throws AlfrescoRuntimeException if path cannot be resolved or found node is not a folder
+     * @throws AlfrescoRuntimeException
+     *             if path cannot be resolved or found node is not a folder
      */
     public NodeRef getFolderPath(
             NamespaceService namespaceService,
@@ -122,11 +120,9 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
     {
         return getFolderPathImpl(namespaceService, nodeService, searchService, fileFolderService, true);
     }
-    
+
     /**
-     * Helper method to find the folder path referenced by this bean.
-     * The {@link #getFolderPath() path} to the start of the folder path
-     * must exist.
+     * Helper method to find the folder path referenced by this bean. The {@link #getFolderPath() path} to the start of the folder path must exist.
      * <p>
      * Authentication and transactions are the client's responsibility.
      * 
@@ -140,7 +136,7 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
     {
         return getFolderPathImpl(namespaceService, nodeService, searchService, fileFolderService, false);
     }
-    
+
     private NodeRef getFolderPathImpl(
             NamespaceService namespaceService,
             NodeService nodeService,
@@ -153,7 +149,8 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
         {
             return getNullOrThrowAlfrescoRuntimeExcpetion(
                     "Folder path resolution requires an existing base path. \n" +
-                    "   Base path: " + getRootPath(), throwException);
+                            "   Base path: " + getRootPath(),
+                    throwException);
         }
         // Just choose the root path if the folder path is empty
         if (folderPath.length() == 0)
@@ -180,7 +177,7 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
         }
         // Done
     }
-    
+
     private NodeRef getNullOrThrowAlfrescoRuntimeExcpetion(String exceptionMessage, boolean throwException)
     {
         if (throwException)
@@ -189,15 +186,13 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
         }
         return null;
     }
-    
+
     /**
-     * Helper method to find or create the folder path referenced by this bean.
-     * The {@link #getFolderPath() path} to the start of the folder path
-     * must exist.  The folder path will be created, if required.
+     * Helper method to find or create the folder path referenced by this bean. The {@link #getFolderPath() path} to the start of the folder path must exist. The folder path will be created, if required.
      * <p>
      * Authentication and transactions are the client's responsibility.
      * 
-     * @return                      Returns an existing or new folder reference
+     * @return Returns an existing or new folder reference
      */
     public NodeRef getOrCreateFolderPath(
             NamespaceService namespaceService,
@@ -210,7 +205,7 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
         {
             throw new AlfrescoRuntimeException(
                     "Folder path resolution requires an existing base path. \n" +
-                    "   Base path: " + getRootPath());
+                            "   Base path: " + getRootPath());
         }
         // Just choose the root path if the folder path is empty
         if (folderPath.length() == 0)
@@ -224,7 +219,7 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
             while (folders.hasMoreTokens())
             {
                 QName folderQName = QName.createQName(folders.nextToken(), namespaceService);
-                List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, folderQName); 
+                List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, folderQName);
                 if (children.isEmpty())
                 {
                     nodeRef = fileFolderService.create(nodeRef, folderQName.getLocalName(), ContentModel.TYPE_FOLDER, folderQName).getNodeRef();

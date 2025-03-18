@@ -25,23 +25,22 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import java.util.Optional;
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.Optional;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 
 /**
- * A {@link RemoteUserMapper} implementation that detects and validates JWTs
- * issued by the Alfresco Identity Service.
+ * A {@link RemoteUserMapper} implementation that detects and validates JWTs issued by the Alfresco Identity Service.
  * 
  * @author Gavin Cornwell
  */
@@ -51,7 +50,7 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
 
     /** Is the mapper enabled */
     private boolean isEnabled;
-    
+
     /** Are token validation failures handled silently? */
     private boolean isValidationFailureSilent;
 
@@ -62,7 +61,8 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
     /**
      * Sets the active flag
      * 
-     * @param isEnabled true to enable the subsystem
+     * @param isEnabled
+     *            true to enable the subsystem
      */
     public void setActive(boolean isEnabled)
     {
@@ -72,7 +72,8 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
     /**
      * Determines whether token validation failures are silent
      * 
-     * @param silent true to silently fail, false to throw an exception
+     * @param silent
+     *            true to silently fail, false to throw an exception
      */
     public void setValidationFailureSilent(boolean silent)
     {
@@ -89,10 +90,9 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
         this.jitProvisioningHandler = jitProvisioningHandler;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.web.app.servlet.RemoteUserMapper#getRemoteUser(jakarta.servlet.http.HttpServletRequest)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.web.app.servlet.RemoteUserMapper#getRemoteUser(jakarta.servlet.http.HttpServletRequest) */
     @Override
     public String getRemoteUser(HttpServletRequest request)
     {
@@ -106,7 +106,6 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
         try
         {
             String normalizedUserId = extractUserFromHeader(request);
-
 
             if (normalizedUserId != null)
             {
@@ -131,19 +130,19 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
         return null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive() */
     public boolean isActive()
     {
         return this.isEnabled;
     }
-    
+
     /**
      * Extracts the user name from the JWT in the given request.
      * 
-     * @param request The request containing the JWT
+     * @param request
+     *            The request containing the JWT
      * @return The username or null if it can not be determined
      */
     private String extractUserFromHeader(HttpServletRequest request)
@@ -163,8 +162,8 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
         }
 
         final Optional<String> possibleUsername = jitProvisioningHandler
-                    .extractUserInfoAndCreateUserIfNeeded(bearerToken)
-                    .map(OIDCUserInfo::username);
+                .extractUserInfoAndCreateUserIfNeeded(bearerToken)
+                .map(OIDCUserInfo::username);
 
         if (possibleUsername.isEmpty())
         {

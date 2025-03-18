@@ -48,7 +48,7 @@ public abstract class FieldDefinition
     {
         this.name = name;
     }
-    
+
     /**
      * Returns the name of the field
      * 
@@ -58,7 +58,7 @@ public abstract class FieldDefinition
     {
         return this.name;
     }
-    
+
     /**
      * Returns the display label for the field
      * 
@@ -68,17 +68,18 @@ public abstract class FieldDefinition
     {
         return this.label;
     }
-    
+
     /**
      * Sets the display label for the field
      * 
-     * @param label The field's display label
+     * @param label
+     *            The field's display label
      */
     public void setLabel(String label)
     {
         this.label = label;
     }
-    
+
     /**
      * Returns the description of the field
      * 
@@ -88,21 +89,20 @@ public abstract class FieldDefinition
     {
         return this.description;
     }
-    
+
     /**
      * Sets the description of the field
      * 
-     * @param description The field's description
+     * @param description
+     *            The field's description
      */
     public void setDescription(String description)
     {
         this.description = description;
     }
-    
+
     /**
-     * Returns the binding for the field, this is used by some
-     * FormModelProcessor implementations to generate an 
-     * alternative representation of the data
+     * Returns the binding for the field, this is used by some FormModelProcessor implementations to generate an alternative representation of the data
      * 
      * @return The field's binding
      */
@@ -110,13 +110,12 @@ public abstract class FieldDefinition
     {
         return this.binding;
     }
-    
+
     /**
-     * Sets the binding to use for the field, this is used by some
-     * FormModelProcessor implementations to generate an 
-     * alternative representation of the data
+     * Sets the binding to use for the field, this is used by some FormModelProcessor implementations to generate an alternative representation of the data
      * 
-     * @param binding The field's binding
+     * @param binding
+     *            The field's binding
      */
     public void setBinding(String binding)
     {
@@ -132,17 +131,18 @@ public abstract class FieldDefinition
     {
         return this.defaultValue;
     }
-    
+
     /**
      * Sets the default value for the field
      * 
-     * @param defaultValue The field's default value
+     * @param defaultValue
+     *            The field's default value
      */
     public void setDefaultValue(String defaultValue)
     {
         this.defaultValue = defaultValue;
     }
-    
+
     /**
      * Returns the name of the key being used to hold the data for the field
      * 
@@ -156,7 +156,8 @@ public abstract class FieldDefinition
     /**
      * Sets the name of the key to be used to hold the data for the field
      * 
-     * @param dataKeyName The name of the key to be used to hold the data for the field
+     * @param dataKeyName
+     *            The name of the key to be used to hold the data for the field
      */
     public void setDataKeyName(String dataKeyName)
     {
@@ -172,20 +173,20 @@ public abstract class FieldDefinition
     {
         return this.group;
     }
-    
+
     /**
      * Sets the group the field is part of
      * 
-     * @param group The group the field belongs to
+     * @param group
+     *            The group the field belongs to
      */
     public void setGroup(FieldGroup group)
     {
         this.group = group;
     }
-    
+
     /**
-     * Determines whether the field is protected i.e. it should be rendered
-     * as read-only in any client displaying the field
+     * Determines whether the field is protected i.e. it should be rendered as read-only in any client displaying the field
      * 
      * @return true if the field is protected
      */
@@ -195,10 +196,10 @@ public abstract class FieldDefinition
     }
 
     /**
-     * Sets whether the field is protected i.e. it should be rendered
-     * as read-only in any client displaying the field
+     * Sets whether the field is protected i.e. it should be rendered as read-only in any client displaying the field
      * 
-     * @param protectedField true if the field is protected
+     * @param protectedField
+     *            true if the field is protected
      */
     public void setProtectedField(boolean protectedField)
     {

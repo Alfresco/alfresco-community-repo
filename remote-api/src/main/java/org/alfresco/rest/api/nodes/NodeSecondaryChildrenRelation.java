@@ -50,13 +50,11 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  *
  * Please note, if you wish to manage primary child associations then please refer to other endpoints, for example:
  *
- * - to create primary child, use POST /nodes/{parentId}/children
- * - to delete node (ie. primary child), use DELETE /nodes/{nodeId}
- * - to move a node from one primary parent to another, use POST /nodes/{nodeId}/copy
+ * - to create primary child, use POST /nodes/{parentId}/children - to delete node (ie. primary child), use DELETE /nodes/{nodeId} - to move a node from one primary parent to another, use POST /nodes/{nodeId}/copy
  *
  * @author janv
  */
-@RelationshipResource(name = "secondary-children",  entityResource = NodesEntityResource.class, title = "Node Secondary Children")
+@RelationshipResource(name = "secondary-children", entityResource = NodesEntityResource.class, title = "Node Secondary Children")
 public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implements
         RelationshipResourceAction.Read<Node>,
         RelationshipResourceAction.Create<AssocChild>,
@@ -65,7 +63,8 @@ public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implemen
     /**
      * List secondary children only
      *
-     * @param parentNodeId String id of parent node
+     * @param parentNodeId
+     *            String id of parent node
      */
     @Override
     @WebApiDescription(title = "Return a paged list of secondary child nodes based on child assocs")
@@ -89,7 +88,7 @@ public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implemen
     }
 
     @Override
-    @WebApiDescription(title="Add secondary child assoc")
+    @WebApiDescription(title = "Add secondary child assoc")
     public List<AssocChild> create(String parentNodeId, List<AssocChild> entities, Parameters parameters)
     {
         return nodes.addChildren(parentNodeId, entities);
@@ -111,7 +110,7 @@ public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implemen
 
         for (ChildAssociationRef assocRef : assocRefs)
         {
-            if (! assocRef.getChildRef().equals(childNodeRef))
+            if (!assocRef.getChildRef().equals(childNodeRef))
             {
                 continue;
             }
@@ -123,7 +122,7 @@ public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implemen
                     if (assocRef.isPrimary())
                     {
                         throw new InvalidArgumentException("Cannot use secondary-children to delete primary assoc: "
-                            +parentNodeId+","+assocTypeStr+","+childNodeId);
+                                + parentNodeId + "," + assocTypeStr + "," + childNodeId);
                     }
 
                     boolean existed = nodeService.removeSecondaryChildAssociation(assocRef);
@@ -135,7 +134,7 @@ public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implemen
             }
             else
             {
-                if (! assocRef.isPrimary())
+                if (!assocRef.isPrimary())
                 {
                     boolean existed = nodeService.removeSecondaryChildAssociation(assocRef);
                     if (existed)
@@ -146,9 +145,9 @@ public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implemen
             }
         }
 
-        if (! found)
+        if (!found)
         {
-            throw new EntityNotFoundException(parentNodeId+","+assocTypeStr+","+childNodeId);
+            throw new EntityNotFoundException(parentNodeId + "," + assocTypeStr + "," + childNodeId);
         }
     }
 }

@@ -38,7 +38,8 @@ public class LuceneListArgument extends BaseListArgument
 {
 
     /**
-     * @param name String
+     * @param name
+     *            String
      */
     public LuceneListArgument(String name, List<Argument> arguments)
     {

@@ -43,11 +43,12 @@ import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 public class PathUtil
 {
     /**
-     * Return the human readable form of the specified node Path. Fast version
-     * of the method that simply converts QName localname components to Strings.
+     * Return the human readable form of the specified node Path. Fast version of the method that simply converts QName localname components to Strings.
      * 
-     * @param path Path to extract readable form from
-     * @param showLeaf Whether to process the final leaf element of the path
+     * @param path
+     *            Path to extract readable form from
+     * @param showLeaf
+     *            Whether to process the final leaf element of the path
      * 
      * @return human readable form of the Path
      */
@@ -68,7 +69,8 @@ public class PathUtil
                 {
                     elementString = elementRef.getQName().getLocalName();
                 }
-            } else
+            }
+            else
             {
                 elementString = element.getElementString();
             }
@@ -84,11 +86,12 @@ public class PathUtil
     }
 
     /**
-     * Return the node ids from the specified node Path, so that
-     * the first element is the immediate parent.
+     * Return the node ids from the specified node Path, so that the first element is the immediate parent.
      *
-     * @param path     the node's path object
-     * @param showLeaf whether to process the final leaf element of the path
+     * @param path
+     *            the node's path object
+     * @param showLeaf
+     *            whether to process the final leaf element of the path
      * @return list of node ids
      */
     public static List<String> getNodeIdsInReverse(Path path, boolean showLeaf)

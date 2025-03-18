@@ -117,8 +117,7 @@ public class AuthenticationUtil
     }
 
     /**
-     * Helper method to get the user that is currently in effect for purposes of authentication. This includes any
-     * overlays introduced by {@link #runAs}.
+     * Helper method to get the user that is currently in effect for purposes of authentication. This includes any overlays introduced by {@link #runAs}.
      *
      * @return Returns the name of the user
      * @throws AuthenticationException

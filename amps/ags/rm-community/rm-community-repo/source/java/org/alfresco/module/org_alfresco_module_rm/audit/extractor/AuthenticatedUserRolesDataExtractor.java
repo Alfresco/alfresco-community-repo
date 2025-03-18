@@ -43,9 +43,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 
 /**
- * An extractor that uses a node context to determine the currently-authenticated
- * user's RM roles.  This is not a data generator because it can only function in
- * the context of a given node.
+ * An extractor that uses a node context to determine the currently-authenticated user's RM roles. This is not a data generator because it can only function in the context of a given node.
  *
  * @author Derek Hulley
  * @since 3.2
@@ -66,7 +64,8 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -74,7 +73,8 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
     }
 
     /**
-     * @param filePlanRoleService   file plan role service
+     * @param filePlanRoleService
+     *            file plan role service
      */
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
@@ -82,7 +82,8 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
     }
 
     /**
-     * @param dictionaryService	dictionary service
+     * @param dictionaryService
+     *            dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -90,8 +91,7 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
     }
 
     /**
-     * @return  Returns <tt>true</tt> if the data is a NodeRef and it represents either a fileplan component or
-     *          a subtype of content
+     * @return Returns <tt>true</tt> if the data is a NodeRef and it represents either a fileplan component or a subtype of content
      */
     public boolean isSupported(Serializable data)
     {
@@ -100,7 +100,7 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
             return false;
         }
         NodeRef nodeRef = (NodeRef) data;
-        return nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT)  ||
+        return nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) ||
                 dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT);
     }
 
@@ -118,13 +118,13 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
         }
 
         StringBuilder sb = new StringBuilder(100);
-        
+
         // Get the rm root
         NodeRef rmRootNodeRef = filePlanService.getFilePlan(nodeRef);
 
         // if we don't have an rm root and the given node is a subtype of content
         if (rmRootNodeRef == null &&
-            dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT))
+                dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT))
         {
             // use the default file plan
             rmRootNodeRef = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
@@ -164,7 +164,7 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
         }
         AuthenticatedUserRolesDataExtractor that = (AuthenticatedUserRolesDataExtractor) o;
         return Objects.equals(nodeService, that.nodeService) && Objects.equals(filePlanService, that.filePlanService)
-            && Objects.equals(filePlanRoleService, that.filePlanRoleService);
+                && Objects.equals(filePlanRoleService, that.filePlanRoleService);
     }
 
     @Override

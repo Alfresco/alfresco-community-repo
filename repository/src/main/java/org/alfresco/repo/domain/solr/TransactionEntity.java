@@ -38,27 +38,26 @@ public class TransactionEntity implements Transaction
     private Long commitTimeMs;
     private int updates;
     private int deletes;
-    
+
     /**
      * Required default constructor
      */
     public TransactionEntity()
-    {
-    }
-        
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("TransactionEntity")
-          .append("[ ID=").append(id)
-          .append(", updates=").append(updates)
-          .append(", deletes=").append(deletes)
-          .append(", commitTimeMs=").append(commitTimeMs)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", updates=").append(updates)
+                .append(", deletes=").append(deletes)
+                .append(", commitTimeMs=").append(commitTimeMs)
+                .append("]");
         return sb.toString();
     }
-    
+
     public Long getId()
     {
         return id;
@@ -99,4 +98,3 @@ public class TransactionEntity implements Transaction
         this.commitTimeMs = commitTimeMs;
     }
 }
-

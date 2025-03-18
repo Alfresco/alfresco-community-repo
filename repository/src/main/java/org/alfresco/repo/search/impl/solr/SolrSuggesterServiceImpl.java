@@ -28,12 +28,13 @@ package org.alfresco.repo.search.impl.solr;
 
 import java.util.HashMap;
 
+import org.json.JSONObject;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SuggesterParameters;
 import org.alfresco.service.cmr.search.SuggesterResult;
 import org.alfresco.service.cmr.search.SuggesterService;
-import org.json.JSONObject;
 
 /**
  * Solr Suggester Service Implementation.
@@ -47,9 +48,8 @@ public class SolrSuggesterServiceImpl implements SuggesterService
     public static final String SUGGEST_HANDLER = "/suggest";
 
     private boolean enabled;
-    
-    SolrQueryClient solrQueryHTTPClient;
 
+    SolrQueryClient solrQueryHTTPClient;
 
     public void setEnabled(boolean isEnabled)
     {
@@ -62,9 +62,9 @@ public class SolrSuggesterServiceImpl implements SuggesterService
         return this.enabled;
     }
 
-
     /**
-     * @param solrQueryHTTPClient the solrQueryHTTPClient to set
+     * @param solrQueryHTTPClient
+     *            the solrQueryHTTPClient to set
      */
     public void setSolrQueryHTTPClient(SolrQueryClient solrQueryHTTPClient)
     {
@@ -93,7 +93,7 @@ public class SolrSuggesterServiceImpl implements SuggesterService
             }
             params.put("wt", "json");
 
-            JSONObject response = ((SolrQueryHTTPClient)solrQueryHTTPClient).execute(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SUGGEST_HANDLER, params);
+            JSONObject response = ((SolrQueryHTTPClient) solrQueryHTTPClient).execute(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SUGGEST_HANDLER, params);
             return new SolrSuggesterResult(response);
         }
         catch (Exception e)

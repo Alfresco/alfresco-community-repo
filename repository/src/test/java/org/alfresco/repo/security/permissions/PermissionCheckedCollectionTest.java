@@ -43,8 +43,7 @@ public class PermissionCheckedCollectionTest extends TestCase
 {
     @Override
     protected void setUp() throws Exception
-    {
-    }
+    {}
 
     public void testBasicWrapping() throws Exception
     {
@@ -52,14 +51,14 @@ public class PermissionCheckedCollectionTest extends TestCase
         list.add(1);
         list.add(2);
         list.add(3);
-        
+
         final boolean isCutOff = true;
         final int sizeUnchecked = 100;
         final int sizeOriginal = 900;
-        
+
         Collection<Integer> proxiedList = PermissionCheckedCollectionMixin.create(
                 list, isCutOff, sizeUnchecked, sizeOriginal);
-        
+
         // Check
         assertTrue("Proxied object must still be a List", proxiedList instanceof List);
         assertEquals("List values incorrect", 3, proxiedList.size());
@@ -70,7 +69,7 @@ public class PermissionCheckedCollectionTest extends TestCase
         assertEquals("sizeUnchecked value incorrect", sizeUnchecked, proxiedPermissionCheckedCollection.sizeUnchecked());
         assertEquals("sizeOriginal value incorrect", sizeOriginal, proxiedPermissionCheckedCollection.sizeOriginal());
     }
-    
+
     public void testVolumeWrapping() throws Exception
     {
         int count = 10000;

@@ -32,31 +32,21 @@
 
 package org.alfresco.rest.model;
 
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Base Path {@linkplain /alfresco/api/-default-/private/alfresco/versions/1}
  * 
- * @author Meenal Bhave
- * Example:
- * "resets": [
- *      {
- *          "subscriptionId": "7787ac59-ec71-43c0-b97a-ebdba0254759",
- *          "resetAll": false,
- *          "resetReason": "Stale",
- *          "timestamp": 1502811227880
- *      }
- *  ]
+ * @author Meenal Bhave Example: "resets": [ { "subscriptionId": "7787ac59-ec71-43c0-b97a-ebdba0254759", "resetAll": false, "resetReason": "Stale", "timestamp": 1502811227880 } ]
  */
 
 public class RestSyncSetResetsModel extends TestModel
 {
 
     public RestSyncSetResetsModel()
-    {
-    }
+    {}
 
     @JsonProperty(required = true)
     private String subscriptionId;

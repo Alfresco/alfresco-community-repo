@@ -31,11 +31,6 @@ import static org.mockito.BDDMockito.then;
 import java.util.List;
 
 import junit.framework.TestCase;
-import org.alfresco.rest.api.Rules;
-import org.alfresco.rest.framework.resource.parameters.Paging;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.tests.core.ParamsExtender;
-import org.alfresco.service.Experimental;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,6 +38,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.rest.api.Rules;
+import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.tests.core.ParamsExtender;
+import org.alfresco.service.Experimental;
 
 @Experimental
 @RunWith(MockitoJUnitRunner.class)
@@ -92,7 +93,8 @@ public class NodeRulesRelationTest extends TestCase
     }
 
     @Test
-    public void testDeleteById() {
+    public void testDeleteById()
+    {
         final Parameters parameters = ParamsExtender.valueOf(null, FOLDER_NODE_ID, RULE_SET_ID, RULE_ID, INCLUDE);
         // when
         nodeRulesRelation.delete(FOLDER_NODE_ID, RULE_SET_ID, parameters);

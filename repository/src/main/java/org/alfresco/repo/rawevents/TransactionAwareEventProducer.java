@@ -25,20 +25,20 @@
  */
 package org.alfresco.repo.rawevents;
 
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.camel.ExchangePattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.camel.ExchangePattern;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.util.transaction.TransactionListenerAdapter;
+
 /**
- * A transaction aware {@link AbstractEventProducer}. Events are scheduled to be sent in
- * post-commit phase.
+ * A transaction aware {@link AbstractEventProducer}. Events are scheduled to be sent in post-commit phase.
  * 
  * @author Cristian Turlica
  */
@@ -153,8 +153,7 @@ public class TransactionAwareEventProducer extends AbstractEventProducer
 
         @Override
         public void flush()
-        {
-        }
+        {}
 
         @Override
         public boolean equals(Object o)

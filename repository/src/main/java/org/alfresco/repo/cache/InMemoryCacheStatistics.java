@@ -33,15 +33,15 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
-import org.alfresco.repo.cache.TransactionStats.OpType;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import org.alfresco.repo.cache.TransactionStats.OpType;
+
 /**
- * Simple non-persistent implementation of {@link CacheStatistics}. Statistics
- * are empty at repository startup.
+ * Simple non-persistent implementation of {@link CacheStatistics}. Statistics are empty at repository startup.
  * 
  * @since 5.0
  * @author Matt Ward
@@ -52,8 +52,7 @@ public class InMemoryCacheStatistics implements CacheStatistics, ApplicationCont
     private final ConcurrentMap<String, ReentrantReadWriteLock> locks = new ConcurrentHashMap<>();
     private Map<String, Map<OpType, OperationStats>> cacheToStatsMap = new HashMap<>();
     private ApplicationContext applicationContext;
-    
-    
+
     @Override
     public long count(String cacheName, OpType opType)
     {
@@ -108,17 +107,17 @@ public class InMemoryCacheStatistics implements CacheStatistics, ApplicationCont
             registerCacheStats = !cacheToStatsMap.containsKey(cacheName);
             if (registerCacheStats)
             {
-                // There are no statistics yet for this cache. 
+                // There are no statistics yet for this cache.
                 cacheToStatsMap.put(cacheName, new HashMap<OpType, OperationStats>());
             }
             Map<OpType, OperationStats> cacheStats = cacheToStatsMap.get(cacheName);
-            
+
             for (OpType opType : OpType.values())
-            {                
+            {
                 SummaryStatistics txOpSummary = txStats.getTimings(opType);
                 long count = txOpSummary.getN();
                 double totalTime = txOpSummary.getSum();
-                    
+
                 OperationStats oldStats = cacheStats.get(opType);
                 OperationStats newStats;
                 if (oldStats == null)
@@ -136,15 +135,15 @@ public class InMemoryCacheStatistics implements CacheStatistics, ApplicationCont
         {
             writeLock.unlock();
         }
-        
+
         if (registerCacheStats)
         {
             // We've added stats for a previously unseen cache, raise an event
-            // so that an MBean for the cache may be registered, for example. 
+            // so that an MBean for the cache may be registered, for example.
             applicationContext.publishEvent(new CacheStatisticsCreated(this, cacheName));
         }
     }
-    
+
     @Override
     public double hitMissRatio(String cacheName)
     {
@@ -159,14 +158,14 @@ public class InMemoryCacheStatistics implements CacheStatistics, ApplicationCont
             }
             long hits = cacheStats.get(OpType.GET_HIT).getCount();
             long misses = cacheStats.get(OpType.GET_MISS).getCount();
-            return (double)hits / (hits+misses);
+            return (double) hits / (hits + misses);
         }
         finally
         {
             readLock.unlock();
         }
     }
-    
+
     @Override
     public long numGets(String cacheName)
     {
@@ -181,14 +180,14 @@ public class InMemoryCacheStatistics implements CacheStatistics, ApplicationCont
             }
             long hits = cacheStats.get(OpType.GET_HIT).getCount();
             long misses = cacheStats.get(OpType.GET_MISS).getCount();
-            return hits+misses;
+            return hits + misses;
         }
         finally
         {
             readLock.unlock();
         }
     }
-    
+
     @Override
     public Map<OpType, OperationStats> allStats(String cacheName)
     {
@@ -214,15 +213,12 @@ public class InMemoryCacheStatistics implements CacheStatistics, ApplicationCont
     {
         this.applicationContext = applicationContext;
     }
-    
-    
+
     /**
-     * Gets a {@link ReentrantReadWriteLock} for a specific cache, lazily
-     * creating the lock if necessary. Locks may be created per cache
-     * (rather than hashing to a smaller pool) since the number of
-     * caches is not too large.
+     * Gets a {@link ReentrantReadWriteLock} for a specific cache, lazily creating the lock if necessary. Locks may be created per cache (rather than hashing to a smaller pool) since the number of caches is not too large.
      * 
-     * @param cacheName  Cache name to obtain lock for.
+     * @param cacheName
+     *            Cache name to obtain lock for.
      * @return ReentrantReadWriteLock
      */
     private ReentrantReadWriteLock getLock(String cacheName)
@@ -234,17 +230,18 @@ public class InMemoryCacheStatistics implements CacheStatistics, ApplicationCont
             {
                 // Lock was successfully added to map.
                 return newLock;
-            };
+            }
+            ;
         }
         return locks.get(cacheName);
     }
-    
+
     private ReadLock getReadLock(String cacheName)
     {
         ReadLock readLock = getLock(cacheName).readLock();
         return readLock;
     }
-    
+
     private WriteLock getWriteLock(String cacheName)
     {
         WriteLock writeLock = getLock(cacheName).writeLock();

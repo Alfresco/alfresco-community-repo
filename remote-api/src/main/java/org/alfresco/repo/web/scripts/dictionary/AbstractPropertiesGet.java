@@ -32,12 +32,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Webscript to get the Propertydefinitions for a given classname eg. =>cm_person
@@ -50,10 +51,9 @@ public abstract class AbstractPropertiesGet extends DictionaryWebServiceBase
     private static final String MODEL_PROP_KEY_PROPERTY_DETAILS = "propertydefs";
     private static final String PARAM_NAME = "name";
     private static final String REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX = "nsp";
-    
+
     /**
-     * This request parameter can be passed to filter the propertes based on 
-     * type. More than one type can be supplied.
+     * This request parameter can be passed to filter the propertes based on type. More than one type can be supplied.
      */
     private static final String REQ_PARM_ALLOWED_TYPE = "type";
 
@@ -121,9 +121,9 @@ public abstract class AbstractPropertiesGet extends DictionaryWebServiceBase
         if (filterTypes != null && filterTypes.length > 0)
         {
             List<PropertyDefinition> typeFilteredProps = new ArrayList<PropertyDefinition>(props.size());
-            for (PropertyDefinition prop: props)
+            for (PropertyDefinition prop : props)
             {
-                for (String type: filterTypes)
+                for (String type : filterTypes)
                 {
                     DataTypeDefinition dtd = prop.getDataType();
                     if (dtd.getName().getPrefixString().equals(type))
@@ -133,7 +133,7 @@ public abstract class AbstractPropertiesGet extends DictionaryWebServiceBase
                     }
                 }
             }
-            
+
             // Important to change the props variable to reference the type filtered properties...
             props = typeFilteredProps;
         }
@@ -149,8 +149,9 @@ public abstract class AbstractPropertiesGet extends DictionaryWebServiceBase
     }
 
     /**
-     * @param req - webscript request
-     * @return  qualified name for class
+     * @param req
+     *            - webscript request
+     * @return qualified name for class
      */
     protected abstract QName getClassQName(WebScriptRequest req);
 

@@ -1,20 +1,21 @@
 package org.alfresco.email.imap;
 
+import jakarta.mail.Flags;
+
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.email.EmailTest;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.testng.annotations.Test;
-
-import jakarta.mail.Flags;
 
 public class ImapMessageFlagsTests extends EmailTest
 {
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.SANITY,
             description = "Verify site manager can set flags action to a content(message) through IMAP Client")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY})
     public void siteManagerShouldSetFlagsToAContent() throws Exception
     {
         testUser = dataUser.createRandomTestUser();
@@ -26,9 +27,9 @@ public class ImapMessageFlagsTests extends EmailTest
                 .then().assertThat().messageContainsFlags(Flags.Flag.ANSWERED, Flags.Flag.SEEN);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager can set flags to a content(message) through IMAP Client")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE})
     public void siteManagerShouldSetFlagsToContent() throws Exception
     {
         testUser = dataUser.createRandomTestUser();
@@ -40,9 +41,9 @@ public class ImapMessageFlagsTests extends EmailTest
                 .then().assertThat().messageContainsFlags(Flags.Flag.ANSWERED, Flags.Flag.SEEN);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager can remove flags from a content(message) through IMAP Client")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE})
     public void siteManagerShouldRemoveFlagsFromContent() throws Exception
     {
         testUser = dataUser.createRandomTestUser();

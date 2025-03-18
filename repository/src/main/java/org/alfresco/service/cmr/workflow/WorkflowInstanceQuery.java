@@ -153,13 +153,15 @@ public class WorkflowInstanceQuery
     {
         this.excludedDefinitions = excludedDefinitions;
     }
-    
-    public void setEngineId(String engine) {
-		this.engine = engine;
-	}
-    
-    public String getEngineId() {
-		return engine;
-	}
+
+    public void setEngineId(String engine)
+    {
+        this.engine = engine;
+    }
+
+    public String getEngineId()
+    {
+        return engine;
+    }
 
 }

@@ -32,7 +32,7 @@ import java.util.Set;
  */
 public class OneToManyHashMap<K, V> implements Map<K, Set<V>>, OneToManyMap<K, V>
 {
-    //Delegate map.
+    // Delegate map.
     private final Map<K, Set<V>> map = new HashMap<K, Set<V>>();
 
     public void clear()
@@ -50,15 +50,14 @@ public class OneToManyHashMap<K, V> implements Map<K, Set<V>>, OneToManyMap<K, V
         return map.containsValue(value);
     }
 
-    /*
-     * @see org.alfresco.util.OneToManyMap#containsSingleValue(V)
-     */
+    /* @see org.alfresco.util.OneToManyMap#containsSingleValue(V) */
     public boolean containsSingleValue(V value)
     {
         Collection<Set<V>> values = map.values();
         for (Set<V> set : values)
         {
-            if (set.contains(value)) return true;
+            if (set.contains(value))
+                return true;
 
         }
         return false;
@@ -69,9 +68,7 @@ public class OneToManyHashMap<K, V> implements Map<K, Set<V>>, OneToManyMap<K, V
         return map.entrySet();
     }
 
-    /*
-     * @see org.alfresco.util.OneToManyMap#entries()
-     */
+    /* @see org.alfresco.util.OneToManyMap#entries() */
     public Set<Entry<K, V>> entries()
     {
         Set<Entry<K, V>> entries = new HashSet<Entry<K, V>>();
@@ -81,8 +78,7 @@ public class OneToManyHashMap<K, V> implements Map<K, Set<V>>, OneToManyMap<K, V
             final Set<V> values = entry.getValue();
             for (final V value : values)
             {
-                entries.add(new Entry<K, V>()
-                {
+                entries.add(new Entry<K, V>() {
 
                     public K getKey()
                     {
@@ -98,8 +94,8 @@ public class OneToManyHashMap<K, V> implements Map<K, Set<V>>, OneToManyMap<K, V
                     public V setValue(V newValue)
                     {
                         throw new UnsupportedOperationException(
-                                    "Cannot modify the entries returned by "
-                                                + OneToManyHashMap.class.getName() + ".entries()!");
+                                "Cannot modify the entries returned by "
+                                        + OneToManyHashMap.class.getName() + ".entries()!");
                     }
                 });
             }
@@ -110,7 +106,8 @@ public class OneToManyHashMap<K, V> implements Map<K, Set<V>>, OneToManyMap<K, V
     public Set<V> get(Object key)
     {
         Set<V> set = map.get(key);
-        if (set == null) set = new HashSet<V>();
+        if (set == null)
+            set = new HashSet<V>();
         return Collections.unmodifiableSet(set);
     }
 
@@ -129,9 +126,7 @@ public class OneToManyHashMap<K, V> implements Map<K, Set<V>>, OneToManyMap<K, V
         return map.put(key, value);
     }
 
-    /*
-     * @see org.alfresco.util.OneToManyMap#putSingleValue(K, V)
-     */
+    /* @see org.alfresco.util.OneToManyMap#putSingleValue(K, V) */
     public V putSingleValue(K key, V value)
     {
         Set<V> values = map.get(key);
@@ -149,9 +144,7 @@ public class OneToManyHashMap<K, V> implements Map<K, Set<V>>, OneToManyMap<K, V
         map.putAll(m);
     }
 
-    /*
-     * @see org.alfresco.util.OneToManyMap#putAllSingleValues(java.util.Map)
-     */
+    /* @see org.alfresco.util.OneToManyMap#putAllSingleValues(java.util.Map) */
     public void putAllSingleValues(Map<? extends K, ? extends V> m)
     {
         for (Entry<? extends K, ? extends V> entry : m.entrySet())
@@ -175,9 +168,7 @@ public class OneToManyHashMap<K, V> implements Map<K, Set<V>>, OneToManyMap<K, V
         return map.values();
     }
 
-    /*
-     * @see org.alfresco.util.OneToManyMap#flatValues()
-     */
+    /* @see org.alfresco.util.OneToManyMap#flatValues() */
     public Collection<V> flatValues()
     {
         LinkedList<V> flatValues = new LinkedList<V>();

@@ -34,6 +34,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentContext;
@@ -44,23 +47,15 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * <h1><u>Aggregating Content Store</u></h1>
  * <p>
- * A content store implementation that aggregates a set of stores.  Content is not 
- * persisted by this store, but rather it relies on any number of
- * child {@link org.alfresco.repo.content.ContentStore stores} to provide access 
- * to content readers and writers.
+ * A content store implementation that aggregates a set of stores. Content is not persisted by this store, but rather it relies on any number of child {@link org.alfresco.repo.content.ContentStore stores} to provide access to content readers and writers.
  * <p>
- * The order in which the stores appear in the list of stores participating is
- * important.  The first store in the list is known as the <i>primary store</i>.
-   <p>
- * Content is written to the primary store only.  The other stores are
- * only used to retrieve content and the primary store is not updated with
- * the content.
+ * The order in which the stores appear in the list of stores participating is important. The first store in the list is known as the <i>primary store</i>.
+ * <p>
+ * Content is written to the primary store only. The other stores are only used to retrieve content and the primary store is not updated with the content.
  * 
  * @author Derek Hulley
  * @author Mark Rogers
@@ -75,22 +70,23 @@ public class AggregatingContentStore extends AbstractContentStore
 
     private ContentStore primaryStore;
     private List<ContentStore> secondaryStores;
-    
+
     private Lock readLock;
 
     /**
-     * Default constructor 
+     * Default constructor
      */
     public AggregatingContentStore()
     {
         ReadWriteLock storeLock = new ReentrantReadWriteLock();
         readLock = storeLock.readLock();
     }
-        
+
     /**
      * Set the primary store that content will be replicated to or from
      * 
-     * @param primaryStore the primary content store
+     * @param primaryStore
+     *            the primary content store
      */
     public void setPrimaryStore(ContentStore primaryStore)
     {
@@ -100,15 +96,16 @@ public class AggregatingContentStore extends AbstractContentStore
     /**
      * Set the secondary stores that this component will replicate to or from
      * 
-     * @param secondaryStores a list of stores to replicate to or from
+     * @param secondaryStores
+     *            a list of stores to replicate to or from
      */
     public void setSecondaryStores(List<ContentStore> secondaryStores)
     {
         this.secondaryStores = secondaryStores;
     }
-    
+
     /**
-     * @return      Returns <tt>true</tt> if the primary store supports writing
+     * @return Returns <tt>true</tt> if the primary store supports writing
      */
     public boolean isWriteSupported()
     {
@@ -116,16 +113,16 @@ public class AggregatingContentStore extends AbstractContentStore
     }
 
     /**
-     * @return      Returns <tt>true</tt> if the primary store supports the URL
+     * @return Returns <tt>true</tt> if the primary store supports the URL
      */
     @Override
     public boolean isContentUrlSupported(String contentUrl)
     {
         return primaryStore.isContentUrlSupported(contentUrl);
     }
-    
+
     /**
-     * @return      Return the primary store root location
+     * @return Return the primary store root location
      */
     @Override
     public String getRootLocation()
@@ -146,7 +143,7 @@ public class AggregatingContentStore extends AbstractContentStore
         {
             // get a reader from the primary store
             ContentReader primaryReader = primaryStore.getReader(contentUrl);
-            
+
             // give it straight back if the content is there
             if (primaryReader.exists())
             {
@@ -169,7 +166,7 @@ public class AggregatingContentStore extends AbstractContentStore
         finally
         {
             readLock.unlock();
-        }     
+        }
     }
 
     public boolean exists(String contentUrl)
@@ -248,8 +245,7 @@ public class AggregatingContentStore extends AbstractContentStore
     }
 
     /**
-     * Performs a delete on the local store and if outbound replication is on, propogates
-     * the delete to the other stores too.
+     * Performs a delete on the local store and if outbound replication is on, propogates the delete to the other stores too.
      * 
      * @return Returns the value returned by the delete on the primary store.
      */
@@ -257,7 +253,7 @@ public class AggregatingContentStore extends AbstractContentStore
     {
         // delete on the primary store
         boolean deleted = primaryStore.delete(contentUrl);
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Deleted content for URL: " + contentUrl);
@@ -423,7 +419,8 @@ public class AggregatingContentStore extends AbstractContentStore
             }
 
             if (objectStoragePropertiesMap.isEmpty() ||
-                    objectStoragePropertiesMap.get().isEmpty()) {// the content is not in the primary store so we have to go looking for it
+                    objectStoragePropertiesMap.get().isEmpty())
+            {// the content is not in the primary store so we have to go looking for it
                 for (ContentStore store : secondaryStores)
                 {
                     try
@@ -490,7 +487,8 @@ public class AggregatingContentStore extends AbstractContentStore
                 final String message = String.format("Primary store does not handle this operation for content URL: %s", contentUrl);
                 logger.trace(message);
             }
-            catch (UnsupportedContentUrlException e) {
+            catch (UnsupportedContentUrlException e)
+            {
                 final String message = String.format(PRIMARY_STORE_COULD_NOT_HANDLE_CONTENT_URL, contentUrl);
                 logger.trace(message);
                 primaryContentUrlUnsupported = true;
@@ -507,11 +505,11 @@ public class AggregatingContentStore extends AbstractContentStore
                     try
                     {
                         archiveRequestSucceeded = archiveRequestResult(contentUrl, requestParams, restore, store);
-                    } catch (UnsupportedOperationException e)
+                    }
+                    catch (UnsupportedOperationException e)
                     {
-                        final String message =
-                                String.format("Secondary store %s does not handle this operation for content URL: %s", store,
-                                        contentUrl);
+                        final String message = String.format("Secondary store %s does not handle this operation for content URL: %s", store,
+                                contentUrl);
                         logger.trace(message);
                     }
                     catch (UnsupportedContentUrlException e)
@@ -541,17 +539,13 @@ public class AggregatingContentStore extends AbstractContentStore
 
     private boolean callSuperMethod(String contentUrl, Map<String, Serializable> requestParams, boolean restore)
     {
-        return restore ?
-                super.requestRestoreContentFromArchive(contentUrl, requestParams) :
-                super.requestSendContentToArchive(contentUrl, requestParams);
+        return restore ? super.requestRestoreContentFromArchive(contentUrl, requestParams) : super.requestSendContentToArchive(contentUrl, requestParams);
     }
 
     private boolean archiveRequestResult(String contentUrl, Map<String, Serializable> requestParams, boolean restore,
-                                         ContentStore store)
+            ContentStore store)
     {
-        return restore ?
-                store.requestRestoreContentFromArchive(contentUrl, requestParams) :
-                store.requestSendContentToArchive(contentUrl, requestParams);
+        return restore ? store.requestRestoreContentFromArchive(contentUrl, requestParams) : store.requestSendContentToArchive(contentUrl, requestParams);
     }
 
     private void checkPrimaryStore()

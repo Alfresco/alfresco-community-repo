@@ -40,15 +40,15 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 public class Equals extends BaseComparison
 {
     public final static String NAME = "Equals";
-    
+
     public Equals()
     {
-        super(NAME, DataTypeDefinition.BOOLEAN, ARGS);   
+        super(NAME, DataTypeDefinition.BOOLEAN, ARGS);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set) */
     public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
         throw new UnsupportedOperationException();

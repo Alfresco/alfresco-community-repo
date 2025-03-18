@@ -1,5 +1,9 @@
 package org.alfresco.rest.workflow.processes.variables;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
@@ -12,9 +16,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * @author iulia.cojocea
@@ -38,9 +39,9 @@ public class AddProcessVariableSanityTests extends RestTest
         dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.SANITY,
             description = "Create non-existing variable")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})
     public void addProcessVariable() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
@@ -49,16 +50,16 @@ public class AddProcessVariableSanityTests extends RestTest
         processVariable = restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processVariable.assertThat().field("name").is(variableModel.getName())
-                       .and().field("type").is(variableModel.getType())
-                       .and().field("value").is(variableModel.getValue());
+                .and().field("type").is(variableModel.getType())
+                .and().field("value").is(variableModel.getValue());
 
         restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
                 .assertThat().entriesListContains("name", variableModel.getName());
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.SANITY,
             description = "Update existing variable")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})
     public void updateExistingProcessVariable() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
@@ -66,8 +67,8 @@ public class AddProcessVariableSanityTests extends RestTest
         processVariable = restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processVariable.assertThat().field("name").is(variableModel.getName())
-                        .and().field("type").is(variableModel.getType())
-                        .and().field("value").is(variableModel.getValue());
+                .and().field("type").is(variableModel.getType())
+                .and().field("value").is(variableModel.getValue());
 
         String newValue = RandomData.getRandomName("value");
         variableModel.setValue(newValue);
@@ -76,20 +77,20 @@ public class AddProcessVariableSanityTests extends RestTest
         processVariable.assertThat().field("value").is(newValue);
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES}, executionType = ExecutionType.SANITY,
             description = "Adding process variable is falling in case invalid variableBody is provided")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})
     public void failedAddingProcessVariableIfInvalidBodyIsProvided() throws Exception
     {
         variableModel = RestProcessVariableModel.getRandomProcessVariableModel("incorrect type");
         processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        
+
         restClient.withWorkflowAPI().usingProcess(processModel).updateProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                  .assertLastError()
-                  .containsErrorKey(String.format(RestErrorModel.UNSUPPORTED_TYPE, "incorrect type"))
-                  .containsSummary(String.format(RestErrorModel.UNSUPPORTED_TYPE, "incorrect type"))
-                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                  .stackTraceIs(RestErrorModel.STACKTRACE);
+                .assertLastError()
+                .containsErrorKey(String.format(RestErrorModel.UNSUPPORTED_TYPE, "incorrect type"))
+                .containsSummary(String.format(RestErrorModel.UNSUPPORTED_TYPE, "incorrect type"))
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 }

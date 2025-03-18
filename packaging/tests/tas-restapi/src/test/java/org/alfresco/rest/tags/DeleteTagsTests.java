@@ -26,16 +26,18 @@
 
 package org.alfresco.rest.tags;
 
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+
+import static org.alfresco.utility.report.log.Step.STEP;
+
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.TestGroup;
-import org.testng.annotations.Test;
-
-import static org.alfresco.utility.report.log.Step.STEP;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 public class DeleteTagsTests extends TagsDataPrep
 {
@@ -58,8 +60,7 @@ public class DeleteTagsTests extends TagsDataPrep
     }
 
     /**
-     * Attempt to delete a tag as a site manager and receive 403 error.
-     * Other user roles have fewer permissions than a SiteManager and thus would also be forbidden from deleting a tag.
+     * Attempt to delete a tag as a site manager and receive 403 error. Other user roles have fewer permissions than a SiteManager and thus would also be forbidden from deleting a tag.
      */
     @Test(groups = {TestGroup.REST_API})
     public void testDeleteTagAsSiteManager_andFail()

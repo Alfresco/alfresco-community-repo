@@ -40,8 +40,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.traitextender.SpringBeanExtension;
 
 public class VirtualCheckOutCheckInServiceExtension extends
-            SpringBeanExtension<CheckOutCheckInServiceExtension, CheckOutCheckInServiceTrait> implements
-            CheckOutCheckInServiceExtension
+        SpringBeanExtension<CheckOutCheckInServiceExtension, CheckOutCheckInServiceTrait> implements
+        CheckOutCheckInServiceExtension
 {
 
     public VirtualCheckOutCheckInServiceExtension()
@@ -58,21 +58,21 @@ public class VirtualCheckOutCheckInServiceExtension extends
 
     @Override
     public NodeRef checkout(NodeRef nodeRef, NodeRef destinationParentNodeRef, QName destinationAssocTypeQName,
-                QName destinationAssocQName)
+            QName destinationAssocQName)
     {
         CheckOutCheckInServiceTrait theTrait = getTrait();
         NodeRef materialNodeRef = smartStore.materializeIfPossible(nodeRef);
         NodeRef materialDestination = smartStore.materializeIfPossible(destinationParentNodeRef);
         NodeRef workingCopy = theTrait.checkout(materialNodeRef,
-                                                materialDestination,
-                                                destinationAssocTypeQName,
-                                                destinationAssocQName);
+                materialDestination,
+                destinationAssocTypeQName,
+                destinationAssocQName);
 
         Reference parentReference = Reference.fromNodeRef(destinationParentNodeRef);
         if (parentReference != null)
         {
             Reference workingCopyReference = NodeProtocol.newReference(workingCopy,
-                                                                       parentReference);
+                    parentReference);
             return workingCopyReference.toNodeRef(workingCopy.getStoreRef());
         }
         else
@@ -90,21 +90,21 @@ public class VirtualCheckOutCheckInServiceExtension extends
         NodeRef workingCopy = theTrait.checkout(materialNodeRef);
 
         return virtualizeOriginalIfNeeded(nodeRef,
-                                          workingCopy);
+                workingCopy);
     }
 
     @Override
     public NodeRef checkin(NodeRef workingCopyNodeRef, Map<String, Serializable> versionProperties, String contentUrl,
-                boolean keepCheckedOut)
+            boolean keepCheckedOut)
     {
         CheckOutCheckInServiceTrait theTrait = getTrait();
         NodeRef materialWorkingCopy = smartStore.materializeIfPossible(workingCopyNodeRef);
         NodeRef materialOriginalNode = theTrait.checkin(materialWorkingCopy,
-                                                        versionProperties,
-                                                        contentUrl,
-                                                        keepCheckedOut);
+                versionProperties,
+                contentUrl,
+                keepCheckedOut);
         return virtualizeOriginalIfNeeded(workingCopyNodeRef,
-                                          materialOriginalNode);
+                materialOriginalNode);
     }
 
     @Override
@@ -113,21 +113,21 @@ public class VirtualCheckOutCheckInServiceExtension extends
         CheckOutCheckInServiceTrait theTrait = getTrait();
         NodeRef materialWorkingCopy = smartStore.materializeIfPossible(workingCopyNodeRef);
         NodeRef materialOriginalNode = theTrait.checkin(materialWorkingCopy,
-                                                        versionProperties,
-                                                        contentUrl);
+                versionProperties,
+                contentUrl);
 
         return virtualizeOriginalIfNeeded(workingCopyNodeRef,
-                                          materialOriginalNode);
+                materialOriginalNode);
     }
 
     private NodeRef virtualizeOriginalIfNeeded(NodeRef workingCopyNodeRef, NodeRef materialOriginalNode)
     {
-    	Reference workingCopyReference = Reference.fromNodeRef(workingCopyNodeRef);
+        Reference workingCopyReference = Reference.fromNodeRef(workingCopyNodeRef);
         if ((materialOriginalNode != null) && (workingCopyReference != null))
         {
             Reference parentReference = workingCopyReference.execute(new GetParentReferenceMethod());
             Reference originalReference = NodeProtocol.newReference(materialOriginalNode,
-                                                                    parentReference);
+                    parentReference);
             return originalReference.toNodeRef(materialOriginalNode.getStoreRef());
         }
         else
@@ -142,19 +142,19 @@ public class VirtualCheckOutCheckInServiceExtension extends
         CheckOutCheckInServiceTrait theTrait = getTrait();
         NodeRef materialWorkingCopy = smartStore.materializeIfPossible(workingCopyNodeRef);
         NodeRef materialOriginalNode = theTrait.checkin(materialWorkingCopy,
-                                                        versionProperties);
+                versionProperties);
 
         return virtualizeOriginalIfNeeded(workingCopyNodeRef,
-                                          materialOriginalNode);
+                materialOriginalNode);
     }
 
     @Override
     public NodeRef cancelCheckout(NodeRef workingCopyNodeRef)
     {
         NodeRef materialOriginalNode = getTrait().cancelCheckout(smartStore.materializeIfPossible(workingCopyNodeRef));
-        
+
         return virtualizeOriginalIfNeeded(workingCopyNodeRef,
-                                          materialOriginalNode);
+                materialOriginalNode);
     }
 
     @Override
@@ -164,18 +164,18 @@ public class VirtualCheckOutCheckInServiceExtension extends
         NodeRef materialWorkingCopy = theTrait.getWorkingCopy(smartStore.materializeIfPossible(nodeRef));
 
         return virtualizeVersionIfNeeded(nodeRef,
-                                         materialWorkingCopy);
+                materialWorkingCopy);
     }
 
     private NodeRef virtualizeVersionIfNeeded(NodeRef originalNodeRef, NodeRef materialVersion)
     {
-    	Reference reference = Reference.fromNodeRef(originalNodeRef);
+        Reference reference = Reference.fromNodeRef(originalNodeRef);
         if ((materialVersion != null) && (reference != null)
-                    && (Reference.fromNodeRef(materialVersion)==null))
+                && (Reference.fromNodeRef(materialVersion) == null))
         {
             Reference parentReference = reference.execute(new GetParentReferenceMethod());
             Reference workingCopyReference = NodeProtocol.newReference(materialVersion,
-                                                                       parentReference);
+                    parentReference);
             return workingCopyReference.toNodeRef(materialVersion.getStoreRef());
         }
         else
@@ -190,7 +190,7 @@ public class VirtualCheckOutCheckInServiceExtension extends
         CheckOutCheckInServiceTrait theTrait = getTrait();
         NodeRef materialChekedOut = theTrait.getCheckedOut(smartStore.materializeIfPossible(nodeRef));
         return virtualizeVersionIfNeeded(nodeRef,
-                                         materialChekedOut);
+                materialChekedOut);
     }
 
     @Override

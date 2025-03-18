@@ -47,24 +47,23 @@ public class AuditQueryResult
     private Long auditValuesId;
     private List<PropertyIdSearchRow> auditValueRows;
     private Map<String, Serializable> auditValue;
-    
+
     public AuditQueryResult()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("AuditEntryResult")
-          .append("[ auditEntryId=").append(auditEntryId)
-          .append(", auditAppNameId=").append(auditAppNameId)
-          .append(", auditUserId=").append(auditUserId)
-          .append(", auditTime").append(new Date(auditTime))
-          .append(", auditValuesId=").append(auditValuesId)
-          .append(", auditValueRows=").append(auditValueRows == null ? null : auditValueRows.size())
-          .append(", auditValue=").append(auditValue)
-          .append("]");
+                .append("[ auditEntryId=").append(auditEntryId)
+                .append(", auditAppNameId=").append(auditAppNameId)
+                .append(", auditUserId=").append(auditUserId)
+                .append(", auditTime").append(new Date(auditTime))
+                .append(", auditValuesId=").append(auditValuesId)
+                .append(", auditValueRows=").append(auditValueRows == null ? null : auditValueRows.size())
+                .append(", auditValue=").append(auditValue)
+                .append("]");
         return sb.toString();
     }
 

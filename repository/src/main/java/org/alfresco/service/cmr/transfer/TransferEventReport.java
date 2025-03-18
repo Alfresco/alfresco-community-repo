@@ -34,14 +34,17 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author mrogers
  *
  */
-public class TransferEventReport extends  TransferEventImpl implements TransferEvent
+public class TransferEventReport extends TransferEventImpl implements TransferEvent
 {
-    public enum ReportType { SOURCE, DESTINATION };
-    
+    public enum ReportType
+    {
+        SOURCE, DESTINATION
+    };
+
     private NodeRef nodeRef;
-    
+
     private ReportType reportType;
-    
+
     public String toString()
     {
         return "TransferEventReportWritten: " + nodeRef;

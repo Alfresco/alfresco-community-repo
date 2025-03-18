@@ -26,8 +26,10 @@
 
 package org.alfresco.rest.api.rules;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.rules.Rule;
@@ -39,7 +41,6 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Folder node's rules.
@@ -48,11 +49,11 @@ import org.springframework.beans.factory.InitializingBean;
 @Experimental
 @RelationshipResource(name = "rules", entityResource = NodeRuleSetsRelation.class, title = "Folder node rules")
 public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
-                                          RelationshipResourceAction.ReadById<Rule>,
-                                          RelationshipResourceAction.Create<Rule>,
-                                          RelationshipResourceAction.Update<Rule>,
-                                          RelationshipResourceAction.Delete,
-                                          InitializingBean
+        RelationshipResourceAction.ReadById<Rule>,
+        RelationshipResourceAction.Create<Rule>,
+        RelationshipResourceAction.Update<Rule>,
+        RelationshipResourceAction.Delete,
+        InitializingBean
 {
 
     private Rules rules;
@@ -68,15 +69,16 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
      * <p>
      * - GET /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules
      *
-     * @param folderNodeId - entity resource context for this relationship
-     * @param parameters - will never be null. Contains i.a. paging information and ruleSetId (relationshipId)
+     * @param folderNodeId
+     *            - entity resource context for this relationship
+     * @param parameters
+     *            - will never be null. Contains i.a. paging information and ruleSetId (relationshipId)
      * @return {@link CollectionWithPagingInfo} containing a page of folder rules
      */
     @WebApiDescription(
-        title = "Get folder node rules",
-        description = "Returns a paged list of folder rules for given node's and rule set's IDs",
-        successStatus = HttpServletResponse.SC_OK
-    )
+            title = "Get folder node rules",
+            description = "Returns a paged list of folder rules for given node's and rule set's IDs",
+            successStatus = HttpServletResponse.SC_OK)
     @Override
     public CollectionWithPagingInfo<Rule> readAll(String folderNodeId, Parameters parameters)
     {
@@ -90,17 +92,20 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
      * <p>
      * - GET /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules/{ruleId}
      *
-     * @param folderNodeId - entity resource context for this relationship
-     * @param ruleSetId - rule set node ID (associated with folder node)
-     * @param parameters - will never be null. Contains i.a. ruleId (relationship2Id)
+     * @param folderNodeId
+     *            - entity resource context for this relationship
+     * @param ruleSetId
+     *            - rule set node ID (associated with folder node)
+     * @param parameters
+     *            - will never be null. Contains i.a. ruleId (relationship2Id)
      * @return {@link Rule} definition
-     * @throws RelationshipResourceNotFoundException in case resource was not found
+     * @throws RelationshipResourceNotFoundException
+     *             in case resource was not found
      */
     @WebApiDescription(
-        title="Get folder node rule",
-        description = "Returns a folder single rule definition for given node's, rule set's and rule's IDs",
-        successStatus = HttpServletResponse.SC_OK
-    )
+            title = "Get folder node rule",
+            description = "Returns a folder single rule definition for given node's, rule set's and rule's IDs",
+            successStatus = HttpServletResponse.SC_OK)
     @Override
     public Rule readById(String folderNodeId, String ruleSetId, Parameters parameters) throws RelationshipResourceNotFoundException
     {
@@ -114,16 +119,18 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
      * <p>
      * POST /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules
      *
-     * @param folderNodeId The folder in which to create the rule.
-     * @param ruleList The list of rules to create.
-     * @param parameters List of parameters including the rule set id as the relationship.
+     * @param folderNodeId
+     *            The folder in which to create the rule.
+     * @param ruleList
+     *            The list of rules to create.
+     * @param parameters
+     *            List of parameters including the rule set id as the relationship.
      * @return The newly created rules.
      */
     @WebApiDescription(
             title = "Create folder rule",
             description = "Creates one or more folder rules for the given folder and rule set",
-            successStatus = HttpServletResponse.SC_CREATED
-    )
+            successStatus = HttpServletResponse.SC_CREATED)
     @Override
     public List<Rule> create(String folderNodeId, List<Rule> ruleList, Parameters parameters)
     {
@@ -137,17 +144,20 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
      * <p>
      * PUT /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules/{ruleId}
      *
-     * @param folderNodeId The id of the folder containing the rule.
-     * @param rule The updated rule.
-     * @param parameters List of parameters including the rule set id and rule id.
+     * @param folderNodeId
+     *            The id of the folder containing the rule.
+     * @param rule
+     *            The updated rule.
+     * @param parameters
+     *            List of parameters including the rule set id and rule id.
      * @return The updated rule.
-     * @throws RelationshipResourceNotFoundException in case resource was not found
+     * @throws RelationshipResourceNotFoundException
+     *             in case resource was not found
      */
-    @WebApiDescription (
+    @WebApiDescription(
             title = "Update folder node rule",
             description = "Update a single rule definition for given node's, rule set's and rule's IDs",
-            successStatus = HttpServletResponse.SC_OK
-    )
+            successStatus = HttpServletResponse.SC_OK)
     @Override
     public Rule update(String folderNodeId, Rule rule, Parameters parameters)
     {
@@ -161,16 +171,19 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
      * <p>
      * - DELETE /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules/{ruleId}
      *
-     * @param folderNodeId - entity resource context for this relationship
-     * @param ruleSetId - rule set node ID (associated with folder node)
-     * @param parameters - Should not be null. Should contain at least ruleId (relationship2Id)
-     * @throws RelationshipResourceNotFoundException in case resource was not found
+     * @param folderNodeId
+     *            - entity resource context for this relationship
+     * @param ruleSetId
+     *            - rule set node ID (associated with folder node)
+     * @param parameters
+     *            - Should not be null. Should contain at least ruleId (relationship2Id)
+     * @throws RelationshipResourceNotFoundException
+     *             in case resource was not found
      */
     @WebApiDescription(
-            title="Delete folder node rule",
+            title = "Delete folder node rule",
             description = "Deletes a single rule definition for given node's, rule set's and rule's IDs",
-            successStatus = HttpServletResponse.SC_NO_CONTENT
-    )
+            successStatus = HttpServletResponse.SC_NO_CONTENT)
     @Override
     public void delete(String folderNodeId, String ruleSetId, Parameters parameters)
     {

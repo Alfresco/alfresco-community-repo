@@ -44,13 +44,13 @@ public class AclEntity implements Acl
     {
         return "AclEntity [id=" + id + ", inheritedId=" + inheritedId + ", aclChangeSetId=" + aclChangeSetId + "]";
     }
-    
+
     @Override
     public Long getId()
     {
         return id;
     }
-    
+
     public void setId(Long id)
     {
         this.id = id;
@@ -61,6 +61,7 @@ public class AclEntity implements Acl
     {
         return aclChangeSetId;
     }
+
     public void setAclChangeSetId(Long aclChangeSetId)
     {
         this.aclChangeSetId = aclChangeSetId;
@@ -78,8 +79,8 @@ public class AclEntity implements Acl
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
+     * 
+     * @see java.lang.Object#hashCode() */
     @Override
     public int hashCode()
     {
@@ -92,8 +93,8 @@ public class AclEntity implements Acl
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+     * 
+     * @see java.lang.Object#equals(java.lang.Object) */
     @Override
     public boolean equals(Object obj)
     {
@@ -129,13 +130,12 @@ public class AclEntity implements Acl
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
+     * 
+     * @see java.lang.Comparable#compareTo(java.lang.Object) */
     @Override
     public int compareTo(Acl o)
     {
         return this.getId().compareTo(o.getId());
     }
-    
-    
+
 }

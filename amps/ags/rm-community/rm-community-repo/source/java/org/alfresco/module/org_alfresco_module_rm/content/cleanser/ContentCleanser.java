@@ -47,15 +47,18 @@ public abstract class ContentCleanser
     /**
      * Cleanse file
      * 
-     * @param file  file to cleanse
+     * @param file
+     *            file to cleanse
      */
     public abstract void cleanse(File file);
 
     /**
      * Overwrite files bytes with provided overwrite operation
      * 
-     * @param file                  file
-     * @param overwriteOperation    overwrite operation
+     * @param file
+     *            file
+     * @param overwriteOperation
+     *            overwrite operation
      */
     protected void overwrite(File file, OverwriteOperation overwriteOperation)
     {
@@ -91,8 +94,7 @@ public abstract class ContentCleanser
     /**
      * Overwrite with zeros operation
      */
-    protected OverwriteOperation overwriteZeros = new OverwriteOperation()
-    {
+    protected OverwriteOperation overwriteZeros = new OverwriteOperation() {
         public void operation(OutputStream os) throws IOException
         {
             os.write(0);
@@ -102,8 +104,7 @@ public abstract class ContentCleanser
     /**
      * Overwrite with ones operation
      */
-    protected OverwriteOperation overwriteOnes = new OverwriteOperation()
-    {
+    protected OverwriteOperation overwriteOnes = new OverwriteOperation() {
         public void operation(OutputStream os) throws IOException
         {
             os.write(0xff);
@@ -113,8 +114,7 @@ public abstract class ContentCleanser
     /**
      * Overwrite with random operation
      */
-    protected OverwriteOperation overwriteRandom = new OverwriteOperation()
-    {
+    protected OverwriteOperation overwriteRandom = new OverwriteOperation() {
         private Random random = new Random();
 
         public void operation(OutputStream os) throws IOException

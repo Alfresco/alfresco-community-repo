@@ -43,8 +43,7 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
 
     // Default constructor
     public SimpleAccessControlListProperties()
-    {
-    }
+    {}
 
     public SimpleAccessControlListProperties(AccessControlListProperties props)
     {
@@ -99,7 +98,8 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     /**
      * Set the acl id
      * 
-     * @param aclId String
+     * @param aclId
+     *            String
      */
     public void setAclId(String aclId)
     {
@@ -109,7 +109,8 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     /**
      * Set the acl type
      * 
-     * @param aclType ACLType
+     * @param aclType
+     *            ACLType
      */
     public void setAclType(ACLType aclType)
     {
@@ -119,7 +120,8 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     /**
      * Set the acl version
      * 
-     * @param aclVersion Long
+     * @param aclVersion
+     *            Long
      */
     public void setAclVersion(Long aclVersion)
     {
@@ -129,7 +131,8 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     /**
      * Set inheritance
      * 
-     * @param inherits boolean
+     * @param inherits
+     *            boolean
      */
     public void setInherits(boolean inherits)
     {
@@ -139,7 +142,8 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     /**
      * Set latest
      * 
-     * @param latest boolean
+     * @param latest
+     *            boolean
      */
     public void setLatest(boolean latest)
     {
@@ -149,7 +153,8 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     /**
      * Set versioned
      * 
-     * @param versioned boolean
+     * @param versioned
+     *            boolean
      */
     public void setVersioned(boolean versioned)
     {
@@ -164,17 +169,17 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     /**
      * Set the id
      * 
-     * @param id Long
+     * @param id
+     *            Long
      */
     public void setId(Long id)
     {
         this.id = id;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.AccessControlListProperties#getChangeSetId()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.permissions.AccessControlListProperties#getChangeSetId() */
     @Override
     public Long getAclChangeSetId()
     {

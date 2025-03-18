@@ -25,8 +25,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * Generic bridge table support with optional reference counting to allow multiple membership for an object via several
- * relationships.
+ * Generic bridge table support with optional reference counting to allow multiple membership for an object via several relationships.
  * 
  * @author Andy
  */
@@ -151,8 +150,10 @@ public class BridgeTable<T>
     }
 
     /**
-     * @param parent T
-     * @param child T
+     * @param parent
+     *            T
+     * @param child
+     *            T
      */
     private void addDescendants(T parent, T child)
     {
@@ -188,8 +189,10 @@ public class BridgeTable<T>
     }
 
     /**
-     * @param parent T
-     * @param child T
+     * @param parent
+     *            T
+     * @param child
+     *            T
      */
     private void removeDescendants(T parent, T child)
     {
@@ -222,10 +225,12 @@ public class BridgeTable<T>
             }
         }
     }
-    
+
     /**
-     * @param parent T
-     * @param child T
+     * @param parent
+     *            T
+     * @param child
+     *            T
      */
     private void removeAncestors(T parent, T child)
     {
@@ -260,10 +265,14 @@ public class BridgeTable<T>
     }
 
     /**
-     * @param toAdd HashMap<Integer, HashMap<T, Counter>>
-     * @param position Integer
-     * @param target HashMap<Integer, HashMap<T, Counter>>
-     * @param node T
+     * @param toAdd
+     *            HashMap<Integer, HashMap<T, Counter>>
+     * @param position
+     *            Integer
+     * @param target
+     *            HashMap<Integer, HashMap<T, Counter>>
+     * @param node
+     *            T
      */
     private void add(HashMap<Integer, HashMap<T, Counter>> toAdd, Integer position, HashMap<Integer, HashMap<T, Counter>> target, T node)
     {
@@ -312,10 +321,14 @@ public class BridgeTable<T>
     }
 
     /**
-     * @param toRemove HashMap<Integer, HashMap<T, Counter>>
-     * @param position Integer
-     * @param target HashMap<Integer, HashMap<T, Counter>>
-     * @param node T
+     * @param toRemove
+     *            HashMap<Integer, HashMap<T, Counter>>
+     * @param position
+     *            Integer
+     * @param target
+     *            HashMap<Integer, HashMap<T, Counter>>
+     * @param node
+     *            T
      */
     private void remove(HashMap<Integer, HashMap<T, Counter>> toRemove, Integer position, HashMap<Integer, HashMap<T, Counter>> target, T node)
     {
@@ -364,8 +377,10 @@ public class BridgeTable<T>
     }
 
     /**
-     * @param parent T
-     * @param child T
+     * @param parent
+     *            T
+     * @param child
+     *            T
      */
     private void addAncestors(T parent, T child)
     {
@@ -404,7 +419,7 @@ public class BridgeTable<T>
     {
         return ancestors.size();
     }
-    
+
     private static class Counter
     {
         int count = 0;
@@ -428,7 +443,7 @@ public class BridgeTable<T>
         {
             count += other.count;
         }
-        
+
         void remove(Counter other)
         {
             count -= other.count;

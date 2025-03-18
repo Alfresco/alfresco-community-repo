@@ -2,6 +2,11 @@ package org.alfresco.rest.sharedLinks;
 
 import jakarta.json.Json;
 
+import org.springframework.http.HttpStatus;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestRenditionInfoModel;
@@ -16,10 +21,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Class includes Sanity tests for the shared-links api. Detailed tests would be covered in the alfresco-remote-api test project
@@ -87,8 +88,8 @@ public class SharedLinksSanityTests extends RestTest
         file6 = dataContent.usingUser(adminUser).usingResource(folder1).createContent(newFile);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.SANITY, description = "Verify create sharedLinks without Path")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.SANITY })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SHAREDLINKS}, executionType = ExecutionType.SANITY, description = "Verify create sharedLinks without Path")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.SANITY})
     public void testCreateAndGetSharedLinks() throws Exception
     {
         // Post without includePath
@@ -111,21 +112,17 @@ public class SharedLinksSanityTests extends RestTest
         restClient.onResponse().assertThat().body("entry.id", org.hamcrest.Matchers.equalTo(sharedLink1.getId()));
         restClient.onResponse().assertThat().body("entry.path", org.hamcrest.Matchers.nullValue());
 
-        /*
-         * Get all shared-links while allowing indexing to complete and check
-         * that the created shared-link is displayed
-         */
-        Utility.sleep(500, 30000, () ->
-            {
-                sharedLinksCollection = restClient.withCoreAPI().usingSharedLinks().getSharedLinks();
-                restClient.assertStatusCodeIs(HttpStatus.OK);
-                sharedLinksCollection.assertThat().entriesListContains("id", sharedLink1.getId()).and()
-                                                  .entriesListContains("nodeId", sharedLink1.getNodeId());
-            });
+        /* Get all shared-links while allowing indexing to complete and check that the created shared-link is displayed */
+        Utility.sleep(500, 30000, () -> {
+            sharedLinksCollection = restClient.withCoreAPI().usingSharedLinks().getSharedLinks();
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            sharedLinksCollection.assertThat().entriesListContains("id", sharedLink1.getId()).and()
+                    .entriesListContains("nodeId", sharedLink1.getNodeId());
+        });
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.REGRESSION, description = "Verify create sharedLinks with Path")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SHAREDLINKS}, executionType = ExecutionType.REGRESSION, description = "Verify create sharedLinks with Path")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.REGRESSION})
     public void testCreateAndGetSharedLinksWithInclude() throws Exception
     {
         // Post with includePath
@@ -163,8 +160,8 @@ public class SharedLinksSanityTests extends RestTest
         Assert.assertNull(sharedLink2.getPath(), "Path is expected to be null for noauth api: Response shows: " + sharedLink2.toJson());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.SANITY, description = "Verify delete sharedLinks with and without Path")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SHAREDLINKS}, executionType = ExecutionType.SANITY, description = "Verify delete sharedLinks with and without Path")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.SANITY})
     public void testDeleteSharedLinks() throws Exception
     {
         sharedLink3 = restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().createSharedLink(file3);
@@ -176,8 +173,8 @@ public class SharedLinksSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.SANITY, description = "Sanity tests for GET {sharedId}/content and POST {sharedId}/email endpoints")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.SANITY })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SHAREDLINKS}, executionType = ExecutionType.SANITY, description = "Sanity tests for GET {sharedId}/content and POST {sharedId}/email endpoints")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.SANITY})
     public void testGetSharedLinkContentAndPostEmail() throws Exception
     {
         // Create shared-link
@@ -192,14 +189,14 @@ public class SharedLinksSanityTests extends RestTest
 
         // Make POST {sharedId}/email to send email with created shared-link
         String postBody = Json.createObjectBuilder().add("client", "share")
-                                                    .add("recipientEmails", "john.doe@acme.com")
-                                                    .build().toString();
+                .add("recipientEmails", "john.doe@acme.com")
+                .build().toString();
         restClient.withCoreAPI().usingSharedLinks().sendSharedLinkEmail(sharedLink6, postBody);
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.REGRESSION, description = "Verify get sharedLink/content and get/renditions")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.REGRESSION, TestGroup.RENDITIONS })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SHAREDLINKS}, executionType = ExecutionType.REGRESSION, description = "Verify get sharedLink/content and get/renditions")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.REGRESSION, TestGroup.RENDITIONS})
     public void testCreateWithExpiryDateAndGetSharedLinkRendition() throws Exception
     {
         sharedLink5 = restClient.authenticateUser(testUser1).withCoreAPI().includePath().usingSharedLinks().createSharedLinkWithExpiryDate(file5, expiryDate);
@@ -215,8 +212,8 @@ public class SharedLinksSanityTests extends RestTest
     /**
      * ATS does not support text -> img (doclib)
      */
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.SANITY, description = "Sanity tests for GET /renditions, GET /renditions/{renditionId} and GET /renditions/{renditionId}/content endpoints")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.SANITY, TestGroup.RENDITIONS, TestGroup.NOT_SUPPORTED_BY_ATS })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SHAREDLINKS}, executionType = ExecutionType.SANITY, description = "Sanity tests for GET /renditions, GET /renditions/{renditionId} and GET /renditions/{renditionId}/content endpoints")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.SANITY, TestGroup.RENDITIONS, TestGroup.NOT_SUPPORTED_BY_ATS})
     public void testGetSharedLinkRendition() throws Exception
     {
         sharedLink7 = restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().createSharedLink(file7);
@@ -226,33 +223,32 @@ public class SharedLinksSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
 
         // GET /renditions: wait until all renditions are created and GET all entries
-        Utility.sleep(500, 50000, () ->
-        {
+        Utility.sleep(500, 50000, () -> {
             nodeRenditionInfoCollection = restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().getSharedLinkRenditions(sharedLink7);
             restClient.assertStatusCodeIs(HttpStatus.OK);
 
             nodeRenditionInfoCollection.assertThat().entriesListCountIs(2);
             nodeRenditionInfoCollection.getEntryByIndex(0).assertThat().field("id").is("doclib").and()
-                                                                       .field("status").is("CREATED");
+                    .field("status").is("CREATED");
             nodeRenditionInfoCollection.getEntryByIndex(1).assertThat().field("id").is("pdf").and()
-                                                                       .field("status").is("CREATED");
+                    .field("status").is("CREATED");
         });
 
         // GET /renditions/{renditionId}: get specific rendition information for the file with shared link
         nodeRenditionInfo = restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().getSharedLinkRendition(sharedLink7, "pdf");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         nodeRenditionInfo.assertThat().field("id").is("pdf").and()
-                                      .field("status").is("CREATED");
+                .field("status").is("CREATED");
 
         // GET /renditions/{renditionId}/content: get the rendition content for file with shared link
         restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().getSharedLinkRenditionContent(sharedLink7, "pdf");
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        restClient.assertHeaderValueContains("Content-Type","application/pdf;charset=UTF-8");
+        restClient.assertHeaderValueContains("Content-Type", "application/pdf;charset=UTF-8");
         Assert.assertTrue(restClient.onResponse().getResponse().body().asInputStream().available() > 0);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SHAREDLINKS }, executionType = ExecutionType.SANITY, description = "Sanity tests for Range reuest header on   GET shared-links/{sharedId}/renditions/{renditionId}/content endpoints")
-    @Test(groups = { TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.SANITY, TestGroup.RENDITIONS })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SHAREDLINKS}, executionType = ExecutionType.SANITY, description = "Sanity tests for Range reuest header on   GET shared-links/{sharedId}/renditions/{renditionId}/content endpoints")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SHAREDLINKS, TestGroup.SANITY, TestGroup.RENDITIONS})
     public void testGetVerifyRangeReguestOnSharedLinks() throws Exception
     {
         sharedLink8 = restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().createSharedLink(file8);
@@ -261,12 +257,11 @@ public class SharedLinksSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
 
         // GET /renditions/{renditionId}/content: get the Range request header for file with shared links endpoints.
-        Utility.sleep(500, 30000, () ->
-        {
+        Utility.sleep(500, 30000, () -> {
             restClient.configureRequestSpec().addHeader("content-range", "bytes=1-10");
             restClient.authenticateUser(testUser1).withCoreAPI().usingSharedLinks().getSharedLinkRenditionContent(sharedLink8, "pdf");
             restClient.assertStatusCodeIs(HttpStatus.PARTIAL_CONTENT);
-            restClient.assertHeaderValueContains("Content-Type","application/pdf;charset=UTF-8");
+            restClient.assertHeaderValueContains("Content-Type", "application/pdf;charset=UTF-8");
             restClient.assertHeaderValueContains("content-range", "bytes 1-10");
         });
     }

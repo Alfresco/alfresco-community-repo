@@ -29,11 +29,11 @@ package org.alfresco.module.org_alfresco_module_rm.capability.declarative;
 
 import java.util.Set;
 
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CompositeCapability;
 import org.alfresco.service.cmr.repository.NodeRef;
-
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * Generic implementation of a composite capability
@@ -41,13 +41,14 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
  * @author Roy Wetherall
  */
 public class DeclarativeCompositeCapability extends DeclarativeCapability
-                                            implements CompositeCapability
+        implements CompositeCapability
 {
     /** set of capabilities */
     private Set<Capability> capabilities;
 
     /**
-     * @param capabilities   set of capabilities
+     * @param capabilities
+     *            set of capabilities
      */
     public void setCapabilities(Set<Capability> capabilities)
     {
@@ -102,7 +103,7 @@ public class DeclarativeCompositeCapability extends DeclarativeCapability
     }
 
     /**
-     * If a target capability is specified then we evaluate that.  Otherwise we combine the results of the provided capabilities.
+     * If a target capability is specified then we evaluate that. Otherwise we combine the results of the provided capabilities.
      *
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability#evaluate(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -113,7 +114,7 @@ public class DeclarativeCompositeCapability extends DeclarativeCapability
 
         // Check we are dealing with a file plan component
         if (getFilePlanService().isFilePlanComponent(source) &&
-            getFilePlanService().isFilePlanComponent(target))
+                getFilePlanService().isFilePlanComponent(target))
         {
             // Check the kind of the object, the permissions and the conditions
             if (checkKinds(source) && checkPermissions(source) && checkConditions(source))

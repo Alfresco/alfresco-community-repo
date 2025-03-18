@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -47,27 +46,24 @@ import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.util.StringUtils;
-
 
 /**
  * Compiled Property Definition
  * 
  * @author David Caruana
  */
-/*package*/ class M2PropertyDefinition implements PropertyDefinition
+/* package */ class M2PropertyDefinition implements PropertyDefinition
 {
     private ClassDefinition classDef;
     private M2Property m2Property;
     private QName name;
     private QName propertyTypeName;
     private DataTypeDefinition dataType;
-    private String  analyserResourceBundleName;
+    private String analyserResourceBundleName;
     private List<ConstraintDefinition> constraintDefs = Collections.emptyList();
     private transient MessageLookup staticMessageLookup = new StaticMessageLookup();
-    
-    /*package*/ M2PropertyDefinition(
+
+    /* package */ M2PropertyDefinition(
             ClassDefinition classDef,
             M2Property m2Property,
             NamespacePrefixResolver prefixResolver)
@@ -79,9 +75,8 @@ import org.springframework.util.StringUtils;
         this.name = QName.createQName(m2Property.getName(), prefixResolver);
         this.propertyTypeName = QName.createQName(m2Property.getType(), prefixResolver);
     }
-    
-    
-    /*package*/ M2PropertyDefinition(
+
+    /* package */ M2PropertyDefinition(
             ClassDefinition classDef,
             PropertyDefinition propertyDef,
             M2PropertyOverride override,
@@ -94,9 +89,8 @@ import org.springframework.util.StringUtils;
         this.propertyTypeName = this.dataType.getName();
         this.m2Property = createOverriddenProperty(propertyDef, override, prefixResolver, modelConstraints);
     }
-    
-    
-    /*package*/ void resolveDependencies(
+
+    /* package */ void resolveDependencies(
             ModelQuery query,
             NamespacePrefixResolver prefixResolver,
             Map<QName, ConstraintDefinition> modelConstraints)
@@ -114,7 +108,7 @@ import org.springframework.util.StringUtils;
                     "d_dictionary.property.err.property_type_not_found",
                     propertyTypeName.toPrefixString(), name.toPrefixString());
         }
-        
+
         // ensure content properties are not multi-valued
         if (propertyTypeName.equals(DataTypeDefinition.CONTENT) && isMultiValued())
         {
@@ -128,7 +122,7 @@ import org.springframework.util.StringUtils;
                 prefixResolver,
                 modelConstraints);
     }
-    
+
     private static List<ConstraintDefinition> buildConstraints(
             List<M2Constraint> m2constraints,
             M2PropertyDefinition m2PropertyDef,
@@ -148,10 +142,10 @@ import org.springframework.util.StringUtils;
                 builder.append(m2PropertyDef.getName().getLocalName()).append("_");
                 builder.append("anon_");
                 builder.append(constraints.size());
-                QName newName  = QName.createQName(m2PropertyDef.classDef.getModel().getName().getNamespaceURI(), builder.toString());
+                QName newName = QName.createQName(m2PropertyDef.classDef.getModel().getName().getNamespaceURI(), builder.toString());
                 constraint.setName(newName.getPrefixedQName(prefixResolver).toPrefixString());
             }
-            
+
             ConstraintDefinition def = new M2ConstraintDefinition(m2PropertyDef, constraint, prefixResolver);
             QName qname = def.getName();
             if (constraintsByQName.containsKey(qname))
@@ -173,13 +167,15 @@ import org.springframework.util.StringUtils;
         // done
         return constraints;
     }
-    
+
     /**
      * Create a property definition whose values are overridden
      * 
-     * @param propertyDef  the property definition to override
-     * @param override  the overridden values
-     * @return  the property definition
+     * @param propertyDef
+     *            the property definition to override
+     * @param override
+     *            the overridden values
+     * @return the property definition
      */
     private M2Property createOverriddenProperty(
             PropertyDefinition propertyDef,
@@ -189,7 +185,7 @@ import org.springframework.util.StringUtils;
     {
         M2Property property = new M2Property();
         property.setOverride(true);
-        
+
         // Process Default Value
         String defaultValue = override.getDefaultValue();
         property.setDefaultValue(defaultValue == null ? propertyDef.getDefaultValue() : defaultValue);
@@ -241,10 +237,10 @@ import org.springframework.util.StringUtils;
         property.setStoredInIndex(propertyDef.isStoredInIndex());
         property.setTitle(propertyDef.getTitle(null));
         property.setIndexTokenisationMode(propertyDef.getIndexTokenisationMode());
-        
+
         return property;
     }
-    
+
     /**
      * @see #getName()
      */
@@ -269,48 +265,48 @@ import org.springframework.util.StringUtils;
 
         return sb.toString();
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getModel()
-     */
+     * 
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getModel() */
     public ModelDefinition getModel()
     {
         return classDef.getModel();
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.PropertyDefinition#getName()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.PropertyDefinition#getName() */
     public QName getName()
     {
         return name;
     }
-    
+
     public String getTitle()
     {
         return getTitle(staticMessageLookup);
     }
-    
+
     public String getTitle(MessageLookup messageLookup)
     {
-        String value = M2Label.getLabel(classDef.getModel(), messageLookup, "property", name, "title"); 
+        String value = M2Label.getLabel(classDef.getModel(), messageLookup, "property", name, "title");
         if (value == null)
         {
             value = m2Property.getTitle();
         }
         return value;
     }
-    
+
     public String getTitle(MessageLookup messageLookup, Locale locale)
     {
-        String value = M2Label.getLabel(locale, classDef.getModel(), messageLookup, "property", name, "title"); 
+        String value = M2Label.getLabel(locale, classDef.getModel(), messageLookup, "property", name, "title");
         if (value == null)
         {
             value = m2Property.getTitle();
         }
         return value;
     }
-    
+
     public String getDescription()
     {
         return getDescription(staticMessageLookup);
@@ -318,97 +314,91 @@ import org.springframework.util.StringUtils;
 
     public String getDescription(MessageLookup messageLookup)
     {
-        String value = M2Label.getLabel(classDef.getModel(), messageLookup, "property", name, "description"); 
+        String value = M2Label.getLabel(classDef.getModel(), messageLookup, "property", name, "description");
         if (value == null)
         {
             value = m2Property.getDescription();
         }
         return value;
     }
-    
+
     public String getDescription(MessageLookup messageLookup, Locale locale)
     {
-        String value = M2Label.getLabel(locale, classDef.getModel(), messageLookup, "property", name, "description"); 
+        String value = M2Label.getLabel(locale, classDef.getModel(), messageLookup, "property", name, "description");
         if (value == null)
         {
             value = m2Property.getDescription();
         }
         return value;
     }
-    
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.PropertyDefinition#getDefaultValue()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.PropertyDefinition#getDefaultValue() */
     public String getDefaultValue()
     {
         return m2Property.getDefaultValue();
     }
 
-    
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.PropertyDefinition#getPropertyType()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.PropertyDefinition#getPropertyType() */
     public DataTypeDefinition getDataType()
     {
         return dataType;
     }
-    
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.PropertyDefinition#getContainerClass()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.PropertyDefinition#getContainerClass() */
     public ClassDefinition getContainerClass()
     {
         return classDef;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#isOverride()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#isOverride() */
     public boolean isOverride()
     {
         return m2Property.isOverride();
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.PropertyDefinition#isMultiValued()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.PropertyDefinition#isMultiValued() */
     public boolean isMultiValued()
     {
         return m2Property.isMultiValued();
     }
 
-    
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.PropertyDefinition#isMandatory()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.PropertyDefinition#isMandatory() */
     public boolean isMandatory()
     {
         return m2Property.isMandatory();
     }
-    
+
     public boolean isMandatoryEnforced()
     {
         return m2Property.isMandatoryEnforced();
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.PropertyDefinition#isProtected()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.PropertyDefinition#isProtected() */
     public boolean isProtected()
     {
         return m2Property.isProtected();
     }
-    
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.PropertyDefinition#isIndexed()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.PropertyDefinition#isIndexed() */
     public boolean isIndexed()
     {
-        if(m2Property.isIndexed() == null)
+        if (m2Property.isIndexed() == null)
         {
             return true;
         }
@@ -417,14 +407,13 @@ import org.springframework.util.StringUtils;
             return m2Property.isIndexed();
         }
     }
-    
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.PropertyDefinition#isStoredInIndex()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.PropertyDefinition#isStoredInIndex() */
     public boolean isStoredInIndex()
     {
-        if(m2Property.isStoredInIndex() == null)
+        if (m2Property.isStoredInIndex() == null)
         {
             return false;
         }
@@ -433,14 +422,13 @@ import org.springframework.util.StringUtils;
             return m2Property.isStoredInIndex();
         }
     }
-    
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.PropertyDefinition#isIndexedAtomically()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.PropertyDefinition#isIndexedAtomically() */
     public boolean isIndexedAtomically()
     {
-        if(m2Property.isIndexedAtomically() == null)
+        if (m2Property.isIndexedAtomically() == null)
         {
             return true;
         }
@@ -449,14 +437,13 @@ import org.springframework.util.StringUtils;
             return m2Property.isIndexedAtomically();
         }
     }
-    
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.PropertyDefinition#isTokenisedInIndex()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.PropertyDefinition#isTokenisedInIndex() */
     public IndexTokenisationMode getIndexTokenisationMode()
     {
-        if(m2Property.getIndexTokenisationMode() == null)
+        if (m2Property.getIndexTokenisationMode() == null)
         {
             return IndexTokenisationMode.TRUE;
         }
@@ -465,16 +452,16 @@ import org.springframework.util.StringUtils;
             return m2Property.getIndexTokenisationMode();
         }
     }
-    
+
     public Facetable getFacetable()
     {
-        if(m2Property.isFacetable() == null)
+        if (m2Property.isFacetable() == null)
         {
             return Facetable.UNSET;
         }
         else
         {
-            if(m2Property.isFacetable().booleanValue())
+            if (m2Property.isFacetable().booleanValue())
             {
                 return Facetable.TRUE;
             }
@@ -485,72 +472,71 @@ import org.springframework.util.StringUtils;
         }
     }
 
-    
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getConstraints()
-     */
+     * 
+     * @see org.alfresco.service.cmr.dictionary.PropertyDefinition#getConstraints() */
     public List<ConstraintDefinition> getConstraints()
     {
         return constraintDefs;
     }
-    
+
     /* package */ M2ModelDiff diffProperty(PropertyDefinition propDef)
     {
         M2ModelDiff modelDiff = null;
         boolean isUpdated = false;
         boolean isUpdatedIncrementally = false;
-        
+
         if (this == propDef)
         {
             modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED);
             return modelDiff;
         }
-        
+
         // check name - cannot be null
-        if (! name.equals(propDef.getName()))
-        { 
+        if (!name.equals(propDef.getName()))
+        {
             isUpdated = true;
         }
-        
+
         // check title
-        if (! EqualsHelper.nullSafeEquals(getTitle(null), propDef.getTitle(null), false))
-        { 
+        if (!EqualsHelper.nullSafeEquals(getTitle(null), propDef.getTitle(null), false))
+        {
             isUpdatedIncrementally = true;
         }
-        
+
         // check description
-        if (! EqualsHelper.nullSafeEquals(getDescription(null), propDef.getDescription(null), false))
-        { 
+        if (!EqualsHelper.nullSafeEquals(getDescription(null), propDef.getDescription(null), false))
+        {
             isUpdatedIncrementally = true;
         }
-        
+
         // check default value
-        if (! EqualsHelper.nullSafeEquals(getDefaultValue(), propDef.getDefaultValue(), false))
-        { 
+        if (!EqualsHelper.nullSafeEquals(getDefaultValue(), propDef.getDefaultValue(), false))
+        {
             isUpdatedIncrementally = true;
         }
-        
+
         // check datatype qname (TODO check datatype defs separately)
-        if (! EqualsHelper.nullSafeEquals(getDataType().getName(), propDef.getDataType().getName()))
-        { 
+        if (!EqualsHelper.nullSafeEquals(getDataType().getName(), propDef.getDataType().getName()))
+        {
             isUpdated = true;
         }
-        
+
         // check container class qname
-        if (! EqualsHelper.nullSafeEquals(getContainerClass().getName(), propDef.getContainerClass().getName()))
-        { 
+        if (!EqualsHelper.nullSafeEquals(getContainerClass().getName(), propDef.getContainerClass().getName()))
+        {
             isUpdated = true;
         }
-        
+
         // check multi-valued
         if (isMultiValued() != propDef.isMultiValued())
-        { 
+        {
             isUpdated = true;
         }
-        
+
         // check mandatory
         if (isMandatory() != propDef.isMandatory())
-        { 
+        {
             // Change from mandatory to NON mandatory is an incremental change
             if (isMandatory() && !propDef.isMandatory())
             {
@@ -561,12 +547,12 @@ import org.springframework.util.StringUtils;
                 isUpdated = true;
             }
         }
-        
+
         // check mandatory enforced
         if (isMandatoryEnforced() != propDef.isMandatoryEnforced())
         {
             // Change from mandatory enforced to NON mandatory enforced is an incremental change
-            if (isMandatoryEnforced() && ! propDef.isMandatoryEnforced())
+            if (isMandatoryEnforced() && !propDef.isMandatoryEnforced())
             {
                 isUpdatedIncrementally = true;
             }
@@ -575,7 +561,7 @@ import org.springframework.util.StringUtils;
                 isUpdated = true;
             }
         }
-        
+
         // check protected
         if (isProtected() != propDef.isProtected())
         {
@@ -589,46 +575,45 @@ import org.springframework.util.StringUtils;
                 isUpdated = true;
             }
         }
-        
+
         //
         // property indexing - is index enabled -> stored, atomic, tokenized (true, false, both)
         //
-        //    <index enabled="true">
-        //       <atomic>true</atomic>
-        //       <stored>false</stored> 
-        //       <tokenised>both</tokenised>
-        //    </index>
+        // <index enabled="true">
+        // <atomic>true</atomic>
+        // <stored>false</stored>
+        // <tokenised>both</tokenised>
+        // </index>
         //
-        
+
         if (isIndexed() != propDef.isIndexed())
-        { 
+        {
             isUpdated = true;
         }
-        
+
         if (isStoredInIndex() != propDef.isStoredInIndex())
-        { 
+        {
             isUpdatedIncrementally = true;
         }
-        
+
         if (isIndexedAtomically() != propDef.isIndexedAtomically())
-        { 
+        {
             isUpdatedIncrementally = true;
         }
-        
-        if (! EqualsHelper.nullSafeEquals(getIndexTokenisationMode().toString(), propDef.getIndexTokenisationMode().toString(), false))
-        { 
+
+        if (!EqualsHelper.nullSafeEquals(getIndexTokenisationMode().toString(), propDef.getIndexTokenisationMode().toString(), false))
+        {
             isUpdated = true;
         }
-        
-        
+
         // check override
         if (isOverride() != propDef.isOverride())
-        { 
+        {
             isUpdated = true;
         }
-        
+
         // TODO - check prop constraints (inline and referenced)
-        
+
         if (isUpdated)
         {
             modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UPDATED);
@@ -641,14 +626,14 @@ import org.springframework.util.StringUtils;
         {
             modelDiff = new M2ModelDiff(name, M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_UNCHANGED);
         }
-        
+
         return modelDiff;
     }
-    
-    /*package*/ static Collection<M2ModelDiff> diffPropertyLists(Collection<PropertyDefinition> previousProperties, Collection<PropertyDefinition> newProperties)
+
+    /* package */ static Collection<M2ModelDiff> diffPropertyLists(Collection<PropertyDefinition> previousProperties, Collection<PropertyDefinition> newProperties)
     {
         List<M2ModelDiff> modelDiffs = new ArrayList<M2ModelDiff>();
-        
+
         for (PropertyDefinition previousProperty : previousProperties)
         {
             boolean found = false;
@@ -656,18 +641,18 @@ import org.springframework.util.StringUtils;
             {
                 if (newProperty.getName().equals(previousProperty.getName()))
                 {
-                    modelDiffs.add(((M2PropertyDefinition)previousProperty).diffProperty(newProperty));
+                    modelDiffs.add(((M2PropertyDefinition) previousProperty).diffProperty(newProperty));
                     found = true;
                     break;
                 }
             }
-            
-            if (! found)
+
+            if (!found)
             {
                 modelDiffs.add(new M2ModelDiff(previousProperty.getName(), M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_DELETED));
             }
         }
-        
+
         for (PropertyDefinition newProperty : newProperties)
         {
             boolean found = false;
@@ -679,13 +664,13 @@ import org.springframework.util.StringUtils;
                     break;
                 }
             }
-            
-            if (! found)
+
+            if (!found)
             {
                 modelDiffs.add(new M2ModelDiff(newProperty.getName(), M2ModelDiff.TYPE_PROPERTY, M2ModelDiff.DIFF_CREATED));
             }
         }
-        
+
         return modelDiffs;
     }
 }

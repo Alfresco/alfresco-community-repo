@@ -37,7 +37,7 @@ import org.alfresco.service.namespace.QName;
 public class AliasableAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
 {
     static final CopyBehaviourCallback INSTANCE = new AliasableAspectCopyBehaviourCallback();
-    
+
     /**
      * Disallows copying of the {@link EmailServerModel#ASPECT_ALIASABLE} aspect.
      */
@@ -67,8 +67,6 @@ public class AliasableAspectCopyBehaviourCallback extends DefaultCopyBehaviourCa
         {
             return Collections.emptyMap();
         }
-        return properties;    
+        return properties;
     }
 }
-
-

@@ -28,10 +28,10 @@ package org.alfresco.service.cmr.search;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.api.AlfrescoPublicApi;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Parameters used for search Intervals.
@@ -44,8 +44,8 @@ public class IntervalParameters
 
     @JsonCreator
     public IntervalParameters(
-                @JsonProperty("sets") Set<IntervalSet> sets,
-                @JsonProperty("intervals") List<Interval> intervals)
+            @JsonProperty("sets") Set<IntervalSet> sets,
+            @JsonProperty("intervals") List<Interval> intervals)
     {
         this.sets = sets;
         this.intervals = intervals;
@@ -65,8 +65,8 @@ public class IntervalParameters
     public String toString()
     {
         return "IntervalParameters{" +
-                    "sets=" + sets +
-                    ", intervals=" + intervals +
-                    '}';
+                "sets=" + sets +
+                ", intervals=" + intervals +
+                '}';
     }
 }

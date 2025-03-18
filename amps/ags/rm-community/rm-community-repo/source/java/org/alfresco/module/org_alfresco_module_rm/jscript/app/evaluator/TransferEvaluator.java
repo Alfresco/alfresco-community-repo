@@ -29,6 +29,9 @@ package org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.BaseEvaluator;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -36,8 +39,6 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Evaluates whether the node in question is transferring is either a transfer or accession.
@@ -53,7 +54,8 @@ public class TransferEvaluator extends BaseEvaluator
     private boolean transferAccessionIndicator = false;
 
     /**
-     * @param transferAccessionIndicator    true if accession, false otherwise
+     * @param transferAccessionIndicator
+     *            true if accession, false otherwise
      */
     public void setTransferAccessionIndicator(boolean transferAccessionIndicator)
     {
@@ -73,7 +75,7 @@ public class TransferEvaluator extends BaseEvaluator
         {
             try
             {
-                boolean actual = ((Boolean)nodeService.getProperty(transfer, RecordsManagementModel.PROP_TRANSFER_ACCESSION_INDICATOR)).booleanValue();
+                boolean actual = ((Boolean) nodeService.getProperty(transfer, RecordsManagementModel.PROP_TRANSFER_ACCESSION_INDICATOR)).booleanValue();
                 result = (actual == transferAccessionIndicator);
             }
             catch (AccessDeniedException ade)
@@ -93,8 +95,9 @@ public class TransferEvaluator extends BaseEvaluator
      * <p>
      * Takes into account records in tranferred record folders.
      *
-     * @param nodeRef               node reference
-     * @return {@link NodeRef}      transfer node
+     * @param nodeRef
+     *            node reference
+     * @return {@link NodeRef} transfer node
      */
     private NodeRef getTransferNodeRef(NodeRef nodeRef)
     {

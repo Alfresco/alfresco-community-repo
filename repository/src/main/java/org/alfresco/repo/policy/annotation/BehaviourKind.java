@@ -33,6 +33,5 @@ package org.alfresco.repo.policy.annotation;
  */
 public enum BehaviourKind
 {
-    CLASS,
-    ASSOCIATION
+    CLASS, ASSOCIATION
 }

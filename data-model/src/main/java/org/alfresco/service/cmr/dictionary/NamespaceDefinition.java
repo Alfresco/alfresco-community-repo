@@ -35,15 +35,15 @@ import org.alfresco.api.AlfrescoPublicApi;
 public interface NamespaceDefinition
 {
     /**
-     * @return  defining model
+     * @return defining model
      */
     public ModelDefinition getModel();
-    
+
     /**
      * @return the namespace URI
      */
     public String getUri();
-    
+
     /**
      * @return the namespace Prefix
      */

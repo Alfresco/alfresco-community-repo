@@ -41,7 +41,6 @@ import java.util.StringJoiner;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-
 import javax.management.JMException;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
@@ -52,10 +51,8 @@ import javax.management.openmbean.CompositeData;
 import org.alfresco.util.exec.RuntimeExec;
 import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
 
-
 /**
- * A utility class providing a method to dump a local or remote MBeanServer's entire object tree for support purposes.
- * Nested arrays and CompositeData objects in MBean attribute values are handled.
+ * A utility class providing a method to dump a local or remote MBeanServer's entire object tree for support purposes. Nested arrays and CompositeData objects in MBean attribute values are handled.
  * 
  * @author dward
  */
@@ -77,11 +74,10 @@ public class JmxDumpUtil
 
     private static final String INPUT_ARGUMENTS = "InputArguments";
 
-    private static final String[] REDACTED_INPUTS = {"password","token","pwd"};
-    
+    private static final String[] REDACTED_INPUTS = {"password", "token", "pwd"};
+
     /**
-     * Dumps a local or remote MBeanServer's entire object tree for support purposes. Nested arrays and CompositeData
-     * objects in MBean attribute values are handled.
+     * Dumps a local or remote MBeanServer's entire object tree for support purposes. Nested arrays and CompositeData objects in MBean attribute values are handled.
      * 
      * @param connection
      *            the server connection (or server itself)
@@ -93,13 +89,12 @@ public class JmxDumpUtil
     public static void dumpConnection(MBeanServerConnection connection, PrintWriter out) throws IOException
     {
         JmxDumpUtil.showStartBanner(out);
-        
+
         // Get all the object names
         Set<ObjectName> objectNames = connection.queryNames(null, null);
 
         // Sort the names (don't assume ObjectName implements Comparable in JDK 1.5)
-        Set<ObjectName> newObjectNames = new TreeSet<ObjectName>(new Comparator<ObjectName>()
-        {
+        Set<ObjectName> newObjectNames = new TreeSet<ObjectName>(new Comparator<ObjectName>() {
             public int compare(ObjectName o1, ObjectName o2)
             {
                 return o1.toString().compareTo(o2.toString());
@@ -108,7 +103,6 @@ public class JmxDumpUtil
         newObjectNames.addAll(objectNames);
         objectNames = newObjectNames;
 
-        
         // Dump each MBean
         for (ObjectName objectName : objectNames)
         {
@@ -175,12 +169,13 @@ public class JmxDumpUtil
         if (objectName.getCanonicalName().equals("java.lang:type=Runtime"))
         {
             String[] commandInputs = (String[]) attributes.get(INPUT_ARGUMENTS);
-            if(commandInputs != null)
+            if (commandInputs != null)
             {
-                try 
+                try
                 {
-                    attributes.put(INPUT_ARGUMENTS, cleanPasswordsFromInputArguments(commandInputs,REDACTED_INPUTS));
-                } catch (IllegalArgumentException e) 
+                    attributes.put(INPUT_ARGUMENTS, cleanPasswordsFromInputArguments(commandInputs, REDACTED_INPUTS));
+                }
+                catch (IllegalArgumentException e)
                 {
                     attributes.put(INPUT_ARGUMENTS, commandInputs);
                 }
@@ -190,46 +185,48 @@ public class JmxDumpUtil
     }
 
     /**
-     * Replaces strings with JmxDumpUtil.PROTECTED_VALUE, 
-     * if any of the string that contains a string from redactedInputs.
+     * Replaces strings with JmxDumpUtil.PROTECTED_VALUE, if any of the string that contains a string from redactedInputs.
      * 
      * @see #cleanPasswordFromInputArgument
-     * @param commandInputs one or more strings of input arguments
-     * @param redactedInputs one or more strings, that end input arguments that are to be redacted
+     * @param commandInputs
+     *            one or more strings of input arguments
+     * @param redactedInputs
+     *            one or more strings, that end input arguments that are to be redacted
      * @return commandInputs with any arguments ending in redactedInputs with redacted values
      */
     static String[] cleanPasswordsFromInputArguments(String[] commandInputs, String[] redactedInputs)
     {
         Pattern passwordRedactPattern = Pattern.compile(createPasswordFindRegexString(redactedInputs));
         List<String> cleanInputs = new ArrayList<String>();
-        for (String input : commandInputs) 
+        for (String input : commandInputs)
         {
             input = cleanPasswordFromInputArgument(input, passwordRedactPattern);
             cleanInputs.add(input);
         }
-        
+
         return cleanInputs.toArray(new String[commandInputs.length]);
     }
 
     /**
-     * Removes any characters the word/s provided in redactedInputs
-     * and replaces them with JmxDumpUtil.PROTECTED_VALUE
+     * Removes any characters the word/s provided in redactedInputs and replaces them with JmxDumpUtil.PROTECTED_VALUE
      * <p>
-     * Example: 
+     * Example:
      * <p>
-     * Input:   -Ddb.password=alfresco
+     * Input: -Ddb.password=alfresco
      * <p>
-     * Output:  -Ddb.password=********
+     * Output: -Ddb.password=********
      * </p>
      * 
-     * @param input String
-     * @param redactedInputs String[]
+     * @param input
+     *            String
+     * @param redactedInputs
+     *            String[]
      * @return password redacted string if input matches a string in redactedInputs, an un-altered string will be returned if it does not match.
      */
     static String cleanPasswordFromInputArgument(String input, Pattern redactedInputPattern)
     {
-        //Replace the whole string with just capture group 1 to remove the desired value and concat the protected value.
-        String output = redactedInputPattern.matcher(input).replaceAll("$1"+PROTECTED_VALUE);
+        // Replace the whole string with just capture group 1 to remove the desired value and concat the protected value.
+        String output = redactedInputPattern.matcher(input).replaceAll("$1" + PROTECTED_VALUE);
         return output;
     }
 
@@ -240,31 +237,30 @@ public class JmxDumpUtil
      * <li>Group 2: The characters that follow group 1, to the end of the string or new line.
      * </ul>
      * <p>
-     * The argEnding can be the whole Input argument or the common characters proceeding the = sign.
-     * Example argEndings:
+     * The argEnding can be the whole Input argument or the common characters proceeding the = sign. Example argEndings:
      * <ul>
-     * <li>    -Ddb.password   This will select the values passed as -Ddb.password
-     * <li>    password        This will select any potential values that end in the word password
+     * <li>-Ddb.password This will select the values passed as -Ddb.password
+     * <li>password This will select any potential values that end in the word password
      * </ul>
      * <p>
-     * Example usage: 
+     * Example usage:
      * <p>
      * argEndings={"password", "pwd"}
      * <p>
-     * This will create a regex that will match a string that contains either argEndings. 
-     * The following will be matched by the resulting regex:
+     * This will create a regex that will match a string that contains either argEndings. The following will be matched by the resulting regex:
      * <p>
      * "-Ddb.password=my_password"
      * <p>
      * For this example: group 1="-Ddb.password=" group 2="my_password"
      * 
      * 
-     * @param argEndings Strings that will end the input argument you wish to select
+     * @param argEndings
+     *            Strings that will end the input argument you wish to select
      * @return Regex pattern for selecting the characters following the strings passed as argEndings
      */
     static String createPasswordFindRegexString(String[] argEndings) throws IllegalArgumentException
     {
-        if(argEndings.length<1)
+        if (argEndings.length < 1)
         {
             IllegalArgumentException e = new IllegalArgumentException("Arguments are required");
             throw e;
@@ -272,13 +268,13 @@ public class JmxDumpUtil
 
         StringJoiner argJoiner = new StringJoiner("|");
 
-        for (String argEnding : argEndings) 
+        for (String argEnding : argEndings)
         {
-            argJoiner.add(escapeRegexMetaChars(argEnding)+"=");
+            argJoiner.add(escapeRegexMetaChars(argEnding) + "=");
         }
 
-        String regex = String.format("%s%s%s%s%s", 
-                        "(?i)(.*(", argJoiner.toString(),"))((?<=",argJoiner.toString(), ").*+)");
+        String regex = String.format("%s%s%s%s%s",
+                "(?i)(.*(", argJoiner.toString(), "))((?<=", argJoiner.toString(), ").*+)");
         return regex;
     }
 
@@ -288,7 +284,7 @@ public class JmxDumpUtil
      * @param input
      * @return
      */
-    static String escapeRegexMetaChars (String input)
+    static String escapeRegexMetaChars(String input)
     {
         String pattern = "(\\||\\?|\\*|\\+|\\.)";
         String output = input.replaceAll(pattern, "\\\\$1");
@@ -298,14 +294,15 @@ public class JmxDumpUtil
     /**
      * Adds a Linux version
      * 
-     * @param osName os.name attribute
+     * @param osName
+     *            os.name attribute
      * @return String
      */
     public static String updateOSNameAttributeForLinux(String osName)
     {
         RuntimeExec exec = new RuntimeExec();
         Map<String, String[]> commandMap = new HashMap<String, String[]>(3, 1.0f);
-        commandMap.put("Linux", new String[] { "lsb_release", "-d" });
+        commandMap.put("Linux", new String[]{"lsb_release", "-d"});
         exec.setCommandsAndArguments(commandMap);
         ExecutionResult ret = exec.execute();
         if (ret.getSuccess())
@@ -314,7 +311,7 @@ public class JmxDumpUtil
         }
         else
         {
-            commandMap.put("Linux", new String[] { "uname", "-a" });
+            commandMap.put("Linux", new String[]{"uname", "-a"});
             exec.setCommandsAndArguments(commandMap);
             ret = exec.execute();
             if (ret.getSuccess())
@@ -345,7 +342,7 @@ public class JmxDumpUtil
     private static void printCompositeInfo(CompositeData composite, PrintWriter out, int nestLevel) throws IOException
     {
         Map<String, Object> attributes = new TreeMap<String, Object>();
-        for (String key : (Set<String>)composite.getCompositeType().keySet())
+        for (String key : (Set<String>) composite.getCompositeType().keySet())
         {
             Object value;
             try
@@ -431,8 +428,7 @@ public class JmxDumpUtil
     }
 
     /**
-     * Outputs a single row in a two-column table. The first column is padded with spaces so that the second column is
-     * aligned.
+     * Outputs a single row in a two-column table. The first column is padded with spaces so that the second column is aligned.
      * 
      * @param out
      *            PrintWriter to write the output to
@@ -541,9 +537,9 @@ public class JmxDumpUtil
             return value.toString().length();
         }
     }
-    
+
     /**
-     * Show a message stating the JmxDumper has been started, with the current date and time. 
+     * Show a message stating the JmxDumper has been started, with the current date and time.
      */
     private static void showStartBanner(PrintWriter out)
     {

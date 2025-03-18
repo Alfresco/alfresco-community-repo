@@ -28,7 +28,7 @@ package org.alfresco.ibatis;
 import java.io.InputStream;
 import java.util.Properties;
 import javax.sql.DataSource;
-import org.alfresco.util.resource.HierarchicalResourceLoader;
+
 import org.apache.ibatis.builder.BaseBuilder;
 import org.apache.ibatis.builder.BuilderException;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
@@ -55,34 +55,22 @@ import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.type.JdbcType;
 import org.springframework.core.io.Resource;
 
+import org.alfresco.util.resource.HierarchicalResourceLoader;
 
 /**
- * Extends the MyBatis XMLConfigBuilder to allow the selection of a {@link org.springframework.core.io.ResourceLoader}
- * that will be used to load the resources specified in the <b>mapper</b>'s <b>resource</b>.
+ * Extends the MyBatis XMLConfigBuilder to allow the selection of a {@link org.springframework.core.io.ResourceLoader} that will be used to load the resources specified in the <b>mapper</b>'s <b>resource</b>.
  * <p>
- * By using the <b>resource.dialect</b> placeholder with hierarchical resource loading,
- * different resource files can be picked up for different dialects. This reduces duplication
- * when supporting multiple database configurations.
+ * By using the <b>resource.dialect</b> placeholder with hierarchical resource loading, different resource files can be picked up for different dialects. This reduces duplication when supporting multiple database configurations.
+ * 
  * <pre>
- * &lt;configuration&gt;
- *    &lt;mappers&gt;
- *        &lt;mapper resource=&quot;org/x/y/#resource.dialect#/View1.xml&quot;/&gt;
- *        &lt;mapper resource=&quot;org/x/y/#resource.dialect#/View2.xml&quot;/&gt;
- *    &lt;/mappers&gt;
- * &lt;/configuration&gt;
+ * &lt;configuration&gt; &lt;mappers&gt; &lt;mapper resource=&quot;org/x/y/#resource.dialect#/View1.xml&quot;/&gt; &lt;mapper resource=&quot;org/x/y/#resource.dialect#/View2.xml&quot;/&gt; &lt;/mappers&gt; &lt;/configuration&gt;
  * <p/>
  * 
- * Much of the implementation is a direct copy of the MyBatis {@link org.apache.ibatis.builder.xml.XMLConfigBuilder}; some
- * of the <tt>protected</tt> methods do not have access to the object's state and can therefore
- * not be overridden successfully: <a href=https://issues.apache.org/jira/browse/IBATIS-589>IBATIS-589</a>
-
- * Pending a better way to extend/override, much of the implementation is a direct copy of the MyBatis 
- * {@link org.mybatis.spring.SqlSessionFactoryBean}; some of the <tt>protected</tt> methods do not have access to the object's state
- * and can therefore not be overridden successfully. 
+ * Much of the implementation is a direct copy of the MyBatis {@link org.apache.ibatis.builder.xml.XMLConfigBuilder}; some of the <tt>protected</tt> methods do not have access to the object's state and can therefore not be overridden successfully: <a href=https://issues.apache.org/jira/browse/IBATIS-589>IBATIS-589</a>
  * 
- * This is equivalent to HierarchicalSqlMapConfigParser which extended iBatis (2.x).
- * See also: <a href=https://issues.apache.org/jira/browse/IBATIS-589>IBATIS-589</a>
- * and: <a href=http://code.google.com/p/mybatis/issues/detail?id=21</a>
+ * Pending a better way to extend/override, much of the implementation is a direct copy of the MyBatis {@link org.mybatis.spring.SqlSessionFactoryBean}; some of the <tt>protected</tt> methods do not have access to the object's state and can therefore not be overridden successfully.
+ * 
+ * This is equivalent to HierarchicalSqlMapConfigParser which extended iBatis (2.x). See also: <a href=https://issues.apache.org/jira/browse/IBATIS-589>IBATIS-589</a> and: <a href=http://code.google.com/p/mybatis/issues/detail?id=21</a>
  * 
  * @author Derek Hulley, janv
  * @since 4.0
@@ -94,17 +82,17 @@ public class HierarchicalXMLConfigBuilder extends BaseBuilder
     private XPathParser parser;
     private String environment;
     private ReflectorFactory localReflectorFactory = new DefaultReflectorFactory();
-    
+
     // EXTENDED
     final private HierarchicalResourceLoader resourceLoader;
-    
+
     public HierarchicalXMLConfigBuilder(HierarchicalResourceLoader resourceLoader, InputStream inputStream, String environment, Properties props)
     {
         super(new Configuration());
-        
+
         // EXTENDED
         this.resourceLoader = resourceLoader;
-        
+
         ErrorContext.instance().resource("SQL Mapper Configuration");
         this.configuration.setVariables(props);
         this.parsed = false;
@@ -112,19 +100,23 @@ public class HierarchicalXMLConfigBuilder extends BaseBuilder
         this.parser = new XPathParser(inputStream, true, props, new XMLMapperEntityResolver());
     }
 
-    public Configuration parse() {
-      if (parsed) {
+    public Configuration parse()
+    {
+        if (parsed)
+        {
             throw new BuilderException("Each XMLConfigBuilder can only be used once.");
-      }
-      parsed = true;
-      parseConfiguration(parser.evalNode("/configuration"));
+        }
+        parsed = true;
+        parseConfiguration(parser.evalNode("/configuration"));
         return configuration;
     }
 
-    private void parseConfiguration(XNode root) {
-        try {
-            //issue #117 read properties first
-            propertiesElement(root.evalNode("properties")); 
+    private void parseConfiguration(XNode root)
+    {
+        try
+        {
+            // issue #117 read properties first
+            propertiesElement(root.evalNode("properties"));
             typeAliasesElement(root.evalNode("typeAliases"));
             pluginElement(root.evalNode("plugins"));
             objectFactoryElement(root.evalNode("objectFactory"));
@@ -132,32 +124,46 @@ public class HierarchicalXMLConfigBuilder extends BaseBuilder
             reflectionFactoryElement(root.evalNode("reflectionFactory"));
             settingsElement(root.evalNode("settings"));
             // read it after objectFactory and objectWrapperFactory issue #631
-            environmentsElement(root.evalNode("environments")); 
+            environmentsElement(root.evalNode("environments"));
             databaseIdProviderElement(root.evalNode("databaseIdProvider"));
             typeHandlerElement(root.evalNode("typeHandlers"));
             mapperElement(root.evalNode("mappers"));
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
         }
     }
 
-    private void typeAliasesElement(XNode parent) {
-        if (parent != null) {
-            for (XNode child : parent.getChildren()) {
-                if ("package".equals(child.getName())) {
+    private void typeAliasesElement(XNode parent)
+    {
+        if (parent != null)
+        {
+            for (XNode child : parent.getChildren())
+            {
+                if ("package".equals(child.getName()))
+                {
                     String typeAliasPackage = child.getStringAttribute("name");
                     configuration.getTypeAliasRegistry().registerAliases(typeAliasPackage);
-                } else {
+                }
+                else
+                {
                     String alias = child.getStringAttribute("alias");
                     String type = child.getStringAttribute("type");
-                    try {
+                    try
+                    {
                         Class<?> clazz = Resources.classForName(type);
-                        if (alias == null) {
+                        if (alias == null)
+                        {
                             typeAliasRegistry.registerAlias(clazz);
-                        } else {
+                        }
+                        else
+                        {
                             typeAliasRegistry.registerAlias(alias, clazz);
                         }
-                    } catch (ClassNotFoundException e) {
+                    }
+                    catch (ClassNotFoundException e)
+                    {
                         throw new BuilderException("Error registering typeAlias for '" + alias + "'. Cause: " + e, e);
                     }
                 }
@@ -165,9 +171,12 @@ public class HierarchicalXMLConfigBuilder extends BaseBuilder
         }
     }
 
-    private void pluginElement(XNode parent) throws Exception {
-        if (parent != null) {
-            for (XNode child : parent.getChildren()) {
+    private void pluginElement(XNode parent) throws Exception
+    {
+        if (parent != null)
+        {
+            for (XNode child : parent.getChildren())
+            {
                 String interceptor = child.getStringAttribute("interceptor");
                 Properties properties = child.getChildrenAsProperties();
                 Interceptor interceptorInstance = (Interceptor) resolveClass(interceptor).newInstance();
@@ -177,61 +186,78 @@ public class HierarchicalXMLConfigBuilder extends BaseBuilder
         }
     }
 
-    private void objectFactoryElement(XNode context) throws Exception {
-      if (context != null) {
-        String type = context.getStringAttribute("type");
-        Properties properties = context.getChildrenAsProperties();
-        ObjectFactory factory = (ObjectFactory) resolveClass(type).newInstance();
-        factory.setProperties(properties);
-        configuration.setObjectFactory(factory);
-      }
-    }
-    
-    private void objectWrapperFactoryElement(XNode context) throws Exception {
-      if (context != null) {
-        String type = context.getStringAttribute("type");
-        ObjectWrapperFactory factory = (ObjectWrapperFactory) resolveClass(type).newInstance();
-        configuration.setObjectWrapperFactory(factory);
-      }
+    private void objectFactoryElement(XNode context) throws Exception
+    {
+        if (context != null)
+        {
+            String type = context.getStringAttribute("type");
+            Properties properties = context.getChildrenAsProperties();
+            ObjectFactory factory = (ObjectFactory) resolveClass(type).newInstance();
+            factory.setProperties(properties);
+            configuration.setObjectFactory(factory);
+        }
     }
 
-    private void reflectionFactoryElement(XNode context) throws Exception {
-      if (context != null) {
-        String type = context.getStringAttribute("type");
-        ReflectorFactory factory = (ReflectorFactory) resolveClass(type).newInstance();
-        configuration.setReflectorFactory(factory);
-      }
+    private void objectWrapperFactoryElement(XNode context) throws Exception
+    {
+        if (context != null)
+        {
+            String type = context.getStringAttribute("type");
+            ObjectWrapperFactory factory = (ObjectWrapperFactory) resolveClass(type).newInstance();
+            configuration.setObjectWrapperFactory(factory);
+        }
     }
 
-    private void propertiesElement(XNode context) throws Exception {
-      if (context != null) {
-        Properties defaults = context.getChildrenAsProperties();
-        String resource = context.getStringAttribute("resource");
-        String url = context.getStringAttribute("url");
-        if (resource != null && url != null) {
-          throw new BuilderException("The properties element cannot specify both a URL and a resource based property file reference.  Please specify one or the other.");
+    private void reflectionFactoryElement(XNode context) throws Exception
+    {
+        if (context != null)
+        {
+            String type = context.getStringAttribute("type");
+            ReflectorFactory factory = (ReflectorFactory) resolveClass(type).newInstance();
+            configuration.setReflectorFactory(factory);
         }
-        if (resource != null) {
-          defaults.putAll(Resources.getResourceAsProperties(resource));
-        } else if (url != null) {
-          defaults.putAll(Resources.getUrlAsProperties(url));
-        }
-        Properties vars = configuration.getVariables();
-        if (vars != null) {
-          defaults.putAll(vars);
-        }
-        parser.setVariables(defaults);
-        configuration.setVariables(defaults);
-      }
     }
 
-    private void settingsElement(XNode context) throws Exception {
-        if (context != null) {
+    private void propertiesElement(XNode context) throws Exception
+    {
+        if (context != null)
+        {
+            Properties defaults = context.getChildrenAsProperties();
+            String resource = context.getStringAttribute("resource");
+            String url = context.getStringAttribute("url");
+            if (resource != null && url != null)
+            {
+                throw new BuilderException("The properties element cannot specify both a URL and a resource based property file reference.  Please specify one or the other.");
+            }
+            if (resource != null)
+            {
+                defaults.putAll(Resources.getResourceAsProperties(resource));
+            }
+            else if (url != null)
+            {
+                defaults.putAll(Resources.getUrlAsProperties(url));
+            }
+            Properties vars = configuration.getVariables();
+            if (vars != null)
+            {
+                defaults.putAll(vars);
+            }
+            parser.setVariables(defaults);
+            configuration.setVariables(defaults);
+        }
+    }
+
+    private void settingsElement(XNode context) throws Exception
+    {
+        if (context != null)
+        {
             Properties props = context.getChildrenAsProperties();
             // Check that all settings are known to the configuration class
             MetaClass metaConfig = MetaClass.forClass(Configuration.class, localReflectorFactory);
-            for (Object key : props.keySet()) {
-                if (!metaConfig.hasSetter(String.valueOf(key))) {
+            for (Object key : props.keySet())
+            {
+                if (!metaConfig.hasSetter(String.valueOf(key)))
+                {
                     throw new BuilderException("The setting " + key + " is not known.  Make sure you spelled it correctly (case sensitive).");
                 }
             }
@@ -259,14 +285,19 @@ public class HierarchicalXMLConfigBuilder extends BaseBuilder
         }
     }
 
-    private void environmentsElement(XNode context) throws Exception {
-        if (context != null) {
-            if (environment == null) {
+    private void environmentsElement(XNode context) throws Exception
+    {
+        if (context != null)
+        {
+            if (environment == null)
+            {
                 environment = context.getStringAttribute("default");
             }
-            for (XNode child : context.getChildren()) {
+            for (XNode child : context.getChildren())
+            {
                 String id = child.getStringAttribute("id");
-                if (isSpecifiedEnvironment(id)) {
+                if (isSpecifiedEnvironment(id))
+                {
                     TransactionFactory txFactory = transactionManagerElement(child.evalNode("transactionManager"));
                     DataSourceFactory dsFactory = dataSourceElement(child.evalNode("dataSource"));
                     DataSource dataSource = dsFactory.getDataSource();
@@ -279,63 +310,82 @@ public class HierarchicalXMLConfigBuilder extends BaseBuilder
         }
     }
 
-    private void databaseIdProviderElement(XNode context) throws Exception {
+    private void databaseIdProviderElement(XNode context) throws Exception
+    {
         DatabaseIdProvider databaseIdProvider = null;
-        if (context != null) {
+        if (context != null)
+        {
             String type = context.getStringAttribute("type");
             Properties properties = context.getChildrenAsProperties();
             databaseIdProvider = (DatabaseIdProvider) resolveClass(type).newInstance();
             databaseIdProvider.setProperties(properties);
         }
         Environment environment = configuration.getEnvironment();
-        if (environment != null && databaseIdProvider != null) {
+        if (environment != null && databaseIdProvider != null)
+        {
             String databaseId = databaseIdProvider.getDatabaseId(environment.getDataSource());
             configuration.setDatabaseId(databaseId);
         }
     }
 
-    private TransactionFactory transactionManagerElement(XNode context) throws Exception {
-      if (context != null) {
-        String type = context.getStringAttribute("type");
-        Properties props = context.getChildrenAsProperties();
-        TransactionFactory factory = (TransactionFactory) resolveClass(type).newInstance();
-        factory.setProperties(props);
-        return factory;
-      }
-      throw new BuilderException("Environment declaration requires a TransactionFactory.");
+    private TransactionFactory transactionManagerElement(XNode context) throws Exception
+    {
+        if (context != null)
+        {
+            String type = context.getStringAttribute("type");
+            Properties props = context.getChildrenAsProperties();
+            TransactionFactory factory = (TransactionFactory) resolveClass(type).newInstance();
+            factory.setProperties(props);
+            return factory;
+        }
+        throw new BuilderException("Environment declaration requires a TransactionFactory.");
     }
 
-    private DataSourceFactory dataSourceElement(XNode context) throws Exception {
-      if (context != null) {
-        String type = context.getStringAttribute("type");
-        Properties props = context.getChildrenAsProperties();
-        DataSourceFactory factory = (DataSourceFactory) resolveClass(type).newInstance();
-        factory.setProperties(props);
-        return factory;
-      }
-      throw new BuilderException("Environment declaration requires a DataSourceFactory.");
+    private DataSourceFactory dataSourceElement(XNode context) throws Exception
+    {
+        if (context != null)
+        {
+            String type = context.getStringAttribute("type");
+            Properties props = context.getChildrenAsProperties();
+            DataSourceFactory factory = (DataSourceFactory) resolveClass(type).newInstance();
+            factory.setProperties(props);
+            return factory;
+        }
+        throw new BuilderException("Environment declaration requires a DataSourceFactory.");
     }
 
-    private void typeHandlerElement(XNode parent) throws Exception {
-        if (parent != null) {
-            for (XNode child : parent.getChildren()) {
-                if ("package".equals(child.getName())) {
+    private void typeHandlerElement(XNode parent) throws Exception
+    {
+        if (parent != null)
+        {
+            for (XNode child : parent.getChildren())
+            {
+                if ("package".equals(child.getName()))
+                {
                     String typeHandlerPackage = child.getStringAttribute("name");
                     typeHandlerRegistry.register(typeHandlerPackage);
-                } else {
+                }
+                else
+                {
                     String javaTypeName = child.getStringAttribute("javaType");
                     String jdbcTypeName = child.getStringAttribute("jdbcType");
                     String handlerTypeName = child.getStringAttribute("handler");
                     Class<?> javaTypeClass = resolveClass(javaTypeName);
                     JdbcType jdbcType = resolveJdbcType(jdbcTypeName);
                     Class<?> typeHandlerClass = resolveClass(handlerTypeName);
-                    if (javaTypeClass != null) {
-                        if (jdbcType == null) {
+                    if (javaTypeClass != null)
+                    {
+                        if (jdbcType == null)
+                        {
                             typeHandlerRegistry.register(javaTypeClass, typeHandlerClass);
-                        } else {
+                        }
+                        else
+                        {
                             typeHandlerRegistry.register(javaTypeClass, jdbcType, typeHandlerClass);
                         }
-                    } else {
+                    }
+                    else
+                    {
                         typeHandlerRegistry.register(typeHandlerClass);
                     }
                 }
@@ -343,17 +393,24 @@ public class HierarchicalXMLConfigBuilder extends BaseBuilder
         }
     }
 
-    private void mapperElement(XNode parent) throws Exception {
-        if (parent != null) {
-            for (XNode child : parent.getChildren()) {
-                if ("package".equals(child.getName())) {
+    private void mapperElement(XNode parent) throws Exception
+    {
+        if (parent != null)
+        {
+            for (XNode child : parent.getChildren())
+            {
+                if ("package".equals(child.getName()))
+                {
                     String mapperPackage = child.getStringAttribute("name");
                     configuration.addMappers(mapperPackage);
-                } else {
+                }
+                else
+                {
                     String resource = child.getStringAttribute("resource");
                     String url = child.getStringAttribute("url");
                     String mapperClass = child.getStringAttribute("class");
-                    if (resource != null && url == null && mapperClass == null) {
+                    if (resource != null && url == null && mapperClass == null)
+                    {
                         ErrorContext.instance().resource(resource);
 
                         // // EXTENDED
@@ -364,22 +421,29 @@ public class HierarchicalXMLConfigBuilder extends BaseBuilder
                         {
                             inputStream = res.getInputStream();
                         }
-                        else {
-                            throw new BuilderException("Failed to get resource: "+resource);
+                        else
+                        {
+                            throw new BuilderException("Failed to get resource: " + resource);
                         }
 
-                        //InputStream inputStream = Resources.getResourceAsStream(resource);
+                        // InputStream inputStream = Resources.getResourceAsStream(resource);
                         XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource, configuration.getSqlFragments());
                         mapperParser.parse();
-                    } else if (resource == null && url != null && mapperClass == null) {
+                    }
+                    else if (resource == null && url != null && mapperClass == null)
+                    {
                         ErrorContext.instance().resource(url);
                         InputStream inputStream = Resources.getUrlAsStream(url);
                         XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, url, configuration.getSqlFragments());
                         mapperParser.parse();
-                    } else if (resource == null && url == null && mapperClass != null) {
+                    }
+                    else if (resource == null && url == null && mapperClass != null)
+                    {
                         Class<?> mapperInterface = Resources.classForName(mapperClass);
                         configuration.addMapper(mapperInterface);
-                    } else {
+                    }
+                    else
+                    {
                         throw new BuilderException("A mapper element may only specify a url, resource or class, but not more than one.");
                     }
                 }
@@ -387,12 +451,18 @@ public class HierarchicalXMLConfigBuilder extends BaseBuilder
         }
     }
 
-    private boolean isSpecifiedEnvironment(String id) {
-        if (environment == null) {
+    private boolean isSpecifiedEnvironment(String id)
+    {
+        if (environment == null)
+        {
             throw new BuilderException("No environment specified.");
-        } else if (id == null) {
+        }
+        else if (id == null)
+        {
             throw new BuilderException("Environment requires an id attribute.");
-        } else if (environment.equals(id)) {
+        }
+        else if (environment.equals(id))
+        {
             return true;
         }
         return false;

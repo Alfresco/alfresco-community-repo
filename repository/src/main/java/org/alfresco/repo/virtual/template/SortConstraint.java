@@ -39,7 +39,6 @@ import org.alfresco.service.cmr.search.SearchParameters.SortDefinition.SortType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
-
 /**
  * Handles generic sort information decorations of the search query parameters.
  *
@@ -59,7 +58,7 @@ public class SortConstraint extends VirtualQueryConstraintDecorator
 
     @Override
     protected SearchParameters applyDecorations(ActualEnvironment environment, SearchParameters searchParameters,
-                VirtualQuery query)
+            VirtualQuery query)
     {
         SearchParameters searchParametersCopy = searchParameters.copy();
         for (Pair<QName, Boolean> sort : sortProps)
@@ -67,8 +66,8 @@ public class SortConstraint extends VirtualQueryConstraintDecorator
             if (!IGNORED_SORT_PROPERTIES.contains(sort.getFirst()))
             {
                 SortDefinition sortDefinition = new SortDefinition(SortType.FIELD,
-                                                                   sort.getFirst().getPrefixString(),
-                                                                   sort.getSecond());
+                        sort.getFirst().getPrefixString(),
+                        sort.getSecond());
                 searchParametersCopy.addSort(sortDefinition);
             }
         }

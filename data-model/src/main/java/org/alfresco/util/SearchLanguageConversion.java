@@ -26,11 +26,9 @@
 package org.alfresco.util;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.util.StringUtils;
-
 
 /**
  * Helper class to provide conversions between different search languages
@@ -150,7 +148,8 @@ public class SearchLanguageConversion
     /**
      * Convert an <b>xpath</b> like function clause into a <b>regex</b> query.
      * 
-     * @param xpathLikeClause String
+     * @param xpathLikeClause
+     *            String
      * @return Returns a valid regular expression that is equivalent to the given <b>xpath</b> like clause.
      */
     public static String convertXPathLikeToRegex(String xpathLikeClause)
@@ -161,7 +160,8 @@ public class SearchLanguageConversion
     /**
      * Convert an <b>xpath</b> like function clause into a <b>Lucene</b> query.
      * 
-     * @param xpathLikeClause String
+     * @param xpathLikeClause
+     *            String
      * @return Returns a valid <b>Lucene</b> expression that is equivalent to the given <b>xpath</b> like clause.
      */
     public static String convertXPathLikeToLucene(String xpathLikeClause)
@@ -172,7 +172,8 @@ public class SearchLanguageConversion
     /**
      * Convert a <b>sql</b> like function clause into a <b>Lucene</b> query.
      * 
-     * @param sqlLikeClause String
+     * @param sqlLikeClause
+     *            String
      * @return Returns a valid <b>Lucene</b> expression that is equivalent to the given <b>sql</b> like clause.
      */
     public static String convertSQLLikeToLucene(String sqlLikeClause)
@@ -183,7 +184,8 @@ public class SearchLanguageConversion
     /**
      * Convert a <b>sql</b> like function clause into a <b>regex</b> query.
      * 
-     * @param sqlLikeClause String
+     * @param sqlLikeClause
+     *            String
      * @return Returns a valid regular expression that is equivalent to the given <b>sql</b> like clause.
      */
     public static String convertSQLLikeToRegex(String sqlLikeClause)
@@ -215,7 +217,7 @@ public class SearchLanguageConversion
         {
             if (escaping) // if we are currently escaping, just escape the current character
             {
-                if(to.isReserved(chars[i]))
+                if (to.isReserved(chars[i]))
                 {
                     sb.append(to.escapeChar); // the to format escape char
                 }
@@ -312,7 +314,7 @@ public class SearchLanguageConversion
             StringBuilder sb = new StringBuilder(20);
             for (char ch = 0; ch < 256; ch++)
             {
-                char[] chars = new char[] { ch };
+                char[] chars = new char[]{ch};
                 String unescaped = new String(chars);
                 // check it
                 String escaped = SearchLanguageConversion.escapeLuceneQuery(unescaped);
@@ -331,46 +333,50 @@ public class SearchLanguageConversion
             return (reserved.indexOf(ch) > -1);
         }
     }
-    
+
     /**
-     * We have to escape lucene query strings outside of lucene - as we do not depend on any given version of lucene
-     * The escaping here is taken from lucene 4.9.0
-     *  
-     * The reserved (and escaped characters) are: 
-     *  
-     *  \ + - ! ( ) : ^ [ ] " { } ~ * ? | & /
-     *  
-     *  The escape character is \
-     *  
-     * @param query String
-     * @return - the escaped query string 
+     * We have to escape lucene query strings outside of lucene - as we do not depend on any given version of lucene The escaping here is taken from lucene 4.9.0
+     * 
+     * The reserved (and escaped characters) are:
+     * 
+     * \ + - ! ( ) : ^ [ ] " { } ~ * ? | & /
+     * 
+     * The escape character is \
+     * 
+     * @param query
+     *            String
+     * @return - the escaped query string
      */
     public static String escapeLuceneQuery(String query)
     {
         StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < query.length(); i++) {
+        for (int i = 0; i < query.length(); i++)
+        {
             char c = query.charAt(i);
             // These characters are part of the query syntax and must be escaped
             if (c == '\\' || c == '+' || c == '-' || c == '!' || c == '(' || c == ')' || c == ':'
                     || c == '^' || c == '[' || c == ']' || c == '\"' || c == '{' || c == '}' || c == '~'
-                    || c == '*' || c == '?' || c == '|' || c == '&' || c == '/') {
+                    || c == '*' || c == '?' || c == '|' || c == '&' || c == '/')
+            {
                 sb.append('\\');
             }
             sb.append(c);
         }
-        return sb.toString(); 
+        return sb.toString();
     }
-    
+
     public static String[] tokenizeString(String query)
     {
         String trimmed = StringUtils.trimWhitespace(query);
-        if (trimmed == null || trimmed.length() < 1) return new String[]{query};
+        if (trimmed == null || trimmed.length() < 1)
+            return new String[]{query};
         List<String> split = new ArrayList<String>();
-        
+
         char[] toSplit = trimmed.toCharArray();
         StringBuffer buff = new StringBuffer();
-        
-        for (char c : toSplit) {
+
+        for (char c : toSplit)
+        {
             if (Character.isWhitespace(c))
             {
                 if (buff.length() > 0)
@@ -379,12 +385,12 @@ public class SearchLanguageConversion
                     buff = new StringBuffer();
                 }
             }
-            else 
+            else
             {
                 buff.append(c);
             }
         }
-        
+
         if (buff.length() > 0)
         {
             split.add(buff.toString());

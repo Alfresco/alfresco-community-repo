@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.transfer.NodeFinder;
 
 /**
  * A {@link NodeFinder} that sums the results of multiple {@link NodeFinder}s.
+ * 
  * @author Nick Smith
  * @since 4.0
  *
@@ -48,22 +49,22 @@ public class CompositeNodeFinder extends AbstractNodeFinder
     {
         this.finders = Arrays.asList(finders);
     }
-    
+
     public CompositeNodeFinder(Collection<NodeFinder> finders)
     {
         this.finders = finders;
     }
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public void init()
     {
         super.init();
         for (NodeFinder finder : finders)
         {
-            if(finder instanceof AbstractNodeFinder)
+            if (finder instanceof AbstractNodeFinder)
             {
                 AbstractNodeFinder nodeFinder = (AbstractNodeFinder) finder;
                 nodeFinder.setServiceRegistry(serviceRegistry);
@@ -71,17 +72,17 @@ public class CompositeNodeFinder extends AbstractNodeFinder
             }
         }
     }
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public Set<NodeRef> findFrom(NodeRef thisNode)
     {
         HashSet<NodeRef> results = new HashSet<NodeRef>();
         for (NodeFinder finder : finders)
         {
             Set<NodeRef> result = finder.findFrom(thisNode);
-            if(result != null)
+            if (result != null)
             {
                 results.addAll(result);
             }

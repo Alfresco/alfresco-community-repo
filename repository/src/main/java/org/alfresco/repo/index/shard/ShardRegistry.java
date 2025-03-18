@@ -45,14 +45,15 @@ public interface ShardRegistry
     /**
      * Registers (or updates the existing subscription) of a shard.
      *
-     * @param shardState the shard state, which contains the information about the shard that wants to subscribe/register.
+     * @param shardState
+     *            the shard state, which contains the information about the shard that wants to subscribe/register.
      */
     void registerShardState(ShardState shardState);
-    
+
     List<ShardInstance> getIndexSlice(SearchParameters searchParameters);
-    
+
     void purge();
-    
+
     Map<Floc, Map<Shard, Set<ShardState>>> getFlocs();
 
     void purgeAgedOutShards();
@@ -60,26 +61,30 @@ public interface ShardRegistry
     /**
      * Returns the shard instance (i.e. shard number) which owns (or should own) the transaction associated with the given timestamp.
      *
-     * @param coreId an identifier (e.g. core name, base url) of the core / collection whose requested shard belongs to.
-     * @param txnTimestamp the transaction timestamp used as search criteria.
+     * @param coreId
+     *            an identifier (e.g. core name, base url) of the core / collection whose requested shard belongs to.
+     * @param txnTimestamp
+     *            the transaction timestamp used as search criteria.
      * @return the shard instance (i.e. shard number) which owns (or should own) the transaction associated with the given timestamp.
      */
     OptionalInt getShardInstanceByTransactionTimestamp(String coreId, long txnTimestamp);
-    
+
     /**
      * Returns the property used for EXPLICIT_ID Sharding methods if exists. Null otherwise.
      * 
-     * @param coreName is the name of the SOLR core: alfresco, archive
+     * @param coreName
+     *            is the name of the SOLR core: alfresco, archive
      * @return QName of the property used for EXPLICIT_ID Sharding methods or null.
      */
     QName getExplicitIdProperty(String coreName);
-    
+
     /**
      * Returns the list with the numbers of the registered Shard Instances.
      * 
-     * @param coreName is the name of the SOLR core: alfresco, archive
+     * @param coreName
+     *            is the name of the SOLR core: alfresco, archive
      * @return Ordered list of numbers of the registered Shard Instances
      */
     Set<Integer> getShardInstanceList(String coreName);
-    
+
 }

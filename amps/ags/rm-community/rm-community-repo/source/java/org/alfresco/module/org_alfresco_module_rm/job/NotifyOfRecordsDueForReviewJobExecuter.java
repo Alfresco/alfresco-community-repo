@@ -29,7 +29,9 @@ package org.alfresco.module.org_alfresco_module_rm.job;
 
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -39,12 +41,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * This job finds all Vital Records which are due for review, optionally
- * excluding those for which notification has already been issued.
+ * This job finds all Vital Records which are due for review, optionally excluding those for which notification has already been issued.
  *
  * @author Neil McErlean
  */
@@ -84,8 +83,7 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
             logger.debug("Job " + this.getClass().getSimpleName() + " starting.");
         }
 
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork()
             {
                 // Query is for all records that are due for review and for which
@@ -106,12 +104,11 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                     logger.debug("Found " + resultNodes.size() + " nodes due for review and without notification.");
                 }
 
-                //If we have something to do and a template to do it with
-                if(resultNodes.size() != 0)
+                // If we have something to do and a template to do it with
+                if (resultNodes.size() != 0)
                 {
-                    //Send the email message - but we must not retry since email is not transactional
-                    RetryingTransactionCallback<Void> txCallbackSendEmail = new RetryingTransactionCallback<Void>()
-                    {
+                    // Send the email message - but we must not retry since email is not transactional
+                    RetryingTransactionCallback<Void> txCallbackSendEmail = new RetryingTransactionCallback<Void>() {
                         // Set the notification issued property.
                         public Void execute()
                         {
@@ -138,6 +135,6 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
         {
             logger.debug("Job " + this.getClass().getSimpleName() + " finished");
         }
-    }  // end of execute method
+    } // end of execute method
 
 }

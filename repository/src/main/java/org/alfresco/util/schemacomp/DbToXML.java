@@ -31,12 +31,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Properties;
-
 import javax.xml.transform.stream.StreamResult;
 
-import org.alfresco.util.schemacomp.model.Schema;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
+
+import org.alfresco.util.schemacomp.model.Schema;
 
 /**
  * Tool to export a database schema to an XML file.
@@ -59,10 +59,8 @@ public class DbToXML
         this.outputFile = outputFile;
     }
 
-
     /**
-     * Constructor. Allows specification of a name prefix, e.g. "jpbm_", that
-     * will be used during the export.
+     * Constructor. Allows specification of a name prefix, e.g. "jpbm_", that will be used during the export.
      */
     public DbToXML(ApplicationContext context, File outputFile, String namePrefix)
     {
@@ -73,13 +71,14 @@ public class DbToXML
     /**
      * Set an optional default schema name
      *
-     * @param dbSchemaName String
+     * @param dbSchemaName
+     *            String
      */
     public void setDbSchemaName(String dbSchemaName)
     {
         this.dbSchemaName = dbSchemaName;
     }
-    
+
     public void execute()
     {
         ExportDb exporter = new ExportDb(context);
@@ -90,22 +89,22 @@ public class DbToXML
         // Write to a string buffer and then write the results to a file
         // since we need to write windows line endings - and even passing in a suitable
         // PrintWriter to StreamResult does not seem to result in the correct line endings.
-        StringWriter stringWriter = new StringWriter(); 
+        StringWriter stringWriter = new StringWriter();
         SchemaToXML schemaToXML = new SchemaToXML(schema, new StreamResult(stringWriter));
         schemaToXML.execute();
         writeToFile(stringWriter.getBuffer().toString());
     }
-    
+
     private void writeToFile(String content)
     {
         PrintWriter pw = printWriter(outputFile, SchemaComparator.CHAR_SET, SchemaComparator.LINE_SEPARATOR);
-        
+
         String[] lines = content.split(System.getProperty("line.separator"));
         for (String line : lines)
         {
             pw.println(line);
         }
-        
+
         pw.close();
     }
 
@@ -148,13 +147,13 @@ public class DbToXML
         }
         String contextPath = args[0];
         File outputFile = new File(args[1]);
-        
+
         // Create the Spring context
         FileSystemXmlApplicationContext context = new FileSystemXmlApplicationContext(contextPath);
         DbToXML dbToXML = new DbToXML(context, outputFile);
-        
+
         dbToXML.execute();
-        
+
         // Shutdown the Spring context
         context.close();
     }

@@ -1,7 +1,10 @@
 package org.alfresco.rest.people.preferences;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPreferenceModelsCollection;
 import org.alfresco.utility.constants.PreferenceName;
 import org.alfresco.utility.constants.UserRole;
@@ -10,9 +13,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Tests for Get Peferences (/people/{personId}/preferences) RestAPI call
@@ -33,8 +33,8 @@ public class GetPeoplePreferencesSanityTests extends RestTest
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify manager user gets its preferences with Rest API and response is successful (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES}, executionType = ExecutionType.SANITY, description = "Verify manager user gets its preferences with Rest API and response is successful (200)")
     public void managerUserGetsPeoplePreferencesWithSuccess() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -47,8 +47,8 @@ public class GetPeoplePreferencesSanityTests extends RestTest
                 .entriesListContains("id", String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets its preferences with Rest API and response is successful (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES}, executionType = ExecutionType.SANITY, description = "Verify collaborator user gets its preferences with Rest API and response is successful (200)")
     public void collaboratorUserGetsPeoplePreferencesWithSuccess() throws Exception
     {
         UserModel collaboratorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -61,8 +61,8 @@ public class GetPeoplePreferencesSanityTests extends RestTest
                 .entriesListContains("id", String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify contributor user gets its preferences with Rest API and response is successful (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES}, executionType = ExecutionType.SANITY, description = "Verify contributor user gets its preferences with Rest API and response is successful (200)")
     public void contributorUserGetsPeoplePreferencesWithSuccess() throws Exception
     {
         UserModel contributorUser = dataUser.usingAdmin().createRandomTestUser();
@@ -75,8 +75,8 @@ public class GetPeoplePreferencesSanityTests extends RestTest
                 .entriesListContains("id", String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API,TestGroup.PEOPLE, TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify consumer user gets its preferences with Rest API and response is successful (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES}, executionType = ExecutionType.SANITY, description = "Verify consumer user gets its preferences with Rest API and response is successful (200)")
     public void consumerUserGetsPeoplePreferencesWithSuccess() throws Exception
     {
         UserModel consumerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -89,8 +89,8 @@ public class GetPeoplePreferencesSanityTests extends RestTest
                 .entriesListContains("id", String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify admin user gets another user preferences with Rest API and response is successful (200)")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES}, executionType = ExecutionType.SANITY, description = "Verify admin user gets another user preferences with Rest API and response is successful (200)")
     public void adminUserGetsPeoplePreferencesWithSuccess() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
@@ -104,9 +104,9 @@ public class GetPeoplePreferencesSanityTests extends RestTest
                 .entriesListContains("id", String.format(PreferenceName.SITES_FAVORITES_PREFIX.toString(), siteModel.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE,TestGroup.PREFERENCES }, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to gets its preferences with Rest API when authentication fails(401)")
-//    @Bug(id = "MNT-16904", description = "It fails only on environment with tenants")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES}, executionType = ExecutionType.SANITY, description = "Verify manager user is NOT Authorized to gets its preferences with Rest API when authentication fails(401)")
+    // @Bug(id = "MNT-16904", description = "It fails only on environment with tenants")
     public void managerUserGetsPeoplePreferencesIsNotAuthorized() throws Exception
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();

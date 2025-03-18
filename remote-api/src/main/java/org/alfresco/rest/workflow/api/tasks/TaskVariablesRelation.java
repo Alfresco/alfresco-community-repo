@@ -45,14 +45,14 @@ import org.alfresco.rest.workflow.api.model.VariableScope;
  */
 @RelationshipResource(name = "variables", entityResource = TasksRestEntityResource.class, title = "Variables for the current task")
 public class TaskVariablesRelation implements RelationshipResourceAction.Read<TaskVariable>, RelationshipResourceAction.Create<TaskVariable>,
-    RelationshipResourceAction.Update<TaskVariable>, RelationshipResourceAction.Delete
+        RelationshipResourceAction.Update<TaskVariable>, RelationshipResourceAction.Delete
 {
     private Tasks tasks;
 
-	public void setTasks(Tasks tasks)
-	{
-		this.tasks = tasks;
-	}
+    public void setTasks(Tasks tasks)
+    {
+        this.tasks = tasks;
+    }
 
     /**
      * List the tasks variables.
@@ -64,16 +64,16 @@ public class TaskVariablesRelation implements RelationshipResourceAction.Read<Ta
     public CollectionWithPagingInfo<TaskVariable> readAll(String taskId, Parameters parameters)
     {
         VariableScope scope = VariableScope.ANY;
-        if(parameters.getQuery() != null)
+        if (parameters.getQuery() != null)
         {
             TaskVariablesWalkerCallback callback = new TaskVariablesWalkerCallback();
             QueryHelper.walk(parameters.getQuery(), callback);
-            
+
             scope = callback.getScope();
         }
         return tasks.getTaskVariables(taskId, parameters.getPaging(), scope);
     }
-    
+
     /**
      * Creates or updates multiple task variables. If the variable name doesn't exist yet it will be created
      */

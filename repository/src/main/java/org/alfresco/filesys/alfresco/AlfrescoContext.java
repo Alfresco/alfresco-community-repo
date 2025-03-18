@@ -40,59 +40,60 @@ import org.alfresco.repo.admin.SysAdminParams;
 /**
  * Alfresco Filesystem Context Class
  * 
- * <p>Contains per filesystem context.
+ * <p>
+ * Contains per filesystem context.
  * 
  * @author GKSpencer
  */
 public abstract class AlfrescoContext extends DiskDeviceContext
 {
     private SysAdminParams sysAdminParams;
-    
+
     private boolean isAlfrescoURLEnabled = false;
     private boolean isShareURLEnabled = false;
 
-	// Debug levels
-	
-	public final static int DBG_FILE		= 0x00000001;	// file/folder create/delete
-	public final static int DBG_FILEIO		= 0x00000002;	// file read/write/truncate
-	public final static int DBG_SEARCH  	= 0x00000004;	// folder search
-	public final static int DBG_INFO        = 0x00000008;	// file/folder information
-	public final static int DBG_LOCK        = 0x00000010;	// file byte range locking
-	public final static int DBG_PSEUDO      = 0x00000020;	// pseudo files/folders
-	public final static int DBG_RENAME      = 0x00000040;	// rename file/folder
-	
-	// Filesystem debug flag strings
-	  
-	private static final String m_filesysDebugStr[] = { "FILE", "FILEIO", "SEARCH", "INFO", "LOCK", "PSEUDO", "RENAME" };
+    // Debug levels
+
+    public final static int DBG_FILE = 0x00000001; // file/folder create/delete
+    public final static int DBG_FILEIO = 0x00000002; // file read/write/truncate
+    public final static int DBG_SEARCH = 0x00000004; // folder search
+    public final static int DBG_INFO = 0x00000008; // file/folder information
+    public final static int DBG_LOCK = 0x00000010; // file byte range locking
+    public final static int DBG_PSEUDO = 0x00000020; // pseudo files/folders
+    public final static int DBG_RENAME = 0x00000040; // rename file/folder
+
+    // Filesystem debug flag strings
+
+    private static final String m_filesysDebugStr[] = {"FILE", "FILEIO", "SEARCH", "INFO", "LOCK", "PSEUDO", "RENAME"};
 
     // URL pseudo file web path prefix (server/port/webapp) and link file name
-    
+
     private String m_urlFileName;
     private String m_shareUrlFileName;
-    
+
     // Debug flags
     //
     // Requires the logger to be enabled for debug output
-    
+
     public int m_debug;
-    
+
     public AlfrescoContext()
     {
         // Default the filesystem to look like an 80Gb sized disk with 90% free space
-        
+
         setDiskInformation(new SrvDiskInfo(2560000, 64, 512, 2304000));
-        
+
         // Set parameters
-        
+
         setFilesystemAttributes(FileSystem.CasePreservedNames + FileSystem.UnicodeOnDisk +
-                FileSystem.CaseSensitiveSearch);        
+                FileSystem.CaseSensitiveSearch);
     }
-    
+
     public void setSysAdminParams(SysAdminParams sysAdminParams)
     {
         this.sysAdminParams = sysAdminParams;
     }
-    
+
     public SysAdminParams getSysAdminParams()
     {
         return sysAdminParams;
@@ -102,7 +103,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     {
         enableChangeHandler(!disableChangeNotification);
     }
-    
+
     /**
      * Complete initialization by registering with a disk driver
      */
@@ -120,21 +121,22 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     {
         return FileSystem.TypeNTFS;
     }
-    
-//    /**
-//     * Determine if the URL pseudo file is enabled
-//     * 
-//     * @return boolean
-//     */
-//    public final boolean hasURLFile()
-//    {
-//        if (m_urlFileName != null)
-//            return true;
-//        return false;
-//    }
-//     
+
+    // /**
+    // * Determine if the URL pseudo file is enabled
+    // *
+    // * @return boolean
+    // */
+    // public final boolean hasURLFile()
+    // {
+    // if (m_urlFileName != null)
+    // return true;
+    // return false;
+    // }
+    //
     /**
      * Return the URL pseudo file path prefix
+     * 
      * @deprecated - does not know about share
      * 
      * @return String
@@ -143,10 +145,10 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     {
         return sysAdminParams.getAlfrescoProtocol() + "://" + sysAdminParams.getAlfrescoHost() + ":" + sysAdminParams.getAlfrescoPort() + "/" + sysAdminParams.getAlfrescoContext() + "/";
     }
-    
+
     public final String getShareUrlPrefix()
     {
-    	return sysAdminParams.getShareProtocol() + "://" + sysAdminParams.getShareHost() + ":" + sysAdminParams.getSharePort() + "/" + sysAdminParams.getShareContext() + "/";
+        return sysAdminParams.getShareProtocol() + "://" + sysAdminParams.getShareHost() + ":" + sysAdminParams.getSharePort() + "/" + sysAdminParams.getShareContext() + "/";
     }
 
     /**
@@ -158,7 +160,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     {
         return m_urlFileName;
     }
-    
+
     /**
      * Return the Share URL pseudo file name
      * 
@@ -169,11 +171,11 @@ public abstract class AlfrescoContext extends DiskDeviceContext
         return m_shareUrlFileName;
     }
 
-    
     /**
      * Set the URL pseudo file name
      * 
-     * @param urlFileName String
+     * @param urlFileName
+     *            String
      */
     public final void setURLFileName(String urlFileName)
     {
@@ -186,11 +188,12 @@ public abstract class AlfrescoContext extends DiskDeviceContext
                 throw new AlfrescoRuntimeException("URL link file must end with .url, " + urlFileName);
         }
     }
-    
+
     /**
      * Set the Share URL pseudo file name
      * 
-     * @param urlFileName String
+     * @param urlFileName
+     *            String
      */
     public final void setShareURLFileName(String urlFileName)
     {
@@ -203,79 +206,81 @@ public abstract class AlfrescoContext extends DiskDeviceContext
                 throw new AlfrescoRuntimeException("URL Share link file must end with .url, " + urlFileName);
         }
     }
-    
+
     /**
      * Set the debug flags, also requires the logger to be enabled for debug output
      * 
-     * @param flagsStr String
+     * @param flagsStr
+     *            String
      */
     public final void setDebug(String flagsStr)
     {
-    	int filesysDbg = 0;
-    	
-    	if (flagsStr != null)
+        int filesysDbg = 0;
+
+        if (flagsStr != null)
         {
-	        // Parse the flags
-	  
-	        StringTokenizer token = new StringTokenizer(flagsStr.toUpperCase(), ",");
-	  
-	        while (token.hasMoreTokens())
-	        {
-	        	// Get the current debug flag token
-  
+            // Parse the flags
+
+            StringTokenizer token = new StringTokenizer(flagsStr.toUpperCase(), ",");
+
+            while (token.hasMoreTokens())
+            {
+                // Get the current debug flag token
+
                 String dbg = token.nextToken().trim();
-  
+
                 // Find the debug flag name
-  
+
                 int idx = 0;
                 boolean match = false;
-  
+
                 while (idx < m_filesysDebugStr.length && match == false)
                 {
-                	if ( m_filesysDebugStr[idx].equalsIgnoreCase(dbg) == true)
-                		match = true;
-                	else
-                		idx++;
+                    if (m_filesysDebugStr[idx].equalsIgnoreCase(dbg) == true)
+                        match = true;
+                    else
+                        idx++;
                 }
-  
+
                 if (match == false)
                     throw new AlfrescoRuntimeException("Invalid filesystem debug flag, " + dbg);
-  
+
                 // Set the debug flag
-  
+
                 filesysDbg += 1 << idx;
             }
-	        
-	        // Set the debug flags
-	        
-	        m_debug = filesysDbg;
+
+            // Set the debug flags
+
+            m_debug = filesysDbg;
         }
     }
-    
+
     /**
      * Check if a debug flag is enabled
      * 
-     * @param flg int
+     * @param flg
+     *            int
      * @return boolean
      */
     public final boolean hasDebug(int flg)
     {
-    	return (m_debug & flg) != 0 ? true : false;
+        return (m_debug & flg) != 0 ? true : false;
     }
-    
+
     /**
      * Start the filesystem
      * 
-     * @param share DiskSharedDevice
+     * @param share
+     *            DiskSharedDevice
      * @exception DeviceContextException
      */
     public void startFilesystem(DiskSharedDevice share)
-        throws DeviceContextException {
-        
-      
+            throws DeviceContextException
+    {
 
         // Call the base class
-        
+
         super.startFilesystem(share);
     }
 
@@ -291,23 +296,24 @@ public abstract class AlfrescoContext extends DiskDeviceContext
      *
      * @return LockManager
      */
-    public LockManager getLockManager() {
+    public LockManager getLockManager()
+    {
         return lockManager;
     }
 
     OpLockManager opLockManager;
-    
+
     /**
      * Return the oplock manager, if enabled
      * 
      * @return OpLockManager
      */
-    public OpLockManager getOpLockManager() 
+    public OpLockManager getOpLockManager()
     {
         return opLockManager;
     }
-    
-    public void setOpLockManager(OpLockManager opLockManager) 
+
+    public void setOpLockManager(OpLockManager opLockManager)
     {
         this.opLockManager = opLockManager;
     }

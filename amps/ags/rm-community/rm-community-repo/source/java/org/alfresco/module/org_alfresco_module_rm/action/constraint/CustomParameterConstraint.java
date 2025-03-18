@@ -46,7 +46,8 @@ public class CustomParameterConstraint extends BaseParameterConstraint
     /**
      * Sets the parameter values
      *
-     * @param parameterValues The parameter values
+     * @param parameterValues
+     *            The parameter values
      */
     public void setParameterValues(List<String> parameterValues)
     {

@@ -47,54 +47,67 @@ public class IdsEntity
     {
         return idOne;
     }
+
     public void setIdOne(Long id)
     {
         this.idOne = id;
     }
+
     public Long getIdTwo()
     {
         return idTwo;
     }
+
     public void setIdTwo(Long id)
     {
         this.idTwo = id;
     }
+
     public Long getIdThree()
     {
         return idThree;
     }
+
     public void setIdThree(Long idThree)
     {
         this.idThree = idThree;
     }
+
     public Long getIdFour()
     {
         return idFour;
     }
+
     public void setIdFour(Long idFour)
     {
         this.idFour = idFour;
     }
+
     public List<Long> getIds()
     {
         return ids;
     }
+
     public void setIds(List<Long> ids)
     {
         this.ids = ids;
     }
+
     public boolean isOrdered()
     {
         return ordered;
     }
+
     public void setOrdered(boolean ordered)
     {
         this.ordered = ordered;
     }
+
     public int getMaxResults()
     {
         return maxResults;
     }
+
     public void setMaxResults(Integer maxResults)
     {
         this.maxResults = maxResults;

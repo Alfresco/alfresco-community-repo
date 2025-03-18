@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Sets;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
@@ -40,9 +43,6 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.annotation.BehaviourRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Convenient base class for behaviour beans.
@@ -51,8 +51,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @since 2.2
  */
 public abstract class BaseBehaviourBean extends ServiceBaseImpl
-                                        implements RecordsManagementModel,
-                                                   BehaviourRegistry
+        implements RecordsManagementModel,
+        BehaviourRegistry
 {
     /** Logger */
     protected static final Log LOGGER = LogFactory.getLog(BaseBehaviourBean.class);
@@ -68,7 +68,8 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
     protected Map<String, org.alfresco.repo.policy.Behaviour> behaviours = new HashMap<>(7);
 
     /**
-     * @param behaviourFilter   behaviour filter
+     * @param behaviourFilter
+     *            behaviour filter
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
@@ -100,24 +101,30 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
 
     /**
      * Helper method that checks if the newly created child association complies with the RM rules
-     * @param parent the parent node
-     * @param child the child node
-     * @param acceptedUniqueChildType a list of node types that are accepted as children of the provided parent only once
-     * @param acceptedMultipleChildType a list of node types that are accepted as children of the provided parent multiple times
-     * @throws IntegrityException if the child association doesn't comply with the RM rules
+     * 
+     * @param parent
+     *            the parent node
+     * @param child
+     *            the child node
+     * @param acceptedUniqueChildType
+     *            a list of node types that are accepted as children of the provided parent only once
+     * @param acceptedMultipleChildType
+     *            a list of node types that are accepted as children of the provided parent multiple times
+     * @throws IntegrityException
+     *             if the child association doesn't comply with the RM rules
      */
     protected void validateNewChildAssociation(NodeRef parent, NodeRef child, List<QName> acceptedUniqueChildType, List<QName> acceptedMultipleChildType) throws IntegrityException
     {
         QName childType = getInternalNodeService().getType(child);
-        if(acceptedUniqueChildType.contains(childType))
+        if (acceptedUniqueChildType.contains(childType))
         {
             // check the user is not trying to create multiple children of a type that is only accepted once
-            if(nodeService.getChildAssocs(parent, Sets.newHashSet(childType)).size() > 1)
+            if (nodeService.getChildAssocs(parent, Sets.newHashSet(childType)).size() > 1)
             {
                 throw new IntegrityException(I18NUtil.getMessage(UNIQUE_CHILD_TYPE_ERROR), null);
             }
         }
-        else if(!acceptedMultipleChildType.contains(childType))
+        else if (!acceptedMultipleChildType.contains(childType))
         {
             throw new IntegrityException(I18NUtil.getMessage(MULTIPLE_CHILDREN_TYPE_ERROR, childType), null);
         }
@@ -125,21 +132,25 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
 
     /**
      * Helper method that checks if the newly created child association is between the sub-types of accepted types.
-     * @param child the child node
-     * @param acceptedMultipleChildType a list of node types that are accepted as children of the provided parent multiple times
-     * @throws IntegrityException if the child association isn't between the sub-types of accepted types
+     * 
+     * @param child
+     *            the child node
+     * @param acceptedMultipleChildType
+     *            a list of node types that are accepted as children of the provided parent multiple times
+     * @throws IntegrityException
+     *             if the child association isn't between the sub-types of accepted types
      */
     protected void validateNewChildAssociationSubTypesIncluded(NodeRef child, List<QName> acceptedMultipleChildType) throws IntegrityException
     {
         QName childType = getInternalNodeService().getType(child);
-        for(QName type :  acceptedMultipleChildType)
+        for (QName type : acceptedMultipleChildType)
         {
-            if(instanceOf(childType, type))
+            if (instanceOf(childType, type))
             {
                 return;
             }
         }
-        //no match was found in sub-types of permitted types list
+        // no match was found in sub-types of permitted types list
         throw new IntegrityException(I18NUtil.getMessage(MULTIPLE_CHILDREN_TYPE_ERROR, childType), null);
     }
 

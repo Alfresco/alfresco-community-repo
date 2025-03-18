@@ -26,9 +26,6 @@
 package org.alfresco.repo.search;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.apache.http.HttpStatus;
-
-import java.util.List;
 
 /**
  * @author Andy
@@ -80,8 +77,10 @@ public class QueryParserException extends AlfrescoRuntimeException
     /**
      * Constructor for exception that allows setting an HTTP status code.
      *
-     * @param msgId Message for the exception
-     * @param httpStatusCode Status code to return for exception
+     * @param msgId
+     *            Message for the exception
+     * @param httpStatusCode
+     *            Status code to return for exception
      */
     public QueryParserException(String msgId, int httpStatusCode)
     {

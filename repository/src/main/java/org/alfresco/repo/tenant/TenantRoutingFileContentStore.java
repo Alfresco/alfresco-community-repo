@@ -30,12 +30,13 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.repo.content.ContentLimitProvider;
 import org.alfresco.repo.content.ContentLimitProvider.NoLimitProvider;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.filestore.FileContentUrlProvider;
-import org.springframework.context.ApplicationContext;
 
 /**
  * MT-aware File Content Store
@@ -44,7 +45,7 @@ public class TenantRoutingFileContentStore extends AbstractTenantRoutingContentS
 {
     private ContentLimitProvider contentLimitProvider = new NoLimitProvider();
     private FileContentUrlProvider fileContentUrlProvider;
-    
+
     /**
      * Sets a new {@link ContentLimitProvider} which will provide a maximum filesize for content.
      */
@@ -52,7 +53,7 @@ public class TenantRoutingFileContentStore extends AbstractTenantRoutingContentS
     {
         this.contentLimitProvider = contentLimitProvider;
     }
-    
+
     /**
      * Sets a new {@link FileContentUrlProvider} which will build the content url.
      */
@@ -60,24 +61,24 @@ public class TenantRoutingFileContentStore extends AbstractTenantRoutingContentS
     {
         this.fileContentUrlProvider = fileContentUrlProvider;
     }
-    
+
     protected ContentStore initContentStore(ApplicationContext ctx, String contentRoot)
     {
-    	Map<String, Serializable> extendedEventParams = new HashMap<String, Serializable>();
-    	if (!TenantService.DEFAULT_DOMAIN.equals(tenantService.getCurrentUserDomain()))
-    	{
-    	    extendedEventParams.put("Tenant", tenantService.getCurrentUserDomain());
-    	}
+        Map<String, Serializable> extendedEventParams = new HashMap<String, Serializable>();
+        if (!TenantService.DEFAULT_DOMAIN.equals(tenantService.getCurrentUserDomain()))
+        {
+            extendedEventParams.put("Tenant", tenantService.getCurrentUserDomain());
+        }
 
         FileContentStore fileContentStore = new FileContentStore(ctx, new File(contentRoot), extendedEventParams);
-        
+
         // Set the content filesize limiter if there is one.
         if (this.contentLimitProvider != null)
         {
             fileContentStore.setContentLimitProvider(contentLimitProvider);
         }
-        
-        if(fileContentUrlProvider != null)
+
+        if (fileContentUrlProvider != null)
         {
             fileContentStore.setFileContentUrlProvider(fileContentUrlProvider);
         }

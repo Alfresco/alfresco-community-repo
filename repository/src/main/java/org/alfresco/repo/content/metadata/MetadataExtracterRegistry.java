@@ -54,11 +54,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.alfresco.api.AlfrescoPublicApi;  
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
- * Holds and provides the most appropriate metadate extracter for a particular
- * mimetype.
+ * Holds and provides the most appropriate metadate extracter for a particular mimetype.
  * <p>
  * The extracters themselves know how well they are able to extract metadata.
  * 
@@ -95,10 +94,9 @@ public class MetadataExtracterRegistry
         extracterCacheReadLock = extractionCacheLock.readLock();
         extracterCacheWriteLock = extractionCacheLock.writeLock();
     }
-    
+
     /**
-     * Force the registry to drop its cache of extractors.  This is useful for the case where an extractor
-     * becomes available only after the registry has initialized the cache.
+     * Force the registry to drop its cache of extractors. This is useful for the case where an extractor becomes available only after the registry has initialized the cache.
      */
     public void resetCache()
     {
@@ -117,7 +115,8 @@ public class MetadataExtracterRegistry
     /**
      * Register an instance of an extracter for use
      * 
-     * @param extracter an extracter
+     * @param extracter
+     *            an extracter
      */
     public void register(MetadataExtracter extracter)
     {
@@ -131,7 +130,7 @@ public class MetadataExtracterRegistry
         {
             if (extracter instanceof AsynchronousExtractor)
             {
-                asynchronousExtractor = (AsynchronousExtractor)extracter;
+                asynchronousExtractor = (AsynchronousExtractor) extracter;
             }
             else
             {
@@ -157,30 +156,30 @@ public class MetadataExtracterRegistry
     }
 
     /**
-     * Returns the {@link AsynchronousExtractor} if it is able to perform the extraction and is enabled. Failing that it
-     * calls {@link #getExtracter(String)}.
+     * Returns the {@link AsynchronousExtractor} if it is able to perform the extraction and is enabled. Failing that it calls {@link #getExtracter(String)}.
      *
-     * @param sourceSizeInBytes size of the source content.
-     * @param sourceMimetype the source MIMETYPE of the extraction
+     * @param sourceSizeInBytes
+     *            size of the source content.
+     * @param sourceMimetype
+     *            the source MIMETYPE of the extraction
      * @return Returns a metadata extractor that can extract metadata from the chosen MIME type.
      */
     public MetadataExtracter getExtractor(String sourceMimetype, long sourceSizeInBytes)
     {
         return asyncExtractEnabled && asynchronousExtractor != null &&
-               asynchronousExtractor.isSupported(sourceMimetype, sourceSizeInBytes)
-            ? asynchronousExtractor
-            : getExtracter(sourceMimetype);
+                asynchronousExtractor.isSupported(sourceMimetype, sourceSizeInBytes)
+                        ? asynchronousExtractor
+                        : getExtracter(sourceMimetype);
     }
 
     /**
-     * Gets the best metadata extracter. This is a combination of the most
-     * reliable and the most performant extracter.
+     * Gets the best metadata extracter. This is a combination of the most reliable and the most performant extracter.
      * <p>
      * The result is cached for quicker access next time.
      * 
-     * @param sourceMimetype the source MIME of the extraction
-     * @return Returns a metadata extracter that can extract metadata from the
-     *         chosen MIME type.
+     * @param sourceMimetype
+     *            the source MIME of the extraction
+     * @return Returns a metadata extracter that can extract metadata from the chosen MIME type.
      */
     public MetadataExtracter getExtracter(String sourceMimetype)
     {
@@ -219,25 +218,25 @@ public class MetadataExtracterRegistry
                 extracterCacheWriteLock.unlock();
             }
         }
-        
+
         // We have the list of extractors that supposedly work (as registered).
         // Take the last one that still claims to work
         MetadataExtracter liveExtractor = null;
         for (MetadataExtracter extractor : extractors)
         {
-            // An extractor may dynamically become unavailable 
+            // An extractor may dynamically become unavailable
             if (!extractor.isSupported(sourceMimetype))
             {
-                logger.debug("Get unsupported: "+getName(extractor));
+                logger.debug("Get unsupported: " + getName(extractor));
                 continue;
             }
-            logger.debug("Get supported:   "+getName(extractor));
+            logger.debug("Get supported:   " + getName(extractor));
             liveExtractor = extractor;
         }
-        logger.debug("Get returning:   "+getName(liveExtractor));
+        logger.debug("Get returning:   " + getName(liveExtractor));
         return liveExtractor;
     }
-    
+
     private String getName(MetadataExtracter extractor)
     {
         if (extractor == null)
@@ -246,7 +245,7 @@ public class MetadataExtracterRegistry
         }
         else if (extractor instanceof AbstractMappingMetadataExtracter)
         {
-            return ((AbstractMappingMetadataExtracter)extractor).getBeanName();
+            return ((AbstractMappingMetadataExtracter) extractor).getBeanName();
         }
         else
         {
@@ -255,8 +254,9 @@ public class MetadataExtracterRegistry
     }
 
     /**
-     * @param       sourceMimetype The MIME type under examination
-     * @return      Returns a set of extractors that will work for the given mimetype
+     * @param sourceMimetype
+     *            The MIME type under examination
+     * @return Returns a set of extractors that will work for the given mimetype
      */
     private List<MetadataExtracter> findBestExtracters(String sourceMimetype)
     {
@@ -274,48 +274,48 @@ public class MetadataExtracterRegistry
                 // extraction not achievable
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("Find unsupported: "+getName(extractor));
+                    logger.debug("Find unsupported: " + getName(extractor));
                 }
                 continue;
             }
             if (logger.isDebugEnabled())
             {
-                logger.debug("Find supported:   "+getName(extractor));
+                logger.debug("Find supported:   " + getName(extractor));
             }
             extractors.add(extractor);
         }
         if (logger.isDebugEnabled())
         {
-            logger.debug("Find returning:   "+extractors);
+            logger.debug("Find returning:   " + extractors);
         }
         return extractors;
     }
 
     /**
-     * Returns the {@link AsynchronousExtractor} if it is able to perform the embedding and is enabled. Failing that it
-     * calls {@link #getEmbedder(String)}.
+     * Returns the {@link AsynchronousExtractor} if it is able to perform the embedding and is enabled. Failing that it calls {@link #getEmbedder(String)}.
      *
-     * @param sourceSizeInBytes size of the source content.
-     * @param sourceMimetype the source MIMETYPE of the extraction
+     * @param sourceSizeInBytes
+     *            size of the source content.
+     * @param sourceMimetype
+     *            the source MIMETYPE of the extraction
      * @return Returns a metadata extractor that can extract metadata from the chosen MIME type.
      */
     public MetadataEmbedder getEmbedder(String sourceMimetype, long sourceSizeInBytes)
     {
         return asyncEmbedEnabled && asynchronousExtractor != null &&
-               asynchronousExtractor.isEmbedderSupported(sourceMimetype, sourceSizeInBytes)
-                ? asynchronousExtractor
-                : getEmbedder(sourceMimetype);
+                asynchronousExtractor.isEmbedderSupported(sourceMimetype, sourceSizeInBytes)
+                        ? asynchronousExtractor
+                        : getEmbedder(sourceMimetype);
     }
 
     /**
-     * Gets the best metadata embedder. This is a combination of the most
-     * reliable and the most performant embedder.
+     * Gets the best metadata embedder. This is a combination of the most reliable and the most performant embedder.
      * <p>
      * The result is cached for quicker access next time.
      * 
-     * @param sourceMimetype the source MIME of the extraction
-     * @return Returns a metadata embedder that can embed metadata in the
-     *         chosen MIME type.
+     * @param sourceMimetype
+     *            the source MIME of the extraction
+     * @return Returns a metadata embedder that can embed metadata in the chosen MIME type.
      */
     public MetadataEmbedder getEmbedder(String sourceMimetype)
     {
@@ -353,13 +353,13 @@ public class MetadataExtracterRegistry
                 extracterCacheWriteLock.unlock();
             }
         }
-        
+
         // We have the list of embedders that supposedly work (as registered).
         // Take the last one that still claims to work
         MetadataEmbedder liveEmbedder = null;
         for (MetadataEmbedder embedder : embedders)
         {
-            // An extractor may dynamically become unavailable 
+            // An extractor may dynamically become unavailable
             if (!embedder.isEmbeddingSupported(sourceMimetype))
             {
                 continue;
@@ -368,10 +368,11 @@ public class MetadataExtracterRegistry
         }
         return liveEmbedder;
     }
-    
+
     /**
-     * @param       sourceMimetype The MIME type under examination
-     * @return      Returns a set of embedders that will work for the given mimetype
+     * @param sourceMimetype
+     *            The MIME type under examination
+     * @return Returns a set of embedders that will work for the given mimetype
      */
     private List<MetadataEmbedder> findBestEmbedders(String sourceMimetype)
     {
@@ -381,16 +382,16 @@ public class MetadataExtracterRegistry
 
         for (MetadataExtracter extractor : extracters)
         {
-        	if (!(extractor instanceof MetadataEmbedder))
-        	{
-        		continue;
-        	}
+            if (!(extractor instanceof MetadataEmbedder))
+            {
+                continue;
+            }
             if (!((MetadataEmbedder) extractor).isEmbeddingSupported(sourceMimetype))
             {
                 // extraction not achievable
                 continue;
             }
-            embedders.add((MetadataEmbedder)extractor);
+            embedders.add((MetadataEmbedder) extractor);
         }
         return embedders;
     }

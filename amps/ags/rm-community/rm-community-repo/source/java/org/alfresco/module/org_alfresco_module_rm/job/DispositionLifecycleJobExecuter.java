@@ -36,9 +36,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
-
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -50,10 +50,8 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 
-
 /**
- * The Disposition Lifecycle Job Finds all disposition action nodes which are for disposition actions specified Where
- * asOf  &gt; now OR dispositionEventsEligible = true; Runs the cut off or retain action for eligible records.
+ * The Disposition Lifecycle Job Finds all disposition action nodes which are for disposition actions specified Where asOf &gt; now OR dispositionEventsEligible = true; Runs the cut off or retain action for eligible records.
  *
  * @author mrogers
  * @author Roy Wetherall
@@ -88,7 +86,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     private FreezeService freezeService;
 
     /**
-     * @param freezeService freeze service
+     * @param freezeService
+     *            freeze service
      */
     public void setFreezeService(FreezeService freezeService)
     {
@@ -98,7 +97,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /**
      * List of disposition actions to automatically execute when eligible.
      *
-     * @param dispositionActions disposition actions
+     * @param dispositionActions
+     *            disposition actions
      */
     public void setDispositionActions(List<String> dispositionActions)
     {
@@ -111,7 +111,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     }
 
     /**
-     * @param recordsManagementActionService records management action service
+     * @param recordsManagementActionService
+     *            records management action service
      */
     public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
     {
@@ -119,7 +120,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     }
 
     /**
-     * @param nodeService node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -127,7 +129,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     }
 
     /**
-     * @param searchService search service
+     * @param searchService
+     *            search service
      */
     public void setSearchService(SearchService searchService)
     {
@@ -215,13 +218,10 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
                 // execute search
                 ResultSet results = searchService.query(params);
-                if(results != null)
+                if (results != null)
                 {
                     // filtering out the hold/freezed cases from the result set
-                    resultNodes =
-                            results.getNodeRefs().stream().filter(node -> nodeService.getPrimaryParent(node) == null ?
-                                    !freezeService.isFrozenOrHasFrozenChildren(node) :
-                                    !freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(node).getParentRef())).collect(Collectors.toList());
+                    resultNodes = results.getNodeRefs().stream().filter(node -> nodeService.getPrimaryParent(node) == null ? !freezeService.isFrozenOrHasFrozenChildren(node) : !freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(node).getParentRef())).collect(Collectors.toList());
                 }
                 hasMore = results.hasMore();
                 skipCount += resultNodes.size(); // increase by page size
@@ -246,7 +246,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /**
      * Helper method that executes a disposition action
      *
-     * @param actionNodes - the disposition actions to execute
+     * @param actionNodes
+     *            - the disposition actions to execute
      */
     private void executeAction(final List<NodeRef> actionNodes)
     {
@@ -277,7 +278,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 {
                     // execute disposition action
                     recordsManagementActionService
-                        .executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
+                            .executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
 
                     log.debug("Processed action: " + dispAction + "on" + parent);
 

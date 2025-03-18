@@ -27,7 +27,6 @@ package org.alfresco.repo.importer.view;
 
 import org.alfresco.service.namespace.QName;
 
-
 /**
  * Represents Property Context
  * 
@@ -37,19 +36,21 @@ import org.alfresco.service.namespace.QName;
 public class NodeItemContext extends ElementContext
 {
     private NodeContext nodeContext;
-    
+
     /**
      * Construct
      * 
-     * @param elementName QName
-     * @param nodeContext NodeContext
+     * @param elementName
+     *            QName
+     * @param nodeContext
+     *            NodeContext
      */
     public NodeItemContext(QName elementName, NodeContext nodeContext)
     {
         super(elementName, nodeContext.getDictionaryService(), nodeContext.getImporter());
         this.nodeContext = nodeContext;
     }
-    
+
     /**
      * Gets the Node Context
      */
@@ -57,15 +58,14 @@ public class NodeItemContext extends ElementContext
     {
         return nodeContext;
     }
-    
+
     /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+     * 
+     * @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
         return "NodeItemContext[nodeContext=" + nodeContext.toString() + "]";
     }
- 
 
 }

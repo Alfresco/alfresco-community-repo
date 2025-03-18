@@ -36,105 +36,98 @@ import org.alfresco.api.AlfrescoPublicApi;
  */
 @AlfrescoPublicApi
 public interface ContentAccessor
-{    
+{
     /**
      * Gets the open/close state of the underlying IO Channel.
      * 
      * @return Returns true if the underlying IO Channel is open
      */
     public boolean isChannelOpen();
-    
+
     /**
-     * Use this method to register any interest in events against underlying
-     * content streams. 
+     * Use this method to register any interest in events against underlying content streams.
      * <p>
      * This method can only be used before the content stream has been retrieved.
      * <p>
-     * When the stream has been closed, all listeners will be called.
-     * The listener is responsible for using a retrying transaction to protect the implementation of the callback when required.
+     * When the stream has been closed, all listeners will be called. The listener is responsible for using a retrying transaction to protect the implementation of the callback when required.
      * 
-     * @param listener a listener that will be called for output stream
-     *      event notification
-     *      
+     * @param listener
+     *            a listener that will be called for output stream event notification
+     * 
      */
     public void addListener(ContentStreamListener listener);
-    
-    
+
     /**
      * Gets the size of the content that this reader references.
      * 
-     * @return Returns the document byte length, or <code>OL</code> if the
-     *      content doesn't exist.
+     * @return Returns the document byte length, or <code>OL</code> if the content doesn't exist.
      */
     public long getSize();
-    
+
     /**
      * Get the data representation of the content being accessed.
      * <p>
-     * The content {@link #setMimetype(String) mimetype } must be set before this
-     * method is called as the content data requires a mimetype whenever the
-     * content URL is specified.
+     * The content {@link #setMimetype(String) mimetype } must be set before this method is called as the content data requires a mimetype whenever the content URL is specified.
      * 
      * @return Returns the content data
      * 
      * @see ContentData#ContentData(String, String, long, String)
      */
     public ContentData getContentData();
-    
+
     /**
      * Retrieve the URL that this accessor references
      * 
      * @return the content URL
      */
     public String getContentUrl();
-    
+
     /**
      * Get the content mimetype
      * 
      * @return Returns a content mimetype
      */
     public String getMimetype();
-    
+
     /**
      * Set the mimetype that must be used for accessing the content.
-     * <p> 
-     * When dealing with a {@link ContentWriter}, you may wish
-     *  to use {@link ContentWriter#guessMimetype(String)} to have
-     *  this set for you based on the filename and contents.
+     * <p>
+     * When dealing with a {@link ContentWriter}, you may wish to use {@link ContentWriter#guessMimetype(String)} to have this set for you based on the filename and contents.
      * 
-     * @param mimetype the content mimetype
+     * @param mimetype
+     *            the content mimetype
      */
     public void setMimetype(String mimetype);
-    
+
     /**
      * Get the encoding of the content being accessed
      * 
      * @return Returns a valid java String encoding
      */
     public String getEncoding();
-    
+
     /**
      * Set the <code>String</code> encoding for this accessor
-     * <p> 
-     * When dealing with a {@link ContentWriter}, you may wish
-     *  to use {@link ContentWriter#guessMimetype(String)} to have
-     *  this set for you based on the contents.
+     * <p>
+     * When dealing with a {@link ContentWriter}, you may wish to use {@link ContentWriter#guessMimetype(String)} to have this set for you based on the contents.
      * 
-     * @param encoding a java-recognised encoding format
+     * @param encoding
+     *            a java-recognised encoding format
      */
     public void setEncoding(String encoding);
 
     /**
      * Get the locale of the content being accessed
      *
-     * @return  Returns a valid java Locale
+     * @return Returns a valid java Locale
      */
     public Locale getLocale();
-    
+
     /**
      * Set the <code>Locale</code> for this accessor
      * 
-     * @param locale    a java-recognised locale
+     * @param locale
+     *            a java-recognised locale
      */
     public void setLocale(Locale locale);
 }

@@ -26,14 +26,17 @@
 
 package org.alfresco.rest.categories;
 
+import static org.springframework.http.HttpStatus.CREATED;
+
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.springframework.http.HttpStatus.CREATED;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import org.testng.annotations.BeforeClass;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestCategoryLinkBodyModel;
@@ -41,7 +44,6 @@ import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.rest.model.RestCategoryModelsCollection;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.UserModel;
-import org.testng.annotations.BeforeClass;
 
 abstract class CategoriesRestTest extends RestTest
 {
@@ -68,9 +70,9 @@ abstract class CategoriesRestTest extends RestTest
     protected RestCategoryModelsCollection linkContentToCategories(final RepoTestModel node, final RestCategoryModel... categories)
     {
         final List<RestCategoryLinkBodyModel> categoryLinkModels = Arrays.stream(categories)
-            .map(RestCategoryModel::getId)
-            .map(this::createCategoryLinkModelWithId)
-            .collect(Collectors.toList());
+                .map(RestCategoryModel::getId)
+                .map(this::createCategoryLinkModelWithId)
+                .collect(Collectors.toList());
         final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(node).linkToCategories(categoryLinkModels);
 
         restClient.assertStatusCodeIs(CREATED);
@@ -87,9 +89,9 @@ abstract class CategoriesRestTest extends RestTest
     {
         final RestCategoryModel categoryModel = createCategoryModelWithName(getRandomName(CATEGORY_NAME_PREFIX));
         final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
-            .withCoreAPI()
-            .usingCategory(parentCategory)
-            .createSingleCategory(categoryModel);
+                .withCoreAPI()
+                .usingCategory(parentCategory)
+                .createSingleCategory(categoryModel);
         restClient.assertStatusCodeIs(CREATED);
 
         return createdCategory;
@@ -104,16 +106,16 @@ abstract class CategoriesRestTest extends RestTest
     {
         final RestCategoryModel parentCategory = createCategoryModelWithId(parentId);
         final List<RestCategoryModel> categoryModels = IntStream
-            .range(0, categoriesCount)
-            .mapToObj(i -> createCategoryModelWithName(getRandomName(CATEGORY_NAME_PREFIX)))
-            .collect(Collectors.toList());
+                .range(0, categoriesCount)
+                .mapToObj(i -> createCategoryModelWithName(getRandomName(CATEGORY_NAME_PREFIX)))
+                .collect(Collectors.toList());
         final List<RestCategoryModel> createdCategories = restClient.authenticateUser(dataUser.getAdminUser())
-            .withCoreAPI()
-            .usingCategory(parentCategory)
-            .createCategoriesList(categoryModels)
-            .getEntries().stream()
-            .map(RestCategoryModel::onModel)
-            .collect(Collectors.toList());
+                .withCoreAPI()
+                .usingCategory(parentCategory)
+                .createCategoriesList(categoryModels)
+                .getEntries().stream()
+                .map(RestCategoryModel::onModel)
+                .collect(Collectors.toList());
         restClient.assertStatusCodeIs(CREATED);
 
         return createdCategories;
@@ -132,16 +134,16 @@ abstract class CategoriesRestTest extends RestTest
     protected RestCategoryModel createCategoryModelWithIdAndName(final String id, final String name)
     {
         return RestCategoryModel.builder()
-            .id(id)
-            .name(name)
-            .create();
+                .id(id)
+                .name(name)
+                .create();
     }
 
     protected RestCategoryLinkBodyModel createCategoryLinkModelWithId(final String id)
     {
         return RestCategoryLinkBodyModel.builder()
-            .categoryId(id)
-            .create();
+                .categoryId(id)
+                .create();
     }
 
     protected RepoTestModel createNodeModelWithId(final String id)

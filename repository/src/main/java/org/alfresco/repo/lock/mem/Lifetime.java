@@ -32,6 +32,6 @@ package org.alfresco.repo.lock.mem;
  */
 public enum Lifetime
 {
-    EPHEMERAL,    // Locks are stored in volatile memory only.
-    PERSISTENT    // Locks are stored in memory and also persisted.
+    EPHEMERAL, // Locks are stored in volatile memory only.
+    PERSISTENT // Locks are stored in memory and also persisted.
 }

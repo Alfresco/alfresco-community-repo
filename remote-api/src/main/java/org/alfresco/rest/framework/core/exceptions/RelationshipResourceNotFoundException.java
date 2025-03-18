@@ -34,14 +34,17 @@ public class RelationshipResourceNotFoundException extends NotFoundException
 {
     private static final long serialVersionUID = 6780456990930538458L;
     public static String DEFAULT_MESSAGE_ID = "framework.exception.RelationshipNotFound";
-    
+
     /**
      * The entity id param will be shown in the default error message.
-     * @param entityId String
-     * @param relationshipId String
+     * 
+     * @param entityId
+     *            String
+     * @param relationshipId
+     *            String
      */
     public RelationshipResourceNotFoundException(String entityId, String relationshipId)
     {
-        super(DEFAULT_MESSAGE_ID, new String[] {entityId, relationshipId});
+        super(DEFAULT_MESSAGE_ID, new String[]{entityId, relationshipId});
     }
 }

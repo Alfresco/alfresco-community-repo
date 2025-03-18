@@ -25,9 +25,10 @@
  */
 package org.alfresco.repo.transfer;
 
-import org.alfresco.service.cmr.transfer.TransferVersion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.service.cmr.transfer.TransferVersion;
 
 /**
  * This is an implementation of TransferVersionChecker.
@@ -37,23 +38,23 @@ import org.apache.commons.logging.LogFactory;
 public class TransferVersionCheckerImpl implements TransferVersionChecker
 {
     private static Log logger = LogFactory.getLog(TransferVersionCheckerImpl.class);
-    
+
     public boolean checkTransferVersions(TransferVersion from, TransferVersion to)
     {
         logger.debug("checkTransferVersions from:" + from + ", to:" + to);
-        
-        if(from == null || to == null || from.getVersionMajor() == null || to.getVersionMajor() == null)
+
+        if (from == null || to == null || from.getVersionMajor() == null || to.getVersionMajor() == null)
         {
             return false;
         }
 
-        if(!from.getVersionMajor().equalsIgnoreCase(to.getVersionMajor()))
+        if (!from.getVersionMajor().equalsIgnoreCase(to.getVersionMajor()))
         {
             return false;
         }
 
         // ignore revisions
-        
+
         return true;
     }
 

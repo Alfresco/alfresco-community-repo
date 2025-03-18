@@ -35,6 +35,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.chemistry.opencmis.commons.data.RenditionData;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisFilterNotValidException;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.RenditionDataImpl;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.rendition.executer.ImageRenderingEngine;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -49,9 +53,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.chemistry.opencmis.commons.data.RenditionData;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisFilterNotValidException;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.RenditionDataImpl;
 
 /**
  *
@@ -81,7 +82,8 @@ public class CMISRenditionMapping
         if (renditionKinds == null)
         {
             this.kindToRenditionNames = new HashMap<String, List<String>>();
-        } else
+        }
+        else
         {
             this.kindToRenditionNames = renditionKinds;
         }
@@ -99,13 +101,11 @@ public class CMISRenditionMapping
 
     private void cacheRenditionSizes()
     {
-        renditionNameToSize = AuthenticationUtil.runAs(new RunAsWork<Map<String, BigInteger[]>>()
-        {
+        renditionNameToSize = AuthenticationUtil.runAs(new RunAsWork<Map<String, BigInteger[]>>() {
             public Map<String, BigInteger[]> doWork() throws Exception
             {
                 return transactionService.getRetryingTransactionHelper().doInTransaction(
-                        new RetryingTransactionCallback<Map<String, BigInteger[]>>()
-                        {
+                        new RetryingTransactionCallback<Map<String, BigInteger[]>>() {
                             public Map<String, BigInteger[]> execute() throws Exception
                             {
                                 Map<String, BigInteger[]> rn2s = new HashMap<String, BigInteger[]>();
@@ -205,7 +205,8 @@ public class CMISRenditionMapping
                                 include = true;
                                 break;
                             }
-                        } else if (f.endsWith("*"))
+                        }
+                        else if (f.endsWith("*"))
                         {
                             // found MIME type with wildcard
                             if (mimeType.startsWith(f.substring(0, f.length() - 2)))
@@ -213,7 +214,8 @@ public class CMISRenditionMapping
                                 include = true;
                                 break;
                             }
-                        } else
+                        }
+                        else
                         {
                             // found complete MIME type
                             if (mimeType.equals(f))
@@ -273,19 +275,22 @@ public class CMISRenditionMapping
             if (s.equals("*"))
             {
                 return null;
-            } else if (s.indexOf('*') > -1)
+            }
+            else if (s.indexOf('*') > -1)
             {
                 if (!s.endsWith("*"))
                 {
                     throw new CmisFilterNotValidException("Rendition filter is invalid: " + s);
                 }
                 result.add(s);
-            } else if (s.equalsIgnoreCase(CMISConnector.RENDITION_NONE))
+            }
+            else if (s.equalsIgnoreCase(CMISConnector.RENDITION_NONE))
             {
                 result.clear();
                 result.add(CMISConnector.RENDITION_NONE);
                 break;
-            } else if (s.length() > 0)
+            }
+            else if (s.length() > 0)
             {
                 result.add(s);
             }

@@ -45,9 +45,7 @@ public interface PermissionEntry
     public PermissionReference getPermissionReference();
 
     /**
-     * Get the authority to which this entry applies This could be the string
-     * value of a username, group, role or any other authority assigned to the
-     * authorisation.
+     * Get the authority to which this entry applies This could be the string value of a username, group, role or any other authority assigned to the authorisation.
      * 
      * If null then this applies to all.
      * 
@@ -58,7 +56,7 @@ public interface PermissionEntry
     /**
      * Get the node ref for the node to which this permission applies.
      * 
-     * This can only be null for a global permission 
+     * This can only be null for a global permission
      * 
      * @return NodeRef
      */
@@ -75,22 +73,24 @@ public interface PermissionEntry
      *
      */
     public boolean isAllowed();
-    
+
     /**
      * Get the Access enum value
      * 
      * @return AccessStatus
      */
     public AccessStatus getAccessStatus();
-    
+
     /**
      * Is this permission inherited?
+     * 
      * @return boolean
      */
     public boolean isInherited();
-    
+
     /**
      * Return the position in the inhertance chain (0 is not inherited and set on the object)
+     * 
      * @return int
      */
     public int getPosition();

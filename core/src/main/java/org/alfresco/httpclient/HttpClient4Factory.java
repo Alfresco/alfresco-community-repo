@@ -22,7 +22,7 @@ package org.alfresco.httpclient;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import org.alfresco.error.AlfrescoRuntimeException;
+
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.client.config.RequestConfig;
@@ -38,6 +38,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 
 public class HttpClient4Factory
 {
@@ -58,7 +59,7 @@ public class HttpClient4Factory
             sslcontext.init(keyManagers, trustManagers, null);
             return sslcontext;
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             throw new AlfrescoRuntimeException("Unable to create SSL context", e);
         }
@@ -73,7 +74,7 @@ public class HttpClient4Factory
     {
         HttpClientBuilder clientBuilder = HttpClients.custom();
 
-        if(config.isMTLSEnabled())
+        if (config.isMTLSEnabled())
         {
             clientBuilder.addInterceptorFirst((HttpRequestInterceptor) (request, context) -> {
                 if (!((HttpHost) context.getAttribute(HTTP_TARGET_HOST)).getSchemeName().equals(HTTPS_PROTOCOL))
@@ -91,7 +92,7 @@ public class HttpClient4Factory
         }
         else
         {
-            //Setting a connectionManager overrides these properties
+            // Setting a connectionManager overrides these properties
             config.getMaxTotalConnections().ifPresent(v -> clientBuilder.setMaxConnTotal(v));
             config.getMaxHostConnections().ifPresent(v -> clientBuilder.setMaxConnPerRoute(v));
         }
@@ -114,7 +115,7 @@ public class HttpClient4Factory
     {
         return new SSLConnectionSocketFactory(
                 createSSLContext(config),
-                new String[] { TLS_V_1_2, TLS_V_1_3 },
+                new String[]{TLS_V_1_2, TLS_V_1_3},
                 null,
                 config.isHostnameVerificationDisabled() ? new NoopHostnameVerifier() : SSLConnectionSocketFactory.getDefaultHostnameVerifier());
     }
@@ -122,19 +123,19 @@ public class HttpClient4Factory
     public static PoolingHttpClientConnectionManager createPoolingConnectionManager(HttpClientConfig config)
     {
         PoolingHttpClientConnectionManager poolingHttpClientConnectionManager;
-        if(config.isMTLSEnabled())
+        if (config.isMTLSEnabled())
         {
             poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager(
-                    RegistryBuilder.<ConnectionSocketFactory>create()
-                   .register("https", getSslConnectionSocketFactory(config))
-                   .build());
+                    RegistryBuilder.<ConnectionSocketFactory> create()
+                            .register("https", getSslConnectionSocketFactory(config))
+                            .build());
         }
         else
         {
             poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager(
-                    RegistryBuilder.<ConnectionSocketFactory>create()
-                   .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                   .build());
+                    RegistryBuilder.<ConnectionSocketFactory> create()
+                            .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                            .build());
         }
         config.getMaxTotalConnections().ifPresent(v -> poolingHttpClientConnectionManager.setMaxTotal(v));
         config.getMaxHostConnections().ifPresent(v -> poolingHttpClientConnectionManager.setDefaultMaxPerRoute(v));

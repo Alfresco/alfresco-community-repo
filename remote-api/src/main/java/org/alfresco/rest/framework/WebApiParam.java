@@ -38,21 +38,23 @@ import org.alfresco.rest.framework.core.ResourceParameter;
  * 
  * The parameter kind is one of :
  * 
- * QUERY_STRING - A query string parameter as part of the URL
- * HTTP_BODY_OBJECT - A JSON object specified in a HTTP_BODY used by either a POST or PUT
- * URL_PATH - Included as part of the actual url, e.g. entity id. (Does not support multiple values)
- * HTTP_HEADER - Included in the request's HTTP Header
+ * QUERY_STRING - A query string parameter as part of the URL HTTP_BODY_OBJECT - A JSON object specified in a HTTP_BODY used by either a POST or PUT URL_PATH - Included as part of the actual url, e.g. entity id. (Does not support multiple values) HTTP_HEADER - Included in the request's HTTP Header
  *
  * @author Gethin James
  */
-@Target({ METHOD })
+@Target({METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface WebApiParam  {
+public @interface WebApiParam
+{
     String name();
-    String title();
-    String description() default "";
-    boolean required() default false;
-    ResourceParameter.KIND kind() default ResourceParameter.KIND.URL_PATH;
-    boolean allowMultiple() default true;  //For URL_PATH the only permitted value will be FALSE
-}
 
+    String title();
+
+    String description() default "";
+
+    boolean required() default false;
+
+    ResourceParameter.KIND kind() default ResourceParameter.KIND.URL_PATH;
+
+    boolean allowMultiple() default true; // For URL_PATH the only permitted value will be FALSE
+}

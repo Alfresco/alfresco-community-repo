@@ -51,14 +51,10 @@ public class LuceneFTSPhrase<Q, S, E extends Throwable> extends FTSPhrase implem
     {
         super();
     }
-    
-    /*
-     * (non-Javadoc)
+
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery,
-     *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
-     *      java.lang.String)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService, java.lang.String) */
     public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
             throws E
     {
@@ -68,14 +64,14 @@ public class LuceneFTSPhrase<Q, S, E extends Throwable> extends FTSPhrase implem
 
         Integer slop = Integer.valueOf(lqpa.getPhraseSlop());
         argument = functionArgs.get(ARG_SLOP);
-        if(argument != null)
-        { 
-           slop = (Integer) argument.getValue(functionContext);
+        if (argument != null)
+        {
+            slop = (Integer) argument.getValue(functionContext);
         }
-        
+
         argument = functionArgs.get(ARG_TOKENISATION_MODE);
         AnalysisMode mode = (AnalysisMode) argument.getValue(functionContext);
-        
+
         PropertyArgument propArg = (PropertyArgument) functionArgs.get(ARG_PROPERTY);
         Q query;
         if (propArg != null)

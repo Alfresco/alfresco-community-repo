@@ -1,5 +1,11 @@
 package org.alfresco.rest.sites.membershipRequests;
 
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestErrorModel;
@@ -13,11 +19,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class UpdateSiteMembershipRequestTests extends RestTest
 {
@@ -40,8 +41,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
         moderatedSiteId = moderatedSite.getId();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify user is able to update its own site membership request")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.SANITY, description = "Verify user is able to update its own site membership request")
     public void userIsAbleToUpdateItsOwnSiteMembershipRequest() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -62,9 +63,9 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .assertThat().field("title").is(moderatedSite.getTitle());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site manager is not able to update membership request of another user")
-//    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify site manager is not able to update membership request of another user")
+    // @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void siteManagerIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -78,9 +79,9 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site collaborator is not able to update membership request of another user")
-    //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify site collaborator is not able to update membership request of another user")
+    // @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void siteCollaboratorIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -94,9 +95,9 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site contributor is not able to update membership request of another user")
-    //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify site contributor is not able to update membership request of another user")
+    // @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void siteContributorIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -110,9 +111,9 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site consumer is not able to update membership request of another user")
-    //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify site consumer is not able to update membership request of another user")
+    // @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void siteConsumerIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -126,9 +127,9 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify one user is not able to update membership request of another user")
-    //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify one user is not able to update membership request of another user")
+    // @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void regularUserIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -142,9 +143,9 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify admin is not able to update membership request of another user")
-    //    @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify admin is not able to update membership request of another user")
+    // @Bug(id = "MNT-16919", description = "Not a bug, The presence of the personId in the URL does not mean it should be possible to act on any other users behalf.")
     public void adminIsNotAbleToUpdateSiteMembershipRequestOfAnotherUser() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -157,8 +158,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY, description = "Verify unauthorized user is not able to update user site membership request")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.SANITY, description = "Verify unauthorized user is not able to update user site membership request")
     public void unauthorizedUserIsNotAbleToUpdateSiteMembershipRequest() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -168,8 +169,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user is able to update its own site membership request using -me-")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify user is able to update its own site membership request using -me-")
     public void usingMeUpdateSiteMembershipRequest() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -179,8 +180,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
         requestUpdateModel.assertMembershipRequestMessageIs(updatedMessage).and().field("id").is(moderatedSite.getId()).and().field("modifiedAt").isNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify inexistent user is not able to update its own site membership request")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify inexistent user is not able to update its own site membership request")
     public void inexistentUserCannotUpdateSiteMembershipRequest() throws Exception
     {
         UserModel inexistentUser = UserModel.getRandomUserModel();
@@ -189,8 +190,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, inexistentUser.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user is not able to update its own site membership request for inexistent site")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify user is not able to update its own site membership request for inexistent site")
     public void userCannotUpdateSiteMembershipRequestForInexistentSite() throws Exception
     {
         SiteModel randomSite = SiteModel.getRandomSiteModel();
@@ -200,8 +201,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), randomSite.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user is able not to update its own site membership request for public site")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify user is able not to update its own site membership request for public site")
     public void userCannotUpdateSiteMembershipRequestForPublicSite() throws Exception
     {
         SiteModel publicSite = dataSite.usingUser(managerUser).createPublicRandomSite();
@@ -212,8 +213,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), publicSite.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user is not able to update its own site membership request for private site")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify user is not able to update its own site membership request for private site")
     public void userCannotUpdateSiteMembershipRequestForPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(managerUser).createPrivateRandomSite();
@@ -224,8 +225,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), privateSite.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user is able to update its own site membership request with initial message")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify user is able to update its own site membership request with initial message")
     public void userCanUpdateSiteMembershipRequestWithInitialMessage() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -235,8 +236,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
         requestUpdateModel.assertMembershipRequestMessageIs(updatedMessage).and().field("id").is(moderatedSite.getId()).and().field("modifiedAt").isNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify user is able to update its own site membership request with different message")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify user is able to update its own site membership request with different message")
     public void userCanUpdateSiteMembershipRequestWithDifferentMessage() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -246,8 +247,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
         requestUpdateModel.assertMembershipRequestMessageIs(updatedMessage).and().field("id").is(moderatedSite.getId()).and().field("modifiedAt").isNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify modifiedAt field for update siteMembership request call")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify modifiedAt field for update siteMembership request call")
     public void verifyModifiedAtForUpdateSiteMembershipRequest() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -258,8 +259,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify user is not able to update membership request of admin")
     public void userIsNotAbleToUpdateSiteMembershipRequestOfAdmin() throws Exception
     {
@@ -277,8 +278,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to update site membership request")
     public void updateSiteMembershipRequestAfterUserIsAddedAsMember() throws Exception
     {
@@ -303,8 +304,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .assertThat().field("title").is(moderatedSite.getTitle());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin is able to update site membership request")
     public void adminIsAbleToUpdateHisSiteMembershipRequest() throws Exception
     {
@@ -330,8 +331,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .assertThat().field("title").is(anotherModeratedSite.getTitle());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify user update site membership request with no message then adds a new message")
     public void userUpdateSiteMembershipRequestWithNoMessageThenAddsNewMessage() throws Exception
     {
@@ -355,8 +356,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .assertThat().field("createdAt").isNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify user updates site membership request and verifies 'ModifiedAt' field using GET")
     public void userUpdateSiteMembershipRequestAndCheckModifiedAtWithGet() throws Exception
     {
@@ -376,8 +377,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .assertThat().field("message").is(requestUpdateModel.getMessage());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Update membership request - empty body")
     public void emptyBodyUpdateSiteMembershipRequest() throws Exception
     {
@@ -390,8 +391,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.NO_CONTENT, "Unrecognized field " + "\"\""));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Update membership request -  missing 'Title' field from Json")
     public void missingTitleFieldBodyUpdateSiteMembershipRequest() throws Exception
     {
@@ -420,8 +421,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .assertThat().field("title").is(moderatedSite.getTitle());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Update site membership request - missing JSON body")
     public void missingJsonFieldBodyUpdateSiteMembershipRequest() throws Exception
     {
@@ -443,8 +444,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Update site membership request - empty JSON body")
     public void emptyJsonFieldBodyUpdateSiteMembershipRequest() throws Exception
     {
@@ -472,8 +473,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .assertThat().field("title").is(moderatedSite.getTitle());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Update site membership request - invalid SiteId")
     public void invalidSiteIdUpdateSiteMembershipRequest() throws Exception
     {
@@ -488,8 +489,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
         moderatedSite.setId(moderatedSiteId);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Update site membership request - empty SiteId")
     public void emptySiteIdUpdateSiteMembershipRequest() throws Exception
     {
@@ -507,8 +508,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
         moderatedSite.setId(moderatedSiteId);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify inexistent user is not able to update site membership request")
     public void emptyUserCannotUpdateSiteMembershipRequest() throws Exception
     {
@@ -519,8 +520,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Update site membership request - rejected Request")
     public void rejectRequestThenUpdateSiteMembershipRequest() throws Exception
     {
@@ -543,9 +544,9 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Update site membership request - approved Request")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
     public void approveRequestThenUpdateSiteMembershipRequest() throws Exception
     {
         UserModel userWithApprovedRequests = dataUser.createRandomTestUser();
@@ -566,8 +567,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
                 .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Update site membership request using invalid network")
     public void updateSiteMembershipRequestUsingInvalidNetwork() throws Exception
     {
@@ -581,8 +582,8 @@ public class UpdateSiteMembershipRequestTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify user is not able to update a deleted site membership request")
     public void userCantUpdateSiteMembershipRequestForDeletedRequest() throws Exception
     {

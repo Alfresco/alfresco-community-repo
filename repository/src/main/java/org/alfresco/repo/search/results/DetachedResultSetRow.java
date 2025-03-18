@@ -36,17 +36,21 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Detatched result set row
+ * 
  * @author andyh
  *
  */
 public class DetachedResultSetRow extends AbstractResultSetRow
 {
     private ChildAssociationRef car;
-    
+
     /**
      * Detached result set row
-     * @param resultSet ResultSet
-     * @param row ResultSetRow
+     * 
+     * @param resultSet
+     *            ResultSet
+     * @param row
+     *            ResultSetRow
      */
     public DetachedResultSetRow(ResultSet resultSet, ResultSetRow row)
     {
@@ -89,7 +93,5 @@ public class DetachedResultSetRow extends AbstractResultSetRow
     {
         throw new UnsupportedOperationException();
     }
-    
-    
 
 }

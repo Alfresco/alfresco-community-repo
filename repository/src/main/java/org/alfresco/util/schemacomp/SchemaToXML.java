@@ -33,8 +33,9 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import org.alfresco.util.schemacomp.model.Schema;
 import org.xml.sax.SAXException;
+
+import org.alfresco.util.schemacomp.model.Schema;
 
 /**
  * Converts an in-memory Schema to an XML output stream.
@@ -45,7 +46,7 @@ public class SchemaToXML
 {
     private TransformerHandler xmlOut;
     private Schema schema;
-    
+
     public SchemaToXML(Schema schema, StreamResult streamResult)
     {
         final SAXTransformerFactory stf = (SAXTransformerFactory) TransformerFactory.newInstance();
@@ -69,11 +70,10 @@ public class SchemaToXML
         t.setOutputProperty(OutputKeys.INDENT, "yes");
         t.setOutputProperty(OutputKeys.ENCODING, SchemaComparator.CHAR_SET);
         xmlOut.setResult(streamResult);
-        
+
         this.schema = schema;
     }
-    
-    
+
     public void execute()
     {
         try
@@ -85,7 +85,7 @@ public class SchemaToXML
             throw new RuntimeException("Unable to complete transformation.", e);
         }
     }
-    
+
     private void attemptTransformation() throws SAXException
     {
         xmlOut.startDocument();
@@ -93,5 +93,5 @@ public class SchemaToXML
         dboTransformer.output(schema);
         xmlOut.endDocument();
     }
-  
+
 }

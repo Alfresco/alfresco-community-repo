@@ -27,6 +27,10 @@ package org.alfresco.repo.search;
 
 import jakarta.transaction.UserTransaction;
 
+import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.DisabledFeatureException;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -50,10 +54,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-
-import junit.framework.TestCase;
 
 @Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class SearchServiceTest extends TestCase
@@ -163,9 +163,9 @@ public class SearchServiceTest extends TestCase
             sp.setLanguage(SearchService.LANGUAGE_CMIS_ALFRESCO);
             sp.setQuery("select * from cmis:document where cmis:name like '%alfresco%'");
             sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-            
+
             pubSearchService.query(sp);
-            
+
             fail("Hybrid search should be disabled.");
         }
         catch (DisabledFeatureException e)
@@ -173,7 +173,7 @@ public class SearchServiceTest extends TestCase
             // Got here, good.
         }
     }
-    
+
     public void testAndyCMIS()
     {
         authenticationComponent.setCurrentUser("andy");
@@ -203,17 +203,17 @@ public class SearchServiceTest extends TestCase
         sp.setQuery("TYPE:\"cm:content\"");
 
         ResultSet rs = pubSearchService.query(sp);
-        
+
         try
         {
-        	for (ResultSetRow row : rs)
+            for (ResultSetRow row : rs)
             {
-            	assertFalse(null == row.getValue(ContentModel.PROP_NAME));
+                assertFalse(null == row.getValue(ContentModel.PROP_NAME));
             }
         }
         finally
         {
-        	rs.close();
+            rs.close();
         }
 
         // Output without sort
@@ -227,14 +227,14 @@ public class SearchServiceTest extends TestCase
 
         try
         {
-        	for (ResultSetRow row : rs)
+            for (ResultSetRow row : rs)
             {
-            	assertFalse(null == row.getValue(ContentModel.PROP_NAME));
+                assertFalse(null == row.getValue(ContentModel.PROP_NAME));
             }
         }
         finally
         {
-        	rs.close();
+            rs.close();
         }
     }
 }

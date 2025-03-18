@@ -39,18 +39,16 @@ import org.alfresco.traitextender.Extensible;
 import org.alfresco.traitextender.Trait;
 import org.alfresco.util.Pair;
 
-
 /**
- * The default behaviour that a type of aspect implements if there is no associated
- * <{@link CopyBehaviourCallback behaviour}.
+ * The default behaviour that a type of aspect implements if there is no associated <{@link CopyBehaviourCallback behaviour}.
  * <p>
  * This implementation is {@link #getInstance() stateless} and therefore thread-safe.
  * <p>
  * The default behaviour is:
  * <ul>
- *    <li><b>Must Copy:</b>         YES</li>
- *    <li><b>Must Cascade:</b>      YES, if cascade is on</li>
- *    <li><b>Properties to Copy:</b>ALL</li>
+ * <li><b>Must Copy:</b> YES</li>
+ * <li><b>Must Cascade:</b> YES, if cascade is on</li>
+ * <li><b>Properties to Copy:</b>ALL</li>
  * </ul>
  * 
  * @author Derek Hulley
@@ -60,27 +58,28 @@ import org.alfresco.util.Pair;
 public class DefaultCopyBehaviourCallback extends AbstractCopyBehaviourCallback implements Extensible
 {
     private static CopyBehaviourCallback instance = new DefaultCopyBehaviourCallback();
-    
+
     private final ExtendedTrait<DefaultCopyBehaviourCallbackTrait> defaultCopyBehaviourCallbackTrait;
-    
+
     public DefaultCopyBehaviourCallback()
     {
-        defaultCopyBehaviourCallbackTrait=new ExtendedTrait<DefaultCopyBehaviourCallbackTrait>(createTrait());
+        defaultCopyBehaviourCallbackTrait = new ExtendedTrait<DefaultCopyBehaviourCallbackTrait>(createTrait());
     }
+
     /**
-     * @return          Returns a stateless singleton
+     * @return Returns a stateless singleton
      */
     public static CopyBehaviourCallback getInstance()
     {
         return instance;
     }
-    
+
     /**
      * Default behaviour: Always copy
      * 
-     * @return          Returns <tt>true</tt> always
+     * @return Returns <tt>true</tt> always
      */
-    @Extend(traitAPI=DefaultCopyBehaviourCallbackTrait.class,extensionAPI=DefaultCopyBehaviourCallbackExtension.class)
+    @Extend(traitAPI = DefaultCopyBehaviourCallbackTrait.class, extensionAPI = DefaultCopyBehaviourCallbackExtension.class)
     public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
     {
         return true;
@@ -105,7 +104,7 @@ public class DefaultCopyBehaviourCallback extends AbstractCopyBehaviourCallback 
     /**
      * Default behaviour: Cascade if we are copying children <b>AND</b> the association is primary
      * 
-     * @return          Returns <tt>true</tt> if the association is primary and <code>copyChildren == true</code>
+     * @return Returns <tt>true</tt> if the association is primary and <code>copyChildren == true</code>
      */
     public ChildAssocCopyAction getChildAssociationCopyAction(
             QName classQName,
@@ -129,7 +128,7 @@ public class DefaultCopyBehaviourCallback extends AbstractCopyBehaviourCallback 
     /**
      * Default behaviour: Copy all associated properties
      * 
-     * @return          Returns all the properties passes in
+     * @return Returns all the properties passes in
      */
     public Map<QName, Serializable> getCopyProperties(
             QName classQName,
@@ -141,20 +140,18 @@ public class DefaultCopyBehaviourCallback extends AbstractCopyBehaviourCallback 
 
     private DefaultCopyBehaviourCallbackTrait createTrait()
     {
-        return new DefaultCopyBehaviourCallbackTrait()
-        {
+        return new DefaultCopyBehaviourCallbackTrait() {
             @Override
             public boolean getMustCopy(final QName classQName, final CopyDetails copyDetails)
             {
-                return AJExtender.run(new AJExtender.ExtensionBypass<Boolean>()
-                {
+                return AJExtender.run(new AJExtender.ExtensionBypass<Boolean>() {
                     @Override
                     public Boolean run()
                     {
                         return getInstance().getMustCopy(classQName, copyDetails);
                     };
                 });
-                
+
             }
         };
     }

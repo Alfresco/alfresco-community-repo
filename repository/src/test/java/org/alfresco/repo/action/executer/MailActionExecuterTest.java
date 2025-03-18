@@ -25,16 +25,16 @@
  */
 package org.alfresco.repo.action.executer;
 
-import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.springframework.context.ApplicationContext;
 
+import org.alfresco.util.test.junitrules.AlfrescoPerson;
+
 /**
- * Provides tests for the MailActionExecuter class. The logic is now in AbstractMailActionExecuterTest. See the Javadoc for AbstractMailActionExecuterTest. The setupRuleChain()
- * method is very important as it really setup the class including creating the users.
+ * Provides tests for the MailActionExecuter class. The logic is now in AbstractMailActionExecuterTest. See the Javadoc for AbstractMailActionExecuterTest. The setupRuleChain() method is very important as it really setup the class including creating the users.
  */
 public class MailActionExecuterTest extends AbstractMailActionExecuterTest
 {

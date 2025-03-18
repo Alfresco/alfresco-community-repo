@@ -27,18 +27,17 @@
 package org.alfresco.repo.web.scripts;
 
 import java.io.IOException;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.webscripts.servlet.WebScriptServlet;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRuntime;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 
 /**
  * Entry point for web scripts which can accept a tenant id in their servlet path
@@ -47,58 +46,58 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRuntime
  */
 public class TenantWebScriptServlet extends WebScriptServlet
 {
-//    public static final String SYSTEM_TENANT = "-system-";
-//    public static final String DEFAULT_TENANT = "-default-";
-    
+    // public static final String SYSTEM_TENANT = "-system-";
+    // public static final String DEFAULT_TENANT = "-default-";
+
     private static final long serialVersionUID = 2954663814419046489L;
-    
+
     // Logger
     private static final Log logger = LogFactory.getLog(TenantWebScriptServlet.class);
-    
+
     protected WebScriptServletRuntime getRuntime(HttpServletRequest req, HttpServletResponse res)
     {
         WebScriptServletRuntime runtime = new TenantWebScriptServletRuntime(container, authenticatorFactory, req, res, serverProperties);
         return runtime;
     }
 
-    /* (non-Javadoc) 
-     * @see jakarta.servlet.http.HttpServlet#service(jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see jakarta.servlet.http.HttpServlet#service(jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse) */
     protected void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
     {
         if (logger.isDebugEnabled())
-            logger.debug("Processing tenant request ("  + req.getMethod() + ") " + req.getRequestURL() + (req.getQueryString() != null ? "?" + req.getQueryString() : ""));
-        
+            logger.debug("Processing tenant request (" + req.getMethod() + ") " + req.getRequestURL() + (req.getQueryString() != null ? "?" + req.getQueryString() : ""));
+
         if (req.getCharacterEncoding() == null)
         {
             req.setCharacterEncoding("UTF-8");
         }
-        
+
         setLanguageFromRequestHeader(req);
-        
+
         try
         {
-        	WebScriptServletRuntime runtime = getRuntime(req, res);
+            WebScriptServletRuntime runtime = getRuntime(req, res);
             runtime.executeScript();
         }
-        catch (IllegalStateException e) 
+        catch (IllegalStateException e)
         {
-           if(e.getMessage().contains("getOutputStream() has already been called for this response"))
-           {
-               if(logger.isDebugEnabled())
-               {
-                   logger.warn("Client has cut off communication", e);
-               }
-               else
-               {
-                   logger.warn("Client has cut off communication");
-               }
-           }
-           else
-           {
-               throw e;
-           }
-        }		
+            if (e.getMessage().contains("getOutputStream() has already been called for this response"))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.warn("Client has cut off communication", e);
+                }
+                else
+                {
+                    logger.warn("Client has cut off communication");
+                }
+            }
+            else
+            {
+                throw e;
+            }
+        }
         finally
         {
             // clear threadlocal

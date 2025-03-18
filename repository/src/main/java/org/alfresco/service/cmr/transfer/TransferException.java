@@ -32,12 +32,12 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * 
  * @author Mark Rogers
  */
-public class TransferException extends AlfrescoRuntimeException 
+public class TransferException extends AlfrescoRuntimeException
 {
     /**
-	 * Serial version UID 
-	 */
-	private static final long serialVersionUID = 3257571685241467958L;
+     * Serial version UID
+     */
+    private static final long serialVersionUID = 3257571685241467958L;
 
     public TransferException(String msgId)
     {

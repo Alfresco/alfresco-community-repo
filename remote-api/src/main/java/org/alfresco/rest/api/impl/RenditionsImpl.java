@@ -39,6 +39,12 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.TreeMap;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ResourceLoaderAware;
+import org.springframework.core.io.ResourceLoader;
+
 import org.alfresco.heartbeat.RenditionsDataCollector;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
@@ -86,11 +92,6 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ResourceLoaderAware;
-import org.springframework.core.io.ResourceLoader;
 
 /**
  * @author Jamal Kaabi-Mofrad, janv
@@ -371,8 +372,8 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         // supplied Rendition names are actually comma separated lists. The following example shows it is possible to
         // use both approaches.
         // [
-        //  { "id": "doclib" },
-        //  { "id": "avatar,avatar32" }
+        // { "id": "doclib" },
+        // { "id": "avatar,avatar32" }
         // ]
         Set<String> renditionNames = new HashSet<>();
         for (Rendition rendition : renditions)
@@ -759,4 +760,3 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     }
 
 }
-

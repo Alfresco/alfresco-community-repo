@@ -28,8 +28,6 @@ package org.alfresco.repo.web.scripts.model.filefolder;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.alfresco.repo.model.filefolder.FileFolderLoader;
-import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -41,6 +39,9 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+
+import org.alfresco.repo.model.filefolder.FileFolderLoader;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 
 /**
  * Link to {@link FileFolderLoader}
@@ -57,28 +58,28 @@ public class FileFolderLoaderPost extends AbstractWebScript implements Applicati
     public static final String KEY_DESCRIPTION_COUNT = "descriptionCount";
     public static final String KEY_DESCRIPTION_SIZE = "descriptionSize";
     public static final String KEY_COUNT = "count";
-    
+
     public static final int DEFAULT_FILE_COUNT = 100;
     public static final int DEFAULT_FILES_PER_TXN = 100;
-    public static final long DEFAULT_MIN_FILE_SIZE = 80*1024L;
-    public static final long DEFAULT_MAX_FILE_SIZE = 120*1024L;
+    public static final long DEFAULT_MIN_FILE_SIZE = 80 * 1024L;
+    public static final long DEFAULT_MAX_FILE_SIZE = 120 * 1024L;
     public static final long DEFAULT_MAX_UNIQUE_DOCUMENTS = Long.MAX_VALUE;
     public static final int DEFAULT_DESCRIPTION_COUNT = 1;
     public static final long DEFAULT_DESCRIPTION_SIZE = 128L;
     public static final boolean DEFAULT_FORCE_BINARY_STORAGE = false;
-    
+
     private ApplicationContext applicationContext;
-    
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.applicationContext = applicationContext;
     }
-    
+
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
         FileFolderLoader loader = (FileFolderLoader) applicationContext.getBean("fileFolderLoader");
-        
+
         int count = 0;
         String folderPath = "";
         try
@@ -129,7 +130,7 @@ public class FileFolderLoaderPost extends AbstractWebScript implements Applicati
             {
                 descriptionSize = json.getLong(KEY_DESCRIPTION_SIZE);
             }
-            
+
             // Perform the load
             count = loader.createFiles(
                     folderPath,

@@ -36,5 +36,4 @@ import org.alfresco.api.AlfrescoPublicApi;
 public interface TypeDefinition extends ClassDefinition
 {
 
-    
 }

@@ -32,9 +32,10 @@ import static org.junit.Assert.assertFalse;
 
 import java.util.Arrays;
 
+import org.junit.Test;
+
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
-import org.junit.Test;
 
 /**
  * Tests the SearchApiWebscript class
@@ -49,14 +50,14 @@ public class SearchApiWebscriptTests
     public void testPaging() throws Exception
     {
         Params params = webscript.getParams(null, null, null, null);
-        //Defaults
+        // Defaults
         assertNotNull(params.getPaging());
         assertEquals(Paging.DEFAULT_MAX_ITEMS, params.getPaging().getMaxItems());
-        assertEquals(Paging.DEFAULT_SKIP_COUNT,params.getPaging().getSkipCount());
+        assertEquals(Paging.DEFAULT_SKIP_COUNT, params.getPaging().getSkipCount());
 
-        params = webscript.getParams(null, null, null, Paging.valueOf(4,20));
+        params = webscript.getParams(null, null, null, Paging.valueOf(4, 20));
         assertEquals(20, params.getPaging().getMaxItems());
-        assertEquals(4,params.getPaging().getSkipCount());
+        assertEquals(4, params.getPaging().getSkipCount());
 
     }
 
@@ -64,7 +65,7 @@ public class SearchApiWebscriptTests
     public void testFilter() throws Exception
     {
         Params params = webscript.getParams(null, null, null, null);
-        //Defaults
+        // Defaults
         assertNotNull(params.getFilter());
 
         params = webscript.getParams(null, null, Arrays.asList("name", "size"), null);
@@ -80,15 +81,15 @@ public class SearchApiWebscriptTests
         params = webscript.getParams(null, Arrays.asList("cat", "dog"), Arrays.asList("name", "size"), null);
         assertTrue(params.getFilter().isAllowed("cat"));
         assertFalse(params.getFilter().isAllowed("horse"));
-        assertTrue("name and size should be automatically added to the filter list",params.getFilter().isAllowed("name"));
-        assertTrue("name and size should be automatically added to the filter list",params.getFilter().isAllowed("size"));
+        assertTrue("name and size should be automatically added to the filter list", params.getFilter().isAllowed("name"));
+        assertTrue("name and size should be automatically added to the filter list", params.getFilter().isAllowed("size"));
     }
 
     @Test
     public void testInclude() throws Exception
     {
         Params params = webscript.getParams(null, null, null, null);
-        //Defaults
+        // Defaults
         assertNotNull(params.getInclude());
         assertEquals(0, params.getInclude().size());
 

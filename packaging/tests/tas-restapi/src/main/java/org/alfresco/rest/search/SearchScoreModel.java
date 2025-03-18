@@ -49,17 +49,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
+
 /**
  * Object that represents the search score.
+ * 
  * @author Michael Suzuki
  *
  */
 public class SearchScoreModel extends TestModel implements IRestModel<SearchScoreModel>
 {
-    
+
     @JsonProperty(required = true)
     private float score;
-    
+
     private List<ResponseHighlightModel> highlight;
 
     public float getScore()

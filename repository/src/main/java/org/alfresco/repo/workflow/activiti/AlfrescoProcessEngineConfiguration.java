@@ -35,6 +35,7 @@ import org.activiti.engine.impl.jobexecutor.TimerExecuteNestedActivityJobHandler
 import org.activiti.engine.impl.variable.SerializableType;
 import org.activiti.engine.impl.variable.VariableType;
 import org.activiti.spring.SpringProcessEngineConfiguration;
+
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.workflow.activiti.variable.CustomStringVariableType;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -48,14 +49,14 @@ public class AlfrescoProcessEngineConfiguration extends SpringProcessEngineConfi
 {
     private List<VariableType> customTypes;
     private NodeService unprotectedNodeService;
-    
+
     public AlfrescoProcessEngineConfiguration()
     {
         // Make sure the synchornizationAdapter is run before the AlfrescoTransactionSupport (and also before the
         // myBatis synchonisation, which unbinds the neccesairy sqlSession used by the JobFailedListener)
         this.transactionSynchronizationAdapterOrder = AlfrescoTransactionSupport.SESSION_SYNCHRONIZATION_ORDER - 100;
     }
-    
+
     @Override
     protected void initVariableTypes()
     {
@@ -64,20 +65,20 @@ public class AlfrescoProcessEngineConfiguration extends SpringProcessEngineConfi
         if (customTypes != null)
         {
             int serializableIndex = variableTypes.getTypeIndex(SerializableType.TYPE_NAME);
-            for (VariableType type : customTypes) 
+            for (VariableType type : customTypes)
             {
                 variableTypes.addType(type, serializableIndex);
             }
         }
-        
+
         // WOR-171: Replace string type by custom one to handle large text-values
         int stringIndex = variableTypes.getTypeIndex("string");
         variableTypes.removeType(variableTypes.getVariableType("string"));
         variableTypes.addType(new CustomStringVariableType(), stringIndex);
     }
-    
+
     @Override
-    protected void initJobExecutor() 
+    protected void initJobExecutor()
     {
         super.initJobExecutor();
 
@@ -85,29 +86,28 @@ public class AlfrescoProcessEngineConfiguration extends SpringProcessEngineConfi
         JobHandler timerJobHandler = jobHandlers.get(TimerExecuteNestedActivityJobHandler.TYPE);
         JobHandler wrappingTimerJobHandler = new AuthenticatedTimerJobHandler(timerJobHandler, unprotectedNodeService);
         jobHandlers.put(TimerExecuteNestedActivityJobHandler.TYPE, wrappingTimerJobHandler);
-        
+
         // Wrap async-job handler to handle authentication
         JobHandler asyncJobHandler = jobHandlers.get(AsyncContinuationJobHandler.TYPE);
         JobHandler wrappingAsyncJobHandler = new AuthenticatedAsyncJobHandler(asyncJobHandler);
         jobHandlers.put(AsyncContinuationJobHandler.TYPE, wrappingAsyncJobHandler);
-        
+
         // Wrap intermediate-timer-job handler to handle authentication
         JobHandler intermediateJobHandler = jobHandlers.get(TimerCatchIntermediateEventJobHandler.TYPE);
         JobHandler wrappingIntermediateJobHandler = new AuthenticatedAsyncJobHandler(intermediateJobHandler);
         jobHandlers.put(TimerCatchIntermediateEventJobHandler.TYPE, wrappingIntermediateJobHandler);
-        
+
     }
-    
+
     public void setCustomTypes(List<VariableType> customTypes)
     {
         this.customTypes = customTypes;
     }
-    
+
     public void setUnprotectedNodeService(NodeService unprotectedNodeService)
     {
         this.unprotectedNodeService = unprotectedNodeService;
     }
-
 
     @Override
     public void initDatabaseType()

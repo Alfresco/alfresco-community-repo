@@ -28,16 +28,17 @@ package org.alfresco.rest.api.tests;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category(LuceneTests.class)
 public class WherePredicateApiTest extends AbstractSingleNetworkSiteTest
@@ -51,26 +52,26 @@ public class WherePredicateApiTest extends AbstractSingleNetworkSiteTest
     public void setup() throws Exception
     {
         super.setup();
-        
+
         setRequestContext(user1);
-        
+
         String myNodeId = getMyNodeId();
 
         String folder0Name = "folder " + RUNID;
         folder0Id = createFolder(myNodeId, folder0Name, null).getId();
-        
+
         String file0Name = "file " + RUNID;
         file0Id = createEmptyTextFile(folder0Id, file0Name).getId();
 
         paging = getPaging(0, 100);
     }
-    
+
     @After
     public void tearDown() throws Exception
     {
         super.tearDown();
     }
-    
+
     /**
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<node>/children}
      */
@@ -80,25 +81,25 @@ public class WherePredicateApiTest extends AbstractSingleNetworkSiteTest
         String childrenUrl = getNodeChildrenUrl(folder0Id);
         // SIMPLE (+ve)
         String clause = new WhereClauseBuilder()
-                                .predicate(Nodes.PARAM_ISFOLDER + "=true")
-                                .build();
+                .predicate(Nodes.PARAM_ISFOLDER + "=true")
+                .build();
         getAll(childrenUrl, paging, getWhereClause(clause), 200);
-        //AND (+ve)
+        // AND (+ve)
         clause = new WhereClauseBuilder()
-                        .predicate(Nodes.PARAM_ISFOLDER + "=true")
-                        .and(Nodes.PARAM_ISFILE + "=false")
-                        .build();
+                .predicate(Nodes.PARAM_ISFOLDER + "=true")
+                .and(Nodes.PARAM_ISFILE + "=false")
+                .build();
         getAll(childrenUrl, paging, getWhereClause(clause), 200);
-        //NOT (-ve)
+        // NOT (-ve)
         clause = new WhereClauseBuilder()
-                   .predicate(Nodes.PARAM_ISFOLDER + "=true", NOT)
-                   .build();
+                .predicate(Nodes.PARAM_ISFOLDER + "=true", NOT)
+                .build();
         getAll(childrenUrl, paging, getWhereClause(clause), 400);
         // OR (-ve)
         clause = new WhereClauseBuilder()
-                         .predicate(Nodes.PARAM_ISFOLDER + "=true")
-                         .or(Nodes.PARAM_ISFILE + "=false")
-                         .build();
+                .predicate(Nodes.PARAM_ISFOLDER + "=true")
+                .or(Nodes.PARAM_ISFILE + "=false")
+                .build();
         getAll(childrenUrl, paging, getWhereClause(clause), 400);
         // NOT + AND (-ve)
         clause = new WhereClauseBuilder()
@@ -107,7 +108,7 @@ public class WherePredicateApiTest extends AbstractSingleNetworkSiteTest
                 .build();
         getAll(childrenUrl, paging, getWhereClause(clause), 400);
     }
-    
+
     /**
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<node>/secondary-children}
      */
@@ -143,7 +144,7 @@ public class WherePredicateApiTest extends AbstractSingleNetworkSiteTest
                 .build();
         getAll(getNodeRenditionsUrl(file0Id), paging, getWhereClause(clause), 400);
     }
-    
+
     /**
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/shared-links}
      */
@@ -155,13 +156,13 @@ public class WherePredicateApiTest extends AbstractSingleNetworkSiteTest
                 .predicate(QuickShareLinks.PARAM_SHAREDBY + "='-me-'")
                 .build();
         getAll("shared-links", paging, getWhereClause(clause), 200);
-        // NOT (-ve)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+        // NOT (-ve)
         clause = new WhereClauseBuilder()
                 .predicate(QuickShareLinks.PARAM_SHAREDBY + "='-me-'", NOT)
                 .build();
         getAll("shared-links", paging, getWhereClause(clause), 400);
     }
-    
+
     /**
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/people/<personId>/favorites}
      */
@@ -171,8 +172,8 @@ public class WherePredicateApiTest extends AbstractSingleNetworkSiteTest
         String favoritesUrl = getFavoritesUrl("-me-");
         // SIMPLE (+ve)
         String clause = new WhereClauseBuilder()
-                                .predicate("EXISTS(target/file)")
-                                .build();
+                .predicate("EXISTS(target/file)")
+                .build();
         getAll(favoritesUrl, paging, getWhereClause(clause), 200);
         // OR (+ve)
         clause = new WhereClauseBuilder()
@@ -184,22 +185,19 @@ public class WherePredicateApiTest extends AbstractSingleNetworkSiteTest
                 .predicate("EXISTS(target/file)").and("EXISTS(target/folder)")
                 .build();
         getAll(favoritesUrl, paging, getWhereClause(clause), 400);
-        
+
         // NOT (-ve): uncomment when REPO-1249 is done
-        /*clause = new WhereClauseBuilder()
-                .predicate("EXISTS(target/file)", NOT)
-                .build();
-        getAll(favoritesUrl, paging, getWhereClause(clause), 400);*/
+        /* clause = new WhereClauseBuilder() .predicate("EXISTS(target/file)", NOT) .build(); getAll(favoritesUrl, paging, getWhereClause(clause), 400); */
     }
-    
+
     private Map<String, String> getWhereClause(String whereparams)
     {
         Map<String, String> params = new HashMap<>();
         params.put("where", whereparams);
-        
+
         return params;
     }
-    
+
     private class WhereClauseBuilder
     {
         private WhereClause whereClause;
@@ -209,6 +207,7 @@ public class WherePredicateApiTest extends AbstractSingleNetworkSiteTest
             whereClause = new WhereClause(predicate, negated);
             return this;
         }
+
         public WhereClauseBuilder predicate(String predicate)
         {
             return this.predicate(predicate, false);
@@ -219,6 +218,7 @@ public class WherePredicateApiTest extends AbstractSingleNetworkSiteTest
             whereClause.and(new WhereClause(predicate, negated));
             return this;
         }
+
         public WhereClauseBuilder and(String predicate)
         {
             return and(predicate, false);
@@ -229,6 +229,7 @@ public class WherePredicateApiTest extends AbstractSingleNetworkSiteTest
             whereClause.or(new WhereClause(predicate, negated));
             return this;
         }
+
         public WhereClauseBuilder or(String predicate)
         {
             return or(predicate, false);
@@ -248,7 +249,7 @@ public class WherePredicateApiTest extends AbstractSingleNetworkSiteTest
 
         private class WhereClause
         {
-            private final String[] operators = new String[] { "MATCHES", "IN", "BETWEEN" };
+            private final String[] operators = new String[]{"MATCHES", "IN", "BETWEEN"};
 
             private String clause;
 
@@ -296,12 +297,12 @@ public class WherePredicateApiTest extends AbstractSingleNetworkSiteTest
             }
         }
     }
-    
+
     private String getNodeSecondaryChildrenUrl(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + "secondary-children";
     }
-    
+
     private String getFavoritesUrl(String nodeId)
     {
         return "people" + "/" + nodeId + "/" + "favorites";

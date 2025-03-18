@@ -31,15 +31,7 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Handles single Folder JSON responses
- * Example:
-      "createdAt": "2016-10-03T08:15:08.722+0000",
-      "createdBy": "admin",
-      "modifiedAt": "2016-10-03T08:15:08.722+0000",
-      "name": "Folder-EJJXzPAauf",
-      "guid": "fd84a762-7fea-4ed8-b9cd-7622ab966ac4",
-      "modifiedBy": "admin",
-      "id": "fd84a762-7fea-4ed8-b9cd-7622ab966ac4"
+ * Handles single Folder JSON responses Example: "createdAt": "2016-10-03T08:15:08.722+0000", "createdBy": "admin", "modifiedAt": "2016-10-03T08:15:08.722+0000", "name": "Folder-EJJXzPAauf", "guid": "fd84a762-7fea-4ed8-b9cd-7622ab966ac4", "modifiedBy": "admin", "id": "fd84a762-7fea-4ed8-b9cd-7622ab966ac4"
  */
 
 public class RestFolderModel extends TestModel implements IRestModel<RestFolderModel>
@@ -84,8 +76,7 @@ public class RestFolderModel extends TestModel implements IRestModel<RestFolderM
     private String parentId;
 
     public RestFolderModel()
-    {
-    }
+    {}
 
     public String getCreatedAt()
     {

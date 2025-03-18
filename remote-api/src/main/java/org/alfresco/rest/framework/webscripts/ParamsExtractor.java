@@ -25,10 +25,11 @@
  */
 package org.alfresco.rest.framework.webscripts;
 
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.rest.framework.core.HttpMethodSupport;
 import org.alfresco.rest.framework.core.ResourceMetadata;
 import org.alfresco.rest.framework.resource.parameters.Params;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /*
  * Extracts parameters from the HTTP request.
@@ -36,5 +37,5 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public interface ParamsExtractor extends HttpMethodSupport
 {
-    public Params extractParams(ResourceMetadata resourceMeta,WebScriptRequest req);
+    public Params extractParams(ResourceMetadata resourceMeta, WebScriptRequest req);
 }

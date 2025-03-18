@@ -37,6 +37,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -57,8 +60,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * The default implementation of the authority service.
@@ -69,26 +70,26 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 {
     public static final String GROUP_ALFRESCO_SYSTEM_ADMINISTRATORS_AUTHORITY = PermissionService.GROUP_PREFIX + "ALFRESCO_SYSTEM_ADMINISTRATORS";
     private static Set<String> DEFAULT_ZONES = new HashSet<String>();
-    
+
     static
     {
         DEFAULT_ZONES.add(AuthorityService.ZONE_APP_DEFAULT);
         DEFAULT_ZONES.add(AuthorityService.ZONE_AUTH_ALFRESCO);
     }
-    
+
     private PersonService personService;
     private TenantService tenantService;
     private AuthorityDAO authorityDAO;
     private UserNameMatcher userNameMatcher;
     private AuthenticationService authenticationService;
     private PermissionServiceSPI permissionServiceSPI;
-    
+
     private Set<String> adminSet = Collections.singleton(PermissionService.ADMINISTRATOR_AUTHORITY);
     private Set<String> guestSet = Collections.singleton(PermissionService.GUEST_AUTHORITY);
     private Set<String> allSet = Collections.singleton(PermissionService.ALL_AUTHORITIES);
     private Set<String> adminGroups = Collections.emptySet();
     private Set<String> guestGroups = Collections.emptySet();
-    
+
     private ClassPolicyDelegate<OnAuthorityAddedToGroup> onAuthorityAddedToGroups;
     private ClassPolicyDelegate<OnAuthorityRemovedFromGroup> onAuthorityRemovedFromGroup;
     private ClassPolicyDelegate<OnGroupDeleted> onGroupDeletedDelegate;
@@ -98,7 +99,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         super();
     }
-   
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
@@ -112,8 +113,8 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public void setAuthorityDAO(AuthorityDAO authorityDAO)
     {
         this.authorityDAO = authorityDAO;
-    }        
-        
+    }
+
     public void setUserNameMatcher(UserNameMatcher userNameMatcher)
     {
         this.userNameMatcher = userNameMatcher;
@@ -138,12 +139,12 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         this.guestGroups = guestGroups;
     }
-    
+
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     public void init()
     {
         onAuthorityAddedToGroups = policyComponent.registerClassPolicy(AuthorityServicePolicies.OnAuthorityAddedToGroup.class);
@@ -175,18 +176,18 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             this.guestGroups = guestGroups;
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public boolean hasAdminAuthority()
     {
         String currentUserName = AuthenticationUtil.getRunAsUser();
-        
+
         // Determine whether the administrator role is mapped to this user or one of their groups
         return ((currentUserName != null) && getAuthoritiesForUser(currentUserName).contains(PermissionService.ADMINISTRATOR_AUTHORITY));
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -197,22 +198,22 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         {
             canonicalName = authorityName;
         }
-        
+
         // Determine whether the administrator role is mapped to this user or one of their groups
         return getAuthoritiesForUser(canonicalName).contains(PermissionService.ADMINISTRATOR_AUTHORITY);
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public boolean hasGuestAuthority()
     {
         String currentUserName = AuthenticationUtil.getRunAsUser();
-        
+
         // Determine whether the guest role is mapped to this user or one of their groups
         return ((currentUserName != null) && getAuthoritiesForUser(currentUserName).contains(PermissionService.GUEST_AUTHORITY));
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -223,16 +224,18 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         {
             canonicalName = authorityName;
         }
-        
+
         // Determine whether the guest role is mapped to this user or one of their groups
         return getAuthoritiesForUser(canonicalName).contains(PermissionService.GUEST_AUTHORITY);
     }
-    
+
     /**
-     * Checks if the {@code authority} (normally a username) is the same as or is contained
-     * within the {@code parentAuthority}.
-     * @param authority String
-     * @param parentAuthority a normalized, case sensitive authority name
+     * Checks if the {@code authority} (normally a username) is the same as or is contained within the {@code parentAuthority}.
+     * 
+     * @param authority
+     *            String
+     * @param parentAuthority
+     *            a normalized, case sensitive authority name
      * @return {@code true} if does, {@code false} otherwise.
      */
     private boolean hasAuthority(String authority, String parentAuthority, Set<String> positiveHits, Set<String> negativeHits)
@@ -248,10 +251,10 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             return true;
         }
 
-        return authorityDAO.isAuthorityContained(parentAuthority, authority, positiveHits, negativeHits);        
-        
+        return authorityDAO.isAuthorityContained(parentAuthority, authority, positiveHits, negativeHits);
+
     }
-    
+
     @Override
     public long countUsers()
     {
@@ -275,7 +278,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         String currentUserName = AuthenticationUtil.getRunAsUser();
         return getAuthoritiesForUser(currentUserName);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -288,21 +291,21 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     private Set<String> getRoleAuthorities(String currentUserName, Set<String> positiveHits, Set<String> negativeHits)
     {
         Set<String> authorities = new TreeSet<String>();
-        
+
         // Check named guest and admin users
         Set<String> adminUsers = authenticationService.getDefaultAdministratorUserNames();
         Set<String> guestUsers = authenticationService.getDefaultGuestUserNames();
-        
+
         String defaultGuestName = AuthenticationUtil.getGuestUserName();
         if (defaultGuestName != null && defaultGuestName.length() > 0)
         {
             guestUsers.add(defaultGuestName);
         }
-        
+
         // Check for name matches using MT + case sensitivity rules
         boolean isAdminUser = containsMatch(adminUsers, currentUserName);
         boolean isGuestUser = containsMatch(guestUsers, currentUserName);
-        
+
         // Check if any of the user's groups are listed as admin groups
         if (!isAdminUser)
         {
@@ -317,14 +320,14 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
                 }
             }
         }
-        
-        // Check if user name matches (ignore case) "ROLE_GUEST", if so its a guest. Code originally in PermissionService. 
+
+        // Check if user name matches (ignore case) "ROLE_GUEST", if so its a guest. Code originally in PermissionService.
         if (!isAdminUser && !isGuestUser &&
-            tenantService.getBaseNameUser(currentUserName).equalsIgnoreCase(AuthenticationUtil.getGuestUserName()))
+                tenantService.getBaseNameUser(currentUserName).equalsIgnoreCase(AuthenticationUtil.getGuestUserName()))
         {
             isGuestUser = true;
         }
-        
+
         // Check if any of the user's groups are listed as guest groups
         if (!isAdminUser && !isGuestUser)
         {
@@ -332,7 +335,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             {
                 for (String authority : guestGroups)
                 {
-                if (hasAuthority(currentUserName, authority, positiveHits, negativeHits) || hasAuthority(currentUserName, tenantService.getBaseNameUser(authority), positiveHits, negativeHits))
+                    if (hasAuthority(currentUserName, authority, positiveHits, negativeHits) || hasAuthority(currentUserName, tenantService.getBaseNameUser(authority), positiveHits, negativeHits))
                     {
                         isGuestUser = true;
                         break;
@@ -340,7 +343,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
                 }
             }
         }
-        
+
         // Give admin user's the ADMINISTRATOR authorities
         if (isAdminUser)
         {
@@ -351,17 +354,17 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         if (!isGuestUser)
         {
             authorities.addAll(allSet);
-           positiveHits.addAll(allSet);
+            positiveHits.addAll(allSet);
         }
         else
         {
             authorities.addAll(guestSet);
             positiveHits.addAll(guestSet);
         }
-        
+
         return authorities;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -373,7 +376,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         authorities.addAll(auths);
         return authorities;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -381,21 +384,21 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
         ParameterCheck.mandatory("type", type);
-        
+
         if (type != AuthorityType.USER && type != AuthorityType.GROUP && type != AuthorityType.ROLE)
         {
-            throw new UnsupportedOperationException("Unexpected authority type: "+type);
+            throw new UnsupportedOperationException("Unexpected authority type: " + type);
         }
         return authorityDAO.getAuthoritiesInfo(type, zoneName, displayNameFilter, sortBy, sortAscending, pagingRequest);
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public PagingResults<String> getAuthorities(AuthorityType type, String zoneName, String displayNameFilter, boolean sortByDisplayName, boolean sortAscending, PagingRequest pagingRequest)
     {
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
-        
+
         if ((type == null) && (zoneName == null))
         {
             throw new IllegalArgumentException("Type and/or zoneName required - both cannot be null");
@@ -413,25 +416,25 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             case GUEST:
             case OWNER:
             default:
-                 // others
-                 return getOtherAuthorities(type); // either singletons or empty - hence ignore zone/filter/sort/paging
+                // others
+                return getOtherAuthorities(type); // either singletons or empty - hence ignore zone/filter/sort/paging
             }
         }
-        
+
         // type is null
         return authorityDAO.getAuthorities(type, zoneName, displayNameFilter, sortByDisplayName, sortAscending, pagingRequest);
     }
-    
+
     private PagingResults<String> getOtherAuthorities(AuthorityType type)
     {
         final List<String> auths = new ArrayList<String>();
-        
+
         switch (type)
         {
         case USER:
         case GROUP:
         case ROLE:
-            throw new UnsupportedOperationException("Unexpected authority type: "+type);
+            throw new UnsupportedOperationException("Unexpected authority type: " + type);
         case ADMIN:
             auths.addAll(adminSet);
             break;
@@ -442,29 +445,31 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             auths.addAll(guestSet);
             break;
         case OWNER:
-             break;
+            break;
         default:
             break;
         }
-        
+
         // spoof the page
-        return new PagingResults<String>()
-        {
+        return new PagingResults<String>() {
             @Override
             public String getQueryExecutionId()
             {
                 return null;
             }
+
             @Override
             public List<String> getPage()
             {
                 return auths;
             }
+
             @Override
             public boolean hasMoreItems()
             {
                 return false;
             }
+
             @Override
             public Pair<Integer, Integer> getTotalResultCount()
             {
@@ -472,7 +477,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             }
         };
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -480,21 +485,21 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         addAuthority(Collections.singleton(parentName), childName);
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public void addAuthority(Collection<String> parentNames, String childName)
     {
         authorityDAO.addAuthority(parentNames, childName);
-        
+
         OnAuthorityAddedToGroup policy = onAuthorityAddedToGroups.get(ContentModel.TYPE_AUTHORITY);
         for (String parentGroup : parentNames)
         {
             policy.onAuthorityAddedToGroup(parentGroup, childName);
         }
     }
-    
+
     private boolean containsMatch(Set<String> names, String name)
     {
         String baseName = this.tenantService.getBaseNameUser(name);
@@ -525,10 +530,10 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         }
         return false;
     }
-    
+
     private void checkTypeIsMutable(AuthorityType type)
     {
-        if((type == AuthorityType.GROUP) || (type == AuthorityType.ROLE))
+        if ((type == AuthorityType.GROUP) || (type == AuthorityType.ROLE))
         {
             return;
         }
@@ -537,7 +542,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             throw new AuthorityException("Trying to modify a fixed authority");
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -554,7 +559,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return createAuthority(type, shortName, shortName, getDefaultZones(), properties);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -562,7 +567,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         deleteAuthority(name, false);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -579,7 +584,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         }
         authorityDAO.deleteAuthority(name);
         permissionServiceSPI.deletePermissions(name);
-        
+
         if (isGroup(type))
         {
             OnGroupDeleted onGroupDelete = onGroupDeletedDelegate.get(ContentModel.TYPE_AUTHORITY);
@@ -591,7 +596,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return AuthorityType.GROUP == authorityType || AuthorityType.EVERYONE == authorityType;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -599,7 +604,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return getAllRootAuthoritiesInZone(null, type);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -607,7 +612,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return authorityDAO.getContainedAuthorities(type, name, immediate);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -615,7 +620,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return authorityDAO.getContainingAuthorities(type, name, immediate);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -623,7 +628,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return authorityDAO.getAuthorityNodeRefOrNull(name);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -636,19 +641,19 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public void removeAuthority(String parentName, String childName)
     {
         authorityDAO.removeAuthority(parentName, childName);
-        
+
         OnAuthorityRemovedFromGroup policy = onAuthorityRemovedFromGroup.get(ContentModel.TYPE_AUTHORITY);
         policy.onAuthorityRemovedFromGroup(parentName, childName);
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public boolean authorityExists(String name)
     {
-       return authorityDAO.authorityExists(name);
+        return authorityDAO.authorityExists(name);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -663,7 +668,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
      */
     @Override
     public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName,
-                                  Set<String> authorityZones, Map<QName, Serializable> properties)
+            Set<String> authorityZones, Map<QName, Serializable> properties)
     {
         checkTypeIsMutable(type);
         String name = getName(type, shortName);
@@ -671,20 +676,20 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 
         return name;
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public String getAuthorityDisplayName(String name)
     {
         String displayName = authorityDAO.getAuthorityDisplayName(name);
-        if(displayName == null)
+        if (displayName == null)
         {
             displayName = getShortName(name);
         }
         return displayName;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -702,7 +707,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public Pair<String, String> getAuthorityDisplayNameAndDescription(String name)
     {
         Pair<String, String> displayNameAndDescription = authorityDAO.getAuthorityDisplayNameAndDescription(name);
-        if(displayNameAndDescription.getFirst() == null)
+        if (displayNameAndDescription.getFirst() == null)
         {
             displayNameAndDescription.setFirst(getShortName(name));
         }
@@ -719,7 +724,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         checkTypeIsMutable(type);
         authorityDAO.setAuthorityDisplayNameAndDescription(authorityName, authorityDisplayName, description);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -727,7 +732,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return authorityDAO.getAuthorityZones(name);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -735,7 +740,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return authorityDAO.getOrCreateZone(zoneName);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -743,7 +748,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return authorityDAO.getZone(zoneName);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -752,16 +757,16 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return authorityDAO.getAllAuthoritiesInZone(zoneName, type);
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public void addAuthorityToZones(String authorityName, Set<String> zones)
     {
         authorityDAO.addAuthorityToZones(authorityName, zones);
-        
+
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -769,15 +774,15 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         authorityDAO.removeAuthorityFromZones(authorityName, zones);
     }
-    
+
     /**
      * {@inheritDoc}
      */
     public Set<String> getDefaultZones()
     {
-      return DEFAULT_ZONES;
+        return DEFAULT_ZONES;
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -785,7 +790,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return authorityDAO.getRootAuthorities(type, zoneName);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -800,7 +805,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
             throw new UnsupportedOperationException();
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -808,7 +813,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return authorityDAO.getName(type, shortName);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -829,8 +834,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     }
 
     /**
-     * Lazy load set of authorities. Try not to iterate or ask for the size. Needed for the case where there
-     * are a large number of sites/groups.
+     * Lazy load set of authorities. Try not to iterate or ask for the size. Needed for the case where there are a large number of sites/groups.
      * 
      * @author David Ward, Alan Davis
      */
@@ -842,14 +846,15 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         private boolean allAuthoritiesLoaded;
 
         /**
-         * @param username String
+         * @param username
+         *            String
          */
         public UserAuthoritySet(String username)
         {
             this.username = username;
             positiveHits = new TreeSet<String>();
             negativeHits = new TreeSet<String>();
-            getRoleAuthorities(username, positiveHits, negativeHits);            
+            getRoleAuthorities(username, positiveHits, negativeHits);
         }
 
         // Try to avoid evaluating the full set unless we have to!
@@ -866,7 +871,8 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         }
 
         @Override
-        public boolean removeAll(Collection<?> c) {
+        public boolean removeAll(Collection<?> c)
+        {
             throw new UnsupportedOperationException();
         }
 

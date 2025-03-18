@@ -26,6 +26,16 @@
 
 package org.alfresco.repo.admin.patch.impl;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AsynchronousPatch;
 import org.alfresco.repo.admin.patch.PatchExecuter;
@@ -45,19 +55,9 @@ import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 /**
- * Patch to add <i>cm:indexControl</i> aspect to sites' surf-config folders and
- * their children as well as to the shared surf-config folder(s) and its/their children.
+ * Patch to add <i>cm:indexControl</i> aspect to sites' surf-config folders and their children as well as to the shared surf-config folder(s) and its/their children.
  * 
  * @author Jamal Kaabi-Mofrad
  */
@@ -87,7 +87,8 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
     private RuleService ruleService;
 
     /**
-     * @param patchDAO the patchDAO to set
+     * @param patchDAO
+     *            the patchDAO to set
      */
     public void setPatchDAO(PatchDAO patchDAO)
     {
@@ -95,7 +96,8 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
     }
 
     /**
-     * @param nodeDAO the nodeDAO to set
+     * @param nodeDAO
+     *            the nodeDAO to set
      */
     public void setNodeDAO(NodeDAO nodeDAO)
     {
@@ -103,7 +105,8 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
     }
 
     /**
-     * @param qnameDAO the qnameDAO to set
+     * @param qnameDAO
+     *            the qnameDAO to set
      */
     public void setQnameDAO(QNameDAO qnameDAO)
     {
@@ -111,7 +114,8 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
     }
 
     /**
-     * @param behaviourFilter the behaviourFilter to set
+     * @param behaviourFilter
+     *            the behaviourFilter to set
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
@@ -119,7 +123,8 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
     }
 
     /**
-     * @param ruleService the ruleService to set
+     * @param ruleService
+     *            the ruleService to set
      */
     public void setRuleService(RuleService ruleService)
     {
@@ -137,10 +142,9 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
         checkPropertyNotNull(behaviourFilter, "behaviourFilter");
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.admin.patch.AbstractPatch#applyInternal()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.admin.patch.AbstractPatch#applyInternal() */
     @Override
     protected String applyInternal() throws Exception
     {
@@ -153,8 +157,7 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
         BatchProcessWorkProvider<Long> siteWorkProvider = new SiteWorkProvider();
 
         // Instance to handle each item of work
-        BatchProcessWorker<Long> siteWorker = new BatchProcessWorkerAdaptor<Long>()
-        {
+        BatchProcessWorker<Long> siteWorker = new BatchProcessWorkerAdaptor<Long>() {
             @Override
             public void beforeProcess() throws Throwable
             {
@@ -188,8 +191,8 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
         };
 
         BatchProcessor<Long> siteBatchProcessor = new BatchProcessor<Long>("SurfConfigFolderPatch",
-                    transactionService.getRetryingTransactionHelper(), siteWorkProvider, SITE_BATCH_THREADS, BATCH_SIZE, null,
-                    progress_logger, 1000);
+                transactionService.getRetryingTransactionHelper(), siteWorkProvider, SITE_BATCH_THREADS, BATCH_SIZE, null,
+                progress_logger, 1000);
 
         int updatedSiteSurfConfig = siteBatchProcessor.process(siteWorker, true);
 
@@ -198,8 +201,7 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
         BatchProcessWorkProvider<NodeRef> surfConfigWorkProvider = new SharedSurfConfigWorkProvider();
 
         // Instance to handle each item of work
-        BatchProcessWorker<NodeRef> surfConfigWorker = new BatchProcessWorkerAdaptor<NodeRef>()
-        {
+        BatchProcessWorker<NodeRef> surfConfigWorker = new BatchProcessWorkerAdaptor<NodeRef>() {
             @Override
             public void beforeProcess() throws Throwable
             {
@@ -239,8 +241,8 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
         };
 
         BatchProcessor<NodeRef> surfConfigBatchProcessor = new BatchProcessor<NodeRef>("SurfConfigFolderPatch",
-                    transactionService.getRetryingTransactionHelper(), surfConfigWorkProvider, SHARED_SURF_CONFIG_BATCH_THREADS,
-                    BATCH_SIZE, null, progress_logger, 1000);
+                transactionService.getRetryingTransactionHelper(), surfConfigWorkProvider, SHARED_SURF_CONFIG_BATCH_THREADS,
+                BATCH_SIZE, null, progress_logger, 1000);
 
         surfConfigBatchProcessor.process(surfConfigWorker, true);
 
@@ -284,7 +286,7 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
             addIndexControlAspectIfNotExist(componentsNodeRef);
 
             List<ChildAssociationRef> listOfComponents = nodeService.getChildAssocs(componentsNodeRef,
-                        ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+                    ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             // apply the aspect to all of the children (6 in total)
             for (ChildAssociationRef comp : listOfComponents)
             {
@@ -340,7 +342,7 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
         addIndexControlAspectIfNotExist(siteChildNodeRef);
 
         List<ChildAssociationRef> listOfComponents = nodeService.getChildAssocs(siteChildNodeRef, ContentModel.ASSOC_CONTAINS,
-                    RegexQNamePattern.MATCH_ALL);
+                RegexQNamePattern.MATCH_ALL);
         // apply the aspect to all of the children
         for (ChildAssociationRef comp : listOfComponents)
         {
@@ -356,7 +358,7 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
         if (indexProp == null || ((Boolean) indexProp))
         {
             nodeService.addAspect(nodeRef, ContentModel.ASPECT_INDEX_CONTROL,
-                        Collections.singletonMap(ContentModel.PROP_IS_INDEXED, (Serializable) false));
+                    Collections.singletonMap(ContentModel.PROP_IS_INDEXED, (Serializable) false));
 
             if (logger.isDebugEnabled())
             {
@@ -382,12 +384,14 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
             this.siteTypeQNameId = qnameDAO.getQName(SiteModel.TYPE_SITE);
         }
 
-        @Override public synchronized int getTotalEstimatedWorkSize()
+        @Override
+        public synchronized int getTotalEstimatedWorkSize()
         {
             return (int) getTotalEstimatedWorkSizeLong();
         }
 
-        @Override public synchronized long getTotalEstimatedWorkSizeLong()
+        @Override
+        public synchronized long getTotalEstimatedWorkSizeLong()
         {
             if (maxId == Long.MAX_VALUE)
             {
@@ -437,8 +441,7 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
     }
 
     /**
-     * Work provider which performs incremental queries to find shared
-     * Surf-Config folders and their children.
+     * Work provider which performs incremental queries to find shared Surf-Config folders and their children.
      * 
      * @author Jamal Kaabi-Mofrad
      */
@@ -448,13 +451,12 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
         private long currentId = 0L;
 
         private SharedSurfConfigWorkProvider()
-        {
-        }
+        {}
 
         @Override
         public synchronized int getTotalEstimatedWorkSize()
         {
-            return (int)getTotalEstimatedWorkSizeLong();
+            return (int) getTotalEstimatedWorkSizeLong();
         }
 
         @Override

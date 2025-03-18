@@ -27,17 +27,18 @@ package org.alfresco.repo.tenant;
 
 import static org.junit.Assert.*;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.ContentStoreCaps;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.junit.Before;
-import org.junit.Test;
 
 public class MultiTAdminServiceImplTest
 {
     private MultiTAdminServiceImpl tenantAdmin;
-    
+
     @Before
     public void setUp() throws Exception
     {
@@ -51,7 +52,7 @@ public class MultiTAdminServiceImplTest
         TenantDeployer tenantDeployer = tenantAdmin.tenantDeployer(contentStore);
         assertNotNull(tenantDeployer);
     }
-    
+
     @Test
     public void testTenantDeployerRetrievedByContentStoreCaps()
     {
@@ -59,7 +60,7 @@ public class MultiTAdminServiceImplTest
         TenantDeployer tenantDeployer = tenantAdmin.tenantDeployer(contentStore);
         assertNotNull(tenantDeployer);
     }
-    
+
     @Test
     public void testTenantDeployerMayBeNullWhenInterfaceNotImplemented()
     {
@@ -67,10 +68,10 @@ public class MultiTAdminServiceImplTest
         TenantDeployer tenantDeployer = tenantAdmin.tenantDeployer(contentStore);
         assertNull(tenantDeployer);
     }
-    
+
     @Test
     public void testTenantDeployerMayBeNullWhenProxyingAndInterfaceNotImplemented()
-    {    
+    {
         // Represents proxy in front of non-TenantDeployer ContentStore
         ContentStore contentStore = new FakeSubsystemProxy(true);
         TenantDeployer tenantDeployer = tenantAdmin.tenantDeployer(contentStore);
@@ -84,7 +85,7 @@ public class MultiTAdminServiceImplTest
         TenantRoutingContentStore router = tenantAdmin.tenantRoutingContentStore(contentStore);
         assertNotNull(router);
     }
-    
+
     @Test
     public void testTenantRoutingContentStoreRetrievedByContentStoreCaps()
     {
@@ -92,7 +93,7 @@ public class MultiTAdminServiceImplTest
         TenantRoutingContentStore router = tenantAdmin.tenantRoutingContentStore(contentStore);
         assertNotNull(router);
     }
-    
+
     @Test
     public void testTenantRoutingContentStoreMayBeNullWhenInterfaceNotImplemented()
     {
@@ -100,31 +101,26 @@ public class MultiTAdminServiceImplTest
         TenantRoutingContentStore router = tenantAdmin.tenantRoutingContentStore(contentStore);
         assertNull(router);
     }
-    
+
     @Test
     public void testTenantRoutingContentStoreMayBeNullWhenProxyingAndInterfaceNotImplemented()
-    {    
+    {
         // Represents proxy in front of non-TenantRoutingContentStore ContentStore
         ContentStore contentStore = new FakeSubsystemProxy(true);
         TenantRoutingContentStore router = tenantAdmin.tenantRoutingContentStore(contentStore);
         assertNull(router);
     }
-    
-
-    
-    
-    
 
     // This is implemented by the CryptodocSubsystemProxyFactory in real life.
     private static class FakeSubsystemProxy extends BaseStore implements ContentStoreCaps
     {
         private boolean returnNull;
-        
+
         FakeSubsystemProxy(boolean returnNull)
         {
             this.returnNull = returnNull;
         }
-        
+
         @Override
         public TenantDeployer getTenantRoutingContentStore()
         {
@@ -139,53 +135,45 @@ public class MultiTAdminServiceImplTest
             return returnNull ? null : new ConcreteTenantDeployer();
         }
     }
-    
+
     private static class ConcreteTenantDeployer extends BaseStore implements TenantDeployer
     {
         @Override
         public void onEnableTenant()
-        {
-        }
+        {}
 
         @Override
         public void onDisableTenant()
-        {
-        }
+        {}
 
         @Override
         public void init()
-        {
-        }
+        {}
 
         @Override
         public void destroy()
-        {
-        }
+        {}
     }
-    
+
     private static class ConcreteTenantRoutingContentStore extends BaseStore implements TenantRoutingContentStore
     {
         @Override
         public void onEnableTenant()
-        {
-        }
+        {}
 
         @Override
         public void onDisableTenant()
-        {
-        }
+        {}
 
         @Override
         public void init()
-        {
-        }
+        {}
 
         @Override
         public void destroy()
-        {
-        }   
+        {}
     }
-    
+
     private static class BaseStore extends AbstractContentStore
     {
 
@@ -201,5 +189,5 @@ public class MultiTAdminServiceImplTest
             return null;
         }
     }
-    
+
 }

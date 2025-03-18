@@ -33,17 +33,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.forms.AssociationFieldDefinition;
+import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldGroup;
-import org.alfresco.repo.forms.AssociationFieldDefinition.Direction;
 import org.alfresco.repo.forms.processor.FieldProcessor;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * {@link FieldProcessor} implementation that handles associations.
@@ -66,7 +67,7 @@ public class AssociationFieldProcessor extends QNameFieldProcessor<AssociationDe
     }
 
     @Override
-    protected Log getLogger() 
+    protected Log getLogger()
     {
         return logger;
     }
@@ -86,10 +87,8 @@ public class AssociationFieldProcessor extends QNameFieldProcessor<AssociationDe
     }
 
     /**
-     * Gets the associated value from the {@link ContentModelItemData}.
-     * If the value is <code>null</code> the method returns an empty {@link List}.
-     * If the value is a single Object (assumed to be a NodeRef) it returns a {@link List} containing a {@link String} representation of that object.
-     * If the value is a {@link Collection} of Objects, returns a {@link List} containing {@link String} representations of all the objects.
+     * Gets the associated value from the {@link ContentModelItemData}. If the value is <code>null</code> the method returns an empty {@link List}. If the value is a single Object (assumed to be a NodeRef) it returns a {@link List} containing a {@link String} representation of that object. If the value is a {@link Collection} of Objects, returns a {@link List} containing {@link String} representations of all the objects.
+     * 
      * @return An {@link ArrayList} of Strings or <code>null</code>.
      */
     @Override
@@ -104,7 +103,7 @@ public class AssociationFieldProcessor extends QNameFieldProcessor<AssociationDe
         {
             return getValues((Collection<?>) values);
         }
-        return Collections.singletonList(values.toString()); 
+        return Collections.singletonList(values.toString());
     }
 
     private List<String> getValues(Collection<?> collection)
@@ -121,10 +120,10 @@ public class AssociationFieldProcessor extends QNameFieldProcessor<AssociationDe
     {
         String name = getPrefixedName(assocDef);
         String endpointType = assocDef.getTargetClass().getName().toPrefixString(namespaceService);
-        AssociationFieldDefinition fieldDef = new AssociationFieldDefinition(name, 
-                endpointType, 
+        AssociationFieldDefinition fieldDef = new AssociationFieldDefinition(name,
+                endpointType,
                 Direction.TARGET);
-        
+
         populateFieldDefinition(assocDef, fieldDef, group, ASSOC_DATA_PREFIX);
 
         fieldDef.setEndpointMandatory(assocDef.isTargetMandatory());
@@ -133,14 +132,14 @@ public class AssociationFieldProcessor extends QNameFieldProcessor<AssociationDe
     }
 
     @Override
-    protected String getRegistryKey() 
+    protected String getRegistryKey()
     {
         return FormFieldConstants.ASSOC;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.node.QNameFieldProcessor#getTypeDefinition(org.alfresco.service.namespace.QName, org.alfresco.repo.forms.processor.node.ItemData, boolean)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.node.QNameFieldProcessor#getTypeDefinition(org.alfresco.service.namespace.QName, org.alfresco.repo.forms.processor.node.ItemData, boolean) */
     @Override
     protected AssociationDefinition getTypeDefinition(QName fullName, ContentModelItemData<?> itemData, boolean isForcedField)
     {

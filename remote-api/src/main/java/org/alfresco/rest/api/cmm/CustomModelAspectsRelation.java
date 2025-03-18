@@ -29,6 +29,8 @@ package org.alfresco.rest.api.cmm;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.CustomModels;
 import org.alfresco.rest.api.model.CustomAspect;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -37,18 +39,17 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * @author Jamal Kaabi-Mofrad
  */
 @RelationshipResource(name = "aspects", entityResource = CustomModelEntityResource.class, title = "Custom Model Aspects")
 public class CustomModelAspectsRelation implements RelationshipResourceAction.Read<CustomAspect>,
-            RelationshipResourceAction.ReadById<CustomAspect>,
-            RelationshipResourceAction.Create<CustomAspect>,
-            RelationshipResourceAction.Update<CustomAspect>,
-            RelationshipResourceAction.Delete,
-            InitializingBean
+        RelationshipResourceAction.ReadById<CustomAspect>,
+        RelationshipResourceAction.Create<CustomAspect>,
+        RelationshipResourceAction.Update<CustomAspect>,
+        RelationshipResourceAction.Delete,
+        InitializingBean
 {
 
     private CustomModels customModels;

@@ -85,11 +85,11 @@ public class ExtenderImpl extends Extender
             if (extension == null)
             {
                 extension = exTrait.extend(point.getExtensionAPI(),
-                                           factory);
+                        factory);
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("trait extension leak trace : " + System.identityHashCode(extension) + " : "
-                                + System.identityHashCode(exTrait) + " : " + System.identityHashCode(extension));
+                            + System.identityHashCode(exTrait) + " : " + System.identityHashCode(extension));
                 }
             }
         }
@@ -104,7 +104,7 @@ public class ExtenderImpl extends Extender
             throw new InvalidExtension("Invalid extension factory registry entry : " + point + "->" + factory);
         }
         pointFactories.put(point,
-                           factory);
+                factory);
     }
 
     public synchronized void unregister(ExtensionPoint<?, ?> point)

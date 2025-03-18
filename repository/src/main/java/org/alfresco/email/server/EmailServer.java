@@ -30,24 +30,26 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailService;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.context.ApplicationEvent;
 
 /**
  * Base implementation of an email server.
+ * 
  * @since 2.2
  */
 public abstract class EmailServer extends AbstractLifecycleBean
 {
     private static final String ERR_SENDER_BLOCKED = "email.server.err.sender_blocked";
     private static final String ERR_FROM_SYNTAX_INCORRECT = "email.server.err.from_syntax";
-    
+
     private boolean enabled;
     private String domain;
     private int port;
@@ -74,7 +76,8 @@ public abstract class EmailServer extends AbstractLifecycleBean
     }
 
     /**
-     * @param enabled Enable/disable server
+     * @param enabled
+     *            Enable/disable server
      */
     public void setEnabled(boolean enabled)
     {
@@ -97,7 +100,8 @@ public abstract class EmailServer extends AbstractLifecycleBean
     }
 
     /**
-     * @param port SMTP port (25 is default)
+     * @param port
+     *            SMTP port (25 is default)
      */
     public void setPort(int port)
     {
@@ -106,6 +110,7 @@ public abstract class EmailServer extends AbstractLifecycleBean
 
     /**
      * Returns the maximum number of connection accepted by the server.
+     * 
      * @return the maximum number of connections
      */
     protected int getMaxConnections()
@@ -115,18 +120,19 @@ public abstract class EmailServer extends AbstractLifecycleBean
 
     /**
      * Sets the maximum number of connection accepted by the server
+     * 
      * @param maxConnections
      */
     public void setMaxConnections(int maxConnections)
     {
         this.maxConnections = maxConnections;
     }
-    
+
     /**
-     * Set the blocked senders as a comma separated list.  The entries will be trimmed of
-     * all whitespace.
+     * Set the blocked senders as a comma separated list. The entries will be trimmed of all whitespace.
      * 
-     * @param blockedSenders    a comman separated list of blocked senders
+     * @param blockedSenders
+     *            a comman separated list of blocked senders
      */
     public void setBlockedSenders(String blockedSenders)
     {
@@ -137,9 +143,10 @@ public abstract class EmailServer extends AbstractLifecycleBean
             this.blockedSenders.add(sender);
         }
     }
-    
+
     /**
-     * @param blockedSenders    a list of senders that are not allowed to email in
+     * @param blockedSenders
+     *            a list of senders that are not allowed to email in
      */
     public void setBlockedSendersList(List<String> blockedSenders)
     {
@@ -147,10 +154,10 @@ public abstract class EmailServer extends AbstractLifecycleBean
     }
 
     /**
-     * Set the allowed senders as a comma separated list.  The entries will be trimmed of
-     * all whitespace.
+     * Set the allowed senders as a comma separated list. The entries will be trimmed of all whitespace.
      * 
-     * @param allowedSenders    a comman separated list of blocked senders
+     * @param allowedSenders
+     *            a comman separated list of blocked senders
      */
     public void setAllowedSenders(String allowedSenders)
     {
@@ -166,17 +173,18 @@ public abstract class EmailServer extends AbstractLifecycleBean
             this.allowedSenders.add(sender);
         }
     }
-    
+
     /**
-     * @param allowedSenders    a list of senders that are allowed to email in
+     * @param allowedSenders
+     *            a list of senders that are allowed to email in
      */
     public void setAllowedSendersList(List<String> allowedSenders)
     {
         this.allowedSenders.addAll(allowedSenders);
     }
-    
+
     /**
-     * @return                  the service interface to interact with
+     * @return the service interface to interact with
      */
     protected EmailService getEmailService()
     {
@@ -184,22 +192,25 @@ public abstract class EmailServer extends AbstractLifecycleBean
     }
 
     /**
-     * @param emailService      the service interface to interact with
+     * @param emailService
+     *            the service interface to interact with
      */
     public void setEmailService(EmailService emailService)
     {
         this.emailService = emailService;
     }
-    
+
     /**
      * Used only for check "isNullReversePatAllowed".
-     * @param unknownUser authority name
+     * 
+     * @param unknownUser
+     *            authority name
      */
     public void setUnknownUser(String unknownUser)
     {
         this.unknownUser = unknownUser;
     }
-    
+
     protected boolean isNullReversePatAllowed()
     {
         return isAuthenticate() || (unknownUser != null && !unknownUser.isEmpty());
@@ -208,8 +219,10 @@ public abstract class EmailServer extends AbstractLifecycleBean
     /**
      * Filter incoming message by its sender e-mail address.
      * 
-     * @param sender                    An e-mail address of sender
-     * @throws EmailMessageException    if the e-mail is rejected accordingly with blocked and allowed lists
+     * @param sender
+     *            An e-mail address of sender
+     * @throws EmailMessageException
+     *             if the e-mail is rejected accordingly with blocked and allowed lists
      */
     protected void filterSender(String sender)
     {
@@ -217,7 +230,7 @@ public abstract class EmailServer extends AbstractLifecycleBean
         {
             if (isNullReversePatAllowed())
             {
-             // allow null reverse-path: e.g.: an undeliverable mail response
+                // allow null reverse-path: e.g.: an undeliverable mail response
                 return;
             }
             else
@@ -225,7 +238,7 @@ public abstract class EmailServer extends AbstractLifecycleBean
                 throw new EmailMessageException(ERR_FROM_SYNTAX_INCORRECT);
             }
         }
-        
+
         // Check if the sender is in the blocked list
         for (String blockedSender : blockedSenders)
         {
@@ -234,7 +247,7 @@ public abstract class EmailServer extends AbstractLifecycleBean
                 throw new EmailMessageException(ERR_SENDER_BLOCKED, sender);
             }
         }
-        
+
         // If there are any restrictions in the allowed list, then a positive match
         // is absolutely required
         if (!allowedSenders.isEmpty())
@@ -297,9 +310,10 @@ public abstract class EmailServer extends AbstractLifecycleBean
             shutdown();
         }
     }
-    
+
     /**
      * authenticate with a user/password
+     * 
      * @param userName
      * @param password
      * @return true - authenticated
@@ -317,7 +331,8 @@ public abstract class EmailServer extends AbstractLifecycleBean
         }
     }
 
-    /** Hide the TLS (Trusted Login Session) option
+    /**
+     * Hide the TLS (Trusted Login Session) option
      * 
      * @param hideTLS
      */

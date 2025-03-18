@@ -32,6 +32,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.activities.feed.FeedTaskProcessor;
@@ -41,12 +48,6 @@ import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.subscriptions.PagingFollowingResults;
 import org.alfresco.service.cmr.subscriptions.SubscriptionService;
 import org.alfresco.util.JSONtoFmModel;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Java-backed WebScript to retrieve Activity User Feed
@@ -61,30 +62,30 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
     public static final String PARAM_EXCLUDE_OTHER_USERS = "exclOthers";
     public static final String PARAM_ONLY_FOLLOWING = "following";
     public static final String PARAM_ACTIVITY_FILTER = "activityFilter";
-    
+
     private ActivityService activityService;
     private SubscriptionService subscriptionService;
-    
+
     private boolean userNamesAreCaseSensitive = false;
-    
+
     public void setActivityService(ActivityService activityService)
     {
         this.activityService = activityService;
     }
-    
+
     public void setSubscriptionService(SubscriptionService subscriptionService)
     {
         this.subscriptionService = subscriptionService;
-    }   
-    
+    }
+
     public void setUserNamesAreCaseSensitive(boolean userNamesAreCaseSensitive)
     {
         this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
-	}
+    }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
-     */
+     * 
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
@@ -94,11 +95,11 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
         {
             format = getDescription().getDefaultFormat();
         }
-        
+
         // process extension
         String extensionPath = req.getExtensionPath();
         String[] extParts = extensionPath == null ? new String[1] : extensionPath.split("/");
-        
+
         String feedUserId = null;
         if (extParts.length == 1)
         {
@@ -108,31 +109,32 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
         {
             throw new AlfrescoRuntimeException("Unexpected extension: " + extensionPath);
         }
-        
+
         // process arguments
         String siteId = req.getParameter(PARAM_SITE_ID); // optional
         String exclThisUserStr = req.getParameter(PARAM_EXCLUDE_THIS_USER); // optional
         String exclOtherUsersStr = req.getParameter(PARAM_EXCLUDE_OTHER_USERS); // optional
         String onlyFollowingStr = req.getParameter(PARAM_ONLY_FOLLOWING); // optional
         String activityFilterStr = req.getParameter(PARAM_ACTIVITY_FILTER); // optional
-        
+
         boolean exclThisUser = false;
         if ((exclThisUserStr != null) && (exclThisUserStr.equalsIgnoreCase("true") || exclThisUserStr.equalsIgnoreCase("t")))
         {
             exclThisUser = true;
         }
-        
+
         boolean exclOtherUsers = false;
         if ((exclOtherUsersStr != null) && (exclOtherUsersStr.equalsIgnoreCase("true") || exclOtherUsersStr.equalsIgnoreCase("t")))
         {
             exclOtherUsers = true;
         }
-        
+
         Set<String> userFilter = null;
         if ((onlyFollowingStr != null) && (onlyFollowingStr.equalsIgnoreCase("true") || onlyFollowingStr.equalsIgnoreCase("t")))
         {
             userFilter = new HashSet<String>();
-            if (subscriptionService.isActive()) {
+            if (subscriptionService.isActive())
+            {
                 PagingFollowingResults following = subscriptionService.getFollowing(AuthenticationUtil.getRunAsUser(), new PagingRequest(-1, null));
                 if (following.getPage() != null)
                 {
@@ -143,7 +145,7 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
                 }
             }
         }
-        
+
         Set<String> activityFilter = null;
         if (activityFilterStr != null)
         {
@@ -161,26 +163,26 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
                 activityFilter = null;
             }
         }
-        
+
         if ((feedUserId == null) || (feedUserId.length() == 0))
         {
             feedUserId = AuthenticationUtil.getFullyAuthenticatedUser();
         }
-        
+
         // map feed collection format to feed entry format (if not the same), eg.
-        //     atomfeed -> atomentry
-        //     atom     -> atomentry
+        // atomfeed -> atomentry
+        // atom -> atomentry
         if (format.equals("atomfeed") || format.equals("atom"))
         {
             format = "atomentry";
         }
-        
+
         Map<String, Object> model = new HashMap<String, Object>();
-        
+
         try
         {
             List<String> feedEntries = activityService.getUserFeedEntries(feedUserId, siteId, exclThisUser, exclOtherUsers, userFilter, activityFilter);
-            
+
             if (format.equals(FeedTaskProcessor.FEED_FORMAT_JSON))
             {
                 model.put("feedEntries", feedEntries);
@@ -200,7 +202,7 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
                 {
                     throw new AlfrescoRuntimeException("Unable to get user feed entries: " + je.getMessage());
                 }
-                
+
                 model.put("feedEntries", activityFeedModels);
                 model.put("feedUserId", feedUserId);
             }
@@ -208,10 +210,10 @@ public class UserFeedRetrieverWebScript extends DeclarativeWebScript
         catch (AccessDeniedException ade)
         {
             status.setCode(Status.STATUS_UNAUTHORIZED);
-            logger.warn("Unable to get user feed entries for '" + feedUserId + "' - currently logged in as '" + AuthenticationUtil.getFullyAuthenticatedUser() +"'");
+            logger.warn("Unable to get user feed entries for '" + feedUserId + "' - currently logged in as '" + AuthenticationUtil.getFullyAuthenticatedUser() + "'");
             return null;
         }
-        
+
         return model;
     }
 }

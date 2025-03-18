@@ -29,6 +29,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -46,8 +48,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Checks that the duplicate child handling is done correctly.
@@ -69,7 +69,7 @@ public class FileFolderDuplicateChildTest extends TestCase
     private FileFolderService fileFolderService;
     private NodeRef rootNodeRef;
     private NodeRef workingRootNodeRef;
-    
+
     @Override
     public void setUp() throws Exception
     {
@@ -80,17 +80,16 @@ public class FileFolderDuplicateChildTest extends TestCase
         fileFolderService = serviceRegistry.getFileFolderService();
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
 
-        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
-        {
+        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 // authenticate
                 authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
-                
+
                 // create a test store
                 StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, getName() + System.currentTimeMillis());
                 rootNodeRef = nodeService.getRootNode(storeRef);
-                
+
                 // create a folder to import into
                 NodeRef nodeRef = nodeService.createNode(
                         rootNodeRef,
@@ -103,11 +102,10 @@ public class FileFolderDuplicateChildTest extends TestCase
         };
         workingRootNodeRef = retryingTransactionHelper.doInTransaction(callback, false, true);
     }
-    
+
     public void tearDown() throws Exception
-    {
-    }
-    
+    {}
+
     public void testDuplicateChildNameDetection() throws Exception
     {
         // First create a file name F1
@@ -115,7 +113,7 @@ public class FileFolderDuplicateChildTest extends TestCase
         FileInfo fileInfo = retryingTransactionHelper.doInTransaction(callback, false, true);
         // Check that the filename is F0
         assertEquals("Incorrect initial filename", "F0", fileInfo.getName());
-        
+
         // Now create a whole lot of threads that attempt file creation
         int threadCount = 10;
         CountDownLatch endLatch = new CountDownLatch(threadCount);
@@ -127,7 +125,7 @@ public class FileFolderDuplicateChildTest extends TestCase
         }
         // Wait at the end gate
         endLatch.await(300L, TimeUnit.SECONDS);
-        
+
         // Analyse
         int failureCount = 0;
         int didNotCompleteCount = 0;
@@ -146,17 +144,19 @@ public class FileFolderDuplicateChildTest extends TestCase
         assertEquals("Some failures", 0, failureCount);
         assertEquals("Some non-finishes", 0, didNotCompleteCount);
     }
-    
+
     /**
      * Attempts to create a file "Fn" where n is the number supplied to the constructor.
      */
     private class CreateFileCallback implements RetryingTransactionCallback<FileInfo>
     {
         private final int number;
+
         public CreateFileCallback(int number)
         {
             this.number = number;
         }
+
         public FileInfo execute() throws Throwable
         {
             authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
@@ -166,9 +166,10 @@ public class FileFolderDuplicateChildTest extends TestCase
                     ContentModel.TYPE_CONTENT);
         }
     }
-    
+
     private static ThreadGroup threadGroup = new ThreadGroup("FileFolderDuplicateChildTest");
     private static int threadNumber = -1;
+
     private class WorkerThread extends Thread
     {
         private CountDownLatch endLatch;
@@ -180,13 +181,13 @@ public class FileFolderDuplicateChildTest extends TestCase
             super(threadGroup, "Worker " + ++threadNumber);
             this.endLatch = endLatch;
         }
-        
+
         public void run()
         {
             FileInfo fileInfo = null;
             // Start the count with a guaranteed failure
             int number = 0;
-            while(true)
+            while (true)
             {
                 RetryingTransactionCallback<FileInfo> callback = new CreateFileCallback(number);
                 try

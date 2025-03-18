@@ -37,9 +37,9 @@ import java.util.HashSet;
 import java.util.TreeSet;
 
 import junit.framework.TestCase;
+import org.springframework.core.io.Resource;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.core.io.Resource;
 
 /**
  * @see HierarchicalResourceLoader
@@ -59,7 +59,7 @@ public class HierarchicalResourceLoaderTest extends TestCase
         loader.afterPropertiesSet();
         return loader;
     }
-    
+
     /**
      * Check that unmatched hierarchies are detected
      */
@@ -90,7 +90,7 @@ public class HierarchicalResourceLoaderTest extends TestCase
             // Expected
         }
     }
-    
+
     private void checkResource(Resource resource, String check) throws Throwable
     {
         assertNotNull("Resource not found", resource);
@@ -127,25 +127,27 @@ public class HierarchicalResourceLoaderTest extends TestCase
                 is.close();
             }
             catch (Exception e)
-            {
-            }
+            {}
         }
         // The string
         String fileValue = builder.toString();
         assertEquals("Incorrect file retrieved: ", check, fileValue);
     }
-    
+
     private static final String RESOURCE = "classpath:resource-loader/#resource.dialect#/file.txt";
+
     /**
      * Check that resource loading works.
      * 
      * The data available is:
+     * 
      * <pre>
      * classpatch:resource-loader/
      *    java.util.AbstractCollection
      *    java.util.AbstractList
-     *    java.util.TreeSet 
+     *    java.util.TreeSet
      * </pre>
+     * 
      * With each folder containing a text file with the name of the folder.
      */
     public void testResourceLoading() throws Throwable

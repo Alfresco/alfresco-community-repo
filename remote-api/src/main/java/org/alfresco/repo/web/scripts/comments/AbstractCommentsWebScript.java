@@ -29,18 +29,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.activities.ActivityService;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONStringer;
@@ -54,9 +42,21 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
+
 /**
- * This class is the abstract controller for the comments web scripts (delete
- * and post)
+ * This class is the abstract controller for the comments web scripts (delete and post)
  * 
  * @author Ramona Popa
  * @since 4.2.6
@@ -115,7 +115,8 @@ public abstract class AbstractCommentsWebScript extends DeclarativeWebScript
     }
 
     /**
-     * returns the nodeRef from  web script request
+     * returns the nodeRef from web script request
+     * 
      * @param req
      * @return
      */
@@ -133,6 +134,7 @@ public abstract class AbstractCommentsWebScript extends DeclarativeWebScript
 
     /**
      * get the value from JSON for given key if exists
+     * 
      * @param json
      * @param key
      * @return
@@ -148,6 +150,7 @@ public abstract class AbstractCommentsWebScript extends DeclarativeWebScript
 
     /**
      * parse JSON from request
+     * 
      * @param req
      * @return
      */
@@ -180,6 +183,7 @@ public abstract class AbstractCommentsWebScript extends DeclarativeWebScript
 
     /**
      * parse JSON for a given input string
+     * 
      * @param input
      * @return
      */
@@ -293,6 +297,7 @@ public abstract class AbstractCommentsWebScript extends DeclarativeWebScript
 
     /**
      * returns SiteInfo needed for post activity
+     * 
      * @param req
      * @return
      */
@@ -300,10 +305,11 @@ public abstract class AbstractCommentsWebScript extends DeclarativeWebScript
     {
         String siteName = req.getParameter(JSON_KEY_SITE);
 
-        if (siteName == null && searchForSiteInJSON )
+        if (siteName == null && searchForSiteInJSON)
         {
             JSONObject json = parseJSON(req);
-            if (json != null){
+            if (json != null)
+            {
                 if (json.containsKey(JSON_KEY_SITE))
                 {
                     siteName = (String) json.get(JSON_KEY_SITE);
@@ -324,7 +330,7 @@ public abstract class AbstractCommentsWebScript extends DeclarativeWebScript
     }
 
     /**
-     * Overrides DeclarativeWebScript with parse request for nodeRef 
+     * Overrides DeclarativeWebScript with parse request for nodeRef
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)

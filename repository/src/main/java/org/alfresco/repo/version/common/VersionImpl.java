@@ -40,7 +40,6 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionServiceException;
 import org.alfresco.service.cmr.version.VersionType;
 
-
 /**
  * Version class implementation.
  * 
@@ -55,30 +54,32 @@ public class VersionImpl implements Version
      * Serial version UID
      */
     private static final long serialVersionUID = 3257567304324888881L;
-    
+
     /**
      * Error message(s)
      */
-    private static final String ERR_NO_NODE_REF = "A valid node reference must be supplied when creating a verison.";       
-    
+    private static final String ERR_NO_NODE_REF = "A valid node reference must be supplied when creating a verison.";
+
     /**
      * The properties of the version
      */
     private Map<String, Serializable> versionProperties = null;
-    
+
     /**
      * The node reference that represents the frozen state of the versioned object
      */
-    private NodeRef nodeRef = null;        
-    
+    private NodeRef nodeRef = null;
+
     /**
      * Constructor that initialises the state of the version object.
      * 
-     * @param  versionProperties  the version properties
-     * @param  nodeRef            the forzen state node reference
+     * @param versionProperties
+     *            the version properties
+     * @param nodeRef
+     *            the forzen state node reference
      */
     public VersionImpl(
-            Map<String, Serializable> versionProperties, 
+            Map<String, Serializable> versionProperties,
             NodeRef nodeRef)
     {
         if (nodeRef == null)
@@ -86,74 +87,73 @@ public class VersionImpl implements Version
             // Exception - a node ref must be specified
             throw new VersionServiceException(VersionImpl.ERR_NO_NODE_REF);
         }
-        
+
         this.versionProperties = versionProperties;
-        this.nodeRef = nodeRef;        
+        this.nodeRef = nodeRef;
     }
-    
 
     @Override
     public String toString()
     {
         return versionProperties.toString();
     }
-    
+
     public Date getFrozenModifiedDate()
     {
-        Date modifiedDate = (Date)this.versionProperties.get(Version2Model.PROP_FROZEN_MODIFIED);
+        Date modifiedDate = (Date) this.versionProperties.get(Version2Model.PROP_FROZEN_MODIFIED);
         if (modifiedDate == null)
         {
             // Assume deprecated V1 version store
-            modifiedDate = (Date)this.versionProperties.get(VersionBaseModel.PROP_CREATED_DATE);
+            modifiedDate = (Date) this.versionProperties.get(VersionBaseModel.PROP_CREATED_DATE);
         }
         return modifiedDate;
     }
-    
+
     public String getFrozenModifier()
     {
-        String modifier = (String)this.versionProperties.get(Version2Model.PROP_FROZEN_MODIFIER);
+        String modifier = (String) this.versionProperties.get(Version2Model.PROP_FROZEN_MODIFIER);
         if (modifier == null)
         {
             // Assume deprecated V1 version store
-            modifier = (String)this.versionProperties.get(VersionBaseModel.PROP_CREATOR);
+            modifier = (String) this.versionProperties.get(VersionBaseModel.PROP_CREATOR);
         }
         return modifier;
     }
-    
+
     public Date getCreatedDate()
     {
         // note: internal version node created date can be retrieved via standard node service
         return getFrozenModifiedDate();
     }
-    
+
     public String getCreator()
     {
         // note: internal version node creator can be retrieved via standard node service
         return getFrozenModifier();
     }
-    
+
     public String getVersionLabel()
     {
-        return (String)this.versionProperties.get(VersionBaseModel.PROP_VERSION_LABEL);
-    }    
-    
+        return (String) this.versionProperties.get(VersionBaseModel.PROP_VERSION_LABEL);
+    }
+
     public VersionType getVersionType()
     {
         return DefaultTypeConverter.INSTANCE.convert(
                 VersionType.class,
                 this.versionProperties.get(VersionBaseModel.PROP_VERSION_TYPE));
     }
-    
+
     public String getDescription()
     {
-        return (String)this.versionProperties.get(Version.PROP_DESCRIPTION);
+        return (String) this.versionProperties.get(Version.PROP_DESCRIPTION);
     }
-    
+
     public Map<String, Serializable> getVersionProperties()
     {
         return this.versionProperties;
     }
-    
+
     public Serializable getVersionProperty(String name)
     {
         Serializable result = null;
@@ -163,61 +163,59 @@ public class VersionImpl implements Version
         }
         return result;
     }
-    
+
     public NodeRef getVersionedNodeRef()
     {
         NodeRef versionedNodeRef = null;
-        
+
         // Switch VersionStore depending on configured impl
         if (nodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID))
         {
             // V2 version store (eg. workspace://version2Store)
-            versionedNodeRef = (NodeRef)this.versionProperties.get(Version2Model.PROP_FROZEN_NODE_REF);
-        } 
+            versionedNodeRef = (NodeRef) this.versionProperties.get(Version2Model.PROP_FROZEN_NODE_REF);
+        }
         else if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
         {
             // Deprecated V1 version store (eg. workspace://lightWeightVersionStore)
-            String storeProtocol = (String)this.versionProperties.get(VersionModel.PROP_FROZEN_NODE_STORE_PROTOCOL);
-            String storeId = (String)this.versionProperties.get(VersionModel.PROP_FROZEN_NODE_STORE_ID);
-            String nodeId = (String)this.versionProperties.get(VersionModel.PROP_FROZEN_NODE_ID);
+            String storeProtocol = (String) this.versionProperties.get(VersionModel.PROP_FROZEN_NODE_STORE_PROTOCOL);
+            String storeId = (String) this.versionProperties.get(VersionModel.PROP_FROZEN_NODE_STORE_ID);
+            String nodeId = (String) this.versionProperties.get(VersionModel.PROP_FROZEN_NODE_ID);
             versionedNodeRef = new NodeRef(new StoreRef(storeProtocol, storeId), nodeId);
         }
-        
+
         return versionedNodeRef;
     }
-    
+
     public NodeRef getFrozenStateNodeRef()
     {
         return this.nodeRef;
     }
-    
+
     /**
      * Static block to register the version type converters
      */
     static
     {
         DefaultTypeConverter.INSTANCE.addConverter(
-                String.class, 
-                VersionType.class, 
-                new TypeConverter.Converter<String, VersionType>()
-                {
+                String.class,
+                VersionType.class,
+                new TypeConverter.Converter<String, VersionType>() {
                     public VersionType convert(String source)
                     {
                         return VersionType.valueOf(source);
                     }
-        
+
                 });
-        
+
         DefaultTypeConverter.INSTANCE.addConverter(
                 VersionType.class,
                 String.class,
-                new TypeConverter.Converter<VersionType, String>()
-                {
+                new TypeConverter.Converter<VersionType, String>() {
                     public String convert(VersionType source)
                     {
                         return source.toString();
                     }
-        
+
                 });
     }
- }
+}

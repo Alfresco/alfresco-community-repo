@@ -26,6 +26,8 @@
 
 package org.alfresco.repo.rendition.executer;
 
+import static org.alfresco.repo.action.executer.TransformActionExecuter.TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
@@ -36,10 +38,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
-
 import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.repo.rendition2.TransformationOptionsConverter;
@@ -60,10 +64,6 @@ import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.repository.TransformationSourceOptions;
 import org.alfresco.service.cmr.repository.TransformationSourceOptions.TransformationSourceOptionsSerializer;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import static org.alfresco.repo.action.executer.TransformActionExecuter.TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN;
 
 /**
  * @author Nick Smith
@@ -76,44 +76,37 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
     private static Log logger = LogFactory.getLog(AbstractTransformationRenderingEngine.class);
 
     /**
-     * This optional {@link Long} parameter specifies the timeout for reading
-     * the source before an exception is thrown.
+     * This optional {@link Long} parameter specifies the timeout for reading the source before an exception is thrown.
      */
     public static final String PARAM_TIMEOUT_MS = TransformationOptionLimits.OPT_TIMEOUT_MS;
 
     /**
-     * This optional {@link Long} parameter specifies how timeout for reading
-     * the source before EOF is returned.
+     * This optional {@link Long} parameter specifies how timeout for reading the source before EOF is returned.
      */
     public static final String PARAM_READ_LIMIT_TIME_MS = TransformationOptionLimits.OPT_READ_LIMIT_TIME_MS;
 
     /**
-     * This optional {@link Long} parameter specifies the maximum number of kbytes of
-     * the source may be read. An exception is thrown before any are read if larger.
+     * This optional {@link Long} parameter specifies the maximum number of kbytes of the source may be read. An exception is thrown before any are read if larger.
      */
     public static final String PARAM_MAX_SOURCE_SIZE_K_BYTES = TransformationOptionLimits.OPT_MAX_SOURCE_SIZE_K_BYTES;
 
     /**
-     * This optional {@link Long} parameter specifies how many kbytes of
-     * the source to read in order to create an image.
+     * This optional {@link Long} parameter specifies how many kbytes of the source to read in order to create an image.
      */
     public static final String PARAM_READ_LIMIT_K_BYTES = TransformationOptionLimits.OPT_READ_LIMIT_K_BYTES;
 
     /**
-     * This optional {@link Integer} parameter specifies the maximum number of pages of
-     * the source that may be read. An exception is thrown before any are read if larger.
+     * This optional {@link Integer} parameter specifies the maximum number of pages of the source that may be read. An exception is thrown before any are read if larger.
      */
     public static final String PARAM_MAX_PAGES = TransformationOptionLimits.OPT_MAX_PAGES;
 
     /**
-     * This optional {@link Integer} parameter specifies how many source
-     * pages should be read in order to create an image.
+     * This optional {@link Integer} parameter specifies how many source pages should be read in order to create an image.
      */
     public static final String PARAM_PAGE_LIMIT = TransformationOptionLimits.OPT_PAGE_LIMIT;
-    
+
     /**
-     * The frequency in milliseconds with which the {@link ActionTrackingService} should
-     * be polled for cancellation of the action.
+     * The frequency in milliseconds with which the {@link ActionTrackingService} should be polled for cancellation of the action.
      */
     protected static final int CANCELLED_ACTION_POLLING_INTERVAL = 200;
 
@@ -124,7 +117,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
 
     private static final String NOT_TRANSFORMABLE_MESSAGE_PATTERN = TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN;
     private static final String TRANSFORMING_ERROR_MESSAGE = RenditionService2Impl.TRANSFORMING_ERROR_MESSAGE;
-    
+
     private Collection<TransformationSourceOptionsSerializer> sourceOptionsSerializers;
 
     public Collection<TransformationSourceOptionsSerializer> getSourceOptionsSerializers()
@@ -138,8 +131,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
     }
 
     /**
-     * The <code>ExecutorService</code> to be used for cancel-aware
-     * transforms.
+     * The <code>ExecutorService</code> to be used for cancel-aware transforms.
      */
     private ExecutorService executorService;
 
@@ -147,12 +139,9 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
     private TransformationOptionsConverter converter;
 
     /**
-     * Gets the <code>ExecutorService</code> to be used for cancel-aware
-     * transforms.
+     * Gets the <code>ExecutorService</code> to be used for cancel-aware transforms.
      * <p>
-     * If no <code>ExecutorService</code> has been defined a default
-     * of <code>Executors.newCachedThreadPool()</code> is used during
-     * {@link AbstractTransformationRenderingEngine#init()}.
+     * If no <code>ExecutorService</code> has been defined a default of <code>Executors.newCachedThreadPool()</code> is used during {@link AbstractTransformationRenderingEngine#init()}.
      * 
      * @return the defined or default <code>ExecutorService</code>
      */
@@ -179,11 +168,10 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
             executorService = Executors.newCachedThreadPool();
         }
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.rendition.executer.AbstractRenderingEngine#render(org.alfresco.repo.rendition.executer.AbstractRenderingEngine.RenderingContext)
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.rendition.executer.AbstractRenderingEngine#render(org.alfresco.repo.rendition.executer.AbstractRenderingEngine.RenderingContext) */
     @Override
     protected void render(RenderingContext context)
     {
@@ -210,7 +198,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
         long startTime = new Date().getTime();
         boolean actionCancelled = false;
         boolean actionCompleted = false;
-        
+
         // Cache the execution summary to get details later
         ExecutionSummary executionSummary = null;
         try
@@ -231,7 +219,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
                 new TransformationCallable(contentReader, targetMimeType, transformationOptions, context,
                         AuthenticationUtil.getFullyAuthenticatedUser()));
         getExecutorService().execute(transformTask);
-        
+
         // Start checking for cancellation or timeout
         while (true)
         {
@@ -257,8 +245,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
                 }
                 if (executionSummary != null)
                 {
-                    ExecutionDetails executionDetails = 
-                            actionTrackingService.getExecutionDetails(executionSummary);
+                    ExecutionDetails executionDetails = actionTrackingService.getExecutionDetails(executionSummary);
                     if (executionDetails != null)
                     {
                         actionCancelled = executionDetails.isCancelRequested();
@@ -282,17 +269,17 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
                 break;
             }
         }
-        
+
         if (actionCancelled)
         {
             throw new RenditionCancelledException("Rendition action cancelled");
         }
-        
+
         if (!actionCompleted && !actionCancelled)
         {
             throw new RenditionServiceException("Transformation failed to obey timeout limit");
         }
-        
+
         if (actionCompleted)
         {
             // Copy content from temp writer to real writer
@@ -335,43 +322,43 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
         {
             options.setTimeoutMs(timeoutMs);
         }
-        
+
         Long readLimitTimeMs = context.getCheckedParam(PARAM_READ_LIMIT_TIME_MS, Long.class);
         if (readLimitTimeMs != null)
         {
             options.setReadLimitTimeMs(readLimitTimeMs);
         }
-        
+
         Long maxSourceSizeKBytes = context.getCheckedParam(PARAM_MAX_SOURCE_SIZE_K_BYTES, Long.class);
         if (maxSourceSizeKBytes != null)
         {
             options.setMaxSourceSizeKBytes(maxSourceSizeKBytes);
         }
-        
+
         Long readLimitKBytes = context.getCheckedParam(PARAM_READ_LIMIT_K_BYTES, Long.class);
         if (readLimitKBytes != null)
         {
             options.setReadLimitKBytes(readLimitKBytes);
         }
-        
+
         Integer maxPages = context.getCheckedParam(PARAM_MAX_PAGES, Integer.class);
         if (maxPages != null)
         {
             options.setMaxPages(maxPages);
         }
-        
+
         Integer pageLimit = context.getCheckedParam(PARAM_PAGE_LIMIT, Integer.class);
         if (pageLimit != null)
         {
             options.setPageLimit(pageLimit);
         }
-        
+
         String use = context.getCheckedParam(PARAM_USE, String.class);
         if (use != null)
         {
             options.setUse(use);
         }
-        
+
         if (getSourceOptionsSerializers() != null)
         {
             for (TransformationSourceOptionsSerializer sourceSerializer : getSourceOptionsSerializers())
@@ -387,13 +374,11 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
         return options;
     }
 
-    /*
-     * @seeorg.alfresco.repo.rendition.executer.AbstractRenderingEngine#getParameterDefinitions()
-     */
+    /* @seeorg.alfresco.repo.rendition.executer.AbstractRenderingEngine#getParameterDefinitions() */
     protected Collection<ParameterDefinition> getParameterDefinitions()
     {
         Collection<ParameterDefinition> paramList = super.getParameterDefinitions();
-        
+
         paramList.add(new ParameterDefinitionImpl(PARAM_TIMEOUT_MS, DataTypeDefinition.LONG, false,
                 getParamDisplayLabel(PARAM_TIMEOUT_MS)));
         paramList.add(new ParameterDefinitionImpl(PARAM_READ_LIMIT_TIME_MS, DataTypeDefinition.LONG, false,
@@ -408,13 +393,12 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
                 getParamDisplayLabel(PARAM_PAGE_LIMIT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_USE, DataTypeDefinition.TEXT, false,
                 getParamDisplayLabel(PARAM_USE)));
-        
+
         return paramList;
     }
-    
+
     /**
-     * Implementation of <code>Callable</code> for doing the work of the transformation
-     * which returns the temporary content writer if successful.
+     * Implementation of <code>Callable</code> for doing the work of the transformation which returns the temporary content writer if successful.
      */
     protected class TransformationCallable implements Callable<ContentWriter>
     {
@@ -425,7 +409,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
         private String initiatingUsername;
 
         public TransformationCallable(ContentReader contentReader, String targetMimeType,
-                                      TransformationOptions transformationOptions, RenderingContext context, String initiatingUsername)
+                TransformationOptions transformationOptions, RenderingContext context, String initiatingUsername)
         {
             this.contentReader = contentReader;
             this.targetMimeType = targetMimeType;
@@ -441,9 +425,8 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
             AuthenticationUtil.setFullyAuthenticatedUser(initiatingUsername);
             Serializable runAsParam = context.getDefinition().getParameterValue(AbstractRenderingEngine.PARAM_RUN_AS);
             String runAsName = runAsParam == null ? AbstractRenderingEngine.DEFAULT_RUN_AS_NAME : (String) runAsParam;
-            
-            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<ContentWriter>()
-            {
+
+            return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<ContentWriter>() {
                 @Override
                 public ContentWriter doWork() throws Exception
                 {
@@ -457,17 +440,17 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
                                 null, sourceNode);
                         return tempContentWriter;
                     }
-                    catch (NoTransformerException|UnsupportedTransformationException ntx)
+                    catch (NoTransformerException | UnsupportedTransformationException ntx)
                     {
                         {
                             logger.debug("No transformer found to execute rule: \n" + "   reader: " + contentReader + "\n"
-                                        + "   writer: " + tempContentWriter + "\n" + "   action: " + this);
+                                    + "   writer: " + tempContentWriter + "\n" + "   action: " + this);
                         }
                         throw new RenditionServiceException(TRANSFORMING_ERROR_MESSAGE + ntx.getMessage(), ntx);
                     }
                 };
             }, runAsName);
         }
-        
+
     }
 }

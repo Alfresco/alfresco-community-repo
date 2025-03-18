@@ -45,39 +45,38 @@ import org.alfresco.service.namespace.QName;
 public class OAuth2CredentialsFactory implements RemoteCredentialsInfoFactory
 {
     private MetadataEncryptor metadataEncryptor;
-    
+
     public void setMetadataEncryptor(MetadataEncryptor metadataEncryptor)
     {
         this.metadataEncryptor = metadataEncryptor;
     }
-    
+
     /**
      * Creates a new {@link OAuth2CredentialsInfo} based on the details of the underlying node.
      */
-    public OAuth2CredentialsInfo createCredentials(QName type, NodeRef nodeRef, String remoteSystemName, 
-            NodeRef remoteSystemContainerNodeRef, Map<QName,Serializable> properties)
+    public OAuth2CredentialsInfo createCredentials(QName type, NodeRef nodeRef, String remoteSystemName,
+            NodeRef remoteSystemContainerNodeRef, Map<QName, Serializable> properties)
     {
         // Decrypt the token details
-        String accessToken = (String)metadataEncryptor.decrypt(
+        String accessToken = (String) metadataEncryptor.decrypt(
                 RemoteCredentialsModel.PROP_OAUTH2_ACCESS_TOKEN, properties.get(RemoteCredentialsModel.PROP_OAUTH2_ACCESS_TOKEN));
-        String refreshToken = (String)metadataEncryptor.decrypt(
+        String refreshToken = (String) metadataEncryptor.decrypt(
                 RemoteCredentialsModel.PROP_OAUTH2_REFRESH_TOKEN, properties.get(RemoteCredentialsModel.PROP_OAUTH2_REFRESH_TOKEN));
-        
+
         // Get the dates
-        Date tokenIssuedAt = (Date)properties.get(RemoteCredentialsModel.PROP_OAUTH2_TOKEN_ISSUED_AT);
-        Date tokenExpiresAt = (Date)properties.get(RemoteCredentialsModel.PROP_OAUTH2_TOKEN_EXPIRES_AT);
-        
+        Date tokenIssuedAt = (Date) properties.get(RemoteCredentialsModel.PROP_OAUTH2_TOKEN_ISSUED_AT);
+        Date tokenExpiresAt = (Date) properties.get(RemoteCredentialsModel.PROP_OAUTH2_TOKEN_EXPIRES_AT);
+
         // Build the object
-        OAuth2CredentialsInfoImpl credentials = 
-            new OAuth2CredentialsInfoImpl(nodeRef, remoteSystemName, remoteSystemContainerNodeRef);
-        
+        OAuth2CredentialsInfoImpl credentials = new OAuth2CredentialsInfoImpl(nodeRef, remoteSystemName, remoteSystemContainerNodeRef);
+
         // Populate
         RemoteCredentialsInfoFactory.FactoryHelper.setCoreCredentials(credentials, properties);
         credentials.setOauthAccessToken(accessToken);
         credentials.setOauthRefreshToken(refreshToken);
         credentials.setOauthTokenIssuedAt(tokenIssuedAt);
         credentials.setOauthTokenExpiresAt(tokenExpiresAt);
-        
+
         // All done
         return credentials;
     }
@@ -85,26 +84,27 @@ public class OAuth2CredentialsFactory implements RemoteCredentialsInfoFactory
     /**
      * Serializes the given {@link BaseCredentialsInfo} object to node properties.
      * 
-     * @param info The Credentials object to serialize
+     * @param info
+     *            The Credentials object to serialize
      * @return The final set of properties to be serialized for the node
      */
-    public Map<QName,Serializable> serializeCredentials(BaseCredentialsInfo info)
+    public Map<QName, Serializable> serializeCredentials(BaseCredentialsInfo info)
     {
-        if (! (info instanceof OAuth2CredentialsInfo))
+        if (!(info instanceof OAuth2CredentialsInfo))
         {
             throw new IllegalStateException("Incorrect registration, info must be a OAuth2CredentialsInfo");
         }
-        
+
         // Encrypt the token details
-        OAuth2CredentialsInfo credentials = (OAuth2CredentialsInfo)info;
-        
+        OAuth2CredentialsInfo credentials = (OAuth2CredentialsInfo) info;
+
         Serializable accessTokenEncrypted = metadataEncryptor.encrypt(
                 RemoteCredentialsModel.PROP_OAUTH2_ACCESS_TOKEN, credentials.getOAuthAccessToken());
         Serializable refreshTokenEncrypted = metadataEncryptor.encrypt(
                 RemoteCredentialsModel.PROP_OAUTH2_REFRESH_TOKEN, credentials.getOAuthRefreshToken());
 
         // Store our specific types and return
-        Map<QName,Serializable> properties = new HashMap<QName, Serializable>();
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(RemoteCredentialsModel.PROP_OAUTH2_ACCESS_TOKEN, accessTokenEncrypted);
         properties.put(RemoteCredentialsModel.PROP_OAUTH2_REFRESH_TOKEN, refreshTokenEncrypted);
         properties.put(RemoteCredentialsModel.PROP_OAUTH2_TOKEN_ISSUED_AT, credentials.getOAuthTicketIssuedAt());

@@ -25,21 +25,22 @@
  */
 package org.alfresco.repo.content.metadata;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
-
 
 /**
  * Tests a mock delayed metadata extractor for proper timeout handling.
@@ -71,7 +72,7 @@ public class MetadataExtracterLimitsTest
         getExtracter().extract(sourceReader, properties);
         return properties;
     }
-    
+
     /**
      * Tests that delayed metadata extraction completes properly for no mimetype-specific limits.
      *
@@ -99,8 +100,7 @@ public class MetadataExtracterLimitsTest
 
         MetadataExtracterLimits limits = new MetadataExtracterLimits();
         limits.setTimeoutMs(timeoutMs);
-        HashMap<String, MetadataExtracterLimits> mimetypeLimits =
-                new HashMap<String, MetadataExtracterLimits>(1);
+        HashMap<String, MetadataExtracterLimits> mimetypeLimits = new HashMap<String, MetadataExtracterLimits>(1);
         mimetypeLimits.put("*", limits);
         ((MockDelayedMetadataExtracter) getExtracter()).setMimetypeLimits(mimetypeLimits);
 
@@ -114,7 +114,7 @@ public class MetadataExtracterLimitsTest
                 "but should have failed with a timeout at " + timeoutMs + "ms",
                 extractionTime < (timeoutMs + 50)); // bit of wiggle room for logging, cleanup, etc.
     }
-    
+
     /**
      * Tests that delayed metadata extraction times out properly for mimetype-specific limits.
      *
@@ -127,8 +127,7 @@ public class MetadataExtracterLimitsTest
 
         MetadataExtracterLimits limits = new MetadataExtracterLimits();
         limits.setTimeoutMs(timeoutMs);
-        HashMap<String, MetadataExtracterLimits> mimetypeLimits =
-                new HashMap<String, MetadataExtracterLimits>(1);
+        HashMap<String, MetadataExtracterLimits> mimetypeLimits = new HashMap<String, MetadataExtracterLimits>(1);
         mimetypeLimits.put(MimetypeMap.MIMETYPE_TEXT_PLAIN, limits);
         ((MockDelayedMetadataExtracter) getExtracter()).setMimetypeLimits(mimetypeLimits);
 
@@ -142,7 +141,7 @@ public class MetadataExtracterLimitsTest
                 "but should have failed with a timeout at " + timeoutMs + "ms",
                 extractionTime < (timeoutMs + 50)); // bit of wiggle room for logging, cleanup, etc.
     }
-    
+
     /**
      * Tests that delayed metadata extraction stops gracefully when interrupted.
      *
@@ -156,17 +155,15 @@ public class MetadataExtracterLimitsTest
 
         MetadataExtracterLimits limits = new MetadataExtracterLimits();
         limits.setTimeoutMs(timeoutMs);
-        HashMap<String, MetadataExtracterLimits> mimetypeLimits =
-                new HashMap<String, MetadataExtracterLimits>(1);
+        HashMap<String, MetadataExtracterLimits> mimetypeLimits = new HashMap<String, MetadataExtracterLimits>(1);
         mimetypeLimits.put(MimetypeMap.MIMETYPE_TEXT_PLAIN, limits);
         ((MockDelayedMetadataExtracter) getExtracter()).setMimetypeLimits(mimetypeLimits);
 
         final File file = AbstractContentTransformerTest.loadNamedQuickTestFile("quick.txt");
 
         long startTime = (new Date()).getTime();
-        
-        Thread extractThread = new Thread(new Runnable()
-        {
+
+        Thread extractThread = new Thread(new Runnable() {
             public void run()
             {
                 extractFromFile(file, MimetypeMap.MIMETYPE_TEXT_PLAIN);
@@ -181,7 +178,7 @@ public class MetadataExtracterLimitsTest
                 "but should have been interrupted at " + interruptMs + "ms",
                 extractionTime < (interruptMs + 500)); // bit of wiggle room for logging, cleanup, etc.
     }
-    
+
     /**
      * Tests that delayed metadata extraction completes properly for unmatched mimetype-specific limits.
      *
@@ -194,8 +191,7 @@ public class MetadataExtracterLimitsTest
 
         MetadataExtracterLimits limits = new MetadataExtracterLimits();
         limits.setTimeoutMs(timeoutMs);
-        HashMap<String, MetadataExtracterLimits> mimetypeLimits =
-                new HashMap<String, MetadataExtracterLimits>(1);
+        HashMap<String, MetadataExtracterLimits> mimetypeLimits = new HashMap<String, MetadataExtracterLimits>(1);
         mimetypeLimits.put(MimetypeMap.MIMETYPE_IMAGE_JPEG, limits);
         ((MockDelayedMetadataExtracter) getExtracter()).setMimetypeLimits(mimetypeLimits);
 
@@ -205,7 +201,7 @@ public class MetadataExtracterLimitsTest
 
         assertEquals("value1", properties.get(QName.createQName("http://DummyMappingMetadataExtracter", "a1")));
     }
-    
+
     /**
      * Tests that delayed metadata extraction completes properly for unlimited timeout.
      *
@@ -222,9 +218,7 @@ public class MetadataExtracterLimitsTest
     }
 
     /**
-     * Mock metadata extracter that simply delays by the time specified in
-     * its constructor and returns default properties regardless of the content
-     * reader its exctracting from.
+     * Mock metadata extracter that simply delays by the time specified in its constructor and returns default properties regardless of the content reader its exctracting from.
      */
     private class MockDelayedMetadataExtracter extends AbstractMappingMetadataExtracter
     {
@@ -250,7 +244,7 @@ public class MetadataExtracterLimitsTest
             int i = 0;
             try
             {
-                while(!done)
+                while (!done)
                 {
                     Thread.sleep(50); // working hard
                     long extractTime = (new Date()).getTime() - startTime;

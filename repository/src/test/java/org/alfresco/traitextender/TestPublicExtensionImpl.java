@@ -26,9 +26,7 @@
 
 package org.alfresco.traitextender;
 
-import org.alfresco.traitextender.InstanceExtension;
-
-public class TestPublicExtensionImpl extends InstanceExtension<TestPublicExtension,TestPublicTrait> implements TestPublicExtension
+public class TestPublicExtensionImpl extends InstanceExtension<TestPublicExtension, TestPublicTrait> implements TestPublicExtension
 {
 
     public TestPublicExtensionImpl(TestPublicTrait trait)
@@ -64,8 +62,14 @@ public class TestPublicExtensionImpl extends InstanceExtension<TestPublicExtensi
     @Override
     public void publicMethod4(boolean throwRuntimeException, boolean throwExRuntimeException)
     {
-        if (throwExRuntimeException) { throw new TestRuntimeException(); }
-        else { trait.publicMethod4(throwRuntimeException, throwExRuntimeException);}
+        if (throwExRuntimeException)
+        {
+            throw new TestRuntimeException();
+        }
+        else
+        {
+            trait.publicMethod4(throwRuntimeException, throwExRuntimeException);
+        }
     }
 
 }

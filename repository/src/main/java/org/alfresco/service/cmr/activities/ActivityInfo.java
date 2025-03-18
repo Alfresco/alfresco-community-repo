@@ -45,7 +45,7 @@ public class ActivityInfo
     private final FileInfo fileInfo;
 
     public ActivityInfo(NodeRef nodeRef, String parentPath, NodeRef parentNodeRef,
-                        String siteId, String fileName, boolean isFolder)
+            String siteId, String fileName, boolean isFolder)
     {
         super();
         this.nodeRef = nodeRef;

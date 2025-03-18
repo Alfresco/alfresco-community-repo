@@ -41,7 +41,7 @@ public class QNameCache
     private final int maxSize;
     private final Map<QName, String> qNameToNameCache = new HashMap<QName, String>();
     private final Map<String, QName> nameToQNameCache = new HashMap<String, QName>();
-    
+
     private final ReentrantReadWriteLock qNameToNameLock = new ReentrantReadWriteLock();
     private final WriteLock qNameToNameWriteLock = qNameToNameLock.writeLock();
     private final ReadLock qNameToNameReadLock = qNameToNameLock.readLock();
@@ -49,7 +49,7 @@ public class QNameCache
     private final ReentrantReadWriteLock nameToQNameLock = new ReentrantReadWriteLock();
     private final WriteLock nameToQNameWriteLock = nameToQNameLock.writeLock();
     private final ReadLock nameToQNameReadLock = nameToQNameLock.readLock();
-    
+
     public QNameCache(int maxSize)
     {
         this.maxSize = maxSize;
@@ -67,13 +67,13 @@ public class QNameCache
             qNameToNameReadLock.unlock();
         }
     }
-    
+
     public void putQNameToName(QName qName, String name)
     {
         qNameToNameWriteLock.lock();
         try
         {
-            if(qNameToNameCache.size()>maxSize)
+            if (qNameToNameCache.size() > maxSize)
             {
                 qNameToNameCache.clear();
             }
@@ -84,13 +84,13 @@ public class QNameCache
             qNameToNameWriteLock.unlock();
         }
     }
-    
+
     public QName getQName(String name)
     {
         nameToQNameReadLock.lock();
         try
         {
-            if(nameToQNameCache.size()>maxSize)
+            if (nameToQNameCache.size() > maxSize)
             {
                 nameToQNameCache.clear();
             }
@@ -101,7 +101,7 @@ public class QNameCache
             nameToQNameReadLock.unlock();
         }
     }
-    
+
     public void putNameToQName(String name, QName qName)
     {
         nameToQNameWriteLock.lock();
@@ -114,7 +114,7 @@ public class QNameCache
             nameToQNameWriteLock.unlock();
         }
     }
-    
+
     public void clear()
     {
         nameToQNameWriteLock.lock();
@@ -135,6 +135,6 @@ public class QNameCache
         {
             qNameToNameWriteLock.unlock();
         }
-        
+
     }
 }

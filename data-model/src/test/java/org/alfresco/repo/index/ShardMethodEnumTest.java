@@ -26,10 +26,10 @@
 
 package org.alfresco.repo.index;
 
-import org.alfresco.repo.index.shard.ShardMethodEnum;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import org.alfresco.repo.index.shard.ShardMethodEnum;
 
 /**
  * Unit test to verify enum works as expected.

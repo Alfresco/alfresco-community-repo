@@ -30,16 +30,16 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.service.cmr.repository.ContentReader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletResponse;
+
+import org.alfresco.service.cmr.repository.ContentReader;
 
 /**
  * Tests for the HttpRangeProcessor class.
@@ -51,7 +51,7 @@ public class HttpRangeProcessorTest
 {
     private HttpRangeProcessor httpRangeProcessor;
     private @Mock ContentReader reader;
-    
+
     @Before
     public void setUp() throws Exception
     {
@@ -66,34 +66,34 @@ public class HttpRangeProcessorTest
     {
         testRange("700-800", HttpServletResponse.SC_PARTIAL_CONTENT);
     }
-    
+
     @Test
     public void testStartOnlyRange() throws IOException
     {
         testRange("19000-", HttpServletResponse.SC_PARTIAL_CONTENT);
     }
-    
+
     @Test
     public void testNegativeRange() throws IOException
     {
         testRange("800-700", HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
     }
-    
+
     @Test
     public void testBeyondLengthRange() throws IOException
     {
         testRange("20000-", HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
     }
-    
+
     protected void testRange(String range, int expectedStatus) throws IOException
     {
         MockHttpServletResponse response = new MockHttpServletResponse();
-        
+
         boolean result = httpRangeProcessor.processRange(response, reader, range, null, null, null, null);
-        
+
         assertTrue(result);
         assertEquals(expectedStatus, response.getStatus());
         reader.getContentInputStream().close();
     }
-    
+
 }

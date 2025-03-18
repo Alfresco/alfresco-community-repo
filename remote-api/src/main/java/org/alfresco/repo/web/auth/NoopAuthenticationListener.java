@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.web.auth;
 
-
 /**
  * {@link AuthenticationListener} that does nothing.
  *

@@ -30,14 +30,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.alfresco.service.cmr.search.SuggesterResult;
-import org.alfresco.util.Pair;
-import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import org.alfresco.service.cmr.search.SuggesterResult;
+import org.alfresco.util.Pair;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * @author Jamal Kaabi-Mofrad
@@ -51,8 +52,7 @@ public class SolrSuggesterResult implements SuggesterResult
     private List<Pair<String, Integer>> suggestions = new ArrayList<>();
 
     public SolrSuggesterResult()
-    {
-    }
+    {}
 
     public SolrSuggesterResult(JSONObject jsonObject)
     {
@@ -69,7 +69,8 @@ public class SolrSuggesterResult implements SuggesterResult
     /**
      * Parses the json returned from the suggester
      * 
-     * @param json the JSON object
+     * @param json
+     *            the JSON object
      * @throws JSONException
      */
     @SuppressWarnings("rawtypes")
@@ -124,7 +125,7 @@ public class SolrSuggesterResult implements SuggesterResult
     {
         StringBuilder builder = new StringBuilder(250);
         builder.append("SolrSuggesterResult [numberFound=").append(this.numberFound).append(", suggestions=")
-                    .append(this.suggestions).append("]");
+                .append(this.suggestions).append("]");
         return builder.toString();
     }
 }

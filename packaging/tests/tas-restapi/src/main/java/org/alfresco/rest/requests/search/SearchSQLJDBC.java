@@ -44,19 +44,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import io.restassured.RestAssured;
+
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.requests.ModelRequest;
 import org.alfresco.rest.search.SearchSqlJDBCRequest;
-import io.restassured.RestAssured;
-
 
 /**
  * Wrapper for Search SQL using JDBC connection.
  * 
  * @author Meenal Bhave
  * 
- * Request POST JDBC
- * End point: /sql
+ *         Request POST JDBC End point: /sql
  */
 public class SearchSQLJDBC extends ModelRequest<SearchSQLJDBC>
 {
@@ -69,7 +68,7 @@ public class SearchSQLJDBC extends ModelRequest<SearchSQLJDBC>
 
     public ResultSet executeQueryViaJDBC(SearchSqlJDBCRequest query) throws SQLException
     {
-        
+
         StringBuilder connectionString = new StringBuilder()
                 .append(RestAssured.baseURI
                         .replaceAll("http", "jdbc:alfresco")

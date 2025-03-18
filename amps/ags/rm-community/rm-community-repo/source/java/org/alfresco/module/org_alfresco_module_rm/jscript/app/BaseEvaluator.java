@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.factory.BeanNameAware;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -46,7 +48,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.NamespaceService;
-import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * Base evaluator.
@@ -57,7 +58,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel, BeanNameA
 {
     /** Name */
     protected String name;
-    
+
     /** bean name */
     protected String beanName;
 
@@ -90,21 +91,23 @@ public abstract class BaseEvaluator implements RecordsManagementModel, BeanNameA
 
     /** Record folder service */
     protected RecordFolderService recordFolderService;
-    
+
     /** transactional resource helper */
-    protected TransactionalResourceHelper transactionalResourceHelper; 
+    protected TransactionalResourceHelper transactionalResourceHelper;
 
     /**
-     * @param   beanName  bean name
+     * @param beanName
+     *            bean name
      */
     @Override
     public void setBeanName(String beanName)
     {
         this.beanName = beanName;
     }
-    
+
     /**
-     * @param jsonConversionComponent   json conversion component
+     * @param jsonConversionComponent
+     *            json conversion component
      */
     public void setJsonConversionComponent(JSONConversionComponent jsonConversionComponent)
     {
@@ -112,7 +115,8 @@ public abstract class BaseEvaluator implements RecordsManagementModel, BeanNameA
     }
 
     /**
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -120,7 +124,8 @@ public abstract class BaseEvaluator implements RecordsManagementModel, BeanNameA
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -128,7 +133,8 @@ public abstract class BaseEvaluator implements RecordsManagementModel, BeanNameA
     }
 
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -136,7 +142,8 @@ public abstract class BaseEvaluator implements RecordsManagementModel, BeanNameA
     }
 
     /**
-     * @param capabilityService capability service
+     * @param capabilityService
+     *            capability service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -144,15 +151,17 @@ public abstract class BaseEvaluator implements RecordsManagementModel, BeanNameA
     }
 
     /**
-     * @param filePlanService	file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
+        this.filePlanService = filePlanService;
+    }
 
     /**
-     * @param dispositionService    disposition service
+     * @param dispositionService
+     *            disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -160,15 +169,17 @@ public abstract class BaseEvaluator implements RecordsManagementModel, BeanNameA
     }
 
     /**
-     * @param recordFolderService   record folder service
+     * @param recordFolderService
+     *            record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
     }
-    
+
     /**
-     * @param transactionalResourceHelper   transactional resource helper
+     * @param transactionalResourceHelper
+     *            transactional resource helper
      */
     public void setTransactionalResourceHelper(TransactionalResourceHelper transactionalResourceHelper)
     {
@@ -210,7 +221,8 @@ public abstract class BaseEvaluator implements RecordsManagementModel, BeanNameA
     /**
      * Helper method which sets on capability.
      *
-     * @param capability    capability name
+     * @param capability
+     *            capability name
      */
     public void setCapability(String capability)
     {
@@ -227,9 +239,9 @@ public abstract class BaseEvaluator implements RecordsManagementModel, BeanNameA
         jsonConversionComponent.registerIndicator(this);
     }
 
-   /**
-    * Registers this instance as an action (evaluator)
-    */
+    /**
+     * Registers this instance as an action (evaluator)
+     */
     public void registerAction()
     {
         jsonConversionComponent.registerAction(this);
@@ -245,19 +257,19 @@ public abstract class BaseEvaluator implements RecordsManagementModel, BeanNameA
     {
         Map<String, Boolean> results = transactionalResourceHelper.getMap("BaseEvaluator.evaluate");
         String key = new StringBuffer(nodeRef.toString()).append(AuthenticationUtil.getRunAsUser()).append(beanName).toString();
-        
+
         if (!results.containsKey(key))
         {
             boolean result = false;
-            
+
             // Check that we are dealing with the correct kind of RM object
             if ((kinds == null || checkKinds(nodeRef)) &&
-                    // Check we have the required capabilities
+            // Check we have the required capabilities
                     (capabilities == null || checkCapabilities(nodeRef)))
             {
                 result = evaluateImpl(nodeRef);
             }
-            
+
             results.put(key, result);
         }
 

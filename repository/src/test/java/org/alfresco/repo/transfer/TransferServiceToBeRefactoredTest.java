@@ -38,13 +38,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.test.context.transaction.TestTransaction;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ResourceUtils;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -88,35 +94,24 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.test.context.transaction.TestTransaction;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.springframework.util.ResourceUtils;
 
 /**
  * Unit test for TransferServiceImpl
  * 
  * Contains some integration tests for the transfer service
  * 
- * These tests need their transaction management to be re-factored then they can be re-instated into
- * TransferServiceImplTest
+ * These tests need their transaction management to be re-factored then they can be re-instated into TransferServiceImplTest
  *
  * @author Mark Rogers
  */
 @SuppressWarnings("deprecation")
 @Category({BaseSpringTestsCategory.class, LuceneTests.class})
 @Transactional
-public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest 
+public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
 {
     private TransferService transferService;
     private ContentService contentService;
@@ -124,7 +119,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
     private SearchService searchService;
     private TransactionService transactionService;
     private TransferReceiver receiver;
-    private TransferManifestNodeFactory transferManifestNodeFactory; 
+    private TransferManifestNodeFactory transferManifestNodeFactory;
     private PermissionService permissionService;
     private LockService lockService;
     private PersonService personService;
@@ -132,7 +127,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
     private CopyService copyService;
     private Descriptor serverDescriptor;
     private Repository repositoryHelper;
-    
+
     String COMPANY_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home";
     String GUEST_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home/{http://www.alfresco.org/model/application/1.0}guest_home";
 
@@ -152,34 +147,34 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             fail("Dangling transaction at start of test.");
         }
         // Get the required services
-        this.transferService = (TransferService)this.applicationContext.getBean("TransferService");
-        this.contentService = (ContentService)this.applicationContext.getBean("ContentService");
-        this.transferServiceImpl = (TransferServiceImpl2)this.applicationContext.getBean("transferService2");
-        this.searchService = (SearchService)this.applicationContext.getBean("SearchService");
-        this.transactionService = (TransactionService)this.applicationContext.getBean("TransactionService");
+        this.transferService = (TransferService) this.applicationContext.getBean("TransferService");
+        this.contentService = (ContentService) this.applicationContext.getBean("ContentService");
+        this.transferServiceImpl = (TransferServiceImpl2) this.applicationContext.getBean("transferService2");
+        this.searchService = (SearchService) this.applicationContext.getBean("SearchService");
+        this.transactionService = (TransactionService) this.applicationContext.getBean("TransactionService");
         this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
         this.contentService = (ContentService) this.applicationContext.getBean("contentService");
         this.authenticationService = (MutableAuthenticationService) this.applicationContext.getBean("authenticationService");
-        this.actionService = (ActionService)this.applicationContext.getBean("actionService");
-        this.permissionService = (PermissionService)this.applicationContext.getBean("permissionService");
-        this.receiver = (TransferReceiver)this.applicationContext.getBean("transferReceiver");
-        this.transferManifestNodeFactory = (TransferManifestNodeFactory)this.applicationContext.getBean("transferManifestNodeFactory");
+        this.actionService = (ActionService) this.applicationContext.getBean("actionService");
+        this.permissionService = (PermissionService) this.applicationContext.getBean("permissionService");
+        this.receiver = (TransferReceiver) this.applicationContext.getBean("transferReceiver");
+        this.transferManifestNodeFactory = (TransferManifestNodeFactory) this.applicationContext.getBean("transferManifestNodeFactory");
         this.authenticationComponent = (AuthenticationComponent) this.applicationContext.getBean("authenticationComponent");
         this.lockService = (LockService) this.applicationContext.getBean("lockService");
-        this.personService = (PersonService)this.applicationContext.getBean("PersonService");
-        this.descriptorService = (DescriptorService)this.applicationContext.getBean("DescriptorService");
-        this.copyService = (CopyService)this.applicationContext.getBean("CopyService");
+        this.personService = (PersonService) this.applicationContext.getBean("PersonService");
+        this.descriptorService = (DescriptorService) this.applicationContext.getBean("DescriptorService");
+        this.copyService = (CopyService) this.applicationContext.getBean("CopyService");
         this.serverDescriptor = descriptorService.getServerDescriptor();
         this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
-        
+
         REPO_ID_B = descriptorService.getCurrentRepositoryDescriptor().getId();
-        
+
         authenticationComponent.setSystemUserAsCurrentUser();
-//        setTransactionDefinition(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW));
-        assertNotNull("receiver is null", this.receiver);     
+        // setTransactionDefinition(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW));
+        assertNotNull("receiver is null", this.receiver);
     }
-    
-   /**
+
+    /**
      * Test the transfer report.
      * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
@@ -190,10 +185,8 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         final NodeRef guestHome = repositoryHelper.getGuestHome();
 
         /**
-          *  For unit test 
-          *  - replace the HTTP transport with the in-process transport
-          *  - replace the node factory with one that will map node refs, paths etc.
-          */
+         * For unit test - replace the HTTP transport with the in-process transport - replace the node factory with one that will map node refs, paths etc.
+         */
         TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(this.receiver, this.contentService, transactionService);
         transferServiceImpl.setTransmitter(transmitter);
         UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory);
@@ -201,14 +194,13 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
         // Map company_home/guest_home to company_home so tranferred nodes and moved "up" one level.
         pathMap.add(new Pair<Path, Path>(PathHelper.stringToPath(GUEST_HOME_XPATH_QUERY), PathHelper.stringToPath(COMPANY_HOME_XPATH_QUERY)));
-        
+
         DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
         transferServiceImpl.setDescriptorService(mockedDescriptorService);
-        
+
         /**
-          * Now go ahead and create our first transfer target
-          * This needs to be committed before we can call transfer asycnc.
-          */
+         * Now go ahead and create our first transfer target This needs to be committed before we can call transfer asycnc.
+         */
         final String CONTENT_TITLE = "ContentTitle";
         final String CONTENT_NAME_A = "Report Node A";
         final String CONTENT_NAME_B = "Report Node B";
@@ -227,8 +219,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
 
         final String targetName = "testTransferReport";
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -277,8 +268,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         });
 
         /**
-         * Step 1.
-         * Call the transfer method. to get a failed transfer - orphan nodes exist
+         * Step 1. Call the transfer method. to get a failed transfer - orphan nodes exist
          */
         TestTransaction.start();
         try
@@ -338,12 +328,11 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         {
             TestTransaction.end();
         }
-        
+
         /**
          * Now validate the client side error transfer report against the xsd file
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -377,12 +366,10 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
 
-       /**
-         * Step 2
-         * Call the transfer method to get a good success transfer report
+        /**
+         * Step 2 Call the transfer method to get a good success transfer report
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -437,8 +424,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Now validate the client side transfer report against the xsd file
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -471,8 +457,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Now validate the destination side transfer report against its xsd file
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -508,8 +493,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Now validate all transfer reports.
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -546,8 +530,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -577,42 +560,15 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
     }
 
     /**
-     * Test the transfer method behaviour with respect to sync folders - sending a complete set 
-     * of nodes and implying delete from the absence of an association.
+     * Test the transfer method behaviour with respect to sync folders - sending a complete set of nodes and implying delete from the absence of an association.
      * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      * 
      * Tree of nodes
      * 
-     *      A1
-     *   |      |    
-     *   A2     A3 (Content Node)   
-     *   |
-     * A4 A5 (Content Node) 
+     * A1 | | A2 A3 (Content Node) | A4 A5 (Content Node)
      * 
-     * Test steps - 
-     * 1 add A1
-     *   transfer(sync)
-     * 2 add A2, A3, A4, A5
-     *   transfer(sync)
-     * 3 remove A2 
-     *   transfer(sync) A4 and A5 should cascade delete on source
-     * 4 remove A3
-     *   transfer(sync)
-     * 5 add back A3 - new node ref
-     *   transfer(sync)
-     * 6 add A2, A4, A5
-     *   transfer(sync)
-     * 7 test delete and restore of a single node
-     *   remove A3 .  
-     *   transfer         
-     *   restore node A3
-     *   transfer
-     * 8 test delete and restore of a tree of nodes
-     *   remove A2 (A4 and A5 should cascade delete on source as well)
-     *   transfer
-     *   restore node A2 (and A4 and A5 cascade restore)
-     *   transfer
+     * Test steps - 1 add A1 transfer(sync) 2 add A2, A3, A4, A5 transfer(sync) 3 remove A2 transfer(sync) A4 and A5 should cascade delete on source 4 remove A3 transfer(sync) 5 add back A3 - new node ref transfer(sync) 6 add A2, A4, A5 transfer(sync) 7 test delete and restore of a single node remove A3 . transfer restore node A3 transfer 8 test delete and restore of a tree of nodes remove A2 (A4 and A5 should cascade delete on source as well) transfer restore node A2 (and A4 and A5 cascade restore) transfer
      */
     @Test
     public void testTransferSyncNodes() throws Exception
@@ -622,17 +578,14 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         final String CONTENT_STRING = "Hello";
 
         /**
-         *  For unit test 
-         *  - replace the HTTP transport with the in-process transport
-         *  - replace the node factory with one that will map node refs, paths etc.
+         * For unit test - replace the HTTP transport with the in-process transport - replace the node factory with one that will map node refs, paths etc.
          */
         TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
         transferServiceImpl.setTransmitter(transmitter);
         final UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory);
         transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory);
         final List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -662,8 +615,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
 
         final TestData testData = new TestData();
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -739,8 +691,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 1. Add Node A1.
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -759,8 +710,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -779,8 +729,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 2. Add Node A2, A3, A4, A5.
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -802,8 +751,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -824,8 +772,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 3 - remove folder node A2
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -833,8 +780,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -856,8 +802,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -878,8 +823,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 4 - remove content node A3
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -887,8 +831,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -910,8 +853,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -932,8 +874,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 5. Add back A3.
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -948,8 +889,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -971,8 +911,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -993,8 +932,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 6. add A2, A4, A5
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1032,8 +970,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1055,8 +992,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1074,15 +1010,10 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        /** 
-         * Step 7 - test delete and restore of a single node
-         * remove A3 .  
-         * transfer         
-         * restore node A3
-         * transfer
+        /**
+         * Step 7 - test delete and restore of a single node remove A3 . transfer restore node A3 transfer
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1091,8 +1022,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1114,8 +1044,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1127,8 +1056,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1139,8 +1067,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1162,8 +1089,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1177,15 +1103,10 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        /** 
-         * Step 8 - test delete and restore of a tree
-         * remove A2 (A4, A5) should cascade delete.  
-         * transfer         
-         * restore node A2
-         * transfer
+        /**
+         * Step 8 - test delete and restore of a tree remove A2 (A4, A5) should cascade delete. transfer restore node A2 transfer
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1193,8 +1114,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1216,8 +1136,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1232,8 +1151,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1242,8 +1160,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1265,8 +1182,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1286,8 +1202,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
     /**
      * Test the transfer method behaviour with respect to sync with (local) alien nodes.
      * 
-     * So we have Repository A transferring content and Repository B is the local repo that we
-     * add and delete alien nodes.
+     * So we have Repository A transferring content and Repository B is the local repo that we add and delete alien nodes.
      * 
      * In general an alien node will prevent deletion of the parent folders
      * 
@@ -1304,14 +1219,14 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      *                                        |
      *                                       B14
      * </pre>
+     * 
      * Test steps -
-     * <ol> 
-     * <li>add A1, A2, A3, A4, A5, A6, A7, A8
-     *   transfer(sync)</li>
-     * <li>add Alien node B9.  A1 becomes Alien.</li>
-     * <li>remove alien node B9.  A1 becomes non Alien.</li>
+     * <ol>
+     * <li>add A1, A2, A3, A4, A5, A6, A7, A8 transfer(sync)</li>
+     * <li>add Alien node B9. A1 becomes Alien.</li>
+     * <li>remove alien node B9. A1 becomes non Alien.</li>
      * <li>add Alien node B10. A1 and A2 become Alien</li>
-     * <li>remove Alien node B10.  A1 and A2 become non Alien</li>
+     * <li>remove Alien node B10. A1 and A2 become non Alien</li>
      * <li>add B12 and B14 A6, A2, A1 becomes Alien</li>
      * <li>remove B14, B12, A6, A2, A1 remain Alien</li>
      * <li>add B13 A6, A2, A1 remains Alien</li>
@@ -1319,10 +1234,8 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * <li>remove B12 A6, A2, A1 becomes non Alien.</li>
      * <li>add B9 and B10 A1 and A2 become Alien</li>
      * <li>remove B10 A2 becomes non alien A1 remains alien.</li>
-     * <li>Add B11, delete A2
-     * transfer sync</li>
-     * (A5, A6, A7 and A8 should be deleted A2 and A4 remain since they contain alien content.)</li>
-     * </ol>   
+     * <li>Add B11, delete A2 transfer sync</li> (A5, A6, A7 and A8 should be deleted A2 and A4 remain since they contain alien content.)</li>
+     * </ol>
      */
     @Test
     public void testTransferInvadedByLocalAlienNodes() throws Exception
@@ -1332,9 +1245,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         final String CONTENT_STRING = "Hello";
 
         /**
-         *  For unit test 
-         *  - replace the HTTP transport with the in-process transport
-         *  - replace the node factory with one that will map node refs, paths etc.
+         * For unit test - replace the HTTP transport with the in-process transport - replace the node factory with one that will map node refs, paths etc.
          *
          * Mock the transfer service to be from Repo A
          */
@@ -1377,8 +1288,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         }
         final TestData testData = new TestData();
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1480,8 +1390,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 1. add A1, A2, A3, A4, A5, A6, A7, A8 transfer(sync)
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1506,8 +1415,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1527,8 +1435,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 2 add Alien node B9 child of A1(dest). A1(dest) becomes Alien because it contains an alien child.
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1544,8 +1451,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1570,8 +1476,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 3 remove alien node B9. A1 becomes non Alien.
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1580,14 +1485,13 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(testData.A1NodeRef);
                 NodeRef A3destNodeRef = testNodeFactory.getMappedNodeRef(testData.A3NodeRef);
-                @SuppressWarnings({ "unused", "unchecked" })
+                @SuppressWarnings({"unused", "unchecked"})
                 List<String> invaders = (List<String>) nodeService.getProperty(A1destNodeRef, TransferModel.PROP_INVADED_BY);
                 assertTrue("dest node ref does not exist", nodeService.exists(A1destNodeRef));
                 assertFalse("node A1 is still alien", (Boolean) nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));
@@ -1600,8 +1504,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * 4 add Alien node B10 child of A2. A1 and A2 become Alien
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1617,8 +1520,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1634,8 +1536,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * 5 remove Alien node B10. A1 and A2 become non Alien
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1644,8 +1545,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1661,8 +1561,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 6 add B12 (child of A6) and B14 A6, A2, A1 becomes Alien
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1679,8 +1578,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1700,8 +1598,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 7 Delete B14. B12 remains alien
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1709,8 +1606,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1729,8 +1625,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 8 add B13 A6, A2, A1 remains Alien
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1746,8 +1641,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1765,8 +1659,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 9 remove B13 A6, A2, A1 remains Alien Due to B12
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1774,8 +1667,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1793,8 +1685,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 10 remove B12 A6, A2, A1 becomes non Alien.
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1802,8 +1693,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1821,8 +1711,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 11 add B9 and B10 A1 and A2 become Alien
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1848,8 +1737,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1866,8 +1754,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 12 remove B10 A2 becomes non alien A1 remains alien.
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1875,8 +1762,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1895,8 +1781,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
          * 13 Add Alien node B11.
          */
         logger.debug("Step 12 Add Node B11, Delete A2 and sync");
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1915,11 +1800,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
         /**
-         * Step 14 delete A2 (will cascade delete A4, A5, A6, A7, A8 transfer sync (A5, A6, A7, A8 and should be deleted
-         * A2 and A4 remain since they contain alien content.)
+         * Step 14 delete A2 (will cascade delete A4, A5, A6, A7, A8 transfer sync (A5, A6, A7, A8 and should be deleted A2 and A4 remain since they contain alien content.)
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1956,8 +1839,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1989,22 +1871,20 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
 
     /**
      * Test restore of a local node.
+     * 
      * <pre>
-     * Tree of nodes
-     *     A1   B1
-     *     |
-     *     B2
-     *     |
-     *     B3
+     * Tree of nodes A1 B1 | B2 | B3
+     * 
      * <pre>
-     * <ol>    
-     *     <li>Add B2.   A1 is alien.</li>
-     *     <li>Delete B2.  A1 not alien</li>
-     *     <li>Restore B2. A1 is alien</li>
-     *     <li>Add B3.  A1 is alien</li>
-     *     <li>Delete B2.  A1 not alien</li>
-     *     <li>Restore to B1.  B2 and B3 not alien.</li>
+     * <ol>
+     * <li>Add B2. A1 is alien.</li>
+     * <li>Delete B2. A1 not alien</li>
+     * <li>Restore B2. A1 is alien</li>
+     * <li>Add B3. A1 is alien</li>
+     * <li>Delete B2. A1 not alien</li>
+     * <li>Restore to B1. B2 and B3 not alien.</li>
      * </ol>
+     * 
      * @throws Exception
      */
     @Test
@@ -2031,8 +1911,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         }
         final TestData testData = new TestData();
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2084,9 +1963,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
         /**
-         *  For unit test 
-         *  - replace the HTTP transport with the in-process transport
-         *  - replace the node factory with one that will map node refs, paths etc.
+         * For unit test - replace the HTTP transport with the in-process transport - replace the node factory with one that will map node refs, paths etc.
          *
          * Mock the transfer service to be from Repo A
          */
@@ -2095,8 +1972,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         final UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory);
         transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory);
         final List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2110,8 +1986,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 1. add A1 transfer(sync)
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2129,8 +2004,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2146,8 +2020,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 2 add Alien node B1 child of A1(dest).
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2159,8 +2032,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2179,8 +2051,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 3 remove alien node B2. A1 becomes non Alien.
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2189,13 +2060,12 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(testData.A1NodeRef);
-                @SuppressWarnings({ "unchecked", "unused" })
+                @SuppressWarnings({"unchecked", "unused"})
                 List<String> invaders = (List<String>) nodeService.getProperty(A1destNodeRef, TransferModel.PROP_INVADED_BY);
                 assertTrue("dest node ref does not exist", nodeService.exists(A1destNodeRef));
                 assertFalse("node A1 is still alien", (Boolean) nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));
@@ -2207,8 +2077,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 4 restore alien node B2. A1 becomes Alien again
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2218,8 +2087,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2234,8 +2102,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 5 - add B3
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2246,8 +2113,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2258,8 +2124,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 5 remove alien node B2. A1 becomes non Alien (again).
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2268,13 +2133,12 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 NodeRef A1destNodeRef = testNodeFactory.getMappedNodeRef(testData.A1NodeRef);
-                @SuppressWarnings({ "unused", "unchecked" })
+                @SuppressWarnings({"unused", "unchecked"})
                 List<String> invaders = (List<String>) nodeService.getProperty(A1destNodeRef, TransferModel.PROP_INVADED_BY);
                 assertTrue("dest node ref does not exist", nodeService.exists(A1destNodeRef));
                 assertFalse("node A1 is still alien", (Boolean) nodeService.hasAspect(A1destNodeRef, TransferModel.ASPECT_ALIEN));
@@ -2286,8 +2150,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step6 restore B2 and B3 to B1.
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2297,8 +2160,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2313,26 +2175,13 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
     /**
      * Test the transfer method with regard to permissions on a node.
      * <p>
-     * Step 1:  
-     * Create a node with a single permission 
-     *     Inherit:false
-     *     Read, Admin, Allow
-     *     Transfer
+     * Step 1: Create a node with a single permission Inherit:false Read, Admin, Allow Transfer
      * <p>
-     * Step 2:
-     * Update it to have several permissions 
-     *     Inherit:false
-     *     Read, Everyone, DENY
-     *     Read, Admin, Allow
+     * Step 2: Update it to have several permissions Inherit:false Read, Everyone, DENY Read, Admin, Allow
      * <p>
-     * Step 3:
-     * Remove a permission
-     *     Inherit:false
-     *     Read, Admin, Allow
+     * Step 3: Remove a permission Inherit:false Read, Admin, Allow
      * <p>
-     * Step 4:
-     * Revert to inherit all permissions
-     *     Inherit:true
+     * Step 4: Revert to inherit all permissions Inherit:true
      * <p>
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
@@ -2344,8 +2193,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         final String CONTENT_STRING = "Hello";
 
         /**
-         * For unit test - replace the HTTP transport with the in-process transport - replace the node factory with one
-         * that will map node refs, paths etc.
+         * For unit test - replace the HTTP transport with the in-process transport - replace the node factory with one that will map node refs, paths etc.
          */
         TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
         transferServiceImpl.setTransmitter(transmitter);
@@ -2370,8 +2218,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         }
         final TestData testData = new TestData();
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2408,8 +2255,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
          * Step 1
          */
         logger.debug("First transfer - create new node with inheritParent permission off");
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2426,8 +2272,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2458,14 +2303,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
         /**
-         * Step 2
-         * Update it to have several permissions 
-         *     Inherit:false
-         *     Read, Everyone, DENY
-         *     Read, Admin, Allow 
+         * Step 2 Update it to have several permissions Inherit:false Read, Everyone, DENY Read, Admin, Allow
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2474,8 +2314,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2493,8 +2332,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2523,8 +2361,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 3 Remove a permission
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2532,8 +2369,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2550,8 +2386,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2580,8 +2415,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 4 Revert to inherit all permissions
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2589,8 +2423,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2607,8 +2440,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2647,29 +2479,25 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * Transfer with read only flag
      * 
      * Node tree for this test
-     * <pre> 
+     * 
+     * <pre>
+     *  
      *           A (Folder)
      *   |                 | 
      *   B (Content)   C (Folder)
      *                     |
      *                     D (Content)
      * </pre>
-     * Step 1
-     * transfer Nodes ABCD with read only flag set - content should all be locked on destination
+     * 
+     * Step 1 transfer Nodes ABCD with read only flag set - content should all be locked on destination
      * <p>
-     * Step 2
-     * lock B (Content node) as user fred
-     * transfer (read only) - destination lock should change to Admin
+     * Step 2 lock B (Content node) as user fred transfer (read only) - destination lock should change to Admin
      * <p>
-     * Step 3
-     * lock C (Folder) as user fred
-     * transfer (read only) - destination lock should change to Admin
-     * <p> 
-     * Step 4
-     * transfer without read only flag - locks should revert from Admin to Fred.
+     * Step 3 lock C (Folder) as user fred transfer (read only) - destination lock should change to Admin
      * <p>
-     * Step 5
-     * remove locks on A and B - transfer without read only flag - content should all be unlocked.
+     * Step 4 transfer without read only flag - locks should revert from Admin to Fred.
+     * <p>
+     * Step 5 remove locks on A and B - transfer without read only flag - content should all be unlocked.
      */
     @Test
     public void testReadOnlyFlag() throws Exception
@@ -2698,9 +2526,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         final TestData testData = new TestData();
 
         /**
-         *  For unit test 
-         *  - replace the HTTP transport with the in-process transport
-         *  - replace the node factory with one that will map node refs, paths etc.
+         * For unit test - replace the HTTP transport with the in-process transport - replace the node factory with one that will map node refs, paths etc.
          */
         TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(this.receiver, this.contentService, transactionService);
         transferServiceImpl.setTransmitter(transmitter);
@@ -2713,8 +2539,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
         transferServiceImpl.setDescriptorService(mockedDescriptorService);
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2778,12 +2603,10 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
         /**
-         * Step 1. 
-         * transfer Nodes ABCD with read only flag set - content should all be locked on destination  
+         * Step 1. transfer Nodes ABCD with read only flag set - content should all be locked on destination
          */
         logger.debug("transfer read only - step 1");
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2799,8 +2622,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2817,13 +2639,10 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-       /**
-         * Step 2
-         * lock B (Content node) as user ONE
-         * transfer (read only) - destination lock should change user to "Admin" 
-         */ 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        /**
+         * Step 2 lock B (Content node) as user ONE transfer (read only) - destination lock should change user to "Admin"
+         */
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2836,8 +2655,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
         logger.debug("transfer read only - step 2");
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2853,8 +2671,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2876,12 +2693,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         });
 
         /**
-         * Step 3
-         * lock C (Folder node) as user ONE
-         * transfer (read only) - destination lock should change to Admin
-         */ 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+         * Step 3 lock C (Folder node) as user ONE transfer (read only) - destination lock should change to Admin
+         */
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2894,8 +2708,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
         logger.debug("transfer read only - step 3");
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2911,8 +2724,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2935,12 +2747,10 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         });
 
         /**
-         * Step 4
-         * transfer without read only flag - locks should revert from Admin to USER_ONE.
+         * Step 4 transfer without read only flag - locks should revert from Admin to USER_ONE.
          */
         logger.debug("transfer read only - step 4");
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2956,8 +2766,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2979,13 +2788,11 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
 
-       /**
-        * Step 5
-        * remove locks on A and B - transfer without read only flag - content should all be unlocked.
-        */
+        /**
+         * Step 5 remove locks on A and B - transfer without read only flag - content should all be unlocked.
+         */
         logger.debug("transfer read only - step 5");
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2994,8 +2801,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3011,8 +2817,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3039,53 +2844,28 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * 
      * This is a unit test so does lots of shenanigans to fake transfer from three repositories on a single repo.
      * 
-     * Multi-repo sync depends upon the following pieces of functionality
-     * a) transferred nodes are tagged with a trx:transferred aspect containing the originating repository 
-     * id and the from repository id
-     * b) to support hub and spoke - when syncing don't imply delete nodes that are not "from" the transferring system
+     * Multi-repo sync depends upon the following pieces of functionality a) transferred nodes are tagged with a trx:transferred aspect containing the originating repository id and the from repository id b) to support hub and spoke - when syncing don't imply delete nodes that are not "from" the transferring system
      * 
-     *      * Tree of nodes 
-     *      A1
-     *   |      |    
-     *   A2     A3 (Content Node) B6 (Content Node)   
-     *   |
-     * A4 A5 B7
+     * * Tree of nodes A1 | | A2 A3 (Content Node) B6 (Content Node) | A4 A5 B7
      * 
-     * Step 1
-     * Hub and Spoke Sync
-     * create Tree A1...A5
-     * transfer (sync)
-     * check the transfered aspects on destination
-     * create node B6.  Fake its transfered aspect to be from Repo B.
-     * transfer (sync)
-     *  
-     * Step 2
-     * Chain Sync
-     * Create Node A7 "from repo B".
-     * Change Nodes A1 ... A5 source to be received "from repo B"
-     * transfer 
+     * Step 1 Hub and Spoke Sync create Tree A1...A5 transfer (sync) check the transfered aspects on destination create node B6. Fake its transfered aspect to be from Repo B. transfer (sync)
+     * 
+     * Step 2 Chain Sync Create Node A7 "from repo B". Change Nodes A1 ... A5 source to be received "from repo B" transfer
      * 
      */
     @Test
     public void testTwoRepoSync() throws Exception
     {
         /**
-        * Step 1
-        * create Tree A1...A6
-        * transfer (sync)
-        * check the transfered aspect
-        * create node B6.  Fake its transfered aspect to be from Repo B, Non Alien.
-        * transfer (sync)
-        */
+         * Step 1 create Tree A1...A6 transfer (sync) check the transfered aspect create node B6. Fake its transfered aspect to be from Repo B, Non Alien. transfer (sync)
+         */
 
         final String CONTENT_TITLE = "ContentTitle";
         final Locale CONTENT_LOCALE = Locale.GERMAN;
         final String CONTENT_STRING = "Hello";
 
         /**
-         *  For unit test 
-         *  - replace the HTTP transport with the in-process transport
-         *  - replace the node factory with one that will map node refs, paths etc.
+         * For unit test - replace the HTTP transport with the in-process transport - replace the node factory with one that will map node refs, paths etc.
          */
         TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
         transferServiceImpl.setTransmitter(transmitter);
@@ -3118,8 +2898,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         }
         final TestData testData = new TestData();
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3199,13 +2978,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         nodes.add(testData.A5NodeRef);
 
         /**
-          * transfer (sync)
-          * check the transfered aspect
-          * create node B6.  Fake its transfered aspect to be from Repo B, Non Alien.
-          * transfer (sync)
-          */ 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+         * transfer (sync) check the transfered aspect create node B6. Fake its transfered aspect to be from Repo B, Non Alien. transfer (sync)
+         */
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3216,8 +2991,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3256,8 +3030,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3268,8 +3041,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3279,16 +3051,12 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-       /** Step 2
-        * Chain Sync
-        * Change Nodes A1 ... A5 source to be received "from repo B"
-        * Create Node A7 - Fake it to be received "from repo B"
-        * transfer
-        */ 
+        /**
+         * Step 2 Chain Sync Change Nodes A1 ... A5 source to be received "from repo B" Create Node A7 - Fake it to be received "from repo B" transfer
+         */
         final String NEW_TITLE = "Chain sync";
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3323,8 +3091,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         });
         nodes.add(testData.A7NodeRef);
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3335,8 +3102,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3364,7 +3130,8 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * This is a unit test so does lots of shenanigans to fake transfer from three repositories on a single repo.
      * 
      * Trees of nodes
-     *  <pre>
+     * 
+     * <pre>
      *      A1              B1               C1
      *      |                                 |    
      *    A2/images                       A2 Dummy/images
@@ -3378,14 +3145,11 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      *      |     |
      *      C3    A3 
      *            | 
-     *            C4         
+     *            C4
      * </pre>
-     * Step 1.  Transfer from A to B. 
-     * Step 2.  Transfer from C to B (crossing over on A2Dest) 
-     * Step 3.  Invade A3Dest via C4
-     * Step 4.  Delete C4. Sync from C 
-     * Step 5.  Delete C3  - A2 dest images folder uninvaded.
-       
+     * 
+     * Step 1. Transfer from A to B. Step 2. Transfer from C to B (crossing over on A2Dest) Step 3. Invade A3Dest via C4 Step 4. Delete C4. Sync from C Step 5. Delete C3 - A2 dest images folder uninvaded.
+     * 
      */
     @Test
     public void testMultiRepoTransfer() throws Exception
@@ -3411,8 +3175,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         }
         final TestData testData = new TestData();
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3514,10 +3277,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
         /**
-         *  For unit test 
-         *  - replace the HTTP transport with the in-process transport
-         *  - Map path from A1 to B1 (So transfer will transfer by path)
-         *  - Map path from C1 to B1
+         * For unit test - replace the HTTP transport with the in-process transport - Map path from A1 to B1 (So transfer will transfer by path) - Map path from C1 to B1
          */
         TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
         transferServiceImpl.setTransmitter(transmitter);
@@ -3526,8 +3286,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         final List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
         // Map Project A/images to Project B/images
         // Map Project C/images to Project A/images
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3545,8 +3304,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 1 Now transfer in A's nodes to Repo B
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3561,8 +3319,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3582,8 +3339,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 2 Now transfer in C's nodes B2 (Owned by A) gets invaded by C
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3600,8 +3356,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3630,8 +3385,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 3 Invade A3Dest via transfer of C4 from C
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3646,8 +3400,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3666,12 +3419,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
         /**
-         * Step 4
-         * Uninvade A3 from C by deleting C4
-         * Via Sync of A3Dummy (which has the same destination path as A3).
+         * Step 4 Uninvade A3 from C by deleting C4 Via Sync of A3Dummy (which has the same destination path as A3).
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3680,8 +3430,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3697,8 +3446,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3714,8 +3462,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 5 - repeat the above test with transfer(non sync) rather than transfer(sync) Uninvade by deleting C3.
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3724,8 +3471,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3744,8 +3490,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3781,10 +3526,10 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
     /**
      * Test the transfer method behaviour with respect to move and alien nodes.
      * 
-     * So we have Repository A transferring content and Repository B is the local repo that we
-     * move alien nodes in and out.
+     * So we have Repository A transferring content and Repository B is the local repo that we move alien nodes in and out.
      * 
      * Tree
+     * 
      * <pre>
      *         B1
      *    |          |         |
@@ -3799,19 +3544,13 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * 
      * Step 2. Transfer in A's nodes to Repo B
      * 
-     * Setup tree above. Validat that A2 is child of C2 dest.
-     * A4 is a child of B1
+     * Setup tree above. Validat that A2 is child of C2 dest. A4 is a child of B1
      * 
-     * Step 3. Move A5 from C2 to C3 via transfer.   
-     * C2Dest should stop being invaded by A5, C3Dest should be invaded by A5.
+     * Step 3. Move A5 from C2 to C3 via transfer. C2Dest should stop being invaded by A5, C3Dest should be invaded by A5.
      * 
-     * Step 4. Invade A5 by B6. Move from C3 to C2 via transfer.
-     * C2Dest should be invaded by A and B.
-     * C3Dest should not be invaded.
+     * Step 4. Invade A5 by B6. Move from C3 to C2 via transfer. C2Dest should be invaded by A and B. C3Dest should not be invaded.
      * 
-     * Step 5. Move A5 to A4.
-     * A4 should be invaded by B due to B6 but not by A.
-     * C2Dest should not be invaded.
+     * Step 5. Move A5 to A4. A4 should be invaded by B due to B6 but not by A. C2Dest should not be invaded.
      */
     @Test
     public void testMultiRepoTransferMove() throws Exception
@@ -3841,8 +3580,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         final QName C2Path = QName.createQName("p2");
         final QName C3Path = QName.createQName("p3");
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3944,10 +3682,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
         /**
-         *  For unit test 
-         *  - replace the HTTP transport with the in-process transport
-         *  - Map path from A1 to B1 (So transfer will transfer by path)
-         *  - Map path from C1 to B1
+         * For unit test - replace the HTTP transport with the in-process transport - Map path from A1 to B1 (So transfer will transfer by path) - Map path from C1 to B1
          */
         TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
         transferServiceImpl.setTransmitter(transmitter);
@@ -3956,8 +3691,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         final List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
         // Map Project A to Project B
         // Map Project C to Project B
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3971,11 +3705,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         transferServiceImpl.setDescriptorService(mockedDescriptorService);
 
         /**
-         * Step 1
-         * Now transfer in C's nodes to Repo B
+         * Step 1 Now transfer in C's nodes to Repo B
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -3990,8 +3722,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4010,12 +3741,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         transferServiceImpl.setDescriptorService(mockedDescriptorService);
 
         /**
-         * Step 2
-         * Now transfer in A's nodes
-         * C2 (Dest) gets invaded by A4
+         * Step 2 Now transfer in A's nodes C2 (Dest) gets invaded by A4
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4029,8 +3757,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4049,12 +3776,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
         /**
-         * Step 3
-         * Now move A5
-         * C3 (Dest) gets invaded by A5
+         * Step 3 Now move A5 C3 (Dest) gets invaded by A5
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4062,8 +3786,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4076,8 +3799,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4095,12 +3817,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
         /**
-         * Step 4 - multi invasion move via transfer service.
-         * Invade A5 by B6.  
-         * Transfer from C3 back to C2.
+         * Step 4 - multi invasion move via transfer service. Invade A5 by B6. Transfer from C3 back to C2.
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4115,8 +3834,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4129,8 +3847,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4157,8 +3874,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         /**
          * Step 5 Move
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4166,8 +3882,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4180,8 +3895,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4241,8 +3955,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         }
         final TestData testData = new TestData();
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4311,9 +4024,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
         /**
-         *  For unit test 
-         *  - replace the HTTP transport with the in-process transport
-         *  - Map path from A1 to B1 (So transfer will transfer by path)
+         * For unit test - replace the HTTP transport with the in-process transport - Map path from A1 to B1 (So transfer will transfer by path)
          */
         TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
         transferServiceImpl.setTransmitter(transmitter);
@@ -4321,8 +4032,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory);
         final List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4339,8 +4049,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
          * Step 1
          */
         logger.debug("First transfer - ");
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4360,8 +4069,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4406,11 +4114,10 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
     /**
      * Test the behaviour with respect to copy of alien nodes.
      * 
-     * So we have Repository A transferring content and Repository B is the local repo that we
-     * copy alien nodes in and out.    Copied nodes are not "transferred" so they change 
-     * from being "from repository A" to "from the local repository".
+     * So we have Repository A transferring content and Repository B is the local repo that we copy alien nodes in and out. Copied nodes are not "transferred" so they change from being "from repository A" to "from the local repository".
      * 
      * Tree
+     * 
      * <pre>
      *         B1
      *    |          |         |
@@ -4425,28 +4132,15 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
      * 
      * Step 2. Transfer in A's nodes to Repo B
      * 
-     * Setup tree above. Validat that A2 is child of C2 dest.
-     * A4 is a child of B1
+     * Setup tree above. Validat that A2 is child of C2 dest. A4 is a child of B1
      * 
-     * Step 3. Copy A5 from C2 to C3.  
-     * C2Dest should still be invaded by A5
-     * C3Dest should be invaded by A5(copy 1) which is now a "B" invader.
+     * Step 3. Copy A5 from C2 to C3. C2Dest should still be invaded by A5 C3Dest should be invaded by A5(copy 1) which is now a "B" invader.
      * 
-     * Step 4. Copy A5 from C2 to A4.  
-     * C2Dest should still be invaded by A5
-     * A4Dest should be invaded by A5(copy 2) which is now a "B" invader.
-     *    
-     * Step 5. Invade A5 dest with B6.
-     * Copy A5(Dest) to B1 (A5 Copy 3)
-     * B1 should not be invaded.
-     * A5 Copy 3 not invaded.
-     * B6 Copy not invaded.
+     * Step 4. Copy A5 from C2 to A4. C2Dest should still be invaded by A5 A4Dest should be invaded by A5(copy 2) which is now a "B" invader.
      * 
-     * Step 6. Invade A5 dest with B6.
-     * Copy A5(Dest) to B1 (A5 Copy 3) with children
-     * B1 should not be invaded.
-     * A5 Copy 4 not invaded.
-     * B6 Copy not invaded.
+     * Step 5. Invade A5 dest with B6. Copy A5(Dest) to B1 (A5 Copy 3) B1 should not be invaded. A5 Copy 3 not invaded. B6 Copy not invaded.
+     * 
+     * Step 6. Invade A5 dest with B6. Copy A5(Dest) to B1 (A5 Copy 3) with children B1 should not be invaded. A5 Copy 4 not invaded. B6 Copy not invaded.
      * 
      */
     @Test
@@ -4478,8 +4172,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
 
         final String localRepositoryId = descriptorService.getCurrentRepositoryDescriptor().getId();
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4581,18 +4274,14 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
         /**
-         *  For unit test 
-         *  - replace the HTTP transport with the in-process transport
-         *  - Map path from A1 to B1 (So transfer will transfer by path)
-         *  - Map path from C1 to B1
+         * For unit test - replace the HTTP transport with the in-process transport - Map path from A1 to B1 (So transfer will transfer by path) - Map path from C1 to B1
          */
         TransferTransmitter transmitter = new UnitTestInProcessTransmitterImpl(receiver, contentService, transactionService);
         transferServiceImpl.setTransmitter(transmitter);
         final UnitTestTransferManifestNodeFactory testNodeFactory = new UnitTestTransferManifestNodeFactory(this.transferManifestNodeFactory);
         transferServiceImpl.setTransferManifestNodeFactory(testNodeFactory);
         final List<Pair<Path, Path>> pathMap = testNodeFactory.getPathMap();
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4608,11 +4297,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         transferServiceImpl.setDescriptorService(mockedDescriptorService);
 
         /**
-         * Step 1
-         * Now transfer in C's nodes to Repo B
+         * Step 1 Now transfer in C's nodes to Repo B
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4627,8 +4314,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4647,12 +4333,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         transferServiceImpl.setDescriptorService(mockedDescriptorService);
 
         /**
-         * Step 2
-         * Now transfer in A's nodes
-         * C2 (Dest) gets invaded by A4
+         * Step 2 Now transfer in A's nodes C2 (Dest) gets invaded by A4
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4666,8 +4349,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4685,13 +4367,10 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-       /** 
-        * Step 3. Copy A5 from C2 to C3.  
-        * C2Dest should still be invaded by A5
-        * C3Dest should be invaded by A5(copy) which is now a "B/local" invader.
-        */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        /**
+         * Step 3. Copy A5 from C2 to C3. C2Dest should still be invaded by A5 C3Dest should be invaded by A5(copy) which is now a "B/local" invader.
+         */
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4717,13 +4396,10 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 return null;
             }
         });
-       /**
-        * Step 4. Copy A5 from C2 to A4.  
-        * C2Dest should still be invaded by A5
-        * A4Dest should be invaded by A5(copy 2) which is now a "B" invader.
-        */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        /**
+         * Step 4. Copy A5 from C2 to A4. C2Dest should still be invaded by A5 A4Dest should be invaded by A5(copy 2) which is now a "B" invader.
+         */
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4749,14 +4425,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
         /**
-         * Step 5. Invade A5 dest with B6.
-         * Copy A5(Dest) to B1 (A5 Copy 3) no children
-         * B1 should not be invaded.
-         * A5 Copy 3 not invaded.
-         * B6 Copy not invaded.
+         * Step 5. Invade A5 dest with B6. Copy A5(Dest) to B1 (A5 Copy 3) no children B1 should not be invaded. A5 Copy 3 not invaded. B6 Copy not invaded.
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -4776,14 +4447,9 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
         /**
-         * Step 6. Invade A5 dest with B6.
-         * Copy A5(Dest) to B1 (A5 Copy 3) with children
-         * B1 should not be invaded.
-         * A5 Copy 4 not invaded.
-         * B6 Copy not invaded.
+         * Step 6. Invade A5 dest with B6. Copy A5(Dest) to B1 (A5 Copy 3) with children B1 should not be invaded. A5 Copy 4 not invaded. B6 Copy not invaded.
          */
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {

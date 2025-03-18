@@ -29,6 +29,8 @@ package org.alfresco.rest.api.cmm;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.CustomModels;
 import org.alfresco.rest.api.model.CustomModel;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -38,18 +40,17 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * @author Jamal Kaabi-Mofrad
  */
 @EntityResource(name = "cmm", title = "Custom Model Management")
 public class CustomModelEntityResource implements EntityResourceAction.Read<CustomModel>,
-            EntityResourceAction.ReadById<CustomModel>,
-            EntityResourceAction.Create<CustomModel>,
-            EntityResourceAction.Update<CustomModel>,
-            EntityResourceAction.Delete,
-            InitializingBean
+        EntityResourceAction.ReadById<CustomModel>,
+        EntityResourceAction.Create<CustomModel>,
+        EntityResourceAction.Update<CustomModel>,
+        EntityResourceAction.Delete,
+        InitializingBean
 {
 
     private CustomModels customModels;
@@ -66,21 +67,21 @@ public class CustomModelEntityResource implements EntityResourceAction.Read<Cust
     }
 
     @Override
-    @WebApiDescription(title="Returns custom model information for the given model name.")
+    @WebApiDescription(title = "Returns custom model information for the given model name.")
     public CustomModel readById(String modelName, Parameters parameters) throws EntityNotFoundException
     {
         return customModels.getCustomModel(modelName, parameters);
     }
 
     @Override
-    @WebApiDescription(title="Returns a paged list of all custom models.")
+    @WebApiDescription(title = "Returns a paged list of all custom models.")
     public CollectionWithPagingInfo<CustomModel> readAll(Parameters parameters)
     {
         return customModels.getCustomModels(parameters);
     }
 
     @Override
-    @WebApiDescription(title="Creates custom model(s).")
+    @WebApiDescription(title = "Creates custom model(s).")
     public List<CustomModel> create(List<CustomModel> entity, Parameters parameters)
     {
         List<CustomModel> result = new ArrayList<>(entity.size());

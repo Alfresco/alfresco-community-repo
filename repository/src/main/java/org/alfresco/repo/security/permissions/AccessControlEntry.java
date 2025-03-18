@@ -37,7 +37,7 @@ public interface AccessControlEntry extends Comparable<AccessControlEntry>, Seri
     public PermissionReference getPermission();
 
     public String getAuthority();
-    
+
     public AuthorityType getAuthorityType();
 
     public AccessStatus getAccessStatus();

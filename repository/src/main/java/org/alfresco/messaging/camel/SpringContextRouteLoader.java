@@ -66,8 +66,8 @@ public class SpringContextRouteLoader implements ApplicationContextAware, Initia
     @SuppressWarnings("unchecked")
     public void addRoutesToCamelContext() throws Exception
     {
-        ModelCamelContext modelCamelContext = (ModelCamelContext)applicationContext
-            .getBean(camelContextId, CamelContext.class);
+        ModelCamelContext modelCamelContext = (ModelCamelContext) applicationContext
+                .getBean(camelContextId, CamelContext.class);
         ArrayList<RouteDefinition> routeDefinitions = (ArrayList<RouteDefinition>) applicationContext.getBean(routeContextId);
         modelCamelContext.addRouteDefinitions(routeDefinitions);
     }
@@ -77,6 +77,5 @@ public class SpringContextRouteLoader implements ApplicationContextAware, Initia
     {
         addRoutesToCamelContext();
     }
-
 
 }

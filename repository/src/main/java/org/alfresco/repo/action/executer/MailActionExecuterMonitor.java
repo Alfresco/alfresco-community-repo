@@ -25,13 +25,14 @@
  */
 package org.alfresco.repo.action.executer;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 public class MailActionExecuterMonitor
 {
     private MailActionExecuter mailActionExceuter;
-    
+
     public String sendTestMessage()
     {
         try
@@ -46,16 +47,17 @@ public class MailActionExecuterMonitor
             return (are.getMessage());
         }
     }
+
     public int getNumberFailedSends()
     {
         return mailActionExceuter.getNumberFailedSends();
     }
-    
+
     public int getNumberSuccessfulSends()
     {
         return mailActionExceuter.getNumberSuccessfulSends();
     }
-    
+
     public void setMailActionExecuter(MailActionExecuter mailActionExceuter)
     {
         this.mailActionExceuter = mailActionExceuter;

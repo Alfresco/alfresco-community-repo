@@ -28,15 +28,16 @@ package org.alfresco.repo.security.permissions.impl;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
-import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.PublicServiceAccessService;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.framework.ReflectiveMethodInvocation;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
+
+import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PublicServiceAccessService;
 
 public class PublicServiceAccessServiceImpl implements PublicServiceAccessService, BeanFactoryAware
 {
@@ -69,11 +70,11 @@ public class PublicServiceAccessServiceImpl implements PublicServiceAccessServic
                     {
                         // check argument types are assignable
                         int parameterPosition = 0;
-                        for(Class<?> clazz : method.getParameterTypes())
+                        for (Class<?> clazz : method.getParameterTypes())
                         {
-                            if(args[parameterPosition] == null)
+                            if (args[parameterPosition] == null)
                             {
-                                if(clazz.isPrimitive())
+                                if (clazz.isPrimitive())
                                 {
                                     continue NEXT_METHOD;
                                 }
@@ -82,108 +83,108 @@ public class PublicServiceAccessServiceImpl implements PublicServiceAccessServic
                                     // OK, null assigns to any non-primitive type
                                 }
                             }
-                            else 
-                            { 
-                                if(clazz.isPrimitive())
+                            else
+                            {
+                                if (clazz.isPrimitive())
                                 {
 
-                                    if(clazz.getName().equals("boolean"))
+                                    if (clazz.getName().equals("boolean"))
                                     {
-                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Boolean"))
+                                        if (args[parameterPosition].getClass().getName().equals("java.lang.Boolean"))
                                         {
                                             // OK
                                         }
                                         else
                                         {
-                                            continue NEXT_METHOD; 
+                                            continue NEXT_METHOD;
                                         }
                                     }
-                                    else  if(clazz.getName().equals("byte"))
+                                    else if (clazz.getName().equals("byte"))
                                     {
-                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Byte"))
+                                        if (args[parameterPosition].getClass().getName().equals("java.lang.Byte"))
                                         {
                                             // OK
                                         }
                                         else
                                         {
-                                            continue NEXT_METHOD; 
+                                            continue NEXT_METHOD;
                                         }
                                     }
-                                    else  if(clazz.getName().equals("char"))
+                                    else if (clazz.getName().equals("char"))
                                     {
-                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Char"))
+                                        if (args[parameterPosition].getClass().getName().equals("java.lang.Char"))
                                         {
                                             // OK
                                         }
                                         else
                                         {
-                                            continue NEXT_METHOD; 
+                                            continue NEXT_METHOD;
                                         }
                                     }
-                                    else  if(clazz.getName().equals("short"))
+                                    else if (clazz.getName().equals("short"))
                                     {
-                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Short"))
+                                        if (args[parameterPosition].getClass().getName().equals("java.lang.Short"))
                                         {
                                             // OK
                                         }
                                         else
                                         {
-                                            continue NEXT_METHOD; 
+                                            continue NEXT_METHOD;
                                         }
                                     }
-                                    else  if(clazz.getName().equals("int"))
+                                    else if (clazz.getName().equals("int"))
                                     {
-                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Integer"))
+                                        if (args[parameterPosition].getClass().getName().equals("java.lang.Integer"))
                                         {
                                             // OK
                                         }
                                         else
                                         {
-                                            continue NEXT_METHOD; 
+                                            continue NEXT_METHOD;
                                         }
                                     }
-                                    else  if(clazz.getName().equals("long"))
+                                    else if (clazz.getName().equals("long"))
                                     {
-                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Long"))
+                                        if (args[parameterPosition].getClass().getName().equals("java.lang.Long"))
                                         {
                                             // OK
                                         }
                                         else
                                         {
-                                            continue NEXT_METHOD; 
+                                            continue NEXT_METHOD;
                                         }
                                     }
-                                    else  if(clazz.getName().equals("float"))
+                                    else if (clazz.getName().equals("float"))
                                     {
-                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Float"))
+                                        if (args[parameterPosition].getClass().getName().equals("java.lang.Float"))
                                         {
                                             // OK
                                         }
                                         else
                                         {
-                                            continue NEXT_METHOD; 
+                                            continue NEXT_METHOD;
                                         }
                                     }
-                                    else  if(clazz.getName().equals("double"))
+                                    else if (clazz.getName().equals("double"))
                                     {
-                                        if(args[parameterPosition].getClass().getName().equals("java.lang.Double"))
+                                        if (args[parameterPosition].getClass().getName().equals("java.lang.Double"))
                                         {
                                             // OK
                                         }
                                         else
                                         {
-                                            continue NEXT_METHOD; 
+                                            continue NEXT_METHOD;
                                         }
                                     }
                                     else
                                     {
-                                        continue NEXT_METHOD; 
+                                        continue NEXT_METHOD;
                                     }
-                                    
+
                                 }
-                                else if(!(clazz.isAssignableFrom(args[parameterPosition].getClass())))
+                                else if (!(clazz.isAssignableFrom(args[parameterPosition].getClass())))
                                 {
-                                    continue NEXT_METHOD; 
+                                    continue NEXT_METHOD;
                                 }
                             }
                             parameterPosition++;
@@ -195,12 +196,12 @@ public class PublicServiceAccessServiceImpl implements PublicServiceAccessServic
 
             if (methodInvocation == null)
             {
-                throw new UnsupportedOperationException("Unknown public service security implementation " + publicService + "." + methodName + " with arguments "+Arrays.toString(args));
+                throw new UnsupportedOperationException("Unknown public service security implementation " + publicService + "." + methodName + " with arguments " + Arrays.toString(args));
             }
 
             return msi.pre(methodInvocation);
         }
-        throw new UnsupportedOperationException("Unknown security interceptor "+interceptor.getClass());
+        throw new UnsupportedOperationException("Unknown security interceptor " + interceptor.getClass());
     }
 
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException

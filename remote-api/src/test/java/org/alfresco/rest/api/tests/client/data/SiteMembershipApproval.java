@@ -31,8 +31,7 @@ public class SiteMembershipApproval extends org.alfresco.rest.api.model.SiteMemb
 {
 
     public SiteMembershipApproval()
-    {
-    }
+    {}
 
     public SiteMembershipApproval(String role)
     {

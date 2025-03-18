@@ -45,8 +45,7 @@ public class CustomModelNamedValue implements Comparable<CustomModelNamedValue>
     private List<String> listValue = null;
 
     public CustomModelNamedValue()
-    {
-    }
+    {}
 
     public CustomModelNamedValue(String name, Object value)
     {
@@ -55,7 +54,7 @@ public class CustomModelNamedValue implements Comparable<CustomModelNamedValue>
         {
             List<?> values = (List<?>) value;
             listValue = new ArrayList<>(values.size());
-            for(Object val : values)
+            for (Object val : values)
             {
                 listValue.add(convertToString(val));
             }
@@ -158,9 +157,9 @@ public class CustomModelNamedValue implements Comparable<CustomModelNamedValue>
     {
         StringBuilder builder = new StringBuilder(120);
         builder.append("CustomModelNamedValue [name=").append(this.name)
-                    .append(", simpleValue=").append(this.simpleValue)
-                    .append(", listValue=").append(this.listValue)
-                    .append(']');
+                .append(", simpleValue=").append(this.simpleValue)
+                .append(", listValue=").append(this.listValue)
+                .append(']');
         return builder.toString();
     }
 }

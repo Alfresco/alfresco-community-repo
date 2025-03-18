@@ -30,10 +30,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * A simple handler to get the full user name from the userID.

@@ -74,20 +74,27 @@ public abstract class AbstractRefreshableCacheEvent implements RefreshableCacheE
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
         AbstractRefreshableCacheEvent other = (AbstractRefreshableCacheEvent) obj;
         if (cacheId == null)
         {
-            if (other.cacheId != null) return false;
+            if (other.cacheId != null)
+                return false;
         }
-        else if (!cacheId.equals(other.cacheId)) return false;
+        else if (!cacheId.equals(other.cacheId))
+            return false;
         if (tenantId == null)
         {
-            if (other.tenantId != null) return false;
+            if (other.tenantId != null)
+                return false;
         }
-        else if (!tenantId.equals(other.tenantId)) return false;
+        else if (!tenantId.equals(other.tenantId))
+            return false;
         return true;
     }
 }

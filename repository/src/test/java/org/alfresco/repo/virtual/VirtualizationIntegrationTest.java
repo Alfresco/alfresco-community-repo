@@ -29,6 +29,7 @@ package org.alfresco.repo.virtual;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -46,8 +47,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import jakarta.transaction.UserTransaction;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Mock;
+import org.mockito.stubbing.Answer;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.FormData;
@@ -78,16 +88,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.traitextender.SpringExtensionBundle;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentMatcher;
-import org.mockito.Mock;
-import static org.mockito.ArgumentMatchers.argThat;
-import org.mockito.stubbing.Answer;
-import org.springframework.context.ApplicationContext;
 
 @Category(LuceneTests.class)
 public abstract class VirtualizationIntegrationTest implements VirtualizationTest
@@ -99,7 +99,7 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
     protected static final String VIRTUAL_FOLDER_1_NAME = "VirtualFolder1";
 
     protected static final String VIRTUAL_FOLDER_2_NAME = "VirtualFolder2";
-    
+
     protected static final String VIRTUAL_FOLDER_3_NAME = "VirtualFolder3";
 
     protected static final String TEST_ROOT_FOLDER_NAME = "TestFolder";
@@ -196,16 +196,17 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
     private @Mock ResultSet dbResults;
     private @Mock ResultSetRow resultSetRow;
     private SearchServiceSubSystemDelegator searchServiceDelegatorSpy;
-    
+
     private String queryMatcher;
 
     @Before
     public void setUp() throws Exception
     {
-        ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);;
-        
+        ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
+        ;
+
         virtualizationConfigTestBootstrap = ctx.getBean(VIRTUALIZATION_CONFIG_TEST_BOOTSTRAP_BEAN_ID,
-                                                        VirtualizationConfigTestBootstrap.class);
+                VirtualizationConfigTestBootstrap.class);
 
         // Get the required services
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
@@ -218,25 +219,25 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
         permissionService = serviceRegistry.getPermissionService();
 
         authenticationComponent = ctx.getBean("authenticationComponent",
-                                              AuthenticationComponent.class);
+                AuthenticationComponent.class);
 
         environment = ctx.getBean("actualEnvironment",
-                                  ActualEnvironment.class);
+                ActualEnvironment.class);
 
         typeAndAspectsFormProcessor = ctx.getBean("typeAndAspectsFormProcessor",
-                                                  TypeAndAspectsFormProcessor.class);
+                TypeAndAspectsFormProcessor.class);
 
         constraints = ctx.getBean("systemTemplateLocations",
-                                  SystemTemplateLocationsConstraint.class);
+                SystemTemplateLocationsConstraint.class);
 
         Repository repository = ctx.getBean("repositoryHelper",
-                                            Repository.class);
+                Repository.class);
 
         if (!virtualizationConfigTestBootstrap.areVirtualFoldersEnabled())
         {
             // "use the force" and enable virtual folders
             SpringExtensionBundle vfBundle = ctx.getBean("smartFoldersBundle",
-                                                         SpringExtensionBundle.class);
+                    SpringExtensionBundle.class);
             vfBundle.start();
         }
         else
@@ -253,12 +254,12 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         companyHomeNodeRef = repository.getCompanyHome();
         testRootFolder = fileAndFolderService.create(companyHomeNodeRef,
-                                                     TEST_ROOT_FOLDER_NAME,
-                                                     ContentModel.TYPE_FOLDER);
+                TEST_ROOT_FOLDER_NAME,
+                ContentModel.TYPE_FOLDER);
 
         virtualFolder1NodeRef = createVirtualizedFolder(testRootFolder.getNodeRef(),
-                                                        VIRTUAL_FOLDER_1_NAME,
-                                                        TEST_TEMPLATE_1_JSON_SYS_PATH);
+                VIRTUAL_FOLDER_1_NAME,
+                TEST_TEMPLATE_1_JSON_SYS_PATH);
         rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         setupMocks();
     }
@@ -270,7 +271,7 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
         {
             // "use the force" and disable virtual folders
             SpringExtensionBundle vfBundle = ctx.getBean("smartFoldersBundle",
-                                                         SpringExtensionBundle.class);
+                    SpringExtensionBundle.class);
             vfBundle.stop();
         }
 
@@ -287,48 +288,46 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
         catch (Exception e)
         {
             logger.error("Test tear down failed. Has the test setup transaction been tempered with ? Hint : "
-                                     + txnTamperHint,
-                         e);
+                    + txnTamperHint,
+                    e);
         }
 
-       // super.tearDown();
+        // super.tearDown();
     }
 
     /**
      * @param parent
      * @param name
-     * @param templateSysPath system path of the template to be applied. If
-     *            <code>null</code> the property is not set - this should
-     *            trigger default predefined settings behavior.
-     * @return the {@link NodeRef} of a newly created folder that has the
-     *         predefined virtualization method aspect applied
+     * @param templateSysPath
+     *            system path of the template to be applied. If <code>null</code> the property is not set - this should trigger default predefined settings behavior.
+     * @return the {@link NodeRef} of a newly created folder that has the predefined virtualization method aspect applied
      */
     protected NodeRef createVirtualizedFolder(NodeRef parent, String name, String templateSysPath)
     {
         Item testItem = new Item("typeAndAspects",
-                                 "cm:folder,smf:systemConfigSmartFolder");
+                "cm:folder,smf:systemConfigSmartFolder");
         FormData testFormData = new FormData();
 
         testFormData.addFieldData(FORM_DATA_PROP_NAME,
-                                  name);
+                name);
         if (templateSysPath != null)
         {
             testFormData.addFieldData(PROP_VM_TEMPLATE_CLASSPATH,
-                                      templateSysPath);
+                    templateSysPath);
         }
         // alf_destination is mandatory
         testFormData.addFieldData(FORM_DATA_PROP_ALF_DEF,
-                                  parent.toString());
+                parent.toString());
 
         return (NodeRef) typeAndAspectsFormProcessor.persist(testItem,
-                                                             testFormData);
+                testFormData);
 
     }
 
     protected void assertVirtualNode(NodeRef nodeRef)
     {
         assertVirtualNode(nodeRef,
-                          Collections.<QName, Serializable> emptyMap());
+                Collections.<QName, Serializable> emptyMap());
     }
 
     protected void assertVirtualNode(NodeRef nodeRef, Map<QName, Serializable> expectedProperties)
@@ -336,32 +335,32 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
         assertNotNull(Reference.fromNodeRef(nodeRef));
 
         assertTrue(nodeService.hasAspect(nodeRef,
-                                         VirtualContentModel.ASPECT_VIRTUAL));
+                VirtualContentModel.ASPECT_VIRTUAL));
         Set<QName> aspects = nodeService.getAspects(nodeRef);
-        assertTrue("Smart virtual node missing virtual aspect",aspects.contains(VirtualContentModel.ASPECT_VIRTUAL));
-        //ACE-5303 injected properties title and description  require the titled aspect 
-        assertTrue("Smaft virtual node missing titled aspect",aspects.contains(ContentModel.ASPECT_TITLED));
+        assertTrue("Smart virtual node missing virtual aspect", aspects.contains(VirtualContentModel.ASPECT_VIRTUAL));
+        // ACE-5303 injected properties title and description require the titled aspect
+        assertTrue("Smaft virtual node missing titled aspect", aspects.contains(ContentModel.ASPECT_TITLED));
 
         Map<QName, Serializable> nodeProperties = nodeService.getProperties(nodeRef);
 
         List<QName> mandatoryProperties = Arrays.asList(ContentModel.PROP_STORE_IDENTIFIER,
-                                                        ContentModel.PROP_STORE_PROTOCOL,
-                                                        ContentModel.PROP_LOCALE,
-                                                        ContentModel.PROP_MODIFIED,
-                                                        ContentModel.PROP_MODIFIER,
-                                                        ContentModel.PROP_CREATED,
-                                                        ContentModel.PROP_CREATOR,
-                                                        ContentModel.PROP_NODE_DBID,
-                                                        ContentModel.PROP_DESCRIPTION);
+                ContentModel.PROP_STORE_PROTOCOL,
+                ContentModel.PROP_LOCALE,
+                ContentModel.PROP_MODIFIED,
+                ContentModel.PROP_MODIFIER,
+                ContentModel.PROP_CREATED,
+                ContentModel.PROP_CREATOR,
+                ContentModel.PROP_NODE_DBID,
+                ContentModel.PROP_DESCRIPTION);
 
         Set<QName> missingPropreties = new HashSet<>(mandatoryProperties);
         missingPropreties.removeAll(nodeProperties.keySet());
 
         assertTrue("Mandatory properties are missing" + missingPropreties,
-                   missingPropreties.isEmpty());
+                missingPropreties.isEmpty());
 
-        assertFalse("ACE-5303 : ContentModel.PROP_TITLE should remain unset",nodeProperties.containsKey(ContentModel.PROP_TITLE));
-        
+        assertFalse("ACE-5303 : ContentModel.PROP_TITLE should remain unset", nodeProperties.containsKey(ContentModel.PROP_TITLE));
+
         Set<Entry<QName, Serializable>> epEntries = expectedProperties.entrySet();
         StringBuilder unexpectedBuilder = new StringBuilder();
         for (Entry<QName, Serializable> entry : epEntries)
@@ -400,76 +399,76 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
         }
         String unexpectedStr = unexpectedBuilder.toString();
         assertTrue("Unexpected property values : " + unexpectedStr,
-                   unexpectedStr.isEmpty());
+                unexpectedStr.isEmpty());
     }
 
     protected ChildAssociationRef createTypedNode(NodeRef parent, final String name, QName type)
     {
         return createTypedNode(parent,
-                               name,
-                               type,
-                               new HashMap<QName, Serializable>());
+                name,
+                type,
+                new HashMap<QName, Serializable>());
     }
 
     protected ChildAssociationRef createTypedNode(NodeRef parent, final String name, QName type,
-                HashMap<QName, Serializable> properties)
+            HashMap<QName, Serializable> properties)
     {
         final HashMap<QName, Serializable> newProperties = new HashMap<QName, Serializable>(properties);
         newProperties.put(ContentModel.PROP_NAME,
-                          name);
+                name);
         QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                             QName.createValidLocalName(name));
+                QName.createValidLocalName(name));
         return nodeService.createNode(parent,
-                                      ContentModel.ASSOC_CONTAINS,
-                                      assocQName,
-                                      type,
-                                      newProperties);
+                ContentModel.ASSOC_CONTAINS,
+                assocQName,
+                type,
+                newProperties);
     }
 
     protected ChildAssociationRef createFolder(NodeRef parent, final String name)
     {
         return createTypedNode(parent,
-                               name,
-                               ContentModel.TYPE_FOLDER);
+                name,
+                ContentModel.TYPE_FOLDER);
     }
 
     protected ChildAssociationRef createFolder(NodeRef parent, final String name,
-                HashMap<QName, Serializable> properties)
+            HashMap<QName, Serializable> properties)
     {
         return createTypedNode(parent,
-                               name,
-                               ContentModel.TYPE_FOLDER,
-                               properties);
+                name,
+                ContentModel.TYPE_FOLDER,
+                properties);
     }
 
     protected ChildAssociationRef createContent(NodeRef parent, final String name)
     {
         return createTypedNode(parent,
-                               name,
-                               ContentModel.TYPE_CONTENT);
+                name,
+                ContentModel.TYPE_CONTENT);
     }
 
     protected ChildAssociationRef createContent(NodeRef parent, final String name, InputStream stream, String mimeType,
-                String encoding)
+            String encoding)
     {
         return createContent(parent,
-                             name,
-                             stream,
-                             mimeType,
-                             encoding,
-                             ContentModel.TYPE_CONTENT);
+                name,
+                stream,
+                mimeType,
+                encoding,
+                ContentModel.TYPE_CONTENT);
     }
 
     protected ChildAssociationRef createContent(NodeRef parent, final String name, InputStream stream, String mimeType,
-                String encoding, QName nodeType)
+            String encoding, QName nodeType)
     {
         ChildAssociationRef nodeAssoc = createTypedNode(parent,
-                                                        name,
-                                                        nodeType);
+                name,
+                nodeType);
         NodeRef child = nodeAssoc.getChildRef();
         ContentWriter writer = contentService.getWriter(child,
-                                                        ContentModel.PROP_CONTENT,
-                                                        true);
+                ContentModel.PROP_CONTENT,
+                true);
 
         writer.setMimetype(mimeType);
         writer.setEncoding(encoding);
@@ -478,15 +477,15 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
     }
 
     protected ChildAssociationRef createContent(NodeRef parent, final String name, String contentString,
-                String mimeType, String encoding)
+            String mimeType, String encoding)
     {
         ChildAssociationRef nodeAssoc = createTypedNode(parent,
-                                                        name,
-                                                        ContentModel.TYPE_CONTENT);
+                name,
+                ContentModel.TYPE_CONTENT);
         NodeRef child = nodeAssoc.getChildRef();
         ContentWriter writer = contentService.getWriter(child,
-                                                        ContentModel.PROP_CONTENT,
-                                                        true);
+                ContentModel.PROP_CONTENT,
+                true);
 
         writer.setMimetype(mimeType);
         writer.setEncoding(encoding);
@@ -528,8 +527,7 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
     protected void prepareMocksCommon(List<ResultSetRow> dbRows)
     {
         // make sure we return a new iterator each time
-        when(dbResults.iterator()).thenAnswer(new Answer<Iterator<ResultSetRow>>()
-        {
+        when(dbResults.iterator()).thenAnswer(new Answer<Iterator<ResultSetRow>>() {
             public Iterator<ResultSetRow> answer(org.mockito.invocation.InvocationOnMock invocation) throws Throwable
             {
                 return dbRows.iterator();
@@ -550,7 +548,7 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
     protected ArgumentMatcher<SearchParameters> getArgMatcher()
     {
         return argument -> {
-            if (argument!=null)
+            if (argument != null)
             {
                 String matchingString = getMatchingString();
                 if (matchingString != null && argument.toString().contains(matchingString))

@@ -62,8 +62,7 @@ public class RM804Test extends BaseRMTestCase
     public void testUsersHaveDeletePermissionsOnFilePlan() throws Exception
     {
         // as rmuser
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -73,8 +72,7 @@ public class RM804Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -84,8 +82,7 @@ public class RM804Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -95,8 +92,7 @@ public class RM804Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -106,8 +102,7 @@ public class RM804Test extends BaseRMTestCase
             }
         }, rmUserName);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -120,8 +115,7 @@ public class RM804Test extends BaseRMTestCase
 
     public void testTryAndDeleteSiteAsSiteManagerOnly()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -131,12 +125,9 @@ public class RM804Test extends BaseRMTestCase
             }
         }, "admin");
 
-        doTestInTransaction(new FailureTest
-        (
-           "Should not be able to delete site as a site manager only.",
-           AlfrescoRuntimeException.class
-        )
-        {
+        doTestInTransaction(new FailureTest(
+                "Should not be able to delete site as a site manager only.",
+                AlfrescoRuntimeException.class) {
             @Override
             public void run() throws Exception
             {
@@ -146,8 +137,7 @@ public class RM804Test extends BaseRMTestCase
         }, userName);
 
         // give the user a RM role (but not sufficient to delete the file plan node ref)
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -157,12 +147,9 @@ public class RM804Test extends BaseRMTestCase
             }
         }, "admin");
 
-        doTestInTransaction(new FailureTest
-        (
-           "Should not be able to delete site as a site manager with an RM role that doesn't have the capability.",
-           AlfrescoRuntimeException.class
-        )
-        {
+        doTestInTransaction(new FailureTest(
+                "Should not be able to delete site as a site manager with an RM role that doesn't have the capability.",
+                AlfrescoRuntimeException.class) {
             @Override
             public void run() throws Exception
             {
@@ -171,8 +158,7 @@ public class RM804Test extends BaseRMTestCase
             }
         }, userName);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -182,8 +168,7 @@ public class RM804Test extends BaseRMTestCase
             }
         }, "admin");
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {

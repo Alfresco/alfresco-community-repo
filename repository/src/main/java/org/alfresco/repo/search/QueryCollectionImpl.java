@@ -30,14 +30,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.dom4j.Element;
+import org.dom4j.Namespace;
+
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.dom4j.Element;
-import org.dom4j.Namespace;
 
 public class QueryCollectionImpl implements QueryCollection
 {
@@ -52,13 +53,13 @@ public class QueryCollectionImpl implements QueryCollection
     private static final org.dom4j.QName PREFIX = new org.dom4j.QName("prefix", new Namespace(NamespaceService.ALFRESCO_PREFIX, NamespaceService.ALFRESCO_URI));
 
     private static final org.dom4j.QName URI = new org.dom4j.QName("uri", new Namespace(NamespaceService.ALFRESCO_PREFIX, NamespaceService.ALFRESCO_URI));
-    
+
     private String name;
-    
+
     private Map<QName, QueryParameterDefinition> parameters = new HashMap<QName, QueryParameterDefinition>();
-    
+
     private Map<QName, CannedQueryDef> queries = new HashMap<QName, CannedQueryDef>();
-    
+
     NamespacePrefixResolver namespacePrefixResolver;
 
     public QueryCollectionImpl(String name, Map<QName, QueryParameterDefinition> parameters, NamespacePrefixResolver namespacePrefixResolver)
@@ -71,7 +72,7 @@ public class QueryCollectionImpl implements QueryCollection
 
     public String getName()
     {
-       return name;
+        return name;
     }
 
     public boolean containsQueryDefinition(QName qName)
@@ -83,7 +84,7 @@ public class QueryCollectionImpl implements QueryCollection
     {
         queries.put(queryDefinition.getQname(), queryDefinition);
     }
-    
+
     public CannedQueryDef getQueryDefinition(QName qName)
     {
         return queries.get(qName);
@@ -104,7 +105,6 @@ public class QueryCollectionImpl implements QueryCollection
         return namespacePrefixResolver;
     }
 
-    
     public static QueryCollection createQueryCollection(Element element, DictionaryService dictionaryService, NamespacePrefixResolver nspr)
     {
         DynamicNamespacePrefixResolver dnpr = new DynamicNamespacePrefixResolver(nspr);
@@ -112,48 +112,48 @@ public class QueryCollectionImpl implements QueryCollection
         {
             String name = null;
             Element nameElement = element.element(NAME.getName());
-            if(nameElement != null)
+            if (nameElement != null)
             {
-               name = nameElement.getText();
-            } 
-            
+                name = nameElement.getText();
+            }
+
             Element nameSpaces = element.element(NAMESPACES.getName());
-            if(nameSpaces != null)
+            if (nameSpaces != null)
             {
                 List ns = nameSpaces.elements(NAMESPACE.getName());
-                for(Iterator it = ns.iterator(); it.hasNext(); /**/)
+                for (Iterator it = ns.iterator(); it.hasNext(); /**/)
                 {
-                    Element nsElement = (Element)it.next();
+                    Element nsElement = (Element) it.next();
                     Element prefixElement = nsElement.element(PREFIX.getName());
                     Element uriElement = nsElement.element(URI.getName());
-                    if((prefixElement != null) && (nsElement != null))
+                    if ((prefixElement != null) && (nsElement != null))
                     {
                         dnpr.registerNamespace(prefixElement.getText(), uriElement.getText());
                     }
                 }
             }
-            
+
             // Do property definitions so they are available to query defintions
-            
+
             Map<QName, QueryParameterDefinition> parameters = new HashMap<QName, QueryParameterDefinition>();
             List list = element.elements(QueryParameterDefImpl.getElementQName().getName());
-            for(Iterator it = list.iterator(); it.hasNext(); /**/)
+            for (Iterator it = list.iterator(); it.hasNext(); /**/)
             {
                 Element defElement = (Element) it.next();
                 QueryParameterDefinition paramDef = QueryParameterDefImpl.createParameterDefinition(defElement, dictionaryService, nspr);
                 parameters.put(paramDef.getQName(), paramDef);
             }
-            
+
             QueryCollectionImpl collection = new QueryCollectionImpl(name, parameters, dnpr);
-            
+
             list = element.elements(CannedQueryDefImpl.getElementQName().getName());
-            for(Iterator it = list.iterator(); it.hasNext(); /**/)
+            for (Iterator it = list.iterator(); it.hasNext(); /**/)
             {
                 Element defElement = (Element) it.next();
                 CannedQueryDefImpl queryDef = CannedQueryDefImpl.createCannedQuery(defElement, dictionaryService, collection, nspr);
                 collection.addQueryDefinition(queryDef);
             }
-            
+
             return collection;
         }
         else

@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -49,12 +48,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -62,31 +55,25 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyCheck;
+
 /**
- * An extracter that pulls values from XML documents using configurable XPath
- * statements.  It is not possible to list a default set of mappings - this is
- * down to the configuration only.
+ * An extracter that pulls values from XML documents using configurable XPath statements. It is not possible to list a default set of mappings - this is down to the configuration only.
  * <p>
- * When an instance of this extracter is configured, XPath statements should be
- * provided to extract all the available metadata.  The implementation is sensitive
- * to what is actually requested by the
- * {@linkplain AbstractMappingMetadataExtracter#setMapping(Map) configured mapping}
- * and will only perform the queries necessary to fulfill the requirements.
+ * When an instance of this extracter is configured, XPath statements should be provided to extract all the available metadata. The implementation is sensitive to what is actually requested by the {@linkplain AbstractMappingMetadataExtracter#setMapping(Map) configured mapping} and will only perform the queries necessary to fulfill the requirements.
  * <p>
  * To summarize, there are two configurations required for this class:
  * <ul>
- *   <li>
- *     A mapping of all reasonable document properties to XPath statements.
- *     See {@link AbstractMappingMetadataExtracter#setMappingProperties(java.util.Properties)}.
- *   </li>
- *   <li>
- *     A mapping of document property names to Alfresco repository model QNames.
- *     See {@link #setXpathMappingProperties(Properties).}
- *   </li>
+ * <li>A mapping of all reasonable document properties to XPath statements. See {@link AbstractMappingMetadataExtracter#setMappingProperties(java.util.Properties)}.</li>
+ * <li>A mapping of document property names to Alfresco repository model QNames. See {@link #setXpathMappingProperties(Properties).}</li>
  * </ul>
  * <p>
- * All values are extracted as text values and therefore all XPath statements must evaluate to a node
- * that can be rendered as text.
+ * All values are extracted as text values and therefore all XPath statements must evaluate to a node that can be rendered as text.
  * 
  * @see AbstractMappingMetadataExtracter#setMappingProperties(Properties)
  * @see #setXpathMappingProperties(Properties)
@@ -95,10 +82,10 @@ import org.w3c.dom.NodeList;
  */
 public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter implements NamespaceContext
 {
-    public static String[] SUPPORTED_MIMETYPES = new String[] {MimetypeMap.MIMETYPE_XML};
-    
+    public static String[] SUPPORTED_MIMETYPES = new String[]{MimetypeMap.MIMETYPE_XML};
+
     private static Log logger = LogFactory.getLog(XPathMetadataExtracter.class);
-    
+
     private DocumentBuilder documentBuilder;
     private DocumentBuilder dtdIgnoringDocumentBuilder;
     private XPathFactory xpathFactory;
@@ -115,12 +102,12 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
         {
             DocumentBuilderFactory normalFactory = DocumentBuilderFactory.newInstance();
             documentBuilder = normalFactory.newDocumentBuilder();
-            
+
             DocumentBuilderFactory dtdIgnoringFactory = DocumentBuilderFactory.newInstance();
             dtdIgnoringFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
             dtdIgnoringFactory.setFeature("http://xml.org/sax/features/validation", false);
             dtdIgnoringDocumentBuilder = dtdIgnoringFactory.newDocumentBuilder();
-            
+
             xpathFactory = XPathFactory.newInstance();
         }
         catch (Throwable e)
@@ -172,10 +159,10 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
     }
 
     /**
-     * Set the properties file that maps document properties to the XPath statements
-     * necessary to retrieve them.
-     * <p> 
+     * Set the properties file that maps document properties to the XPath statements necessary to retrieve them.
+     * <p>
      * The Xpath mapping is of the form:
+     * 
      * <pre>
      * # Namespaces prefixes
      * namespace.prefix.my=http://www....com/alfresco/1.0
@@ -191,7 +178,7 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
         xpathExpressionMapping = new HashMap<String, XPathExpression>(17);
         readXPathMappingProperties(xpathMappingProperties);
     }
-    
+
     @Override
     protected void init()
     {
@@ -213,7 +200,7 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
     /**
      * It is not possible to have any default mappings, but something has to be returned.
      * 
-     * @return          Returns an empty map
+     * @return Returns an empty map
      */
     @Override
     protected Map<String, Set<QName>> getDefaultMapping()
@@ -228,22 +215,22 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
         try
         {
             is = reader.getContentInputStream();
-            
+
             Document doc;
-            try 
+            try
             {
                 // Try with the default settings
                 doc = documentBuilder.parse(is);
             }
-            catch(FileNotFoundException e)
+            catch (FileNotFoundException e)
             {
                 // The XML depends on a DTD we don't have available
                 // Try to parse it without using DTDs. (This may mean we miss
-                //  out on some entities, but it's better than nothing!)
+                // out on some entities, but it's better than nothing!)
                 is = reader.getReader().getContentInputStream();
                 doc = dtdIgnoringDocumentBuilder.parse(is);
             }
-            
+
             Map<String, Serializable> rawProperties = processDocument(doc);
             if (logger.isDebugEnabled())
             {
@@ -258,18 +245,23 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
         {
             if (is != null)
             {
-                try { is.close(); } catch (IOException e) {}
+                try
+                {
+                    is.close();
+                }
+                catch (IOException e)
+                {}
             }
         }
     }
-    
+
     /**
      * Executes all the necessary XPath statements to extract values.
      */
     protected Map<String, Serializable> processDocument(Document document) throws Throwable
     {
         Map<String, Serializable> rawProperties = super.newRawMap();
-        
+
         // Execute all the XPaths that we saved
         for (Map.Entry<String, XPathExpression> element : xpathExpressionMapping.entrySet())
         {
@@ -292,14 +284,14 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
         // Done
         return rawProperties;
     }
-    
+
     private Serializable getStringValue(Document document, XPathExpression xpathExpression) throws XPathExpressionException
     {
         String value = (String) xpathExpression.evaluate(document, XPathConstants.STRING);
         // Done
         return value;
     }
-    
+
     private Serializable getNodeSetValue(Document document, XPathExpression xpathExpression) throws XPathExpressionException
     {
         // Execute it
@@ -343,7 +335,7 @@ public class XPathMetadataExtracter extends AbstractMappingMetadataExtracter imp
         // Done
         return value;
     }
-    
+
     /**
      * A utility method to convert mapping properties to the Map form.
      * 

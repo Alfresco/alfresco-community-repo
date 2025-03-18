@@ -31,7 +31,6 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -60,7 +59,8 @@ public class CustomDateTimeSerializer extends StdSerializer<DateTime>
     /**
      * Custom serialize method to convert the org.joda.time.DateTime into string value using the DATE_TIME_FORMAT
      *
-     * @param value datetime value
+     * @param value
+     *            datetime value
      * @param jgen
      * @param provider
      * @throws IOException

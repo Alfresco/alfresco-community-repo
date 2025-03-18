@@ -28,6 +28,11 @@ package org.alfresco.repo.policy;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.repo.policy.traitextender.BehaviourFilterExtension;
 import org.alfresco.repo.policy.traitextender.BehaviourFilterTrait;
 import org.alfresco.repo.tenant.TenantService;
@@ -42,15 +47,9 @@ import org.alfresco.traitextender.Extend;
 import org.alfresco.traitextender.ExtendedTrait;
 import org.alfresco.traitextender.Extensible;
 import org.alfresco.traitextender.Trait;
-import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
- * Implementation of Behaviour Filter.  All methods operate on transactionally-bound
- * resources.  Behaviour will therefore never span transactions; the filter state has
- * the same lifespan as the transaction in which it was created.
+ * Implementation of Behaviour Filter. All methods operate on transactionally-bound resources. Behaviour will therefore never span transactions; the filter state has the same lifespan as the transaction in which it was created.
  * <p/>
  * <b>Multitenancy and disabling by <tt>NodeRef</tt>:</b><br/>
  * Conversions based on the current tenant context are done automatically.
@@ -64,9 +63,9 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
     private static final String KEY_CLASS_FILTERS = "BehaviourFilterImpl.classFilters";
     private static final String KEY_INSTANCE_CLASS_FILTERS = "BehaviourFilterImpl.instanceClassFilters";
     private static final String KEY_INSTANCE_FILTERS = "BehaviourFilterImpl.instanceFilters";
-    
+
     private static final Log logger = LogFactory.getLog(BehaviourFilterImpl.class);
-    
+
     private DictionaryService dictionaryService;
     private TenantService tenantService;
 
@@ -79,16 +78,18 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
     }
 
     /**
-     * @param dictionaryService  dictionary service
-     */    
+     * @param dictionaryService
+     *            dictionary service
+     */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
-     * @param tenantService  dictionary service
-     */    
+     * @param tenantService
+     *            dictionary service
+     */
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
@@ -131,9 +132,9 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
         }
 
         TransactionalResourceHelper.incrementCount(KEY_FILTER_COUNT);
-        
+
         TransactionalResourceHelper.incrementCount(KEY_GLOBAL_FILTERS);
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("   Now: " + TransactionalResourceHelper.getCount(KEY_GLOBAL_FILTERS));
@@ -155,7 +156,7 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
         {
             logger.debug("Behaviour: DISABLE (" + AlfrescoTransactionSupport.getTransactionId() + "): " + className);
         }
-        ParameterCheck.mandatory("className",  className);
+        ParameterCheck.mandatory("className", className);
         ClassFilter classFilter = new ClassFilter(className, includeSubClasses);
 
         TransactionalResourceHelper.incrementCount(KEY_FILTER_COUNT);
@@ -179,18 +180,18 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
     @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void disableBehaviour(NodeRef nodeRef, QName className)
     {
-        ParameterCheck.mandatory("nodeRef",  nodeRef);
-        ParameterCheck.mandatory("className",  className);
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        ParameterCheck.mandatory("className", className);
         nodeRef = tenantService.getName(nodeRef);
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Behaviour: DISABLE (" + AlfrescoTransactionSupport.getTransactionId() + "): " + nodeRef + "/" + className);
         }
         nodeRef = tenantService.getName(nodeRef);
-        
+
         TransactionalResourceHelper.incrementCount(KEY_FILTER_COUNT);
-        
+
         Map<NodeRef, Map<QName, MutableInt>> instanceClassFilters = TransactionalResourceHelper.getMap(KEY_INSTANCE_CLASS_FILTERS);
         Map<QName, MutableInt> classFilters = instanceClassFilters.get(nodeRef);
         if (classFilters == null)
@@ -205,7 +206,7 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
             classFilters.put(className, filter);
         }
         filter.increment();
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("   Now: " + filter);
@@ -216,16 +217,16 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
     @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void disableBehaviour(NodeRef nodeRef)
     {
-        ParameterCheck.mandatory("nodeRef",  nodeRef);
-        
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Behaviour: DISABLE (" + AlfrescoTransactionSupport.getTransactionId() + "): " + nodeRef + "/ALL:");
         }
         nodeRef = tenantService.getName(nodeRef);
-        
+
         TransactionalResourceHelper.incrementCount(KEY_FILTER_COUNT);
-        
+
         Map<NodeRef, MutableInt> instanceFilters = TransactionalResourceHelper.getMap(KEY_INSTANCE_FILTERS);
         MutableInt filter = instanceFilters.get(nodeRef);
         if (filter == null)
@@ -234,7 +235,7 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
             instanceFilters.put(nodeRef, filter);
         }
         filter.increment();
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("   Now:" + filter);
@@ -251,9 +252,9 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
         }
 
         TransactionalResourceHelper.decrementCount(KEY_FILTER_COUNT, false);
-        
+
         TransactionalResourceHelper.decrementCount(KEY_GLOBAL_FILTERS, false);
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("   Now: " + TransactionalResourceHelper.getCount(KEY_GLOBAL_FILTERS));
@@ -265,14 +266,14 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
     public void enableBehaviour(QName className)
     {
         ParameterCheck.mandatory("className", className);
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Behaviour: ENABLE (" + AlfrescoTransactionSupport.getTransactionId() + "): " + className);
         }
-        
+
         TransactionalResourceHelper.decrementCount(KEY_FILTER_COUNT, false);
-        
+
         if (!TransactionalResourceHelper.isResourcePresent(KEY_CLASS_FILTERS))
         {
             // Nothing was disabled
@@ -301,10 +302,10 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
         {
             filterNumber.decrement();
         }
-        
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("   Now: "+ filterNumber);
+            logger.debug("   Now: " + filterNumber);
         }
     }
 
@@ -312,16 +313,16 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
     @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void enableBehaviour(NodeRef nodeRef, QName className)
     {
-        ParameterCheck.mandatory("nodeRef",  nodeRef);
-        ParameterCheck.mandatory("className",  className);
-        
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        ParameterCheck.mandatory("className", className);
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Behaviour: ENABLE (" + AlfrescoTransactionSupport.getTransactionId() + "): " + nodeRef + "/" + className);
         }
-        
+
         TransactionalResourceHelper.decrementCount(KEY_FILTER_COUNT, false);
-        
+
         if (!TransactionalResourceHelper.isResourcePresent(KEY_INSTANCE_CLASS_FILTERS))
         {
             // Nothing was disabled
@@ -350,10 +351,10 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
         {
             filter.decrement();
         }
-        
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("   Now: "+ filter);
+            logger.debug("   Now: " + filter);
         }
     }
 
@@ -361,15 +362,15 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
     @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public void enableBehaviour(NodeRef nodeRef)
     {
-        ParameterCheck.mandatory("nodeRef",  nodeRef);
-        
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Behaviour: ENABLE (" + AlfrescoTransactionSupport.getTransactionId() + "): " + nodeRef + "/ALL");
         }
-        
+
         TransactionalResourceHelper.decrementCount(KEY_FILTER_COUNT, false);
-        
+
         if (!TransactionalResourceHelper.isResourcePresent(KEY_INSTANCE_FILTERS))
         {
             // Nothing was disabled
@@ -392,7 +393,7 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
         {
             filter.decrement();
         }
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("   Now:" + filter);
@@ -407,7 +408,8 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
     }
 
     /**
-     * @param className the class name
+     * @param className
+     *            the class name
      * @return the super class or <code>null</code>
      */
     private QName generaliseClass(QName className)
@@ -427,13 +429,13 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
     public boolean isEnabled(QName className)
     {
         ParameterCheck.mandatory("className", className);
-        
+
         // Check the global, first
         if (!isEnabled())
         {
             return false;
         }
-        
+
         if (!TransactionalResourceHelper.isResourcePresent(KEY_CLASS_FILTERS))
         {
             // Nothing was disabled
@@ -446,7 +448,8 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
         if (classFilter != null)
         {
             MutableInt filterNumber = classFilters.get(classFilter);
-            if (filterNumber != null && filterNumber.intValue() > 0) {
+            if (filterNumber != null && filterNumber.intValue() > 0)
+            {
                 // the class is disabled
                 return false;
             }
@@ -493,7 +496,7 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
             if (classFilter.getClassName().equals(className))
             {
                 MutableInt filterNumber = classFilters.get(classFilter);
-                if (filterNumber != null && filterNumber.intValue() > 0 )
+                if (filterNumber != null && filterNumber.intValue() > 0)
                 {
                     return classFilter;
                 }
@@ -507,15 +510,15 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
     @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public boolean isEnabled(NodeRef nodeRef, QName className)
     {
-        ParameterCheck.mandatory("nodeRef",  nodeRef);
-        ParameterCheck.mandatory("className",  className);
-        
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        ParameterCheck.mandatory("className", className);
+
         // Check the class (includes global) and instance, first
         if (!isEnabled(className) || !isEnabled(nodeRef))
         {
             return false;
         }
-        
+
         if (!TransactionalResourceHelper.isResourcePresent(KEY_INSTANCE_CLASS_FILTERS))
         {
             // Nothing was disabled
@@ -551,14 +554,14 @@ public class BehaviourFilterImpl implements BehaviourFilter, Extensible
     @Extend(traitAPI = BehaviourFilterTrait.class, extensionAPI = BehaviourFilterExtension.class)
     public boolean isEnabled(NodeRef nodeRef)
     {
-        ParameterCheck.mandatory("nodeRef",  nodeRef);
-        
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+
         // Check the class (includes global) and instance, first
         if (!isEnabled())
         {
             return false;
         }
-        
+
         if (!TransactionalResourceHelper.isResourcePresent(KEY_INSTANCE_FILTERS))
         {
             // Nothing was disabled

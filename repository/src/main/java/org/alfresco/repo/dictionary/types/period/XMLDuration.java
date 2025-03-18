@@ -33,6 +33,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * XMLDuration
+ * 
  * @author andyh
  *
  */
@@ -41,7 +42,7 @@ public class XMLDuration extends AbstractPeriodProvider
     /**
      * Period type
      */
-    public static final String PERIOD_TYPE = "duration"; 
+    public static final String PERIOD_TYPE = "duration";
 
     public String getDefaultExpression()
     {
@@ -55,15 +56,15 @@ public class XMLDuration extends AbstractPeriodProvider
 
     public Date getNextDate(Date date, String expression)
     {
-       Duration d = new Duration(expression);
-       return Duration.add(date, d);
+        Duration d = new Duration(expression);
+        return Duration.add(date, d);
     }
 
     public String getPeriodType()
     {
         return PERIOD_TYPE;
     }
-    
+
     public QName getExpressionDataType()
     {
         return DataTypeDefinition.TEXT;

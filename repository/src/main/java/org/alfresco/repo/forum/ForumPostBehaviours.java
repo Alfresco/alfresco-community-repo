@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -45,44 +48,41 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * This class registers behaviours for the {@link ForumModel#TYPE_POST fm:post} content type.
- * These behaviours maintain the correct value for the {@link ForumModel#PROP_COMMENT_COUNT comment count rollup property}.
+ * This class registers behaviours for the {@link ForumModel#TYPE_POST fm:post} content type. These behaviours maintain the correct value for the {@link ForumModel#PROP_COMMENT_COUNT comment count rollup property}.
  * 
  * @author Neil Mc Erlean
  * @since 4.0
  */
 public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePolicy,
-                                            NodeServicePolicies.BeforeDeleteNodePolicy,
-                                            NodeServicePolicies.OnUpdatePropertiesPolicy
+        NodeServicePolicies.BeforeDeleteNodePolicy,
+        NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     public static final int COUNT_TRIGGER_VALUE = -1;
-    
+
     private static final Log log = LogFactory.getLog(ForumPostBehaviours.class);
-    
+
     private PolicyComponent policyComponent;
     private CommentService commentService;
     private NodeService nodeService;
     private NodeService rawNodeService;
-    
-    public void setPolicyComponent(PolicyComponent policyComponent) 
+
+    public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     public void setCommentService(CommentService commentService)
     {
         this.commentService = commentService;
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setRawNodeService(NodeService nodeService)
     {
         this.rawNodeService = nodeService;
@@ -106,7 +106,7 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
                 ForumModel.TYPE_POST,
                 new JavaBehaviour(this, "beforeDeleteNode"));
     }
-    
+
     @Override
     public void onUpdateProperties(NodeRef commentsRollupNode,
             Map<QName, Serializable> before, Map<QName, Serializable> after)
@@ -116,19 +116,19 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
         Serializable newCommentCount = after.get(ForumModel.PROP_COMMENT_COUNT);
         if (newCommentCount != null)
         {
-            Integer newCommentCountInt = (Integer)newCommentCount;
+            Integer newCommentCountInt = (Integer) newCommentCount;
             if (newCommentCountInt == COUNT_TRIGGER_VALUE)
             {
                 if (log.isDebugEnabled())
                 {
                     StringBuilder msg = new StringBuilder();
                     msg.append(commentsRollupNode)
-                       .append(" had its ").append(ForumModel.PROP_COMMENT_COUNT.getLocalName())
-                       .append(" property set to ").append(newCommentCountInt);
+                            .append(" had its ").append(ForumModel.PROP_COMMENT_COUNT.getLocalName())
+                            .append(" property set to ").append(newCommentCountInt);
                     log.debug(msg.toString());
                     log.debug("Triggering a comment recount...");
                 }
-                
+
                 final Integer realCommentTotal = calculateCommentTotalByNodeCounting(commentsRollupNode);
                 if (realCommentTotal != null && realCommentTotal != -1)
                 {
@@ -141,40 +141,41 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
     /**
      * Calculate the comment total for the specified node.
      * 
-     * @param discussableNode discussable node.
+     * @param discussableNode
+     *            discussable node.
      * @return the recount value or <tt>null</tt> if it is not possible to calculate the total.
      */
     private Integer calculateCommentTotalByNodeCounting(NodeRef discussableNode)
     {
         // This method only counts "Share comments" and not Explorer comments or other fm:post nodes.
         Integer result = null;
-        
+
         if (nodeService.hasAspect(discussableNode, ForumModel.ASPECT_DISCUSSABLE))
         {
             NodeRef topicNode = commentService.getShareCommentsTopic(discussableNode);
-            
+
             if (log.isDebugEnabled())
             {
                 StringBuilder msg = new StringBuilder();
                 msg.append("Recounting comments for node ").append(discussableNode);
                 log.debug(msg.toString());
-                
+
                 msg = new StringBuilder();
                 msg.append("Topic node: ").append(topicNode);
                 log.debug(msg.toString());
             }
-            
+
             // We'll ignore discussable nodes which do not have an fm:topic in the correct
             // location - as used by "Share comments" - as opposed to e.g. Explorer client discussion fm:posts.
             if (topicNode != null)
             {
                 // Need to recalculate by hand.
-                
-                //TODO This could be replaced with a GetChildrenCannedQuery.
+
+                // TODO This could be replaced with a GetChildrenCannedQuery.
                 // Look for fm:post nodes only.
                 Set<QName> childNodeTypeQNames = new HashSet<QName>();
                 childNodeTypeQNames.add(ForumModel.TYPE_POST);
-                
+
                 // We'll use the raw, small 'n' nodeService as the big 'N' NodeService's interceptors would limit results.
                 List<ChildAssociationRef> fmPostChildren = rawNodeService.getChildAssocs(topicNode, childNodeTypeQNames);
                 result = Integer.valueOf(fmPostChildren.size());
@@ -182,12 +183,11 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
         }
         return result;
     }
-    
+
     @Override
     public void onCreateNode(final ChildAssociationRef childAssocRef)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -196,12 +196,11 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
             }
         });
     }
-    
+
     @Override
     public void beforeDeleteNode(final NodeRef nodeRef)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -210,77 +209,78 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
             }
         });
     }
-    
+
     /**
-     * This method adjusts the {@link ForumModel#PROP_COMMENT_COUNT} based on the supplied increment/decrement flag
-     * .
-     * @param fmPostNode the fm:post node (the comment node)
-     * @param incrementing <tt>true</tt> if we're incrementing the count, else <tt>false</tt>.
+     * This method adjusts the {@link ForumModel#PROP_COMMENT_COUNT} based on the supplied increment/decrement flag .
+     * 
+     * @param fmPostNode
+     *            the fm:post node (the comment node)
+     * @param incrementing
+     *            <tt>true</tt> if we're incrementing the count, else <tt>false</tt>.
      */
     private void adjustCommentCount(NodeRef fmPostNode, boolean incrementing)
     {
         // We have a new or a deleted comment under a discussable node.
         // We need to find the fm:commentsCount ancestor to this comment node (if there is one) and adjust its commentCount
         NodeRef discussableAncestor = commentService.getDiscussableAncestor(fmPostNode);
-        
+
         if (discussableAncestor != null)
         {
             if (discussableNodeRequiresFullRecount(discussableAncestor))
             {
                 Integer recount = calculateCommentTotalByNodeCounting(discussableAncestor);
-                
+
                 if (recount != null)
                 {
                     nodeService.addAspect(discussableAncestor, ForumModel.ASPECT_COMMENTS_ROLLUP, null);
-                    
+
                     int newCountValue = recount;
                     // If the node is being deleted then the above node-count will include the to-be-deleted node.
                     // This is because the policies are onCreateNode and *before*DeleteNode
-                    if ( !incrementing)
+                    if (!incrementing)
                     {
                         newCountValue--;
                     }
-                    
+
                     if (log.isDebugEnabled())
                     {
                         log.debug(discussableAncestor + " newCountValue: " + newCountValue);
                     }
-                    
+
                     nodeService.setProperty(discussableAncestor, ForumModel.PROP_COMMENT_COUNT, newCountValue);
-                    
+
                 }
-                
+
             }
             else
             {
                 Integer existingCommentCount = (Integer) nodeService.getProperty(discussableAncestor, ForumModel.PROP_COMMENT_COUNT);
                 int existingCommentCountInt = existingCommentCount == null ? 0 : existingCommentCount.intValue();
-                
+
                 int delta = incrementing ? 1 : -1;
-                
+
                 nodeService.setProperty(discussableAncestor, ForumModel.PROP_COMMENT_COUNT, existingCommentCountInt + delta);
             }
         }
     }
-    
+
     /**
-     * This method checks if a {@link ForumModel#ASPECT_DISCUSSABLE} node requires a full recount of its comments.
-     * This will occur if any of the following are true:
+     * This method checks if a {@link ForumModel#ASPECT_DISCUSSABLE} node requires a full recount of its comments. This will occur if any of the following are true:
      * <ul>
-     *    <li>the node has no {@link ForumModel#ASPECT_COMMENTS_ROLLUP} aspect</li>
-     *    <li>the {@link ForumModel#PROP_COMMENT_COUNT} is a negative number</li>
+     * <li>the node has no {@link ForumModel#ASPECT_COMMENTS_ROLLUP} aspect</li>
+     * <li>the {@link ForumModel#PROP_COMMENT_COUNT} is a negative number</li>
      * </ul>
      */
     private boolean discussableNodeRequiresFullRecount(NodeRef discussableNode)
     {
         boolean result;
-        
-        if ( !nodeService.hasAspect(discussableNode, ForumModel.ASPECT_DISCUSSABLE))
+
+        if (!nodeService.hasAspect(discussableNode, ForumModel.ASPECT_DISCUSSABLE))
         {
             throw new AlfrescoRuntimeException("Node did not have fm:discussable aspect as expected.");
         }
-        
-        if ( !nodeService.hasAspect(discussableNode, ForumModel.ASPECT_COMMENTS_ROLLUP))
+
+        if (!nodeService.hasAspect(discussableNode, ForumModel.ASPECT_COMMENTS_ROLLUP))
         {
             result = true;
         }
@@ -289,19 +289,19 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
             Integer existingCommentCount = (Integer) nodeService.getProperty(discussableNode, ForumModel.PROP_COMMENT_COUNT);
             result = existingCommentCount == null || existingCommentCount <= COUNT_TRIGGER_VALUE;
         }
-        
+
         if (log.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
             msg.append(discussableNode).append(" does");
-            if ( !result)
+            if (!result)
             {
                 msg.append(" not");
             }
             msg.append(" require full comment recount");
             log.debug(msg.toString());
         }
-        
+
         return result;
     }
 }

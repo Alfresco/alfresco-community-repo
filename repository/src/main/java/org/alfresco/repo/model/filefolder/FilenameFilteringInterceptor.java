@@ -28,6 +28,11 @@ package org.alfresco.repo.model.filefolder;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
@@ -45,14 +50,9 @@ import org.alfresco.util.FileFilterMode;
 import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.FileFilterMode.Mode;
 import org.alfresco.util.PatternFilter;
-import org.aopalliance.intercept.MethodInterceptor;
-import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * An interceptor that intercepts FileFolderService methods, ensuring system, temporary and hidden files
- * and paths are marked with the correct aspects.
+ * An interceptor that intercepts FileFolderService methods, ensuring system, temporary and hidden files and paths are marked with the correct aspects.
  * 
  * @author alex.mukha
  */
@@ -68,7 +68,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 
     private NodeService nodeService;
     private PermissionService permissionService;
-    
+
     private ContentService contentService;
 
     private PatternFilter temporaryFiles;
@@ -77,9 +77,8 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
     private boolean enabled = true;
 
     public FilenameFilteringInterceptor()
-    {
-    }
-    
+    {}
+
     /**
      * A list of regular expressions that represent patterns of temporary files.
      * 
@@ -88,7 +87,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
     {
         this.temporaryFiles = temporaryFiles;
     }
-    
+
     public void setHiddenAspect(HiddenAspect hiddenAspect)
     {
         this.hiddenAspect = hiddenAspect;
@@ -107,25 +106,26 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
     {
         this.systemPaths = systemPaths;
     }
-    
+
     public Mode getMode()
     {
         return FileFilterMode.getMode();
     }
-    
+
     public Client getClient()
     {
         return FileFilterMode.getClient();
     }
 
     /**
-     * @param nodeService the service to use to apply the <b>sys:temporary</b> aspect
+     * @param nodeService
+     *            the service to use to apply the <b>sys:temporary</b> aspect
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
@@ -141,14 +141,14 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
         return contentService;
     }
 
-    private void checkTemporaryAspect(boolean isTemporary,  FileInfo fileInfo)
+    private void checkTemporaryAspect(boolean isTemporary, FileInfo fileInfo)
     {
         checkTemporaryAspect(isTemporary, fileInfo.getNodeRef());
     }
-    
-    private void checkTemporaryAspect(boolean isTemporary,  NodeRef nodeRef)
+
+    private void checkTemporaryAspect(boolean isTemporary, NodeRef nodeRef)
     {
-        if(isTemporary)
+        if (isTemporary)
         {
             // it matched, so apply the temporary and hidden aspects
             nodeService.addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);
@@ -166,14 +166,14 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
             {
                 // Remove the aspect
                 nodeService.removeAspect(nodeRef, ContentModel.ASPECT_TEMPORARY);
-                
+
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Removed temporary marker: " + nodeRef);
                 }
             }
         }
-    }        
+    }
 
     private Object runAsSystem(MethodInvocation invocation) throws Throwable
     {
@@ -192,7 +192,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
         {
             AuthenticationUtil.popAuthentication();
         }
-        
+
         return ret;
     }
 
@@ -202,11 +202,11 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
         Path path = nodeService.getPath(parentNodeRef);
 
         Iterator<Element> it = path.iterator();
-        while(it.hasNext())
+        while (it.hasNext())
         {
-            Path.ChildAssocElement elem = (Path.ChildAssocElement)it.next();
+            Path.ChildAssocElement elem = (Path.ChildAssocElement) it.next();
             QName qname = elem.getRef().getQName();
-            if(qname != null && systemPaths.isFiltered(qname.getLocalName()))
+            if (qname != null && systemPaths.isFiltered(qname.getLocalName()))
             {
                 ret = true;
                 break;
@@ -215,7 +215,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 
         return ret;
     }
-    
+
     private int getSystemFileVisibilityMask()
     {
         int mask = 0;
@@ -232,7 +232,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
         {
             return invocation.proceed();
         }
-        
+
         // execute and get the result
         String methodName = invocation.getMethod().getName();
         Object ret = null;
@@ -240,18 +240,18 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
         // do the invocation
         if (methodName.startsWith("create"))
         {
-            NodeRef nodeRef  = (NodeRef)invocation.getArguments()[0];
-            String filename = (String)invocation.getArguments()[1];
+            NodeRef nodeRef = (NodeRef) invocation.getArguments()[0];
+            String filename = (String) invocation.getArguments()[1];
 
-            if(getMode() == Mode.ENHANCED)
+            if (getMode() == Mode.ENHANCED)
             {
-                if(systemPaths.isFiltered(filename))
+                if (systemPaths.isFiltered(filename))
                 {
                     // it's a system file/folder, create as system and allow full control to all authorities
                     ret = runAsSystem(invocation);
-                    FileInfoImpl fileInfo = (FileInfoImpl)ret;
-                    permissionService.setPermission(fileInfo.getNodeRef(), PermissionService.ALL_AUTHORITIES, PermissionService.FULL_CONTROL, true);                
-                        
+                    FileInfoImpl fileInfo = (FileInfoImpl) ret;
+                    permissionService.setPermission(fileInfo.getNodeRef(), PermissionService.ALL_AUTHORITIES, PermissionService.FULL_CONTROL, true);
+
                     // it's always marked temporary and hidden
                     checkTemporaryAspect(true, fileInfo);
                     hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask(), false, false, false);
@@ -260,10 +260,10 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                 {
                     // it's not a temporary file/folder, create as normal
                     ret = invocation.proceed();
-                    
-                    FileInfoImpl fileInfo = (FileInfoImpl)ret;
 
-                    if(isSystemPath(nodeRef, filename))
+                    FileInfoImpl fileInfo = (FileInfoImpl) ret;
+
+                    if (isSystemPath(nodeRef, filename))
                     {
                         // it's on a system path, check whether temporary, hidden and noindex aspects need to be applied
                         checkTemporaryAspect(true, fileInfo);
@@ -272,13 +272,13 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                     else
                     {
                         // check whether it's a temporary or hidden file
-                        FileInfo sourceInfo = (FileInfo)ret;
+                        FileInfo sourceInfo = (FileInfo) ret;
                         boolean isTmp = isTemporaryObject(filename, sourceInfo.getNodeRef());
                         checkTemporaryAspect(isTmp, sourceInfo);
                         boolean isHidden = hiddenAspect.checkHidden(fileInfo, false, false);
-                        if(isHidden && fileInfo instanceof FileInfoImpl)
+                        if (isHidden && fileInfo instanceof FileInfoImpl)
                         {
-                            ((FileInfoImpl)fileInfo).setHidden(true);
+                            ((FileInfoImpl) fileInfo).setHidden(true);
                         }
                     }
                 }
@@ -287,7 +287,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
             {
                 ret = invocation.proceed();
 
-                FileInfoImpl fileInfo = (FileInfoImpl)ret;
+                FileInfoImpl fileInfo = (FileInfoImpl) ret;
 
                 boolean isTmp = isTemporaryObject(filename, fileInfo.getNodeRef());
                 checkTemporaryAspect(isTmp, fileInfo);
@@ -296,23 +296,23 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
         else if (methodName.startsWith("move"))
         {
             Object[] args = invocation.getArguments();
-            NodeRef sourceNodeRef = (NodeRef)args[0];
-            String newName = (String)args[args.length -1];
-           
-            if(newName != null)
+            NodeRef sourceNodeRef = (NodeRef) args[0];
+            String newName = (String) args[args.length - 1];
+
+            if (newName != null)
             {
                 // Name is changing
                 // check against all the regular expressions
                 boolean isTmp = isTemporaryObject(newName, sourceNodeRef);
                 checkTemporaryAspect(isTmp, sourceNodeRef);
             }
-          
+
             // now do the move
             ret = invocation.proceed();
 
-            if(getMode() == Mode.ENHANCED)
+            if (getMode() == Mode.ENHANCED)
             {
-                    hiddenAspect.checkHidden(sourceNodeRef, true, true);
+                hiddenAspect.checkHidden(sourceNodeRef, true, true);
             }
         }
         else if (methodName.startsWith("copy"))
@@ -330,49 +330,46 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
             // check against all the regular expressions
             boolean isTmp = isTemporaryObject(filename, fileInfo.getNodeRef());
             checkTemporaryAspect(isTmp, fileInfo);
-            if(getMode() == Mode.ENHANCED)
+            if (getMode() == Mode.ENHANCED)
             {
-                    boolean isHidden = hiddenAspect.checkHidden(fileInfo, true, true);
-                    if(isHidden && fileInfo instanceof FileInfoImpl)
-                    {
-                        ((FileInfoImpl)fileInfo).setHidden(true);
-                    }
+                boolean isHidden = hiddenAspect.checkHidden(fileInfo, true, true);
+                if (isHidden && fileInfo instanceof FileInfoImpl)
+                {
+                    ((FileInfoImpl) fileInfo).setHidden(true);
+                }
             }
-            /*
-             * TODO should these two calls be before the proceed?   However its the same problem as create
-             * The node needs to be created before we can add aspects.
-             */
+            /* TODO should these two calls be before the proceed? However its the same problem as create The node needs to be created before we can add aspects. */
         }
-        else if (methodName.startsWith("rename")) 
+        else if (methodName.startsWith("rename"))
         {
             Object[] args = invocation.getArguments();
-            
-            if(args != null && args.length == 2)
+
+            if (args != null && args.length == 2)
             {
                 /**
                  * Expecting rename(NodeRef, newName)
                  */
-                String newName = (String)args[1];
-                NodeRef sourceNodeRef = (NodeRef)args[0];
-                
+                String newName = (String) args[1];
+                NodeRef sourceNodeRef = (NodeRef) args[0];
+
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Checking filename returned by " + methodName + ": " + newName);
                 }
-              
+
                 // check against all the regular expressions
                 boolean isTmp = isTemporaryObject(newName, sourceNodeRef);
                 checkTemporaryAspect(isTmp, sourceNodeRef);
-                
+
                 ret = invocation.proceed();
 
-                if(getMode() == Mode.ENHANCED)
+                if (getMode() == Mode.ENHANCED)
                 {
-                        boolean isHidden = hiddenAspect.checkHidden(sourceNodeRef, true, true);
-                        if(isHidden && ret instanceof FileInfoImpl)
-                        {
-                            ((FileInfoImpl)ret).setHidden(true);
-                        }
+                    boolean isHidden = hiddenAspect.checkHidden(sourceNodeRef, true, true);
+                    if (isHidden && ret instanceof FileInfoImpl)
+                    {
+                        ((FileInfoImpl) ret).setHidden(true);
+                    }
                 }
 
                 return ret;
@@ -395,17 +392,19 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
     }
 
     /**
-     * Determines whether specified <code>name</code> matches any pattern of temporary file names.
-     * <br>Also it checks special case of new XLS document creation in MacOS:
+     * Determines whether specified <code>name</code> matches any pattern of temporary file names. <br>
+     * Also it checks special case of new XLS document creation in MacOS:
      * <ul>
-     *    <li>its name doesn’t have extension (on MacOS, but it has ‘.tmp’ extension on Windows);
-     *    <li>length of its name equals to 8;
-     *    <li>its name contains only hexadecimal digits (0-9, A-F);
-     *    <li>it has Mimetype equal to ‘application/vnd.openxmlformats-officedocument.spreadsheetml.sheet’.
+     * <li>its name doesn’t have extension (on MacOS, but it has ‘.tmp’ extension on Windows);
+     * <li>length of its name equals to 8;
+     * <li>its name contains only hexadecimal digits (0-9, A-F);
+     * <li>it has Mimetype equal to ‘application/vnd.openxmlformats-officedocument.spreadsheetml.sheet’.
      * </ul>
      * 
-     * @param name - {@link String} value which contains name of node
-     * @param nodeRef - {@link NodeRef} instance of the node
+     * @param name
+     *            - {@link String} value which contains name of node
+     * @param nodeRef
+     *            - {@link NodeRef} instance of the node
      * @return {@link boolean} value. <code>true</code> if <code>name</code> is name of temporary object.
      */
     private boolean isTemporaryObject(String name, NodeRef nodeRef)
@@ -415,7 +414,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
         {
             return true;
         }
-        
+
         // This pattern must be validated in conjunction with mimetype validation only!
         boolean result = XSL_MACOS_TEMPORARY_FILENAME_FITLER.matcher(name).matches();
 
@@ -427,7 +426,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
             {
                 result = XLSX_MIMETYPE.equals(contentReader.getMimetype());
             }
-            else 
+            else
             {
                 // MNT-10561
                 // We are unable to determine the mimetype so assume it's NOT temporary
@@ -437,4 +436,3 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
         return result;
     }
 }
-

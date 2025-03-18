@@ -26,18 +26,18 @@
 package org.alfresco.service.cmr.transfer;
 
 /**
- * The transfer callback is called during a transfer, it allows the real-time feedback of 
- * an in progress transfer.  It can be used to populate a deployment report or to display 
- * a user interface.
+ * The transfer callback is called during a transfer, it allows the real-time feedback of an in progress transfer. It can be used to populate a deployment report or to display a user interface.
  *
  * @author Mark Rogers
  */
-public interface TransferCallback 
+public interface TransferCallback
 {
-   /**
+    /**
      * processEvent
-     * @param event TransferEvent
+     * 
+     * @param event
+     *            TransferEvent
      */
-    public void processEvent(TransferEvent event);    
-    
+    public void processEvent(TransferEvent event);
+
 }

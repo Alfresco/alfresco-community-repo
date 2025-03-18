@@ -30,13 +30,14 @@ package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.aopalliance.intercept.MethodInvocation;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.PolicyRegister;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMSecurityCommon;
 import org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.aopalliance.intercept.MethodInvocation;
 
 /**
  * Abstract base policy implementation
@@ -45,7 +46,7 @@ import org.aopalliance.intercept.MethodInvocation;
  * @since 2.1
  */
 public abstract class AbstractBasePolicy extends RMSecurityCommon
-                                         implements Policy
+        implements Policy
 {
     /** Capability service */
     private CapabilityService capabilityService;
@@ -57,7 +58,8 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
     private String name;
 
     /**
-     * @param name  policy name
+     * @param name
+     *            policy name
      */
     public void setName(String name)
     {
@@ -90,7 +92,8 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
     }
 
     /**
-     * @param capabilityService capability service
+     * @param capabilityService
+     *            capability service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -98,12 +101,13 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
     }
 
     /**
-     * @param policyRegister	policy register
+     * @param policyRegister
+     *            policy register
      */
     public void setPolicyRegister(PolicyRegister policyRegister)
     {
-		this.policyRegister = policyRegister;
-	}
+        this.policyRegister = policyRegister;
+    }
 
     /**
      * Init method
@@ -185,7 +189,7 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
      * @param position
      * @return
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     protected Map<QName, Serializable> getProperties(MethodInvocation invocation, Class[] params, int position)
     {
         if (invocation.getArguments()[position] == null)

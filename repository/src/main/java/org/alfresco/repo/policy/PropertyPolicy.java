@@ -34,5 +34,4 @@ import org.alfresco.api.AlfrescoPublicApi;
  */
 @AlfrescoPublicApi
 public interface PropertyPolicy extends Policy
-{
-}
+{}

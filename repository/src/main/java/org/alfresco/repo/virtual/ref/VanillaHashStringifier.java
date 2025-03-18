@@ -25,9 +25,9 @@
  */
 
 package org.alfresco.repo.virtual.ref;
+
 /**
- * Custom stringifier for hash encoded strings of {@link Reference}s having the
- * protocol set to {@link VanillaProtocol}.
+ * Custom stringifier for hash encoded strings of {@link Reference}s having the protocol set to {@link VanillaProtocol}.
  */
 public class VanillaHashStringifier extends VirtualHashStringifier
 {
@@ -36,7 +36,7 @@ public class VanillaHashStringifier extends VirtualHashStringifier
     public VanillaHashStringifier(HashStore classpathHashStore, Stringifier referenceDispatcher)
     {
         super(classpathHashStore,
-              referenceDispatcher);
+                referenceDispatcher);
     }
 
     @Override
@@ -46,14 +46,14 @@ public class VanillaHashStringifier extends VirtualHashStringifier
         if (!Protocols.VANILLA.protocol.equals(protocol))
         {
             throw new ReferenceEncodingException("Unsupported protocol " + protocol + "."
-                        + Protocols.VIRTUAL.protocol.name + " exoected ");
+                    + Protocols.VIRTUAL.protocol.name + " exoected ");
         }
 
         String virtualString = stringifyVirtualReference(reference);
 
         ResourceParameter vanillaTemplateParam = (ResourceParameter) reference
-                    .getParameters()
-                        .get(VanillaProtocol.VANILLA_TEMPLATE_PARAM_INDEX);
+                .getParameters()
+                .get(VanillaProtocol.VANILLA_TEMPLATE_PARAM_INDEX);
 
         String vanillaString = stringify(vanillaTemplateParam.getValue());
 

@@ -29,6 +29,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.mozilla.javascript.Scriptable;
+
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.jscript.ValueConverter;
@@ -39,12 +41,9 @@ import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
-import org.mozilla.javascript.Scriptable;
 
 /**
- * The Workflow Manager serves as the main entry point for scripts 
- * to create and interact with workflows.
- * It is made available in the root scripting scope
+ * The Workflow Manager serves as the main entry point for scripts to create and interact with workflows. It is made available in the root scripting scope
  * 
  * @author glenj
  *
@@ -53,24 +52,25 @@ public class WorkflowManager extends BaseScopableProcessorExtension
 {
     /** The maximum number of reviewers for "Group Review and Approve" workflow */
     private int maxGroupReviewers = 0;
-    /** Registry Service property */ 
+    /** Registry Service property */
     private ServiceRegistry services;
 
     /**
      * Sets the Service Registry property
      * 
-     * @param services  the service registry
+     * @param services
+     *            the service registry
      */
     public void setServiceRegistry(ServiceRegistry services)
     {
         this.services = services;
     }
-    
+
     public void setMaxGroupReviewers(int maxGroupReviewers)
     {
         this.maxGroupReviewers = maxGroupReviewers;
     }
-    
+
     public int getMaxGroupReviewers()
     {
         return maxGroupReviewers;
@@ -79,7 +79,8 @@ public class WorkflowManager extends BaseScopableProcessorExtension
     /**
      * Get deployed workflow definition by ID
      * 
-     * @param id the workflow definition ID
+     * @param id
+     *            the workflow definition ID
      * @return the workflow definition matching the given ID
      */
     public JscriptWorkflowDefinition getDefinition(String id)
@@ -87,44 +88,45 @@ public class WorkflowManager extends BaseScopableProcessorExtension
         WorkflowDefinition definition = services.getWorkflowService().getDefinitionById(id);
         return definition == null ? null : new JscriptWorkflowDefinition(definition, services, getScope());
     }
-    
+
     /**
      * Get deployed workflow definition by Name
      * 
-     * @param name the workflow definition name
+     * @param name
+     *            the workflow definition name
      * @return the workflow definition matching the given name
      */
     public JscriptWorkflowDefinition getDefinitionByName(String name)
     {
         WorkflowDefinition cmrWorkflowDefinition = services.getWorkflowService().getDefinitionByName(name);
-        return cmrWorkflowDefinition == null ? null: new JscriptWorkflowDefinition(cmrWorkflowDefinition, services, getScope());
+        return cmrWorkflowDefinition == null ? null : new JscriptWorkflowDefinition(cmrWorkflowDefinition, services, getScope());
     }
 
     /**
-     * Get tasks assigned to the current user. Note that this will only return in-progress 
-     * tasks.
+     * Get tasks assigned to the current user. Note that this will only return in-progress tasks.
      * 
-     * @return  the list of assigned (in-progress) tasks
+     * @return the list of assigned (in-progress) tasks
      */
     public Scriptable getAssignedTasks()
     {
-        return getAssignedTasksByState(WorkflowTaskState.IN_PROGRESS);  
+        return getAssignedTasksByState(WorkflowTaskState.IN_PROGRESS);
     }
-    
+
     /**
      * Get completed tasks assigned to the current user.
      * 
-     * @return  the list of completed tasks
+     * @return the list of completed tasks
      */
     public Scriptable getCompletedTasks()
     {
         return getAssignedTasksByState(WorkflowTaskState.COMPLETED);
     }
-    
+
     /**
      * Get Workflow Instance by ID
      * 
-     * @param workflowInstanceID ID of the workflow instance to retrieve
+     * @param workflowInstanceID
+     *            ID of the workflow instance to retrieve
      * @return the workflow instance for the given ID
      */
     public JscriptWorkflowInstance getInstance(String workflowInstanceID)
@@ -132,12 +134,13 @@ public class WorkflowManager extends BaseScopableProcessorExtension
         WorkflowInstance instance = services.getWorkflowService().getWorkflowById(workflowInstanceID);
         return instance == null ? null : new JscriptWorkflowInstance(instance, services, getScope());
     }
-    
+
     /**
      * Get pooled tasks
      * 
-     * @param authority  the authority
-     * @return  the list of assigned tasks
+     * @param authority
+     *            the authority
+     * @return the list of assigned tasks
      */
     public Scriptable getPooledTasks(final String authority)
     {
@@ -148,13 +151,14 @@ public class WorkflowManager extends BaseScopableProcessorExtension
             pooledTasks.add(new JscriptWorkflowTask(cmrPooledTask, services, getScope()));
         }
         ValueConverter converter = new ValueConverter();
-        return (Scriptable)converter.convertValueForScript(services, getScope(), null, pooledTasks);
+        return (Scriptable) converter.convertValueForScript(services, getScope(), null, pooledTasks);
     }
-    
+
     /**
      * Get task by id
      * 
-     * @param id task id
+     * @param id
+     *            task id
      * @return the task (null if not found)
      */
     public JscriptWorkflowTask getTask(String id)
@@ -162,19 +166,19 @@ public class WorkflowManager extends BaseScopableProcessorExtension
         WorkflowTask task = services.getWorkflowService().getTaskById(id);
         return task == null ? null : new JscriptWorkflowTask(task, services, this.getScope());
     }
-    
+
     /**
-     * Get task by id. Alternative method signature to <code>getTask(String id)</code> for 
-     * those used to the Template API
+     * Get task by id. Alternative method signature to <code>getTask(String id)</code> for those used to the Template API
      * 
-     * @param id task id
+     * @param id
+     *            task id
      * @return the task (null if not found)
      */
     public JscriptWorkflowTask getTaskById(String id)
     {
         return getTask(id);
     }
-    
+
     /**
      * Gets the latest versions of the deployed, workflow definitions
      *
@@ -188,8 +192,8 @@ public class WorkflowManager extends BaseScopableProcessorExtension
         {
             workflowDefs.add(new JscriptWorkflowDefinition(cmrDefinition, services, getScope()));
         }
-        
-        return (Scriptable)new ValueConverter().convertValueForScript(services, getScope(), null, workflowDefs);
+
+        return (Scriptable) new ValueConverter().convertValueForScript(services, getScope(), null, workflowDefs);
     }
 
     /**
@@ -205,9 +209,9 @@ public class WorkflowManager extends BaseScopableProcessorExtension
         {
             workflowDefs.add(new JscriptWorkflowDefinition(cmrDefinition, services, getScope()));
         }
-        return (Scriptable)new ValueConverter().convertValueForScript(services, getScope(), null, workflowDefs);
+        return (Scriptable) new ValueConverter().convertValueForScript(services, getScope(), null, workflowDefs);
     }
-    
+
     /**
      * Create a workflow package (a container of content to route through a workflow)
      * 
@@ -220,11 +224,11 @@ public class WorkflowManager extends BaseScopableProcessorExtension
     }
 
     /**
-     * Get tasks assigned to the current user, filtered by workflow task state.
-     * Only tasks having the specified state will be returned.
+     * Get tasks assigned to the current user, filtered by workflow task state. Only tasks having the specified state will be returned.
      * 
-     * @param state  workflow task state to filter assigned tasks by
-     * @return  the list of assigned tasks, filtered by state
+     * @param state
+     *            workflow task state to filter assigned tasks by
+     * @return the list of assigned tasks, filtered by state
      */
     private Scriptable getAssignedTasksByState(WorkflowTaskState state)
     {
@@ -236,6 +240,6 @@ public class WorkflowManager extends BaseScopableProcessorExtension
         {
             assignedTasks.add(new JscriptWorkflowTask(cmrTask, services, getScope()));
         }
-        return (Scriptable)new ValueConverter().convertValueForScript(services, getScope(), null, assignedTasks);
+        return (Scriptable) new ValueConverter().convertValueForScript(services, getScope(), null, assignedTasks);
     }
 }

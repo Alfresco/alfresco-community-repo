@@ -47,14 +47,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Extended version node service implementation that supports the retrieval of
- * recorded version state.
+ * Extended version node service implementation that supports the retrieval of recorded version state.
  *
  * @author Roy Wetherall
  * @since 2.3
  */
 public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
-                                              implements RecordableVersionModel
+        implements RecordableVersionModel
 {
     /** record service */
     private RecordService recordService;
@@ -62,8 +61,9 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
     /** record model URI's */
     private List<String> recordModelURIs;
 
-	/**
-     * @param recordModelURIs namespaces specific to records
+    /**
+     * @param recordModelURIs
+     *            namespaces specific to records
      */
     public void setRecordModelURIs(List<String> recordModelURIs)
     {
@@ -71,7 +71,8 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
     }
 
     /**
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -90,15 +91,15 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
         NodeRef converted = VersionUtil.convertNodeRef(nodeRef);
         if (dbNodeService.hasAspect(converted, ASPECT_RECORDED_VERSION))
         {
-            NodeRef record = (NodeRef)dbNodeService.getProperty(converted, PROP_RECORD_NODE_REF);
+            NodeRef record = (NodeRef) dbNodeService.getProperty(converted, PROP_RECORD_NODE_REF);
             if (record != null && dbNodeService.exists(record))
             {
-                Map<QName, Serializable> properties =  dbNodeService.getProperties(record);
+                Map<QName, Serializable> properties = dbNodeService.getProperties(record);
                 return processProperties(converted, properties);
             }
             else
             {
-                return (Map<QName, Serializable>)Collections.EMPTY_MAP;
+                return (Map<QName, Serializable>) Collections.EMPTY_MAP;
             }
         }
         else
@@ -110,7 +111,8 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
     /**
      * Process properties map before returning as frozen state.
      *
-     * @param properties                                        properties map
+     * @param properties
+     *            properties map
      * @return {@link Map}&lt;{@link QName}, {@link Serializable}&gt; processed property map
      */
     protected Map<QName, Serializable> processProperties(NodeRef version, Map<QName, Serializable> properties)
@@ -141,8 +143,10 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
     /**
      * Process version properties.
      *
-     * @param version                   version node reference
-     * @param properties                properties map
+     * @param version
+     *            version node reference
+     * @param properties
+     *            properties map
      */
     protected void processVersionProperties(NodeRef version, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
@@ -151,11 +155,11 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
 
         if (versionProperties != null)
         {
-            String versionLabel = (String)versionProperties.get(Version2Model.PROP_QNAME_VERSION_LABEL);
+            String versionLabel = (String) versionProperties.get(Version2Model.PROP_QNAME_VERSION_LABEL);
             properties.put(ContentModel.PROP_VERSION_LABEL, versionLabel);
 
             // Convert frozen sys:referenceable properties
-            NodeRef nodeRef = (NodeRef)versionProperties.get(Version2Model.PROP_QNAME_FROZEN_NODE_REF);
+            NodeRef nodeRef = (NodeRef) versionProperties.get(Version2Model.PROP_QNAME_FROZEN_NODE_REF);
             if (nodeRef != null)
             {
                 properties.put(ContentModel.PROP_STORE_PROTOCOL, nodeRef.getStoreRef().getProtocol());
@@ -163,42 +167,42 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
                 properties.put(ContentModel.PROP_NODE_UUID, nodeRef.getId());
             }
 
-            Long dbid = (Long)versionProperties.get(Version2Model.PROP_QNAME_FROZEN_NODE_DBID);
+            Long dbid = (Long) versionProperties.get(Version2Model.PROP_QNAME_FROZEN_NODE_DBID);
             properties.put(ContentModel.PROP_NODE_DBID, dbid);
 
             // Convert frozen cm:auditable properties
-            String creator = (String)versionProperties.get(Version2Model.PROP_QNAME_FROZEN_CREATOR);
+            String creator = (String) versionProperties.get(Version2Model.PROP_QNAME_FROZEN_CREATOR);
             if (creator != null)
             {
                 properties.put(ContentModel.PROP_CREATOR, creator);
             }
 
-            Date created = (Date)versionProperties.get(Version2Model.PROP_QNAME_FROZEN_CREATED);
+            Date created = (Date) versionProperties.get(Version2Model.PROP_QNAME_FROZEN_CREATED);
             if (created != null)
             {
                 properties.put(ContentModel.PROP_CREATED, created);
             }
 
             // TODO - check use-cases for get version, revert, restore ....
-            String modifier = (String)versionProperties.get(Version2Model.PROP_QNAME_FROZEN_MODIFIER);
+            String modifier = (String) versionProperties.get(Version2Model.PROP_QNAME_FROZEN_MODIFIER);
             if (modifier != null)
             {
                 properties.put(ContentModel.PROP_MODIFIER, modifier);
             }
 
-            Date modified = (Date)versionProperties.get(Version2Model.PROP_QNAME_FROZEN_MODIFIED);
+            Date modified = (Date) versionProperties.get(Version2Model.PROP_QNAME_FROZEN_MODIFIED);
             if (modified != null)
             {
                 properties.put(ContentModel.PROP_MODIFIED, modified);
             }
 
-            Date accessed = (Date)versionProperties.get(Version2Model.PROP_QNAME_FROZEN_ACCESSED);
+            Date accessed = (Date) versionProperties.get(Version2Model.PROP_QNAME_FROZEN_ACCESSED);
             if (accessed != null)
             {
                 properties.put(ContentModel.PROP_ACCESSED, accessed);
             }
 
-            String owner = (String)versionProperties.get(PROP_FROZEN_OWNER);
+            String owner = (String) versionProperties.get(PROP_FROZEN_OWNER);
             if (owner != null)
             {
                 properties.put(ContentModel.PROP_OWNER, owner);
@@ -219,15 +223,15 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
         if (dbNodeService.hasAspect(converted, ASPECT_RECORDED_VERSION))
         {
 
-            NodeRef record = (NodeRef)dbNodeService.getProperty(converted, PROP_RECORD_NODE_REF);
+            NodeRef record = (NodeRef) dbNodeService.getProperty(converted, PROP_RECORD_NODE_REF);
             if (record != null && dbNodeService.exists(record))
             {
-                Set<QName> aspects =  dbNodeService.getAspects(record);
+                Set<QName> aspects = dbNodeService.getAspects(record);
                 return processAspects(aspects);
             }
             else
             {
-                return (Set<QName>)Collections.EMPTY_SET;
+                return (Set<QName>) Collections.EMPTY_SET;
             }
         }
         else
@@ -239,8 +243,9 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
     /**
      * Process frozen aspects.
      *
-     * @param aspects                       aspect set
-     * @return {@link Set}&lt;{@link QName}&gt;   processed aspect set
+     * @param aspects
+     *            aspect set
+     * @return {@link Set}&lt;{@link QName}&gt; processed aspect set
      */
     protected Set<QName> processAspects(Set<QName> aspects)
     {

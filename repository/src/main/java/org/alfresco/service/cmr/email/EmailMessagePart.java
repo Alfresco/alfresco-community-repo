@@ -29,7 +29,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 
 /**
- * Interface to process email parts. 
+ * Interface to process email parts.
  * 
  * @author maxim
  * @since 2.2

@@ -39,24 +39,23 @@ public class PropertySerializableValueEntity
 {
     private Long id;
     private Serializable serializableValue;
-    
+
     public PropertySerializableValueEntity()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("PropertySerializableValueEntity")
-          .append("[ id=").append(id)
-          .append(", value=").append(serializableValue)
-          .append("]");
+                .append("[ id=").append(id)
+                .append(", value=").append(serializableValue)
+                .append("]");
         return sb.toString();
     }
-    
+
     /**
-     * @return          Returns the ID-value pair
+     * @return Returns the ID-value pair
      */
     public Pair<Long, Serializable> getEntityPair()
     {
@@ -81,5 +80,5 @@ public class PropertySerializableValueEntity
     public void setSerializableValue(Serializable serializableValue)
     {
         this.serializableValue = serializableValue;
-    }    
+    }
 }

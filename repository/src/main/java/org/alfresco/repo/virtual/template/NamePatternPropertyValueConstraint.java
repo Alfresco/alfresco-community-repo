@@ -34,11 +34,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.SearchLanguageConversion;
 
 /**
- * Specifies a constraint on a property value, as for e.g.
- * ContentModel.PROP_NAME, to be applied as name pattern to queries given in the virtual folder
- * template.
+ * Specifies a constraint on a property value, as for e.g. ContentModel.PROP_NAME, to be applied as name pattern to queries given in the virtual folder template.
  *
- *@author sdinuta
+ * @author sdinuta
  */
 public class NamePatternPropertyValueConstraint extends PropertyValueConstraint
 {
@@ -49,12 +47,12 @@ public class NamePatternPropertyValueConstraint extends PropertyValueConstraint
     private NamespacePrefixResolver nspResolver;
 
     public NamePatternPropertyValueConstraint(VirtualQueryConstraint decoratedConstraint, QName property,
-                Serializable value, NamespacePrefixResolver nspResolver)
+            Serializable value, NamespacePrefixResolver nspResolver)
     {
         super(decoratedConstraint,
-              property,
-              value,
-              nspResolver);
+                property,
+                value,
+                nspResolver);
         this.property = property;
         this.value = value;
         this.nspResolver = nspResolver;
@@ -65,19 +63,21 @@ public class NamePatternPropertyValueConstraint extends PropertyValueConstraint
     {
         String filePattern;
         StringBuffer luceneReserved = new StringBuffer();
-        for(int i=0;i<value.toString().length();i++){
-            if(SearchLanguageConversion.DEF_LUCENE.isReserved(value.toString().charAt(i))){
+        for (int i = 0; i < value.toString().length(); i++)
+        {
+            if (SearchLanguageConversion.DEF_LUCENE.isReserved(value.toString().charAt(i)))
+            {
                 luceneReserved.append(value.toString().charAt(i));
             }
         }
-        String luceneReservedStr=luceneReserved.toString();
-        String pattern =org.alfresco.util.ISO9075.encode(value.toString());
+        String luceneReservedStr = luceneReserved.toString();
+        String pattern = org.alfresco.util.ISO9075.encode(value.toString());
         for (int i = 0; i < luceneReservedStr.length(); i++)
         {
-            pattern = pattern.replace(org.alfresco.util.ISO9075.encode(luceneReservedStr.substring(i,i + 1)),
-                                      luceneReservedStr.substring(i,i + 1));
+            pattern = pattern.replace(org.alfresco.util.ISO9075.encode(luceneReservedStr.substring(i, i + 1)),
+                    luceneReservedStr.substring(i, i + 1));
         }
-        filePattern=SearchLanguageConversion.escapeForLucene(pattern);
+        filePattern = SearchLanguageConversion.escapeForLucene(pattern);
 
         SearchParameters constrainedParameters = searchParameters.copy();
         String theQuery = constrainedParameters.getQuery();

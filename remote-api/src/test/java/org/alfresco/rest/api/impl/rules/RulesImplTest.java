@@ -28,8 +28,6 @@ package org.alfresco.rest.api.impl.rules;
 
 import static java.util.Collections.emptyList;
 
-import static org.alfresco.rest.api.impl.rules.RuleSetLoader.INCLUSION_TYPE;
-import static org.alfresco.rest.api.model.rules.RuleSet.DEFAULT_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
@@ -39,6 +37,9 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 
+import static org.alfresco.rest.api.impl.rules.RuleSetLoader.INCLUSION_TYPE;
+import static org.alfresco.rest.api.model.rules.RuleSet.DEFAULT_ID;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -46,6 +47,15 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.action.executer.ExecuteAllRulesActionExecuter;
@@ -67,14 +77,6 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 @Experimental
 @RunWith(MockitoJUnitRunner.class)
@@ -633,7 +635,7 @@ public class RulesImplTest extends TestCase
     @Test
     public void testDeleteRuleById()
     {
-        //when
+        // when
         rules.deleteRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID);
 
         then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, true);
@@ -716,10 +718,9 @@ public class RulesImplTest extends TestCase
         final ActionImpl expectedAction = new ActionImpl(null, null, ExecuteAllRulesActionExecuter.NAME);
         expectedAction.setNodeRef(FOLDER_NODE_REF);
         expectedAction.setParameterValues(Map.of(
-            ExecuteAllRulesActionExecuter.PARAM_RUN_ALL_RULES_ON_CHILDREN, INCLUDE_SUB_FOLDERS,
-            ExecuteAllRulesActionExecuter.PARAM_EXECUTE_INHERITED_RULES, EXECUTE_INHERITED_RULES,
-            ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME, ActionAccessRestriction.V1_ACTION_CONTEXT)
-        );
+                ExecuteAllRulesActionExecuter.PARAM_RUN_ALL_RULES_ON_CHILDREN, INCLUDE_SUB_FOLDERS,
+                ExecuteAllRulesActionExecuter.PARAM_EXECUTE_INHERITED_RULES, EXECUTE_INHERITED_RULES,
+                ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME, ActionAccessRestriction.V1_ACTION_CONTEXT));
         final ArgumentCaptor<ActionImpl> actionCaptor = ArgumentCaptor.forClass(ActionImpl.class);
         then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, false);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
@@ -727,13 +728,13 @@ public class RulesImplTest extends TestCase
         then(actionServiceMock).shouldHaveNoMoreInteractions();
         final ActionImpl actualAction = actionCaptor.getValue();
         assertThat(actualAction)
-            .isNotNull()
-            .usingRecursiveComparison().ignoringFields("id")
-            .isEqualTo(expectedAction);
+                .isNotNull()
+                .usingRecursiveComparison().ignoringFields("id")
+                .isEqualTo(expectedAction);
         assertThat(actualRuleExecution)
-            .isNotNull()
-            .usingRecursiveComparison()
-            .isEqualTo(expectedRuleExecution);
+                .isNotNull()
+                .usingRecursiveComparison()
+                .isEqualTo(expectedRuleExecution);
     }
 
     private static org.alfresco.service.cmr.rule.Rule createRule(final String id)
@@ -751,8 +752,7 @@ public class RulesImplTest extends TestCase
         return List.of(
                 new EntityNotFoundException(FOLDER_NODE_ID),
                 new InvalidArgumentException(),
-                new PermissionDeniedException()
-        );
+                new PermissionDeniedException());
     }
 
     private static List<Exception> ruleSetValidationExceptions()
@@ -760,8 +760,7 @@ public class RulesImplTest extends TestCase
         return List.of(
                 new EntityNotFoundException(RULE_SET_ID),
                 new InvalidArgumentException(),
-                new RelationshipResourceNotFoundException(RULE_SET_ID, "fake-relationship-id")
-        );
+                new RelationshipResourceNotFoundException(RULE_SET_ID, "fake-relationship-id"));
     }
 
     private static List<Exception> ruleValidationExceptions()
@@ -769,7 +768,6 @@ public class RulesImplTest extends TestCase
         return List.of(
                 new EntityNotFoundException(RULE_ID),
                 new InvalidArgumentException(),
-                new RelationshipResourceNotFoundException(RULE_ID, "fake-relationship-id")
-        );
+                new RelationshipResourceNotFoundException(RULE_ID, "fake-relationship-id"));
     }
 }

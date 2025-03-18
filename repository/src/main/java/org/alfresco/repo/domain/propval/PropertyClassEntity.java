@@ -43,17 +43,16 @@ public class PropertyClassEntity
     private String javaClassName;
     private String javaClassNameShort;
     private long javaClassNameCrc;
-    
+
     public PropertyClassEntity()
-    {
-    }
-    
+    {}
+
     @Override
     public int hashCode()
     {
         return (javaClass == null ? 0 : javaClass.hashCode());
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -71,26 +70,26 @@ public class PropertyClassEntity
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("PropertyClassEntity")
-          .append("[ ID=").append(id)
-          .append(", javaClass=").append(javaClass)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", javaClass=").append(javaClass)
+                .append("]");
         return sb.toString();
     }
-    
+
     /**
-     * @return          Returns the ID-class pair
+     * @return Returns the ID-class pair
      */
     public Pair<Long, Class<?>> getEntityPair()
     {
         return new Pair<Long, Class<?>>(id, getJavaClass());
     }
-    
+
     public Class<?> getJavaClass()
     {
         if (javaClass == null && javaClassName != null)

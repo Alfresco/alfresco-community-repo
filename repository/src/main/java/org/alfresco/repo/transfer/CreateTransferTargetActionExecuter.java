@@ -42,9 +42,10 @@ public class CreateTransferTargetActionExecuter extends ActionExecuterAbstractBa
 {
     public static final String NAME = "create-transfer-target";
     private TransferService transferService;
-    
+
     /**
-     * @param transferService the transferService to set
+     * @param transferService
+     *            the transferService to set
      */
     public void setTransferService(TransferService transferService)
     {
@@ -52,8 +53,8 @@ public class CreateTransferTargetActionExecuter extends ActionExecuterAbstractBa
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef) */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
@@ -62,6 +63,5 @@ public class CreateTransferTargetActionExecuter extends ActionExecuterAbstractBa
 
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
-    }
+    {}
 }

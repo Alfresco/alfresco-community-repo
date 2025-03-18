@@ -25,16 +25,15 @@
  */
 package org.alfresco.repo.rendition;
 
-import org.alfresco.repo.thumbnail.ThumbnailServiceImplParameterTest;
-import org.alfresco.repo.thumbnail.ThumbnailServiceImplTest;
-import org.alfresco.repo.thumbnail.conditions.NodeEligibleForRethumbnailingEvaluatorTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import org.alfresco.repo.thumbnail.ThumbnailServiceImplParameterTest;
+import org.alfresco.repo.thumbnail.ThumbnailServiceImplTest;
+import org.alfresco.repo.thumbnail.conditions.NodeEligibleForRethumbnailingEvaluatorTest;
+
 /**
- * This class is a holder for the various test classes associated with the Rendition Service.
- * It is not (at the time of writing) intended to be incorporated into the automatic build
- * which will find the various test classes and run them individually.
+ * This class is a holder for the various test classes associated with the Rendition Service. It is not (at the time of writing) intended to be incorporated into the automatic build which will find the various test classes and run them individually.
  * 
  * @author Neil McErlean
  */

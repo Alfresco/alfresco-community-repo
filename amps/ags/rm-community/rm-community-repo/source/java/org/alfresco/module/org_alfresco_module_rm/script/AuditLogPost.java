@@ -29,14 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 
 import java.io.IOException;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,9 +40,17 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.ParameterCheck;
+
 /**
- * Implementation for Java backed webscript to file an
- * audit log as a record.
+ * Implementation for Java backed webscript to file an audit log as a record.
  *
  * @author Gavin Cornwell
  */
@@ -74,7 +74,8 @@ public class AuditLogPost extends BaseAuditRetrievalWebScript
     /**
      * Sets the record folder service
      *
-     * @param recordFolderService Record folder service
+     * @param recordFolderService
+     *            Record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
@@ -84,7 +85,8 @@ public class AuditLogPost extends BaseAuditRetrievalWebScript
     /**
      * Sets the disposition service
      *
-     * @param dispositionService disposition service
+     * @param dispositionService
+     *            disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -128,9 +130,12 @@ public class AuditLogPost extends BaseAuditRetrievalWebScript
     /**
      * Helper method to write the response to the web script response
      *
-     * @param res {@link WebScriptResponse} Web script response
-     * @param reponse {@link String} Response to write
-     * @throws IOException can throw an exception whilst writing the response
+     * @param res
+     *            {@link WebScriptResponse} Web script response
+     * @param reponse
+     *            {@link String} Response to write
+     * @throws IOException
+     *             can throw an exception whilst writing the response
      */
     private void writeResponse(WebScriptResponse res, String response) throws IOException
     {
@@ -146,7 +151,8 @@ public class AuditLogPost extends BaseAuditRetrievalWebScript
     /**
      * Helper method to create the response text from the record
      *
-     * @param record {@link NodeRef} The audit trail as record
+     * @param record
+     *            {@link NodeRef} The audit trail as record
      * @return Response text as {@link String}
      */
     @SuppressWarnings("null")
@@ -167,15 +173,16 @@ public class AuditLogPost extends BaseAuditRetrievalWebScript
     }
 
     /**
-     * Helper method to put a key and a value to a json object.
-     * It handles the {@link JSONException} so that a try/catch
-     * block is not need through out the code
+     * Helper method to put a key and a value to a json object. It handles the {@link JSONException} so that a try/catch block is not need through out the code
      *
-     * @param json The json object the key/value write to
-     * @param key The key which will be written to the json object
-     * @param value The value which will be written to the json object
+     * @param json
+     *            The json object the key/value write to
+     * @param key
+     *            The key which will be written to the json object
+     * @param value
+     *            The value which will be written to the json object
      */
-    private void putToJSONObject(JSONObject json, String key,  Object value)
+    private void putToJSONObject(JSONObject json, String key, Object value)
     {
         try
         {
@@ -190,8 +197,10 @@ public class AuditLogPost extends BaseAuditRetrievalWebScript
     /**
      * Helper method which will file the audit trail
      *
-     * @param destination The destination where the audit trail will be filed
-     * @param req {@link WebScriptRequest} from which additional parameters will be retrieved
+     * @param destination
+     *            The destination where the audit trail will be filed
+     * @param req
+     *            {@link WebScriptRequest} from which additional parameters will be retrieved
      * @return The {@link NodeRef} of the record
      */
     private NodeRef fileAuditTrail(NodeRef destination, WebScriptRequest req)
@@ -210,9 +219,11 @@ public class AuditLogPost extends BaseAuditRetrievalWebScript
     /**
      * Helper method to create a json object from the request
      *
-     * @param req {@link WebScriptRequest} from which the json object will be created
+     * @param req
+     *            {@link WebScriptRequest} from which the json object will be created
      * @return Returns a json object containing the request content
-     * @throws IOException can throw an exception whilst getting the content from the request
+     * @throws IOException
+     *             can throw an exception whilst getting the content from the request
      */
     private JSONObject getJSONObjectFromRequest(WebScriptRequest req) throws IOException
     {
@@ -233,7 +244,8 @@ public class AuditLogPost extends BaseAuditRetrievalWebScript
     /**
      * Helper method to get the destination from the json object
      *
-     * @param json The json object which was created from the request content
+     * @param json
+     *            The json object which was created from the request content
      * @return {@link NodeRef} The destination of the audit log
      */
     private NodeRef getDestination(JSONObject json)

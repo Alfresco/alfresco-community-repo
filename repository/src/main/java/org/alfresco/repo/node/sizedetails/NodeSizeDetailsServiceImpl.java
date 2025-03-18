@@ -216,9 +216,9 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             searchParameters.addFacetQuery(FACET_QUERY);
             FieldFacet fieldFacet = new FieldFacet(FIELD_FACET);
             int numberFound = Optional.ofNullable(resultsWithoutFacet.getNumberFound())
-                        .map(Long::intValue)
-                        .filter(n -> n > 0)
-                        .orElse(DEFAULT_FACET_LIMIT);
+                    .map(Long::intValue)
+                    .filter(n -> n > 0)
+                    .orElse(DEFAULT_FACET_LIMIT);
             fieldFacet.setLimitOrNull(numberFound);
             searchParameters.addFieldFacet(fieldFacet);
             resultsWithoutFacet.close();

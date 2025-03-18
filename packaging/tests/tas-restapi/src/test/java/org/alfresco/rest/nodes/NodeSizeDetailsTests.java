@@ -113,26 +113,26 @@ public class NodeSizeDetailsTests extends RestTest
 
         jobId = restSizeDetailsModel.getJobId();
 
-        STEP("3. Wait for 5 seconds for the processing to complete.");
+        STEP("2. Wait for 5 seconds for the processing to complete.");
         Awaitility
-                    .await()
-                    .atMost(Duration.ofSeconds(5))
-                    .pollInterval(Durations.ONE_SECOND)
-                    .ignoreExceptions()
-                    .untilAsserted(() -> {
-                        RestSizeDetailsModel sizeDetailsModel = restClient.authenticateUser(user1)
-                                    .withCoreAPI()
-                                    .usingNode(folder)
-                                    .getSizeDetails(jobId);
-                        restClient.assertStatusCodeIs(HttpStatus.OK);
-                        sizeDetailsModel.assertThat()
-                                    .field("sizeInBytes")
-                                    .isNotEmpty();
-                        Assert.assertEquals(sizeDetailsModel.getSizeInBytes(), 0,
-                                            "Value of sizeInBytes should be 0 " + sizeDetailsModel.getSizeInBytes());
-                        Assert.assertEquals(sizeDetailsModel.getNumberOfFiles(), 0,
-                                            "Value of NumberOfFiles should be 0 " + sizeDetailsModel.getNumberOfFiles());
-                    });
+                .await()
+                .atMost(Duration.ofSeconds(5))
+                .pollInterval(Durations.ONE_SECOND)
+                .ignoreExceptions()
+                .untilAsserted(() -> {
+                    RestSizeDetailsModel sizeDetailsModel = restClient.authenticateUser(user1)
+                            .withCoreAPI()
+                            .usingNode(folder)
+                            .getSizeDetails(jobId);
+                    restClient.assertStatusCodeIs(HttpStatus.OK);
+                    sizeDetailsModel.assertThat()
+                            .field("sizeInBytes")
+                            .isNotEmpty();
+                    Assert.assertEquals(sizeDetailsModel.getSizeInBytes(), 0,
+                            "Value of sizeInBytes should be 0 " + sizeDetailsModel.getSizeInBytes());
+                    Assert.assertEquals(sizeDetailsModel.getNumberOfFiles(), 0,
+                            "Value of NumberOfFiles should be 0 " + sizeDetailsModel.getNumberOfFiles());
+                });
     }
 
     /**

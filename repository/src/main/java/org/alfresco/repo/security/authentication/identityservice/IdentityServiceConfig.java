@@ -88,7 +88,8 @@ public class IdentityServiceConfig
 
     /**
      *
-     * @param clientConnectionTimeout Client connection timeout in milliseconds.
+     * @param clientConnectionTimeout
+     *            Client connection timeout in milliseconds.
      */
     public void setClientConnectionTimeout(int clientConnectionTimeout)
     {
@@ -106,7 +107,8 @@ public class IdentityServiceConfig
 
     /**
      *
-     * @param clientSocketTimeout Client socket timeout in milliseconds.
+     * @param clientSocketTimeout
+     *            Client socket timeout in milliseconds.
      */
     public void setClientSocketTimeout(int clientSocketTimeout)
     {
@@ -146,13 +148,13 @@ public class IdentityServiceConfig
     public String getAuthServerUrl()
     {
         return Optional.ofNullable(realm)
-            .filter(StringUtils::isNotBlank)
-            .filter(realm -> StringUtils.isNotBlank(authServerUrl))
-            .map(realm -> UriComponentsBuilder.fromUriString(authServerUrl)
-                .pathSegment(REALMS, realm)
-                .build()
-                .toString())
-            .orElse(authServerUrl);
+                .filter(StringUtils::isNotBlank)
+                .filter(realm -> StringUtils.isNotBlank(authServerUrl))
+                .map(realm -> UriComponentsBuilder.fromUriString(authServerUrl)
+                        .pathSegment(REALMS, realm)
+                        .build()
+                        .toString())
+                .orElse(authServerUrl);
     }
 
     public void setAuthServerUrl(String authServerUrl)
@@ -188,7 +190,7 @@ public class IdentityServiceConfig
     public String getClientSecret()
     {
         return Optional.ofNullable(clientSecret)
-            .orElse("");
+                .orElse("");
     }
 
     public void setAllowAnyHostname(boolean allowAnyHostname)
@@ -324,10 +326,10 @@ public class IdentityServiceConfig
     public Set<SignatureAlgorithm> getSignatureAlgorithms()
     {
         return Stream.of(signatureAlgorithms.split(","))
-            .map(String::trim)
-            .map(SignatureAlgorithm::from)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toUnmodifiableSet());
+                .map(String::trim)
+                .map(SignatureAlgorithm::from)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     public void setSignatureAlgorithms(String signatureAlgorithms)
@@ -348,8 +350,8 @@ public class IdentityServiceConfig
     public Set<String> getAdminConsoleScopes()
     {
         return Stream.of(adminConsoleScopes.split(","))
-            .map(String::trim)
-            .collect(Collectors.toUnmodifiableSet());
+                .map(String::trim)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     public void setAdminConsoleScopes(String adminConsoleScopes)
@@ -360,8 +362,8 @@ public class IdentityServiceConfig
     public Set<String> getPasswordGrantScopes()
     {
         return Stream.of(passwordGrantScopes.split(","))
-            .map(String::trim)
-            .collect(Collectors.toUnmodifiableSet());
+                .map(String::trim)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     public void setPasswordGrantScopes(String passwordGrantScopes)

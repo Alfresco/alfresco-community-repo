@@ -46,7 +46,8 @@ public class SpringBasedIdentityServiceFacadeUnitTest
     private static final String USER_NAME = "user";
     private static final String PASSWORD = "password";
     private static final String TOKEN = "tEsT-tOkEn";
-    private static final UserInfoAttrMapping USER_INFO_ATTR_MAPPING = new UserInfoAttrMapping("preferred_username",  "given_name", "family_name", "email");
+    private static final UserInfoAttrMapping USER_INFO_ATTR_MAPPING = new UserInfoAttrMapping("preferred_username", "given_name", "family_name", "email");
+
     @Test
     public void shouldThrowVerificationExceptionOnFailure()
     {

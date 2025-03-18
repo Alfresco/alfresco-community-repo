@@ -26,22 +26,23 @@
 
 package org.alfresco.repo.security.authentication.identityservice;
 
-import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
-import com.nimbusds.openid.connect.sdk.claims.UserInfo;
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.DecodedAccessToken;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
+
+import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
+import com.nimbusds.openid.connect.sdk.claims.UserInfo;
+import org.apache.commons.lang3.StringUtils;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.DecodedAccessToken;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 
 /**
  * This class handles Just in Time user provisioning. It extracts {@link OIDCUserInfo} from {@link IdentityServiceFacade.DecodedAccessToken} or {@link UserInfo} and creates a new user if it does not exist in the repository.
@@ -50,7 +51,7 @@ public class IdentityServiceJITProvisioningHandler
 {
     private static final String DEFAULT_USERNAME_CLAIM = PersonClaims.PREFERRED_USERNAME_CLAIM_NAME;
     private static final String EMPTY_STRING = "";
-    
+
     private final IdentityServiceConfig identityServiceConfig;
     private final IdentityServiceFacade identityServiceFacade;
     private final PersonService personService;
@@ -62,10 +63,10 @@ public class IdentityServiceJITProvisioningHandler
         Optional<String> email = getClaim(token, userMappingClaim.emailClaim());
 
         return getClaim(token, Optional.ofNullable(userMappingClaim.usernameClaim())
-                    .filter(StringUtils::isNotBlank)
-                    .orElse(DEFAULT_USERNAME_CLAIM))
-                .map(this::normalizeUserId)
-                .map(username -> new OIDCUserInfo(username, firstName.orElse(EMPTY_STRING), lastName.orElse(EMPTY_STRING), email.orElse(EMPTY_STRING)));
+                .filter(StringUtils::isNotBlank)
+                .orElse(DEFAULT_USERNAME_CLAIM))
+                        .map(this::normalizeUserId)
+                        .map(username -> new OIDCUserInfo(username, firstName.orElse(EMPTY_STRING), lastName.orElse(EMPTY_STRING), email.orElse(EMPTY_STRING)));
     };
 
     public IdentityServiceJITProvisioningHandler(IdentityServiceFacade identityServiceFacade,
@@ -82,9 +83,9 @@ public class IdentityServiceJITProvisioningHandler
     public Optional<OIDCUserInfo> extractUserInfoAndCreateUserIfNeeded(String bearerToken)
     {
         UserInfoAttrMapping userInfoAttrMapping = new UserInfoAttrMapping(identityServiceFacade.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName(),
-            identityServiceConfig.getFirstNameAttribute(),
-            identityServiceConfig.getLastNameAttribute(),
-            identityServiceConfig.getEmailAttribute());
+                identityServiceConfig.getFirstNameAttribute(),
+                identityServiceConfig.getLastNameAttribute(),
+                identityServiceConfig.getEmailAttribute());
         Optional<OIDCUserInfo> userInfoResponse = Optional.ofNullable(bearerToken)
                 .filter(Predicate.not(String::isEmpty))
                 .flatMap(token -> extractUserInfoResponseFromAccessToken(token, userInfoAttrMapping)
@@ -95,8 +96,7 @@ public class IdentityServiceJITProvisioningHandler
         {
             return userInfoResponse;
         }
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Optional<OIDCUserInfo>>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Optional<OIDCUserInfo>>() {
             @Override
             public Optional<OIDCUserInfo> doWork() throws Exception
             {
@@ -138,7 +138,7 @@ public class IdentityServiceJITProvisioningHandler
      * Normalizes a user id, taking into account existing user accounts and case sensitivity settings.
      *
      * @param userId
-     *         the user id
+     *            the user id
      * @return the string
      */
     private String normalizeUserId(final String userId)
@@ -148,8 +148,7 @@ public class IdentityServiceJITProvisioningHandler
             return null;
         }
 
-        String normalized = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String>()
-        {
+        String normalized = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String>() {
             @Override
             public String doWork() throws Exception
             {
@@ -160,14 +159,16 @@ public class IdentityServiceJITProvisioningHandler
         return normalized == null ? userId : normalized;
     }
 
-    private Optional<String> getClaim(DecodedAccessToken token, String claimName) {
+    private Optional<String> getClaim(DecodedAccessToken token, String claimName)
+    {
         return Optional.ofNullable(token)
                 .map(jwtToken -> jwtToken.getClaim(claimName))
                 .filter(String.class::isInstance)
                 .map(String.class::cast);
     }
 
-    private void createPerson(OIDCUserInfo userInfo) {
+    private void createPerson(OIDCUserInfo userInfo)
+    {
         Map<QName, Serializable> properties = new HashMap<>();
         properties.put(ContentModel.PROP_USERNAME, userInfo.username());
         properties.put(ContentModel.PROP_FIRSTNAME, userInfo.firstName());

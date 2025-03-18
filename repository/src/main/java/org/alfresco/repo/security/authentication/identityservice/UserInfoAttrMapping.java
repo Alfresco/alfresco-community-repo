@@ -26,13 +26,16 @@
 package org.alfresco.repo.security.authentication.identityservice;
 
 /**
- *  The UserInfoAttrMapping record represents the mapping of claims fetched from the UserInfo endpoint to create an Alfresco user.
+ * The UserInfoAttrMapping record represents the mapping of claims fetched from the UserInfo endpoint to create an Alfresco user.
  *
- *  @param usernameClaim the claim that represents the username
- *  @param firstNameClaim the claim that represents the first name
- *  @param lastNameClaim the claim that represents the last name
- *  @param emailClaim the claim that represents the email
+ * @param usernameClaim
+ *            the claim that represents the username
+ * @param firstNameClaim
+ *            the claim that represents the first name
+ * @param lastNameClaim
+ *            the claim that represents the last name
+ * @param emailClaim
+ *            the claim that represents the email
  */
 public record UserInfoAttrMapping(String usernameClaim, String firstNameClaim, String lastNameClaim, String emailClaim)
-{
-}
+{}

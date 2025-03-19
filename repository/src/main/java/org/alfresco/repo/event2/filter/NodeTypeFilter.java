@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -41,10 +42,13 @@ import org.alfresco.service.namespace.QName;
 public class NodeTypeFilter extends AbstractNodeEventFilter
 {
     private final List<String> nodeTypesBlackList;
+    private final DictionaryService dictionaryService;
 
-    public NodeTypeFilter(String filteredNodeTypes)
+    public NodeTypeFilter(String filteredNodeTypes, DictionaryService dictionaryService)
     {
+        super();
         this.nodeTypesBlackList = parseFilterList(filteredNodeTypes);
+        this.dictionaryService = dictionaryService;
     }
 
     @Override

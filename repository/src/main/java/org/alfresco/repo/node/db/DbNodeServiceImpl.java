@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -23,6 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.repo.node.db;
 
 import java.io.Serializable;
@@ -38,6 +39,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -99,21 +104,18 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Node service using database persistence layer to fulfill functionality
  * 
  * @author Derek Hulley
  */
-public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extensible , NodeService
+public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extensible, NodeService
 {
     public static final String KEY_PENDING_DELETE_NODES = "DbNodeServiceImpl.pendingDeleteNodes";
-    
+
     private static Log logger = LogFactory.getLog(DbNodeServiceImpl.class);
-    
+
     private QNameDAO qnameDAO;
     private NodeDAO nodeDAO;
     private PermissionService permissionService;
@@ -121,11 +123,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     private BehaviourFilter policyBehaviourFilter;
     private boolean enableTimestampPropagation;
     private final ExtendedTrait<NodeServiceTrait> nodeServiceTrait;
-    
+
     public DbNodeServiceImpl()
     {
         nodeServiceTrait = new ExtendedTrait<NodeServiceTrait>(AJProxyTrait.create(this, NodeServiceTrait.class));
-        storeArchiveMap = new StoreArchiveMap();        // in case it is not set
+        storeArchiveMap = new StoreArchiveMap(); // in case it is not set
     }
 
     public void setQnameDAO(QNameDAO qnameDAO)
@@ -150,7 +152,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
     /**
      * 
-     * @param policyBehaviourFilter     component used to enable and disable behaviours
+     * @param policyBehaviourFilter
+     *            component used to enable and disable behaviours
      */
     public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter)
     {
@@ -158,11 +161,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
 
     /**
-     * Set whether <b>cm:auditable</b> timestamps should be propagated to parent nodes
-     * where the parent-child relationship has been marked using <b>propagateTimestamps</b>.
+     * Set whether <b>cm:auditable</b> timestamps should be propagated to parent nodes where the parent-child relationship has been marked using <b>propagateTimestamps</b>.
      * 
-     * @param enableTimestampPropagation        <tt>true</tt> to propagate timestamps to the parent
-     *                                          node where appropriate
+     * @param enableTimestampPropagation
+     *            <tt>true</tt> to propagate timestamps to the parent node where appropriate
      */
     public void setEnableTimestampPropagation(boolean enableTimestampPropagation)
     {
@@ -172,14 +174,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     /**
      * Performs a null-safe get of the node
      * 
-     * @param nodeRef the node to retrieve
+     * @param nodeRef
+     *            the node to retrieve
      * @return Returns the node entity (never null)
-     * @throws InvalidNodeRefException if the referenced node could not be found
+     * @throws InvalidNodeRefException
+     *             if the referenced node could not be found
      */
     private Pair<Long, NodeRef> getNodePairNotNull(NodeRef nodeRef) throws InvalidNodeRefException
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
+
         Pair<Long, NodeRef> unchecked = nodeDAO.getNodePair(nodeRef);
         if (unchecked == null)
         {
@@ -188,21 +192,21 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         }
         return unchecked;
     }
-    
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public boolean exists(StoreRef storeRef)
     {
         return nodeDAO.exists(storeRef);
     }
-    
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public boolean exists(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         return nodeDAO.exists(nodeRef);
     }
-    
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public Status getNodeStatus(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
@@ -211,7 +215,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
 
     @Override
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public NodeRef getNodeRef(Long nodeId)
     {
         Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(nodeId);
@@ -221,7 +225,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     /**
      * {@inheritDoc}
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<StoreRef> getStores()
     {
         // Get the ADM stores
@@ -240,33 +244,34 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // Return them all.
         return storeRefs;
     }
-    
+
     /**
      * Defers to the typed service
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public StoreRef createStore(String protocol, String identifier)
     {
         StoreRef storeRef = new StoreRef(protocol, identifier);
-        
+
         // invoke policies
         invokeBeforeCreateStore(ContentModel.TYPE_STOREROOT, storeRef);
-        
+
         // create a new one
         Pair<Long, NodeRef> rootNodePair = nodeDAO.newStore(storeRef);
         NodeRef rootNodeRef = rootNodePair.getSecond();
-        
+
         // invoke policies
         invokeOnCreateStore(rootNodeRef);
-        
+
         // Done
         return storeRef;
     }
-    
+
     /**
-     * @throws UnsupportedOperationException        Always
+     * @throws UnsupportedOperationException
+     *             Always
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public void deleteStore(StoreRef storeRef) throws InvalidStoreRefException
     {
         // Cannot delete the root node but we can delete, without archive, all immediate children
@@ -278,10 +283,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             // We do NOT want to archive these, so mark them as temporary
             deleteNode(childNodeRef, false);
         }
-        // Rename the store.  This takes all the nodes with it.
+        // Rename the store. This takes all the nodes with it.
         StoreRef deletedStoreRef = new StoreRef(StoreRef.PROTOCOL_DELETED, GUID.generate());
         nodeDAO.moveStore(storeRef, deletedStoreRef);
-        
+
         // Done
         if (logger.isDebugEnabled())
         {
@@ -289,7 +294,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         }
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public NodeRef getRootNode(StoreRef storeRef) throws InvalidStoreRefException
     {
         Pair<Long, NodeRef> rootNodePair = nodeDAO.getRootNode(storeRef);
@@ -300,9 +305,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // done
         return rootNodePair.getSecond();
     }
-    
+
     @Override
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public Set<NodeRef> getAllRootNodes(StoreRef storeRef)
     {
         return nodeDAO.getAllRootNodes(storeRef);
@@ -311,7 +316,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     /**
      * @see #createNode(NodeRef, QName, QName, QName, Map)
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public ChildAssociationRef createNode(
             NodeRef parentRef,
             QName assocTypeQName,
@@ -322,23 +327,23 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
 
     @Override
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef) throws InvalidNodeRefException
     {
         return super.getChildAssocs(nodeRef);
     }
-    
+
     @Override
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<NodeRef> findNodes(FindNodeParameters params)
     {
         return super.findNodes(params);
     }
-    
+
     /**
      * {@inheritDoc}
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public ChildAssociationRef createNode(
             NodeRef parentRef,
             QName assocTypeQName,
@@ -348,46 +353,46 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(parentRef);
-        
+
         ParameterCheck.mandatory("parentRef", parentRef);
         ParameterCheck.mandatory("assocTypeQName", assocTypeQName);
         ParameterCheck.mandatory("assocQName", assocQName);
         ParameterCheck.mandatory("nodeTypeQName", nodeTypeQName);
-        if(assocQName.getLocalName().length() > QName.MAX_LENGTH)
+        if (assocQName.getLocalName().length() > QName.MAX_LENGTH)
         {
-            throw new IllegalArgumentException("Localname is too long. Length of " + 
-                 assocQName.getLocalName().length() + " exceeds the maximum of " + QName.MAX_LENGTH);
+            throw new IllegalArgumentException("Localname is too long. Length of " +
+                    assocQName.getLocalName().length() + " exceeds the maximum of " + QName.MAX_LENGTH);
         }
-        
+
         // Get the parent node
         Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(parentRef);
         StoreRef parentStoreRef = parentRef.getStoreRef();
 
         // null property map is allowed
         if (properties == null)
-        {      
+        {
             properties = Collections.emptyMap();
         }
-        
+
         // get an ID for the node
         String newUuid = generateGuid(properties);
-        
+
         // Invoke policy behaviour
         invokeBeforeCreateNode(parentRef, assocTypeQName, assocQName, nodeTypeQName);
-        
+
         // check the node type
         TypeDefinition nodeTypeDef = dictionaryService.getType(nodeTypeQName);
         if (nodeTypeDef == null)
         {
             throw new InvalidTypeException(nodeTypeQName);
         }
-        
+
         // Ensure child uniqueness
         String newName = extractNameProperty(properties);
-        
+
         // Get the thread's locale
         Locale locale = I18NUtil.getLocale();
-        
+
         // create the node instance
         ChildAssocEntity assoc = nodeDAO.newNode(
                 parentNodePair.getFirst(),
@@ -401,20 +406,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 properties);
         ChildAssociationRef childAssocRef = assoc.getRef(qnameDAO);
         Pair<Long, NodeRef> childNodePair = assoc.getChildNode().getNodePair();
-        
+
         addAspectsAndProperties(
-                    childNodePair,
-                    nodeTypeQName,
-                    null,
-                    Collections.<QName>emptySet(),
-                    Collections.<QName, Serializable>emptyMap(),
-                    Collections.<QName>emptySet(),
-                    properties,
-                    true,
-                    false);
-        
+                childNodePair,
+                nodeTypeQName,
+                null,
+                Collections.<QName> emptySet(),
+                Collections.<QName, Serializable> emptyMap(),
+                Collections.<QName> emptySet(),
+                properties,
+                true,
+                false);
+
         Map<QName, Serializable> propertiesAfter = nodeDAO.getNodeProperties(childNodePair.getFirst());
-        
+
         // Propagate timestamps
         propagateTimeStamps(childAssocRef);
 
@@ -426,32 +431,32 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 childAssocRef.getChildRef(),
                 propertiesBefore,
                 propertiesAfter);
-        
+
         // Ensure that the parent node has the required aspects
         addAspectsAndPropertiesAssoc(parentNodePair, assocTypeQName, null, null, null, null, false);
-        
+
         // done
         return childAssocRef;
     }
-    
-    
+
     /**
-     * Adds all the aspects and properties required for the given node, along with mandatory aspects
-     * and related properties.
-     * Existing values will not be overridden.  All required pre- and post-update notifications
-     * are sent for missing aspects.
+     * Adds all the aspects and properties required for the given node, along with mandatory aspects and related properties. Existing values will not be overridden. All required pre- and post-update notifications are sent for missing aspects.
      * 
-     * @param nodePair              the node to which the details apply
-     * @param classQName            the type or aspect QName for which the defaults must be applied.
-     *                              If this is <tt>null</tt> then properties and aspects are only applied
-     *                              for 'extra' aspects and 'extra' properties.
-     * @param existingAspects       the existing aspects or <tt>null</tt> to have them fetched
-     * @param existingProperties    the existing properties or <tt>null</tt> to have them fetched
-     * @param extraAspects          any aspects that should be added to the 'missing' set (may be <tt>null</tt>)
-     * @param extraProperties       any properties that should be added the the 'missing' set (may be <tt>null</tt>)
-     * @param overwriteExistingProperties   <tt>true</tt> if the extra properties must completely overwrite
-     *                              the existing properties
-     * @return                      <tt>true</tt> if properties or aspects were added
+     * @param nodePair
+     *            the node to which the details apply
+     * @param classQName
+     *            the type or aspect QName for which the defaults must be applied. If this is <tt>null</tt> then properties and aspects are only applied for 'extra' aspects and 'extra' properties.
+     * @param existingAspects
+     *            the existing aspects or <tt>null</tt> to have them fetched
+     * @param existingProperties
+     *            the existing properties or <tt>null</tt> to have them fetched
+     * @param extraAspects
+     *            any aspects that should be added to the 'missing' set (may be <tt>null</tt>)
+     * @param extraProperties
+     *            any properties that should be added the the 'missing' set (may be <tt>null</tt>)
+     * @param overwriteExistingProperties
+     *            <tt>true</tt> if the extra properties must completely overwrite the existing properties
+     * @return <tt>true</tt> if properties or aspects were added
      */
     private boolean addAspectsAndProperties(
             Pair<Long, NodeRef> nodePair,
@@ -464,7 +469,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     {
         return addAspectsAndProperties(nodePair, classQName, null, existingAspects, existingProperties, extraAspects, extraProperties, overwriteExistingProperties, true);
     }
-    
+
     private boolean addAspectsAndPropertiesAssoc(
             Pair<Long, NodeRef> nodePair,
             QName assocTypeQName,
@@ -476,29 +481,29 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     {
         return addAspectsAndProperties(nodePair, null, assocTypeQName, existingAspects, existingProperties, extraAspects, extraProperties, overwriteExistingProperties, true);
     }
-    
+
     private boolean addAspectsAndProperties(
-                Pair<Long, NodeRef> nodePair,
-                QName classQName,
-                QName assocTypeQName,
-                Set<QName> existingAspects,
-                Map<QName, Serializable> existingProperties,
-                Set<QName> extraAspects,
-                Map<QName, Serializable> extraProperties,
-                boolean overwriteExistingProperties,
-                boolean invokeOnUpdateProperties)
+            Pair<Long, NodeRef> nodePair,
+            QName classQName,
+            QName assocTypeQName,
+            Set<QName> existingAspects,
+            Map<QName, Serializable> existingProperties,
+            Set<QName> extraAspects,
+            Map<QName, Serializable> extraProperties,
+            boolean overwriteExistingProperties,
+            boolean invokeOnUpdateProperties)
     {
         ParameterCheck.mandatory("nodePair", nodePair);
 
         Long nodeId = nodePair.getFirst();
         NodeRef nodeRef = nodePair.getSecond();
-        
+
         // Ensure that have a type that has no mandatory aspects or properties
         if (classQName == null)
         {
             classQName = ContentModel.TYPE_BASE;
         }
-        
+
         // Ensure we have 'extra' aspects and properties to play with
         if (extraAspects == null)
         {
@@ -508,7 +513,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             extraProperties = Collections.emptyMap();
         }
-        
+
         // Get the existing aspects and properties, if necessary
         if (existingAspects == null)
         {
@@ -518,38 +523,38 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             existingProperties = nodeDAO.getNodeProperties(nodeId);
         }
-        
+
         // To determine the 'missing' aspects, we need to determine the full set of properties
         Map<QName, Serializable> allProperties = new HashMap<QName, Serializable>(37);
         allProperties.putAll(existingProperties);
         allProperties.putAll(extraProperties);
-        
+
         // Copy incoming existing values so that we can modify appropriately
         existingAspects = new HashSet<QName>(existingAspects);
-        
+
         // Get the 'missing' aspects and append the 'extra' aspects
         Set<QName> missingAspects = getMissingAspects(existingAspects, allProperties, classQName);
         missingAspects.addAll(extraAspects);
-        
+
         if (assocTypeQName != null)
         {
             missingAspects.addAll(getMissingAspectsAssoc(existingAspects, allProperties, assocTypeQName));
         }
-        
+
         // Notify 'before' adding aspect
         for (QName missingAspect : missingAspects)
         {
             invokeBeforeAddAspect(nodeRef, missingAspect);
         }
-        
+
         // Get all missing properties for aspects that are missing.
-        //   This will include the type if the type was passed in.
+        // This will include the type if the type was passed in.
         Set<QName> allClassQNames = new HashSet<QName>(13);
         allClassQNames.add(classQName);
         allClassQNames.addAll(missingAspects);
         Map<QName, Serializable> missingProperties = getMissingProperties(existingProperties, allClassQNames);
         missingProperties.putAll(extraProperties);
-        
+
         // Bulk-add the properties
         boolean changedProperties = false;
         if (overwriteExistingProperties)
@@ -579,28 +584,27 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // Done
         return changedAspects || changedProperties;
     }
-    
+
     private Set<QName> getMissingAspectsAssoc(
             Set<QName> existingAspects,
             Map<QName, Serializable> existingProperties,
             QName assocTypeQName)
     {
-            AssociationDefinition assocDef = dictionaryService.getAssociation(assocTypeQName);
-            if (assocDef == null)
-            {
-                return Collections.emptySet();
-            }
-            ClassDefinition classDefinition = assocDef.getSourceClass();
-            return getMissingAspects(existingAspects, existingProperties, classDefinition.getName());
+        AssociationDefinition assocDef = dictionaryService.getAssociation(assocTypeQName);
+        if (assocDef == null)
+        {
+            return Collections.emptySet();
+        }
+        ClassDefinition classDefinition = assocDef.getSourceClass();
+        return getMissingAspects(existingAspects, existingProperties, classDefinition.getName());
     }
-    
+
     /**
-     * Get any aspects that should be added given the type, properties and existing aspects.
-     * Note that this <b>does not</b> included a search for properties required for the missing
-     * aspects.
+     * Get any aspects that should be added given the type, properties and existing aspects. Note that this <b>does not</b> included a search for properties required for the missing aspects.
      * 
-     * @param classQName    the type, aspect or association
-     * @return              Returns any aspects that should be added
+     * @param classQName
+     *            the type, aspect or association
+     * @return Returns any aspects that should be added
      */
     private Set<QName> getMissingAspects(
             Set<QName> existingAspects,
@@ -609,7 +613,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     {
         // Copy incoming existing values so that we can modify appropriately
         existingAspects = new HashSet<QName>(existingAspects);
-        
+
         ClassDefinition classDefinition = dictionaryService.getClass(classQName);
         if (classDefinition == null)
         {
@@ -622,7 +626,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             missingAspects.add(classQName);
         }
-        
+
         // Find all aspects that should be present on the class
         List<AspectDefinition> defaultAspectDefs = classDefinition.getDefaultAspects();
         for (AspectDefinition defaultAspectDef : defaultAspectDefs)
@@ -639,7 +643,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             PropertyDefinition existingPropDef = dictionaryService.getProperty(existingPropQName);
             if (existingPropDef == null || !existingPropDef.getContainerClass().isAspect())
             {
-                continue;           // Property is undefined or belongs to a class
+                continue; // Property is undefined or belongs to a class
             }
             QName existingPropDefiningType = existingPropDef.getContainerClass().getName();
             if (!existingAspects.contains(existingPropDefiningType))
@@ -648,8 +652,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
         }
         // If there were missing aspects, recurse to find further missing aspects
-        //    Don't re-add ones we know about or we can end in infinite recursion.
-        //    Don't send any properties because we don't want to reprocess them each time
+        // Don't re-add ones we know about or we can end in infinite recursion.
+        // Don't send any properties because we don't want to reprocess them each time
         Set<QName> allTypesAndAspects = new HashSet<QName>(13);
         allTypesAndAspects.add(classQName);
         allTypesAndAspects.addAll(existingAspects);
@@ -658,20 +662,22 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         for (QName missingAspect : missingAspectsCopy)
         {
             Set<QName> furtherMissingAspects = getMissingAspects(
-                        allTypesAndAspects,
-                        Collections.<QName, Serializable>emptyMap(),
-                        missingAspect);
+                    allTypesAndAspects,
+                    Collections.<QName, Serializable> emptyMap(),
+                    missingAspect);
             missingAspects.addAll(furtherMissingAspects);
             allTypesAndAspects.addAll(furtherMissingAspects);
         }
         // Done
         return missingAspects;
     }
-    
+
     /**
-     * @param existingProperties    existing node properties
-     * @param classQNames           the types or aspects to introspect
-     * @return                      Returns any properties that should be added
+     * @param existingProperties
+     *            existing node properties
+     * @param classQNames
+     *            the types or aspects to introspect
+     * @return Returns any properties that should be added
      */
     private Map<QName, Serializable> getMissingProperties(Map<QName, Serializable> existingProperties, Set<QName> classQNames)
     {
@@ -696,19 +702,19 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // Done
         return missingProperties;
     }
-    
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public void setChildAssociationIndex(ChildAssociationRef childAssocRef, int index)
     {
         // get nodes
         Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(childAssocRef.getParentRef());
         Pair<Long, NodeRef> childNodePair = getNodePairNotNull(childAssocRef.getChildRef());
-        
+
         Long parentNodeId = parentNodePair.getFirst();
         Long childNodeId = childNodePair.getFirst();
         QName assocTypeQName = childAssocRef.getTypeQName();
         QName assocQName = childAssocRef.getQName();
-        
+
         // set the index
         int updated = nodeDAO.setChildAssocIndex(
                 parentNodeId, childNodeId, assocTypeQName, assocQName, index);
@@ -716,28 +722,28 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             throw new InvalidChildAssociationRefException(
                     "Unable to set child association index: \n" +
-                    "   assoc: " + childAssocRef + "\n" +
-                    "   index: " + index,
+                            "   assoc: " + childAssocRef + "\n" +
+                            "   index: " + index,
                     childAssocRef);
         }
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public QName getType(NodeRef nodeRef) throws InvalidNodeRefException
     {
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         return nodeDAO.getNodeType(nodePair.getFirst());
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.repository.NodeService#setType(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public void setType(NodeRef nodeRef, QName typeQName) throws InvalidNodeRefException
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(nodeRef);
-        
+
         // check the node type
         TypeDefinition nodeTypeDef = dictionaryService.getType(typeQName);
         if (nodeTypeDef == null)
@@ -745,18 +751,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             throw new InvalidTypeException(typeQName);
         }
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
-        
+
         // Invoke policies
         invokeBeforeUpdateNode(nodeRef);
         QName oldType = nodeDAO.getNodeType(nodePair.getFirst());
         invokeBeforeSetType(nodeRef, oldType, typeQName);
-        
+
         // Set the type
         boolean updatedNode = nodeDAO.updateNode(nodePair.getFirst(), typeQName, null);
-        
+
         // Add the default aspects and properties required for the given type. Existing values will not be overridden.
         boolean updatedProps = addAspectsAndProperties(nodePair, typeQName, null, null, null, null, false);
-        
+
         // Invoke policies
         if (updatedNode || updatedProps)
         {
@@ -765,9 +771,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             invokeOnSetType(nodeRef, oldType, typeQName);
         }
     }
-    
+
     @Override
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public void addAspect(
             NodeRef nodeRef,
             QName aspectTypeQName,
@@ -780,13 +786,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             throw new InvalidAspectException("The aspect is invalid: " + aspectTypeQName, aspectTypeQName);
         }
-        
+
         // Don't allow spoofed aspect(s) to be added
         if (aspectTypeQName.equals(ContentModel.ASPECT_PENDING_DELETE))
         {
             throw new IllegalArgumentException("The aspect is reserved for system use: " + aspectTypeQName);
         }
-        
+
         // Check the properties
         if (aspectProperties == null)
         {
@@ -795,7 +801,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         }
         // Make the properties immutable to be sure that they are not used incorrectly
         aspectProperties = Collections.unmodifiableMap(aspectProperties);
-        
+
         // Invoke policy behaviours
         invokeBeforeUpdateNode(nodeRef);
 
@@ -804,31 +810,31 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // SetProperties common tasks
         setPropertiesCommonWork(nodePair, aspectProperties);
         boolean modified = addAspectsAndProperties(
-                    nodePair,
-                    aspectTypeQName,
-                    null,
-                    null,
-                    Collections.singleton(aspectTypeQName),
-                    aspectProperties,
-                    false);
-        
+                nodePair,
+                aspectTypeQName,
+                null,
+                null,
+                Collections.singleton(aspectTypeQName),
+                aspectProperties,
+                false);
+
         if (modified)
-        {                                
+        {
             // Invoke policy behaviours
             invokeOnUpdateNode(nodeRef);
         }
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public int countChildAssocs(NodeRef nodeRef, boolean isPrimary) throws InvalidNodeRefException
-    {    
+    {
         final Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         final Long nodeId = nodePair.getFirst();
         return nodeDAO.countChildAssocsByParent(nodeId, isPrimary);
     }
-    
+
     @Override
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public void removeAspect(NodeRef nodeRef, QName aspectTypeQName)
             throws InvalidNodeRefException, InvalidAspectException
     {
@@ -837,10 +843,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             throw new IllegalArgumentException("The aspect is reserved for system use: " + aspectTypeQName);
         }
-        
-        /*
-         * Note: Aspect and property removal is resilient to missing dictionary definitions
-         */
+
+        /* Note: Aspect and property removal is resilient to missing dictionary definitions */
         // get the node
         final Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         final Long nodeId = nodePair.getFirst();
@@ -867,33 +871,33 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             // We have to iterate over the associations and remove all those between the parent and child
             final List<Pair<Long, ChildAssociationRef>> assocsToDelete = new ArrayList<Pair<Long, ChildAssociationRef>>(5);
             final List<Pair<Long, NodeRef>> nodesToDelete = new ArrayList<Pair<Long, NodeRef>>(5);
-            NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
-            {
+            NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback() {
                 public boolean preLoadNodes()
                 {
                     return true;
                 }
 
-                @Override public boolean orderResults()
+                @Override
+                public boolean orderResults()
                 {
                     return false;
                 }
 
                 public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
-                            Pair<Long, NodeRef> childNodePair)
+                        Pair<Long, NodeRef> childNodePair)
                 {
                     if (isPendingDelete(parentNodePair.getSecond()) || isPendingDelete(childNodePair.getSecond()))
                     {
                         if (logger.isTraceEnabled())
                         {
                             logger.trace("Aspect-triggered association removal: "
-                                        + "Ignoring child associations where one of the nodes is pending delete: " + childAssocPair);
+                                    + "Ignoring child associations where one of the nodes is pending delete: " + childAssocPair);
                         }
                         return true;
                     }
 
-                    // Double check that it's not a primary association.  If so, we can't delete it and
-                    //    have to delete the child node directly and with full archival.
+                    // Double check that it's not a primary association. If so, we can't delete it and
+                    // have to delete the child node directly and with full archival.
                     if (childAssocPair.getSecond().isPrimary())
                     {
                         nodesToDelete.add(childNodePair);
@@ -907,8 +911,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 }
 
                 public void done()
-                {
-                }
+                {}
             };
             // Get all the QNames to remove
             Set<QName> assocTypeQNamesToRemove = new HashSet<QName>(aspectDef.getChildAssociations().keySet());
@@ -943,8 +946,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                     if (logger.isTraceEnabled())
                     {
                         logger.trace(
-                                    "Aspect-triggered association removal: " + "Ignoring peer associations where one of the nodes is pending delete: "
-                                                + nodeRef);
+                                "Aspect-triggered association removal: " + "Ignoring peer associations where one of the nodes is pending delete: "
+                                        + nodeRef);
                     }
                     continue;
                 }
@@ -962,7 +965,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                         if (logger.isTraceEnabled())
                         {
                             logger.trace("Aspect-triggered association removal: "
-                                        + "Ignoring peer associations where one of the nodes is pending delete: " + assocPair);
+                                    + "Ignoring peer associations where one of the nodes is pending delete: " + assocPair);
                         }
                         continue;
                     }
@@ -970,10 +973,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                     assocRefsRemoved.add(assocPair.getSecond());
                 }
                 // MNT-9580: Daisy chained cm:original associations are cascade-deleted when the first original is deleted
-                //           As a side-effect of the investigation of MNT-9446, it was dicovered that inbound associations (ones pointing *to* this aspect)
-                //           were also being removed.  This is incorrect because the aspect being removed here has no say over who points at it.
-                //           Therefore, do not remove inbound associations because we only define outbound associations on types and aspects.
-                //           Integrity checking will ensure that the correct behaviours are in place to maintain model integrity.
+                // As a side-effect of the investigation of MNT-9446, it was dicovered that inbound associations (ones pointing *to* this aspect)
+                // were also being removed. This is incorrect because the aspect being removed here has no say over who points at it.
+                // Therefore, do not remove inbound associations because we only define outbound associations on types and aspects.
+                // Integrity checking will ensure that the correct behaviours are in place to maintain model integrity.
             }
             // Now delete peer associations
             int assocsDeleted = nodeDAO.removeNodeAssocs(nodeAssocIdsToRemove);
@@ -997,7 +1000,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     /**
      * Performs a check on the set of node aspects
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public boolean hasAspect(NodeRef nodeRef, QName aspectQName) throws InvalidNodeRefException, InvalidAspectException
     {
         if (aspectQName.equals(ContentModel.ASPECT_PENDING_DELETE))
@@ -1008,7 +1011,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         return nodeDAO.hasNodeAspect(nodePair.getFirst(), aspectQName);
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
     {
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
@@ -1021,7 +1024,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
 
     /**
-     * @return      Returns <tt>true</tt> if the node is being deleted
+     * @return Returns <tt>true</tt> if the node is being deleted
      * 
      * @see #KEY_PENDING_DELETE_NODES
      */
@@ -1035,9 +1038,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         Set<NodeRef> nodesPendingDelete = TransactionalResourceHelper.getSet(KEY_PENDING_DELETE_NODES);
         return nodesPendingDelete.contains(nodeRef);
     }
-    
+
     /**
-     * @throws      IllegalStateException   if the node is pending delete
+     * @throws IllegalStateException
+     *             if the node is pending delete
      * 
      * @see #KEY_PENDING_DELETE_NODES
      */
@@ -1047,32 +1051,33 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             throw new IllegalStateException(
                     "Operation not allowed against node pending deletion." +
-                    "  Check the node for aspect " + ContentModel.ASPECT_PENDING_DELETE);
+                            "  Check the node for aspect " + ContentModel.ASPECT_PENDING_DELETE);
         }
     }
-    
+
     /**
      * Delete Node
      */
     @Override
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public void deleteNode(NodeRef nodeRef)
     {
         deleteNode(nodeRef, true);
     }
-    
+
     /**
      * Delete a node
      * 
-     * @param nodeRef           the node to delete
-     * @param allowArchival     <tt>true</tt> if normal archival may occur or
-     *                          <tt>false</tt> if the node must be forcibly deleted
+     * @param nodeRef
+     *            the node to delete
+     * @param allowArchival
+     *            <tt>true</tt> if normal archival may occur or <tt>false</tt> if the node must be forcibly deleted
      */
     private void deleteNode(NodeRef nodeRef, boolean allowArchival)
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(nodeRef);
-        
+
         // Pair contains NodeId, NodeRef
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         Long nodeId = nodePair.getFirst();
@@ -1093,14 +1098,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         Pair<Long, ChildAssociationRef> childAssocPair = nodeDAO.getPrimaryParentAssoc(nodeId);
         ChildAssociationRef childAssocRef = childAssocPair.getSecond();
 
-        // Is this store 
+        // Is this store
         StoreRef storeRef = nodeRef.getStoreRef();
         StoreRef archiveStoreRef = storeArchiveMap.get(storeRef);
 
         // Gather information about the hierarchy
         NodeHierarchyWalker walker = new NodeHierarchyWalker(nodeDAO);
         walker.walkHierarchy(nodePair, childAssocPair);
-        
+
         // Protect the nodes from being link/unlinked for the remainder of the process
         Set<NodeRef> nodesPendingDelete = new HashSet<NodeRef>(walker.getNodes(false).size());
         for (VisitedNode visitedNode : walker.getNodes(true))
@@ -1108,8 +1113,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             nodesPendingDelete.add(visitedNode.nodeRef);
         }
         Set<NodeRef> nodesPendingDeleteTxn = TransactionalResourceHelper.getSet(KEY_PENDING_DELETE_NODES);
-        nodesPendingDeleteTxn.addAll(nodesPendingDelete);           // We need to remove these later, again
-        
+        nodesPendingDeleteTxn.addAll(nodesPendingDelete); // We need to remove these later, again
+
         // Work out whether we need to archive or delete the node.
         if (!allowArchival)
         {
@@ -1150,7 +1155,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 }
             }
         }
-        
+
         // Propagate timestamps
         propagateTimeStamps(childAssocRef);
 
@@ -1158,8 +1163,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         boolean archive = requiresDelete != null && !requiresDelete.booleanValue();
 
         // Fire pre-delete events
-        Set<Long> childAssocIds = new HashSet<Long>(23);            // Prevents duplicate firing
-        Set<Long> peerAssocIds = new HashSet<Long>(23);            // Prevents duplicate firing
+        Set<Long> childAssocIds = new HashSet<Long>(23); // Prevents duplicate firing
+        Set<Long> peerAssocIds = new HashSet<Long>(23); // Prevents duplicate firing
         List<VisitedNode> nodesToDelete = walker.getNodes(true);
         for (VisitedNode nodeToDelete : nodesToDelete)
         {
@@ -1168,7 +1173,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             {
                 if (!peerAssocIds.add(targetAssocPair.getFirst()))
                 {
-                    continue;           // Already fired
+                    continue; // Already fired
                 }
                 invokeBeforeDeleteAssociation(targetAssocPair.getSecond());
             }
@@ -1177,7 +1182,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             {
                 if (!peerAssocIds.add(sourceAssocPair.getFirst()))
                 {
-                    continue;           // Already fired
+                    continue; // Already fired
                 }
                 invokeBeforeDeleteAssociation(sourceAssocPair.getSecond());
             }
@@ -1186,7 +1191,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             {
                 if (!childAssocIds.add(secondaryChildAssocPair.getFirst()))
                 {
-                    continue;           // Already fired
+                    continue; // Already fired
                 }
                 invokeBeforeDeleteChildAssociation(secondaryChildAssocPair.getSecond());
             }
@@ -1195,11 +1200,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             {
                 if (!childAssocIds.add(secondaryParentAssocPair.getFirst()))
                 {
-                    continue;           // Already fired
+                    continue; // Already fired
                 }
                 invokeBeforeDeleteChildAssociation(secondaryParentAssocPair.getSecond());
             }
-            
+
             // Primary child associations
             if (archive)
             {
@@ -1207,7 +1212,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
             invokeBeforeDeleteNode(nodeToDelete.nodeRef);
         }
-        
+
         // Archive, if necessary
         if (archive)
         {
@@ -1216,8 +1221,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         }
 
         // Delete/Archive and fire post-delete events incl. updating indexes
-        childAssocIds.clear();                                    // Prevents duplicate firing
-        peerAssocIds.clear();                                     // Prevents duplicate firing
+        childAssocIds.clear(); // Prevents duplicate firing
+        peerAssocIds.clear(); // Prevents duplicate firing
         for (VisitedNode nodeToDelete : nodesToDelete)
         {
             // Target associations
@@ -1225,7 +1230,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             {
                 if (!peerAssocIds.add(targetAssocPair.getFirst()))
                 {
-                    continue;           // Already fired
+                    continue; // Already fired
                 }
                 nodeDAO.removeNodeAssocs(Collections.singletonList(targetAssocPair.getFirst()));
                 invokeOnDeleteAssociation(targetAssocPair.getSecond());
@@ -1235,7 +1240,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             {
                 if (!peerAssocIds.add(sourceAssocPair.getFirst()))
                 {
-                    continue;           // Already fired
+                    continue; // Already fired
                 }
                 nodeDAO.removeNodeAssocs(Collections.singletonList(sourceAssocPair.getFirst()));
                 invokeOnDeleteAssociation(sourceAssocPair.getSecond());
@@ -1245,7 +1250,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             {
                 if (!childAssocIds.add(secondaryChildAssocPair.getFirst()))
                 {
-                    continue;           // Already fired
+                    continue; // Already fired
                 }
                 nodeDAO.deleteChildAssoc(secondaryChildAssocPair.getFirst());
                 invokeOnDeleteChildAssociation(secondaryChildAssocPair.getSecond());
@@ -1255,7 +1260,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             {
                 if (!childAssocIds.add(secondaryParentAssocPair.getFirst()))
                 {
-                    continue;           // Already fired
+                    continue; // Already fired
                 }
                 nodeDAO.deleteChildAssoc(secondaryParentAssocPair.getFirst());
                 invokeOnDeleteChildAssociation(secondaryParentAssocPair.getSecond());
@@ -1269,24 +1274,24 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                     nodeToDelete.primaryParentAssocPair.getSecond(),
                     childNodeTypeQName, childAspectQnames, archive);
         }
-        
+
         // Clear out the list of nodes pending delete
         nodesPendingDeleteTxn = TransactionalResourceHelper.getSet(KEY_PENDING_DELETE_NODES);
         nodesPendingDeleteTxn.removeAll(nodesPendingDelete);
     }
-    
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public ChildAssociationRef addChild(NodeRef parentRef, NodeRef childRef, QName assocTypeQName, QName assocQName)
     {
         return addChild(Collections.singletonList(parentRef), childRef, assocTypeQName, assocQName).get(0);
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<ChildAssociationRef> addChild(Collection<NodeRef> parentRefs, NodeRef childRef, QName assocTypeQName, QName assocQName)
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(childRef);
-        
+
         // Get the node's name, if present
         Pair<Long, NodeRef> childNodePair = getNodePairNotNull(childRef);
         Long childNodeId = childNodePair.getFirst();
@@ -1297,13 +1302,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             childNodeName = childRef.getId();
         }
 
-        List <ChildAssociationRef> childAssociationRefs = new ArrayList<ChildAssociationRef>(parentRefs.size());
+        List<ChildAssociationRef> childAssociationRefs = new ArrayList<ChildAssociationRef>(parentRefs.size());
         List<Pair<Long, NodeRef>> parentNodePairs = new ArrayList<Pair<Long, NodeRef>>(parentRefs.size());
         for (NodeRef parentRef : parentRefs)
         {
             // The node(s) involved may not be pending deletion
             checkPendingDelete(parentRef);
-            
+
             Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(parentRef);
             Long parentNodeId = parentNodePair.getFirst();
             parentNodePairs.add(parentNodePair);
@@ -1316,7 +1321,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
             childAssociationRefs.add(childAssocPair.getSecond());
         }
-        
+
         // check that the child addition of the child has not created a cyclic relationship
         nodeDAO.cycleCheck(childNodeId);
 
@@ -1325,7 +1330,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             invokeOnCreateChildAssociation(childAssocRef, false);
         }
-        
+
         // Get the type associated with the association
         // The association may be sourced on an aspect, which may itself mandate further aspects
         for (Pair<Long, NodeRef> parentNodePair : parentNodePairs)
@@ -1336,18 +1341,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         return childAssociationRefs;
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public void removeChild(NodeRef parentRef, NodeRef childRef) throws InvalidNodeRefException
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(parentRef);
         checkPendingDelete(childRef);
-        
+
         final Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(parentRef);
         final Long parentNodeId = parentNodePair.getFirst();
         final Pair<Long, NodeRef> childNodePair = getNodePairNotNull(childRef);
         final Long childNodeId = childNodePair.getFirst();
-        
+
         // Get the primary parent association for the child
         Pair<Long, ChildAssociationRef> primaryChildAssocPair = nodeDAO.getPrimaryParentAssoc(childNodeId);
         // We can shortcut if our parent is also the primary parent
@@ -1361,11 +1366,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 return;
             }
         }
-        
+
         // We have to iterate over the associations and remove all those between the parent and child
         final List<Pair<Long, ChildAssociationRef>> assocsToDelete = new ArrayList<Pair<Long, ChildAssociationRef>>(5);
-        NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
-        {
+        NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback() {
             public boolean preLoadNodes()
             {
                 return true;
@@ -1394,11 +1398,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
 
             public void done()
-            {
-            }                               
+            {}
         };
         nodeDAO.getChildAssocs(parentNodeId, childNodeId, null, null, null, null, callback);
-        
+
         // Delete all the collected associations
         for (Pair<Long, ChildAssociationRef> assocPair : assocsToDelete)
         {
@@ -1412,14 +1415,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
         // Done
     }
-    
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public boolean removeChildAssociation(ChildAssociationRef childAssocRef)
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(childAssocRef.getParentRef());
         checkPendingDelete(childAssocRef.getChildRef());
-        
+
         Long parentNodeId = getNodePairNotNull(childAssocRef.getParentRef()).getFirst();
         Long childNodeId = getNodePairNotNull(childAssocRef.getChildRef()).getFirst();
         QName assocTypeQName = childAssocRef.getTypeQName();
@@ -1453,13 +1456,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
 
     @Override
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public boolean removeSecondaryChildAssociation(ChildAssociationRef childAssocRef)
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(childAssocRef.getParentRef());
         checkPendingDelete(childAssocRef.getChildRef());
-        
+
         Long parentNodeId = getNodePairNotNull(childAssocRef.getParentRef()).getFirst();
         Long childNodeId = getNodePairNotNull(childAssocRef.getChildRef()).getFirst();
         QName assocTypeQName = childAssocRef.getTypeQName();
@@ -1477,7 +1480,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             throw new IllegalArgumentException(
                     "removeSeconaryChildAssociation can not be applied to a primary association: \n" +
-                    "   Child Assoc: " + assocRef);
+                            "   Child Assoc: " + assocRef);
         }
         // Delete the secondary association
         invokeBeforeDeleteChildAssociation(childAssocRef);
@@ -1487,7 +1490,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         return true;
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public Serializable getProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
     {
         Long nodeId = getNodePairNotNull(nodeRef).getFirst();
@@ -1508,20 +1511,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             return nodeId;
         }
-        
+
         Serializable property = nodeDAO.getNodeProperty(nodeId, qname);
-        
+
         // check if we need to provide a spoofed name
         if (property == null && qname.equals(ContentModel.PROP_NAME))
         {
             return nodeRef.getId();
         }
-        
+
         // done
         return property;
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
     {
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
@@ -1538,8 +1541,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // done
         return nodeProperties;
     }
-    
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public Long getNodeAclId(NodeRef nodeRef) throws InvalidNodeRefException
     {
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
@@ -1556,11 +1559,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // done
         return aclID;
     }
-    
+
     /**
      * Performs additional tasks associated with setting a property.
      * 
-     * @return      Returns <tt>true</tt> if any work was done by this method
+     * @return Returns <tt>true</tt> if any work was done by this method
      */
     private boolean setPropertiesCommonWork(Pair<Long, NodeRef> nodePair, Map<QName, Serializable> properties)
     {
@@ -1582,18 +1585,17 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // Done
         return changed;
     }
-    
+
     /**
-     * Gets the properties map, sets the value (null is allowed) and checks that the new set
-     * of properties is valid.
+     * Gets the properties map, sets the value (null is allowed) and checks that the new set of properties is valid.
      * 
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public void setProperty(NodeRef nodeRef, QName qname, Serializable value) throws InvalidNodeRefException
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("qname", qname);
-        
+
         // The UUID cannot be explicitly changed
         if (qname.equals(ContentModel.PROP_NODE_UUID))
         {
@@ -1602,94 +1604,91 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
         // get the node
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
-        
+
         // Invoke policy behaviour
         invokeBeforeUpdateNode(nodeRef);
-        
+
         // cm:name special handling
         setPropertiesCommonWork(
-                    nodePair,
-                    Collections.singletonMap(qname, value));
+                nodePair,
+                Collections.singletonMap(qname, value));
 
         // Add the property and all required defaults
         boolean changed = addAspectsAndProperties(
-                    nodePair, null,
-                    null, null,
-                    null, Collections.singletonMap(qname, value), false);
-        
+                nodePair, null,
+                null, null,
+                null, Collections.singletonMap(qname, value), false);
+
         if (changed)
         {
             // Invoke policy behaviour
             invokeOnUpdateNode(nodeRef);
         }
     }
-    
+
     /**
-     * Ensures that all required properties are present on the node and copies the
-     * property values to the <code>Node</code>.
+     * Ensures that all required properties are present on the node and copies the property values to the <code>Node</code>.
      * <p>
-     * To remove a property, <b>remove it from the map</b> before calling this method.
-     * Null-valued properties are allowed.
+     * To remove a property, <b>remove it from the map</b> before calling this method. Null-valued properties are allowed.
      * <p>
-     * If any of the values are null, a marker object is put in to mimic nulls.  They will be turned back into
-     * a real nulls when the properties are requested again.
+     * If any of the values are null, a marker object is put in to mimic nulls. They will be turned back into a real nulls when the properties are requested again.
      * 
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public void setProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
-        
+
         // Invoke policy behaviours
         invokeBeforeUpdateNode(nodeRef);
 
         // SetProperties common tasks
         setPropertiesCommonWork(nodePair, properties);
-        
+
         // Set properties and defaults, overwriting the existing properties
         boolean changed = addAspectsAndProperties(nodePair, null, null, null, null, properties, true);
-        
+
         if (changed)
         {
             // Invoke policy behaviours
             invokeOnUpdateNode(nodeRef);
         }
     }
-    
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public void addProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
-        
+
         // Invoke policy behaviours
         invokeBeforeUpdateNode(nodeRef);
-        
+
         // cm:name special handling
         setPropertiesCommonWork(nodePair, properties);
 
         // Add properties and defaults
         boolean changed = addAspectsAndProperties(nodePair, null, null, null, null, properties, false);
-        
+
         if (changed)
         {
             // Invoke policy behaviours
             invokeOnUpdateNode(nodeRef);
         }
     }
-    
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public void removeProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
     {
         // Get the node
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         Long nodeId = nodePair.getFirst();
-        
+
         // Invoke policy behaviours
         invokeBeforeUpdateNode(nodeRef);
-        
+
         // Get the values before
         Map<QName, Serializable> propertiesBefore = getPropertiesImpl(nodePair);
-        
+
         // cm:name special handling
         if (qname.equals(ContentModel.PROP_NAME))
         {
@@ -1700,7 +1699,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
         // Remove
         nodeDAO.removeNodeProperties(nodeId, Collections.singleton(qname));
-        
+
         // Invoke policy behaviours
         Map<QName, Serializable> propertiesAfter = getPropertiesImpl(nodePair);
         invokeOnUpdateNode(nodeRef);
@@ -1713,7 +1712,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 nodeRef,
                 RegexQNamePattern.MATCH_ALL,
                 RegexQNamePattern.MATCH_ALL);
-        
+
         // Copy into the set to avoid duplicates
         Set<NodeRef> parentNodeRefs = new HashSet<NodeRef>(parentAssocs.size());
         for (ChildAssociationRef parentAssoc : parentAssocs)
@@ -1728,7 +1727,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     /**
      * Filters out any associations if their qname is not a match to the given pattern.
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<ChildAssociationRef> getParentAssocs(
             final NodeRef nodeRef,
             final QNamePattern typeQNamePattern,
@@ -1737,16 +1736,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // Get the node
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         Long nodeId = nodePair.getFirst();
-        
+
         final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);
         // We have a callback handler to filter results
-        ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()
-        {
+        ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback() {
             public boolean preLoadNodes()
             {
                 return false;
             }
-            
+
             @Override
             public boolean orderResults()
             {
@@ -1771,39 +1769,38 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
 
             public void done()
-            {
-            }                               
+            {}
         };
-        
+
         // Get the assocs pointing to it
         QName typeQName = (typeQNamePattern instanceof QName) ? (QName) typeQNamePattern : null;
         QName qname = (qnamePattern instanceof QName) ? (QName) qnamePattern : null;
-        
+
         nodeDAO.getParentAssocs(nodeId, typeQName, qname, null, callback);
         // done
         return results;
     }
 
     @Override
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<ChildAssociationRef> getParentAssocs(NodeRef nodeRef) throws InvalidNodeRefException
     {
         return super.getParentAssocs(nodeRef);
-    }
-    
-    /**
-     * Filters out any associations if their qname is not a match to the given pattern.
-     */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
-    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, final QNamePattern typeQNamePattern, final QNamePattern qnamePattern)
-    {
-       return getChildAssocs(nodeRef, typeQNamePattern, qnamePattern, true) ;
     }
 
     /**
      * Filters out any associations if their qname is not a match to the given pattern.
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
+    public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, final QNamePattern typeQNamePattern, final QNamePattern qnamePattern)
+    {
+        return getChildAssocs(nodeRef, typeQNamePattern, qnamePattern, true);
+    }
+
+    /**
+     * Filters out any associations if their qname is not a match to the given pattern.
+     */
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<ChildAssociationRef> getChildAssocs(
             NodeRef nodeRef,
             final QNamePattern typeQNamePattern,
@@ -1811,12 +1808,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             final boolean preload)
     {
         return getChildAssocs(nodeRef, typeQNamePattern, qnamePattern, Integer.MAX_VALUE, preload);
-            }
-            
+    }
+
     /**
      * Fetches the first n child associations in an efficient manner
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<ChildAssociationRef> getChildAssocs(
             NodeRef nodeRef,
             final QNamePattern typeQNamePattern,
@@ -1826,16 +1823,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     {
         // Get the node
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
-        
+
         // We have a callback handler to filter results
         final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);
-        ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()
-        {
+        ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback() {
             public boolean preLoadNodes()
             {
                 return preload;
             }
-            
+
             @Override
             public boolean orderResults()
             {
@@ -1860,8 +1856,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
 
             public void done()
-            {
-            }                               
+            {}
         };
         // Get the assocs pointing to it
         QName typeQName = (typeQNamePattern instanceof QName) ? (QName) typeQNamePattern : null;
@@ -1872,7 +1867,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         return results;
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, Set<QName> childNodeTypeQNames)
     {
         // Get the node
@@ -1880,9 +1875,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         Long nodeId = nodePair.getFirst();
 
         final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(100);
-        
-        NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
-        {
+
+        NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback() {
             public boolean preLoadNodes()
             {
                 return true;
@@ -1905,8 +1899,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
 
             public void done()
-            {
-            }                               
+            {}
         };
         // Get all child associations with the specific qualified name
         nodeDAO.getChildAssocsByChildTypes(nodeId, childNodeTypeQNames, callback);
@@ -1914,13 +1907,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         return results;
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName)
     {
         ParameterCheck.mandatory("childName", childName);
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("assocTypeQName", assocTypeQName);
-        
+
         // Get the node
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         Long nodeId = nodePair.getFirst();
@@ -1936,7 +1929,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         }
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<ChildAssociationRef> getChildrenByName(NodeRef nodeRef, QName assocTypeQName, Collection<String> childNames)
     {
         // Get the node
@@ -1944,13 +1937,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         Long nodeId = nodePair.getFirst();
 
         final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(100);
-        
-        NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
-        {
+
+        NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback() {
             public boolean preLoadNodes()
             {
                 return true;
-            }            
+            }
 
             @Override
             public boolean orderResults()
@@ -1969,8 +1961,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
 
             public void done()
-            {
-            }                               
+            {}
         };
         // Get all child associations with the specific qualified name
         nodeDAO.getChildAssocs(nodeId, assocTypeQName, childNames, callback);
@@ -1978,7 +1969,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         return results;
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public ChildAssociationRef getPrimaryParent(NodeRef nodeRef) throws InvalidNodeRefException
     {
         // Get the node
@@ -2002,14 +1993,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
 
     @Override
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public AssociationRef createAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
             throws InvalidNodeRefException, AssociationExistsException
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(sourceRef);
         checkPendingDelete(targetRef);
-        
+
         Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
         long sourceNodeId = sourceNodePair.getFirst();
         Pair<Long, NodeRef> targetNodePair = getNodePairNotNull(targetRef);
@@ -2021,20 +2012,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
         // Invoke policy behaviours
         invokeOnCreateAssociation(assocRef);
-        
+
         // Add missing aspects
         addAspectsAndPropertiesAssoc(sourceNodePair, assocTypeQName, null, null, null, null, false);
 
         return assocRef;
-    }   
-    
+    }
+
     @Override
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public void setAssociations(NodeRef sourceRef, QName assocTypeQName, List<NodeRef> targetRefs)
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(sourceRef);
-        
+
         Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
         Long sourceNodeId = sourceNodePair.getFirst();
         // First get the existing associations
@@ -2059,18 +2050,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // Remove reduncant assocs
         List<Long> toRemoveIds = new ArrayList<Long>(toRemoveMap.values());
         nodeDAO.removeNodeAssocs(toRemoveIds);
-        
+
         // Work out which associations need to be added
         Set<NodeRef> toAdd = new HashSet<NodeRef>(targetRefs);
         toAdd.removeAll(targetRefsBefore.keySet());
-        
+
         // Iterate over the desired result and create new or reset indexes
         int assocIndex = 1;
         for (NodeRef targetNodeRef : targetRefs)
         {
             // The node(s) involved may not be pending deletion
             checkPendingDelete(targetNodeRef);
-            
+
             Long id = targetRefsBefore.get(targetNodeRef);
             // Is this an existing assoc?
             if (id != null)
@@ -2085,7 +2076,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
             assocIndex++;
         }
-        
+
         // Invoke policy behaviours
         for (NodeRef targetNodeRef : toAdd)
         {
@@ -2094,7 +2085,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         }
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public Collection<ChildAssociationRef> getChildAssocsWithoutParentAssocsOfType(NodeRef parent, QName assocTypeQName)
     {
         // Get the parent node
@@ -2103,8 +2094,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
         final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(100);
 
-        NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
-        {
+        NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback() {
             public boolean preLoadNodes()
             {
                 return false;
@@ -2125,8 +2115,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
 
             public void done()
-            {
-            }                               
+            {}
         };
         // Get the child associations that meet the criteria
         nodeDAO.getChildAssocsWithoutParentAssocsOfType(parentNodeId, assocTypeQName, callback);
@@ -2134,7 +2123,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         return results;
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<String> findAssocsNotLinkedByTwoOtherAssocs(NodeRef parent)
     {
         // Get the parent node
@@ -2143,11 +2132,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
         return nodeDAO.selectAssocsNotLinkedByTwoOtherAssocs(parentNodeId);
     }
+
     /**
      * Specific properties <b>not</b> supported by {@link #getChildAssocsByPropertyValue(NodeRef, QName, Serializable)}
      */
     private static List<QName> getChildAssocsByPropertyValueBannedProps = new ArrayList<QName>();
-    static 
+    static
     {
         getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_NODE_DBID);
         getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_NODE_UUID);
@@ -2157,12 +2147,12 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_CREATED);
         getChildAssocsByPropertyValueBannedProps.add(ContentModel.PROP_CREATOR);
     }
-    
+
     @Override
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<ChildAssociationRef> getChildAssocsByPropertyValue(
             NodeRef nodeRef,
-            QName propertyQName, 
+            QName propertyQName,
             Serializable value)
     {
         // Get the node
@@ -2170,22 +2160,21 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         Long nodeId = nodePair.getFirst();
 
         // Check the QName is not one of the "special" system maintained ones.
-        
+
         if (getChildAssocsByPropertyValueBannedProps.contains(propertyQName))
         {
             throw new IllegalArgumentException(
                     "getChildAssocsByPropertyValue does not allow search of system maintained properties: " + propertyQName);
         }
-                
+
         final List<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(10);
         // We have a callback handler to filter results
-        ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback()
-        {
+        ChildAssocRefQueryCallback callback = new ChildAssocRefQueryCallback() {
             public boolean preLoadNodes()
             {
                 return false;
             }
-            
+
             @Override
             public boolean orderResults()
             {
@@ -2202,8 +2191,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
 
             public void done()
-            {
-            }                               
+            {}
         };
         // Get the assocs pointing to it
         nodeDAO.getChildAssocsByPropertyValue(nodeId, propertyQName, value, callback);
@@ -2211,14 +2199,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         return results;
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public void removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
             throws InvalidNodeRefException
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(sourceRef);
         checkPendingDelete(targetRef);
-        
+
         Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
         Long sourceNodeId = sourceNodePair.getFirst();
         Pair<Long, NodeRef> targetNodePair = getNodePairNotNull(targetRef);
@@ -2230,23 +2218,23 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
         // delete it
         int assocsDeleted = nodeDAO.removeNodeAssoc(sourceNodeId, targetNodeId, assocTypeQName);
-        
+
         if (assocsDeleted > 0)
         {
             // Invoke policy behaviours
             invokeOnDeleteAssociation(assocRef);
         }
     }
-    
+
     @Override
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public AssociationRef getAssoc(Long id)
     {
         Pair<Long, AssociationRef> nodeAssocPair = nodeDAO.getNodeAssocOrNull(id);
         return nodeAssocPair == null ? null : nodeAssocPair.getSecond();
     }
 
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<AssociationRef> getTargetAssocs(NodeRef sourceRef, QNamePattern qnamePattern)
     {
         Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
@@ -2265,7 +2253,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             // check qname pattern, if not already filtered
             if (qnameFilter == null && !qnamePattern.isMatch(assocRef.getTypeQName()))
             {
-                continue;   // the assoc name doesn't match the pattern given 
+                continue; // the assoc name doesn't match the pattern given
             }
             nodeAssocRefs.add(assocRef);
         }
@@ -2274,7 +2262,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
 
     @Override
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<AssociationRef> getTargetAssocsByPropertyValue(NodeRef sourceRef, QNamePattern qnamePattern, QName propertyQName, Serializable propertyValue)
     {
         Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
@@ -2286,7 +2274,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             qnameFilter = (QName) qnamePattern;
         }
 
-         // Check the QName is not one of the "special" system maintained ones.
+        // Check the QName is not one of the "special" system maintained ones.
         if (getChildAssocsByPropertyValueBannedProps.contains(propertyQName))
         {
             throw new IllegalArgumentException(
@@ -2301,19 +2289,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             // check qname pattern, if not already filtered
             if (qnameFilter == null && !qnamePattern.isMatch(assocRef.getTypeQName()))
             {
-                continue;   // the assoc name doesn't match the pattern given 
+                continue; // the assoc name doesn't match the pattern given
             }
             nodeAssocRefs.add(assocRef);
         }
         // done
         return nodeAssocRefs;
     }
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<AssociationRef> getSourceAssocs(NodeRef targetRef, QNamePattern qnamePattern)
     {
         Pair<Long, NodeRef> targetNodePair = getNodePairNotNull(targetRef);
         Long targetNodeId = targetNodePair.getFirst();
-        
+
         QName qnameFilter = null;
         if (qnamePattern instanceof QName)
         {
@@ -2327,41 +2316,40 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             // check qname pattern, if not already filtered
             if (qnameFilter == null && !qnamePattern.isMatch(assocRef.getTypeQName()))
             {
-                continue;   // the assoc name doesn't match the pattern given 
+                continue; // the assoc name doesn't match the pattern given
             }
             nodeAssocRefs.add(assocRef);
         }
         // done
         return nodeAssocRefs;
     }
-    
+
     /**
      * @see #getPaths(NodeRef, boolean)
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public Path getPath(NodeRef nodeRef) throws InvalidNodeRefException
     {
-        List<Path> paths = getPaths(nodeRef, true);   // checks primary path count
+        List<Path> paths = getPaths(nodeRef, true); // checks primary path count
         if (paths.size() == 1)
         {
-            return paths.get(0);   // we know there is only one
+            return paths.get(0); // we know there is only one
         }
-        throw new RuntimeException("Primary path count not checked");  // checked by getPaths()
+        throw new RuntimeException("Primary path count not checked"); // checked by getPaths()
     }
 
     /**
-     * When searching for <code>primaryOnly == true</code>, checks that there is exactly
-     * one path.
+     * When searching for <code>primaryOnly == true</code>, checks that there is exactly one path.
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public List<Path> getPaths(NodeRef nodeRef, boolean primaryOnly) throws InvalidNodeRefException
     {
         // get the starting node
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
-        
+
         return nodeDAO.getPaths(nodePair, primaryOnly);
     }
-    
+
     /**
      * Archives the node without the <b>cm:auditable</b> aspect behaviour
      */
@@ -2377,18 +2365,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
         }
     }
-    
+
     /**
      * Archive (direct copy) a node hierarchy
      * 
-     * @param walker                the node hierarchy to archive
-     * @param archiveStoreRef StoreRef
+     * @param walker
+     *            the node hierarchy to archive
+     * @param archiveStoreRef
+     *            StoreRef
      */
     private void archiveHierarchyImpl(NodeHierarchyWalker walker, StoreRef archiveStoreRef)
     {
         // Start with the node we are archiving to
         Pair<Long, NodeRef> archiveStoreRootNodePair = nodeDAO.getRootNode(archiveStoreRef);
-        
+
         // Work through the hierarchy from the top down and archive all the nodes
         boolean firstNode = true;
         Map<Long, Pair<Long, NodeRef>> archiveRecord = new HashMap<Long, Pair<Long, NodeRef>>(walker.getNodes(false).size() * 2);
@@ -2450,14 +2440,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                         true,
                         primaryParentAssocRef.getNthSibling());
             }
-            
+
             // Invoke behaviours
             invokeBeforeCreateNode(
                     archivePrimaryParentAssocRef.getParentRef(),
                     archivePrimaryParentAssocRef.getTypeQName(),
                     archivePrimaryParentAssocRef.getQName(),
                     node.nodeType);
-                    
+
             // Create a new node
             boolean attempted = false;
             Node archiveNode = null;
@@ -2495,7 +2485,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                     }
                 }
             }
-          
+
             // Carry any explicit permissions over to the new node
             Set<AccessPermission> originalNodePermissions = permissionService.getAllSetPermissions(node.nodeRef);
             for (AccessPermission originalPermission : originalNodePermissions)
@@ -2519,14 +2509,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             {
                 permissionService.setInheritParentPermissions(archiveNode.getNodeRef(), false);
             }
-            
+
             // Add properties and aspects
             Long archiveNodeId = archiveNode.getId();
             NodeRef archiveNodeRef = archiveNode.getNodeRef();
             nodeDAO.addNodeAspects(archiveNodeId, archiveAspects);
             nodeDAO.addNodeProperties(archiveNodeId, archiveProperties);
             // TODO: archive other associations
-            
+
             // If we are have just handled the top-level node in the hierarchy, then ensure that the
             // username is linked to the document
             if (firstNode)
@@ -2552,10 +2542,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 NodeRef userArchiveNodeRef = null;
                 if (userArchiveAssocPair == null)
                 {
-                    // User has no node entry.  Create a new one.
+                    // User has no node entry. Create a new one.
                     QName archiveUserAssocQName = QName.createQName(
-                                NamespaceService.CONTENT_MODEL_1_0_URI,
-                                QName.createValidLocalName(username));
+                            NamespaceService.CONTENT_MODEL_1_0_URI,
+                            QName.createValidLocalName(username));
                     Map<QName, Serializable> userArchiveNodeProps = Collections.singletonMap(
                             ContentModel.PROP_NAME, (Serializable) username);
                     userArchiveNodeRef = createNode(
@@ -2579,20 +2569,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                         NamespaceService.SYSTEM_MODEL_1_0_URI, archiveNodeName);
                 addChild(userArchiveNodeRef, archiveNodeRef, ContentModel.ASSOC_ARCHIVED_LINK, archiveAssocQName);
             }
-            
+
             // Invoke behaviours
             invokeOnCreateNode(archivePrimaryParentAssocRef);
 
             firstNode = false;
         }
     }
-    
+
     /**
      * {@inheritDoc}
      * 
      * Archives the node without the <b>cm:auditable</b> aspect behaviour
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public NodeRef restoreNode(NodeRef archivedNodeRef, NodeRef destinationParentNodeRef, QName assocTypeQName, QName assocQName)
     {
         policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
@@ -2605,7 +2595,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
         }
     }
-    
+
     private NodeRef restoreNodeImpl(NodeRef archivedNodeRef, NodeRef destinationParentNodeRef, QName assocTypeQName, QName assocQName)
     {
         Pair<Long, NodeRef> archivedNodePair = getNodePairNotNull(archivedNodeRef);
@@ -2614,13 +2604,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         Set<QName> newAspects = new HashSet<QName>(5);
         Map<QName, Serializable> existingProperties = nodeDAO.getNodeProperties(archivedNodeId);
         Map<QName, Serializable> newProperties = new HashMap<QName, Serializable>(11);
-        
+
         // the node must be a top-level archive node
         if (!existingAspects.contains(ContentModel.ASPECT_ARCHIVED))
         {
             throw new AlfrescoRuntimeException("The node to restore is not an archive node");
         }
-        
+
         // Remove the secondary link to the user that deleted the node
         List<ChildAssociationRef> parentAssocsToRemove = getParentAssocs(
                 archivedNodeRef,
@@ -2630,7 +2620,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         {
             this.removeSecondaryChildAssociation(parentAssocToRemove);
         }
-        
+
         ChildAssociationRef originalPrimaryParentAssocRef = (ChildAssociationRef) existingProperties.get(
                 ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
         Serializable originalOwner = existingProperties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER);
@@ -2642,7 +2632,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         removePropertyQNames.add(ContentModel.PROP_ARCHIVED_DATE);
         removePropertyQNames.add(ContentModel.PROP_ARCHIVED_ORIGINAL_OWNER);
         removeAspectQNames.add(ContentModel.ASPECT_ARCHIVED);
-        
+
         // restore the original ownership
         if (originalOwner == null || originalOwner.equals(OwnableService.NO_OWNER))
         {
@@ -2655,7 +2645,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             newAspects.add(ContentModel.ASPECT_OWNABLE);
             newProperties.put(ContentModel.PROP_OWNER, originalOwner);
         }
-        
+
         // Prepare the node for restoration: remove old aspects and properties; add new aspects and properties
         nodeDAO.removeNodeProperties(archivedNodeId, removePropertyQNames);
         nodeDAO.removeNodeAspects(archivedNodeId, removeAspectQNames);
@@ -2703,7 +2693,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
      * 
      * Drops the old primary association and creates a new one
      */
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public ChildAssociationRef moveNode(
             NodeRef nodeToMoveRef,
             NodeRef newParentRef,
@@ -2713,28 +2703,28 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // The node(s) involved may not be pending deletion
         checkPendingDelete(nodeToMoveRef);
         checkPendingDelete(newParentRef);
-        
+
         Pair<Long, NodeRef> nodeToMovePair = getNodePairNotNull(nodeToMoveRef);
         Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(newParentRef);
-        
+
         Long nodeToMoveId = nodeToMovePair.getFirst();
         NodeRef oldNodeToMoveRef = nodeToMovePair.getSecond();
         Long parentNodeId = parentNodePair.getFirst();
         NodeRef parentNodeRef = parentNodePair.getSecond();
         StoreRef oldStoreRef = oldNodeToMoveRef.getStoreRef();
         StoreRef newStoreRef = parentNodeRef.getStoreRef();
-        
+
         List<ChildAssociationRef> nodesToRestoreAssociationsFor = new ArrayList<ChildAssociationRef>();
-        
+
         // Get the primary parent association
         Pair<Long, ChildAssociationRef> oldParentAssocPair = nodeDAO.getPrimaryParentAssoc(nodeToMoveId);
         if (oldParentAssocPair == null)
         {
-            // The node doesn't have parent.  Moving it is not possible.
+            // The node doesn't have parent. Moving it is not possible.
             throw new IllegalArgumentException("Node " + nodeToMoveId + " doesn't have a parent.  Use 'addChild' instead of move.");
         }
         ChildAssociationRef oldParentAssocRef = oldParentAssocPair.getSecond();
-        
+
         boolean movingStore = !oldStoreRef.equals(newStoreRef);
 
         if (movingStore)
@@ -2744,7 +2734,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             List<ChildAssociationRef> childAssocs = new LinkedList<ChildAssociationRef>();
             Map<NodeRef, Long> oldChildNodeIds = new HashMap<NodeRef, Long>(97);
             findNodeChildrenToMove(nodeToMoveId, newStoreRef, childAssocs, oldChildNodeIds);
-        
+
             // Invoke "Before Delete" policy behaviour
             invokeBeforeDeleteNode(nodeToMoveRef);
 
@@ -2754,25 +2744,25 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 // Fire before delete policy. Before create policy needs the new parent ref to exist, so will be fired later
                 invokeBeforeDeleteNode(oldChildAssoc.getChildRef());
             }
-            
+
             // Now do the moving and remaining policy firing
-            Map<NodeRef, Pair<Long, NodeRef>> movedNodePairs = new HashMap<NodeRef, Pair<Long,NodeRef>>(childAssocs.size() * 2 + 2);
+            Map<NodeRef, Pair<Long, NodeRef>> movedNodePairs = new HashMap<NodeRef, Pair<Long, NodeRef>>(childAssocs.size() * 2 + 2);
             QName childNodeTypeQName = nodeDAO.getNodeType(nodeToMoveId);
             Set<QName> childNodeAspectQNames = nodeDAO.getNodeAspects(nodeToMoveId);
-            
+
             // Fire before create immediately before moving with all parents in place
             invokeBeforeCreateNode(newParentRef, assocTypeQName, assocQName, childNodeTypeQName);
 
             // Move node under the new parent
             Pair<Pair<Long, ChildAssociationRef>, Pair<Long, NodeRef>> moveNodeResult = nodeDAO.moveNode(
-                        nodeToMoveId,
-                        parentNodeId,
-                        assocTypeQName,
-                        assocQName);
+                    nodeToMoveId,
+                    parentNodeId,
+                    assocTypeQName,
+                    assocQName);
             Pair<Long, ChildAssociationRef> newParentAssocPair = moveNodeResult.getFirst();
             movedNodePairs.put(nodeToMoveRef, moveNodeResult.getSecond());
             ChildAssociationRef newParentAssocRef = newParentAssocPair.getSecond();
-            
+
             // Propagate timestamps
             propagateTimeStamps(oldParentAssocRef);
             propagateTimeStamps(newParentAssocRef);
@@ -2781,7 +2771,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             // of a node in a new store as far as the clients are concerned.
             invokeOnDeleteNode(oldParentAssocRef, childNodeTypeQName, childNodeAspectQNames, true);
             invokeOnCreateNode(newParentAssocRef);
-            
+
             // do the same to the children, preserving parents, types and qnames
             for (ChildAssociationRef oldChildAssoc : childAssocs)
             {
@@ -2804,33 +2794,33 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 // Move the node as this gives back the primary parent association
                 try
                 {
-                    moveNodeResult = nodeDAO.moveNode(oldChildNodeId, newParentNodeId, null,null);
+                    moveNodeResult = nodeDAO.moveNode(oldChildNodeId, newParentNodeId, null, null);
                 }
                 catch (NodeExistsException e)
                 {
                     deleteNode(e.getNodePair().getSecond());
-                    moveNodeResult = nodeDAO.moveNode(oldChildNodeId, newParentNodeId, null,null);
+                    moveNodeResult = nodeDAO.moveNode(oldChildNodeId, newParentNodeId, null, null);
                 }
                 // Move the node as this gives back the primary parent association
                 newParentAssocPair = moveNodeResult.getFirst();
                 movedNodePairs.put(oldChildNodeRef, moveNodeResult.getSecond());
                 ChildAssociationRef newChildAssoc = newParentAssocPair.getSecond();
-                
+
                 // Propagate timestamps
                 propagateTimeStamps(newChildAssoc);
 
-                // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
+                // Fire node policies. This ensures that each node in the hierarchy gets a notification fired.
                 invokeOnDeleteNode(oldChildAssoc, childNodeTypeQName, childNodeAspectQNames, true);
                 invokeOnCreateNode(newChildAssoc);
 
-                // collect working copy nodes that need to be updated; we need all nodes 
+                // collect working copy nodes that need to be updated; we need all nodes
                 // to be already moved when create association between nodes
                 if (hasAspect(newChildAssoc.getChildRef(), ContentModel.ASPECT_ARCHIVE_LOCKABLE))
                 {
                     nodesToRestoreAssociationsFor.add(newChildAssoc);
                 }
             }
-            
+
             // invoke onRestoreNode for working copy nodes in order to restore original lock
             for (ChildAssociationRef childAssoc : nodesToRestoreAssociationsFor)
             {
@@ -2868,20 +2858,19 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
             invokeOnCreateChildAssociation(newParentAssocRef, false);
             invokeOnDeleteChildAssociation(oldParentAssocRef);
-            invokeOnMoveNode(oldParentAssocRef, newParentAssocRef);            
+            invokeOnMoveNode(oldParentAssocRef, newParentAssocRef);
 
             // Done
             return newParentAssocRef;
         }
     }
-    
+
     private void findNodeChildrenToMove(Long nodeId, final StoreRef storeRef,
             final List<ChildAssociationRef> childAssocsToMove, final Map<NodeRef, Long> nodeIds)
     {
         // Get the node's children, but only one's that aren't in the same store
         final List<ChildAssociationRef> childAssocs = new LinkedList<ChildAssociationRef>();
-        NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
-        {
+        NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback() {
             public boolean preLoadNodes()
             {
                 return true;
@@ -2896,11 +2885,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             public boolean handle(
                     Pair<Long, ChildAssociationRef> childAssocPair,
                     Pair<Long, NodeRef> parentNodePair,
-                    Pair<Long, NodeRef> childNodePair
-                    )
+                    Pair<Long, NodeRef> childNodePair)
             {
                 // Add it if it's not in the target store
-                NodeRef childNodeRef = childNodePair.getSecond(); 
+                NodeRef childNodeRef = childNodePair.getSecond();
                 if (!childNodeRef.getStoreRef().equals(storeRef))
                 {
                     childAssocs.add(childAssocPair.getSecond());
@@ -2911,12 +2899,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
 
             public void done()
-            {
-            }                               
+            {}
         };
         // We need to get all primary children and do the store filtering ourselves
         nodeDAO.getChildAssocs(nodeId, null, null, null, Boolean.TRUE, null, callback);
-        
+
         // Each child must be moved to the same store as the parent
         for (ChildAssociationRef oldChildAssoc : childAssocs)
         {
@@ -2927,14 +2914,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             {
                 // Node has already been deleted.
                 continue;
-            } 
+            }
             childAssocsToMove.add(oldChildAssoc);
             // Cascade
             findNodeChildrenToMove(childNodeId, storeRef, childAssocsToMove, nodeIds);
         }
     }
-    
-    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+
+    @Extend(traitAPI = NodeServiceTrait.class, extensionAPI = NodeServiceExtension.class)
     public NodeRef getStoreArchiveNode(StoreRef storeRef)
     {
         StoreRef archiveStoreRef = storeArchiveMap.get(storeRef);
@@ -2957,19 +2944,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
 
     /**
-     * Ensures name uniqueness for the child and the child association.  Note that nothing is done if the
-     * association type doesn't enforce name uniqueness.
+     * Ensures name uniqueness for the child and the child association. Note that nothing is done if the association type doesn't enforce name uniqueness.
      * 
-     * @return          Returns <tt>true</tt> if the child association <b>cm:name</b> was written
+     * @return Returns <tt>true</tt> if the child association <b>cm:name</b> was written
      */
     private boolean setChildNameUnique(Pair<Long, NodeRef> childNodePair, String newName, String oldName)
     {
         if (newName == null)
         {
-            newName = childNodePair.getSecond().getId();            // Use the node's GUID
+            newName = childNodePair.getSecond().getId(); // Use the node's GUID
         }
         Long childNodeId = childNodePair.getFirst();
-        
+
         if (EqualsHelper.nullSafeEquals(newName, oldName))
         {
             // The name has not changed
@@ -2983,18 +2969,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
 
     /**
-     * Propagate, if necessary, a <b>cm:modified</b> timestamp change to the parent of the
-     * given association, along with the <b>cm:modifier</b> of who changed it.  
-     * The parent node has to be <b>cm:auditable</b> and the association
-     * has to be marked for propagation as well.
+     * Propagate, if necessary, a <b>cm:modified</b> timestamp change to the parent of the given association, along with the <b>cm:modifier</b> of who changed it. The parent node has to be <b>cm:auditable</b> and the association has to be marked for propagation as well.
      * 
-     * @param assocRef          the association to propagate along
+     * @param assocRef
+     *            the association to propagate along
      */
     private void propagateTimeStamps(ChildAssociationRef assocRef)
     {
         if (!enableTimestampPropagation)
         {
-            return;         // Bypassed on a system-wide basis
+            return; // Bypassed on a system-wide basis
         }
         // First check if the association type warrants propagation in the first place
         AssociationDefinition assocDef = dictionaryService.getAssociation(assocRef.getTypeQName());
@@ -3015,10 +2999,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
             return;
         }
-        
-        // The dictionary says propagate.  Now get the parent node and prompt the touch.
+
+        // The dictionary says propagate. Now get the parent node and prompt the touch.
         NodeRef parentNodeRef = assocRef.getParentRef();
-        
+
         // Do not propagate if the cm:auditable behaviour is off
         if (!policyBehaviourFilter.isEnabled(parentNodeRef, ContentModel.ASPECT_AUDITABLE))
         {
@@ -3028,15 +3012,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
             return;
         }
-        
+
         Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(parentNodeRef);
         Long parentNodeId = parentNodePair.getFirst();
-        
+
         // Get the ID of the child that triggered this update
         NodeRef childNodeRef = assocRef.getChildRef();
         Pair<Long, NodeRef> childNodePair = getNodePairNotNull(childNodeRef);
         Long childNodeId = childNodePair.getFirst();
-        
+
         // If we have already modified a particular parent node in the current txn,
         // it is not necessary to start a new transaction to tweak the cm:modified date.
         // But if the parent node was NOT touched, then doing so in this transaction would
@@ -3052,14 +3036,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
             return;
         }
-        
+
         if (nodeDAO.isInCurrentTxn(parentNodeId))
         {
             // The parent and child are in the same transaction
             TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION_PRE).put(parentNodeId, childNodeId);
             // Make sure that it is not processed after the transaction
             TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION_POST).remove(parentNodeId);
-            
+
             if (logger.isDebugEnabled())
             {
                 logger.debug("Performing in-transaction cm:auditable update for " + parentNodePair + " from " + childNodePair);
@@ -3068,23 +3052,23 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         else
         {
             TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION_POST).put(parentNodeId, childNodeId);
-            
+
             if (logger.isDebugEnabled())
             {
                 logger.debug("Requesting later cm:auditable update for " + parentNodePair + " from " + childNodePair);
             }
         }
-        
+
         // Bind a listener for post-transaction manipulation
         AlfrescoTransactionSupport.bindListener(auditableTransactionListener);
     }
-    
+
     private static final String KEY_AUDITABLE_PROPAGATION_PRE = "node.auditable.propagation.pre";
     private static final String KEY_AUDITABLE_PROPAGATION_POST = "node.auditable.propagation.post";
     private AuditableTransactionListener auditableTransactionListener = new AuditableTransactionListener();
+
     /**
-     * Wrapper to set the <b>cm:modified</b> time and <b>cm:modifier</b> on 
-     * individual nodes.
+     * Wrapper to set the <b>cm:modified</b> time and <b>cm:modifier</b> on individual nodes.
      * 
      * @author Derek Hulley
      * @since 3.4.6
@@ -3099,8 +3083,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             {
                 throw new IllegalStateException("Attempting to modify parent cm:modified in read-only txn.");
             }
-            
-            Map<Long,Long> parentNodeIds = TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION_PRE);
+
+            Map<Long, Long> parentNodeIds = TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION_PRE);
             if (parentNodeIds.size() == 0)
             {
                 return;
@@ -3113,7 +3097,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         @Override
         public void afterCommit()
         {
-            Map<Long,Long> parentNodeIds = TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION_POST);
+            Map<Long, Long> parentNodeIds = TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION_POST);
             if (parentNodeIds.size() == 0)
             {
                 return;
@@ -3123,33 +3107,39 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         }
 
         /**
-         * @param parentNodeIds         the parent node IDs that need to be touched for <b>cm:modified</b>, and the updating child node from which to get the <b>cm:modifier</b> from
-         * @param modifiedDate          the date to set
-         * @param useCurrentTxn         <tt>true</tt> to use the current transaction
+         * @param parentNodeIds
+         *            the parent node IDs that need to be touched for <b>cm:modified</b>, and the updating child node from which to get the <b>cm:modifier</b> from
+         * @param modifiedDate
+         *            the date to set
+         * @param useCurrentTxn
+         *            <tt>true</tt> to use the current transaction
          */
-        private void process(final Map<Long,Long> parentNodeIds, Date modifiedDate, boolean useCurrentTxn)
+        private void process(final Map<Long, Long> parentNodeIds, Date modifiedDate, boolean useCurrentTxn)
         {
             // Walk through the IDs
-            for (Long parentNodeId: parentNodeIds.keySet())
+            for (Long parentNodeId : parentNodeIds.keySet())
             {
                 processSingle(parentNodeId, parentNodeIds.get(parentNodeId), modifiedDate, useCurrentTxn);
             }
         }
-        
+
         /**
          * Touch a single node in a new, writable txn
          * 
-         * @param parentNodeId          the parent node to touch
-         * @param childNodeId           the child node from which to get the <b>cm:modifier</b> from
-         * @param modifiedDate          the date to set
-         * @param useCurrentTxn         <tt>true</tt> to use the current transaction
+         * @param parentNodeId
+         *            the parent node to touch
+         * @param childNodeId
+         *            the child node from which to get the <b>cm:modifier</b> from
+         * @param modifiedDate
+         *            the date to set
+         * @param useCurrentTxn
+         *            <tt>true</tt> to use the current transaction
          */
         private void processSingle(final Long parentNodeId, final Long childNodeId, final Date modifiedDate, boolean useCurrentTxn)
         {
             RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
             txnHelper.setMaxRetries(1);
-            RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-            {
+            RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -3157,14 +3147,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                     Pair<Long, NodeRef> parentNodePair = nodeDAO.getNodePair(parentNodeId);
                     if (parentNodePair == null)
                     {
-                        return null;                            // Parent has gone away
+                        return null; // Parent has gone away
                     }
                     else if (!nodeDAO.hasNodeAspect(parentNodeId, ContentModel.ASPECT_AUDITABLE))
                     {
-                        return null;                            // Not auditable
+                        return null; // Not auditable
                     }
                     NodeRef parentNodeRef = parentNodePair.getSecond();
-                    
+
                     // Fetch the modification details from the child, as best we can
                     Pair<Long, NodeRef> childNodePair = nodeDAO.getNodePair(childNodeId);
                     String modifiedByToPropagate = null;
@@ -3182,20 +3172,20 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                     else
                     {
                         // Get the child's modification details
-                        modifiedByToPropagate = (String)nodeDAO.getNodeProperty(childNodeId, ContentModel.PROP_MODIFIER);
-                        modifiedDateToPropagate = (Date)nodeDAO.getNodeProperty(childNodeId, ContentModel.PROP_MODIFIED);
+                        modifiedByToPropagate = (String) nodeDAO.getNodeProperty(childNodeId, ContentModel.PROP_MODIFIER);
+                        modifiedDateToPropagate = (Date) nodeDAO.getNodeProperty(childNodeId, ContentModel.PROP_MODIFIED);
                     }
-                    
+
                     // Did another child get there first?
-                    Date parentModifiedAt = (Date)nodeDAO.getNodeProperty(parentNodeId, ContentModel.PROP_MODIFIED);
-                    if (parentModifiedAt != null && modifiedDateToPropagate != null 
+                    Date parentModifiedAt = (Date) nodeDAO.getNodeProperty(parentNodeId, ContentModel.PROP_MODIFIED);
+                    if (parentModifiedAt != null && modifiedDateToPropagate != null
                             && parentModifiedAt.getTime() > modifiedDateToPropagate.getTime())
                     {
                         // Parent was modified more recently, don't update
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
-                            logger.debug("Parent " + parentNodeRef + " was modified more recently than child " + 
-                                         childNodePair + " so not propogating auditable details");
+                            logger.debug("Parent " + parentNodeRef + " was modified more recently than child " +
+                                    childNodePair + " so not propogating auditable details");
                         }
                         return null;
                     }
@@ -3203,13 +3193,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                     // Invoke policy behaviour
                     invokeBeforeUpdateNode(parentNodeRef);
 
+                    Map<QName, Serializable> propertiesBefore = nodeDAO.getNodeProperties(parentNodeId);
                     // Touch the node; it is cm:auditable
                     boolean changed = nodeDAO.setModifiedProperties(parentNodeId, modifiedDate, modifiedByToPropagate);
 
                     if (changed)
                     {
+                        Map<QName, Serializable> propertiesAfter = nodeDAO.getNodeProperties(parentNodeId);
                         // Invoke policy behaviour
                         invokeOnUpdateNode(parentNodeRef);
+                        invokeOnUpdateProperties(parentNodeRef, propertiesBefore, propertiesAfter);
                     }
 
                     return null;
@@ -3222,9 +3215,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 {
                     logger.debug(
                             "Touched cm:modified date for node " + parentNodeId +
-                            " (" + modifiedDate + ")" +
-                            (useCurrentTxn ? " in txn " : " in new txn ") +
-                            nodeDAO.getCurrentTransactionId(false));
+                                    " (" + modifiedDate + ")" +
+                                    (useCurrentTxn ? " in txn " : " in new txn ") +
+                                    nodeDAO.getCurrentTransactionId(false));
                 }
             }
             catch (Throwable e)
@@ -3233,7 +3226,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
         }
     }
-    
 
     @SuppressWarnings("unchecked")
     @Override

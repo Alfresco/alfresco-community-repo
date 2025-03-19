@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-
+ 
 <beans>
 
     <bean id="event2TypeDefExpander" class="org.alfresco.repo.event2.shared.TypeDefExpander">
         <constructor-arg ref="dictionaryService"/>
         <constructor-arg ref="namespaceService"/>
-    </bean>
+    </bean> 
 
     <!-- Event2 Filters -->
     <bean id="event2FilterRegistry" class="org.alfresco.repo.event2.filter.EventFilterRegistry"/>

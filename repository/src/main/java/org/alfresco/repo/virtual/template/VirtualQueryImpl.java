@@ -203,9 +203,8 @@ public class VirtualQueryImpl implements VirtualQuery
                 start = 0;
             }
         }
-        final int totlaSecond = !hasMore ? (int) result.getNumberFound() : (int) (start + result.getNumberFound() + 1);
-        final Pair<Integer, Integer> total = new Pair<Integer, Integer>(totalFirst,
-                totlaSecond);
+        final int totalSecond = !hasMore ? (int) result.getNumberFound() : (int) (start + result.getNumberFound());
+        final Pair<Integer, Integer> total = new Pair<Integer, Integer>(totalFirst, totalSecond);
         return new PagingResults<Reference>() {
 
             @Override

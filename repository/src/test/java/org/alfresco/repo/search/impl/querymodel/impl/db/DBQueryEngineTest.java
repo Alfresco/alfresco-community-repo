@@ -60,7 +60,8 @@ import org.alfresco.util.Pair;
 
 public class DBQueryEngineTest
 {
-    private static final String SQL_TEMPLATE_PATH = "alfresco.metadata.query.select_byDynamicQuery";
+    private static final String SQL_SELECT_TEMPLATE_PATH = "alfresco.metadata.query.select_byDynamicQuery";
+    private static final String SQL_COUNT_TEMPLATE_PATH = "alfresco.metadata.query.count_byDynamicQuery";
 
     private DBQueryEngine engine;
     private SqlSessionTemplate template;
@@ -94,6 +95,7 @@ public class DBQueryEngineTest
     public void shouldGetAFilteringResultSetFromAcceleratedNodeSelection()
     {
         withMaxItems(10);
+        when(template.selectOne(any(), eq(dbQuery))).thenReturn(10);
 
         ResultSet result = engine.acceleratedNodeSelection(options, dbQuery, assessor);
 
@@ -226,7 +228,9 @@ public class DBQueryEngineTest
             }
             return null;
 
-        }).when(template).select(eq(SQL_TEMPLATE_PATH), eq(dbQuery), any());
+        }).when(template).select(eq(SQL_SELECT_TEMPLATE_PATH), eq(dbQuery), any());
+
+        when(template.selectOne(eq(SQL_COUNT_TEMPLATE_PATH), eq(dbQuery))).thenReturn(nodes.size());
     }
 
     private QueryOptions createQueryOptions()

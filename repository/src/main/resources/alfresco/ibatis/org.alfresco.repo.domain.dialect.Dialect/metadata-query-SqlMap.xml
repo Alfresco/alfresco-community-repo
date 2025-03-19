@@ -8,4 +8,10 @@
     <include refid="sql_select_byDynamicQuery"/>   
   </select>
 
+  <select id="count_byDynamicQuery" parameterType="org.alfresco.repo.search.impl.querymodel.impl.db.DBQuery" resultType="int">
+    SELECT COUNT(DISTINCT nodes.id)
+    FROM (
+      <include refid="sql_select_byDynamicQuery"/>
+    ) nodes
+  </select>
 </mapper>

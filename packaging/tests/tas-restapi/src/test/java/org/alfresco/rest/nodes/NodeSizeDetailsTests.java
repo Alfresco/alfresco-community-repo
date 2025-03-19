@@ -130,8 +130,8 @@ public class NodeSizeDetailsTests extends RestTest
                             .isNotEmpty();
                     Assert.assertEquals(sizeDetailsModel.getSizeInBytes(), 0,
                             "Value of sizeInBytes should be 0 " + sizeDetailsModel.getSizeInBytes());
-                    Assert.assertEquals(sizeDetailsModel.getNumberOfFiles(), 0,
-                            "Value of NumberOfFiles should be 0 " + sizeDetailsModel.getNumberOfFiles());
+                    Assert.assertEquals(sizeDetailsModel.getStatus().name(), "COMPLETED",
+                            "Status should be - COMPLETED" + sizeDetailsModel.getStatus().name());
                 });
     }
 

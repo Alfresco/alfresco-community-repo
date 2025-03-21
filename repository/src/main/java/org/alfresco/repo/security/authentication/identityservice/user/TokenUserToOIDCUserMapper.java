@@ -46,19 +46,19 @@ public class TokenUserToOIDCUserMapper
      */
     public OIDCUserInfo toOIDCUser(DecodedTokenUser decodedTokenUser)
     {
-        return new OIDCUserInfo(normalizeUserId(decodedTokenUser.username()), decodedTokenUser.firstName(), decodedTokenUser.lastName(), decodedTokenUser.email());
+        return new OIDCUserInfo(usernameToUserId(decodedTokenUser.username()), decodedTokenUser.firstName(), decodedTokenUser.lastName(), decodedTokenUser.email());
     }
 
     /**
-     * Normalizes a user id, taking into account existing user accounts and case sensitivity settings.
+     * Normalizes a username, taking into account existing user accounts and case sensitivity settings.
      *
-     * @param userId
-     *            the user id
+     * @param caseSensitiveUserName
+     *            the case-sensitive username
      * @return the string
      */
-    private String normalizeUserId(final String userId)
+    private String usernameToUserId(final String caseSensitiveUserName)
     {
-        if (userId == null)
+        if (caseSensitiveUserName == null)
         {
             return null;
         }
@@ -67,10 +67,10 @@ public class TokenUserToOIDCUserMapper
             @Override
             public String doWork() throws Exception
             {
-                return personService.getUserIdentifier(userId);
+                return personService.getUserIdentifier(caseSensitiveUserName);
             }
         }, AuthenticationUtil.getSystemUserName());
 
-        return normalized == null ? userId : normalized;
+        return normalized == null ? caseSensitiveUserName : normalized;
     }
 }

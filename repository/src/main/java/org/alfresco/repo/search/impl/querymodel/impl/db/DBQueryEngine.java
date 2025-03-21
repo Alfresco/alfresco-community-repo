@@ -441,6 +441,8 @@ public class DBQueryEngine implements QueryEngine
 
     protected int countSelectedNodes(QueryTemplate queryTemplate, DBQuery dbQuery)
     {
+        dbQuery.setLimit(0);
+        dbQuery.setOffset(0);
         String countQuery = queryTemplate.count();
         return template.selectOne(countQuery, dbQuery);
     }
@@ -466,8 +468,7 @@ public class DBQueryEngine implements QueryEngine
     private void performTmdqSelectPaging(String statement, DBQuery dbQuery, int requiredNodes, ResultHandler<Node> handler)
     {
         int batchStart = 0;
-        int batchSize = requiredNodes * 2;
-        batchSize = Math.min(Math.max(batchSize, minPagingBatchSize), maxPagingBatchSize);
+        int batchSize = calculateBatchSize(requiredNodes);
         DefaultResultContext<Node> resultCtx = new DefaultResultContext<>();
         while (!resultCtx.isStopped())
         {
@@ -492,6 +493,21 @@ public class DBQueryEngine implements QueryEngine
                 batchStart += batchSize;
             }
         }
+    }
+
+    private int calculateBatchSize(int requiredNodes)
+    {
+        int batchSize;
+        if (requiredNodes > Integer.MAX_VALUE / 2)
+        {
+            // preventing overflow
+            batchSize = Integer.MAX_VALUE;
+        }
+        else
+        {
+            batchSize = requiredNodes * 2;
+        }
+        return Math.min(Math.max(batchSize, minPagingBatchSize), maxPagingBatchSize);
     }
 
     private DBResultSet createResultSet(QueryOptions options, List<Node> nodes, int numberFound)

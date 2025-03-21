@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -90,6 +90,8 @@ public class DBQueryEngine implements QueryEngine
     protected static final Log logger = LogFactory.getLog(DBQueryEngine.class);
 
     protected static final String SELECT_BY_DYNAMIC_QUERY = "alfresco.metadata.query.select_byDynamicQuery";
+    protected static final String COUNT_BY_DYNAMIC_QUERY = "alfresco.metadata.query.count_byDynamicQuery";
+    protected static final QueryTemplate QUERY_TEMPLATE = new QueryTemplate(SELECT_BY_DYNAMIC_QUERY, COUNT_BY_DYNAMIC_QUERY);
 
     private static final int DEFAULT_MIN_PAGING_BATCH_SIZE = 2500;
 
@@ -252,7 +254,7 @@ public class DBQueryEngine implements QueryEngine
     }
 
     /* (non-Javadoc)
-     * 
+     *
      * @see org.alfresco.repo.search.impl.querymodel.QueryEngine#executeQuery(org.alfresco.repo.search.impl.querymodel.Query, org.alfresco.repo.search.impl.querymodel.QueryOptions, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext) */
     @Override
     public QueryEngineResults executeQuery(Query query, QueryOptions options, FunctionEvaluationContext functionContext)
@@ -331,10 +333,10 @@ public class DBQueryEngine implements QueryEngine
         return asQueryEngineResults(resultSet);
     }
 
-    protected String pickQueryTemplate(QueryOptions options, DBQuery dbQuery)
+    protected QueryTemplate pickQueryTemplate(QueryOptions options, DBQuery dbQuery)
     {
         logger.debug("- using standard table for the query");
-        return SELECT_BY_DYNAMIC_QUERY;
+        return QUERY_TEMPLATE;
     }
 
     private ResultSet selectNodesWithPermissions(QueryOptions options, DBQuery dbQuery)
@@ -370,7 +372,8 @@ public class DBQueryEngine implements QueryEngine
         int requiredNodes = computeRequiredNodesCount(options);
 
         logger.debug("- query sent to the database");
-        performTmdqSelect(pickQueryTemplate(options, dbQuery), dbQuery, requiredNodes, new ResultHandler<Node>() {
+        QueryTemplate queryTemplate = pickQueryTemplate(options, dbQuery);
+        performTmdqSelect(queryTemplate, dbQuery, requiredNodes, new ResultHandler<Node>() {
             @Override
             public void handleResult(ResultContext<? extends Node> context)
             {
@@ -425,8 +428,7 @@ public class DBQueryEngine implements QueryEngine
                 }
             }
         });
-
-        int numberFound = nodes.size();
+        int numberFound = countSelectedNodes(queryTemplate, dbQuery);
         nodes.removeAll(Collections.singleton(null));
 
         DBResultSet rs = createResultSet(options, nodes, numberFound);
@@ -437,8 +439,17 @@ public class DBQueryEngine implements QueryEngine
         return frs;
     }
 
-    private void performTmdqSelect(String statement, DBQuery dbQuery, int requiredNodes, ResultHandler<Node> handler)
+    protected int countSelectedNodes(QueryTemplate queryTemplate, DBQuery dbQuery)
     {
+        dbQuery.setLimit(0);
+        dbQuery.setOffset(0);
+        String countQuery = queryTemplate.count();
+        return template.selectOne(countQuery, dbQuery);
+    }
+
+    private void performTmdqSelect(QueryTemplate queryTemplate, DBQuery dbQuery, int requiredNodes, ResultHandler<Node> handler)
+    {
+        String statement = queryTemplate.select();
         if (usePagingQuery)
         {
             performTmdqSelectPaging(statement, dbQuery, requiredNodes, handler);
@@ -457,8 +468,7 @@ public class DBQueryEngine implements QueryEngine
     private void performTmdqSelectPaging(String statement, DBQuery dbQuery, int requiredNodes, ResultHandler<Node> handler)
     {
         int batchStart = 0;
-        int batchSize = requiredNodes * 2;
-        batchSize = Math.min(Math.max(batchSize, minPagingBatchSize), maxPagingBatchSize);
+        int batchSize = calculateBatchSize(requiredNodes);
         DefaultResultContext<Node> resultCtx = new DefaultResultContext<>();
         while (!resultCtx.isStopped())
         {
@@ -483,6 +493,21 @@ public class DBQueryEngine implements QueryEngine
                 batchStart += batchSize;
             }
         }
+    }
+
+    private int calculateBatchSize(int requiredNodes)
+    {
+        int batchSize;
+        if (requiredNodes > Integer.MAX_VALUE / 2)
+        {
+            // preventing overflow
+            batchSize = Integer.MAX_VALUE;
+        }
+        else
+        {
+            batchSize = requiredNodes * 2;
+        }
+        return Math.min(Math.max(batchSize, minPagingBatchSize), maxPagingBatchSize);
     }
 
     private DBResultSet createResultSet(QueryOptions options, List<Node> nodes, int numberFound)
@@ -524,7 +549,7 @@ public class DBQueryEngine implements QueryEngine
     }
 
     /* (non-Javadoc)
-     * 
+     *
      * @see org.alfresco.repo.search.impl.querymodel.QueryEngine#getQueryModelFactory() */
     @Override
     public QueryModelFactory getQueryModelFactory()
@@ -534,7 +559,7 @@ public class DBQueryEngine implements QueryEngine
 
     /**
      * Injection of nodes cache for clean-up and warm up when required
-     * 
+     *
      * @param cache
      *            The node cache to set
      */
@@ -588,4 +613,7 @@ public class DBQueryEngine implements QueryEngine
             }
         }
     }
+
+    protected record QueryTemplate(String select, String count)
+    {}
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -203,9 +203,8 @@ public class VirtualQueryImpl implements VirtualQuery
                 start = 0;
             }
         }
-        final int totlaSecond = !hasMore ? (int) result.getNumberFound() : (int) (start + result.getNumberFound() + 1);
-        final Pair<Integer, Integer> total = new Pair<Integer, Integer>(totalFirst,
-                totlaSecond);
+        final int totalSecond = !hasMore ? (int) result.getNumberFound() : (int) (start + result.getNumberFound());
+        final Pair<Integer, Integer> total = new Pair<>(totalFirst, totalSecond);
         return new PagingResults<Reference>() {
 
             @Override

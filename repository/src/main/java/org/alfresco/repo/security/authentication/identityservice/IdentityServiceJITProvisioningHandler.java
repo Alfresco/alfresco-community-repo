@@ -53,9 +53,10 @@ public class IdentityServiceJITProvisioningHandler
     private final IdentityServiceFacade identityServiceFacade;
     private final PersonService personService;
     private final TransactionService transactionService;
-    private final UserInfoAttrMapping userInfoAttrMapping;
-    private final TokenUserToOIDCUserMapper tokenUserToOIDCUserMapper;
-    private final AccessTokenToDecodedTokenUserMapper accessTokenToDecodedTokenUserMapper;
+    private final IdentityServiceConfig identityServiceConfig;
+    private UserInfoAttrMapping userInfoAttrMapping;
+    private TokenUserToOIDCUserMapper tokenUserToOIDCUserMapper;
+    private AccessTokenToDecodedTokenUserMapper tokenToDecodedTokenUserMapper;
 
     public IdentityServiceJITProvisioningHandler(IdentityServiceFacade identityServiceFacade,
             PersonService personService,
@@ -65,9 +66,7 @@ public class IdentityServiceJITProvisioningHandler
         this.identityServiceFacade = identityServiceFacade;
         this.personService = personService;
         this.transactionService = transactionService;
-        this.userInfoAttrMapping = initUserInfoAttrMapping(identityServiceConfig);
-        this.tokenUserToOIDCUserMapper = new TokenUserToOIDCUserMapper(personService);
-        this.accessTokenToDecodedTokenUserMapper = new AccessTokenToDecodedTokenUserMapper(userInfoAttrMapping);
+        this.identityServiceConfig = identityServiceConfig;
     }
 
     /**
@@ -75,6 +74,11 @@ public class IdentityServiceJITProvisioningHandler
      */
     public Optional<OIDCUserInfo> extractUserInfoAndCreateUserIfNeeded(String bearerToken)
     {
+        if (userInfoAttrMapping == null)
+        {
+            initMappers(identityServiceConfig);
+        }
+
         Optional<OIDCUserInfo> oidcUserInfo = Optional.ofNullable(bearerToken)
                 .filter(Predicate.not(String::isEmpty))
                 .flatMap(token -> extractUserInfoResponseFromAccessToken(token).filter(decodedTokenUser -> StringUtils.isNotEmpty(decodedTokenUser.username()))
@@ -108,6 +112,13 @@ public class IdentityServiceJITProvisioningHandler
         }, AuthenticationUtil.getSystemUserName());
     }
 
+    private void initMappers(IdentityServiceConfig identityServiceConfig)
+    {
+        this.userInfoAttrMapping = initUserInfoAttrMapping(identityServiceConfig);
+        this.tokenUserToOIDCUserMapper = new TokenUserToOIDCUserMapper(personService);
+        this.tokenToDecodedTokenUserMapper = new AccessTokenToDecodedTokenUserMapper(userInfoAttrMapping);
+    }
+
     private boolean userDoesNotExistsAndCanBeCreated(OIDCUserInfo userInfo)
     {
         return userInfo.username() != null && personService.createMissingPeople()
@@ -118,7 +129,7 @@ public class IdentityServiceJITProvisioningHandler
     {
         return Optional.ofNullable(bearerToken)
                 .map(identityServiceFacade::decodeToken)
-                .flatMap(accessTokenToDecodedTokenUserMapper::toDecodedTokenUser);
+                .flatMap(tokenToDecodedTokenUserMapper::toDecodedTokenUser);
     }
 
     private Optional<DecodedTokenUser> extractUserInfoResponseFromEndpoint(String bearerToken, UserInfoAttrMapping userInfoAttrMapping)

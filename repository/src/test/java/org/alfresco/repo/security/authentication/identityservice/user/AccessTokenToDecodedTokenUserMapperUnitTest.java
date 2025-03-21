@@ -45,7 +45,7 @@ public class AccessTokenToDecodedTokenUserMapperUnitTest
     @Mock
     private IdentityServiceFacade.DecodedAccessToken decodedAccessToken;
 
-    private AccessTokenToDecodedTokenUserMapper accessTokenToDecodedTokenUserMapper;
+    private AccessTokenToDecodedTokenUserMapper tokenToDecodedTokenUserMapper;
 
     public static final String USERNAME_CLAIM = "nickname";
     public static final String EMAIL_CLAIM = "email";
@@ -57,7 +57,7 @@ public class AccessTokenToDecodedTokenUserMapperUnitTest
     {
         initMocks(this);
         UserInfoAttrMapping userInfoAttrMapping = new UserInfoAttrMapping(USERNAME_CLAIM, FIRST_NAME_CLAIM, LAST_NAME_CLAIM, EMAIL_CLAIM);
-        accessTokenToDecodedTokenUserMapper = new AccessTokenToDecodedTokenUserMapper(userInfoAttrMapping);
+        tokenToDecodedTokenUserMapper = new AccessTokenToDecodedTokenUserMapper(userInfoAttrMapping);
     }
 
     @Test
@@ -68,7 +68,7 @@ public class AccessTokenToDecodedTokenUserMapperUnitTest
         when(decodedAccessToken.getClaim(LAST_NAME_CLAIM)).thenReturn("Doe");
         when(decodedAccessToken.getClaim(EMAIL_CLAIM)).thenReturn("johny123@email.com");
 
-        Optional<DecodedTokenUser> result = accessTokenToDecodedTokenUserMapper.toDecodedTokenUser(decodedAccessToken);
+        Optional<DecodedTokenUser> result = tokenToDecodedTokenUserMapper.toDecodedTokenUser(decodedAccessToken);
 
         assertTrue(result.isPresent());
         assertEquals("johny123", result.get().username());
@@ -85,7 +85,7 @@ public class AccessTokenToDecodedTokenUserMapperUnitTest
         when(decodedAccessToken.getClaim(LAST_NAME_CLAIM)).thenReturn("Doe");
         when(decodedAccessToken.getClaim(EMAIL_CLAIM)).thenReturn("");
 
-        Optional<DecodedTokenUser> result = accessTokenToDecodedTokenUserMapper.toDecodedTokenUser(decodedAccessToken);
+        Optional<DecodedTokenUser> result = tokenToDecodedTokenUserMapper.toDecodedTokenUser(decodedAccessToken);
 
         assertTrue(result.isPresent());
         assertEquals("johny123", result.get().username());
@@ -102,7 +102,7 @@ public class AccessTokenToDecodedTokenUserMapperUnitTest
         when(decodedAccessToken.getClaim(LAST_NAME_CLAIM)).thenReturn("Doe");
         when(decodedAccessToken.getClaim(EMAIL_CLAIM)).thenReturn("johny123@email.com");
 
-        Optional<DecodedTokenUser> result = accessTokenToDecodedTokenUserMapper.toDecodedTokenUser(decodedAccessToken);
+        Optional<DecodedTokenUser> result = tokenToDecodedTokenUserMapper.toDecodedTokenUser(decodedAccessToken);
 
         assertFalse(result.isPresent());
     }

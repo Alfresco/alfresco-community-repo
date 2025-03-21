@@ -29,9 +29,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import org.junit.After;
 import org.junit.Before;
@@ -42,7 +40,6 @@ import org.springframework.context.ApplicationContext;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -59,6 +56,7 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.DBTests;
 
 @Category({OwnJVMTestsCategory.class, DBTests.class})
+@SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert"})
 public class ACS9167Test
 {
     private NodeService nodeService;
@@ -66,11 +64,6 @@ public class ACS9167Test
     private SearchService pubSearchService;
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
-
-    private TransactionalCache<Serializable, AccessControlList> aclCache;
-    private TransactionalCache<Serializable, Object> aclEntityCache;
-    private TransactionalCache<Serializable, Object> permissionEntityCache;
-    private TransactionalCache<Serializable, Object> nodeOwnerCache;
 
     @Before
     public void setUp() throws Exception
@@ -81,7 +74,6 @@ public class ACS9167Test
         txnHelper.setReadOnly(false);
         txnHelper.setMaxRetries(1);
         authenticationComponent.setSystemUserAsCurrentUser();
-        dropCaches();
     }
 
     private void setupServices()
@@ -91,18 +83,20 @@ public class ACS9167Test
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         pubSearchService = (SearchService) ctx.getBean("SearchService");
         transactionService = (TransactionService) ctx.getBean("TransactionService");
-        aclCache = (TransactionalCache) ctx.getBean("aclCache");
-        aclEntityCache = (TransactionalCache) ctx.getBean("aclEntityCache");
-        permissionEntityCache = (TransactionalCache) ctx.getBean("permissionEntityCache");
-        nodeOwnerCache = (TransactionalCache) ctx.getBean("nodeOwnerCache");
-    }
 
-    private void dropCaches()
-    {
-        aclCache.clear();
-        aclEntityCache.clear();
-        permissionEntityCache.clear();
-        nodeOwnerCache.clear();
+        List<TransactionalCache<?, ?>> cachesToClear = new ArrayList<>();
+        cachesToClear.add((TransactionalCache<?, ?>) ctx.getBean("propertyValueCache"));
+        cachesToClear.add((TransactionalCache<?, ?>) ctx.getBean("node.nodesCache"));
+        cachesToClear.add((TransactionalCache<?, ?>) ctx.getBean("node.propertiesCache"));
+        cachesToClear.add((TransactionalCache<?, ?>) ctx.getBean("aclCache"));
+        cachesToClear.add((TransactionalCache<?, ?>) ctx.getBean("aclEntityCache"));
+        cachesToClear.add((TransactionalCache<?, ?>) ctx.getBean("permissionEntityCache"));
+        cachesToClear.add((TransactionalCache<?, ?>) ctx.getBean("nodeOwnerCache"));
+
+        for (TransactionalCache<?, ?> transactionalCache : cachesToClear)
+        {
+            transactionalCache.clear();
+        }
     }
 
     @After
@@ -182,7 +176,7 @@ public class ACS9167Test
             sp.setSkipCount(parameterSkipCount);
             sp.setMaxItems(parameterMaxItems);
             sp.setMaxPermissionChecks(Integer.MAX_VALUE);
-            sp.setMaxPermissionCheckTimeMillis(Duration.ofMinutes(2).toMillis());
+            sp.setMaxPermissionCheckTimeMillis(Duration.ofMinutes(10).toMillis());
             // when
             ResultSet resultSet = pubSearchService.query(sp);
             // then

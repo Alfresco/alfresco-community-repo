@@ -70,6 +70,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 
+import org.alfresco.repo.security.authentication.identityservice.user.DecodedTokenUser;
+import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
+
 class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
 {
     private static final Log LOGGER = LogFactory.getLog(SpringBasedIdentityServiceFacade.class);
@@ -118,12 +121,12 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     }
 
     @Override
-    public Optional<OIDCUserInfo> getUserInfo(String token, UserInfoAttrMapping userInfoAttrMapping)
+    public Optional<DecodedTokenUser> getUserInfo(String token, UserInfoAttrMapping userInfoAttrMapping)
     {
         try
         {
             return Optional.ofNullable(defaultOAuth2UserService.loadUser(new OAuth2UserRequest(clientRegistration, getSpringAccessToken(token))))
-                    .flatMap(oidcUser -> mapOAuth2UserToOIDCUserInfo(oidcUser, userInfoAttrMapping));
+                    .flatMap(oAuth2User -> mapOAuth2UserToDecodedTokenUser(oAuth2User, userInfoAttrMapping));
         }
         catch (OAuth2AuthenticationException exception)
         {
@@ -225,17 +228,17 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         return userService;
     }
 
-    private Optional<OIDCUserInfo> mapOAuth2UserToOIDCUserInfo(OAuth2User oAuth2User, UserInfoAttrMapping userInfoAttrMapping)
+    private Optional<DecodedTokenUser> mapOAuth2UserToDecodedTokenUser(OAuth2User oAuth2User, UserInfoAttrMapping userInfoAttrMapping)
     {
         var preferredUsername = Optional.ofNullable(oAuth2User.getAttribute(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME))
                 .filter(String.class::isInstance)
                 .map(String.class::cast)
                 .filter(StringUtils::isNotEmpty);
         var userName = Optional.ofNullable(oAuth2User.getName()).filter(username -> !username.isEmpty()).or(() -> preferredUsername);
-        return userName.map(name -> new OIDCUserInfo(name,
-                Optional.ofNullable(oAuth2User.getAttribute(userInfoAttrMapping.firstNameClaim())).filter(String.class::isInstance).map(String.class::cast).orElse(""),
-                Optional.ofNullable(oAuth2User.getAttribute(userInfoAttrMapping.lastNameClaim())).filter(String.class::isInstance).map(String.class::cast).orElse(""),
-                Optional.ofNullable(oAuth2User.getAttribute(userInfoAttrMapping.emailClaim())).filter(String.class::isInstance).map(String.class::cast).orElse("")));
+        return userName.map(name -> DecodedTokenUser.validateAndCreate(name,
+                oAuth2User.getAttribute(userInfoAttrMapping.firstNameClaim()),
+                oAuth2User.getAttribute(userInfoAttrMapping.lastNameClaim()),
+                oAuth2User.getAttribute(userInfoAttrMapping.emailClaim())));
     }
 
     private static OAuth2AccessTokenResponseClient<OAuth2PasswordGrantRequest> createPasswordClient(RestOperations rest,

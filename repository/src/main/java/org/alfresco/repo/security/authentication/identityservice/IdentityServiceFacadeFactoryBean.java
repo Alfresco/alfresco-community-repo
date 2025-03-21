@@ -126,6 +126,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
+import org.alfresco.repo.security.authentication.identityservice.user.DecodedTokenUser;
+import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
 
 /**
  * Creates an instance of {@link IdentityServiceFacade}. <br>
@@ -209,7 +211,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         }
 
         @Override
-        public Optional<OIDCUserInfo> getUserInfo(String token, UserInfoAttrMapping userInfoAttrMapping)
+        public Optional<DecodedTokenUser> getUserInfo(String token, UserInfoAttrMapping userInfoAttrMapping)
         {
             return getTargetFacade().getUserInfo(token, userInfoAttrMapping);
         }

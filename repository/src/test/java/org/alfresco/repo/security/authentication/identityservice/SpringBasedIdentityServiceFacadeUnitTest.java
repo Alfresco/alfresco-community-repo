@@ -40,6 +40,7 @@ import org.springframework.web.client.RestOperations;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenDecodingException;
+import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
 
 public class SpringBasedIdentityServiceFacadeUnitTest
 {

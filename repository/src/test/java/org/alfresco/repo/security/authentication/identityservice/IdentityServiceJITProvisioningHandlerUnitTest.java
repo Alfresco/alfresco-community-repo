@@ -41,10 +41,12 @@ import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Answers;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 
+import org.alfresco.repo.security.authentication.identityservice.user.DecodedTokenUser;
+import org.alfresco.repo.security.authentication.identityservice.user.OIDCUserInfo;
+import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 
@@ -70,9 +72,8 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     private IdentityServiceConfig identityServiceConfig;
 
     @Mock
-    private OIDCUserInfo userInfo;
+    private DecodedTokenUser decodedTokenUser;
 
-    @InjectMocks
     private IdentityServiceJITProvisioningHandler jitProvisioningHandler;
 
     private UserInfoAttrMapping expectedMapping;
@@ -83,6 +84,11 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     private static final String LAST_NAME = "Doe";
     private static final String EMAIL = "johny123@email.com";
 
+    public static final String USERNAME_CLAIM = "nickname";
+    public static final String EMAIL_CLAIM = "email";
+    public static final String FIRST_NAME_CLAIM = "given_name";
+    public static final String LAST_NAME_CLAIM = "family_name";
+
     @Before
     public void setup()
     {
@@ -92,11 +98,12 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(identityServiceFacade.decodeToken(JWT_TOKEN)).thenReturn(decodedAccessToken);
         when(personService.createMissingPeople()).thenReturn(true);
         when(identityServiceFacade.getClientRegistration()).thenReturn(clientRegistration);
-        when(clientRegistration.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName()).thenReturn("nickname");
-        when(identityServiceConfig.getEmailAttribute()).thenReturn("email");
-        when(identityServiceConfig.getFirstNameAttribute()).thenReturn("given_name");
-        when(identityServiceConfig.getLastNameAttribute()).thenReturn("family_name");
-        expectedMapping = new UserInfoAttrMapping("nickname", "given_name", "family_name", "email");
+        when(clientRegistration.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName()).thenReturn(USERNAME_CLAIM);
+        when(identityServiceConfig.getEmailAttribute()).thenReturn(EMAIL_CLAIM);
+        when(identityServiceConfig.getFirstNameAttribute()).thenReturn(FIRST_NAME_CLAIM);
+        when(identityServiceConfig.getLastNameAttribute()).thenReturn(LAST_NAME_CLAIM);
+        expectedMapping = new UserInfoAttrMapping(USERNAME_CLAIM, FIRST_NAME_CLAIM, LAST_NAME_CLAIM, EMAIL_CLAIM);
+        jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade, personService, transactionService, identityServiceConfig);
     }
 
     @Test
@@ -106,6 +113,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(personService.personExists(USERNAME)).thenReturn(true);
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn(USERNAME);
 
+        jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade, personService, transactionService, identityServiceConfig);
         Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
                 JWT_TOKEN);
 
@@ -118,9 +126,9 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     @Test
     public void shouldExtractUserInfoForExistingUserWithProviderPrincipalAttribute()
     {
-        when(identityServiceConfig.getPrincipalAttribute()).thenReturn("nickname");
+        when(identityServiceConfig.getPrincipalAttribute()).thenReturn(USERNAME_CLAIM);
         when(personService.personExists(USERNAME)).thenReturn(true);
-        when(decodedAccessToken.getClaim("nickname")).thenReturn(USERNAME);
+        when(decodedAccessToken.getClaim(USERNAME_CLAIM)).thenReturn(USERNAME);
 
         Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
                 JWT_TOKEN);
@@ -135,14 +143,13 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     public void shouldExtractUserInfoFromAccessTokenAndCreateUser()
     {
         when(clientRegistration.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName()).thenReturn(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
-
         when(personService.personExists(USERNAME)).thenReturn(false);
-
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn(USERNAME);
         when(decodedAccessToken.getClaim(PersonClaims.GIVEN_NAME_CLAIM_NAME)).thenReturn(FIRST_NAME);
         when(decodedAccessToken.getClaim(PersonClaims.FAMILY_NAME_CLAIM_NAME)).thenReturn(LAST_NAME);
         when(decodedAccessToken.getClaim(PersonClaims.EMAIL_CLAIM_NAME)).thenReturn(EMAIL);
 
+        jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade, personService, transactionService, identityServiceConfig);
         Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
                 JWT_TOKEN);
 
@@ -159,15 +166,13 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     @Test
     public void shouldExtractUserInfoFromUserInfoEndpointAndCreateUser()
     {
-        when(userInfo.username()).thenReturn(USERNAME);
-        when(userInfo.firstName()).thenReturn(FIRST_NAME);
-        when(userInfo.lastName()).thenReturn(LAST_NAME);
-        when(userInfo.email()).thenReturn(EMAIL);
-
+        when(decodedTokenUser.username()).thenReturn(USERNAME);
+        when(decodedTokenUser.firstName()).thenReturn(FIRST_NAME);
+        when(decodedTokenUser.lastName()).thenReturn(LAST_NAME);
+        when(decodedTokenUser.email()).thenReturn(EMAIL);
         when(personService.personExists(USERNAME)).thenReturn(false);
-
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn(USERNAME);
-        when(identityServiceFacade.getUserInfo(JWT_TOKEN, expectedMapping)).thenReturn(Optional.of(userInfo));
+        when(identityServiceFacade.getUserInfo(JWT_TOKEN, expectedMapping)).thenReturn(Optional.of(decodedTokenUser));
 
         Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
                 JWT_TOKEN);
@@ -185,8 +190,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     @Test
     public void shouldReturnEmptyOptionalIfUsernameNotExtracted()
     {
-
-        when(identityServiceFacade.getUserInfo(JWT_TOKEN, expectedMapping)).thenReturn(Optional.of(userInfo));
+        when(identityServiceFacade.getUserInfo(JWT_TOKEN, expectedMapping)).thenReturn(Optional.of(decodedTokenUser));
 
         Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
                 JWT_TOKEN);
@@ -200,12 +204,8 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     public void shouldCallUserInfoEndpointToGetUsername()
     {
         when(personService.personExists(USERNAME)).thenReturn(true);
-
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn("");
-
-        when(userInfo.username()).thenReturn(USERNAME);
-        when(identityServiceFacade.getUserInfo(JWT_TOKEN, expectedMapping)).thenReturn(Optional.of(userInfo));
-
+        when(identityServiceFacade.getUserInfo(JWT_TOKEN, expectedMapping)).thenReturn(Optional.of(DecodedTokenUser.validateAndCreate(USERNAME, null, null, null)));
         Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
                 JWT_TOKEN);
 
@@ -222,13 +222,10 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     @Test
     public void shouldCallUserInfoEndpointToGetUsernameWithProvidedPrincipalAttribute()
     {
-        when(identityServiceConfig.getPrincipalAttribute()).thenReturn("nickname");
+        when(identityServiceConfig.getPrincipalAttribute()).thenReturn(USERNAME_CLAIM);
         when(personService.personExists(USERNAME)).thenReturn(true);
-
-        when(decodedAccessToken.getClaim("nickname")).thenReturn("");
-
-        when(userInfo.username()).thenReturn(USERNAME);
-        when(identityServiceFacade.getUserInfo(JWT_TOKEN, expectedMapping)).thenReturn(Optional.of(userInfo));
+        when(decodedAccessToken.getClaim(USERNAME_CLAIM)).thenReturn("");
+        when(identityServiceFacade.getUserInfo(JWT_TOKEN, expectedMapping)).thenReturn(Optional.of(DecodedTokenUser.validateAndCreate(USERNAME, null, null, null)));
 
         Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
                 JWT_TOKEN);

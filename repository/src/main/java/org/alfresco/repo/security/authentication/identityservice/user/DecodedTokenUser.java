@@ -23,19 +23,22 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.identityservice;
+package org.alfresco.repo.security.authentication.identityservice.user;
 
-/**
- * The UserInfoAttrMapping record represents the mapping of claims fetched from the UserInfo endpoint to create an Alfresco user.
- *
- * @param usernameClaim
- *            the claim that represents the username
- * @param firstNameClaim
- *            the claim that represents the first name
- * @param lastNameClaim
- *            the claim that represents the last name
- * @param emailClaim
- *            the claim that represents the email
- */
-public record UserInfoAttrMapping(String usernameClaim, String firstNameClaim, String lastNameClaim, String emailClaim)
-{}
+import java.util.Optional;
+
+public record DecodedTokenUser(String username, String firstName, String lastName, String email)
+{
+
+    private static final String EMPTY_STRING = "";
+
+    public static DecodedTokenUser validateAndCreate(String username, Object firstName, Object lastName, Object email)
+    {
+        return new DecodedTokenUser(username, getStringVal(firstName), getStringVal(lastName), getStringVal(email));
+    }
+
+    private static String getStringVal(Object firstName)
+    {
+        return Optional.ofNullable(firstName).filter(String.class::isInstance).map(String.class::cast).orElse(EMPTY_STRING);
+    }
+}

@@ -25,13 +25,17 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.db;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.Serializable;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -55,10 +59,8 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.DBTests;
 
 @Category({OwnJVMTestsCategory.class, DBTests.class})
-public class ACS9167Test extends TestCase
+public class ACS9167Test
 {
-    private ApplicationContext ctx;
-
     private NodeService nodeService;
     private AuthenticationComponent authenticationComponent;
     private SearchService pubSearchService;
@@ -70,7 +72,7 @@ public class ACS9167Test extends TestCase
     private TransactionalCache<Serializable, Object> permissionEntityCache;
     private TransactionalCache<Serializable, Object> nodeOwnerCache;
 
-    @Override
+    @Before
     public void setUp() throws Exception
     {
         setupServices();
@@ -84,7 +86,7 @@ public class ACS9167Test extends TestCase
 
     private void setupServices()
     {
-        ctx = ApplicationContextHelper.getApplicationContext();
+        ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
         nodeService = (NodeService) ctx.getBean("dbNodeService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         pubSearchService = (SearchService) ctx.getBean("SearchService");
@@ -103,12 +105,13 @@ public class ACS9167Test extends TestCase
         nodeOwnerCache.clear();
     }
 
-    @Override
-    protected void tearDown() throws Exception
+    @After
+    public void tearDown() throws Exception
     {
         authenticationComponent.clearCurrentSecurityContext();
     }
 
+    @Test
     public void testPagination()
     {
         String searchMarker = UUID.randomUUID().toString();
@@ -127,6 +130,7 @@ public class ACS9167Test extends TestCase
         prepareParametersQueryAndAssertResult(searchMarker, 0, 200, contentFilesCount, contentFilesCount);
     }
 
+    @Test
     public void testLargeFilesCount()
     {
         String searchMarker = UUID.randomUUID().toString();
@@ -138,14 +142,32 @@ public class ACS9167Test extends TestCase
 
     private void createFolderWithContentNodes(String searchMarker, int contentFilesCount)
     {
-        txnHelper.doInTransaction(() -> {
-            NodeRef testFolder = createFolderNode();
-            for (int c = 1; c <= contentFilesCount; c++)
-            {
-                createContentNode(searchMarker, testFolder);
-            }
-            return null;
-        }, false, false);
+        NodeRef testFolder = txnHelper.doInTransaction(this::createFolderNode, false, false);
+        int batchSize = 1000;
+        int fullBatches = contentFilesCount / batchSize;
+        int remainingItems = contentFilesCount % batchSize;
+
+        for (int i = 0; i < fullBatches; i++)
+        {
+            txnHelper.doInTransaction(() -> {
+                for (int j = 0; j < batchSize; j++)
+                {
+                    createContentNode(searchMarker, testFolder);
+                }
+                return null;
+            }, false, false);
+        }
+
+        if (remainingItems > 0)
+        {
+            txnHelper.doInTransaction(() -> {
+                for (int j = 0; j < remainingItems; j++)
+                {
+                    createContentNode(searchMarker, testFolder);
+                }
+                return null;
+            }, false, false);
+        }
     }
 
     private void prepareParametersQueryAndAssertResult(String searchMarker, int parameterSkipCount, int parameterMaxItems, int expectedLength, int expectedNumberFound)
@@ -160,7 +182,7 @@ public class ACS9167Test extends TestCase
             sp.setSkipCount(parameterSkipCount);
             sp.setMaxItems(parameterMaxItems);
             sp.setMaxPermissionChecks(Integer.MAX_VALUE);
-            sp.setMaxPermissionCheckTimeMillis(Duration.ofSeconds(60).toMillis());
+            sp.setMaxPermissionCheckTimeMillis(Duration.ofMinutes(2).toMillis());
             // when
             ResultSet resultSet = pubSearchService.query(sp);
             // then

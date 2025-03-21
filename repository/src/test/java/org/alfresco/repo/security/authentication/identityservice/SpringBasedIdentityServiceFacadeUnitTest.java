@@ -40,12 +40,14 @@ import org.springframework.web.client.RestOperations;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenDecodingException;
+import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
 
 public class SpringBasedIdentityServiceFacadeUnitTest
 {
     private static final String USER_NAME = "user";
     private static final String PASSWORD = "password";
     private static final String TOKEN = "tEsT-tOkEn";
+    private static final UserInfoAttrMapping USER_INFO_ATTR_MAPPING = new UserInfoAttrMapping("preferred_username", "given_name", "family_name", "email");
 
     @Test
     public void shouldThrowVerificationExceptionOnFailure()
@@ -82,7 +84,7 @@ public class SpringBasedIdentityServiceFacadeUnitTest
         final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
         final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restOperations, testRegistration(), jwtDecoder);
 
-        assertThat(facade.getUserInfo(TOKEN, "preferred_username").isEmpty()).isTrue();
+        assertThat(facade.getUserInfo(TOKEN, USER_INFO_ATTR_MAPPING).isEmpty()).isTrue();
     }
 
     private ClientRegistration testRegistration()

@@ -69,6 +69,13 @@ public class IdentityServiceConfig
     private boolean clientIdValidationDisabled;
     private String adminConsoleRedirectPath;
     private String signatureAlgorithms;
+    private String adminConsoleScopes;
+    private String passwordGrantScopes;
+    private String issuerAttribute;
+    private String firstNameAttribute;
+    private String lastNameAttribute;
+    private String emailAttribute;
+    private long jwtClockSkewMs;
 
     /**
      *
@@ -328,5 +335,79 @@ public class IdentityServiceConfig
     public void setSignatureAlgorithms(String signatureAlgorithms)
     {
         this.signatureAlgorithms = signatureAlgorithms;
+    }
+
+    public String getIssuerAttribute()
+    {
+        return issuerAttribute;
+    }
+
+    public void setIssuerAttribute(String issuerAttribute)
+    {
+        this.issuerAttribute = issuerAttribute;
+    }
+
+    public Set<String> getAdminConsoleScopes()
+    {
+        return Stream.of(adminConsoleScopes.split(","))
+                .map(String::trim)
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    public void setAdminConsoleScopes(String adminConsoleScopes)
+    {
+        this.adminConsoleScopes = adminConsoleScopes;
+    }
+
+    public Set<String> getPasswordGrantScopes()
+    {
+        return Stream.of(passwordGrantScopes.split(","))
+                .map(String::trim)
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    public void setPasswordGrantScopes(String passwordGrantScopes)
+    {
+        this.passwordGrantScopes = passwordGrantScopes;
+    }
+
+    public void setFirstNameAttribute(String firstNameAttribute)
+    {
+        this.firstNameAttribute = firstNameAttribute;
+    }
+
+    public void setLastNameAttribute(String lastNameAttribute)
+    {
+        this.lastNameAttribute = lastNameAttribute;
+    }
+
+    public void setEmailAttribute(String emailAttribute)
+    {
+        this.emailAttribute = emailAttribute;
+    }
+
+    public void setJwtClockSkewMs(long jwtClockSkewMs)
+    {
+        this.jwtClockSkewMs = jwtClockSkewMs;
+    }
+
+    public String getFirstNameAttribute()
+    {
+        return firstNameAttribute;
+    }
+
+    public String getLastNameAttribute()
+    {
+        return lastNameAttribute;
+    }
+
+    public String getEmailAttribute()
+    {
+        return emailAttribute;
+    }
+
+    public long getJwtClockSkewMs()
+    {
+        return jwtClockSkewMs;
     }
 }

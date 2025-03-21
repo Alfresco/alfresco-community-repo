@@ -72,6 +72,7 @@ import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.Identifier;
 import com.nimbusds.oauth2.sdk.id.Issuer;
+import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -96,6 +97,7 @@ import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.converter.RsaKeyConverters;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenDecoderFactory;
@@ -124,6 +126,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
+import org.alfresco.repo.security.authentication.identityservice.user.DecodedTokenUser;
+import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
 
 /**
  * Creates an instance of {@link IdentityServiceFacade}. <br>
@@ -134,6 +138,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     private static final Log LOGGER = LogFactory.getLog(IdentityServiceFacadeFactoryBean.class);
 
     private static final JOSEObjectType AT_JWT = new JOSEObjectType("at+jwt");
+    private static final String DEFAULT_ISSUER_ATTR = "issuer";
 
     private boolean enabled;
     private SpringBasedIdentityServiceFacadeFactory factory;
@@ -206,9 +211,9 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         }
 
         @Override
-        public Optional<OIDCUserInfo> getUserInfo(String token, String principalAttribute)
+        public Optional<DecodedTokenUser> getUserInfo(String token, UserInfoAttrMapping userInfoAttrMapping)
         {
-            return getTargetFacade().getUserInfo(token, principalAttribute);
+            return getTargetFacade().getUserInfo(token, userInfoAttrMapping);
         }
 
         @Override
@@ -277,7 +282,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         private RestTemplate createOAuth2RestTemplate(ClientHttpRequestFactory requestFactory)
         {
             final RestTemplate restTemplate = new RestTemplate(
-                    Arrays.asList(new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter()));
+                    Arrays.asList(new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter(), new MappingJackson2HttpMessageConverter()));
             restTemplate.setRequestFactory(requestFactory);
             restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
 
@@ -385,8 +390,6 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     {
         private final IdentityServiceConfig config;
 
-        private static final Set<String> SCOPES = Set.of("openid", "profile", "email");
-
         ClientRegistrationProvider(IdentityServiceConfig config)
         {
             this.config = requireNonNull(config);
@@ -456,10 +459,11 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     .map(URI::toASCIIString)
                     .orElse(null);
 
-            final String issuerUri = Optional.of(metadata)
-                    .map(OIDCProviderMetadata::getIssuer)
-                    .map(Issuer::getValue)
+            var metadataIssuer = getMetadataIssuer(metadata, config);
+            final String issuerUri = metadataIssuer
                     .orElseGet(() -> (StringUtils.isNotBlank(config.getRealm()) && StringUtils.isBlank(config.getIssuerUrl())) ? config.getAuthServerUrl() : config.getIssuerUrl());
+
+            final var usernameAttribute = StringUtils.isNotBlank(config.getPrincipalAttribute()) ? config.getPrincipalAttribute() : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME;
 
             return ClientRegistration
                     .withRegistrationId("ids")
@@ -468,6 +472,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     .jwkSetUri(metadata.getJWKSetURI().toASCIIString())
                     .issuerUri(issuerUri)
                     .userInfoUri(metadata.getUserInfoEndpointURI().toASCIIString())
+                    .userNameAttributeName(usernameAttribute)
                     .scope(getSupportedScopes(metadata.getScopes()))
                     .providerConfigurationMetadata(createMetadata(metadata))
                     .authorizationGrantType(AuthorizationGrantType.PASSWORD);
@@ -501,9 +506,15 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
         private Set<String> getSupportedScopes(Scope scopes)
         {
-            return scopes.stream().filter(scope -> SCOPES.contains(scope.getValue()))
+            return scopes.stream()
+                    .filter(this::hasPasswordGrantScope)
                     .map(Identifier::getValue)
                     .collect(Collectors.toSet());
+        }
+
+        private boolean hasPasswordGrantScope(Scope.Value scope)
+        {
+            return config.getPasswordGrantScopes().contains(scope.getValue());
         }
 
         private Optional<OIDCProviderMetadata> extractMetadata(RestOperations rest, URI metadataUri)
@@ -550,6 +561,18 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     .pathSegment(".well-known", "openid-configuration")
                     .build().toUri());
         }
+    }
+
+    private static Optional<String> getMetadataIssuer(OIDCProviderMetadata metadata, IdentityServiceConfig config)
+    {
+        return DEFAULT_ISSUER_ATTR.equals(config.getIssuerAttribute()) ? Optional.of(metadata)
+                .map(OIDCProviderMetadata::getIssuer)
+                .map(Issuer::getValue)
+                : Optional.of(metadata)
+                        .map(OIDCProviderMetadata::getCustomParameters)
+                        .map(map -> map.get(config.getIssuerAttribute()))
+                        .filter(String.class::isInstance)
+                        .map(String.class::cast);
     }
 
     static class JwtDecoderProvider
@@ -651,7 +674,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         private OAuth2TokenValidator<Jwt> createJwtTokenValidator(ProviderDetails providerDetails)
         {
             List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
-            validators.add(new JwtTimestampValidator(Duration.of(0, ChronoUnit.MILLIS)));
+            validators.add(new JwtTimestampValidator(Duration.of(config.getJwtClockSkewMs(), ChronoUnit.MILLIS)));
             validators.add(new JwtIssuerValidator(providerDetails.getIssuerUri()));
             if (!config.isClientIdValidationDisabled())
             {

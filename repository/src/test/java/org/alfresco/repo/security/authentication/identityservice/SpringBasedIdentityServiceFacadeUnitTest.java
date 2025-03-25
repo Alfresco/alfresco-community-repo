@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -31,20 +31,23 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenDecodingException;
 import org.junit.Test;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.client.RestOperations;
 
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenDecodingException;
+import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
+
 public class SpringBasedIdentityServiceFacadeUnitTest
 {
     private static final String USER_NAME = "user";
     private static final String PASSWORD = "password";
     private static final String TOKEN = "tEsT-tOkEn";
+    private static final UserInfoAttrMapping USER_INFO_ATTR_MAPPING = new UserInfoAttrMapping("preferred_username", "given_name", "family_name", "email");
 
     @Test
     public void shouldThrowVerificationExceptionOnFailure()
@@ -74,7 +77,6 @@ public class SpringBasedIdentityServiceFacadeUnitTest
                 .havingCause().withNoCause().withMessage("Expected");
     }
 
-
     @Test
     public void shouldReturnEmptyOptionalOnFailure()
     {
@@ -82,17 +84,16 @@ public class SpringBasedIdentityServiceFacadeUnitTest
         final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
         final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restOperations, testRegistration(), jwtDecoder);
 
-
-        assertThat(facade.getUserInfo(TOKEN, "preferred_username").isEmpty()).isTrue();
+        assertThat(facade.getUserInfo(TOKEN, USER_INFO_ATTR_MAPPING).isEmpty()).isTrue();
     }
 
     private ClientRegistration testRegistration()
     {
         return ClientRegistration.withRegistrationId("test")
-                                 .tokenUri("http://localhost")
-                                 .clientId("test")
-                                 .userInfoUri("http://localhost/userinfo")
-                                 .authorizationGrantType(AuthorizationGrantType.PASSWORD)
-                                 .build();
+                .tokenUri("http://localhost")
+                .clientId("test")
+                .userInfoUri("http://localhost/userinfo")
+                .authorizationGrantType(AuthorizationGrantType.PASSWORD)
+                .build();
     }
 }

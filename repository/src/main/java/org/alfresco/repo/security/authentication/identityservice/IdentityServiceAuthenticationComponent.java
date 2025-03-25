@@ -25,22 +25,20 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.alfresco.repo.security.authentication.identityservice.user.OIDCUserInfo;
 
 /**
  *
- * Authenticates a user against Identity Service (Keycloak/Authorization Server).
- * {@link IdentityServiceFacade} is used to verify provided user credentials. User is set as the current user if the
- * user credentials are valid.
- * <br>
- * The {@link IdentityServiceAuthenticationComponent#identityServiceFacade} can be null in which case this authenticator
- * will just fall through to the next one in the chain.
+ * Authenticates a user against Identity Service (Keycloak/Authorization Server). {@link IdentityServiceFacade} is used to verify provided user credentials. User is set as the current user if the user credentials are valid. <br>
+ * The {@link IdentityServiceAuthenticationComponent#identityServiceFacade} can be null in which case this authenticator will just fall through to the next one in the chain.
  *
  */
 public class IdentityServiceAuthenticationComponent extends AbstractAuthenticationComponent implements ActivateableBean
@@ -48,7 +46,7 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     private final Log LOGGER = LogFactory.getLog(IdentityServiceAuthenticationComponent.class);
     /** client used to authenticate user credentials against Authorization Server **/
     private IdentityServiceFacade identityServiceFacade;
-    /** enabled flag for the identity service subsystem**/
+    /** enabled flag for the identity service subsystem **/
     private boolean active;
 
     private IdentityServiceJITProvisioningHandler jitProvisioningHandler;
@@ -89,8 +87,8 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
             IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(AuthorizationGrant.password(userName, String.valueOf(password)));
 
             String normalizedUsername = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(accessTokenAuthorization.getAccessToken().getTokenValue())
-                        .map(OIDCUserInfo::username)
-                        .orElseThrow(() -> new AuthenticationException("Failed to extract username from token and user info endpoint."));
+                    .map(OIDCUserInfo::username)
+                    .orElseThrow(() -> new AuthenticationException("Failed to extract username from token and user info endpoint."));
             // Verification was successful so treat as authenticated user
             setCurrentUser(normalizedUsername);
         }

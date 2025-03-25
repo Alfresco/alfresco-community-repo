@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -155,6 +156,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     {
         String redirectPath = "/alfresco/s/admin/admin-communitysummary";
 
+        when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
         when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn("/alfresco/s/admin/admin-communitysummary");
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
@@ -178,6 +180,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         String redirectPath = "/alfresco/s/admin/admin-communitysummary";
         when(identityServiceConfig.getAudience()).thenReturn(audience);
         when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(redirectPath);
+        when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
                 .formatted("http://localhost:8080", redirectPath);

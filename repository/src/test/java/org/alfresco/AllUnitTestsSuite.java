@@ -37,6 +37,8 @@ import org.alfresco.repo.security.authentication.identityservice.SpringBasedIden
 import org.alfresco.repo.security.authentication.identityservice.admin.AdminConsoleAuthenticationCookiesServiceUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.admin.AdminConsoleHttpServletRequestWrapperUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.admin.IdentityServiceAdminConsoleAuthenticatorUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.user.AccessTokenToDecodedTokenUserMapperUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.user.TokenUserToOIDCUserMapperUnitTest;
 import org.alfresco.util.testing.category.DBTests;
 import org.alfresco.util.testing.category.NonBuildTests;
 
@@ -149,6 +151,8 @@ import org.alfresco.util.testing.category.NonBuildTests;
         LazyInstantiatingIdentityServiceFacadeUnitTest.class,
         SpringBasedIdentityServiceFacadeUnitTest.class,
         IdentityServiceJITProvisioningHandlerUnitTest.class,
+        AccessTokenToDecodedTokenUserMapperUnitTest.class,
+        TokenUserToOIDCUserMapperUnitTest.class,
         AdminConsoleAuthenticationCookiesServiceUnitTest.class,
         AdminConsoleHttpServletRequestWrapperUnitTest.class,
         IdentityServiceAdminConsoleAuthenticatorUnitTest.class,

@@ -30,21 +30,12 @@ import static java.util.Objects.requireNonNull;
 
 import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKey.AUDIENCE;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Predicate;
 
-import com.nimbusds.oauth2.sdk.ErrorObject;
-import com.nimbusds.oauth2.sdk.ParseException;
-import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
-import com.nimbusds.openid.connect.sdk.UserInfoErrorResponse;
-import com.nimbusds.openid.connect.sdk.UserInfoRequest;
-import com.nimbusds.openid.connect.sdk.UserInfoResponse;
-import com.nimbusds.openid.connect.sdk.UserInfoSuccessResponse;
+import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.convert.converter.Converter;
@@ -59,27 +50,35 @@ import org.springframework.security.oauth2.client.endpoint.OAuth2PasswordGrantRe
 import org.springframework.security.oauth2.client.endpoint.OAuth2RefreshTokenGrantRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.AbstractOAuth2Token;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AccessToken.TokenType;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationExchange;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationResponse;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestOperations;
 
+import org.alfresco.repo.security.authentication.identityservice.user.DecodedTokenUser;
+import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
+
 class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
 {
     private static final Log LOGGER = LogFactory.getLog(SpringBasedIdentityServiceFacade.class);
     private static final Instant SOME_INSIGNIFICANT_DATE_IN_THE_PAST = Instant.MIN.plusSeconds(12345);
     private final Map<AuthorizationGrantType, OAuth2AccessTokenResponseClient> clients;
+    private final DefaultOAuth2UserService defaultOAuth2UserService;
     private final ClientRegistration clientRegistration;
     private final JwtDecoder jwtDecoder;
 
@@ -93,6 +92,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
                 AuthorizationGrantType.AUTHORIZATION_CODE, createAuthorizationCodeClient(restOperations),
                 AuthorizationGrantType.REFRESH_TOKEN, createRefreshTokenClient(restOperations),
                 AuthorizationGrantType.PASSWORD, createPasswordClient(restOperations, clientRegistration));
+        this.defaultOAuth2UserService = createOAuth2UserService(restOperations);
     }
 
     @Override
@@ -121,51 +121,18 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     }
 
     @Override
-    public Optional<OIDCUserInfo> getUserInfo(String tokenParameter, String principalAttribute)
+    public Optional<DecodedTokenUser> getUserInfo(String token, UserInfoAttrMapping userInfoAttrMapping)
     {
-        return Optional.ofNullable(tokenParameter)
-                .filter(Predicate.not(String::isEmpty))
-                .flatMap(token -> Optional.ofNullable(clientRegistration)
-                        .map(ClientRegistration::getProviderDetails)
-                        .map(ClientRegistration.ProviderDetails::getUserInfoEndpoint)
-                        .map(ClientRegistration.ProviderDetails.UserInfoEndpoint::getUri)
-                        .flatMap(uri -> {
-                            try
-                            {
-                                return Optional.of(
-                                        new UserInfoRequest(new URI(uri), new BearerAccessToken(token)).toHTTPRequest().send());
-                            }
-                            catch (IOException | URISyntaxException e)
-                            {
-                                LOGGER.warn("Failed to get user information. Reason: " + e.getMessage());
-                                return Optional.empty();
-                            }
-                        })
-                        .flatMap(httpResponse -> {
-                            try
-                            {
-                                UserInfoResponse userInfoResponse = UserInfoResponse.parse(httpResponse);
-
-                                if (userInfoResponse instanceof UserInfoErrorResponse userInfoErrorResponse)
-                                {
-                                    String errorMessage = Optional.ofNullable(userInfoErrorResponse.getErrorObject())
-                                            .map(ErrorObject::getDescription)
-                                            .orElse("No error description found");
-                                    LOGGER.warn("User Info Request failed: " + errorMessage);
-                                    throw new UserInfoException(errorMessage);
-                                }
-                                return Optional.of(userInfoResponse);
-                            }
-                            catch (ParseException e)
-                            {
-                                LOGGER.warn("Failed to parse user info response. Reason: " + e.getMessage());
-                                return Optional.empty();
-                            }
-                        })
-                        .map(UserInfoResponse::toSuccessResponse)
-                        .map(UserInfoSuccessResponse::getUserInfo))
-                .map(userInfo -> new OIDCUserInfo(userInfo.getStringClaim(principalAttribute), userInfo.getGivenName(),
-                        userInfo.getFamilyName(), userInfo.getEmailAddress()));
+        try
+        {
+            return Optional.ofNullable(defaultOAuth2UserService.loadUser(new OAuth2UserRequest(clientRegistration, getSpringAccessToken(token))))
+                    .flatMap(oAuth2User -> mapOAuth2UserToDecodedTokenUser(oAuth2User, userInfoAttrMapping));
+        }
+        catch (OAuth2AuthenticationException exception)
+        {
+            LOGGER.warn("User Info Request failed: " + exception.getMessage());
+            return Optional.empty();
+        }
     }
 
     @Override
@@ -202,11 +169,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
 
         if (grant.isRefreshToken())
         {
-            final OAuth2AccessToken expiredAccessToken = new OAuth2AccessToken(
-                    TokenType.BEARER,
-                    "JUST_FOR_FULFILLING_THE_SPRING_API",
-                    SOME_INSIGNIFICANT_DATE_IN_THE_PAST,
-                    SOME_INSIGNIFICANT_DATE_IN_THE_PAST.plusSeconds(1));
+            final OAuth2AccessToken expiredAccessToken = getSpringAccessToken("JUST_FOR_FULFILLING_THE_SPRING_API");
             final OAuth2RefreshToken refreshToken = new OAuth2RefreshToken(grant.getRefreshToken(), null);
 
             return new OAuth2RefreshTokenGrantRequest(clientRegistration, expiredAccessToken, refreshToken,
@@ -258,6 +221,26 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         return client;
     }
 
+    private static DefaultOAuth2UserService createOAuth2UserService(RestOperations rest)
+    {
+        final DefaultOAuth2UserService userService = new DefaultOAuth2UserService();
+        userService.setRestOperations(rest);
+        return userService;
+    }
+
+    private Optional<DecodedTokenUser> mapOAuth2UserToDecodedTokenUser(OAuth2User oAuth2User, UserInfoAttrMapping userInfoAttrMapping)
+    {
+        var preferredUsername = Optional.ofNullable(oAuth2User.getAttribute(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME))
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
+                .filter(StringUtils::isNotEmpty);
+        var userName = Optional.ofNullable(oAuth2User.getName()).filter(username -> !username.isEmpty()).or(() -> preferredUsername);
+        return userName.map(name -> DecodedTokenUser.validateAndCreate(name,
+                oAuth2User.getAttribute(userInfoAttrMapping.firstNameClaim()),
+                oAuth2User.getAttribute(userInfoAttrMapping.lastNameClaim()),
+                oAuth2User.getAttribute(userInfoAttrMapping.emailClaim())));
+    }
+
     private static OAuth2AccessTokenResponseClient<OAuth2PasswordGrantRequest> createPasswordClient(RestOperations rest,
             ClientRegistration clientRegistration)
     {
@@ -286,6 +269,16 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
 
             return parameters;
         };
+    }
+
+    private static OAuth2AccessToken getSpringAccessToken(String token)
+    {
+        // Just for fulfilling the Spring API
+        return new OAuth2AccessToken(
+                TokenType.BEARER,
+                token,
+                SOME_INSIGNIFICANT_DATE_IN_THE_PAST,
+                SOME_INSIGNIFICANT_DATE_IN_THE_PAST.plusSeconds(1));
     }
 
     private static class SpringAccessTokenAuthorization implements AccessTokenAuthorization

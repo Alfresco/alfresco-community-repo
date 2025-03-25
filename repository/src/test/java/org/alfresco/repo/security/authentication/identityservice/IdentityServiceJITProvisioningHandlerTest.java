@@ -25,10 +25,7 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
 import java.util.Optional;
@@ -37,11 +34,14 @@ import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.identityservice.user.OIDCUserInfo;
+import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -126,11 +126,15 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         String principalAttribute = isAuth0Enabled ? PersonClaims.NICKNAME_CLAIM_NAME : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME;
         IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
                 IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, userPassword));
+        UserInfoAttrMapping userInfoAttrMapping = new UserInfoAttrMapping(principalAttribute, "given_name", "family_name", "email");
 
         String accessToken = accessTokenAuthorization.getAccessToken().getTokenValue();
+        ClientRegistration clientRegistration = mock(ClientRegistration.class, RETURNS_DEEP_STUBS);
+        when(clientRegistration.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName()).thenReturn(principalAttribute);
         IdentityServiceFacade idsServiceFacadeMock = mock(IdentityServiceFacade.class);
         when(idsServiceFacadeMock.decodeToken(accessToken)).thenReturn(null);
-        when(idsServiceFacadeMock.getUserInfo(accessToken, principalAttribute)).thenReturn(identityServiceFacade.getUserInfo(accessToken, principalAttribute));
+        when(idsServiceFacadeMock.getUserInfo(accessToken, userInfoAttrMapping)).thenReturn(identityServiceFacade.getUserInfo(accessToken, userInfoAttrMapping));
+        when(idsServiceFacadeMock.getClientRegistration()).thenReturn(clientRegistration);
 
         // Replace the original facade with a mocked one to prevent user information from being extracted from the access token.
         Field declaredField = jitProvisioningHandler.getClass()
@@ -151,7 +155,7 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         assertEquals("johndoe123@alfresco.com", userInfoOptional.get().email());
         assertEquals("johndoe123@alfresco.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
         verify(idsServiceFacadeMock).decodeToken(accessToken);
-        verify(idsServiceFacadeMock, atLeast(1)).getUserInfo(accessToken, principalAttribute);
+        verify(idsServiceFacadeMock, atLeast(1)).getUserInfo(accessToken, userInfoAttrMapping);
         if (!isAuth0Enabled)
         {
             assertEquals("John", userInfoOptional.get().firstName());

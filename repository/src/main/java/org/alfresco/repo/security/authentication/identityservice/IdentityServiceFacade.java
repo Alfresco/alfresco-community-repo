@@ -34,6 +34,9 @@ import java.util.Optional;
 
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 
+import org.alfresco.repo.security.authentication.identityservice.user.DecodedTokenUser;
+import org.alfresco.repo.security.authentication.identityservice.user.UserInfoAttrMapping;
+
 /**
  * Allows to interact with the Identity Service
  */
@@ -66,11 +69,11 @@ public interface IdentityServiceFacade
      * 
      * @param token
      *            {@link String} with encoded access token value.
-     * @param principalAttribute
-     *            {@link String} the attribute name used to access the user's name from the user info response.
-     * @return {@link OIDCUserInfo} containing user claims.
+     * @param userInfoAttrMapping
+     *            {@link UserInfoAttrMapping} containing the mapping of claims.
+     * @return {@link DecodedTokenUser} containing user claims or {@link Optional#empty()} if the token does not contain a username claim.
      */
-    Optional<OIDCUserInfo> getUserInfo(String token, String principalAttribute);
+    Optional<DecodedTokenUser> getUserInfo(String token, UserInfoAttrMapping userInfoAttrMapping);
 
     /**
      * Gets a client registration

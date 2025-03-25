@@ -33,6 +33,7 @@ import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
+import org.alfresco.repo.security.authentication.identityservice.user.OIDCUserInfo;
 
 /**
  *

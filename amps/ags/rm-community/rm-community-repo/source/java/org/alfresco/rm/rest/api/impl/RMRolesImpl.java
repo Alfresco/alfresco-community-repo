@@ -26,9 +26,20 @@
  */
 package org.alfresco.rm.rest.api.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.rest.antlr.WhereClauseParser;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
@@ -38,37 +49,27 @@ import org.alfresco.rm.rest.api.RMRoles;
 import org.alfresco.rm.rest.api.model.RoleModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 public class RMRolesImpl implements RMRoles
 {
     private ApiNodesModelFactory nodesModelFactory;
     private FilePlanRoleService filePlanRoleService;
 
-    private final static Set<String> LIST_ROLES_EQUALS_QUERY_PROPERTIES = new HashSet<>(List.of(PARAM_PERSON_ID, PARAM_INCLUDE_SYSTEM_ROLES));
+    private final static Set<String> LIST_ROLES_QUERY_PROPERTIES = new HashSet<>(List.of(PARAM_PERSON_ID, PARAM_INCLUDE_SYSTEM_ROLES, PARAM_CAPABILITY_NAME));
 
     @Override
     public CollectionWithPagingInfo<RoleModel> getRoles(NodeRef filePlan, Parameters parameters)
     {
-        RolesFilter rolesFilter = getRolesFilter(parameters.getQuery());
+        var rolesFilter = getRolesFilter(parameters.getQuery());
+        boolean includeSystemRoles = rolesFilter.getIncludeSystemRoles() == null || rolesFilter.getIncludeSystemRoles();
+        var capabilities = rolesFilter.getCapabilities();
+        var roles = getRolesByFilter(filePlan, rolesFilter, includeSystemRoles);
 
-        Set<Role> roles = null;
-        if (rolesFilter.getPersonId() != null)
-        {
-            roles = filePlanRoleService.getRolesByUser(filePlan, rolesFilter.getPersonId(), rolesFilter.getIncludeSystemRoles());
-        }
-        else
-        {
-            roles = filePlanRoleService.getRoles(filePlan, rolesFilter.getIncludeSystemRoles());
-        }
+        Predicate<RoleModel> roleModelPredicate = role -> role.capabilities().stream().anyMatch(capability -> capabilities.contains(capability.name()));
 
         var page = roles.stream()
-                .map(nodesModelFactory::createRoleModel)
-                .sorted()
+                .map(role -> createRoleModel(filePlan, role, parameters.getInclude()))
+                .filter(capabilities != null && !capabilities.isEmpty() ? roleModelPredicate : role -> true)
+                .sorted(Comparator.comparing(RoleModel::name))
                 .skip(parameters.getPaging().getSkipCount())
                 .limit(parameters.getPaging().getMaxItems())
                 .collect(Collectors.toCollection(LinkedList::new));
@@ -76,6 +77,44 @@ public class RMRolesImpl implements RMRoles
         int totalItems = roles.size();
         boolean hasMore = parameters.getPaging().getSkipCount() + parameters.getPaging().getMaxItems() < totalItems;
         return CollectionWithPagingInfo.asPaged(parameters.getPaging(), page, hasMore, totalItems);
+    }
+
+    private Set<Role> getRolesByFilter(NodeRef filePlan, RolesFilter rolesFilter, boolean includeSystemRoles)
+    {
+        if (rolesFilter.getPersonId() != null)
+        {
+            return filePlanRoleService.getRolesByUser(filePlan, rolesFilter.getPersonId(), includeSystemRoles);
+        }
+        else
+        {
+            return filePlanRoleService.getRoles(filePlan, includeSystemRoles);
+        }
+    }
+
+    private RoleModel createRoleModel(NodeRef filePlan, Role role, List<String> include)
+    {
+        List<String> assignedUsers = getAssignedUsers(filePlan, role, include);
+        List<String> assignedGroups = getAssignedGroups(filePlan, role, include);
+
+        return nodesModelFactory.createRoleModel(role, assignedUsers, assignedGroups);
+    }
+
+    private List<String> getAssignedUsers(NodeRef filePlan, Role role, List<String> include)
+    {
+        if (include != null && include.contains(PARAM_INCLUDE_ASSIGNED_USERS))
+        {
+            return new ArrayList<>(filePlanRoleService.getAllAssignedToRole(filePlan, role.getName()));
+        }
+        return null;
+    }
+
+    private List<String> getAssignedGroups(NodeRef filePlan, Role role, List<String> include)
+    {
+        if (include != null && include.contains(PARAM_INCLUDE_ASSIGNED_GROUPS))
+        {
+            return new ArrayList<>(filePlanRoleService.getGroupsAssignedToRole(filePlan, role.getName()));
+        }
+        return null;
     }
 
     public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
@@ -99,6 +138,7 @@ public class RMRolesImpl implements RMRoles
 
             rolesFilterBuilder
                     .withPersonId(propertyWalker.getPersonId())
+                    .withCapabilities(propertyWalker.getCapabilitiesNames())
                     .withIncludeSystemRoles(propertyWalker.getIncludeSystemRoles());
         }
         return rolesFilterBuilder.build();
@@ -106,15 +146,36 @@ public class RMRolesImpl implements RMRoles
 
     private static class RolesQueryWalker extends MapBasedQueryWalker
     {
+        private List<String> capabilitiesNames = null;
+
         public RolesQueryWalker()
         {
-            super(LIST_ROLES_EQUALS_QUERY_PROPERTIES, null);
+            super(LIST_ROLES_QUERY_PROPERTIES, null);
+        }
+
+        @Override
+        public void in(String propertyName, boolean negated, String... propertyValues)
+        {
+            if (negated)
+            {
+                throw new InvalidArgumentException("Cannot use NOT for " + propertyName);
+            }
+
+            if (propertyName.equalsIgnoreCase(PARAM_CAPABILITY_NAME))
+            {
+                capabilitiesNames = Arrays.asList(propertyValues);
+            }
         }
 
         @Override
         public void and()
         {
             // allow AND, e.g. personId='123' AND includeSystemRoles=true
+        }
+
+        public List<String> getCapabilitiesNames()
+        {
+            return this.capabilitiesNames;
         }
 
         public String getPersonId()
@@ -133,10 +194,10 @@ class RolesFilter
 {
     private String personId;
     private Boolean includeSystemRoles;
+    private List<String> capabilities;
 
     private RolesFilter()
-    {
-    }
+    {}
 
     public static RolesFilterBuilder builder()
     {
@@ -153,10 +214,16 @@ class RolesFilter
         return includeSystemRoles;
     }
 
+    public List<String> getCapabilities()
+    {
+        return capabilities;
+    }
+
     public static class RolesFilterBuilder
     {
         private String personId;
         private Boolean includeSystemRoles;
+        private List<String> capabilities;
 
         public RolesFilterBuilder withPersonId(String personId)
         {
@@ -170,11 +237,18 @@ class RolesFilter
             return this;
         }
 
+        public RolesFilterBuilder withCapabilities(List<String> capabilities)
+        {
+            this.capabilities = capabilities;
+            return this;
+        }
+
         public RolesFilter build()
         {
             RolesFilter rolesFilter = new RolesFilter();
             rolesFilter.personId = this.personId;
             rolesFilter.includeSystemRoles = this.includeSystemRoles;
+            rolesFilter.capabilities = this.capabilities;
             return rolesFilter;
         }
     }

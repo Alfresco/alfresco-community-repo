@@ -26,6 +26,10 @@
  */
 package org.alfresco.rm.rest.api.fileplans;
 
+import static org.alfresco.util.ParameterCheck.mandatory;
+
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
@@ -35,17 +39,12 @@ import org.alfresco.rm.rest.api.RMRoles;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.model.RoleModel;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.beans.factory.InitializingBean;
-
-
-import static org.alfresco.util.ParameterCheck.mandatory;
 
 @RelationshipResource(name = "roles", entityResource = FilePlanEntityResource.class, title = "Roles in a file plan")
 public class FilePlanRolesRelation implements RelationshipResourceAction.Read<RoleModel>, InitializingBean
 {
     private RMRoles rmRoles;
     private FilePlanComponentsApiUtils apiUtils;
-
 
     @Override
     public void afterPropertiesSet() throws Exception

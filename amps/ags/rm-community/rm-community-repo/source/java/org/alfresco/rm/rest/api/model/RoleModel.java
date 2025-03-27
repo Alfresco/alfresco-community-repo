@@ -26,6 +26,7 @@
  */
 package org.alfresco.rm.rest.api.model;
 
-import java.util.Set;
+import java.util.List;
 
-public record RoleModel(String name, String displayLabel, Set<CapabilityModel> capabilities, String roleGroupName, String groupShortName) {}
+public record RoleModel(String name, String displayLabel, List<CapabilityModel> capabilities, String roleGroupName, String groupShortName, List<String> assignedUsers, List<String> assignedGroups)
+{}

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -460,7 +460,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
         return testFileName;
     }
 
-    NodeRef createContentNodeFromQuickFile(String fileName) throws FileNotFoundException
+    protected NodeRef createContentNodeFromQuickFile(String fileName) throws FileNotFoundException
     {
         NodeRef rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         NodeRef folderNodeRef = nodeService.createNode(

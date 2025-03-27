@@ -542,10 +542,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     @Override
     protected void onShutdown(ApplicationEvent applicationEvent)
     {
-        if (eventSender != null)
-        {
-            eventSender.destroy();
-        }
+        // NOOP
     }
 
     protected class EventTransactionListener extends TransactionListenerAdapter

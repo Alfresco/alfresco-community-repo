@@ -156,4 +156,13 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
     {
         return event2MessageProducer;
     }
+
+    @Override
+    protected void destroyInstance(EventSender eventSender)
+    {
+        if (eventSender != null)
+        {
+            eventSender.destroy();
+        }
+    }
 }

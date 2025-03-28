@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -936,4 +936,35 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         }
     }
 
+    @Override
+    public void forceRenditionsContentHashCode(NodeRef sourceNodeRef)
+    {
+        if (sourceNodeRef != null && nodeService.exists(sourceNodeRef))
+        {
+            List<ChildAssociationRef> renditions = getRenditionChildAssociations(sourceNodeRef);
+            if (renditions != null)
+            {
+                int sourceContentHashCode = getSourceContentHashCode(sourceNodeRef);
+                for (ChildAssociationRef rendition : renditions)
+                {
+                    NodeRef renditionNode = rendition.getChildRef();
+                    if (nodeService.hasAspect(renditionNode, RenditionModel.ASPECT_RENDITION2))
+                    {
+                        int renditionContentHashCode = getRenditionContentHashCode(renditionNode);
+                        String renditionName = rendition.getQName().getLocalName();
+                        if (sourceContentHashCode != renditionContentHashCode)
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Update content hash code for rendition " + renditionName + " of node "
+                                        + sourceNodeRef);
+                            }
+                            nodeService.setProperty(renditionNode, PROP_RENDITION_CONTENT_HASH_CODE,
+                                    sourceContentHashCode);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

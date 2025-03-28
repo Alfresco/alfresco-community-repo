@@ -460,7 +460,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         render(ADMIN, sourceNodeRef, PDF);
         NodeRef pdfRenditionNodeRef = waitForRendition(ADMIN, sourceNodeRef, PDF, true);
         assertNotNull("pdf rendition was not generated", pdfRenditionNodeRef);
-        assertNotNull("pdf rendition was not generated", nodeService.getProperty(pdfRenditionNodeRef, ContentModel.PROP_CONTENT));
+        assertNotNull("pdf rendition was not generated", nodeService.getProperty(pdfRenditionNodeRef, PROP_CONTENT));
 
         // Check the pdf rendition content hash code is valid
         int pdfRenditionContentHashCode = getRenditionContentHashCode(pdfRenditionNodeRef);
@@ -470,7 +470,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         render(ADMIN, sourceNodeRef, DOC_LIB);
         NodeRef docLibRenditionNodeRef = waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
         assertNotNull("doc lib rendition was not generated", docLibRenditionNodeRef);
-        assertNotNull("doc lib rendition was not generated", nodeService.getProperty(docLibRenditionNodeRef, ContentModel.PROP_CONTENT));
+        assertNotNull("doc lib rendition was not generated", nodeService.getProperty(docLibRenditionNodeRef, PROP_CONTENT));
 
         // Check the doc lib rendition content hash code is valid
         int docLibenditionContentHashCode = getRenditionContentHashCode(docLibRenditionNodeRef);

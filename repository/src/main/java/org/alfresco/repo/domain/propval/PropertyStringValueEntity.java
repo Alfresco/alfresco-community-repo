@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -44,7 +44,6 @@ public class PropertyStringValueEntity
     private String stringValue;
     private String stringEndLower;
     private Long stringCrc;
-    private String stringLower;
     
     public PropertyStringValueEntity()
     {
@@ -116,9 +115,6 @@ public class PropertyStringValueEntity
         Pair<String, Long> crcPair = CrcHelper.getStringCrcPair(value, 16, false, true);
         stringEndLower = crcPair.getFirst();
         stringCrc = crcPair.getSecond();
-        // Calculate the crc value with case-insensitive
-        Pair<String, Long> crcPairWithCaseInSensitive = CrcHelper.getStringCrcPair(value, 16, false, false);
-        stringLower = crcPairWithCaseInSensitive.getFirst();
     }
 
     public Long getId()
@@ -159,15 +155,5 @@ public class PropertyStringValueEntity
     public void setStringCrc(Long stringCrc)
     {
         this.stringCrc = stringCrc;
-    }
-
-    public String getStringLower()
-    {
-        return stringLower;
-    }
-
-    public void setStringLower(String stringLower)
-    {
-        this.stringLower = stringLower;
     }
 }

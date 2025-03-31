@@ -975,8 +975,6 @@ public class AuditComponentImpl implements AuditComponent
     @Override
     public int getAuditEntriesCountByAppAndProperties(String applicationName, AuditQueryParameters parameters)
     {
-        org.alfresco.repo.domain.audit.AuditQueryParameters dbParameters = new org.alfresco.repo.domain.audit.AuditQueryParameters();
-
         return auditDAO.getAuditEntriesCountByAppAndProperties(applicationName, parameters);
     }
 }

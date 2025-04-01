@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -443,6 +443,61 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
 
         // Check the modifier is still user1
         assertEquals(TOTAL_NODES, countModifier(nodes, user1));
+    }
+
+    @Test
+    public void testForceRenditionsContentHashCode()
+    {
+
+        // Create a node
+        NodeRef sourceNodeRef = createSource(ADMIN, "quick.docx");
+        assertNotNull("Node not generated", sourceNodeRef);
+
+        // Get content hash code for the source node
+        int sourceNodeContentHashCode = getSourceContentHashCode(sourceNodeRef);
+
+        // Trigger the pdf rendition
+        render(ADMIN, sourceNodeRef, PDF);
+        NodeRef pdfRenditionNodeRef = waitForRendition(ADMIN, sourceNodeRef, PDF, true);
+        assertNotNull("pdf rendition was not generated", pdfRenditionNodeRef);
+        assertNotNull("pdf rendition was not generated", nodeService.getProperty(pdfRenditionNodeRef, PROP_CONTENT));
+
+        // Check the pdf rendition content hash code is valid
+        int pdfRenditionContentHashCode = getRenditionContentHashCode(pdfRenditionNodeRef);
+        assertEquals("pdf rendition content hash code is different from source node content hash code", sourceNodeContentHashCode, pdfRenditionContentHashCode);
+
+        // Trigger the doc lib rendition
+        render(ADMIN, sourceNodeRef, DOC_LIB);
+        NodeRef docLibRenditionNodeRef = waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, true);
+        assertNotNull("doc lib rendition was not generated", docLibRenditionNodeRef);
+        assertNotNull("doc lib rendition was not generated", nodeService.getProperty(docLibRenditionNodeRef, PROP_CONTENT));
+
+        // Check the doc lib rendition content hash code is valid
+        int docLibenditionContentHashCode = getRenditionContentHashCode(docLibRenditionNodeRef);
+        assertEquals("doc lib rendition content hash code is different from source node content hash code", sourceNodeContentHashCode, docLibenditionContentHashCode);
+
+        // Update the source node content
+        updateContent(ADMIN, sourceNodeRef, "quick.docx");
+
+        // Get source node content hash code after update
+        int sourceNodeContentHashCode2 = getSourceContentHashCode(sourceNodeRef);
+
+        // Check content hash code are different after content update
+        assertNotEquals("Source node content hash code is the same after content update", sourceNodeContentHashCode, sourceNodeContentHashCode2);
+        assertNotEquals("pdf rendition content hash code is the same after content update", sourceNodeContentHashCode2, pdfRenditionContentHashCode);
+        assertNotEquals("doc lib rendition content hash code is the same after content update", sourceNodeContentHashCode2, docLibenditionContentHashCode);
+
+        // Forces the content hash code for every source node renditions
+        AuthenticationUtil.runAs(() -> {
+            renditionService2.forceRenditionsContentHashCode(sourceNodeRef);
+            return null;
+        }, ADMIN);
+
+        // Check the renditions content hash code are now the same as the latest source node content hash code
+        int pdfRenditionContentHashCode2 = getRenditionContentHashCode(pdfRenditionNodeRef);
+        int docLibenditionContentHashCode2 = getRenditionContentHashCode(docLibRenditionNodeRef);
+        assertEquals("pdf rendition content hash code is different from latest source node content hash code", sourceNodeContentHashCode2, pdfRenditionContentHashCode2);
+        assertEquals("doc lib rendition content hash code is different from latest source node content hash code", sourceNodeContentHashCode2, docLibenditionContentHashCode2);
     }
 
     private int countModifier(List<NodeRef> nodes, String user)

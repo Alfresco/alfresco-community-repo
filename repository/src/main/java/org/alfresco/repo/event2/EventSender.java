@@ -52,7 +52,7 @@ public interface EventSender
     }
 
     /**
-     * It's called when the application context is closing, allowing {@link org.alfresco.repo.event2.EventGenerator} to perform cleanup operations.
+     * It's called when the bean instance is destroyed, allowing to perform cleanup operations.
      */
     default void destroy()
     {

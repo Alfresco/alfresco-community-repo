@@ -49,5 +49,6 @@ then
   echo "Docker Compose started ok"
 else
   echo "Docker Compose failed to start" >&2
+  docker compose ${DOCKER_COMPOSES} logs --tail 200
   exit 1
 fi

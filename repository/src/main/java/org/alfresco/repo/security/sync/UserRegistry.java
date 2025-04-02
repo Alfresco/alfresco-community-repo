@@ -76,4 +76,9 @@ public interface UserRegistry
      * @return the person mapped properties
      */
     public Set<QName> getPersonMappedProperties();
+
+    /**
+     * Notifies the user registry that the sync process is about to start.
+     */
+    void initSync();
 }

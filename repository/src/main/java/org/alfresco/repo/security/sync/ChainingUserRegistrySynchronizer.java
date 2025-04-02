@@ -411,6 +411,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             Date groupLastModified = groupLastModifiedMillis == -1 ? null : new Date(groupLastModifiedMillis);
             Date personLastModified = personLastModifiedMillis == -1 ? null : new Date(personLastModifiedMillis);
 
+            plugin.initSync();
             ret.setGroups(plugin.getGroupNames());
 
             ret.setUsers(plugin.getPersonNames());
@@ -899,6 +900,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 SyncProcess.AUTHORITY_DELETION.getTitle(zone)
         };
 
+        userRegistry.initSync();
         notifySyncDirectoryStart(zone, reservedBatchProcessNames);
 
         // Ensure that the zoneId exists before multiple threads start using it

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -21,7 +21,7 @@
  * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
- * #L%
+ * #L% 
  */
 package org.alfresco.repo.domain.propval;
 
@@ -39,23 +39,21 @@ public class PropertyStringValueEntity
 {
     public static final String EMPTY_STRING = "";
     public static final String EMPTY_STRING_REPLACEMENT = ".empty";
-    
+
     private Long id;
     private String stringValue;
     private String stringEndLower;
     private Long stringCrc;
-    private String stringLower;
-    
+
     public PropertyStringValueEntity()
-    {
-    }
-    
+    {}
+
     @Override
     public int hashCode()
     {
         return (stringValue == null ? 0 : stringValue.hashCode());
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -73,18 +71,18 @@ public class PropertyStringValueEntity
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("PropertyStringValueEntity")
-          .append("[ ID=").append(id)
-          .append(", stringValue=").append(stringValue)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", stringValue=").append(stringValue)
+                .append("]");
         return sb.toString();
     }
-    
+
     public Pair<Long, String> getEntityPair()
     {
         if (stringValue != null && stringValue.equals(PropertyStringValueEntity.EMPTY_STRING_REPLACEMENT))
@@ -96,7 +94,7 @@ public class PropertyStringValueEntity
             return new Pair<Long, String>(id, stringValue);
         }
     }
-    
+
     /**
      * Set the string and string-end values
      */
@@ -116,9 +114,6 @@ public class PropertyStringValueEntity
         Pair<String, Long> crcPair = CrcHelper.getStringCrcPair(value, 16, false, true);
         stringEndLower = crcPair.getFirst();
         stringCrc = crcPair.getSecond();
-        // Calculate the crc value with case-insensitive
-        Pair<String, Long> crcPairWithCaseInSensitive = CrcHelper.getStringCrcPair(value, 16, false, false);
-        stringLower = crcPairWithCaseInSensitive.getFirst();
     }
 
     public Long getId()
@@ -140,7 +135,7 @@ public class PropertyStringValueEntity
     {
         this.stringValue = stringValue;
     }
-    
+
     public String getStringEndLower()
     {
         return stringEndLower;
@@ -159,15 +154,5 @@ public class PropertyStringValueEntity
     public void setStringCrc(Long stringCrc)
     {
         this.stringCrc = stringCrc;
-    }
-
-    public String getStringLower()
-    {
-        return stringLower;
-    }
-
-    public void setStringLower(String stringLower)
-    {
-        this.stringLower = stringLower;
     }
 }

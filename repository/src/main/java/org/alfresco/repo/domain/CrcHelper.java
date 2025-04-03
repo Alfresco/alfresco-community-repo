@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -21,7 +21,7 @@
  * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
- * #L%
+ * #L% 
  */
 
 package org.alfresco.repo.domain;
@@ -40,29 +40,23 @@ import org.alfresco.util.Pair;
 public class CrcHelper
 {
     public static final String EMPTY_STRING = ".empty";
-    
+
     /**
-     * Calculate a persistable, unique pair of values that can be persisted in a database unique
-     * key and guarantee correct case-sensitivity.
+     * Calculate a persistable, unique pair of values that can be persisted in a database unique key and guarantee correct case-sensitivity.
      * <p>
-     * While the short-string version of the value is always lowercase, the CRC is
-     * calculated from the virgin string if case-sensitivity is enforced; in the case-insensitive
-     * case, the CRC is calculated from a lowercase version of the string.
+     * While the short-string version of the value is always lowercase, the CRC is calculated from the virgin string if case-sensitivity is enforced; in the case-insensitive case, the CRC is calculated from a lowercase version of the string.
      * <p>
-     * If the value is an empty string, then {@link #EMPTY_STRING} is used instead.  This ensures
-     * that persisted values don't fall foul of the Oracle empty string comparison "behaviour" i.e
-     * you should never persist an empty string in Oracle as it equates to a SQL <b>NULL</b>.
+     * If the value is an empty string, then {@link #EMPTY_STRING} is used instead. This ensures that persisted values don't fall foul of the Oracle empty string comparison "behaviour" i.e you should never persist an empty string in Oracle as it equates to a SQL <b>NULL</b>.
      * 
-     * @param value             the raw value that will be persisted
-     * @param dataLength        the maximum number of characters that can be persisted
-     * @param useCharsFromStart <tt>true</tt> if the shortened string value must be made from
-     *                          the first characters of the string or <tt>false</tt> to use
-     *                          characters from the end of the string.
-     * @param caseSensitive     <tt>true</tt> if the resulting pair must be case-sensitive or
-     *                          <tt>false</tt> if the pair must be case-insensitive.
-     * @return                  Return the persistable pair.  The result will never be <tt>null</tt>,
-     *                          but the individual pair values will be <tt>null</tt> if the
-     *                          value given is <tt>null</tt>
+     * @param value
+     *            the raw value that will be persisted
+     * @param dataLength
+     *            the maximum number of characters that can be persisted
+     * @param useCharsFromStart
+     *            <tt>true</tt> if the shortened string value must be made from the first characters of the string or <tt>false</tt> to use characters from the end of the string.
+     * @param caseSensitive
+     *            <tt>true</tt> if the resulting pair must be case-sensitive or <tt>false</tt> if the pair must be case-insensitive.
+     * @return Return the persistable pair. The result will never be <tt>null</tt>, but the individual pair values will be <tt>null</tt> if the value given is <tt>null</tt>
      */
     public static Pair<String, Long> getStringCrcPair(
             String value,
@@ -102,21 +96,20 @@ public class CrcHelper
         {
             throw new RuntimeException("UTF-8 encoding is not supported");
         }
-        // Crc Value will change based on the case-sensitive, So we need to get the short value based on case-sensitive
+        // Get the short value (case-sensitive or not)
         String valueShort = null;
-        String currentValue = caseSensitive ? value : valueLowerCase;
-        int valueLen = currentValue.length();
+        int valueLen = valueLowerCase.length();
         if (valueLen < dataLength)
         {
-            valueShort = currentValue;
+            valueShort = valueLowerCase;
         }
         else if (useCharsFromStart)
         {
-            valueShort = currentValue.substring(0, dataLength - 1);
+            valueShort = valueLowerCase.substring(0, dataLength - 1);
         }
         else
         {
-            valueShort = currentValue.substring(valueLen - dataLength);
+            valueShort = valueLowerCase.substring(valueLen - dataLength);
         }
         return new Pair<String, Long>(valueShort, valueCrc);
     }

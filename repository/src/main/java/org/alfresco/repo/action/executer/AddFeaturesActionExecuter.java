@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -124,9 +125,13 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
                                 else
                                 {
                                     // Must be an adhoc property
-                                    QName propertyQName = QName.createQName(entry.getKey());
-                                    Serializable propertyValue = entry.getValue();
-                                    properties.put(propertyQName, propertyValue);
+                                    // Skip actionContext to classify as an adhoc property
+                                    if(!ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME.equals(entry.getKey()))
+                                    {
+                                        QName propertyQName = QName.createQName(entry.getKey());
+                                        Serializable propertyValue = entry.getValue();
+                                        properties.put(propertyQName, propertyValue);
+                                    }
                                 }
                             }
 

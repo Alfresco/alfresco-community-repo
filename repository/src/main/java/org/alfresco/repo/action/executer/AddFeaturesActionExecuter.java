@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -43,7 +43,7 @@ import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Add features action executor implementation.
- * 
+ *
  * @author Roy Wetherall
  */
 public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
@@ -65,9 +65,9 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
 
     /**
      * Set the node service
-     * 
+     *
      * @param nodeService
-     *            the node service
+     *         the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -76,9 +76,9 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
 
     /**
      * Set the transaction service
-     * 
+     *
      * @param transactionService
-     *            the transaction service
+     *         the transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -102,7 +102,8 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
         if (this.nodeService.exists(actionedUponNodeRef))
         {
             transactionService.getRetryingTransactionHelper().doInTransaction(
-                    new RetryingTransactionCallback<Void>() {
+                    new RetryingTransactionCallback<Void>()
+                    {
                         public Void execute() throws Throwable
                         {
                             Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
@@ -126,7 +127,7 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
                                 {
                                     // Must be an adhoc property
                                     // Skip actionContext to classify as an adhoc property
-                                    if(!ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME.equals(entry.getKey()))
+                                    if (!ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME.equals(entry.getKey()))
                                     {
                                         QName propertyQName = QName.createQName(entry.getKey());
                                         Serializable propertyValue = entry.getValue();

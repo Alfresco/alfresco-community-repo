@@ -322,8 +322,8 @@ public class ImporterActionExecuterTest
                     importerActionExecuter.setUncompressedBytesLimit("100000");
                     importerActionExecuter.execute(action, zipFileNodeRef);
                     NodeRef importedFolder = nodeService.getChildByName(targetFolderNodeRef, ContentModel.ASSOC_CONTAINS, "accentCharTestZip");
-                    assertNotNull("import action failed", importedFolder);
-                    assertTrue("unzip action failed",nodeService.getChildAssocs(importedFolder).size() == 1);
+                    assertNotNull("unzip action failed", importedFolder);
+                    assertTrue("multiple folder structure created",nodeService.getChildAssocs(importedFolder).size() == 1);
                 }
                 catch (AlfrescoRuntimeException e)
                 {

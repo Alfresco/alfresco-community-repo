@@ -306,7 +306,8 @@ public class ImporterActionExecuterTest
 
         retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
-            public Void execute() throws Throwable {
+            public Void execute() throws Throwable
+            {
                 NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
 
                 // create test data
@@ -323,7 +324,7 @@ public class ImporterActionExecuterTest
                     importerActionExecuter.execute(action, zipFileNodeRef);
                     NodeRef importedFolder = nodeService.getChildByName(targetFolderNodeRef, ContentModel.ASSOC_CONTAINS, "accentCharTestZip");
                     assertNotNull("unzip action failed", importedFolder);
-                    assertTrue("multiple folder structure created",nodeService.getChildAssocs(importedFolder).size() == 1);
+                    assertTrue("multiple folder structure created", nodeService.getChildAssocs(importedFolder).size() == 1);
                 }
                 finally
                 {

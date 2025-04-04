@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -66,6 +67,7 @@ public class LocalTransformClient implements TransformClient, InitializingBean
     private ContentService contentService;
     private RenditionService2Impl renditionService2;
     private boolean directAccessUrlEnabled;
+    private int threadPoolSize;
 
     private ExecutorService executorService;
     private ThreadLocal<LocalTransform> transform = new ThreadLocal<>();
@@ -95,6 +97,11 @@ public class LocalTransformClient implements TransformClient, InitializingBean
         this.directAccessUrlEnabled = directAccessUrlEnabled;
     }
 
+    public void setThreadPoolSize(int threadPoolSize)
+    {
+        this.threadPoolSize = threadPoolSize;
+    }
+
     public void setExecutorService(ExecutorService executorService)
     {
         this.executorService = executorService;
@@ -108,9 +115,11 @@ public class LocalTransformClient implements TransformClient, InitializingBean
         PropertyCheck.mandatory(this, "contentService", contentService);
         PropertyCheck.mandatory(this, "renditionService2", renditionService2);
         PropertyCheck.mandatory(this, "directAccessUrlEnabled", directAccessUrlEnabled);
+        PropertyCheck.mandatory(this, "threadPoolSize", threadPoolSize);
         if (executorService == null)
         {
-            executorService = Executors.newCachedThreadPool();
+            var threadFactory = new ThreadFactoryBuilder().setNameFormat("local-transform-%d").build();
+            executorService = Executors.newFixedThreadPool(threadPoolSize, threadFactory);
         }
     }
 

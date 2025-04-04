@@ -149,7 +149,9 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_ASPECT_NAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASPECT_NAME), false, "ac-aspects"));
     }
 
-    // Remove actionContext from the parameter values to declassify as an adhoc property
+    /**
+     * Remove actionContext from the parameter values to declassify as an adhoc property
+     */
     private void removeActionContextParameter(Map<String, Serializable> paramValues)
     {
         paramValues.remove(ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME);

@@ -325,10 +325,6 @@ public class ImporterActionExecuterTest
                     assertNotNull("unzip action failed", importedFolder);
                     assertTrue("multiple folder structure created",nodeService.getChildAssocs(importedFolder).size() == 1);
                 }
-                catch (AlfrescoRuntimeException e)
-                {
-                    throw(new AlfrescoRuntimeException(e.getMessage()));
-                }
                 finally
                 {
                     // clean test data

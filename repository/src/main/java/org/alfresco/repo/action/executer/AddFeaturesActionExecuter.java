@@ -152,13 +152,7 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
     // Remove actionContext from the parameter values to declassify as an adhoc property
     private void removeActionContextParameter(Map<String, Serializable> paramValues)
     {
-        for (Map.Entry<String, Serializable> entry : paramValues.entrySet())
-        {
-            if (ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME.equals(entry.getKey()))
-            {
-                paramValues.remove(entry.getKey());
-            }
-        }
+        paramValues.remove(ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME);
     }
 
 }

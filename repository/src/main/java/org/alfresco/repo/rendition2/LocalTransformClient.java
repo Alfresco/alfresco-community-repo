@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
 import static org.alfresco.transform.common.RequestParamMap.DIRECT_ACCESS_URL;
@@ -120,7 +121,7 @@ public class LocalTransformClient implements TransformClient, InitializingBean
         PropertyCheck.mandatory(this, "threadPoolSize", threadPoolSize);
         if (executorService == null)
         {
-            var threadFactory = new ThreadFactoryBuilder().setNameFormat("local-transform-%d").build();
+            ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("local-transform-%d").build();
             executorService = Executors.newFixedThreadPool(threadPoolSize, threadFactory);
         }
     }

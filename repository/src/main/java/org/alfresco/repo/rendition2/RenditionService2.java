@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -124,4 +124,13 @@ public interface RenditionService2
      * Indicates if renditions are enabled. Set using the {@code system.thumbnail.generate} value.
      */
     boolean isEnabled();
+
+    /**
+     * This method forces the content hash code for every {@code sourceNodeRef} renditions.
+     * 
+     * @param sourceNodeRef
+     *            the source node to update renditions hash code
+     */
+    @NotAuditable
+    void forceRenditionsContentHashCode(NodeRef sourceNodeRef);
 }

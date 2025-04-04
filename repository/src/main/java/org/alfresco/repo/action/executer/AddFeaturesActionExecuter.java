@@ -116,6 +116,7 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
 
                             // Build the aspect details
                             Map<String, Serializable> paramValues = ruleAction.getParameterValues();
+                            removeActionContextParameter(paramValues);
                             for (Map.Entry<String, Serializable> entry : paramValues.entrySet())
                             {
                                 if (entry.getKey().equals(PARAM_ASPECT_NAME) == true)
@@ -125,13 +126,9 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
                                 else
                                 {
                                     // Must be an adhoc property
-                                    // Skip actionContext to classify as an adhoc property
-                                    if (!ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME.equals(entry.getKey()))
-                                    {
-                                        QName propertyQName = QName.createQName(entry.getKey());
-                                        Serializable propertyValue = entry.getValue();
-                                        properties.put(propertyQName, propertyValue);
-                                    }
+                                    QName propertyQName = QName.createQName(entry.getKey());
+                                    Serializable propertyValue = entry.getValue();
+                                    properties.put(propertyQName, propertyValue);
                                 }
                             }
 
@@ -150,6 +147,18 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_ASPECT_NAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASPECT_NAME), false, "ac-aspects"));
+    }
+
+    // Remove actionContext from the parameter values to declassify as an adhoc property
+    private void removeActionContextParameter(Map<String, Serializable> paramValues)
+    {
+        for (Map.Entry<String, Serializable> entry : paramValues.entrySet())
+        {
+            if (ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME.equals(entry.getKey()))
+            {
+                paramValues.remove(entry.getKey());
+            }
+        }
     }
 
 }

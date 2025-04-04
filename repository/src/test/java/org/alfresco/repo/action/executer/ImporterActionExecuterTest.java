@@ -299,6 +299,48 @@ public class ImporterActionExecuterTest
         });
     }
 
+    @Test
+    public void testUnzipZipFileHavingAccentCharInFolderName() throws IOException
+    {
+        final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
+
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable {
+                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+
+                // create test data
+                NodeRef zipFileNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_CONTENT).getChildRef();
+                NodeRef targetFolderNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_FOLDER).getChildRef();
+
+                putContent(zipFileNodeRef, "import-archive-test/accentCharTestZip.zip");
+
+                Action action = createAction(zipFileNodeRef, "ImporterActionExecuterTestActionDefinition", targetFolderNodeRef);
+
+                try
+                {
+                    importerActionExecuter.setUncompressedBytesLimit("100000");
+                    importerActionExecuter.execute(action, zipFileNodeRef);
+                    NodeRef importedFolder = nodeService.getChildByName(targetFolderNodeRef, ContentModel.ASSOC_CONTAINS, "accentCharTestZip");
+                    assertNotNull("import action failed", importedFolder);
+                    assertTrue("unzip action failed",nodeService.getChildAssocs(importedFolder).size() == 1);
+                }
+                catch (AlfrescoRuntimeException e)
+                {
+                    throw(new AlfrescoRuntimeException(e.getMessage()));
+                }
+                finally
+                {
+                    // clean test data
+                    nodeService.deleteNode(targetFolderNodeRef);
+                    nodeService.deleteNode(zipFileNodeRef);
+                }
+
+                return null;
+            }
+        });
+    }
+
     private void putContent(NodeRef zipFileNodeRef, String resource)
     {
         URL url = AbstractContentTransformerTest.class.getClassLoader().getResource(resource);

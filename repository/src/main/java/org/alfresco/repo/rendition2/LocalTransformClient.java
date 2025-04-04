@@ -33,14 +33,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.alfresco.model.ContentModel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.transform.LocalTransform;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -120,7 +119,7 @@ public class LocalTransformClient implements TransformClient, InitializingBean
         if (executorService == null)
         {
             var threadFactory = new ThreadFactoryBuilder().setNameFormat("local-transform-%d").build();
-            executorService = Executors.newFixedThreadPool(threadPoolSize ,threadFactory);
+            executorService = Executors.newFixedThreadPool(threadPoolSize, threadFactory);
         }
     }
 

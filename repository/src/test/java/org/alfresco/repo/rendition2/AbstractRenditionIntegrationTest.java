@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -45,6 +45,7 @@ import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -52,6 +53,7 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -128,6 +130,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
 
     protected static final String ADMIN = "admin";
     protected static final String DOC_LIB = "doclib";
+    protected static final String PDF = "pdf";
 
     private CronExpression origLocalTransCron;
     private CronExpression origRenditionCron;
@@ -568,5 +571,29 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
         }
 
         return renditionContentHashCode;
+    }
+
+    /**
+     * Helper method which gets the content hash code from the supplied source node (the equivalent method from {@link RenditionService2Impl} is not public)
+     *
+     * @param sourceNodeRef
+     *            the source node
+     *
+     * @return -1 in case of there is no content, otherwise, the actual content hash code otherwise
+     */
+    protected int getSourceContentHashCode(NodeRef sourceNodeRef)
+    {
+        int hashCode = -1;
+        ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, nodeService.getProperty(sourceNodeRef, PROP_CONTENT));
+        if (contentData != null)
+        {
+            // Originally we used the contentData URL, but that is not enough if the mimetype changes.
+            String contentString = contentData.getContentUrl() + contentData.getMimetype();
+            if (contentString != null)
+            {
+                hashCode = contentString.hashCode();
+            }
+        }
+        return hashCode;
     }
 }

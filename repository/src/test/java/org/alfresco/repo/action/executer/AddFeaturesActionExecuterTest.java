@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,6 +30,7 @@ import java.util.Locale;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -160,5 +161,21 @@ public class AddFeaturesActionExecuterTest extends BaseSpringTest
 
         I18NUtil.setLocale(Locale.getDefault());
 
+    }
+
+    /**
+     * Test check actionContext param is removed from adhoc properties
+     */
+    @Test
+    public void testCheckActionContext()
+    {
+        // Execute the action
+        ActionImpl action = new ActionImpl(null, ID, AddFeaturesActionExecuter.NAME, null);
+        action.setParameterValue(ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME, ActionAccessRestriction.V1_ACTION_CONTEXT);
+        action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
+        this.executer.execute(action, this.nodeRef);
+
+        // Ensure the actionContext parameter has been removed
+        assertFalse(nodeService.getProperties(this.nodeRef).containsKey(QName.createQName(ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME)));
     }
 }

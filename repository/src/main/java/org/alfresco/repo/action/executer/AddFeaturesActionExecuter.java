@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -114,6 +115,7 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
 
                      // Build the aspect details
                      Map<String, Serializable> paramValues = ruleAction.getParameterValues();
+                     removeActionContextParameter(paramValues);
                      for (Map.Entry<String, Serializable> entry : paramValues.entrySet())
                      {
                          if (entry.getKey().equals(PARAM_ASPECT_NAME) == true)
@@ -147,4 +149,11 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_ASPECT_NAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASPECT_NAME), false, "ac-aspects"));
     }
 
+    /**
+     * Remove actionContext from the parameter values to declassify as an adhoc property
+     */
+    private void removeActionContextParameter(Map<String, Serializable> paramValues)
+    {
+        paramValues.remove(ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME);
+    }
 }

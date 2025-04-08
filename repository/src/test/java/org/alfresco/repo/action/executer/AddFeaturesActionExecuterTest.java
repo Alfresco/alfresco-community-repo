@@ -28,6 +28,11 @@ package org.alfresco.repo.action.executer;
 import java.util.List;
 import java.util.Locale;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.access.ActionAccessRestriction;
@@ -40,10 +45,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Add features action execution test
@@ -102,7 +103,7 @@ public class AddFeaturesActionExecuterTest extends BaseSpringTest
                 QName.createQName("{test}testnode"),
                 ContentModel.TYPE_CONTENT).getChildRef();
 
-        // Get the executer instance 
+        // Get the executer instance
         this.executer = (AddFeaturesActionExecuter) this.applicationContext.getBean(AddFeaturesActionExecuter.NAME);
     }
 

@@ -67,7 +67,7 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
      * Set the node service
      *
      * @param nodeService
-     *            the node service
+     *         the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -78,7 +78,7 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
      * Set the transaction service
      *
      * @param transactionService
-     *            the transaction service
+     *         the transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -102,7 +102,8 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
         if (this.nodeService.exists(actionedUponNodeRef))
         {
             transactionService.getRetryingTransactionHelper().doInTransaction(
-                    new RetryingTransactionCallback<Void>() {
+                    new RetryingTransactionCallback<Void>()
+                    {
                         public Void execute() throws Throwable
                         {
                             Map<QName, Serializable> properties = new HashMap<QName, Serializable>();

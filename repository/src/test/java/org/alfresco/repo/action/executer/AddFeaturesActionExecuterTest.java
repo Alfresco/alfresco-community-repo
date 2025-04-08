@@ -55,34 +55,29 @@ import org.alfresco.util.GUID;
 public class AddFeaturesActionExecuterTest extends BaseSpringTest
 {
     /**
+     * Id used to identify the test action created
+     */
+    private final static String ID = GUID.generate();
+    /**
      * The node service
      */
     private NodeService nodeService;
-
     /**
      * The store reference
      */
     private StoreRef testStoreRef;
-
     /**
      * The root node reference
      */
     private NodeRef rootNodeRef;
-
     /**
      * The test node reference
      */
     private NodeRef nodeRef;
-
     /**
      * The add features action executer
      */
     private AddFeaturesActionExecuter executer;
-
-    /**
-     * Id used to identify the test action created
-     */
-    private final static String ID = GUID.generate();
 
     /**
      * Called at the begining of all tests

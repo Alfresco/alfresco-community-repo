@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -42,7 +43,7 @@ import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Add features action executor implementation.
- * 
+ *
  * @author Roy Wetherall
  */
 public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
@@ -64,7 +65,7 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
 
     /**
      * Set the node service
-     * 
+     *
      * @param nodeService
      *            the node service
      */
@@ -75,7 +76,7 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
 
     /**
      * Set the transaction service
-     * 
+     *
      * @param transactionService
      *            the transaction service
      */
@@ -115,6 +116,7 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
 
                             // Build the aspect details
                             Map<String, Serializable> paramValues = ruleAction.getParameterValues();
+                            removeActionContextParameter(paramValues);
                             for (Map.Entry<String, Serializable> entry : paramValues.entrySet())
                             {
                                 if (entry.getKey().equals(PARAM_ASPECT_NAME) == true)
@@ -145,6 +147,14 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_ASPECT_NAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASPECT_NAME), false, "ac-aspects"));
+    }
+
+    /**
+     * Remove actionContext from the parameter values to declassify as an adhoc property
+     */
+    private void removeActionContextParameter(Map<String, Serializable> paramValues)
+    {
+        paramValues.remove(ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME);
     }
 
 }

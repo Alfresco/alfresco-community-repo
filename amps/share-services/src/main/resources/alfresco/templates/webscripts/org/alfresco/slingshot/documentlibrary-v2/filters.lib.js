@@ -189,7 +189,7 @@ var Filters =
                filterQuery += "ID:\"" + favourite + "\"";
             }
             
-            if (filterQuery.length !== 0)
+            if (filterQuery.length !== 0 && filterQuery !== "ID:\"\"")
             {
                filterQuery = "+(" + filterQuery + ")";
                // no need to specify path here for all sites - IDs are exact matches
@@ -201,7 +201,7 @@ var Filters =
             else
             {
                // empty favourites query
-               filterQuery = "+ID:\"\"";
+               filterQuery = "+ID:\"default\"";
             }
             
             filterParams.query = filterQuery;

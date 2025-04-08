@@ -62,6 +62,7 @@ import org.alfresco.util.test.junitrules.ApplicationContextInit;
  * 
  * @author abalmus
  */
+@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 public class ImporterActionExecuterTest
 {
     // Rule to initialise the default Alfresco spring configuration
@@ -307,6 +308,7 @@ public class ImporterActionExecuterTest
         retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
+
             {
                 NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
 

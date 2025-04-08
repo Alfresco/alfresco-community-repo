@@ -26,7 +26,6 @@
 package org.alfresco.repo.webdav;
 
 import java.util.List;
-
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
@@ -52,9 +51,8 @@ public class MoveMethod extends HierarchicalMethod
      * Default constructor
      */
     public MoveMethod()
-    {
-    }
-    
+    {}
+
     protected boolean isMove()
     {
         return true;
@@ -138,7 +136,7 @@ public class MoveMethod extends HierarchicalMethod
         NodeRef sourceNodeRef = sourceInfo.getNodeRef();
         NodeRef sourceParentNodeRef = sourceParentInfo.getNodeRef();
         NodeRef destParentNodeRef = destParentInfo.getNodeRef();
-        
+
         String name = getDAVHelper().splitPath(destPath)[1];
 
         moveOrCopy(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, name);
@@ -152,13 +150,13 @@ public class MoveMethod extends HierarchicalMethod
         {
             m_response.setStatus(HttpServletResponse.SC_NO_CONTENT);
         }
-    }       
-       
+    }
+
     protected void parseRequestHeaders() throws WebDAVServerException
     {
         super.parseRequestHeaders();
         parseIfHeader();
-    } 
+    }
 
     protected void moveOrCopy(
             NodeRef sourceNodeRef,
@@ -172,11 +170,11 @@ public class MoveMethod extends HierarchicalMethod
         String sourcePath = getPath();
         List<String> sourcePathElements = getDAVHelper().splitAllPaths(sourcePath);
         FileInfo sourceFileInfo = null;
-        
+
         String destPath = getDestinationPath();
         List<String> destPathElements = getDAVHelper().splitAllPaths(destPath);
         FileInfo destFileInfo = null;
-        
+
         boolean isMove = isMove();
 
         try
@@ -234,10 +232,10 @@ public class MoveMethod extends HierarchicalMethod
                 {
                     logger.debug("Destination exists and overwrite is allowed");
                 }
-                
+
                 fileFolderService.delete(destFileInfo.getNodeRef());
             }
-            
+
             fileFolderService.copy(sourceNodeRef, destParentNodeRef, name);
         }
         // If this is a move and the destination looks like the start of a shuffle operation, then the source is just
@@ -251,20 +249,20 @@ public class MoveMethod extends HierarchicalMethod
             // As per the WebDAV spec, we make sure the node is unlocked once moved
             unlock(sourceNodeRef, lockInfo);
         }
-        else if (sourceParentNodeRef.equals(destParentNodeRef)) 
-        { 
-           // It is a simple rename operation
-           // MNT-9939 - check overwrite
-           if (hasOverWrite() && destFileInfo != null && !sourceFileInfo.equals(destFileInfo))
-           {
-               if (logger.isDebugEnabled())
-               {
-                   logger.debug("Destination exists and overwrite is allowed");
-               }
-               
-               fileFolderService.delete(destFileInfo.getNodeRef());
-           }
-           
+        else if (sourceParentNodeRef.equals(destParentNodeRef))
+        {
+            // It is a simple rename operation
+            // MNT-9939 - check overwrite
+            if (hasOverWrite() && destFileInfo != null && !sourceFileInfo.equals(destFileInfo))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Destination exists and overwrite is allowed");
+                }
+
+                fileFolderService.delete(destFileInfo.getNodeRef());
+            }
+
             fileFolderService.rename(sourceNodeRef, name);
 
             // MNT-13144 WebDav does not correctly version CAD drawings correctly when saved using Windows mapped drive
@@ -273,12 +271,12 @@ public class MoveMethod extends HierarchicalMethod
                 fileFolderService.setHidden(sourceFileInfo.getNodeRef(), true);
             }
 
-           // As per the WebDAV spec, we make sure the node is unlocked once moved
-           unlock(sourceNodeRef, lockInfo);
+            // As per the WebDAV spec, we make sure the node is unlocked once moved
+            unlock(sourceNodeRef, lockInfo);
         }
         else
         {
-            // It is a simple move operation 
+            // It is a simple move operation
             // MNT-9939 - check overwrite
             if (hasOverWrite() && destFileInfo != null)
             {
@@ -286,20 +284,20 @@ public class MoveMethod extends HierarchicalMethod
                 {
                     logger.debug("Destination exists and overwrite is allowed");
                 }
-                
+
                 fileFolderService.delete(destFileInfo.getNodeRef());
             }
-            
-            fileFolderService.moveFrom(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, name);  
+
+            fileFolderService.moveFrom(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, name);
 
             // As per the WebDAV spec, we make sure the node is unlocked once moved
             unlock(sourceNodeRef, lockInfo);
         }
     }
-    
+
     private void copyContentOnly(FileInfo sourceFileInfo, FileInfo destFileInfo, FileFolderService fileFolderService) throws WebDAVServerException
     {
-    	ContentService contentService = getContentService();
+        ContentService contentService = getContentService();
         ContentReader reader = contentService.getReader(sourceFileInfo.getNodeRef(), ContentModel.PROP_CONTENT);
         if (reader == null)
         {
@@ -317,7 +315,7 @@ public class MoveMethod extends HierarchicalMethod
             contentWriter.putContent(reader);
         }
     }
-    
+
     /**
      * Unlock only if the node was locked in the first place.
      */
@@ -328,8 +326,7 @@ public class MoveMethod extends HierarchicalMethod
             if (lockInfo.isExpired())
             {
                 // If the lock expired unlock as system user
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         getDAVHelper().getLockService().unlock(nodeRef);

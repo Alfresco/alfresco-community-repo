@@ -25,8 +25,9 @@
  */
 package org.alfresco.repo.security.permissions.impl.model;
 
-import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.dom4j.Element;
+
+import org.alfresco.service.namespace.NamespacePrefixResolver;
 
 /**
  * Interface to initialise a component of the permission mode from its XML representation.

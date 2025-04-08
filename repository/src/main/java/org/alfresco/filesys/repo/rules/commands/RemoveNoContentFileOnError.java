@@ -38,9 +38,9 @@ public class RemoveNoContentFileOnError implements Command
     private String name;
     private String path;
     private NodeRef rootNode;
-  
+
     private NetworkFile networkFile;
-    
+
     public RemoveNoContentFileOnError(String name, NodeRef rootNode, String path)
     {
         this.name = name;
@@ -52,17 +52,17 @@ public class RemoveNoContentFileOnError implements Command
     {
         return name;
     }
-    
+
     public NetworkFile getNetworkFile()
     {
         return networkFile;
     }
-    
+
     public NodeRef getRootNodeRef()
     {
         return rootNode;
     }
-    
+
     public String getPath()
     {
         return path;

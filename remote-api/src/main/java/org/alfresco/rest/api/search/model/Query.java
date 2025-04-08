@@ -42,9 +42,9 @@ public class Query implements Serializable
     private final String userQuery;
 
     @JsonCreator
-    public Query(@JsonProperty("language")  String language,
-                 @JsonProperty("query")     String query,
-                 @JsonProperty("userQuery") String userQuery)
+    public Query(@JsonProperty("language") String language,
+            @JsonProperty("query") String query,
+            @JsonProperty("userQuery") String userQuery)
     {
         this.language = language;
         this.query = query;

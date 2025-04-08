@@ -27,7 +27,6 @@ package org.alfresco.repo.index.shard;
 
 import java.io.Serializable;
 
-
 /**
  * @author Andy
  *
@@ -37,17 +36,16 @@ public class ShardInstance implements Serializable
     private static final long serialVersionUID = -3407675092111933581L;
 
     private Shard shard;
-    
+
     private String baseUrl;
-    
+
     private int port;
-    
+
     private String hostName;
-   
+
     public ShardInstance()
-    {
-    }
-    
+    {}
+
     /**
      * @return the shard
      */
@@ -57,7 +55,8 @@ public class ShardInstance implements Serializable
     }
 
     /**
-     * @param shard the shard to set
+     * @param shard
+     *            the shard to set
      */
     public void setShard(Shard shard)
     {
@@ -73,18 +72,19 @@ public class ShardInstance implements Serializable
     }
 
     /**
-     * @param baseUrl the baseUrl to set
+     * @param baseUrl
+     *            the baseUrl to set
      */
     public void setBaseUrl(String baseUrl)
     {
-    	if((baseUrl != null) && baseUrl.endsWith("/"))
-    	{
-    		this.baseUrl = baseUrl.substring(0, baseUrl.length()-1);
-    	}
-    	else
-    	{
-        this.baseUrl = baseUrl;
-    }
+        if ((baseUrl != null) && baseUrl.endsWith("/"))
+        {
+            this.baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        }
+        else
+        {
+            this.baseUrl = baseUrl;
+        }
     }
 
     /**
@@ -96,7 +96,8 @@ public class ShardInstance implements Serializable
     }
 
     /**
-     * @param port the port to set
+     * @param port
+     *            the port to set
      */
     public void setPort(int port)
     {
@@ -112,7 +113,8 @@ public class ShardInstance implements Serializable
     }
 
     /**
-     * @param hostName the hostName to set
+     * @param hostName
+     *            the hostName to set
      */
     public void setHostName(String hostName)
     {
@@ -120,8 +122,8 @@ public class ShardInstance implements Serializable
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
+     * 
+     * @see java.lang.Object#hashCode() */
     @Override
     public int hashCode()
     {
@@ -135,8 +137,8 @@ public class ShardInstance implements Serializable
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+     * 
+     * @see java.lang.Object#equals(java.lang.Object) */
     @Override
     public boolean equals(Object obj)
     {
@@ -174,14 +176,12 @@ public class ShardInstance implements Serializable
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+     * 
+     * @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
         return "ShardInstance [shard=" + shard + ", baseUrl=" + baseUrl + ", port=" + port + ", hostName=" + hostName + "]";
     }
-
-    
 
 }

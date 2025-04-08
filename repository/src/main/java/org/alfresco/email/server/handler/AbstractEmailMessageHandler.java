@@ -33,6 +33,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
@@ -47,10 +51,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 
 /**
  * Abstract class implements common logic for processing email messages.
@@ -66,7 +66,7 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     private NodeService nodeService;
     private ContentService contentService;
     private MimetypeService mimetypeService;
-    
+
     private static Log logger = LogFactory.getLog(AbstractEmailMessageHandler.class);
 
     /**
@@ -78,7 +78,8 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     }
 
     /**
-     * @param contentService Alfresco Content Service.
+     * @param contentService
+     *            Alfresco Content Service.
      */
     public void setContentService(ContentService contentService)
     {
@@ -86,7 +87,7 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     }
 
     /**
-     * @return                      the Alfresco dictionary service
+     * @return the Alfresco dictionary service
      */
     protected DictionaryService getDictionaryService()
     {
@@ -94,7 +95,8 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     }
 
     /**
-     * @param dictionaryService     Alfresco dictionary service
+     * @param dictionaryService
+     *            Alfresco dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -110,7 +112,8 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     }
 
     /**
-     * @param nodeService Alfresco Node Service.
+     * @param nodeService
+     *            Alfresco Node Service.
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -118,7 +121,7 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     }
 
     /**
-     * @return      the service used to determine mimeypte and encoding
+     * @return the service used to determine mimeypte and encoding
      */
     protected MimetypeService getMimetypeService()
     {
@@ -126,57 +129,61 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     }
 
     /**
-     * @param mimetypeService       the the service to determine mimetype and encoding
+     * @param mimetypeService
+     *            the the service to determine mimetype and encoding
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {
         this.mimetypeService = mimetypeService;
     }
 
-//    /**
-//     * @param to Email address which user part specifies node-dbid
-//     * @return Referance to requested node.
-//     * @throws InvalidArgumentException The exception is thrown if input string has incorrect format or empty.
-//     */
-//    protected NodeRef getTargetNode(String to) throws InvalidArgumentException
-//    {
-//        if (to == null || to.length() == 0)
-//        {
-//            throw new InvalidArgumentException("Input string has to contain email address.");
-//        }
-//        String[] parts = to.split("@");
-//        if (parts.length != 2)
-//        {
-//            throw new InvalidArgumentException("Incorrect email address format.");
-//        }
-//        try
-//        {
-//            Long dbId = Long.parseLong(parts[0]);
-//            return nodeService.getNodeRef(dbId);
-//        }
-//        catch (NumberFormatException e)
-//        {
-//            return null;
-//        }
-//    }
+    // /**
+    // * @param to Email address which user part specifies node-dbid
+    // * @return Referance to requested node.
+    // * @throws InvalidArgumentException The exception is thrown if input string has incorrect format or empty.
+    // */
+    // protected NodeRef getTargetNode(String to) throws InvalidArgumentException
+    // {
+    // if (to == null || to.length() == 0)
+    // {
+    // throw new InvalidArgumentException("Input string has to contain email address.");
+    // }
+    // String[] parts = to.split("@");
+    // if (parts.length != 2)
+    // {
+    // throw new InvalidArgumentException("Incorrect email address format.");
+    // }
+    // try
+    // {
+    // Long dbId = Long.parseLong(parts[0]);
+    // return nodeService.getNodeRef(dbId);
+    // }
+    // catch (NumberFormatException e)
+    // {
+    // return null;
+    // }
+    // }
 
-//    /**
-//     * Write the content to the node as MIMETYPE TEXT PLAIN.
-//     * 
-//     * @param nodeRef Target node
-//     * @param content Content
-//     */
-//    protected void writeContent(NodeRef nodeRef, String content)
-//    {
-//        writeContent(nodeRef, content, MimetypeMap.MIMETYPE_TEXT_PLAIN);
-//    }
+    // /**
+    // * Write the content to the node as MIMETYPE TEXT PLAIN.
+    // *
+    // * @param nodeRef Target node
+    // * @param content Content
+    // */
+    // protected void writeContent(NodeRef nodeRef, String content)
+    // {
+    // writeContent(nodeRef, content, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+    // }
 
     /**
      * Write the string as content to the node.
      * 
-     * @param nodeRef Target node.
-     * @param content Text for writting.
-     * @param mimetype MIME content type. For exaple you can set this parameter to "text/html" or "text/xml", etc.
+     * @param nodeRef
+     *            Target node.
+     * @param content
+     *            Text for writting.
+     * @param mimetype
+     *            MIME content type. For exaple you can set this parameter to "text/html" or "text/xml", etc.
      */
     protected void writeContent(NodeRef nodeRef, String content, String mimetype)
     {
@@ -194,10 +201,14 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     /**
      * Write content to the node from InputStream.
      * 
-     * @param nodeRef Target node.
-     * @param content Content stream.
-     * @param mimetype MIME content type.
-     * @param encoding Encoding. Can be null for text based content, n which case the best guess.
+     * @param nodeRef
+     *            Target node.
+     * @param content
+     *            Content stream.
+     * @param mimetype
+     *            MIME content type.
+     * @param encoding
+     *            Encoding. Can be null for text based content, n which case the best guess.
      */
     protected void writeContent(NodeRef nodeRef, InputStream content, String mimetype, String encoding)
     {
@@ -216,51 +227,47 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
                 encoding = "UTF-8";
             }
         }
-        
+
         if (log.isDebugEnabled())
         {
             log.debug("Write content (MimeType=\"" + mimetype + "\", Encoding=\"" + encoding + "\"");
         }
-        
-        
+
         ContentService contentService = getContentService();
         ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         writer.setMimetype(mimetype);
         writer.setEncoding(encoding);
         writer.putContent(bis);
     }
-    
+
     /**
      * Add emailed aspect to the specified node.
      * 
-     * @param nodeRef Target node.
-     * @param message Mail message that will be used for extracting necessary information
+     * @param nodeRef
+     *            Target node.
+     * @param message
+     *            Mail message that will be used for extracting necessary information
      */
-    protected void addEmailedAspect(NodeRef nodeRef, EmailMessage message) 
+    protected void addEmailedAspect(NodeRef nodeRef, EmailMessage message)
     {
 
-    /*
-     * TODO - get rid of this and use the RFC822 metadata extractor instead.
-     */
+        /* TODO - get rid of this and use the RFC822 metadata extractor instead. */
         Map<QName, Serializable> emailProps = new HashMap<QName, Serializable>();
         emailProps.put(ContentModel.PROP_SENTDATE, message.getSentDate());
         emailProps.put(ContentModel.PROP_ORIGINATOR, message.getFrom());
         emailProps.put(ContentModel.PROP_ADDRESSEE, message.getTo());
-        emailProps.put(ContentModel.PROP_ADDRESSEES, (Serializable)message.getCC());
+        emailProps.put(ContentModel.PROP_ADDRESSEES, (Serializable) message.getCC());
         emailProps.put(ContentModel.PROP_SUBJECT, message.getSubject());
         nodeService.addAspect(nodeRef, ContentModel.ASPECT_EMAILED, emailProps);
 
-        /*
-         * MER 
-         * Can't add IMAP_CONTENT here since that means the body of the message is a mime message. 
-         */
-        //Map<QName, Serializable> imapProps = new HashMap<QName, Serializable>();
-        //emailProps.put(ImapModel.PROP_MESSAGE_FROM, message.getFrom());
-        //emailProps.put(ImapModel.PROP_MESSAGE_TO, message.getTo());
-        //emailProps.put(ImapModel.PROP_MESSAGE_CC, (Serializable)message.getCC());
-        //emailProps.put(ImapModel.PROP_MESSAGE_SUBJECT, message.getSubject());
-        //nodeService.addAspect(nodeRef, ImapModel.ASPECT_IMAP_CONTENT, imapProps);
-        
+        /* MER Can't add IMAP_CONTENT here since that means the body of the message is a mime message. */
+        // Map<QName, Serializable> imapProps = new HashMap<QName, Serializable>();
+        // emailProps.put(ImapModel.PROP_MESSAGE_FROM, message.getFrom());
+        // emailProps.put(ImapModel.PROP_MESSAGE_TO, message.getTo());
+        // emailProps.put(ImapModel.PROP_MESSAGE_CC, (Serializable)message.getCC());
+        // emailProps.put(ImapModel.PROP_MESSAGE_SUBJECT, message.getSubject());
+        // nodeService.addAspect(nodeRef, ImapModel.ASPECT_IMAP_CONTENT, imapProps);
+
         if (log.isDebugEnabled())
         {
             log.debug("Emailed aspect has been added.");
@@ -270,60 +277,65 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     /**
      * Add new node into Alfresco repository with specified parameters. Node content isn't added.
      * 
-     * @param nodeService Alfresco Node Service
-     * @param parent Parent node
-     * @param name Name of the new node
-     * @param overwrite if true then overwrite an existing node with the same name.   if false the name is changed to make it unique.
-     * @param assocType Association type that should be set between parent node and the new one.
+     * @param nodeService
+     *            Alfresco Node Service
+     * @param parent
+     *            Parent node
+     * @param name
+     *            Name of the new node
+     * @param overwrite
+     *            if true then overwrite an existing node with the same name. if false the name is changed to make it unique.
+     * @param assocType
+     *            Association type that should be set between parent node and the new one.
      * @return Reference to created node
      */
     protected NodeRef addContentNode(NodeService nodeService, NodeRef parent, String name, QName assocType, boolean overwrite)
     {
-        String workingName =  encodeSubject(name);
-        
+        String workingName = encodeSubject(name);
+
         // Need to work out a new safe name.
         String baseName = FilenameUtils.getBaseName(workingName);
         String extension = FilenameUtils.getExtension(workingName);
-        
-        if(logger.isDebugEnabled())
+
+        if (logger.isDebugEnabled())
         {
             logger.debug("addContentNode name:" + workingName);
         }
-          
-        for(int counter = 1; counter < 10000; counter++)
+
+        for (int counter = 1; counter < 10000; counter++)
         {
             QName safeQName = QName.createQNameWithValidLocalName(NamespaceService.CONTENT_MODEL_1_0_URI, workingName);
 
             NodeRef childNodeRef = nodeService.getChildByName(parent, ContentModel.ASSOC_CONTAINS, workingName);
-            
+
             if (childNodeRef != null)
             {
-                if(overwrite)
+                if (overwrite)
                 {
-                    if(logger.isDebugEnabled())
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug("overwriting existing node :" + workingName);
                     }
-                
+
                     // Node already exists
-                    // The node is present already.  Make sure the name case is correct
+                    // The node is present already. Make sure the name case is correct
                     nodeService.setProperty(childNodeRef, ContentModel.PROP_NAME, baseName);
                     return childNodeRef;
                 }
-                
+
                 // Node already exists and not overwrite
                 String postFix = "(" + counter + ")";
-            
-                if(baseName.length() + extension.length() + postFix.length() > QName.MAX_LENGTH )
+
+                if (baseName.length() + extension.length() + postFix.length() > QName.MAX_LENGTH)
                 {
-                    // Need to truncate base name   
-                    workingName =  baseName.substring(0, QName.MAX_LENGTH - postFix.length() - extension.length() -1) + postFix;  
+                    // Need to truncate base name
+                    workingName = baseName.substring(0, QName.MAX_LENGTH - postFix.length() - extension.length() - 1) + postFix;
                 }
                 else
                 {
-                    workingName = baseName + postFix ;
+                    workingName = baseName + postFix;
                 }
-                if(extension.length() > 0)
+                if (extension.length() > 0)
                 {
                     workingName = workingName + "." + extension;
                 }
@@ -331,21 +343,21 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
             else
             {
                 // Here if child node ref does not already exist
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("child node ref does not already exist :" + workingName);
                 }
                 Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
                 contentProps.put(ContentModel.PROP_NAME, workingName);
-                    
+
                 ChildAssociationRef associationRef = nodeService.createNode(
-                    parent,
-                    assocType,
-                    safeQName,
-                    ContentModel.TYPE_CONTENT,
-                    contentProps);
+                        parent,
+                        assocType,
+                        safeQName,
+                        ContentModel.TYPE_CONTENT,
+                        contentProps);
                 childNodeRef = associationRef.getChildRef();
-                    
+
                 return childNodeRef;
             }
         }
@@ -353,16 +365,18 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     }
 
     /**
-     * Add new node into Alfresco repository with specified parameters.
-     * Node content isn't added. 
+     * Add new node into Alfresco repository with specified parameters. Node content isn't added.
      * 
      * New node will be created with ContentModel.ASSOC_CONTAINS association with parent.
      * 
-     * @param nodeService Alfresco Node Service
-     * @param parent Parent node
-     * @param name Name of the new node
-     * @param overwrite whether a new node should overwrite an existing node with the same name or have its name
-     * mangled to be alongside the existing node.
+     * @param nodeService
+     *            Alfresco Node Service
+     * @param parent
+     *            Parent node
+     * @param name
+     *            Name of the new node
+     * @param overwrite
+     *            whether a new node should overwrite an existing node with the same name or have its name mangled to be alongside the existing node.
      * @return Reference to created node
      * 
      */
@@ -374,40 +388,47 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     /**
      * Adds new node into Alfresco repository and mark its as an attachment.
      * 
-     * @param nodeService Alfresco Node Service.
-     * @param folder Space/Folder to add.
-     * @param mainContentNode Main content node. Any mail is added into Alfresco as one main content node and several its attachments. Each attachment related with its main node.
-     * @param fileName File name for the attachment.
+     * @param nodeService
+     *            Alfresco Node Service.
+     * @param folder
+     *            Space/Folder to add.
+     * @param mainContentNode
+     *            Main content node. Any mail is added into Alfresco as one main content node and several its attachments. Each attachment related with its main node.
+     * @param fileName
+     *            File name for the attachment.
      * @return Reference to created node.
      */
     protected NodeRef addAttachment(NodeService nodeService, NodeRef folder, NodeRef mainContentNode, String fileName)
     {
-        
+
         if (log.isDebugEnabled())
         {
             log.debug("Adding attachment node (name=" + fileName + ").");
         }
-        
+
         NodeRef attachmentNode = addContentNode(nodeService, folder, fileName, false);
-        
+
         // Add attached aspect
         nodeService.addAspect(mainContentNode, ContentModel.ASPECT_ATTACHABLE, null);
         // Add the association
         nodeService.createAssociation(mainContentNode, attachmentNode, ContentModel.ASSOC_ATTACHMENTS);
-        
+
         if (log.isDebugEnabled())
         {
             log.debug("Attachment has been added.");
         }
         return attachmentNode;
     }
-    
+
     /**
      * Return unique content name in passed folder based on provided name
      * 
-     * @param parent parent folder
-     * @param name name of node
-     * @param assocType assocType between parent and child  
+     * @param parent
+     *            parent folder
+     * @param name
+     *            name of node
+     * @param assocType
+     *            assocType between parent and child
      * @return Original name or name in format {name}({number})
      */
     private String getAppropriateNodeName(NodeRef parent, String name, QName assocType)
@@ -415,7 +436,7 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
         if (nodeService.getChildByName(parent, assocType, name) != null)
         {
             name = name + "(1)";
-            
+
             while (nodeService.getChildByName(parent, assocType, name) != null)
             {
 
@@ -431,14 +452,16 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
         }
         return name;
     }
-    
+
     /**
-     * Extracts the attachments from the given message and adds them to the space.  All attachments
-     * are linked back to the original node that they are attached to.
+     * Extracts the attachments from the given message and adds them to the space. All attachments are linked back to the original node that they are attached to.
      * 
-     * @param spaceNodeRef      the space to add the documents into
-     * @param nodeRef           the node to which the documents will be attached
-     * @param message           the email message
+     * @param spaceNodeRef
+     *            the space to add the documents into
+     * @param nodeRef
+     *            the node to which the documents will be attached
+     * @param message
+     *            the email message
      */
     protected void addAttachments(NodeRef spaceNodeRef, NodeRef nodeRef, EmailMessage message)
     {
@@ -449,7 +472,7 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
             String fileName = attachment.getFileName();
 
             InputStream contentIs = attachment.getContent();
-            
+
             MimetypeService mimetypeService = getMimetypeService();
             String mimetype = mimetypeService.guessMimetype(fileName);
             String encoding = attachment.getEncoding();
@@ -458,53 +481,52 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
             writeContent(attachmentNode, contentIs, mimetype, encoding);
         }
     }
-    
+
     // Lookup Table for dubious characters.
-    final static String[][] dubiousChars = new String[][] { { "\\", "%5c" }, 
-            { "/", "%2f" }, 
-            { "*", "%2a" }, 
-            { "|", "%7c" }, 
-            { ":", "%3a" }, 
-            { "\"", "%22" }, 
-            { "<", "%3c" }, 
-            { ">", "%3e" },
-            { "?", "%3f" }};
-    
+    final static String[][] dubiousChars = new String[][]{{"\\", "%5c"},
+            {"/", "%2f"},
+            {"*", "%2a"},
+            {"|", "%7c"},
+            {":", "%3a"},
+            {"\"", "%22"},
+            {"<", "%3c"},
+            {">", "%3e"},
+            {"?", "%3f"}};
+
     /**
      * 
      * Subject field is used as name of the content, so we need to replace characters that are forbidden in file names.
      * 
      * Trims whitespace
      * 
-     * Replaces characters \/*|:"<>? with their hex values.  
+     * Replaces characters \/*|:"<>? with their hex values.
      * 
-     * @param subject the string of the email subject
+     * @param subject
+     *            the string of the email subject
      *
      ** @return filename
      */
 
-    
     public static String encodeSubject(String subject)
-    {   
-        
-        // MER Removed . * ,  { ".", "%2e" }
-        
+    {
+
+        // MER Removed . * , { ".", "%2e" }
+
         // Filename regex from model is (.*[\"\*\\\>\<\?\/\:\|]+.*)|(.*[\.]?.*[\.]+$)|(.*[ ]+$)
-        //Strip whitespace
+        // Strip whitespace
         String result = subject.trim();
-        
+
         // replace dubious chars
         for (int i = 0; i < dubiousChars.length; i++)
         {
             result = result.replace(dubiousChars[i][0], dubiousChars[i][1]);
         }
-        
+
         // Replace trailing "." with %2e
-        if(result.endsWith("."))
+        if (result.endsWith("."))
         {
-            result = result.substring(0, result.length() -1) + "%2e";
+            result = result.substring(0, result.length() - 1) + "%2e";
         }
-        
 
         return result;
     }

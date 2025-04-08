@@ -26,12 +26,13 @@
 
 package org.alfresco.util.email;
 
-import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
+import java.util.Map;
+import jakarta.mail.internet.MimeMessage;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import jakarta.mail.internet.MimeMessage;
-import java.util.Map;
+import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 
 /**
  * A utility class to work with {@link ExtendedMailActionExecutor} in test mode.

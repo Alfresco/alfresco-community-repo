@@ -29,8 +29,6 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ApplicationModel;
@@ -56,9 +54,11 @@ public abstract class AbstractForumEmailMessageHandler extends AbstractEmailMess
     /**
      * Posts content
      * 
-     * @param nodeRef   Reference to node
-     * @param message    Mail parser
-     * @return          Returns the new post node
+     * @param nodeRef
+     *            Reference to node
+     * @param message
+     *            Mail parser
+     * @return Returns the new post node
      */
     protected NodeRef addPostNode(NodeRef nodeRef, EmailMessage message)
     {
@@ -103,7 +103,7 @@ public abstract class AbstractForumEmailMessageHandler extends AbstractEmailMess
             writeContent(postNodeRef, "<The message was empty>", MimetypeMap.MIMETYPE_TEXT_PLAIN);
         }
         addEmailedAspect(postNodeRef, message);
-        
+
         // Done
         return postNodeRef;
     }
@@ -111,14 +111,16 @@ public abstract class AbstractForumEmailMessageHandler extends AbstractEmailMess
     /**
      * Finds first child with specified name
      * 
-     * @param nodeRef Parent node for the search
-     * @param name String for search
+     * @param nodeRef
+     *            Parent node for the search
+     * @param name
+     *            String for search
      * @return Reference to found node or null if node isn't found
      */
     protected NodeRef getTopicNode(NodeRef nodeRef, String name)
     {
         String workingName = encodeSubject(name);
-        
+
         NodeRef ret = getNodeService().getChildByName(nodeRef, ContentModel.ASSOC_CONTAINS, workingName);
         return ret;
     }
@@ -126,14 +128,16 @@ public abstract class AbstractForumEmailMessageHandler extends AbstractEmailMess
     /**
      * Adds topic node into Alfresco repository
      * 
-     * @param parentNode        Parent node
-     * @param name              Topic name
-     * @return                  Reference to created node
+     * @param parentNode
+     *            Parent node
+     * @param name
+     *            Topic name
+     * @return Reference to created node
      */
     protected NodeRef addTopicNode(NodeRef parentNode, String name)
     {
         String workingName = encodeSubject(name);
-        
+
         NodeService nodeService = getNodeService();
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
         properties.put(ContentModel.PROP_NAME, workingName);

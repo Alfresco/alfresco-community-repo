@@ -26,10 +26,29 @@
 package org.alfresco.repo.security.sync;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.any;
+
+import java.io.Serializable;
+import java.util.*;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.BasicAttributes;
+import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
+
 import junit.framework.TestCase;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.support.StaticApplicationContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -44,7 +63,6 @@ import org.alfresco.repo.security.person.PersonServiceImpl;
 import org.alfresco.repo.security.sync.ldap.AbstractDirectoryServiceUserAccountStatusInterpreter;
 import org.alfresco.repo.security.sync.ldap.LDAPUserAccountStatusInterpreter;
 import org.alfresco.repo.security.sync.ldap.LDAPUserRegistry;
-import org.alfresco.repo.security.sync.ldap.LDAPUserRegistry.PersonCollection;
 import org.alfresco.repo.security.sync.ldap_ad.LDAPADUserAccountStatusInterpreter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -59,26 +77,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.experimental.categories.Category;
-import org.mockito.Mockito;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.context.support.StaticApplicationContext;
-
-import java.io.Serializable;
-import java.util.*;
-
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.BasicAttributes;
-import javax.naming.directory.InitialDirContext;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
 
 /**
  * Tests the {@link ChainingUserRegistrySynchronizer} using a simulated {@link UserRegistry}.
@@ -90,9 +88,8 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 {
 
     /** The context locations, in reverse priority order. */
-    private static final String[] CONFIG_LOCATIONS =
-    {
-        "classpath:alfresco/application-context.xml", "classpath:sync-test-context.xml"
+    private static final String[] CONFIG_LOCATIONS = {
+            "classpath:alfresco/application-context.xml", "classpath:sync-test-context.xml"
     };
 
     /** The Spring application context. */
@@ -104,7 +101,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
     /** The application context manager. */
     private MockApplicationContextManager applicationContextManager;
-    
+
     /** The namespace service. */
     private NamespaceService namespaceService;
 
@@ -122,16 +119,15 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
     /** The retrying transaction helper. */
     private RetryingTransactionHelper retryingTransactionHelper;
-    
+
     /** The value given to the person service. */
     private boolean homeFolderCreationEager;
 
     private static final Log logger = LogFactory.getLog(ChainingUserRegistrySynchronizerTest.class);
 
-    /*
-     * (non-Javadoc)
-     * @see junit.framework.TestCase#setUp()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see junit.framework.TestCase#setUp() */
     @Override
     protected void setUp() throws Exception
     {
@@ -146,24 +142,22 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
         this.authenticationContext = (AuthenticationContext) ChainingUserRegistrySynchronizerTest.context
                 .getBean("authenticationContext");
-        
-        
+
         // this.authenticationContext.setSystemUserAsCurrentUser();
-        //AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        // AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         this.authenticationContext.setSystemUserAsCurrentUser();
 
         this.retryingTransactionHelper = (RetryingTransactionHelper) ChainingUserRegistrySynchronizerTest.context
                 .getBean("retryingTransactionHelper");
         setHomeFolderCreationEager(false); // the normal default if using LDAP
-        
+
         this.namespaceService = (NamespaceService) ChainingUserRegistrySynchronizerTest.context
                 .getBean("namespaceService");
     }
 
-    /*
-     * (non-Javadoc)
-     * @see junit.framework.TestCase#tearDown()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see junit.framework.TestCase#tearDown() */
     @Override
     protected void tearDown() throws Exception
     {
@@ -172,10 +166,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     }
 
     /**
-     * Sets up the test users and groups in three zones, "Z0", "Z1" and "Z2", by doing a forced synchronize with a Mock
-     * user registry. Note that the zones have some overlapping entries. "Z0" is not used in subsequent synchronizations
-     * and is used to test that users and groups in zones that aren't in the authentication chain get 're-zoned'
-     * appropriately. The layout is as follows
+     * Sets up the test users and groups in three zones, "Z0", "Z1" and "Z2", by doing a forced synchronize with a Mock user registry. Note that the zones have some overlapping entries. "Z0" is not used in subsequent synchronizations and is used to test that users and groups in zones that aren't in the authentication chain get 're-zoned' appropriately. The layout is as follows
      * 
      * <pre>
      * Z0
@@ -195,28 +186,25 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      */
     private void setUpTestUsersAndGroups() throws Exception
     {
-        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", new NodeDescription[]
-        {
-            newPerson("U6")
-        }, new NodeDescription[]
-        {
-            newGroup("G1")
-        }), new MockUserRegistry("Z1", new NodeDescription[]
-        {
-            newPerson("U1"), newPerson("U2"), newPerson("U7")
-        }, new NodeDescription[]
-        {
-            newGroup("G2", "U1", "G3"), newGroup("G3", "U2", "G4", "G5"), newGroup("G4"), newGroup("G5")
-        }), new MockUserRegistry("Z2", new NodeDescription[]
-        {
-            newPerson("U1"), newPerson("U3"), newPerson("U4"), newPerson("U5")
-        }, new NodeDescription[]
-        {
-            newGroup("G2", "U1", "U3", "U4"), newGroup("G6", "U3", "U4", "G7"), newGroup("G7", "U5")
-        }));
+        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", new NodeDescription[]{
+                newPerson("U6")
+        }, new NodeDescription[]{
+                newGroup("G1")
+        }), new MockUserRegistry("Z1",
+                new NodeDescription[]{
+                        newPerson("U1"), newPerson("U2"), newPerson("U7")
+                },
+                new NodeDescription[]{
+                        newGroup("G2", "U1", "G3"), newGroup("G3", "U2", "G4", "G5"), newGroup("G4"), newGroup("G5")
+                }), new MockUserRegistry("Z2",
+                        new NodeDescription[]{
+                                newPerson("U1"), newPerson("U3"), newPerson("U4"), newPerson("U5")
+                        },
+                        new NodeDescription[]{
+                                newGroup("G2", "U1", "U3", "U4"), newGroup("G6", "U3", "U4", "G7"), newGroup("G7", "U5")
+                        }));
         this.synchronizer.synchronize(true, true);
-        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
 
             public Object execute() throws Throwable
             {
@@ -247,25 +235,24 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     public void tearDownTestUsersAndGroups() throws Exception
     {
         // Re-zone everything that may have gone astray
-        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", new NodeDescription[]
-        {
-            newPerson("U1"), newPerson("U2"), newPerson("U3"), newPerson("U4"), newPerson("U5"), newPerson("U6"),
-            newPerson("U7")
-        }, new NodeDescription[]
-        {
-            newGroup("G1"), newGroup("G2"), newGroup("G3"), newGroup("G4"), newGroup("G5"), newGroup("G6"),
-            newGroup("G7")
-        }), new MockUserRegistry("Z1", new NodeDescription[] {}, new NodeDescription[] {}), new MockUserRegistry("Z2",
-                new NodeDescription[] {}, new NodeDescription[] {}));
+        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", new NodeDescription[]{
+                newPerson("U1"), newPerson("U2"), newPerson("U3"), newPerson("U4"), newPerson("U5"), newPerson("U6"),
+                newPerson("U7")
+        }, new NodeDescription[]{
+                newGroup("G1"), newGroup("G2"), newGroup("G3"), newGroup("G4"), newGroup("G5"), newGroup("G6"),
+                newGroup("G7")
+        }), new MockUserRegistry("Z1", new NodeDescription[]{}, new NodeDescription[]{}), new MockUserRegistry("Z2",
+                new NodeDescription[]{}, new NodeDescription[]{}));
         this.synchronizer.synchronize(true, true);
         // Wipe out everything that was in Z0 - Z2
-        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", new NodeDescription[] {},
-                new NodeDescription[] {}), new MockUserRegistry("Z1", new NodeDescription[] {},
-                new NodeDescription[] {}), new MockUserRegistry("Z2", new NodeDescription[] {},
-                new NodeDescription[] {}));
+        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", new NodeDescription[]{},
+                new NodeDescription[]{}),
+                new MockUserRegistry("Z1", new NodeDescription[]{},
+                        new NodeDescription[]{}),
+                new MockUserRegistry("Z2", new NodeDescription[]{},
+                        new NodeDescription[]{}));
         this.synchronizer.synchronize(true, true);
-        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
 
             public Object execute() throws Throwable
             {
@@ -291,7 +278,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     public void setHomeFolderCreationEager(boolean homeFolderCreationEager)
     {
         this.homeFolderCreationEager = homeFolderCreationEager;
-        ((PersonServiceImpl)personService).setHomeFolderCreationEager(homeFolderCreationEager);
+        ((PersonServiceImpl) personService).setHomeFolderCreationEager(homeFolderCreationEager);
     }
 
     /**
@@ -314,31 +301,25 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     {
         setUpTestUsersAndGroups();
         this.applicationContextManager.removeZone("Z0");
-        this.applicationContextManager.updateZone("Z1", new NodeDescription[]
-        {
-            newPerson("U1", "changeofemail@alfresco.com"), newPerson("U6"), newPerson("U7")
-        }, new NodeDescription[]
-        {
-            newGroup("G1", "U1", "U6", "UDangling", "G2"), newGroup("G2", "U1", "GDangling", "G1"), // test cyclic G2
-                                                                                                    // <-> G1
-            newGroupWithDisplayName("G5", "Amazing Group", "U6", "U7", "G4")
+        this.applicationContextManager.updateZone("Z1", new NodeDescription[]{
+                newPerson("U1", "changeofemail@alfresco.com"), newPerson("U6"), newPerson("U7")
+        }, new NodeDescription[]{
+                newGroup("G1", "U1", "U6", "UDangling", "G2"), newGroup("G2", "U1", "GDangling", "G1"), // test cyclic G2
+                                                                                                        // <-> G1
+                newGroupWithDisplayName("G5", "Amazing Group", "U6", "U7", "G4")
         });
-        this.applicationContextManager.updateZone("Z2", new NodeDescription[]
-        {
-            newPerson("U1", "shouldbeignored@alfresco.com"), newPerson("U5", "u5email@alfresco.com"), newPerson("U6"),
-            newPerson("U8")
-        }, new NodeDescription[]
-        {
-            newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G7"), newGroup("G8", "U4", "U8")
+        this.applicationContextManager.updateZone("Z2", new NodeDescription[]{
+                newPerson("U1", "shouldbeignored@alfresco.com"), newPerson("U5", "u5email@alfresco.com"), newPerson("U6"),
+                newPerson("U8")
+        }, new NodeDescription[]{
+                newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G7"), newGroup("G8", "U4", "U8")
         });
-        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
 
             public Object execute() throws Throwable
             {
                 // re: THOR-293 - note: use runAs else security context is cleared (=> current system user becomes null and personExists fails)
-                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         // Split transactions to avoid MNT-9768
@@ -346,7 +327,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                         return null;
                     }
                 });
-                
+
                 // Stay in the same transaction
                 assertExists("Z1", "U1");
                 assertEmailEquals("U1", "changeofemail@alfresco.com");
@@ -374,10 +355,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     }
 
     /**
-     * Tests a forced update of the test users and groups. Also tests that groups and users that previously existed in
-     * Z2 get moved when they appear in Z1. Also tests that 'dangling references' to removed users (U4, U5) do not cause
-     * any problems. Also tests that case-sensitivity is not a problem when an occluded user is recreated with different
-     * case. The layout is as follows
+     * Tests a forced update of the test users and groups. Also tests that groups and users that previously existed in Z2 get moved when they appear in Z1. Also tests that 'dangling references' to removed users (U4, U5) do not cause any problems. Also tests that case-sensitivity is not a problem when an occluded user is recreated with different case. The layout is as follows
      * 
      * <pre>
      * Z1
@@ -388,7 +366,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
      * Z2
      * G2 - U1
      * G6 - U3, G7
-	 * G8 - U1, U8
+     * G8 - U1, U8
      * </pre>
      * 
      * @throws Exception
@@ -397,24 +375,21 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     public void testForcedUpdate() throws Exception
     {
         setUpTestUsersAndGroups();
-        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z1", new NodeDescription[]
-        {
-            newPerson("U2"), newPerson("u3"), newPerson("U6")
-        }, new NodeDescription[]
-        {
-            newGroup("G1", "U6", "G5"), newGroup("G2", "G1"), newGroup("G3", "U2", "G5"), newGroup("G5", "U6", "G2"), // cycle g1 -> g5 -> g2 -> g1
-            newGroup("G6", "u3")
-        }), new MockUserRegistry("Z2", new NodeDescription[]
-        {
-            newPerson("U1", "somenewemail@alfresco.com"), newPerson("U3"), newPerson("U6"), newPerson("U8"),
-        }, new NodeDescription[]
-        {
-            newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G6", "U3", "U4", "G7"),
-            newGroupWithDisplayName("G7", "Late Arrival", "U4", "U5"), newGroup("G8", "U1", "U8")
-        }));
+        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z1", new NodeDescription[]{
+                newPerson("U2"), newPerson("u3"), newPerson("U6")
+        }, new NodeDescription[]{
+                newGroup("G1", "U6", "G5"), newGroup("G2", "G1"), newGroup("G3", "U2", "G5"), newGroup("G5", "U6", "G2"), // cycle g1 -> g5 -> g2 -> g1
+                newGroup("G6", "u3")
+        }), new MockUserRegistry("Z2",
+                new NodeDescription[]{
+                        newPerson("U1", "somenewemail@alfresco.com"), newPerson("U3"), newPerson("U6"), newPerson("U8"),
+                },
+                new NodeDescription[]{
+                        newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G6", "U3", "U4", "G7"),
+                        newGroupWithDisplayName("G7", "Late Arrival", "U4", "U5"), newGroup("G8", "U1", "U8")
+                }));
         this.synchronizer.synchronize(true, true);
-        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
 
             public Object execute() throws Throwable
             {
@@ -432,7 +407,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 assertNotExists("U4");
                 assertNotExists("U5");
                 assertExists("Z2", "U8");
-				assertExists("Z2", "G7");
+                assertExists("Z2", "G7");
                 assertGroupDisplayNameEquals("G7", "Late Arrival");
                 assertExists("Z2", "G8", "U1", "U8");
                 return null;
@@ -509,9 +484,9 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     private void testLDAPDisableUserAccount(AbstractDirectoryServiceUserAccountStatusInterpreter userAccountStatusInterpreter,
             String enabledAccountPropertyValue, String disabledAccountPropertyValue) throws Exception
     {
-        MockUserRegistry mockUserRegistry = new MockUserRegistry("ldap1", new NodeDescription[] {
+        MockUserRegistry mockUserRegistry = new MockUserRegistry("ldap1", new NodeDescription[]{
                 newPersonWithUserAccountStatusProperty("EnabledUser", enabledAccountPropertyValue),
-                newPersonWithUserAccountStatusProperty("DisabledUser", disabledAccountPropertyValue) }, new NodeDescription[] {});
+                newPersonWithUserAccountStatusProperty("DisabledUser", disabledAccountPropertyValue)}, new NodeDescription[]{});
 
         MockLDAPUserRegistry mockLDAPUserRegistry = new MockLDAPUserRegistry(mockUserRegistry);
         mockLDAPUserRegistry.setUserAccountStatusInterpreter(userAccountStatusInterpreter);
@@ -524,8 +499,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
         this.synchronizer.synchronize(false, false);
 
-        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 NodeRef enabledUserRef = ChainingUserRegistrySynchronizerTest.this.personService.getPerson("EnabledUser", false);
@@ -543,7 +517,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     {
         LDAPADUserAccountStatusInterpreter ldapadUserAccountStatusInterpreter = new LDAPADUserAccountStatusInterpreter();
 
-        // Active Directory enabled account: userAccountControl=512; 
+        // Active Directory enabled account: userAccountControl=512;
         // disabled account: userAccountControl=514.
         testLDAPDisableUserAccount(ldapadUserAccountStatusInterpreter, "512", "514");
     }
@@ -572,9 +546,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     }
 
     /**
-     * Tests a forced update of the test users and groups with deletions disabled. No users or groups should be deleted,
-     * whether or not they move registry. Groups that would have been deleted should have no members and should only be
-     * in the default zone.
+     * Tests a forced update of the test users and groups with deletions disabled. No users or groups should be deleted, whether or not they move registry. Groups that would have been deleted should have no members and should only be in the default zone.
      * 
      * @throws Exception
      *             the exception
@@ -584,28 +556,25 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         UserRegistrySynchronizer synchronizer = (UserRegistrySynchronizer) ChainingUserRegistrySynchronizerTest.context
                 .getBean("testUserRegistrySynchronizerPreventDeletions");
         setUpTestUsersAndGroups();
-        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", new NodeDescription[]
-        {
-            newPerson("U2"), newPerson("U3"), newPerson("U4"),
-        }, new NodeDescription[]
-        {
-            newGroup("G1"), newGroup("G2"),
-        }), new MockUserRegistry("Z1", new NodeDescription[]
-        {
-            newPerson("U5"), newPerson("u6"),
-        }, new NodeDescription[] {}), new MockUserRegistry("Z2", new NodeDescription[]
-        {
-            newPerson("U6"),
-        }, new NodeDescription[] {}));
+        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", new NodeDescription[]{
+                newPerson("U2"), newPerson("U3"), newPerson("U4"),
+        }, new NodeDescription[]{
+                newGroup("G1"), newGroup("G2"),
+        }), new MockUserRegistry("Z1",
+                new NodeDescription[]{
+                        newPerson("U5"), newPerson("u6"),
+                }, new NodeDescription[]{}), new MockUserRegistry("Z2",
+                        new NodeDescription[]{
+                                newPerson("U6"),
+                        }, new NodeDescription[]{}));
         synchronizer.synchronize(true, true);
-        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
 
             public Object execute() throws Throwable
             {
                 // MNT-13867 fix. User U6 already exists in zone "Z0". According ChainingUserRegistrySynchronizercurrent
                 // implementation when syncDelete==false person that exists in a different zone with higher
-                // precedence  will be ignored
+                // precedence will be ignored
                 assertExists("Z0", "U6");
                 assertExists("Z1", "U1");
                 assertExists("Z1", "U7");
@@ -619,16 +588,14 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     }
 
     /**
-     * Tests a forced update of the test users and groups where some of the users change their case and some groups
-     * appear with different case.
+     * Tests a forced update of the test users and groups where some of the users change their case and some groups appear with different case.
      */
     public void testCaseChange() throws Exception
     {
         setUpTestUsersAndGroups();
 
         final Map<String, NodeRef> personNodes = new TreeMap<String, NodeRef>();
-        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 // Get hold of the original person nodes so we can compare them later
@@ -639,23 +606,20 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             }
         }, false, true);
 
-        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z1", new NodeDescription[]
-        {
-            newPerson("u1"), newPerson("u2"), newPerson("u6"), newPerson("U7")
-        }, new NodeDescription[]
-        {
-            newGroup("g1", "u6"), newGroup("g2", "u1", "G3"), newGroup("G3", "u2", "g4", "g5"), newGroup("g4"),
-            newGroup("g5")
-        }), new MockUserRegistry("Z2", new NodeDescription[]
-        {
-            newPerson("U1"), newPerson("U3"), newPerson("U4"), newPerson("U5")
-        }, new NodeDescription[]
-        {
-            newGroup("G2", "U1", "U3", "U4"), newGroup("G6", "U3", "U4", "G7"), newGroup("G7", "U5")
-        }));
+        this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z1", new NodeDescription[]{
+                newPerson("u1"), newPerson("u2"), newPerson("u6"), newPerson("U7")
+        }, new NodeDescription[]{
+                newGroup("g1", "u6"), newGroup("g2", "u1", "G3"), newGroup("G3", "u2", "g4", "g5"), newGroup("g4"),
+                newGroup("g5")
+        }), new MockUserRegistry("Z2",
+                new NodeDescription[]{
+                        newPerson("U1"), newPerson("U3"), newPerson("U4"), newPerson("U5")
+                },
+                new NodeDescription[]{
+                        newGroup("G2", "U1", "U3", "U4"), newGroup("G6", "U3", "U4", "G7"), newGroup("G7", "U5")
+                }));
         this.synchronizer.synchronize(true, true);
-        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
 
             public Object execute() throws Throwable
             {
@@ -687,7 +651,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
         tearDownTestUsersAndGroups();
     }
-    
+
     public void testDifferentialUpdateWithHomeFolderCreation() throws Exception
     {
         setHomeFolderCreationEager(!homeFolderCreationEager);
@@ -720,7 +684,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         this.synchronizer.synchronize(true, true);
         tearDownTestUsersAndGroups();
     }
-    
+
     /**
      * 
      */
@@ -739,27 +703,27 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             assertTrue("pre-condition test registry isActive", testRegistry.isActive());
             assertTrue("pre-condition test registry in application context", instances.contains(TEST_REGISTRY_NAME));
             assertFalse("pre-condition test registry isActive", instances.contains(TEST_REGISTRY_NAME_BAD));
-        
-            if(synchronizer instanceof ChainingUserRegistrySynchronizer)
+
+            if (synchronizer instanceof ChainingUserRegistrySynchronizer)
             {
                 /**
-                 *  positive test using mocked user registry
+                 * positive test using mocked user registry
                  */
-                ChainingUserRegistrySynchronizer chainingSynchronizer = (ChainingUserRegistrySynchronizer)synchronizer;
+                ChainingUserRegistrySynchronizer chainingSynchronizer = (ChainingUserRegistrySynchronizer) synchronizer;
                 SynchronizeDiagnostic diagnostic = chainingSynchronizer.testSynchronize(TEST_REGISTRY_NAME);
                 assertTrue("diagnostic is active", diagnostic.isActive());
                 assertNotNull("diagnostic users are null", diagnostic.getUsers());
                 assertNotNull("diagnostic groups are null", diagnostic.getGroups());
-                
+
                 /**
-                 *  test with active flag set to false
+                 * test with active flag set to false
                  */
                 testRegistry.setActive(false);
                 diagnostic = chainingSynchronizer.testSynchronize(TEST_REGISTRY_NAME);
                 assertFalse("diagnostic is still active", diagnostic.isActive());
                 assertNotNull("diagnostic users are null", diagnostic.getUsers());
                 assertNotNull("diagnostic groups are null", diagnostic.getGroups());
-                
+
                 /**
                  * negative test - invalid user registry
                  */
@@ -777,44 +741,44 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             {
                 fail("test not run - synchroniser is not a ChainingUserRegistrySynchronizer");
             }
-        } 
+        }
         finally
         {
             tearDownTestUsersAndGroups();
         }
     }
-    
+
     public void testSyncStatus() throws Exception
     {
         Date testStart = new Date();
-        
+
         try
-        {       
+        {
             List<NodeDescription> persons = new ArrayList<NodeDescription>(new RandomPersonCollection(3));
             List<NodeDescription> groups = new ArrayList<NodeDescription>(new RandomGroupCollection(4, persons));
             MockUserRegistry testRegistry = new MockUserRegistry("Z0", persons, groups);
             this.applicationContextManager.setUserRegistries(testRegistry);
             this.synchronizer.synchronize(true, true);
-            
-            if(this.synchronizer instanceof ChainingUserRegistrySynchronizerStatus)
+
+            if (this.synchronizer instanceof ChainingUserRegistrySynchronizerStatus)
             {
-                ChainingUserRegistrySynchronizerStatus status = (ChainingUserRegistrySynchronizerStatus)this.synchronizer;
+                ChainingUserRegistrySynchronizerStatus status = (ChainingUserRegistrySynchronizerStatus) this.synchronizer;
                 // Header Status
                 assertTrue("end time not updated", status.getSyncEndTime().after(testStart));
                 assertTrue("start time not updated", status.getSyncStartTime().after(testStart));
-                assertEquals("sync status is not complete", "COMPLETE", status.getSynchronizationStatus());         
+                assertEquals("sync status is not complete", "COMPLETE", status.getSynchronizationStatus());
                 assertNotNull("last run on server is null", status.getLastRunOnServer());
                 assertNull(status.getLastErrorMessage());
 
                 // Authenticator status
-                assertEquals("sync status is not complete", "COMPLETE", status.getSynchronizationStatus("Z0")); 
-                //assertNull(status.getSynchronizationLastError("Z0"));
+                assertEquals("sync status is not complete", "COMPLETE", status.getSynchronizationStatus("Z0"));
+                // assertNull(status.getSynchronizationLastError("Z0"));
             }
             else
             {
                 fail("test not run");
             }
-            
+
             /**
              * Negative test - make an user registry throw an exception
              */
@@ -828,16 +792,16 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             catch (AlfrescoRuntimeException e)
             {
                 // expect to go here
-                ChainingUserRegistrySynchronizerStatus status = (ChainingUserRegistrySynchronizerStatus)this.synchronizer;
+                ChainingUserRegistrySynchronizerStatus status = (ChainingUserRegistrySynchronizerStatus) this.synchronizer;
                 // Header Status
                 assertTrue("end time not updated", status.getSyncEndTime().after(testStart));
                 assertTrue("start time not updated", status.getSyncStartTime().after(testStart));
-                assertEquals("sync status is not complete", "COMPLETE_ERROR", status.getSynchronizationStatus());         
+                assertEquals("sync status is not complete", "COMPLETE_ERROR", status.getSynchronizationStatus());
                 assertNotNull("last run on server is null", status.getLastRunOnServer());
                 assertNotNull(status.getLastErrorMessage());
 
                 // Authenticator status
-                assertEquals("sync status is not complete", "COMPLETE_ERROR", status.getSynchronizationStatus("Z0")); 
+                assertEquals("sync status is not complete", "COMPLETE_ERROR", status.getSynchronizationStatus("Z0"));
                 assertNotNull(status.getSynchronizationLastError("Z0"));
             }
         }
@@ -846,10 +810,14 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             tearDownTestUsersAndGroups();
         }
     }
-    
+
     /**
-     * <p>Test that upon a first sync, the missing properties at the AD level are set as 'null' on the Alfresco Person object.</p> 
-     * <p>MNT-14026: LDAP sync fails to update attribute's value deletion.</p>
+     * <p>
+     * Test that upon a first sync, the missing properties at the AD level are set as 'null' on the Alfresco Person object.
+     * </p>
+     * <p>
+     * MNT-14026: LDAP sync fails to update attribute's value deletion.
+     * </p>
      */
     public void testSyncInexistentProperty() throws Exception
     {
@@ -867,10 +835,14 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             tearDownTestUsersAndGroups();
         }
     }
-    
+
     /**
-     * <p>Test that an attribute is also removed on the Alfresco side, when it's removed at the AD level.</p> 
-     * <p>MNT-14026: LDAP sync fails to update attribute's value deletion.</p>
+     * <p>
+     * Test that an attribute is also removed on the Alfresco side, when it's removed at the AD level.
+     * </p>
+     * <p>
+     * MNT-14026: LDAP sync fails to update attribute's value deletion.
+     * </p>
      */
     public void testSyncDeletedProperty() throws Exception
     {
@@ -899,12 +871,12 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             logger.info("testSyncDeletedProperty finished finally");
         }
     }
-    
+
     private void executeMockedLDAPSyncWithActiveDirectoryEmailProp() throws Exception
     {
         executeMockedLDAPSync(true);
     }
-    
+
     private void executeMockedLDAPSyncWithoutActiveDirectoryEmailProp() throws Exception
     {
         executeMockedLDAPSync(false);
@@ -912,7 +884,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
     private void executeMockedLDAPSync(boolean withEmail) throws NamingException, Exception
     {
-        MockUserRegistry mockUserRegistry = new MockUserRegistry("Z0", new NodeDescription[] {}, new NodeDescription[] {});
+        MockUserRegistry mockUserRegistry = new MockUserRegistry("Z0", new NodeDescription[]{}, new NodeDescription[]{});
 
         MockLDAPUserRegistry mockLDAPUserRegistry = new MockLDAPUserRegistry(mockUserRegistry);
 
@@ -953,7 +925,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         when(mockedNamingEnumeration.next()).thenReturn(mockedSearchResult);
 
         InitialDirContext mockedInitialDirContext = mock(InitialDirContext.class);
-        when(mockedInitialDirContext.search((String)any(), anyString(), any(SearchControls.class))).thenReturn(mockedNamingEnumeration);
+        when(mockedInitialDirContext.search((String) any(), anyString(), any(SearchControls.class))).thenReturn(mockedNamingEnumeration);
 
         LDAPInitialDirContextFactoryImpl mockedLdapInitialDirContextFactory = mock(LDAPInitialDirContextFactoryImpl.class);
         when(mockedLdapInitialDirContextFactory.getDefaultIntialDirContext(0)).thenReturn(mockedInitialDirContext);
@@ -968,7 +940,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         personAttributeMapping.put("cm:email", "mail");
         return personAttributeMapping;
     }
-    
+
     /**
      * Tests synchronization of group associations in a zone with a larger volume of authorities.
      * 
@@ -978,8 +950,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     public void dontTestAssocs() throws Exception
     {
         List<NodeDescription> groups = this.retryingTransactionHelper.doInTransaction(
-                new RetryingTransactionCallback<List<NodeDescription>>()
-                {
+                new RetryingTransactionCallback<List<NodeDescription>>() {
 
                     public List<NodeDescription> execute() throws Throwable
                     {
@@ -1128,20 +1099,20 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
             // Check case matches
             assertEquals(this.personService.getUserIdentifier(name), name);
-            
+
             // Check the person exist.
             NodeRef person = personService.getPerson(name, false);
-            assertNotNull("Person for "+name+" should exist", person);
-            
+            assertNotNull("Person for " + name + " should exist", person);
+
             // Check the home folder exists or not.
             NodeRef homeFolder = DefaultTypeConverter.INSTANCE.convert(NodeRef.class, nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER));
             if (homeFolderCreationEager)
             {
-                assertNotNull("Home folder for "+name+" should exist", homeFolder);
+                assertNotNull("Home folder for " + name + " should exist", homeFolder);
             }
             else
             {
-                assertNull("Home folder for "+name+" should not exist", homeFolder);
+                assertNull("Home folder for " + name + " should not exist", homeFolder);
             }
         }
     }
@@ -1195,8 +1166,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     }
 
     /**
-     * Converts the given short name to a full authority name, assuming that those short names beginning with 'G'
-     * correspond to groups and all others correspond to users.
+     * Converts the given short name to a full authority name, assuming that those short names beginning with 'G' correspond to groups and all others correspond to users.
      * 
      * @param shortName
      *            the short name
@@ -1214,7 +1184,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     public static class TestSynchronizeEventListener implements ApplicationListener<ApplicationEvent>
     {
         private ChainingUserRegistrySynchronizer synchronizer;
-        
+
         public void setSynchronizer(ChainingUserRegistrySynchronizer synchronizer)
         {
             this.synchronizer = synchronizer;
@@ -1229,7 +1199,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 assertEquals(null, this.synchronizer.getSyncEndTime());
             }
         }
-        
+
     }
 
     public static interface IMockUserRegistry extends UserRegistry, ActivateableBean
@@ -1242,8 +1212,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         String getZoneId();
 
         /**
-         * Modifies the state to match the arguments. Compares new with old and
-         * records new modification dates only for changes.
+         * Modifies the state to match the arguments. Compares new with old and records new modification dates only for changes.
          * 
          * @param persons
          *            the persons
@@ -1259,7 +1228,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     public static class MockUserRegistry implements IMockUserRegistry
     {
         private boolean isActive = true;
-        
+
         private boolean throwError = false;
 
         /** The zone id. */
@@ -1287,8 +1256,6 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             this.persons = persons;
             this.groups = groups;
         }
-        
-
 
         @Override
         public void updateState(Collection<NodeDescription> persons, Collection<NodeDescription> groups)
@@ -1303,8 +1270,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         }
 
         /**
-         * Merges together an old and new list of node descriptions. Retains the old node with its old modification date
-         * if it is the same in the new list, otherwises uses the node from the new list.
+         * Merges together an old and new list of node descriptions. Retains the old node with its old modification date if it is the same in the new list, otherwises uses the node from the new list.
          * 
          * @param oldNodes
          *            the old node list
@@ -1353,13 +1319,14 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
         /**
          * 
-         * @param throwError boolean
+         * @param throwError
+         *            boolean
          */
         public void setThrowError(boolean throwError)
         {
             this.throwError = throwError;
         }
-        
+
         /**
          * Instantiates a new mock user registry.
          * 
@@ -1381,10 +1348,9 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             return this.zoneId;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.security.sync.UserRegistry#getGroupNames()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.security.sync.UserRegistry#getGroupNames() */
         public Collection<String> getGroupNames()
         {
             List<String> groupNames = new LinkedList<String>();
@@ -1395,10 +1361,9 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             return groupNames;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.security.sync.UserRegistry#getPersonNames()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.security.sync.UserRegistry#getPersonNames() */
         public Collection<String> getPersonNames()
         {
             List<String> personNames = new LinkedList<String>();
@@ -1409,13 +1374,12 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             return personNames;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.security.sync.UserRegistry#getGroups(java.util.Date)
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.security.sync.UserRegistry#getGroups(java.util.Date) */
         public Collection<NodeDescription> getGroups(Date modifiedSince)
         {
-            if(throwError)
+            if (throwError)
             {
                 throw new AlfrescoRuntimeException("test error");
             }
@@ -1423,8 +1387,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         }
 
         /**
-         * Filters the given list of node descriptions, retaining only those with a modification date greater than the
-         * given date.
+         * Filters the given list of node descriptions, retaining only those with a modification date greater than the given date.
          * 
          * @param nodes
          *            the list of nodes
@@ -1450,26 +1413,23 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             return filteredNodes;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.security.sync.UserRegistry#getPersons(java.util.Date)
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.security.sync.UserRegistry#getPersons(java.util.Date) */
         public Collection<NodeDescription> getPersons(Date modifiedSince)
         {
             return filterNodeDescriptions(this.persons, modifiedSince);
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.security.sync.UserRegistry#getPersonMappedProperties()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.security.sync.UserRegistry#getPersonMappedProperties() */
         public Set<QName> getPersonMappedProperties()
         {
-            return new HashSet<QName>(Arrays.asList(new QName[]
-            {
-                ContentModel.PROP_USERNAME, ContentModel.PROP_FIRSTNAME, ContentModel.PROP_LASTNAME,
-                ContentModel.PROP_EMAIL, ContentModel.PROP_ORGID, ContentModel.PROP_ORGANIZATION,
-                ContentModel.PROP_HOME_FOLDER_PROVIDER
+            return new HashSet<QName>(Arrays.asList(new QName[]{
+                    ContentModel.PROP_USERNAME, ContentModel.PROP_FIRSTNAME, ContentModel.PROP_LASTNAME,
+                    ContentModel.PROP_EMAIL, ContentModel.PROP_ORGID, ContentModel.PROP_ORGANIZATION,
+                    ContentModel.PROP_HOME_FOLDER_PROVIDER
             }));
         }
 
@@ -1478,7 +1438,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         {
             return isActive;
         }
-        
+
         public void setActive(boolean isActive)
         {
             this.isActive = isActive;
@@ -1539,21 +1499,17 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             registry.updateState(Arrays.asList(persons), Arrays.asList(groups));
         }
 
-        /*
-         * (non-Javadoc)
-         * @see
-         * org.alfresco.repo.management.subsystems.ChildApplicationContextManager#getApplicationContext(java.lang.String
-         * )
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.subsystems.ChildApplicationContextManager#getApplicationContext(java.lang.String ) */
         public ApplicationContext getApplicationContext(String id)
         {
             return this.contexts.get(id);
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.subsystems.ChildApplicationContextManager#getInstanceIds()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.subsystems.ChildApplicationContextManager#getInstanceIds() */
         public Collection<String> getInstanceIds()
         {
             return this.contexts.keySet();
@@ -1580,15 +1536,13 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             this.size = size;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see java.util.AbstractCollection#iterator()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see java.util.AbstractCollection#iterator() */
         @Override
         public Iterator<NodeDescription> iterator()
         {
-            return new Iterator<NodeDescription>()
-            {
+            return new Iterator<NodeDescription>() {
 
                 private int pos;
 
@@ -1611,10 +1565,9 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
         }
 
-        /*
-         * (non-Javadoc)
-         * @see java.util.AbstractCollection#size()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see java.util.AbstractCollection#size() */
         @Override
         public int size()
         {
@@ -1624,8 +1577,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     }
 
     /**
-     * A collection whose iterator returns randomly generated groups with random associations to a given list of
-     * persons.
+     * A collection whose iterator returns randomly generated groups with random associations to a given list of persons.
      */
     public class RandomGroupCollection extends AbstractCollection<NodeDescription>
     {
@@ -1670,15 +1622,13 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             }
         }
 
-        /*
-         * (non-Javadoc)
-         * @see java.util.AbstractCollection#iterator()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see java.util.AbstractCollection#iterator() */
         @Override
         public Iterator<NodeDescription> iterator()
         {
-            return new Iterator<NodeDescription>()
-            {
+            return new Iterator<NodeDescription>() {
 
                 private int pos;
 
@@ -1696,8 +1646,9 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                     for (int i = 0; i < authorityNames.length; i++)
                     {
                         // Choose an authority at random from the list of known authorities
-                        int index = this.pos == RandomGroupCollection.this.size ? i : RandomGroupCollection.this.generator.nextInt(RandomGroupCollection.this.authorities
-                                .size());
+                        int index = this.pos == RandomGroupCollection.this.size ? i
+                                : RandomGroupCollection.this.generator.nextInt(RandomGroupCollection.this.authorities
+                                        .size());
                         authorityNames[i] = ChainingUserRegistrySynchronizerTest.this.authorityService
                                 .getShortName((String) RandomGroupCollection.this.authorities.get(index));
                     }
@@ -1716,10 +1667,9 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
         }
 
-        /*
-         * (non-Javadoc)
-         * @see java.util.AbstractCollection#size()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see java.util.AbstractCollection#size() */
         @Override
         public int size()
         {

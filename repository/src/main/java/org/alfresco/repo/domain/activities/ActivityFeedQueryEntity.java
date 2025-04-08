@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.domain.activities;
 
-
 /**
  * Entity bean to carry query parameters for <tt>alf_activity_feed</tt>
  *
@@ -38,17 +37,17 @@ public class ActivityFeedQueryEntity
     private int maxFeedSize;
     private String feedUserId;
     private String siteNetwork;
-    
+
     public String getNullValue()
     {
         return ActivitiesDAO.KEY_ACTIVITY_NULL_VALUE;
     }
-    
+
     public Long getMinId()
     {
         return minId;
     }
-    
+
     public void setMinId(Long minId)
     {
         this.minId = minId;
@@ -56,19 +55,19 @@ public class ActivityFeedQueryEntity
 
     public Long getMaxId()
     {
-		return maxId;
-	}
+        return maxId;
+    }
 
-	public void setMaxId(Long maxId)
-	{
-		this.maxId = maxId;
-	}
+    public void setMaxId(Long maxId)
+    {
+        this.maxId = maxId;
+    }
 
     public int getMaxFeedSize()
     {
         return maxFeedSize;
     }
-    
+
     public void setMaxFeedSize(int maxFeedSize)
     {
         this.maxFeedSize = maxFeedSize;
@@ -78,17 +77,17 @@ public class ActivityFeedQueryEntity
     {
         return feedUserId;
     }
-    
+
     public void setFeedUserId(String feedUserId)
     {
         this.feedUserId = feedUserId;
     }
-    
+
     public String getSiteNetwork()
     {
         return siteNetwork;
     }
-    
+
     public void setSiteNetwork(String siteNetwork)
     {
         this.siteNetwork = siteNetwork;

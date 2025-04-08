@@ -33,6 +33,9 @@ import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -41,12 +44,9 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.GUID;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * The one and only implementation of the ContentCache class. Binary content data itself
- * is stored on disk in the location specified by {@link #cacheRoot}.
+ * The one and only implementation of the ContentCache class. Binary content data itself is stored on disk in the location specified by {@link #cacheRoot}.
  * <p>
  * The in-memory lookup table is provided by a SimpleCache implementation.
  * 
@@ -59,8 +59,7 @@ public class ContentCacheImpl implements ContentCache
     private static final String CACHE_FILE_TEMP_EXT = ".tmp";
     private File cacheRoot;
     private SimpleCache<Key, String> memoryStore;
-    
-    
+
     @Override
     public boolean contains(String contentUrl)
     {
@@ -70,48 +69,52 @@ public class ContentCacheImpl implements ContentCache
     /**
      * Allows caller to perform lookup using a {@link Key}.
      * 
-     * @param key Key
+     * @param key
+     *            Key
      * @return true if the cache contains, false otherwise.
      */
     public boolean contains(Key key)
     {
         return memoryStore.contains(key);
     }
-    
+
     /**
      * Put an item in the lookup table.
      * 
-     * @param key Key
-     * @param value String
+     * @param key
+     *            Key
+     * @param value
+     *            String
      */
     public void putIntoLookup(Key key, String value)
     {
         memoryStore.put(key, value);
     }
-    
+
     /**
-     * Get the path of a cache file for the given content URL - will return null if there is no entry
-     * in the cache for the specified URL.
+     * Get the path of a cache file for the given content URL - will return null if there is no entry in the cache for the specified URL.
      * 
-     * @param contentUrl String
+     * @param contentUrl
+     *            String
      * @return cache file path
      */
     public String getCacheFilePath(String contentUrl)
     {
         return memoryStore.get(Key.forUrl(contentUrl));
     }
-    
+
     /**
      * Get a content URL from the cache - keyed by File.
      * 
-     * @param file File
+     * @param file
+     *            File
      * @return String
      */
     public String getContentUrl(File file)
     {
         return memoryStore.get(Key.forCacheFile(file));
     }
-    
+
     @Override
     public ContentReader getReader(String contentUrl)
     {
@@ -119,27 +122,27 @@ public class ContentCacheImpl implements ContentCache
         if (memoryStore.contains(url))
         {
             String path = memoryStore.get(url);
-            
+
             // Getting the path for a URL from the memoryStore will reset the timeToIdle for
             // that URL. It is important to perform a reverse lookup as well to ensure that the
             // cache file path to URL mapping is also kept in the cache.
             memoryStore.get(Key.forCacheFile(path));
-            
+
             File cacheFile = new File(path);
             if (cacheFile.exists())
             {
                 return new FileContentReader(cacheFile, contentUrl);
             }
         }
-        
+
         throw new CacheMissException(contentUrl);
     }
-    
+
     @Override
     public boolean put(String contentUrl, ContentReader source)
     {
         File tempFile = createCacheFile();
-        
+
         // Copy the content from the source into a cache file
         if (source.getSize() > 0L)
         {
@@ -158,7 +161,7 @@ public class ContentCacheImpl implements ContentCache
         memoryStore.put(Key.forUrl(contentUrl), cacheFile.getAbsolutePath());
         memoryStore.put(Key.forCacheFile(cacheFile), contentUrl);
     }
-    
+
     /**
      * Create a File object and makes any intermediate directories in the path.
      * 
@@ -171,7 +174,7 @@ public class ContentCacheImpl implements ContentCache
         parentDir.mkdirs();
         return file;
     }
-    
+
     @Override
     public void remove(String contentUrl)
     {
@@ -180,15 +183,15 @@ public class ContentCacheImpl implements ContentCache
         memoryStore.remove(Key.forUrl(contentUrl));
         memoryStore.remove(Key.forCacheFile(path));
     }
-    
+
     /**
-     * Remove all items from the lookup table. Cached content files are not removed. 
+     * Remove all items from the lookup table. Cached content files are not removed.
      */
     public void removeAll()
     {
         memoryStore.clear();
     }
-    
+
     @Override
     public void deleteFile(String url)
     {
@@ -202,10 +205,9 @@ public class ContentCacheImpl implements ContentCache
         // Get a writer to a cache file.
         final File tempFile = createCacheFile();
         final CacheWriter writer = new CacheWriter(tempFile, url);
-        
+
         // Attach a listener to populate the in-memory store when done writing.
-        writer.addListener(new ContentStreamListener()
-        {
+        writer.addListener(new ContentStreamListener() {
             @Override
             public void contentStreamClosed() throws ContentIOException
             {
@@ -214,34 +216,33 @@ public class ContentCacheImpl implements ContentCache
                 recordCacheEntries(url, cacheFile);
             }
         });
-        
+
         return writer;
     }
-    
-    
+
     private File renameTempToActive(File tempFile)
     {
         String fullPath = tempFile.getPath();
         int extIndex = fullPath.lastIndexOf(CACHE_FILE_TEMP_EXT);
-        
+
         if (extIndex > 0)
         {
             String prefix = fullPath.substring(0, extIndex);
             File dest = new File(prefix + CACHE_FILE_EXT);
-            
+
             boolean renamed = tempFile.renameTo(dest);
-            
+
             if (renamed)
             {
-                return dest; 
+                return dest;
             }
             else
             {
                 throw new IllegalStateException(
-                            "Temp file couldn't be renamed to active cache file, temp=" +
-                            tempFile.getPath() +
-                            ", dest=" +
-                            dest.getPath());
+                        "Temp file couldn't be renamed to active cache file, temp=" +
+                                tempFile.getPath() +
+                                ", dest=" +
+                                dest.getPath());
             }
         }
         else
@@ -249,41 +250,41 @@ public class ContentCacheImpl implements ContentCache
             throw new IllegalArgumentException("Invalid temp file name: " + tempFile.getPath());
         }
     }
-    
+
     /**
-     * Creates a relative path for a new cache file. The path is based
-     * upon the current date/time: year/month/day/hour/minute/guid.bin
+     * Creates a relative path for a new cache file. The path is based upon the current date/time: year/month/day/hour/minute/guid.bin
      * <p>
      * e.g. 2011/12/3/13/55/27d56416-bf9f-4d89-8f9e-e0a52de0a59e.bin
+     * 
      * @return The relative path for the new cache file.
      */
     public static String createNewCacheFilePath()
     {
         return createNewCacheFilePath(false);
     }
-    
+
     private static String createNewTempCacheFilePath()
     {
         return createNewCacheFilePath(true);
     }
-    
+
     private static String createNewCacheFilePath(boolean tempFile)
     {
         Calendar calendar = new GregorianCalendar();
         int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;  // 0-based
+        int month = calendar.get(Calendar.MONTH) + 1; // 0-based
         int day = calendar.get(Calendar.DAY_OF_MONTH);
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
         // create the URL
         StringBuilder sb = new StringBuilder(20);
         sb.append(year).append('/')
-          .append(month).append('/')
-          .append(day).append('/')
-          .append(hour).append('/')
-          .append(minute).append('/')
-          .append(GUID.generate());
-        
+                .append(month).append('/')
+                .append(day).append('/')
+                .append(hour).append('/')
+                .append(minute).append('/')
+                .append(GUID.generate());
+
         if (tempFile)
         {
             sb.append(CACHE_FILE_TEMP_EXT);
@@ -292,25 +293,26 @@ public class ContentCacheImpl implements ContentCache
         {
             sb.append(CACHE_FILE_EXT);
         }
-            
+
         return sb.toString();
     }
 
-    
     /**
      * Configure ContentCache with a memory store.
      * 
-     * @param memoryStore the memoryStore to set
+     * @param memoryStore
+     *            the memoryStore to set
      */
     public void setMemoryStore(SimpleCache<Key, String> memoryStore)
     {
         this.memoryStore = memoryStore;
     }
-    
+
     /**
      * Specify the directory where cache files will be written.
      * 
-     * @param cacheRoot File
+     * @param cacheRoot
+     *            File
      */
     public void setCacheRoot(File cacheRoot)
     {
@@ -324,7 +326,7 @@ public class ContentCacheImpl implements ContentCache
         }
         this.cacheRoot = cacheRoot;
     }
-    
+
     /**
      * Returns the directory where cache files will be written (cacheRoot).
      * 
@@ -338,7 +340,9 @@ public class ContentCacheImpl implements ContentCache
 
     /**
      * Ask the ContentCacheImpl to visit all the content files in the cache.
-     * @param handler FileHandler
+     * 
+     * @param handler
+     *            FileHandler
      */
     public void processFiles(FileHandler handler)
     {
@@ -346,18 +350,19 @@ public class ContentCacheImpl implements ContentCache
     }
 
     /**
-     * Recurse into a directory handling cache files (*.bin) with the supplied
-     * {@link FileHandler}.
+     * Recurse into a directory handling cache files (*.bin) with the supplied {@link FileHandler}.
      * 
-     * @param dir File
-     * @param handler FileHandler
+     * @param dir
+     *            File
+     * @param handler
+     *            FileHandler
      */
     private void handleDir(File dir, FileHandler handler)
     {
         if (dir.isDirectory())
         {
             File[] files = sortFiles(dir);
-            
+
             for (File file : files)
             {
                 if (file.isDirectory())
@@ -366,7 +371,8 @@ public class ContentCacheImpl implements ContentCache
                 }
                 else
                 {
-                    if (file.getName().endsWith(CACHE_FILE_EXT)) handler.handle(file);
+                    if (file.getName().endsWith(CACHE_FILE_EXT))
+                        handler.handle(file);
                 }
             }
         }
@@ -377,21 +383,19 @@ public class ContentCacheImpl implements ContentCache
     }
 
     /**
-     * Sort files ready for a FileHandler to visit them. This sorts them based on the structure
-     * created by the {@link #createNewCacheFilePath()} method. Knowing that the directories are all
-     * numeric date/time components, if they are sorted in ascending order then the oldest 
-     * directories will be visited first.
+     * Sort files ready for a FileHandler to visit them. This sorts them based on the structure created by the {@link #createNewCacheFilePath()} method. Knowing that the directories are all numeric date/time components, if they are sorted in ascending order then the oldest directories will be visited first.
      * <p>
      * The returned array contains the (numerically sorted) directories first followed by the (unsorted) plain files.
      * 
-     * @param dir File
+     * @param dir
+     *            File
      * @return File[]
      */
     private File[] sortFiles(File dir)
     {
         List<File> dirs = new ArrayList<File>();
         List<File> files = new ArrayList<File>();
-        
+
         for (File item : dir.listFiles())
         {
             if (item.isDirectory())
@@ -403,20 +407,18 @@ public class ContentCacheImpl implements ContentCache
                 files.add(item);
             }
         }
-        
+
         // Sort directories as numbers - as for structure produced by ContentCacheImpl
         Collections.sort(dirs, new NumericFileNameComparator());
-        
+
         // Concatenation of elements in dirs followed by elements in files
         List<File> all = new ArrayList<File>();
         all.addAll(dirs);
         all.addAll(files);
-        
+
         return all.toArray(new File[]{});
     }
-    
-    
-    
+
     protected static class NumericFileNameComparator implements Comparator<File>
     {
         @Override
@@ -426,14 +428,12 @@ public class ContentCacheImpl implements ContentCache
             Integer n2 = parse(o2.getName());
             return n1.compareTo(n2);
         }
-        
+
         /**
-         * If unable to parse a String numerically then Integer.MAX_VALUE is returned. This
-         * results in unexpected directories or files in the structure appearing after the
-         * expected directories - so the files we know ought to be older will appear first
-         * in a sorted collection.
+         * If unable to parse a String numerically then Integer.MAX_VALUE is returned. This results in unexpected directories or files in the structure appearing after the expected directories - so the files we know ought to be older will appear first in a sorted collection.
          * 
-         * @param s String to parse
+         * @param s
+         *            String to parse
          * @return Numeric form of s
          */
         private int parse(String s)
@@ -442,18 +442,15 @@ public class ContentCacheImpl implements ContentCache
             {
                 return Integer.parseInt(s);
             }
-            catch(NumberFormatException e)
+            catch (NumberFormatException e)
             {
                 return Integer.MAX_VALUE;
             }
         }
     }
-    
-    
+
     /**
-     * This FileContentWriter subclass allows for the temp cache file
-     * to be renamed to a cache file proper, e.g filename.tmp becomes
-     * filename.bin
+     * This FileContentWriter subclass allows for the temp cache file to be renamed to a cache file proper, e.g filename.tmp becomes filename.bin
      * 
      * @author Matt Ward
      */
@@ -461,17 +458,16 @@ public class ContentCacheImpl implements ContentCache
     {
         private File cacheFile = null;
 
-        
         public CacheWriter(File file, String url)
         {
             super(file, url, null);
         }
-        
+
         public void setCacheFile(File file)
         {
             cacheFile = file;
         }
-        
+
         @Override
         public File getFile()
         {
@@ -481,12 +477,12 @@ public class ContentCacheImpl implements ContentCache
             }
             return super.getFile();
         }
-        
+
         @Override
         protected ContentReader createReader() throws ContentIOException
         {
             FileContentReader reader = new FileContentReader(getFile(), getContentUrl());
-            // TODO: what about reader.setAllowRandomAccess(this.allowRandomAccess); ? 
+            // TODO: what about reader.setAllowRandomAccess(this.allowRandomAccess); ?
             return reader;
         }
 
@@ -494,7 +490,7 @@ public class ContentCacheImpl implements ContentCache
         public long getSize()
         {
             File file = getFile();
-            
+
             if (file == null)
                 return 0L;
             else if (!file.exists())

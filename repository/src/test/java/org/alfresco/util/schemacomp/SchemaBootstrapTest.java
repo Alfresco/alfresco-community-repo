@@ -32,7 +32,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
@@ -45,10 +44,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
-import org.alfresco.repo.domain.schema.SchemaBootstrap;
-import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -61,6 +56,11 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.util.test.junitrules.ApplicationContextInit;
 
 @Category({OwnJVMTestsCategory.class})
 public class SchemaBootstrapTest
@@ -131,7 +131,7 @@ public class SchemaBootstrapTest
         testIndex.setAttribute("unique", "false");
 
         Element columnNames = document.createElement("columnnames");
-        for (String colName: Arrays.asList("acl_id", "audit_creator"))
+        for (String colName : Arrays.asList("acl_id", "audit_creator"))
         {
             Element columnName = document.createElement("columnname");
             columnName.setNodeValue(colName);
@@ -147,7 +147,7 @@ public class SchemaBootstrapTest
         XPathFactory xPathfactory = XPathFactory.newInstance();
         XPath xpath = xPathfactory.newXPath();
         XPathExpression expr = xpath.compile("/schema/objects/table[@name='alf_node']/indexes");
-        Node indexes = (Node)expr.evaluate(document, XPathConstants.NODE);
+        Node indexes = (Node) expr.evaluate(document, XPathConstants.NODE);
         return indexes;
     }
 

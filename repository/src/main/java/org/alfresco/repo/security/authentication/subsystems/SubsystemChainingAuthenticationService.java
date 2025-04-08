@@ -32,17 +32,16 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AbstractChainingAuthenticationService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.springframework.context.ApplicationContext;
 
 /**
- * An authentication service that chains across beans in multiple child application contexts corresponding to different
- * 'subsystems' in a chain determined by a {@link ChildApplicationContextManager}. The first authentication service in
- * the chain will always be considered to be the 'mutable' authentication service.
+ * An authentication service that chains across beans in multiple child application contexts corresponding to different 'subsystems' in a chain determined by a {@link ChildApplicationContextManager}. The first authentication service in the chain will always be considered to be the 'mutable' authentication service.
  * 
  * @author dward
  */
@@ -53,7 +52,7 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
 
     /** The source bean name. */
     private String sourceBeanName;
-    
+
     private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private Collection<String> instanceIds;
     private Map<String, ApplicationContext> contexts = new TreeMap<String, ApplicationContext>();
@@ -144,11 +143,9 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.security.authentication.AbstractChainingAuthenticationService#getMutableAuthenticationService()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.authentication.AbstractChainingAuthenticationService#getMutableAuthenticationService() */
     @Override
     public MutableAuthenticationService getMutableAuthenticationService()
     {
@@ -177,11 +174,9 @@ public class SubsystemChainingAuthenticationService extends AbstractChainingAuth
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.security.authentication.AbstractChainingAuthenticationService#getUsableAuthenticationServices()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.authentication.AbstractChainingAuthenticationService#getUsableAuthenticationServices() */
     @Override
     protected List<AuthenticationService> getUsableAuthenticationServices()
     {

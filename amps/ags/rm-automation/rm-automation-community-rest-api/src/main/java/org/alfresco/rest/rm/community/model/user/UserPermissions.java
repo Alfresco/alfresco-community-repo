@@ -34,9 +34,7 @@ package org.alfresco.rest.rm.community.model.user;
  */
 public enum UserPermissions
 {
-    PERMISSION_FILING("Filing"),
-    PERMISSION_READ_RECORDS("ReadRecords"),
-    PERMISSION_FILE_RECORDS("FileRecords");
+    PERMISSION_FILING("Filing"), PERMISSION_READ_RECORDS("ReadRecords"), PERMISSION_FILE_RECORDS("FileRecords");
 
     public final String permissionId;
 

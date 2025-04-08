@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.archive.NodeArchiveService;
@@ -47,14 +50,11 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Edition support implementation
@@ -77,9 +77,9 @@ public class EditionServiceImpl implements EditionService
      * List of properties to set persistent when an edition of the mlContainer is created
      */
     public static final QName[] ML_CONTAINER_PROPERTIES_TO_VERSION = {
-                        ContentModel.PROP_AUTHOR,
-                        ContentModel.PROP_LOCALE
-                    };
+            ContentModel.PROP_AUTHOR,
+            ContentModel.PROP_LOCALE
+    };
 
     /** {@inheritDoc} */
     public NodeRef createEdition(NodeRef startingTranslationNodeRef, Map<String, Serializable> versionProperties)
@@ -88,8 +88,7 @@ public class EditionServiceImpl implements EditionService
         {
             return createEditionImpl(
                     startingTranslationNodeRef,
-                    versionProperties
-                );
+                    versionProperties);
         }
         else
         {
@@ -113,7 +112,7 @@ public class EditionServiceImpl implements EditionService
         Version currentEdition = versionService.getCurrentVersion(mlContainerToVersion);
         addVersionHistoryProperty(currentEdition, childAssocRefs);
 
-        if(versionProperties == null)
+        if (versionProperties == null)
         {
             versionProperties = new HashMap<String, Serializable>();
         }
@@ -124,14 +123,14 @@ public class EditionServiceImpl implements EditionService
         // Version the container and its translations
         versionService.createVersion(mlContainerToVersion, versionProperties, true);
 
-        // 2.   second step: prepare the current edition of the mlContainer
+        // 2. second step: prepare the current edition of the mlContainer
 
         // Get the new starting point node, it will be returned
         NodeRef startNode;
 
         // copy the translation before its deletion and get usefull properties
         NodeRef space = nodeService.getPrimaryParent(startingTranslationNodeRef).getParentRef();
-        String name   = (String) nodeService.getProperty(startingTranslationNodeRef, ContentModel.PROP_NAME);
+        String name = (String) nodeService.getProperty(startingTranslationNodeRef, ContentModel.PROP_NAME);
         Locale locale = (Locale) nodeService.getProperty(startingTranslationNodeRef, ContentModel.PROP_LOCALE);
         String author = (String) nodeService.getProperty(startingTranslationNodeRef, ContentModel.PROP_AUTHOR);
 
@@ -164,7 +163,6 @@ public class EditionServiceImpl implements EditionService
 
         // restore the original name of the node
         nodeService.setProperty(startNode, ContentModel.PROP_NAME, name);
-
 
         // add the starting node to the mlContainer, and set the author
         multilingualContentService.addTranslation(startNode, mlContainerToVersion, locale);
@@ -230,7 +228,7 @@ public class EditionServiceImpl implements EditionService
             Map<String, Serializable> versionProps = version.getVersionProperties();
         }
 
-        if(ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(nodeService.getType(frozenNodeRef)))
+        if (ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(nodeService.getType(frozenNodeRef)))
         {
             // for the mlContainer, the properties are set as a version properties
             Map<String, Serializable> properties = version.getVersionProperties();
@@ -239,7 +237,7 @@ public class EditionServiceImpl implements EditionService
             Map<QName, Serializable> convertedProperties = new HashMap<QName, Serializable>(properties.size());
 
             // perform the convertion
-            for(Map.Entry<String, Serializable> entry : properties.entrySet())
+            for (Map.Entry<String, Serializable> entry : properties.entrySet())
             {
                 convertedProperties.put(
                         QName.createQName(entry.getKey()),
@@ -259,7 +257,7 @@ public class EditionServiceImpl implements EditionService
     public List<VersionHistory> getVersionedTranslations(Version mlContainerEdition)
     {
         // Ensure that the given version is an Edition of an mlContainer
-        if(!ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(nodeService.getType(mlContainerEdition.getVersionedNodeRef())))
+        if (!ContentModel.TYPE_MULTILINGUAL_CONTAINER.equals(nodeService.getType(mlContainerEdition.getVersionedNodeRef())))
         {
             throw new IllegalArgumentException("The type of the node must be " + ContentModel.TYPE_CONTAINER);
         }
@@ -267,38 +265,38 @@ public class EditionServiceImpl implements EditionService
         Map<QName, Serializable> properties = versionNodeService.getProperties(mlContainerEdition.getFrozenStateNodeRef());
 
         List<VersionHistory> versionHistories = null;
-        
+
         // Switch VersionStore depending on configured impl
         if (versionService.getVersionStoreReference().getIdentifier().equals(Version2Model.STORE_ID))
         {
             // V2 version store (eg. workspace://version2Store)
-            
+
             // get the serialisation of the version histories in the version properties
             Object histories = properties.get(Version2Model.PROP_QNAME_TRANSLATION_VERSIONS);
             if (histories instanceof List)
             {
-                versionHistories = (List<VersionHistory>)histories;
+                versionHistories = (List<VersionHistory>) histories;
             }
             else if (histories instanceof VersionHistory)
             {
                 versionHistories = new ArrayList<VersionHistory>(1);
-                versionHistories.add((VersionHistory)histories);
+                versionHistories.add((VersionHistory) histories);
             }
         }
         else if (versionService.getVersionStoreReference().getIdentifier().equals(VersionModel.STORE_ID))
         {
             // Deprecated V1 version store (eg. workspace://lightWeightVersionStore)
-            
+
             // get the serialisation of the version histories in the version properties
             Object histories = properties.get(VersionModel.PROP_QNAME_TRANSLATION_VERSIONS);
             if (histories instanceof List)
             {
-                versionHistories = (List<VersionHistory>)histories;
+                versionHistories = (List<VersionHistory>) histories;
             }
             else if (histories instanceof VersionHistory)
             {
                 versionHistories = new ArrayList<VersionHistory>(1);
-                versionHistories.add((VersionHistory)histories);
+                versionHistories.add((VersionHistory) histories);
             }
         }
         else
@@ -308,8 +306,8 @@ public class EditionServiceImpl implements EditionService
 
         if (versionHistories == null)
         {
-           // the initial edition doesn't content translations (at the creation time of the mlContainer).
-           versionHistories = new ArrayList<VersionHistory>();
+            // the initial edition doesn't content translations (at the creation time of the mlContainer).
+            versionHistories = new ArrayList<VersionHistory>();
         }
 
         if (logger.isDebugEnabled())
@@ -352,7 +350,7 @@ public class EditionServiceImpl implements EditionService
         else if (versionService.getVersionStoreReference().getIdentifier().equals(VersionModel.STORE_ID))
         {
             // Deprecated V1 version store (eg. workspace://lightWeightVersionStore)
-            
+
             // add the version history of the translation as property of the Edition
             properties.put(VersionModel.PROP_QNAME_QNAME, VersionModel.PROP_QNAME_TRANSLATION_VERSIONS);
             properties.put(VersionModel.PROP_QNAME_IS_MULTI_VALUE, true);
@@ -360,11 +358,11 @@ public class EditionServiceImpl implements EditionService
 
             // create the versioned property node
             this.nodeService.createNode(
-                        VersionUtil.convertNodeRef(edition.getFrozenStateNodeRef()),
-                        VersionModel.CHILD_QNAME_VERSIONED_ATTRIBUTES,
-                        VersionModel.CHILD_QNAME_VERSIONED_ATTRIBUTES,
-                        VersionModel.TYPE_QNAME_VERSIONED_PROPERTY,
-                        properties);
+                    VersionUtil.convertNodeRef(edition.getFrozenStateNodeRef()),
+                    VersionModel.CHILD_QNAME_VERSIONED_ATTRIBUTES,
+                    VersionModel.CHILD_QNAME_VERSIONED_ATTRIBUTES,
+                    VersionModel.TYPE_QNAME_VERSIONED_PROPERTY,
+                    properties);
         }
         else
         {
@@ -380,7 +378,7 @@ public class EditionServiceImpl implements EditionService
     private void addPropertiesToVersion(Map<String, Serializable> versionProperties, NodeRef mlContainerToVersion)
     {
         // add useful properties
-        for(QName prop : ML_CONTAINER_PROPERTIES_TO_VERSION)
+        for (QName prop : ML_CONTAINER_PROPERTIES_TO_VERSION)
         {
             versionProperties.put(prop.toString(), nodeService.getProperty(mlContainerToVersion, prop));
         }
@@ -407,7 +405,7 @@ public class EditionServiceImpl implements EditionService
 
                 // Permanently delete it
                 nodeService.deleteNode(documentNodeRef);
-                if(nodeService.exists(nodeArchiveService.getArchivedNode(documentNodeRef)))
+                if (nodeService.exists(nodeArchiveService.getArchivedNode(documentNodeRef)))
                 {
                     nodeService.deleteNode(nodeArchiveService.getArchivedNode(documentNodeRef));
                 }
@@ -458,7 +456,8 @@ public class EditionServiceImpl implements EditionService
     }
 
     /**
-     * @param policyBehaviourFilter the Behaviour Filter to set
+     * @param policyBehaviourFilter
+     *            the Behaviour Filter to set
      */
     public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter)
     {
@@ -466,7 +465,8 @@ public class EditionServiceImpl implements EditionService
     }
 
     /**
-     * @param nodeArchiveService the node Archive Service to set
+     * @param nodeArchiveService
+     *            the node Archive Service to set
      */
     public void setNodeArchiveService(NodeArchiveService nodeArchiveService)
     {
@@ -474,7 +474,8 @@ public class EditionServiceImpl implements EditionService
     }
 
     /**
-     * @param fileFolderService the fileFolder Service to set
+     * @param fileFolderService
+     *            the fileFolder Service to set
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {

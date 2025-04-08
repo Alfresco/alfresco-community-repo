@@ -37,9 +37,9 @@ public interface AdminConsoleAuthenticator
      * Gets an externally authenticated user ID from the HTTP Admin Console webscript request.
      *
      * @param request
-     *           the request
+     *            the request
      * @param response
-     *           the response
+     *            the response
      * @return the user ID or <code>null</code> if the user is unauthenticated
      */
     String getAdminConsoleUser(HttpServletRequest request, HttpServletResponse response);
@@ -48,9 +48,9 @@ public interface AdminConsoleAuthenticator
      * Requests an authentication.
      *
      * @param request
-     *           the request
+     *            the request
      * @param response
-     *           the response
+     *            the response
      */
     void requestAuthentication(HttpServletRequest request, HttpServletResponse response);
 }

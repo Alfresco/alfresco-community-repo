@@ -28,7 +28,8 @@ package org.alfresco.repo.action.access;
 
 import org.alfresco.service.cmr.action.Action;
 
-public interface ActionAccessRestriction {
+public interface ActionAccessRestriction
+{
 
     String ACTION_CONTEXT_PARAM_NAME = "actionContext";
     String RULE_ACTION_CONTEXT = "rule";
@@ -36,11 +37,13 @@ public interface ActionAccessRestriction {
     String V0_ACTION_CONTEXT = "v0";
     String V1_ACTION_CONTEXT = "v1";
 
-    static void setActionContext(Action action, String actionContext) {
+    static void setActionContext(Action action, String actionContext)
+    {
         action.setParameterValue(ACTION_CONTEXT_PARAM_NAME, actionContext);
     }
 
-    static String getActionContext(Action action) {
+    static String getActionContext(Action action)
+    {
         return (String) action.getParameterValue(ACTION_CONTEXT_PARAM_NAME);
     }
 

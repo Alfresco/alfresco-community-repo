@@ -26,13 +26,13 @@
 
 package org.alfresco.rest.api.model;
 
+import java.util.List;
+import java.util.Objects;
+
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.namespace.QName;
-
-import java.util.List;
-import java.util.Objects;
 
 public abstract class AbstractClass extends ClassDefinition implements Comparable<AbstractClass>
 {
@@ -158,7 +158,7 @@ public abstract class AbstractClass extends ClassDefinition implements Comparabl
 
     Model getModelInfo(org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition, MessageLookup messageLookup)
     {
-        final ModelDefinition modelDefinition  = classDefinition.getModel();
+        final ModelDefinition modelDefinition = classDefinition.getModel();
         final String prefix = classDefinition.getName().toPrefixString().split(":")[0];
 
         final NamespaceDefinition namespaceDefinition = modelDefinition.getNamespaces().stream()

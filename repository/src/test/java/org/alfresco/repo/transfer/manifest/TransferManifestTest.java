@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -61,7 +60,7 @@ import org.alfresco.util.TempFileProvider;
 /**
  * Unit test for the transfer manifest
  */
-public class TransferManifestTest extends TestCase 
+public class TransferManifestTest extends TestCase
 {
     /**
      * This unit test creates and reads a manifest.
@@ -80,7 +79,7 @@ public class TransferManifestTest extends TestCase
         // where to put snapshot ?
         File snapshotFile = TempFileProvider.createTempFile(prefix, suffix);
         Writer snapshotWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(snapshotFile), "UTF-8"));
-        
+
         // Write the manifest file
         TransferManifestWriter formatter = new XMLTransferManifestWriter();
         TransferManifestHeader header = new TransferManifestHeader();
@@ -88,34 +87,34 @@ public class TransferManifestTest extends TestCase
         header.setRepositoryId(repoId);
         formatter.startTransferManifest(snapshotWriter);
         formatter.writeTransferManifestHeader(header);
-        
+
         // node to transmit
         TransferManifestNormalNode node = new TransferManifestNormalNode();
         NodeRef nodeRefA = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "123");
-        node.setNodeRef(nodeRefA); 
+        node.setNodeRef(nodeRefA);
         node.setParentPath(new Path());
         Set<QName> aspects = new HashSet<QName>();
         aspects.add(QName.createQName("{gsxhjsx}", "cm:wobble"));
         aspects.add(QName.createQName("{gsxhjsx}", "cm:wibble"));
         node.setAspects(aspects);
-        
+
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        
+
         /**
          * String type
          */
         properties.put(QName.createQName("{gsxhjsx}", "cm:name"), "brian.jpg");
-        
+
         /**
          * Date type
          */
         properties.put(QName.createQName("{gsxhjsx}", "cm:created"), new java.util.Date());
-        
+
         /**
          * Boolean type
          */
         properties.put(QName.createQName("{gsxhjsx}", "trx:enabled"), Boolean.FALSE);
-        
+
         /**
          * MLText value
          */
@@ -125,12 +124,12 @@ public class TransferManifestTest extends TestCase
         mltext.addValue(Locale.ITALY, "Buongiorno");
         properties.put(QName.createQName("{gsxhjsx}", "cm:title"), mltext);
         String password = "helloWorld";
-        
+
         /**
          * Put a char array type
          */
         properties.put(QName.createQName("{gsxhjsx}", "trx:password"), password.toCharArray());
-        
+
         /**
          * Put an ArrayList type
          */
@@ -138,185 +137,182 @@ public class TransferManifestTest extends TestCase
         a1.add("Rhubarb");
         a1.add("Custard");
         properties.put(QName.createQName("{gsxhjsx}", "trx:arrayList"), a1);
-        
+
         /**
          * Put a HashMap type
          */
-        HashMap<String,String> m1 = new HashMap<String,String>();
+        HashMap<String, String> m1 = new HashMap<String, String>();
         m1.put("Rhubarb", "Rhubarb");
         m1.put("Custard", "Custard");
         properties.put(QName.createQName("{gsxhjsx}", "trx:hashMap"), m1);
-        
+
         /**
          * Put a null value
          */
         properties.put(QName.createQName("{gsxhjsx}", "cm:nullTest"), null);
-        
+
         /**
          * Put a node ref property
          */
         properties.put(QName.createQName("{gsxhjsx}", "trx:nodeRef"), new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "P1"));
-        
+
         /**
          * Put an obscure "unknown type".
          */
-//        TestPrivateBean obscure = new TestPrivateBean();
-//        obscure.a = "hello";
-//        obscure.b = "world";
-//        properties.put(QName.createQName("{gsxhjsx}", "cm:obscure"), obscure);
-        
+        // TestPrivateBean obscure = new TestPrivateBean();
+        // obscure.a = "hello";
+        // obscure.b = "world";
+        // properties.put(QName.createQName("{gsxhjsx}", "cm:obscure"), obscure);
+
         List<ChildAssociationRef> parents = new ArrayList<ChildAssociationRef>();
         ChildAssociationRef primaryParent = new ChildAssociationRef(QName.createQName("{gsxhjsx}", "cm:contains"),
                 new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "P1"),
                 QName.createQName("{gsxhjsx}", "app:smashing"),
                 new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "123"),
                 true,
-                -1); 
+                -1);
         parents.add(primaryParent);
         parents.add(new ChildAssociationRef(QName.createQName("{gsxhjsx}", "app:wibble"),
-                    new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "P1"),
-                    QName.createQName("{gsxhjsx}", "app:jskjsdc"),
-                    new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "123"),
-                    false,
-                    -1));
+                new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "P1"),
+                QName.createQName("{gsxhjsx}", "app:jskjsdc"),
+                new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "123"),
+                false,
+                -1));
         node.setParentAssocs(parents);
         node.setPrimaryParentAssoc(primaryParent);
-        
+
         List<ChildAssociationRef> children = new ArrayList<ChildAssociationRef>();
         children.add(new ChildAssociationRef(QName.createQName("{gsxhjsx}", "cm:contains"),
-                    new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "P1"),
-                    QName.createQName("{gsxhjsx}", "app:super"),
-                    new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "P5"),
-                    true,
-                    -1));
-        
+                new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "P1"),
+                QName.createQName("{gsxhjsx}", "app:super"),
+                new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "P5"),
+                true,
+                -1));
+
         node.setChildAssocs(children);
-        
-        Set<String>values=new HashSet<String>();
+
+        Set<String> values = new HashSet<String>();
         values.add("red");
         values.add("blue");
         values.add("green");
-        properties.put(QName.createQName("{gsxhjsx}", "xyz:colours"), (Serializable)values);
-        
+        properties.put(QName.createQName("{gsxhjsx}", "xyz:colours"), (Serializable) values);
+
         ContentData contentHeader = new ContentData("http://wibble", "mimeType", 123, "utf-8", Locale.ENGLISH);
-        properties.put(QName.createQName("{gsxhjsx}", "cm:content"), (Serializable)contentHeader);
-        
+        properties.put(QName.createQName("{gsxhjsx}", "cm:content"), (Serializable) contentHeader);
+
         node.setProperties(properties);
-        
+
         node.setType(QName.createQName("{gsxhjsx}", "trx:nsbbmbs"));
-        
+
         List<AssociationRef> targetAssocs = new ArrayList<AssociationRef>();
         List<AssociationRef> sourceAssocs = new ArrayList<AssociationRef>();
-        
-        targetAssocs.add(new AssociationRef(null, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "SA"),
-                    QName.createQName("{gsxhjsx}", "app:super"),
-                    new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "TA")));
-        
 
-        
+        targetAssocs.add(new AssociationRef(null, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "SA"),
+                QName.createQName("{gsxhjsx}", "app:super"),
+                new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "TA")));
+
         sourceAssocs.add(new AssociationRef(null, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "HH"),
-                    QName.createQName("{gsxhjsx}", "app:super"),
-                    new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "JJ")));
-        
+                QName.createQName("{gsxhjsx}", "app:super"),
+                new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "JJ")));
+
         node.setSourceAssocs(sourceAssocs);
         node.setTargetAssocs(targetAssocs);
-        
+
         formatter.writeTransferManifestNode(node);
-        
+
         /**
          * Write a second node
          */
-        
+
         TransferManifestNormalNode node2 = new TransferManifestNormalNode();
         node2.setNodeRef(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "456"));
         node2.setType(QName.createQName("{gsxhjsx}", "trx:dummy"));
         formatter.writeTransferManifestNode(node2);
-        
-        
+
         /**
          * Write a deleted node
          */
         TransferManifestDeletedNode node3 = new TransferManifestDeletedNode();
         node3.setNodeRef(new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, "567"));
-        
+
         ChildAssociationRef origPrimaryParent = new ChildAssociationRef(QName.createQName("{gsxhjsx}", "cm:contains"),
                 new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "P1"),
                 QName.createQName("{gsxhjsx}", "app:whopper"),
                 new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "567"),
                 true,
-                -1); 
+                -1);
 
         node3.setPrimaryParentAssoc(origPrimaryParent);
         node3.setParentPath(new Path());
-        
+
         formatter.writeTransferManifestNode(node3);
-        
 
         formatter.endTransferManifest();
         snapshotWriter.close();
-        
-        // 
+
+        //
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(snapshotFile), "UTF-8"));
         String s = reader.readLine();
-        while(s != null)
+        while (s != null)
         {
             System.out.println(s);
             s = reader.readLine();
         }
-        
+
         // Now try to parse the snapshot file we have just created
         SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
         SAXParser parser = saxParserFactory.newSAXParser();
-        
-        TestTransferManifestProcessor tp = new TestTransferManifestProcessor(); 
-        
-        XMLTransferManifestReader xmlReader = new  XMLTransferManifestReader(tp);
-        parser.parse(snapshotFile, xmlReader );
-        
+
+        TestTransferManifestProcessor tp = new TestTransferManifestProcessor();
+
+        XMLTransferManifestReader xmlReader = new XMLTransferManifestReader(tp);
+        parser.parse(snapshotFile, xmlReader);
+
         /**
          * Now validate the parsed data.
          */
-        
+
         Map<NodeRef, TransferManifestNode> nodes = tp.getNodes();
-        
-        TransferManifestNormalNode rxNodeA = (TransferManifestNormalNode)nodes.get(nodeRefA);
-        
+
+        TransferManifestNormalNode rxNodeA = (TransferManifestNormalNode) nodes.get(nodeRefA);
+
         assertNotNull("rxNodeA is null", rxNodeA);
-        
+
         Map<QName, Serializable> rxNodeAProps = rxNodeA.getProperties();
         System.out.println(rxNodeAProps.get(QName.createQName("{gsxhjsx}", "trx:password")));
-        for(Map.Entry<QName, Serializable> value : rxNodeAProps.entrySet())
+        for (Map.Entry<QName, Serializable> value : rxNodeAProps.entrySet())
         {
             System.out.println("key = " + value.getKey() + " value =" + value.getValue());
-            if(value.getValue() != null)
+            if (value.getValue() != null)
             {
-                if(value.getValue().getClass().isArray())
+                if (value.getValue().getClass().isArray())
                 {
-                    System.out.println("arrayValue="+ value.getValue().toString());
-                    char[] chars = (char[])value.getValue();
-                    
+                    System.out.println("arrayValue=" + value.getValue().toString());
+                    char[] chars = (char[]) value.getValue();
+
                     System.out.println(chars);
                 }
             }
-            
+
         }
-                
+
         tp.getHeader();
-        
+
         snapshotFile.delete();
     }
-    
+
     public class TestPrivateBean implements Serializable
     {
         public TestPrivateBean()
         {
-            
+
         }
-        
+
         public void setA(String a)
         {
             this.a = a;
         }
+
         public String getA()
         {
             return a;
@@ -328,5 +324,5 @@ public class TransferManifestTest extends TestCase
         private static final long serialVersionUID = 1053132227110567282L;
         private String a;
     }
-    
+
 }

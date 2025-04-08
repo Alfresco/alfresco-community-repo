@@ -60,7 +60,7 @@ import org.alfresco.service.namespace.QName;
  */
 @BehaviourBean
 public class DispositionProperty extends BaseBehaviourBean
-                                 implements NodeServicePolicies.OnUpdatePropertiesPolicy
+        implements NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     /** Property QName */
     private QName propertyName;
@@ -81,7 +81,8 @@ public class DispositionProperty extends BaseBehaviourBean
     private Set<String> excludedDispositionActions;
 
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -89,7 +90,8 @@ public class DispositionProperty extends BaseBehaviourBean
     }
 
     /**
-     * @param dispositionService    disposition service
+     * @param dispositionService
+     *            disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -97,7 +99,8 @@ public class DispositionProperty extends BaseBehaviourBean
     }
 
     /**
-     * @param propertyName property name (as string)
+     * @param propertyName
+     *            property name (as string)
      */
     public void setName(String propertyName)
     {
@@ -105,7 +108,7 @@ public class DispositionProperty extends BaseBehaviourBean
     }
 
     /**
-     * @return  property QName
+     * @return property QName
      */
     public QName getQName()
     {
@@ -113,7 +116,7 @@ public class DispositionProperty extends BaseBehaviourBean
     }
 
     /**
-     * @return  property definition
+     * @return property definition
      */
     public PropertyDefinition getPropertyDefinition()
     {
@@ -121,7 +124,8 @@ public class DispositionProperty extends BaseBehaviourBean
     }
 
     /**
-     * @param excludedDispositionActions    list of excluded disposition actions
+     * @param excludedDispositionActions
+     *            list of excluded disposition actions
      */
     public void setExcludedDispositionActions(Set<String> excludedDispositionActions)
     {
@@ -156,16 +160,18 @@ public class DispositionProperty extends BaseBehaviourBean
     /**
      * Indicates whether the disposition property applies given the context.
      *
-     * @param isRecordLevel      true if record level disposition schedule, false otherwise
-     * @param dispositionAction  disposition action name
-     * @return boolean           true if applies, false otherwise
+     * @param isRecordLevel
+     *            true if record level disposition schedule, false otherwise
+     * @param dispositionAction
+     *            disposition action name
+     * @return boolean true if applies, false otherwise
      */
     public boolean applies(boolean isRecordLevel, String dispositionAction)
     {
         boolean result = false;
 
         if ((isRecordLevel && appliesToRecordLevel) ||
-            (!isRecordLevel && appliesToFolderLevel))
+                (!isRecordLevel && appliesToFolderLevel))
         {
             if (excludedDispositionActions != null && excludedDispositionActions.size() != 0)
             {
@@ -187,12 +193,10 @@ public class DispositionProperty extends BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
             type = "rma:dispositionLifecycle",
-            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onUpdateProperties(
             final NodeRef nodeRef,
             final Map<QName, Serializable> before,
@@ -203,12 +207,11 @@ public class DispositionProperty extends BaseBehaviourBean
             // has the property we care about changed?
             if (isPropertyUpdated(before, after))
             {
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     @Override
                     public Void doWork()
                     {
-                        Date updatedDateValue = (Date)after.get(propertyName);
+                        Date updatedDateValue = (Date) after.get(propertyName);
                         if (updatedDateValue != null)
                         {
                             DispositionAction dispositionAction = dispositionService.getNextDispositionAction(nodeRef);
@@ -238,7 +241,7 @@ public class DispositionProperty extends BaseBehaviourBean
                             {
                                 throw new AlfrescoRuntimeException(
                                         "Error updating property " + propertyName.toPrefixString(namespaceService) +
-                                        " to null, because property is being used to determine a disposition date.");
+                                                " to null, because property is being used to determine a disposition date.");
                             }
                         }
 

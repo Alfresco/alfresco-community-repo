@@ -26,6 +26,8 @@
 package org.alfresco.repo.domain.encoding;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -36,8 +38,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.DBTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @see EncodingDAO
@@ -53,21 +53,20 @@ public class EncodingDAOTest extends TestCase
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
     private EncodingDAO encodingDAO;
-    
+
     @Override
     public void setUp() throws Exception
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();
-        
+
         encodingDAO = (EncodingDAO) ctx.getBean("encodingDAO");
     }
-    
+
     private Pair<Long, String> get(final String encoding, final boolean autoCreate, boolean expectSuccess)
     {
-        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>()
-        {
+        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>() {
             public Pair<Long, String> execute() throws Throwable
             {
                 Pair<Long, String> mimetypePair = null;
@@ -99,7 +98,7 @@ public class EncodingDAOTest extends TestCase
             }
         }
     }
-    
+
     public void testCreateWithCommit() throws Exception
     {
         // Create an encoding
@@ -109,13 +108,12 @@ public class EncodingDAOTest extends TestCase
         Pair<Long, String> encodingPairCheck = get(encodingPair.getSecond(), false, true);
         assertEquals("Encoding ID changed", encodingPair.getFirst(), encodingPairCheck.getFirst());
     }
-    
+
     public void testCreateWithRollback() throws Exception
     {
         final String encoding = GUID.generate();
         // Create an encoding
-        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>()
-        {
+        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>() {
             public Pair<Long, String> execute() throws Throwable
             {
                 get(encoding, true, true);
@@ -135,7 +133,7 @@ public class EncodingDAOTest extends TestCase
         // Check that it doesn't exist
         get(encoding, false, false);
     }
-    
+
     public void testCaseInsensitivity() throws Exception
     {
         String encoding = "AAA-" + GUID.generate();

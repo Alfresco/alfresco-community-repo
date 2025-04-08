@@ -30,6 +30,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.springframework.beans.factory.ObjectFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.service.cmr.activities.ActivityService;
@@ -45,10 +50,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ModelUtil;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
-import org.springframework.beans.factory.ObjectFactory;
 
 /**
  * @since 4.0
@@ -90,12 +91,12 @@ public abstract class AbstractUserNotifier implements UserNotifier
     {
         this.siteService = siteService;
     }
-    
-    public void setActivitiesFeedModelBuilderFactory(ObjectFactory<ActivitiesFeedModelBuilder> activitiesFeedModelBuilder) 
+
+    public void setActivitiesFeedModelBuilderFactory(ObjectFactory<ActivitiesFeedModelBuilder> activitiesFeedModelBuilder)
     {
-        this.activitiesFeedModelBuilderFactory = activitiesFeedModelBuilder;    
+        this.activitiesFeedModelBuilderFactory = activitiesFeedModelBuilder;
     }
-    
+
     /**
      * Perform basic checks to ensure that the necessary dependencies were injected.
      */
@@ -109,16 +110,18 @@ public abstract class AbstractUserNotifier implements UserNotifier
     }
 
     protected abstract boolean skipUser(NodeRef personNodeRef);
+
     protected abstract Long getFeedId(NodeRef personNodeRef);
+
     protected abstract void notifyUser(NodeRef personNodeRef, String subjectLine, Object[] subjectParams, Map<String, Object> model, String templateNodeRef);
-    
+
     private void addSiteName(String siteId, Map<String, String> siteNames)
     {
         if (siteId == null)
         {
             return;
         }
-        
+
         String siteName = siteNames.get(siteId);
         if (siteName == null)
         {
@@ -127,7 +130,7 @@ public abstract class AbstractUserNotifier implements UserNotifier
             {
                 return;
             }
-            
+
             String siteTitle = site.getTitle();
             if (siteTitle != null && siteTitle.length() > 0)
             {
@@ -137,17 +140,17 @@ public abstract class AbstractUserNotifier implements UserNotifier
             {
                 siteName = siteId;
             }
-            
+
             siteNames.put(siteId, siteName);
         }
     }
-    
+
     public Pair<Integer, Long> notifyUser(final NodeRef personNodeRef, String subject, Object[] subjectParams, Map<String, String> siteNames,
             String shareUrl, int repeatIntervalMins, String templateNodeRef)
     {
         Map<QName, Serializable> personProps = nodeService.getProperties(personNodeRef);
 
-        String feedUserId = (String)personProps.get(ContentModel.PROP_USERNAME);
+        String feedUserId = (String) personProps.get(ContentModel.PROP_USERNAME);
 
         if (skipUser(personNodeRef))
         {
@@ -164,7 +167,7 @@ public abstract class AbstractUserNotifier implements UserNotifier
             logger.debug("Get user feed entries: " + feedUserId + ", " + feedDBID);
         }
         List<ActivityFeedEntity> feedEntries = activityService.getUserFeedEntries(feedUserId, null, false, false, null, null, feedDBID);
-        
+
         if (feedEntries.size() > 0)
         {
             ActivitiesFeedModelBuilder modelBuilder;
@@ -177,7 +180,7 @@ public abstract class AbstractUserNotifier implements UserNotifier
                 logger.warn("Unable to create model builder: " + error.getMessage());
                 return null;
             }
-            
+
             for (ActivityFeedEntity feedEntry : feedEntries)
             {
                 try
@@ -190,7 +193,7 @@ public abstract class AbstractUserNotifier implements UserNotifier
                 catch (JSONException je)
                 {
                     // skip this feed entry
-                    logger.warn("Skip feed entry for user ("+feedUserId+"): " + je.getMessage());
+                    logger.warn("Skip feed entry for user (" + feedUserId + "): " + je.getMessage());
                     continue;
                 }
             }
@@ -199,7 +202,7 @@ public abstract class AbstractUserNotifier implements UserNotifier
             if (activityCount > 0)
             {
                 Map<String, Object> model = modelBuilder.buildModel();
-                
+
                 model.put("siteTitles", siteNames);
                 model.put("repeatIntervalMins", repeatIntervalMins);
                 model.put("feedItemsMax", activityService.getMaxFeedItems());

@@ -25,6 +25,20 @@
  */
 package org.alfresco.repo.tagging;
 
+import java.io.ByteArrayInputStream;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runners.MethodSorters;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -69,19 +83,6 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runners.MethodSorters;
-
-import java.io.ByteArrayInputStream;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.*;
 
 /**
  * Tagging service implementation unit test
@@ -153,15 +154,15 @@ public class TaggingServiceImplTest extends BaseSpringTest
         }
 
         // Get services
-        this.taggingService = (TaggingServiceImpl)applicationContext.getBean("taggingService");
+        this.taggingService = (TaggingServiceImpl) applicationContext.getBean("taggingService");
         this.nodeService = (NodeService) applicationContext.getBean("NodeService");
         this.fileFolderService = (FileFolderService) applicationContext.getBean("FileFolderService");
         this.copyService = (CopyService) applicationContext.getBean("CopyService");
         this.checkOutCheckInService = (CheckOutCheckInService) applicationContext.getBean("CheckoutCheckinService");
-        this.actionService = (ActionService)applicationContext.getBean("ActionService");
-        this.transactionService = (TransactionService)applicationContext.getBean("transactionComponent");
+        this.actionService = (ActionService) applicationContext.getBean("ActionService");
+        this.transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
         this.siteService = applicationContext.getBean("SiteService", SiteService.class);
-        //MNT-10807 : Auditing does not take into account audit.filter.alfresco-access.transaction.user
+        // MNT-10807 : Auditing does not take into account audit.filter.alfresco-access.transaction.user
         UserAuditFilter userAuditFilter = new UserAuditFilter();
         userAuditFilter.setUserFilterPattern("System;.*");
         userAuditFilter.afterPropertiesSet();
@@ -169,19 +170,19 @@ public class TaggingServiceImplTest extends BaseSpringTest
         auditComponent.setUserAuditFilter(userAuditFilter);
         AuditServiceImpl auditServiceImpl = (AuditServiceImpl) applicationContext.getBean("auditService");
         auditServiceImpl.setAuditComponent(auditComponent);
-        this.auditService = (AuditService)applicationContext.getBean("auditService");
-        this.scriptService = (ScriptService)applicationContext.getBean("scriptService");
-        this.actionTrackingService = (ActionTrackingService)applicationContext.getBean("actionTrackingService");
-        this.authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
+        this.auditService = (AuditService) applicationContext.getBean("auditService");
+        this.scriptService = (ScriptService) applicationContext.getBean("scriptService");
+        this.actionTrackingService = (ActionTrackingService) applicationContext.getBean("actionTrackingService");
+        this.authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
 
-        this.personService = (PersonService)applicationContext.getBean("PersonService");
-        this.permissionService = (PermissionService)applicationContext.getBean("PermissionService");
-        this.authenticationService = (MutableAuthenticationService)applicationContext.getBean("authenticationService");
-        this.nodeRefPropInterceptor = (NodeRefPropertyMethodInterceptor)applicationContext.getBean("nodeRefPropertyInterceptor");
+        this.personService = (PersonService) applicationContext.getBean("PersonService");
+        this.permissionService = (PermissionService) applicationContext.getBean("PermissionService");
+        this.authenticationService = (MutableAuthenticationService) applicationContext.getBean("authenticationService");
+        this.nodeRefPropInterceptor = (NodeRefPropertyMethodInterceptor) applicationContext.getBean("nodeRefPropertyInterceptor");
 
         if (init == false)
         {
-            this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+            this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
 
                 @Override
                 public Void execute() throws Throwable
@@ -208,21 +209,20 @@ public class TaggingServiceImplTest extends BaseSpringTest
 
                     init = true;
                     return null;
-                }});
+                }
+            });
 
         }
 
         // We want to know when tagging actions have finished running
         asyncOccurs = new AsyncOccurs();
-        ((PolicyComponent)applicationContext.getBean("policyComponent")).bindClassBehaviour(
+        ((PolicyComponent) applicationContext.getBean("policyComponent")).bindClassBehaviour(
                 AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute.QNAME,
                 ActionModel.TYPE_ACTION,
-                new JavaBehaviour(asyncOccurs, "onAsyncActionExecute", NotificationFrequency.EVERY_EVENT)
-        );
+                new JavaBehaviour(asyncOccurs, "onAsyncActionExecute", NotificationFrequency.EVERY_EVENT));
 
         // We do want action tracking whenever the tag scope updater runs
-        UpdateTagScopesActionExecuter updateTagsAction =
-                (UpdateTagScopesActionExecuter)applicationContext.getBean("update-tagscope");
+        UpdateTagScopesActionExecuter updateTagsAction = (UpdateTagScopesActionExecuter) applicationContext.getBean("update-tagscope");
         updateTagsAction.setTrackStatus(true);
 
         // Create the folders and documents to be tagged
@@ -241,7 +241,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
 
     private void createTestDocumentsAndFolders() throws Exception
     {
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -296,7 +296,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
 
     private void removeTestDocumentsAndFolders() throws Exception
     {
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -304,17 +304,17 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 authenticationComponent.setSystemUserAsCurrentUser();
 
                 // If anything is a tag scope, stop it being
-                NodeRef[] nodes = new NodeRef[] { subDocument, subFolder, document, folder };
-                for(NodeRef nodeRef : nodes)
+                NodeRef[] nodes = new NodeRef[]{subDocument, subFolder, document, folder};
+                for (NodeRef nodeRef : nodes)
                 {
-                    if(taggingService.isTagScope(nodeRef))
+                    if (taggingService.isTagScope(nodeRef))
                     {
                         taggingService.removeTagScope(nodeRef);
                     }
                 }
 
                 // Remove the sample nodes
-                for(NodeRef nodeRef : nodes)
+                for (NodeRef nodeRef : nodes)
                 {
                     nodeService.deleteNode(nodeRef);
                 }
@@ -322,19 +322,18 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 // Tidy up the audit component, now all the nodes have gone
                 auditService.clearAudit(
                         TaggingServiceImpl.TAGGING_AUDIT_APPLICATION_NAME,
-                        0l, System.currentTimeMillis()+1
-                );
+                        0l, System.currentTimeMillis() + 1);
                 return null;
             }
         });
     }
 
     @Test
-    @Category({RedundantTests.class,LuceneTests.class})
+    @Category({RedundantTests.class, LuceneTests.class})
     public void test1TagCRUD()
             throws Exception
     {
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -352,7 +351,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
             }
         });
 
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -365,7 +364,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 assertTrue(tags.contains(LOWER_TAG));
 
                 // Get Paged tags with filter
-                Pair<List<String>, Integer> pagedTags = taggingService.getPagedTags(TaggingServiceImplTest.storeRef, "one", 0 ,10);
+                Pair<List<String>, Integer> pagedTags = taggingService.getPagedTags(TaggingServiceImplTest.storeRef, "one", 0, 10);
                 assertNotNull(pagedTags);
                 List<String> tagPage = pagedTags.getFirst();
                 int allFilteredTagsCount = pagedTags.getSecond();
@@ -393,7 +392,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
             }
         });
 
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -416,11 +415,11 @@ public class TaggingServiceImplTest extends BaseSpringTest
     }
 
     @Test
-    @Category({RedundantTests.class,LuceneTests.class})
+    @Category({RedundantTests.class, LuceneTests.class})
     public void test2AddRemoveTag()
             throws Exception
     {
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -484,7 +483,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
     public void test3TagScopeFindAddRemove()
             throws Exception
     {
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -544,7 +543,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
     public void test4TagScope()
             throws Exception
     {
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -560,8 +559,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -569,8 +567,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -578,8 +575,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -587,8 +583,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -596,8 +591,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -605,8 +599,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -617,12 +610,10 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 // Check that the tag scopes got populated
                 assertEquals(
                         "Wrong tags on sub folder: " + ts1.getTags(),
-                        3, ts1.getTags().size()
-                );
+                        3, ts1.getTags().size());
                 assertEquals(
                         "Wrong tags on main folder: " + ts2.getTags(),
-                        3, ts2.getTags().size()
-                );
+                        3, ts2.getTags().size());
 
                 // check the order and count of the tagscopes
                 assertEquals(2, ts1.getTags().get(0).getCount());
@@ -639,14 +630,12 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 assertEquals(TAG_1, ts2.getTags().get(1).getName());
                 assertEquals(TAG_3.toLowerCase(), ts2.getTags().get(2).getName());
 
-
                 // Take some off again
                 taggingService.removeTag(folder, TAG_2);
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -654,8 +643,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -663,8 +651,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -672,8 +659,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -683,53 +669,50 @@ public class TaggingServiceImplTest extends BaseSpringTest
             }
         });
 
-        /*
-        The following code from the test was commented out as part of REPO-2028 to remove
-        the lucene dependencies in the tests.
-        @Category({RedundantTests.class,LuceneTests.class})
-         */
-//
-//        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-//        {
-//            @Override
-//            public Void execute() throws Throwable
-//            {
-//                // re get the tag scopes
-//                TagScope ts1 = taggingService.findTagScope(subDocument);
-//                TagScope ts2 = taggingService.findTagScope(folder);
-//
-//                // Recheck the tag scopes
-//                assertEquals(
-//                      "Wrong tags on sub folder: " + ts1.getTags(),
-//                      2, ts1.getTags().size()
-//                );
-//                assertEquals(
-//                      "Wrong tags on main folder: " + ts2.getTags(),
-//                      2, ts2.getTags().size()
-//                );
-//
-//                // Sub-folder should be ordered by tag name, as all values 1
-//                assertEquals(1, ts1.getTags().get(0).getCount());
-//                assertEquals(1, ts1.getTags().get(1).getCount());
-//                assertEquals(TAG_2, ts1.getTags().get(0).getName());
-//                assertEquals(TAG_3.toLowerCase(), ts1.getTags().get(1).getName());
-//
-//                // Folder should be still sorted by size, as a 2 & a 1
-//                assertEquals(2, ts2.getTags().get(0).getCount());
-//                assertEquals(1, ts2.getTags().get(1).getCount());
-//                assertEquals(TAG_3.toLowerCase(), ts2.getTags().get(0).getName());
-//                assertEquals(TAG_2, ts2.getTags().get(1).getName());
-//                return null;
-//            }
-//        });
+        /* The following code from the test was commented out as part of REPO-2028 to remove the lucene dependencies in the tests.
+         * 
+         * @Category({RedundantTests.class,LuceneTests.class}) */
+        //
+        // this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        // {
+        // @Override
+        // public Void execute() throws Throwable
+        // {
+        // // re get the tag scopes
+        // TagScope ts1 = taggingService.findTagScope(subDocument);
+        // TagScope ts2 = taggingService.findTagScope(folder);
+        //
+        // // Recheck the tag scopes
+        // assertEquals(
+        // "Wrong tags on sub folder: " + ts1.getTags(),
+        // 2, ts1.getTags().size()
+        // );
+        // assertEquals(
+        // "Wrong tags on main folder: " + ts2.getTags(),
+        // 2, ts2.getTags().size()
+        // );
+        //
+        // // Sub-folder should be ordered by tag name, as all values 1
+        // assertEquals(1, ts1.getTags().get(0).getCount());
+        // assertEquals(1, ts1.getTags().get(1).getCount());
+        // assertEquals(TAG_2, ts1.getTags().get(0).getName());
+        // assertEquals(TAG_3.toLowerCase(), ts1.getTags().get(1).getName());
+        //
+        // // Folder should be still sorted by size, as a 2 & a 1
+        // assertEquals(2, ts2.getTags().get(0).getCount());
+        // assertEquals(1, ts2.getTags().get(1).getCount());
+        // assertEquals(TAG_3.toLowerCase(), ts2.getTags().get(0).getName());
+        // assertEquals(TAG_2, ts2.getTags().get(1).getName());
+        // return null;
+        // }
+        // });
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void test5TagScopeSummary() throws Exception
     {
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -744,8 +727,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -753,8 +735,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -762,8 +743,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -771,8 +751,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -780,8 +759,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -789,8 +767,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -799,19 +776,19 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 Serializable summaryObj = nodeService.getProperty(folder, ContentModel.PROP_TAGSCOPE_SUMMARY);
                 assertTrue("TagScopeSummary value on main folder is not of correct class: " + summaryObj.getClass().getName(),
                         List.class.isAssignableFrom(summaryObj.getClass()));
-                assertEquals(3, ((List)summaryObj).size());
+                assertEquals(3, ((List) summaryObj).size());
 
-                //Check that the next call for the same summary comes from the cache
+                // Check that the next call for the same summary comes from the cache
                 Serializable summaryObj2 = nodeService.getProperty(folder, ContentModel.PROP_TAGSCOPE_SUMMARY);
                 assertTrue("TagScopeSummary value on main folder did not come from the cache",
                         summaryObj == summaryObj2);
 
-                Map<QName,Serializable> props = nodeService.getProperties(subFolder);
+                Map<QName, Serializable> props = nodeService.getProperties(subFolder);
                 assertTrue("Properties of subfolder do not include tagScopeSummary", props.containsKey(ContentModel.PROP_TAGSCOPE_SUMMARY));
                 summaryObj = props.get(ContentModel.PROP_TAGSCOPE_SUMMARY);
                 assertTrue("TagScopeSummary value on subfolder is not of correct class: " + summaryObj.getClass().getName(),
                         List.class.isAssignableFrom(summaryObj.getClass()));
-                assertEquals(3, ((List)summaryObj).size());
+                assertEquals(3, ((List) summaryObj).size());
 
                 TagScopePropertyMethodInterceptor.setEnabled(Boolean.FALSE);
 
@@ -827,12 +804,11 @@ public class TaggingServiceImplTest extends BaseSpringTest
     }
 
     @Test
-    @Category({RedundantTests.class,LuceneTests.class})
+    @Category({RedundantTests.class, LuceneTests.class})
     public void test6TagScopeRefresh()
             throws Exception
     {
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -853,8 +829,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -866,8 +841,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -887,8 +861,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
     public void test7TagScopeSetUpdate()
             throws Exception
     {
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -901,8 +874,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -910,8 +882,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -919,8 +890,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -928,8 +898,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -937,8 +906,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -946,8 +914,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -955,8 +922,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -977,38 +943,34 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        /*
-        This part of the code was commented out as part of the REPO-2028 to remove the lucene dependency from tests
-        @Category({RedundantTests.class,LuceneTests.class})
-         */
+        /* This part of the code was commented out as part of the REPO-2028 to remove the lucene dependency from tests
+         * 
+         * @Category({RedundantTests.class,LuceneTests.class}) */
 
-//        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-//        {
-//            @Override
-//            public Void execute() throws Throwable
-//            {
-//                // Check that the tagscope has been updated correctly
-//                TagScope ts1 = taggingService.findTagScope(folder);
-//                assertEquals(3, ts1.getTag(TAG_1).getCount());
-//                assertEquals(2, ts1.getTag(TAG_2).getCount());
-//                assertEquals(1, ts1.getTag(TAG_3.toLowerCase()).getCount());
-//                assertEquals(1, ts1.getTag(TAG_4).getCount());
-//                return null;
-//            }
-//        });
+        // this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        // {
+        // @Override
+        // public Void execute() throws Throwable
+        // {
+        // // Check that the tagscope has been updated correctly
+        // TagScope ts1 = taggingService.findTagScope(folder);
+        // assertEquals(3, ts1.getTag(TAG_1).getCount());
+        // assertEquals(2, ts1.getTag(TAG_2).getCount());
+        // assertEquals(1, ts1.getTag(TAG_3.toLowerCase()).getCount());
+        // assertEquals(1, ts1.getTag(TAG_4).getCount());
+        // return null;
+        // }
+        // });
     }
 
-    /*
-     * https://issues.alfresco.com/jira/browse/ETHREEOH-220
-     */
+    /* https://issues.alfresco.com/jira/browse/ETHREEOH-220 */
     @Test
-    @Category({RedundantTests.class,LuceneTests.class})
+    @Category({RedundantTests.class, LuceneTests.class})
     public void test8ETHREEOH_220() throws Exception
     {
         // Add tag scope to a folder, then add a non-ASCII (unicode)
-        //  tag onto the folder
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        // tag onto the folder
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1018,8 +980,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
             }
         });
 
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1043,13 +1004,12 @@ public class TaggingServiceImplTest extends BaseSpringTest
     }
 
     /**
-     * Ensures that the tag scope is correctly updated
-     *  when folders and content are created, updated,
-     *  moved, copied and deleted.
+     * Ensures that the tag scope is correctly updated when folders and content are created, updated, moved, copied and deleted.
      */
     @Test
-    @Category({RedundantTests.class,LuceneTests.class})
-    public void test9TagScopeUpdateViaNodePolicies() throws Exception {
+    @Category({RedundantTests.class, LuceneTests.class})
+    public void test9TagScopeUpdateViaNodePolicies() throws Exception
+    {
         class TestData
         {
             public NodeRef tagFoo1;
@@ -1066,8 +1026,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
         }
         final TestData testData = new TestData();
 
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1078,7 +1037,6 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 testData.tagBar = taggingService.createTag(folder.getStoreRef(), "Bar");
 
                 List<NodeRef> tagsList = new ArrayList<NodeRef>();
-
 
                 // Create two containers marked as tag scopes
                 Map<QName, Serializable> container1Props = new HashMap<QName, Serializable>(1);
@@ -1101,15 +1059,13 @@ public class TaggingServiceImplTest extends BaseSpringTest
                         container2Props).getChildRef();
                 assertEquals(0, nodeService.getChildAssocs(testData.container2).size());
 
-
                 // Check that the tag scopes are empty
                 taggingService.addTagScope(testData.container1);
                 taggingService.addTagScope(testData.container2);
                 return null;
             }
         });
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1128,8 +1084,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1148,23 +1103,19 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 assertEquals(
                         "Unexpected tags " + taggingService.findTagScope(testData.container1).getTags(),
-                        2, taggingService.findTagScope(testData.container1).getTags().size()
-                );
+                        2, taggingService.findTagScope(testData.container1).getTags().size());
                 assertEquals(
                         "Unexpected tags " + taggingService.findTagScope(testData.container2).getTags(),
-                        0, taggingService.findTagScope(testData.container2).getTags().size()
-                );
+                        0, taggingService.findTagScope(testData.container2).getTags().size());
 
                 assertEquals(1, taggingService.findTagScope(testData.container1).getTag("foo1").getCount());
                 assertEquals(1, taggingService.findTagScope(testData.container1).getTag("foo3").getCount());
-
 
                 // Create a document within it, check that tag scope tags are updated
                 List<NodeRef> tagsList = new ArrayList<NodeRef>();
@@ -1173,7 +1124,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
 
                 Map<QName, Serializable> taggedDocProps = new HashMap<QName, Serializable>(1);
                 taggedDocProps.put(ContentModel.PROP_NAME, "Document");
-                taggedDocProps.put(ContentModel.ASPECT_TAGGABLE, (Serializable)tagsList);
+                taggedDocProps.put(ContentModel.ASPECT_TAGGABLE, (Serializable) tagsList);
                 testData.taggedDoc = nodeService.createNode(
                         testData.taggedFolder,
                         ContentModel.ASSOC_CONTAINS,
@@ -1183,8 +1134,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1195,22 +1145,19 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 assertEquals(1, taggingService.findTagScope(testData.container1).getTag("foo2").getCount());
                 assertEquals(1, taggingService.findTagScope(testData.container1).getTag("foo3").getCount());
 
-
                 // Check that the Document really is a child of the folder,
-                //  otherwise later checks will fail for really odd reasons
+                // otherwise later checks will fail for really odd reasons
                 assertEquals(1, nodeService.getChildAssocs(testData.container1).size());
                 assertEquals(1, nodeService.getChildAssocs(testData.taggedFolder).size());
 
-
                 // Check out the node
                 // Tags should be doubled up. (We don't care about ContentModel.ASPECT_WORKING_COPY
-                //  because it isn't applied at suitable times to take not of)
+                // because it isn't applied at suitable times to take not of)
                 testData.checkedOutDoc = checkOutCheckInService.checkout(testData.taggedDoc);
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1224,15 +1171,13 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 assertEquals(1, nodeService.getChildAssocs(testData.container1).size());
                 assertEquals(2, nodeService.getChildAssocs(testData.taggedFolder).size());
 
-
                 // And check it back in again
                 // Tags should go back to how they were
                 checkOutCheckInService.checkin(testData.checkedOutDoc, null);
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1245,7 +1190,6 @@ public class TaggingServiceImplTest extends BaseSpringTest
 
                 assertEquals(1, nodeService.getChildAssocs(testData.container1).size());
                 assertEquals(1, nodeService.getChildAssocs(testData.taggedFolder).size());
-
 
                 // Do a node->node copy of the document onto the other container
                 Map<QName, Serializable> taggedDocProps = new HashMap<QName, Serializable>(1);
@@ -1260,8 +1204,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1271,8 +1214,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1280,8 +1222,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1300,7 +1241,6 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 assertEquals(testData.container2, nodeService.getPrimaryParent(testData.taggedDoc2).getParentRef());
                 assertEquals(testData.container2, taggingService.findTagScope(testData.taggedDoc2).getNodeRef());
 
-
                 // Copy the folder to another container
                 // Does a proper, recursing copy
                 testData.taggedFolder2 = copyService.copy(
@@ -1311,8 +1251,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1329,19 +1268,17 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 assertEquals(2, taggingService.findTagScope(testData.container2).getTag("foo2").getCount());
                 assertEquals(1, taggingService.findTagScope(testData.container2).getTag("foo3").getCount());
 
-
                 // Update the document on the original
                 List<NodeRef> tagsList = new ArrayList<NodeRef>();
                 tagsList.add(testData.tagBar);
                 Map<QName, Serializable> taggedDocProps = new HashMap<QName, Serializable>(1);
-                taggedDocProps.put(ContentModel.ASPECT_TAGGABLE, (Serializable)tagsList);
+                taggedDocProps.put(ContentModel.ASPECT_TAGGABLE, (Serializable) tagsList);
                 taggedDocProps.put(ContentModel.PROP_NAME, "UpdatedDocument");
                 nodeService.addProperties(testData.taggedDoc, taggedDocProps);
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1356,7 +1293,6 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 assertEquals(2, taggingService.findTagScope(testData.container2).getTag("foo2").getCount());
                 assertEquals(1, taggingService.findTagScope(testData.container2).getTag("foo3").getCount());
 
-
                 // Move the document to another container
                 testData.taggedDoc = nodeService.moveNode(testData.taggedDoc, testData.container2,
                         ContentModel.ASSOC_CONTAINS,
@@ -1364,8 +1300,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1380,7 +1315,6 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 assertEquals(1, taggingService.findTagScope(testData.container2).getTag("foo3").getCount());
                 assertEquals(1, taggingService.findTagScope(testData.container2).getTag("bar").getCount());
 
-
                 // Check the state of the tree
                 assertEquals(1, nodeService.getChildAssocs(testData.container1).size());
                 assertEquals(3, nodeService.getChildAssocs(testData.container2).size());
@@ -1390,14 +1324,12 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 assertEquals(testData.container2, nodeService.getPrimaryParent(testData.taggedDoc2).getParentRef());
                 assertEquals(testData.container2, taggingService.findTagScope(testData.taggedDoc2).getNodeRef());
 
-
                 // Delete the documents and folder one at a time
                 nodeService.deleteNode(testData.taggedDoc); // container 2, "bar"
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1414,13 +1346,11 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 assertEquals(1, taggingService.findTagScope(testData.container2).getTag("foo3").getCount());
                 assertEquals(null, taggingService.findTagScope(testData.container2).getTag("bar"));
 
-
                 nodeService.deleteNode(testData.taggedDoc2); // container 2, "foo1", "foo2"
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1437,13 +1367,11 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 assertEquals(1, taggingService.findTagScope(testData.container2).getTag("foo3").getCount());
                 assertEquals(null, taggingService.findTagScope(testData.container2).getTag("bar"));
 
-
                 nodeService.deleteNode(testData.taggedFolder); // container 1, "foo1", "foo3"
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1456,13 +1384,11 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 assertEquals(1, taggingService.findTagScope(testData.container2).getTag("foo2").getCount());
                 assertEquals(1, taggingService.findTagScope(testData.container2).getTag("foo3").getCount());
 
-
                 nodeService.deleteNode(testData.taggedFolder2); // container 2, has a child also
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1476,14 +1402,10 @@ public class TaggingServiceImplTest extends BaseSpringTest
     }
 
     /**
-     * Ensures that a user can only tag a node they can write to,
-     *  but that the tag scope updates propagate upwards as the system
-     *  (even to things the user can't write to)
-     * Also checks that policies are disabled during tag scope updates,
-     *  so that the auditable flags aren't incorrectly set by the change
+     * Ensures that a user can only tag a node they can write to, but that the tag scope updates propagate upwards as the system (even to things the user can't write to) Also checks that policies are disabled during tag scope updates, so that the auditable flags aren't incorrectly set by the change
      */
     @Test
-    @Category({RedundantTests.class,LuceneTests.class})
+    @Category({RedundantTests.class, LuceneTests.class})
     public void test91PermissionsAndPolicies() throws Exception
     {
         class TestData
@@ -1495,15 +1417,14 @@ public class TaggingServiceImplTest extends BaseSpringTest
         final TestData testData = new TestData();
         final String USER_1 = "User1";
         authenticationComponent.setSystemUserAsCurrentUser();
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 // Create a user
-                if(authenticationService.authenticationExists(USER_1))
+                if (authenticationService.authenticationExists(USER_1))
                     authenticationService.deleteAuthentication(USER_1);
-                if(personService.personExists(USER_1))
+                if (personService.personExists(USER_1))
                     personService.deletePerson(USER_1);
 
                 authenticationService.createAuthentication(USER_1, "PWD".toCharArray());
@@ -1512,26 +1433,23 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 personProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, "title" + USER_1);
                 personProperties.put(ContentModel.PROP_FIRSTNAME, "firstName");
                 personProperties.put(ContentModel.PROP_LASTNAME, "lastName");
-                personProperties.put(ContentModel.PROP_EMAIL, USER_1+"@example.com");
+                personProperties.put(ContentModel.PROP_EMAIL, USER_1 + "@example.com");
                 personProperties.put(ContentModel.PROP_JOBTITLE, "jobTitle");
                 personService.createPerson(personProperties);
 
-
                 // Give that user permissions on the tagging category root, so
-                //  they're allowed to add new tags
+                // they're allowed to add new tags
                 NodeRef tn = taggingService.createTag(folder.getStoreRef(), "Testing");
                 NodeRef tr = nodeService.getPrimaryParent(tn).getParentRef();
                 permissionService.setPermission(tr, USER_1, PermissionService.EDITOR, true);
                 permissionService.setPermission(tr, USER_1, PermissionService.CONTRIBUTOR, true);
-
 
                 // Create a folder with a tag scope on it + auditable aspect
                 // User can read but not write
                 authenticationComponent.setSystemUserAsCurrentUser();
                 testData.auditableFolder = nodeService.createNode(
                         folder, ContentModel.ASSOC_CONTAINS,
-                        QName.createQName("Folder"), ContentModel.TYPE_FOLDER
-                ).getChildRef();
+                        QName.createQName("Folder"), ContentModel.TYPE_FOLDER).getChildRef();
                 nodeService.addAspect(testData.auditableFolder, ContentModel.ASPECT_AUDITABLE, null);
                 taggingService.addTagScope(testData.auditableFolder);
                 permissionService.setPermission(testData.auditableFolder, USER_1, PermissionService.CONSUMER, true);
@@ -1540,15 +1458,12 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 assertEquals("System", nodeService.getProperty(testData.auditableFolder, ContentModel.PROP_CREATOR));
                 assertEquals("System", nodeService.getProperty(testData.auditableFolder, ContentModel.PROP_MODIFIER));
 
-
                 // Create a node without tags, which the user
-                //  can write to
+                // can write to
                 testData.taggedNode = nodeService.createNode(
                         testData.auditableFolder, ContentModel.ASSOC_CONTAINS,
-                        QName.createQName("Tagged"), ContentModel.TYPE_CONTENT
-                ).getChildRef();
+                        QName.createQName("Tagged"), ContentModel.TYPE_CONTENT).getChildRef();
                 permissionService.setPermission(testData.taggedNode, USER_1, PermissionService.EDITOR, true);
-
 
                 // Tag the node as the user
                 authenticationComponent.setCurrentUser(USER_1);
@@ -1559,7 +1474,6 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 taggingService.addTag(testData.taggedNode, TAG_1);
                 taggingService.addTag(testData.taggedNode, TAG_2);
                 assertEquals(2, taggingService.getTags(testData.taggedNode).size());
-
 
                 // Ensure the folder tag scope got the update
                 TagScope ts = taggingService.findTagScope(testData.taggedNode);
@@ -1572,17 +1486,15 @@ public class TaggingServiceImplTest extends BaseSpringTest
             }
         });
         // Due to timestamp propagation, we need to start a new transaction to get the current folder modified date
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
-                testData.origModified = (Date)nodeService.getProperty(testData.auditableFolder, ContentModel.PROP_MODIFIED);
+                testData.origModified = (Date) nodeService.getProperty(testData.auditableFolder, ContentModel.PROP_MODIFIED);
                 return null;
             }
         });
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1595,7 +1507,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 // Ensure the auditable flags on the folder are unchanged
                 assertEquals("System", nodeService.getProperty(testData.auditableFolder, ContentModel.PROP_CREATOR));
                 assertEquals("System", nodeService.getProperty(ts.getNodeRef(), ContentModel.PROP_MODIFIER));
-                assertEquals(testData.origModified.getTime(), ((Date)nodeService.getProperty(testData.auditableFolder, ContentModel.PROP_MODIFIED)).getTime());
+                assertEquals(testData.origModified.getTime(), ((Date) nodeService.getProperty(testData.auditableFolder, ContentModel.PROP_MODIFIED)).getTime());
 
                 // Tidy up
                 authenticationComponent.setSystemUserAsCurrentUser();
@@ -1608,11 +1520,10 @@ public class TaggingServiceImplTest extends BaseSpringTest
 
     // == Test the JavaScript API ==
     @Test
-    @Category({RedundantTests.class,LuceneTests.class})
+    @Category({RedundantTests.class, LuceneTests.class})
     public void test92JSAPI() throws Exception
     {
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1633,11 +1544,10 @@ public class TaggingServiceImplTest extends BaseSpringTest
     }
 
     @Test
-    @Category({RedundantTests.class,LuceneTests.class})
+    @Category({RedundantTests.class, LuceneTests.class})
     public void test93JSTagScope() throws Exception
     {
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1656,8 +1566,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1665,8 +1574,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1674,8 +1582,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1683,8 +1590,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1692,8 +1598,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1701,8 +1606,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1710,8 +1614,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1719,8 +1622,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1743,8 +1645,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
     }
 
     /**
-     * Test that the scheduled task will do the right thing
-     *  when it runs.
+     * Test that the scheduled task will do the right thing when it runs.
      */
     @Test
     public void test93OnStartupJob() throws Exception
@@ -1757,14 +1658,12 @@ public class TaggingServiceImplTest extends BaseSpringTest
             public String lockSF;
         }
         final TestData testData = new TestData();
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 // Nothing is pending to start with
                 assertEquals(0, updateTagsAction.searchForTagScopesPendingUpdates().size());
-
 
                 // Take the tag scope lock, so that no real updates will happen
                 testData.lockF = updateTagsAction.lockTagScope(folder);
@@ -1784,24 +1683,20 @@ public class TaggingServiceImplTest extends BaseSpringTest
             }
         });
 
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 // Tag scope updates shouldn't have happened yet,
-                //  as the scopes are locked
+                // as the scopes are locked
                 TagScope ts1 = taggingService.findTagScope(folder);
                 TagScope ts2 = taggingService.findTagScope(subFolder);
                 assertEquals(
                         "Wrong tags on folder tagscope: " + ts1.getTags(),
-                        0, ts1.getTags().size()
-                );
+                        0, ts1.getTags().size());
                 assertEquals(
                         "Wrong tags on folder tagscope: " + ts1.getTags(),
-                        0, ts2.getTags().size()
-                );
-
+                        0, ts2.getTags().size());
 
                 // Check the pending list now
                 assertEquals(2, updateTagsAction.searchForTagScopesPendingUpdates().size());
@@ -1809,12 +1704,10 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 assertTrue("Not found in " + pendingScopes, pendingScopes.contains(folder));
                 assertTrue("Not found in " + pendingScopes, pendingScopes.contains(subFolder));
 
-
                 // Ensure that we've still got the lock, eg in case
-                //  of the async execution taking a while to proceed
+                // of the async execution taking a while to proceed
                 updateTagsAction.updateTagScopeLock(folder, testData.lockF);
                 updateTagsAction.updateTagScopeLock(subFolder, testData.lockSF);
-
 
                 // Have the Quartz bean fire now
                 // It won't be able to do anything, as the locks are taken
@@ -1823,8 +1716,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 return null;
             }
         });
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1837,18 +1729,15 @@ public class TaggingServiceImplTest extends BaseSpringTest
             }
         });
 
-
         // Give back our locks, so we can proceed
         updateTagsAction.unlockTagScope(folder, testData.lockF);
         updateTagsAction.unlockTagScope(subFolder, testData.lockSF);
-
 
         // Fire off the quartz bean, this time it can really work
         UpdateTagScopesQuartzJob job = new UpdateTagScopesQuartzJob();
         job.execute(actionService, updateTagsAction);
 
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1859,12 +1748,10 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 TagScope ts2 = taggingService.findTagScope(subFolder);
                 assertEquals(
                         "Wrong tags on folder tagscope: " + ts1.getTags(),
-                        3, ts1.getTags().size()
-                );
+                        3, ts1.getTags().size());
                 assertEquals(
                         "Wrong tags on folder tagscope: " + ts1.getTags(),
-                        2, ts2.getTags().size()
-                );
+                        2, ts2.getTags().size());
 
                 assertEquals(4, ts1.getTag(TAG_1).getCount());
                 assertEquals(1, ts1.getTag(TAG_2).getCount());
@@ -1878,14 +1765,12 @@ public class TaggingServiceImplTest extends BaseSpringTest
     }
 
     /**
-     * Test that when multiple threads do tag updates, the right thing still
-     * happens
+     * Test that when multiple threads do tag updates, the right thing still happens
      */
     @Test
     public void test94MultiThreaded() throws Exception
     {
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -1898,18 +1783,16 @@ public class TaggingServiceImplTest extends BaseSpringTest
         // Reset the action count
         asyncOccurs.wantedActionsCount = 0;
 
-
         // Prepare a bunch of threads to do tagging
         final List<Thread> threads = new ArrayList<Thread>();
-        final String[] tags = new String[] { TAG_1, TAG_2, TAG_3, TAG_4, TAG_5,
+        final String[] tags = new String[]{TAG_1, TAG_2, TAG_3, TAG_4, TAG_5,
                 "testTag06", "testTag07", "testTag08", "testTag09", "testTag10",
                 "testTag11", "testTag12", "testTag13", "testTag14", "testTag15",
                 "testTag16", "testTag17", "testTag18", "testTag19", "testTag20"};
         for (String tmpTag : tags)
         {
             final String tag = tmpTag;
-            Thread t = new Thread(new Runnable()
-            {
+            Thread t = new Thread(new Runnable() {
                 @Override
                 public synchronized void run()
                 {
@@ -1919,14 +1802,12 @@ public class TaggingServiceImplTest extends BaseSpringTest
                         wait();
                     }
                     catch (InterruptedException e)
-                    {
-                    }
+                    {}
                     logger.debug(Thread.currentThread() + " - About to start tagging for " + tag);
 
                     // Do the updates
                     AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-                    RetryingTransactionCallback<Void> txnCallback = new RetryingTransactionCallback<Void>()
-                    {
+                    RetryingTransactionCallback<Void> txnCallback = new RetryingTransactionCallback<Void>() {
                         @Override
                         public Void execute() throws Throwable
                         {
@@ -1948,10 +1829,13 @@ public class TaggingServiceImplTest extends BaseSpringTest
                     logger.debug(Thread.currentThread() + " - Done tagging for " + tag);
 
                     // Wait briefly for thing to catch up, before we
-                    //  declare ourselves to be done
-                    try {
+                    // declare ourselves to be done
+                    try
+                    {
                         Thread.sleep(150);
-                    } catch (InterruptedException e) {}
+                    }
+                    catch (InterruptedException e)
+                    {}
                 }
             });
             threads.add(t);
@@ -1974,21 +1858,21 @@ public class TaggingServiceImplTest extends BaseSpringTest
         logger.info("All threads should have finished");
 
         // Have a brief pause, while we wait for their related
-        //  async actions to kick off
+        // async actions to kick off
         Thread.sleep(150);
 
         // Wait until we've had 20 async tagging actions run (One per Thread)
         // Not all of the actions will do something, but we just need to
-        //  wait for all of them!
+        // wait for all of them!
         // As a backup check, also ensure that the action tracking service
-        //  shows none of them running either
+        // shows none of them running either
         for (int i = 0; i < 600; i++)
         {
             try
             {
-                if(asyncOccurs.wantedActionsCount < tags.length)
+                if (asyncOccurs.wantedActionsCount < tags.length)
                 {
-                    if(i%50 == 0)
+                    if (i % 50 == 0)
                     {
                         logger.info("Done " + asyncOccurs.wantedActionsCount + " of " + tags.length);
                     }
@@ -1997,7 +1881,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 }
                 if (actionTrackingService.getAllExecutingActions().size() > 0)
                 {
-                    if(i%50 == 0)
+                    if (i % 50 == 0)
                     {
                         List<ExecutionSummary> actions = actionTrackingService.getAllExecutingActions();
                         logger.info("Waiting on " + actions.size() + " actions: " + actions);
@@ -2008,19 +1892,17 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 break;
             }
             catch (InterruptedException e)
-            {
-            }
+            {}
         }
 
         // Extra sleep just to be sure things are quiet before we continue
         // (Allows anything that runs after the async actions commit to
-        //  finish up for example)
+        // finish up for example)
         Thread.sleep(175);
         System.out.println("Done waiting for tagging, now checking");
 
         // Now check that things ended up as planned
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2028,12 +1910,10 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 TagScope ts2 = taggingService.findTagScope(subFolder);
                 assertEquals(
                         "Wrong tags on folder tagscope: " + ts1.getTags(),
-                        tags.length, ts1.getTags().size()
-                );
+                        tags.length, ts1.getTags().size());
                 assertEquals(
                         "Wrong tags on subfolder tagscope: " + ts2.getTags(),
-                        tags.length, ts2.getTags().size()
-                );
+                        tags.length, ts2.getTags().size());
 
                 // Each tag should crop up 3 times on the folder
                 // and twice for the subfolder
@@ -2049,8 +1929,8 @@ public class TaggingServiceImplTest extends BaseSpringTest
         });
     }
 
-
-    public class AsyncOccurs implements OnAsyncActionExecute {
+    public class AsyncOccurs implements OnAsyncActionExecute
+    {
         private Object waitForExecutionLock = new Object();
         private static final long waitTime = 3500;
         private static final String ACTION_TYPE = UpdateTagScopesActionExecuter.NAME;
@@ -2060,13 +1940,17 @@ public class TaggingServiceImplTest extends BaseSpringTest
         @Override
         public void onAsyncActionExecute(Action action, NodeRef actionedUponNodeRef)
         {
-            if(action.getActionDefinitionName().equals(ACTION_TYPE))
+            if (action.getActionDefinitionName().equals(ACTION_TYPE))
             {
                 wantedActionsCount++;
-                synchronized (waitForExecutionLock) {
-                    try {
+                synchronized (waitForExecutionLock)
+                {
+                    try
+                    {
                         waitForExecutionLock.notify();
-                    } catch(IllegalMonitorStateException e) {}
+                    }
+                    catch (IllegalMonitorStateException e)
+                    {}
                 }
             }
             else
@@ -2079,20 +1963,21 @@ public class TaggingServiceImplTest extends BaseSpringTest
         {
             T returnVal = transactionService.getRetryingTransactionHelper().doInTransaction(callback);
 
-            synchronized (waitForExecutionLock) {
+            synchronized (waitForExecutionLock)
+            {
 
                 // Always wait 100ms
                 waitForExecutionLock.wait(100);
 
                 // If there are actions if the required type
-                //  currently running, keep waiting longer for
-                //  them to finish
-                if(actionTrackingService.getExecutingActions(ACTION_TYPE).size() > 0)
+                // currently running, keep waiting longer for
+                // them to finish
+                if (actionTrackingService.getExecutingActions(ACTION_TYPE).size() > 0)
                 {
                     long now = System.currentTimeMillis();
                     waitForExecutionLock.wait(waitTime);
 
-                    if(System.currentTimeMillis() - now >= waitTime)
+                    if (System.currentTimeMillis() - now >= waitTime)
                     {
                         System.err.println("Warning - trigger wasn't received");
                     }
@@ -2100,16 +1985,19 @@ public class TaggingServiceImplTest extends BaseSpringTest
             }
 
             // If there are any more actions of the same type,
-            //  then wait for them to finish too
-            for(int i=0; i<100; i++)
+            // then wait for them to finish too
+            for (int i = 0; i < 100; i++)
             {
-                if( actionTrackingService.getExecutingActions(ACTION_TYPE).size() == 0 )
+                if (actionTrackingService.getExecutingActions(ACTION_TYPE).size() == 0)
                 {
                     break;
                 }
-                try {
+                try
+                {
                     Thread.sleep(100);
-                } catch(InterruptedException e) {}
+                }
+                catch (InterruptedException e)
+                {}
             }
             if (actionTrackingService.getExecutingActions(ACTION_TYPE).size() > 0)
             {
@@ -2123,8 +2011,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
     /**
      * Test for https://https://issues.alfresco.com/jira/browse/ALF-17260.
      *
-     * When the audit queue for the tagging service contains more than 100 entries which aren't update,
-     * {@link UpdateTagScopesActionExecuter} was failing to update the tag scope of containers correctly.
+     * When the audit queue for the tagging service contains more than 100 entries which aren't update, {@link UpdateTagScopesActionExecuter} was failing to update the tag scope of containers correctly.
      *
      * @throws Exception
      */
@@ -2132,7 +2019,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
     public void testALF_17260() throws Exception
     {
         // Add tag scope to our container
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
 
             @Override
             public Void execute() throws Throwable
@@ -2144,16 +2031,14 @@ public class TaggingServiceImplTest extends BaseSpringTest
         });
 
         // Generate ~1800 audit entries, none of which are updates, as determined by UpdateTagScopesActionExecuter
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
                 for (int j = 0; j < 10; j++)
                 {
                     final int k = j;
-                    RetryingTransactionCallback<NodeRef> createFoldersAndTags = new RetryingTransactionCallback<NodeRef>()
-                    {
+                    RetryingTransactionCallback<NodeRef> createFoldersAndTags = new RetryingTransactionCallback<NodeRef>() {
                         @Override
                         public NodeRef execute() throws Throwable
                         {
@@ -2186,8 +2071,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
         });
 
         // The tag scope of our container should be empty at this stage.
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2201,8 +2085,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
         });
 
         // Add some tags which should update the tag scope.
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2213,8 +2096,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
 
         // Prior to fixing ALF-17260, the tag scope of our container wasn't being updated correctly. These
         // assertions were failing.
-        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
-        {
+        asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2244,7 +2126,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
     }
 
     @Test
-    @Category({RedundantTests.class,LuceneTests.class})
+    @Category({RedundantTests.class, LuceneTests.class})
     public void testPagedTags() throws UnsupportedEncodingException
     {
         authenticationComponent.setSystemUserAsCurrentUser();
@@ -2252,7 +2134,6 @@ public class TaggingServiceImplTest extends BaseSpringTest
         assertNotNull(tags);
         PagingResults<Pair<NodeRef, String>> res = taggingService.getTags(storeRef, new PagingRequest(10));
         assertNotNull(res);
-
 
         String guid = GUID.generate();
         // Create a node
@@ -2265,7 +2146,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, docName),
                 ContentModel.TYPE_CONTENT,
                 docProps).getChildRef();
-        taggingService.addTag(myDoc,"dog");
+        taggingService.addTag(myDoc, "dog");
 
         res = taggingService.getTags(myDoc, new PagingRequest(10));
         assertNotNull(res);
@@ -2273,7 +2154,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
     }
 
     @Test
-    @Category({RedundantTests.class,LuceneTests.class})
+    @Category({RedundantTests.class, LuceneTests.class})
     public void testChangeTags() throws UnsupportedEncodingException
     {
         try
@@ -2320,7 +2201,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
         {
             List<String> storeTags = taggingService.getTags(storeRef);
             assertNotNull(storeTags);
-            assertTrue(storeTags.size()>1);
+            assertTrue(storeTags.size() > 1);
             taggingService.changeTag(storeRef, storeTags.get(0), storeTags.get(1));
             fail("Should throw exception");
         }
@@ -2329,7 +2210,6 @@ public class TaggingServiceImplTest extends BaseSpringTest
             tee.getMessage().contains("already exists");
         }
     }
-
 
     /* Test adding tags containing \n and | chars. Test all ways to create tag (e.g. createTag, addTag, setTags) */
     @Test
@@ -2341,7 +2221,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
 
     private void testTag(final String tag)
     {
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -2350,7 +2230,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                     taggingService.createTag(storeRef, tag);
                     fail();
                 }
-                catch(IllegalArgumentException iae)
+                catch (IllegalArgumentException iae)
                 {
                     //
                 }
@@ -2360,7 +2240,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
                     taggingService.addTag(document, tag);
                     fail();
                 }
-                catch(IllegalArgumentException iae)
+                catch (IllegalArgumentException iae)
                 {
                     //
                 }
@@ -2373,7 +2253,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
 
                     fail();
                 }
-                catch(IllegalArgumentException iae)
+                catch (IllegalArgumentException iae)
                 {
                     //
                 }
@@ -2387,16 +2267,18 @@ public class TaggingServiceImplTest extends BaseSpringTest
      * Tests that when the deleteTag() method runs, it will remove invalid references to the deleted tag.
      */
     @Test
-    @Category({RedundantTests.class,LuceneTests.class})
-    public void testDeleteTag() throws Exception{
+    @Category({RedundantTests.class, LuceneTests.class})
+    public void testDeleteTag() throws Exception
+    {
 
-        try{
+        try
+        {
             // We instruct the 'nodeRefPropInterceptor' to skip processing on the 'get' methods.
             // This is needed because this interceptor removes any properties which are invalid. e.g. have been deleted.
             // We need to make sure that the 'taggable' property stays put.
             nodeRefPropInterceptor.setFilterOnGet(false);
 
-            this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+            this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
 
                 @SuppressWarnings("unchecked")
                 @Override
@@ -2420,7 +2302,9 @@ public class TaggingServiceImplTest extends BaseSpringTest
                     return null;
                 }
             });
-        } finally{
+        }
+        finally
+        {
             nodeRefPropInterceptor.setFilterOnGet(true);
         }
     }
@@ -2436,8 +2320,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         String siteName = GUID.generate();
 
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
 
             @SuppressWarnings("unchecked")
             @Override
@@ -2469,8 +2352,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
             }
         });
 
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
 
             @SuppressWarnings("unchecked")
             @Override

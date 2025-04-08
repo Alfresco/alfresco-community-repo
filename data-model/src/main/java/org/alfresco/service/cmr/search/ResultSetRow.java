@@ -45,9 +45,7 @@ import org.alfresco.service.namespace.QName;
 public interface ResultSetRow
 {
     /**
-     * Get the values of all available node properties.  These are only properties
-     * that were stored in the query results and can vary depending on the query
-     * language that was used.
+     * Get the values of all available node properties. These are only properties that were stored in the query results and can vary depending on the query language that was used.
      * 
      * @return Returns all the available node properties
      */
@@ -55,7 +53,9 @@ public interface ResultSetRow
 
     /**
      * Get the data for a single column
-     * @param columnName String
+     * 
+     * @param columnName
+     *            String
      * @return the value
      */
     public Serializable getValue(String columnName);
@@ -63,78 +63,81 @@ public interface ResultSetRow
     /**
      * Get a node property value by name
      * 
-     * @param qname the property name
+     * @param qname
+     *            the property name
      * @return Returns the node property for the given name
      */
     public Serializable getValue(QName qname);
-    
+
     /**
      * The reference to the node that equates to this row in the result set
      * 
-     * @return Returns the reference to the node that makes this result 
+     * @return Returns the reference to the node that makes this result
      */
     public NodeRef getNodeRef();
 
-    
     /**
      * Gets the node refs
+     * 
      * @return a map of selector name to node ref
      */
     public Map<String, NodeRef> getNodeRefs();
-    
 
     /**
      * Gets the node ref related to the named selector
-     * @param selectorName String
+     * 
+     * @param selectorName
+     *            String
      * @return the node ref
      */
     public NodeRef getNodeRef(String selectorName);
-    
+
     /**
      * Get the score for this row in the result set
      * 
      * @return Returns the score for this row in the resultset
      */
     public float getScore(); // Score is score + rank + potentially other
-                                // stuff
+                             // stuff
 
     /**
      * Get the scores .
+     * 
      * @return a map of selector name to score.
      */
     public Map<String, Float> getScores();
-    
+
     /**
      * Get the score related to the named selector.
-     * @param selectorName String
+     * 
+     * @param selectorName
+     *            String
      * @return - the score.
      */
     public float getScore(String selectorName);
-    
-    
+
     /**
      * Get the containing result set
      * 
      * @return Returns the containing resultset
      */
     public ResultSet getResultSet();
-    
+
     /**
-     * @return Returns the name of the child association leading down to the
-     *      node represented by this row 
+     * @return Returns the name of the child association leading down to the node represented by this row
      */
     public QName getQName();
 
     /**
-     * Get the index of this result set in the result set 
-     * If you want the overall position in paged reults you have to add the skipCount fo the result set. 
+     * Get the index of this result set in the result set If you want the overall position in paged reults you have to add the skipCount fo the result set.
+     * 
      * @return int
      */
     public int getIndex();
-    
+
     /**
      * @return Returns the child assoc ref for this row
      */
     public ChildAssociationRef getChildAssocRef();
-    
+
 }

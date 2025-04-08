@@ -34,11 +34,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.util.ISO8601DateFormat;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 /**
  * A representation of an Audit Application Entry in JUnit Test
@@ -101,7 +102,7 @@ public class AuditEntry extends org.alfresco.rest.api.model.AuditEntry implement
         {
             String userId = (String) createdByUserJson.get("id");
             String displayName = (String) createdByUserJson.get("displayName");
-            createdByUser = new  org.alfresco.rest.api.model.UserInfo(userId,displayName,displayName);   
+            createdByUser = new org.alfresco.rest.api.model.UserInfo(userId, displayName, displayName);
         }
         Date createdAt = ISO8601DateFormat.parse((String) jsonObject.get("createdAt"));
 

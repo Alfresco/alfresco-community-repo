@@ -35,9 +35,10 @@ import org.alfresco.repo.content.caching.CachingContentStoreEvent;
 public class CachedContentCleanerCreatedEvent extends CachingContentStoreEvent
 {
     private static final long serialVersionUID = 1L;
-    
+
     /**
-     * @param cleaner - cleaner
+     * @param cleaner
+     *            - cleaner
      */
     public CachedContentCleanerCreatedEvent(CachedContentCleaner cleaner)
     {

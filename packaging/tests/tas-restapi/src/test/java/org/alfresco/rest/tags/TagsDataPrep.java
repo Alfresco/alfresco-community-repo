@@ -1,5 +1,7 @@
 package org.alfresco.rest.tags;
 
+import org.testng.annotations.BeforeClass;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestTagModel;
@@ -12,7 +14,6 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.testng.annotations.BeforeClass;
 
 public class TagsDataPrep extends RestTest
 {
@@ -31,10 +32,10 @@ public class TagsDataPrep extends RestTest
     @BeforeClass
     public void init() throws Exception
     {
-        //Create users
+        // Create users
         adminUserModel = dataUser.getAdminUser();
         userModel = dataUser.createRandomTestUser();
-        //Create public site
+        // Create public site
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         usersWithRoles = dataUser.usingAdmin().addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
         document = dataContent.usingUser(adminUserModel).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -53,14 +54,13 @@ public class TagsDataPrep extends RestTest
         folder2tags = restClient.withCoreAPI().usingResource(folder2).addTags(folderTagValue, documentTagValue);
 
         // Allow indexing to complete.
-        Utility.sleep(500, 60000, () ->
-        {
+        Utility.sleep(500, 60000, () -> {
             returnedCollection = restClient.withParams("maxItems=10000", "where=(tag MATCHES ('*tag*'))")
-                                           .withCoreAPI().getTags();
+                    .withCoreAPI().getTags();
             returnedCollection.assertThat().entriesListContains("tag", documentTagValue)
-                              .and().entriesListContains("tag", documentTagValue2)
-                              .and().entriesListContains("tag", folderTagValue)
-                              .and().entriesListContains("tag", orphanTag.getTag());
+                    .and().entriesListContains("tag", documentTagValue2)
+                    .and().entriesListContains("tag", folderTagValue)
+                    .and().entriesListContains("tag", orphanTag.getTag());
         });
     }
 

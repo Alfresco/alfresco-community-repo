@@ -37,11 +37,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Stores a set of expected and excluded types, by full type name. The localName can be a wildcard (*) to indicate that the
- * whole namespace should be expected/excluded.
+ * Stores a set of expected and excluded types, by full type name. The localName can be a wildcard (*) to indicate that the whole namespace should be expected/excluded.
  * 
- * A node is tested to ensure that its type is in the expected list and not in the excluded list. Its aspects are also
- * tested to ensure that they are in the expected list and not in the excluded list.
+ * A node is tested to ensure that its type is in the expected list and not in the excluded list. Its aspects are also tested to ensure that they are in the expected list and not in the excluded list.
  * 
  * Adapted some code from QNameFilter.
  * 
@@ -52,9 +50,9 @@ public class TypeConstraint
 {
     public static final String WILDCARD = "*";
 
-	private Set<String> expectedModels;
-	private Set<QName> expectedQNames;
-	private List<String> expectedTypes;
+    private Set<String> expectedModels;
+    private Set<QName> expectedQNames;
+    private List<String> expectedTypes;
 
     private Set<QName> excludedQNames;
     private Set<String> excludedModels;
@@ -62,31 +60,31 @@ public class TypeConstraint
 
     private NodeService nodeService;
     private DictionaryService dictionaryService;
-    
+
     public void setExpectedTypes(List<String> expectedTypes)
     {
-//        if(expectedTypes != null && expectedTypes.size() > 0)
-//        {
-//        	this.expectedTypes = new ArrayList<QName>(expectedTypes.size());
-//
-//	    	for(String type : expectedTypes)
-//	    	{
-//	            final QName typeDef = QName.createQName(type);
-//	    		this.expectedTypes.add(typeDef);
-//	    	}
-//        }
-    	this.expectedTypes = expectedTypes;
-	}
+        // if(expectedTypes != null && expectedTypes.size() > 0)
+        // {
+        // this.expectedTypes = new ArrayList<QName>(expectedTypes.size());
+        //
+        // for(String type : expectedTypes)
+        // {
+        // final QName typeDef = QName.createQName(type);
+        // this.expectedTypes.add(typeDef);
+        // }
+        // }
+        this.expectedTypes = expectedTypes;
+    }
 
-	public void setNodeService(NodeService nodeService)
+    public void setNodeService(NodeService nodeService)
     {
-		this.nodeService = nodeService;
-	}
-	
-	public void setDictionaryService(DictionaryService dictionaryService)
-	{
-		this.dictionaryService = dictionaryService;
-	}
+        this.nodeService = nodeService;
+    }
+
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
 
     public void setExcludedTypes(List<String> excludedTypes)
     {
@@ -95,35 +93,34 @@ public class TypeConstraint
 
     public void init()
     {
-        if(expectedTypes != null && !expectedTypes.isEmpty())
+        if (expectedTypes != null && !expectedTypes.isEmpty())
         {
-        	preprocessExpectedTypes(expectedTypes);
+            preprocessExpectedTypes(expectedTypes);
         }
-        if(excludedTypes != null && !excludedTypes.isEmpty())
+        if (excludedTypes != null && !excludedTypes.isEmpty())
         {
-        	preprocessExcludedTypes(excludedTypes);
+            preprocessExcludedTypes(excludedTypes);
         }
     }
 
     /**
-     * Processes the user-defined list of types into valid QNames & models, it validates them
-     * against the dictionary and also supports wildcards
+     * Processes the user-defined list of types into valid QNames & models, it validates them against the dictionary and also supports wildcards
      */
     protected void preprocessExcludedTypes(List<String> typeNames)
     {
         Set<QName> qNamesToExclude = new HashSet<QName>(typeNames.size());
         Set<String> modelsToExclude = new HashSet<String>();
-        
+
         for (String typeDefinition : typeNames)
         {
             final QName typeDef = QName.createQName(typeDefinition);
             if (WILDCARD.equals(typeDef.getLocalName()))
             {
-            	modelsToExclude.add(typeDef.getNamespaceURI());
+                modelsToExclude.add(typeDef.getNamespaceURI());
             }
             else
             {
-            	qNamesToExclude.add(typeDef); // valid so add it to the list
+                qNamesToExclude.add(typeDef); // valid so add it to the list
             }
         }
 
@@ -132,42 +129,41 @@ public class TypeConstraint
     }
 
     /**
-     * Processes the user-defined list of types into valid QNames & models, it validates them
-     * against the dictionary and also supports wildcards
+     * Processes the user-defined list of types into valid QNames & models, it validates them against the dictionary and also supports wildcards
      */
     protected void preprocessExpectedTypes(List<String> typeNames)
     {
         Set<QName> qNames = new HashSet<QName>(typeNames.size());
         Set<String> models = new HashSet<String>();
-        
+
         for (String typeDefinition : typeNames)
         {
             final QName typeDef = QName.createQName(typeDefinition);
             if (WILDCARD.equals(typeDef.getLocalName()))
             {
-            	models.add(typeDef.getNamespaceURI());
+                models.add(typeDef.getNamespaceURI());
             }
             else
             {
-            	qNames.add(typeDef);
+                qNames.add(typeDef);
             }
         }
 
         this.expectedModels = models;
         this.expectedQNames = qNames;
     }
-    
+
     private boolean isExcluded(QName typeQName)
     {
         return excludedQNames != null && excludedQNames.contains(typeQName) || excludedModels != null && excludedModels.contains(typeQName.getNamespaceURI());
     }
-    
+
     private boolean matchesExpected(QName typeQName)
     {
-    	if(expectedQNames == null || expectedQNames.contains(typeQName) || expectedModels == null || expectedModels.contains(typeQName.getNamespaceURI()))
-    	{
+        if (expectedQNames == null || expectedQNames.contains(typeQName) || expectedModels == null || expectedModels.contains(typeQName.getNamespaceURI()))
+        {
             return true;
-    	}
+        }
 
         for (QName expectedQName : expectedQNames)
         {
@@ -182,78 +178,78 @@ public class TypeConstraint
     /**
      * Returns true if the nodeRef matches the constraints, false otherwise.
      * 
-     * @param nodeRef NodeRef
+     * @param nodeRef
+     *            NodeRef
      * @return returns true if the nodeRef matches the constraints, false otherwise.
      */
-	public boolean matches(final NodeRef nodeRef)
-	{
-		// need to run as system - caller may not be able to read the node's aspects
-		// but we need to know what they are in order to determine exclusion.
-		boolean matches = TenantUtil.runAsSystemTenant(new TenantRunAsWork<Boolean>()
-		{
-			@Override
-			public Boolean doWork() throws Exception
-			{
-				boolean matches = true;
+    public boolean matches(final NodeRef nodeRef)
+    {
+        // need to run as system - caller may not be able to read the node's aspects
+        // but we need to know what they are in order to determine exclusion.
+        boolean matches = TenantUtil.runAsSystemTenant(new TenantRunAsWork<Boolean>() {
+            @Override
+            public Boolean doWork() throws Exception
+            {
+                boolean matches = true;
 
-				QName nodeType = nodeService.getType(nodeRef);
-				boolean typeExcluded = isExcluded(nodeType);
+                QName nodeType = nodeService.getType(nodeRef);
+                boolean typeExcluded = isExcluded(nodeType);
 
-				if(typeExcluded)
-				{
-					// if the type is excluded, bail out
-					matches = false;
-				}
-				else
-				{
-					boolean isExpected = matchesExpected(nodeType);
-					if(isExpected)
-					{
-						// type is expected and not excluded, check the aspects for exclusion
-						Set<QName> aspects = nodeService.getAspects(nodeRef);
-						for(QName aspect : aspects)
-						{
-							if(isExcluded(aspect))
-							{
-								matches = false;
-								break;
-							}
-						}
-					}
-					else
-					{
-						// type not in expected list, check aspects for exclusion and in the expected list
+                if (typeExcluded)
+                {
+                    // if the type is excluded, bail out
+                    matches = false;
+                }
+                else
+                {
+                    boolean isExpected = matchesExpected(nodeType);
+                    if (isExpected)
+                    {
+                        // type is expected and not excluded, check the aspects for exclusion
+                        Set<QName> aspects = nodeService.getAspects(nodeRef);
+                        for (QName aspect : aspects)
+                        {
+                            if (isExcluded(aspect))
+                            {
+                                matches = false;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // type not in expected list, check aspects for exclusion and in the expected list
 
-						// check aspects
-						Set<QName> aspects = nodeService.getAspects(nodeRef);
-						for(QName aspect : aspects)
-						{
-							if(isExcluded(aspect))
-							{
-								// aspect is excluded, bail out
-								matches = false;
-								break;
-							}
+                        // check aspects
+                        Set<QName> aspects = nodeService.getAspects(nodeRef);
+                        for (QName aspect : aspects)
+                        {
+                            if (isExcluded(aspect))
+                            {
+                                // aspect is excluded, bail out
+                                matches = false;
+                                break;
+                            }
 
-							if(matchesExpected(aspect))
-							{
-								// aspect matches an expected type
-								isExpected = true;
-							}
-						}
-						
-						if(!isExpected)
-						{
-							// neither the type nor any of the aspects in the expected list, no match
-							matches = false;
-						}
-					}
-				}
+                            if (matchesExpected(aspect))
+                            {
+                                // aspect matches an expected type
+                                isExpected = true;
+                            }
+                        }
 
-				return matches;
-			}
-		}, TenantUtil.getCurrentDomain());
+                        if (!isExpected)
+                        {
+                            // neither the type nor any of the aspects in the expected list, no match
+                            matches = false;
+                        }
+                    }
+                }
 
-		return matches;
-	}
+                return matches;
+            }
+        }, TenantUtil.getCurrentDomain());
+
+        return matches;
+    }
 }

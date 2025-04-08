@@ -30,7 +30,6 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-
 /**
  * Tests for the UnlimitedQuotaStrategy class.
  * 
@@ -39,20 +38,20 @@ import org.junit.Test;
 public class UnlimitedQuotaStrategyTest
 {
     private UnlimitedQuotaStrategy quota;
-    
+
     @Before
     public void setUp()
     {
         quota = new UnlimitedQuotaStrategy();
     }
-    
+
     @Test
     public void beforeWritingCacheFile()
     {
         assertTrue("Should always allow caching", quota.beforeWritingCacheFile(0));
         assertTrue("Should always allow caching", quota.beforeWritingCacheFile(Long.MAX_VALUE));
     }
-    
+
     @Test
     public void afterWritingCacheFile()
     {

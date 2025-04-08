@@ -49,20 +49,20 @@ public class CompositeActionImplTest extends ActionImplTest
         Action action1 = new ActionImpl(null, ACTION1_ID, ACTION1_NAME, null);
         Action action2 = new ActionImpl(null, ACTION2_ID, ACTION2_NAME, null);
         Action action3 = new ActionImpl(null, ACTION3_ID, ACTION3_NAME, null);
-        
+
         CompositeAction compositeAction = new CompositeActionImpl(null, ID);
-        
+
         // Check has no action
         assertFalse(compositeAction.hasActions());
         List<Action> noActions = compositeAction.getActions();
         assertNotNull(noActions);
         assertEquals(0, noActions.size());
-    
+
         // Add actions
         compositeAction.addAction(action1);
         compositeAction.addAction(action2);
         compositeAction.addAction(action3);
-        
+
         // Check that the actions that are there and in the correct order
         assertTrue(compositeAction.hasActions());
         List<Action> actions = compositeAction.getActions();
@@ -83,32 +83,32 @@ public class CompositeActionImplTest extends ActionImplTest
             {
                 assertEquals(action3, action);
             }
-            counter+=1;
-        }        
+            counter += 1;
+        }
         assertEquals(action1, compositeAction.getAction(0));
         assertEquals(action2, compositeAction.getAction(1));
         assertEquals(action3, compositeAction.getAction(2));
-        
+
         // Check remove
         compositeAction.removeAction(action3);
         assertEquals(2, compositeAction.getActions().size());
-        
+
         // Check set
         compositeAction.setAction(1, action3);
         assertEquals(action1, compositeAction.getAction(0));
         assertEquals(action3, compositeAction.getAction(1));
-        
+
         // Check index of
         assertEquals(0, compositeAction.indexOfAction(action1));
         assertEquals(1, compositeAction.indexOfAction(action3));
-        
+
         // Test insert
         compositeAction.addAction(1, action2);
         assertEquals(3, compositeAction.getActions().size());
         assertEquals(action1, compositeAction.getAction(0));
         assertEquals(action2, compositeAction.getAction(1));
         assertEquals(action3, compositeAction.getAction(2));
-        
+
         // Check remote all
         compositeAction.removeAllActions();
         assertFalse(compositeAction.hasActions());

@@ -30,6 +30,7 @@ import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Provider API for file content store URL implementations
+ * 
  * @author Andreea Dragoi
  */
 @AlfrescoPublicApi
@@ -37,6 +38,7 @@ public interface FileContentUrlProvider
 {
     /**
      * Content URLs must consist of a prefix or protocol followed by an implementation-specific identifier
+     * 
      * @return file content store URL
      */
     public String createNewFileStoreUrl();

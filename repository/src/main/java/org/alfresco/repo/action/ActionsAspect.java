@@ -56,12 +56,12 @@ public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, Copy
     private BehaviourFilter behaviourFilter;
     private RuleService ruleService;
     private NodeService nodeService;
-    
+
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
@@ -71,25 +71,25 @@ public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, Copy
     {
         this.nodeService = nodeService;
     }
-   
+
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
     }
-    
+
     public void init()
     {
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
         PropertyCheck.mandatory(this, "behaviourFilter", behaviourFilter);
         PropertyCheck.mandatory(this, "ruleService", ruleService);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
-        
+
         this.policyComponent.bindAssociationBehaviour(
                 NodeServicePolicies.OnDeleteAssociationPolicy.QNAME,
                 ActionModel.TYPE_ACTION_SCHEDULE,
                 ActionModel.ASSOC_SCHEDULED_ACTION,
                 new JavaBehaviour(this, "onDeleteAssociation"));
-        
+
         this.policyComponent.bindClassBehaviour(
                 CopyServicePolicies.OnCopyNodePolicy.QNAME,
                 ActionModel.ASPECT_ACTIONS,
@@ -98,13 +98,13 @@ public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, Copy
                 CopyServicePolicies.OnCopyCompletePolicy.QNAME,
                 ActionModel.ASPECT_ACTIONS,
                 new JavaBehaviour(this, "onCopyComplete"));
-        
+
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"), 
-                ActionModel.ASPECT_ACTIONS, 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"),
+                ActionModel.ASPECT_ACTIONS,
                 new JavaBehaviour(this, "onAddAspect"));
     }
-    
+
     @Override
     public void onDeleteAssociation(AssociationRef nodeAssocRef)
     {
@@ -121,8 +121,10 @@ public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, Copy
     /**
      * On add aspect policy behaviour
      * 
-     * @param nodeRef NodeRef
-     * @param aspectTypeQName QName
+     * @param nodeRef
+     *            NodeRef
+     * @param aspectTypeQName
+     *            QName
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
@@ -140,15 +142,15 @@ public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, Copy
             this.ruleService.enableRules(nodeRef);
         }
     }
-    
+
     /**
-     * @return              Returns {@code ActionsAspectCopyBehaviourCallback}
+     * @return Returns {@code ActionsAspectCopyBehaviourCallback}
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
         return new ActionsAspectCopyBehaviourCallback(behaviourFilter);
     }
-    
+
     /**
      * Extends the default copy behaviour to include cascading to action folders.
      * 
@@ -158,6 +160,7 @@ public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, Copy
     private static class ActionsAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
     {
         private final BehaviourFilter behaviourFilter;
+
         private ActionsAspectCopyBehaviourCallback(BehaviourFilter behaviourFilter)
         {
             this.behaviourFilter = behaviourFilter;
@@ -166,7 +169,7 @@ public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, Copy
         /**
          * Disables the aspect behaviour for this node
          * 
-         * @return          Returns <tt>true</tt>
+         * @return Returns <tt>true</tt>
          */
         @Override
         public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
@@ -195,9 +198,9 @@ public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, Copy
             {
                 throw new IllegalStateException(
                         "Behaviour should have been invoked: \n" +
-                        "   Aspect: " + this.getClass().getName() + "\n" +
-                        "   " + childAssocCopyDetails + "\n" +
-                        "   " + copyDetails);
+                                "   Aspect: " + this.getClass().getName() + "\n" +
+                                "   " + childAssocCopyDetails + "\n" +
+                                "   " + copyDetails);
             }
         }
     }

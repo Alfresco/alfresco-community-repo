@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.extensions.surf.util.URLEncoder;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -41,11 +43,9 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNameMap;
-import org.springframework.extensions.surf.util.URLEncoder;
 
 /**
- * Template Node wrapper representing a record in the version history of a node.
- * Provides access to basic properties and version information for the frozen state record. 
+ * Template Node wrapper representing a record in the version history of a node. Provides access to basic properties and version information for the frozen state record.
  * 
  * @author Kevin Roast
  */
@@ -56,11 +56,12 @@ public class VersionHistoryNode extends BaseContentNode implements NamespacePref
     private Version version;
     private TemplateNode parent;
     private Set<QName> aspects = null;
-    
+
     /**
      * Constructor
      * 
-     * @param version       Descriptor of the node version information
+     * @param version
+     *            Descriptor of the node version information
      */
     public VersionHistoryNode(Version version, TemplateNode parent, ServiceRegistry services)
     {
@@ -81,7 +82,7 @@ public class VersionHistoryNode extends BaseContentNode implements NamespacePref
         this.services = services;
         this.properties = new QNameMap<String, Serializable>(this);
     }
-    
+
     /**
      * @return The GUID for the frozen state NodeRef
      */
@@ -89,7 +90,7 @@ public class VersionHistoryNode extends BaseContentNode implements NamespacePref
     {
         return this.version.getFrozenStateNodeRef().getId();
     }
-    
+
     /**
      * @return Returns the frozen state NodeRef this record represents
      */
@@ -97,7 +98,7 @@ public class VersionHistoryNode extends BaseContentNode implements NamespacePref
     {
         return this.version.getFrozenStateNodeRef();
     }
-    
+
     /**
      * @return Returns the type.
      */
@@ -105,41 +106,41 @@ public class VersionHistoryNode extends BaseContentNode implements NamespacePref
     {
         return parent.services.getNodeService().getType(this.version.getFrozenStateNodeRef());
     }
-    
+
     /**
      * Helper method to get the item name.
      * 
-     * @return  the item name
+     * @return the item name
      */
     public String getName()
     {
-        return (String)this.getProperties().get(ContentModel.PROP_NAME);
+        return (String) this.getProperties().get(ContentModel.PROP_NAME);
     }
-    
+
     /**
      * Helper method to get the item title.
      * 
-     * @return  the item name
+     * @return the item name
      */
     public String getTitle()
     {
-        return (String)this.getProperties().get(ContentModel.PROP_TITLE);
+        return (String) this.getProperties().get(ContentModel.PROP_TITLE);
     }
 
     /**
      * Helper method to get the created date from the version property data.
      * 
-     * @return  the date the version was created
+     * @return the date the version was created
      */
     public Date getCreatedDate()
     {
         return this.version.getCreatedDate();
     }
-    
+
     /**
      * Helper method to get the creator of the version.
      * 
-     * @return  the creator of the version
+     * @return the creator of the version
      */
     public String getCreator()
     {
@@ -149,23 +150,23 @@ public class VersionHistoryNode extends BaseContentNode implements NamespacePref
     /**
      * Helper method to get the version label from the version property data.
      * 
-     * @return  the version label
+     * @return the version label
      */
     public String getVersionLabel()
     {
         return this.version.getVersionLabel();
     }
-    
+
     /**
      * Helper method to get the version type.
      * 
-     * @return  true if this is a major version, false otherwise.
+     * @return true if this is a major version, false otherwise.
      */
     public boolean getIsMajorVersion()
     {
         return (this.version.getVersionType() == VersionType.MAJOR);
     }
-    
+
     /**
      * Helper method to get the version description.
      * 
@@ -179,7 +180,7 @@ public class VersionHistoryNode extends BaseContentNode implements NamespacePref
     /**
      * Get the map containing the version property values.
      * 
-     * @return  the map containing the version properties
+     * @return the map containing the version properties
      */
     public Map<String, Serializable> getProperties()
     {
@@ -187,19 +188,19 @@ public class VersionHistoryNode extends BaseContentNode implements NamespacePref
         {
             Map<QName, Serializable> props = parent.services.getNodeService().getProperties(
                     this.version.getFrozenStateNodeRef());
-            
+
             for (QName qname : props.keySet())
             {
                 Serializable propValue = parent.new TemplatePropertyConverter().convertProperty(props.get(qname), qname, parent.services, parent.imageResolver);
                 this.properties.put(qname.toString(), propValue);
             }
-            
+
             propsRetrieved = true;
         }
-        
+
         return this.properties;
     }
-    
+
     /**
      * @return The list of aspects applied to this node
      */
@@ -210,12 +211,13 @@ public class VersionHistoryNode extends BaseContentNode implements NamespacePref
         {
             this.aspects = parent.services.getNodeService().getAspects(this.version.getFrozenStateNodeRef());
         }
-        
+
         return this.aspects;
     }
-    
+
     /**
-     * @param aspect The aspect name to test for
+     * @param aspect
+     *            The aspect name to test for
      * 
      * @return true if the node has the aspect false otherwise
      */
@@ -226,7 +228,7 @@ public class VersionHistoryNode extends BaseContentNode implements NamespacePref
         {
             getAspects();
         }
-        
+
         if (aspect.startsWith(parent.NAMESPACE_BEGIN))
         {
             return aspects.contains((QName.createQName(aspect)));
@@ -245,7 +247,7 @@ public class VersionHistoryNode extends BaseContentNode implements NamespacePref
             return found;
         }
     }
-    
+
     /**
      * @see org.alfresco.repo.template.TemplateProperties#getChildren()
      */
@@ -254,7 +256,7 @@ public class VersionHistoryNode extends BaseContentNode implements NamespacePref
     {
         return null;
     }
-    
+
     /**
      * @see org.alfresco.repo.template.TemplateProperties#getParent()
      */
@@ -262,29 +264,26 @@ public class VersionHistoryNode extends BaseContentNode implements NamespacePref
     {
         return null;
     }
-    
-    
+
     public NamespacePrefixResolver getNamespacePrefixResolver()
     {
         return this.services.getNamespaceService();
     }
-    
-    
+
     // ------------------------------------------------------------------------------
-    // Content API 
-    
+    // Content API
+
     /**
-     * @return Returns the URL to the content stream for the frozen state of the node from
-     *         the default content property (@see ContentModel.PROP_CONTENT)
+     * @return Returns the URL to the content stream for the frozen state of the node from the default content property (@see ContentModel.PROP_CONTENT)
      */
     @Override
     public String getUrl()
     {
         NodeRef nodeRef = this.version.getFrozenStateNodeRef();
-        return MessageFormat.format(parent.CONTENT_GET_URL, new Object[] {
+        return MessageFormat.format(parent.CONTENT_GET_URL, new Object[]{
                 nodeRef.getStoreRef().getProtocol(),
                 nodeRef.getStoreRef().getIdentifier(),
                 nodeRef.getId(),
-                URLEncoder.encode(getName()) } );
+                URLEncoder.encode(getName())});
     }
 }

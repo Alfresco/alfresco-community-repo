@@ -55,7 +55,7 @@ public class LastDispositionActionCondition extends AbstractCapabilityCondition
         boolean result = false;
         DispositionAction dispositionAction = dispositionService.getLastCompletedDispostionAction(nodeRef);
         if (dispositionAction != null &&
-            dispositionActionName.equals(dispositionAction.getName()))
+                dispositionActionName.equals(dispositionAction.getName()))
         {
             result = true;
         }

@@ -49,81 +49,101 @@ import org.alfresco.service.namespace.QName;
  * @since 4.0
  */
 public interface SearchTrackingComponent
-{   
+{
     /**
      * Get the ACL changesets for given range parameters
      * 
-     * @param minAclChangeSetId         minimum ACL changeset ID - (inclusive and optional)
-     * @param fromCommitTime            minimum ACL commit time - (inclusive and optional)
-     * @param maxAclChangeSetId         max ACL changeset ID - (exclusive and optional)
-     * @param toCommitTime              max ACL commit time - (exclusive and optional)
-     * @param maxResults                limit the results. 0 or Integer.MAX_VALUE does not limit the results
-     * @return                          list of ACL changesets
+     * @param minAclChangeSetId
+     *            minimum ACL changeset ID - (inclusive and optional)
+     * @param fromCommitTime
+     *            minimum ACL commit time - (inclusive and optional)
+     * @param maxAclChangeSetId
+     *            max ACL changeset ID - (exclusive and optional)
+     * @param toCommitTime
+     *            max ACL commit time - (exclusive and optional)
+     * @param maxResults
+     *            limit the results. 0 or Integer.MAX_VALUE does not limit the results
+     * @return list of ACL changesets
      */
     public List<AclChangeSet> getAclChangeSets(Long minAclChangeSetId, Long fromCommitTime, Long maxAclChangeSetId, Long toCommitTime, int maxResults);
-    
+
     /**
      * Get the ACLs with paging options for a specific ACL ChangeSet
      * 
-     * @param aclChangeSetIds           the ACL ChangeSet IDs
-     * @param minAclId                  the minimum ACL ID - (inclusive and optional).
-     * @param maxResults                the maximum number of results (must be greater than zero and less than MAX)
-     * @return                          list of ACLs
+     * @param aclChangeSetIds
+     *            the ACL ChangeSet IDs
+     * @param minAclId
+     *            the minimum ACL ID - (inclusive and optional).
+     * @param maxResults
+     *            the maximum number of results (must be greater than zero and less than MAX)
+     * @return list of ACLs
      */
     public List<Acl> getAcls(List<Long> aclChangeSetIds, Long minAclId, int maxResults);
-    
+
     /**
      * Get the ACL readers ("authorities who can read this ACL") for a given set of ACL IDs
      * 
-     * @param aclIds                    the ACL IDs
-     * @return                          Returns the list of ACL readers (includes original ACL IDs)
+     * @param aclIds
+     *            the ACL IDs
+     * @return Returns the list of ACL readers (includes original ACL IDs)
      */
     public List<AclReaders> getAclsReaders(List<Long> aclIds);
-    
+
     /**
      * Get the transactions from either minTxnId or fromCommitTime, optionally limited to maxResults
      * 
-     * @param minTxnId greater than or equal to minTxnId
-     * @param fromCommitTime greater than or equal to transaction commit time
-     * @param maxTxnId less than maxTxnId
-     * @param toCommitTimeint less then toCommitTimeint
-     * @param maxResults limit the results. 0 or Integer.MAX_VALUE does not limit the results
+     * @param minTxnId
+     *            greater than or equal to minTxnId
+     * @param fromCommitTime
+     *            greater than or equal to transaction commit time
+     * @param maxTxnId
+     *            less than maxTxnId
+     * @param toCommitTimeint
+     *            less then toCommitTimeint
+     * @param maxResults
+     *            limit the results. 0 or Integer.MAX_VALUE does not limit the results
      * @return list of transactions
      */
     public List<Transaction> getTransactions(Long minTxnId, Long fromCommitTime, Long maxTxnId, Long toCommitTimeint, int maxResults);
-    
+
     /**
      * Get the nodes satisfying the constraints in nodeParameters
      * 
-     * @param nodeParameters set of constraints for which nodes to return
-     * @param callback a callback to receive the results
+     * @param nodeParameters
+     *            set of constraints for which nodes to return
+     * @param callback
+     *            a callback to receive the results
      */
-	public void getNodes(NodeParameters nodeParameters, NodeQueryCallback callback);
-	
-	/**
-	 * Returns metadata for a set of node ids
-	 * 
-	 * @param nodeMetaDataParameters NodeMetaDataParameters
-	 * @param resultFilter MetaDataResultsFilter
-	 * @param callback a callback to receive the results
-	 */
-	public void getNodesMetadata(NodeMetaDataParameters nodeMetaDataParameters, MetaDataResultsFilter resultFilter, NodeMetaDataQueryCallback callback);
+    public void getNodes(NodeParameters nodeParameters, NodeQueryCallback callback);
 
-	/**
-	 * Returns the Alfresco model given by the name modelName
-	 * 
-	 * @param modelName the name of the model
+    /**
+     * Returns metadata for a set of node ids
+     * 
+     * @param nodeMetaDataParameters
+     *            NodeMetaDataParameters
+     * @param resultFilter
+     *            MetaDataResultsFilter
+     * @param callback
+     *            a callback to receive the results
+     */
+    public void getNodesMetadata(NodeMetaDataParameters nodeMetaDataParameters, MetaDataResultsFilter resultFilter, NodeMetaDataQueryCallback callback);
+
+    /**
+     * Returns the Alfresco model given by the name modelName
+     * 
+     * @param modelName
+     *            the name of the model
      * @return the model plus a checksum
-	 */
-	public AlfrescoModel getModel(QName modelName);
+     */
+    public AlfrescoModel getModel(QName modelName);
 
-	/**
-	 * Returns a list of diffs representing differences between the current Repository models
-	 * and those passed in the models parameter.
-	 * 
-	 * @param models a set of mappings of model names to checksums
+    /**
+     * Returns a list of diffs representing differences between the current Repository models and those passed in the models parameter.
+     * 
+     * @param models
+     *            a set of mappings of model names to checksums
      * @return a list of diffs between those in the repository and those passed in the models parameter
-	 */
+     */
     public List<AlfrescoModelDiff> getModelDiffs(Map<QName, Long> models);
 
     /**
@@ -134,12 +154,13 @@ public interface SearchTrackingComponent
         /**
          * Handle a node.
          * 
-         * @param node                      the node
-         * @return                          Return <tt>true</tt> to continue processing rows or <tt>false</tt> to stop
+         * @param node
+         *            the node
+         * @return Return <tt>true</tt> to continue processing rows or <tt>false</tt> to stop
          */
         boolean handleNode(Node node);
     }
-    
+
     /**
      * The interface that will be used to give query results to the calling code.
      */
@@ -148,8 +169,9 @@ public interface SearchTrackingComponent
         /**
          * Handle a node.
          * 
-         * @param nodeMetaData                      the node meta data
-         * @return                          Return <tt>true</tt> to continue processing rows or <tt>false</tt> to stop
+         * @param nodeMetaData
+         *            the node meta data
+         * @return Return <tt>true</tt> to continue processing rows or <tt>false</tt> to stop
          */
         boolean handleNodeMetaData(NodeMetaData nodeMetaData);
     }
@@ -160,18 +182,21 @@ public interface SearchTrackingComponent
     boolean isEnabled();
 
     /**
-     * @param enabled boolean
+     * @param enabled
+     *            boolean
      */
     void setEnabled(boolean enabled);
-    
+
     /**
      * Get the last transaction timestamp from the repo
+     * 
      * @return Long
      */
     public Long getMaxTxnCommitTime();
-    
+
     /**
      * Get the last transaction id from the repo
+     * 
      * @return Long
      */
     public Long getMaxTxnId();
@@ -185,23 +210,24 @@ public interface SearchTrackingComponent
      * @return Long
      */
     public Long getMaxChangeSetId();
-    
+
     /**
-     * Register and update a shard state 
+     * Register and update a shard state
+     * 
      * @param shardState
      */
-    public void registerShardState(ShardState shardState); 
-    
+    public void registerShardState(ShardState shardState);
+
     /**
      * Get the shard registry
-     * @return the shard registry or null if one is not registered.
-     * This is an optional feature.
+     * 
+     * @return the shard registry or null if one is not registered. This is an optional feature.
      */
     public ShardRegistry getShardRegistry();
-    
+
     /**
-     * Compute the CRC for the parent associations to this node that can cause its PATH to change
-     * - primary & secondary associations and virtual associations from categories.
+     * Compute the CRC for the parent associations to this node that can cause its PATH to change - primary & secondary associations and virtual associations from categories.
+     * 
      * @param nodeId
      * @return
      */

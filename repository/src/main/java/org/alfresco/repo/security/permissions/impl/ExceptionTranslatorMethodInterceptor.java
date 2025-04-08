@@ -25,22 +25,23 @@
  */
 package org.alfresco.repo.security.permissions.impl;
 
-import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.tenant.TenantDisabledException;
-import org.alfresco.service.transaction.ReadOnlyServerException;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.TransientDataAccessResourceException;
 
+import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.tenant.TenantDisabledException;
+import org.alfresco.service.transaction.ReadOnlyServerException;
+
 /**
- * Interceptor to translate and possibly I18Nize exceptions thrown by service calls. 
+ * Interceptor to translate and possibly I18Nize exceptions thrown by service calls.
  */
 public class ExceptionTranslatorMethodInterceptor implements MethodInterceptor
 {
     private static final String MSG_ACCESS_DENIED = "permissions.err_access_denied";
-    
+
     public ExceptionTranslatorMethodInterceptor()
     {
         super();

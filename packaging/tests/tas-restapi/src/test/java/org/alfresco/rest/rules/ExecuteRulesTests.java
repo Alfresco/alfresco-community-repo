@@ -35,6 +35,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestNodeModel;
@@ -46,15 +51,11 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 /**
  * Tests for POST /nodes/{nodeId}/rule-executions.
  */
-@Test(groups = { TestGroup.RULES})
+@Test(groups = {TestGroup.RULES})
 public class ExecuteRulesTests extends RulesRestTest
 {
 
@@ -95,7 +96,7 @@ public class ExecuteRulesTests extends RulesRestTest
     /**
      * Execute one rule with one action trying to add audio aspect to a file.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS, TestGroup.SANITY})
     public void executeRules_onlyOwnedRules()
     {
         STEP("Check if file aspects don't contain Audio one");
@@ -117,7 +118,7 @@ public class ExecuteRulesTests extends RulesRestTest
     /**
      * Execute owned rule adding Audio aspect and inherited rule adding Lockable aspect.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS, TestGroup.SANITY})
     public void executeRules_includeInheritedRules()
     {
         STEP("Check if file aspects don't contain Audio and Lockable ones");
@@ -140,7 +141,7 @@ public class ExecuteRulesTests extends RulesRestTest
     /**
      * Execute rules on parent folder (add Lockable aspect) including sub-folder folders (add Audio aspect).
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS, TestGroup.SANITY})
     public void executeRules_includeSubFolderRules()
     {
         STEP("Check if parent folder's file aspects don't contain Audio and Lockable ones");
@@ -164,20 +165,20 @@ public class ExecuteRulesTests extends RulesRestTest
         fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(parentFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         rulesUtils.assertThat(fileNode)
-            .containsAspects(LOCKABLE_ASPECT)
-            .notContainsAspects(AUDIO_ASPECT);
+                .containsAspects(LOCKABLE_ASPECT)
+                .notContainsAspects(AUDIO_ASPECT);
 
         STEP("Check if Audio and Lockable aspects were added to child folder's file");
         fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         rulesUtils.assertThat(fileNode)
-            .containsAspects(AUDIO_ASPECT, LOCKABLE_ASPECT);
+                .containsAspects(AUDIO_ASPECT, LOCKABLE_ASPECT);
     }
 
     /**
      * Try to execute disabled rule and check if nothing changed.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS})
     public void executeRules_disabledRule()
     {
         STEP("Disable child rules");
@@ -204,7 +205,7 @@ public class ExecuteRulesTests extends RulesRestTest
     /**
      * Try to execute inherited parent folder's rule which is not inheritable.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS})
     public void executeRules_notInheritableRule()
     {
         STEP("Set parent rule as not inheritable");
@@ -226,14 +227,14 @@ public class ExecuteRulesTests extends RulesRestTest
         fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         rulesUtils.assertThat(fileNode)
-            .containsAspects(AUDIO_ASPECT)
-            .notContainsAspects(LOCKABLE_ASPECT);
+                .containsAspects(AUDIO_ASPECT)
+                .notContainsAspects(LOCKABLE_ASPECT);
     }
 
     /**
      * Try to execute private folder's rules by user not added to site and receive 403.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS})
     public void executeRules_privateFolderResultsWith403()
     {
         STEP("Using admin create private site, folder and rule");
@@ -250,7 +251,7 @@ public class ExecuteRulesTests extends RulesRestTest
     /**
      * Try to execute private folder's rules as site contributor and receive 403.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS})
     public void executeRules_privateFolderAsContributorResultsWith403()
     {
         STEP("Using admin create private site, folder, file in it, rule and add user to site as contributor");
@@ -269,7 +270,7 @@ public class ExecuteRulesTests extends RulesRestTest
     /**
      * Execute private folder's rules as site collaborator.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS})
     public void executeRules_privateFolderAsCollaborator()
     {
         STEP("Using admin create private site, folder, file in it, rule and add user to site as collaborator");
@@ -299,7 +300,7 @@ public class ExecuteRulesTests extends RulesRestTest
     /**
      * Try to execute rule with broken action and receive 404 error.
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS})
     public void executeRules_copyActionWithDeletedDestinationFolder()
     {
         FolderModel owningFolder = dataContent.usingUser(user).usingSite(site).createFolder();
@@ -307,8 +308,7 @@ public class ExecuteRulesTests extends RulesRestTest
         FolderModel destinationFolder = dataContent.usingUser(user).usingSite(site).createFolder();
 
         STEP("Create copy action and rule");
-        final Map<String, Serializable> copyParams =
-                Map.of("destination-folder", destinationFolder.getNodeRef(), "deep-copy", true);
+        final Map<String, Serializable> copyParams = Map.of("destination-folder", destinationFolder.getNodeRef(), "deep-copy", true);
         final RestActionBodyExecTemplateModel copyAction = rulesUtils.createCustomActionModel("copy", copyParams);
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         ruleModel.setActions(Arrays.asList(copyAction));

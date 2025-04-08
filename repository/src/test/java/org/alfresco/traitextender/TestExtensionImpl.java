@@ -28,9 +28,7 @@ package org.alfresco.traitextender;
 
 import java.util.List;
 
-import org.alfresco.traitextender.InstanceExtension;
-
-public class TestExtensionImpl extends InstanceExtension<TestExtension,TestTrait> implements TestExtension
+public class TestExtensionImpl extends InstanceExtension<TestExtension, TestTrait> implements TestExtension
 {
 
     public TestExtensionImpl(TestTrait tarit)

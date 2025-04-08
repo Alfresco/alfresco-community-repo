@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.api.search.model;
 
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -38,8 +37,8 @@ public class Template
     private final String template;
 
     @JsonCreator
-    public Template(@JsonProperty("name")  String name,
-                    @JsonProperty("template") String template)
+    public Template(@JsonProperty("name") String name,
+            @JsonProperty("template") String template)
     {
         this.name = name;
         this.template = template;

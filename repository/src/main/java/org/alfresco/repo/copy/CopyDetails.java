@@ -53,7 +53,7 @@ public class CopyDetails
     private final boolean targetNodeIsNew;
     private final QName assocTypeQName;
     private final QName assocQName;
-    
+
     public CopyDetails(
             NodeRef sourceNodeRef,
             QName sourceNodeTypeQName,
@@ -75,22 +75,22 @@ public class CopyDetails
         this.assocTypeQName = assocTypeQName;
         this.assocQName = assocQName;
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("CopyDetails")
-          .append(" [source=").append(sourceNodeRef)
-          .append(", targetParent=").append(targetParentNodeRef)
-          .append(", targetNode=").append(targetNodeRef)
-          .append(", targetNodeIsNew=").append(targetNodeIsNew)
-          .append(", assocTypeQName=").append(assocTypeQName)
-          .append(", assocQName=").append(assocQName)
-          .append("]");
+                .append(" [source=").append(sourceNodeRef)
+                .append(", targetParent=").append(targetParentNodeRef)
+                .append(", targetNode=").append(targetNodeRef)
+                .append(", targetNodeIsNew=").append(targetNodeIsNew)
+                .append(", assocTypeQName=").append(assocTypeQName)
+                .append(", assocQName=").append(assocQName)
+                .append("]");
         return sb.toString();
     }
-    
+
     /**
      * Get the source node
      */
@@ -132,8 +132,7 @@ public class CopyDetails
     }
 
     /**
-     * Get the node to which the copy will occur.  The node may not
-     * <i>yet</i> exist.
+     * Get the node to which the copy will occur. The node may not <i>yet</i> exist.
      */
     public final NodeRef getTargetNodeRef()
     {
@@ -141,10 +140,9 @@ public class CopyDetails
     }
 
     /**
-     * Determine if the {@link #getTargetNodeRef() target node} was newly-created
-     * for the copy or if it pre-existed.
+     * Determine if the {@link #getTargetNodeRef() target node} was newly-created for the copy or if it pre-existed.
      * 
-     * @return      <tt>true</tt> if the node was created by the copy
+     * @return <tt>true</tt> if the node was created by the copy
      */
     public final boolean isTargetNodeIsNew()
     {

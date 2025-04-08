@@ -42,10 +42,10 @@ public abstract class VirtualSpringBeanExtension<E, T extends Trait> extends Spr
 
     public boolean isVirtualContextFolder(NodeRef nodeRef, ActualEnvironment environment)
     {
-        boolean isReference=(Reference.fromNodeRef(nodeRef)!=null);
-        boolean isFolder=environment.isSubClass(environment.getType(nodeRef),
-                                                ContentModel.TYPE_FOLDER);
-        boolean virtualContext=environment.hasAspect(nodeRef,VirtualContentModel.ASPECT_VIRTUAL_DOCUMENT);
-        return  isReference && isFolder && virtualContext;
+        boolean isReference = (Reference.fromNodeRef(nodeRef) != null);
+        boolean isFolder = environment.isSubClass(environment.getType(nodeRef),
+                ContentModel.TYPE_FOLDER);
+        boolean virtualContext = environment.hasAspect(nodeRef, VirtualContentModel.ASPECT_VIRTUAL_DOCUMENT);
+        return isReference && isFolder && virtualContext;
     }
 }

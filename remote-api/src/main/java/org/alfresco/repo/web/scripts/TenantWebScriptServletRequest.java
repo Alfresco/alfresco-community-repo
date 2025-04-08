@@ -34,7 +34,6 @@ import org.springframework.extensions.webscripts.Match;
 import org.springframework.extensions.webscripts.Runtime;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 
-
 /**
  * Web Script Request which can handle a tenant id in their servlet path
  * 
@@ -44,11 +43,11 @@ public class TenantWebScriptServletRequest extends WebScriptServletRequest
 {
     protected String tenant;
     protected String pathInfo;
-    
+
     protected void parse()
     {
         String realPathInfo = getRealPathInfo();
-        
+
         // remove tenant
         int idx = realPathInfo.indexOf('/', 1);
         tenant = realPathInfo.substring(1, idx == -1 ? realPathInfo.length() : idx);
@@ -58,10 +57,14 @@ public class TenantWebScriptServletRequest extends WebScriptServletRequest
     /**
      * Construction
      *
-     * @param container Runtime
-     * @param req HttpServletRequest
-     * @param serviceMatch Match
-     * @param serverProperties ServerProperties
+     * @param container
+     *            Runtime
+     * @param req
+     *            HttpServletRequest
+     * @param serviceMatch
+     *            Match
+     * @param serverProperties
+     *            ServerProperties
      */
     public TenantWebScriptServletRequest(Runtime container, HttpServletRequest req, Match serviceMatch, ServerProperties serverProperties)
     {
@@ -70,16 +73,16 @@ public class TenantWebScriptServletRequest extends WebScriptServletRequest
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptRequest#getServiceContextPath()
-     */
+     * 
+     * @see org.alfresco.web.scripts.WebScriptRequest#getServiceContextPath() */
     public String getServiceContextPath()
     {
         return getHttpServletRequest().getContextPath() + getHttpServletRequest().getServletPath() + "/" + tenant;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptRequest#getPathInfo()
-     */
+     * 
+     * @see org.alfresco.web.scripts.WebScriptRequest#getPathInfo() */
     public String getPathInfo()
     {
         return pathInfo;
@@ -89,17 +92,17 @@ public class TenantWebScriptServletRequest extends WebScriptServletRequest
     {
         return tenant;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.web.scripts.WebScriptRequest#getPathInfo()
-     */
+     * 
+     * @see org.alfresco.web.scripts.WebScriptRequest#getPathInfo() */
     protected String getRealPathInfo()
     {
         // NOTE: Don't use req.getPathInfo() - it truncates the path at first semi-colon in Tomcat
         final String requestURI = getHttpServletRequest().getRequestURI();
         final String serviceContextPath = getHttpServletRequest().getContextPath() + getHttpServletRequest().getServletPath();
         String pathInfo;
-        
+
         if (serviceContextPath.length() > requestURI.length())
         {
             // NOTE: assume a redirect has taken place e.g. tomcat welcome-page
@@ -110,7 +113,7 @@ public class TenantWebScriptServletRequest extends WebScriptServletRequest
         {
             pathInfo = URLDecoder.decode(requestURI.substring(serviceContextPath.length()));
         }
-        
+
         return pathInfo;
     }
 

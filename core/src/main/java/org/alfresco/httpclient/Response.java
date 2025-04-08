@@ -29,14 +29,14 @@ import java.io.InputStream;
 public interface Response
 {
     public InputStream getContentAsStream() throws IOException;
-    
+
     public String getHeader(String name);
-    
+
     public String getContentType();
-    
+
     public int getStatus();
-    
-//    public Long getRequestDuration();
-    
+
+    // public Long getRequestDuration();
+
     public void release();
 }

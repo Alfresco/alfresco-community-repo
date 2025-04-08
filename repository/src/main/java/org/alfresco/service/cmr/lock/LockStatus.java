@@ -40,22 +40,22 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @author Roy Wetherall
  */
 @AlfrescoPublicApi
-public enum LockStatus 
+public enum LockStatus
 {
     /**
-     * Indicates that there is no lock present 
+     * Indicates that there is no lock present
      */
-    NO_LOCK, 
+    NO_LOCK,
     /**
      * Indicates that the node is locked
      */
     LOCKED,
     /**
-     * Indicates that the node is locked and you have lock ownership rights 
+     * Indicates that the node is locked and you have lock ownership rights
      */
-    LOCK_OWNER, 
+    LOCK_OWNER,
     /**
      * Indicates that the lock has expired and the node can be considered to be unlocked
      */
-    LOCK_EXPIRED 
+    LOCK_EXPIRED
 }

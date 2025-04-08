@@ -27,66 +27,65 @@ package org.alfresco.repo.transaction;
 
 /* package scope */ class DAOAdapter implements TransactionListener
 {
-	protected TransactionalDao daoService;
-	
-	public DAOAdapter (TransactionalDao daoService)
-	{
-		this.daoService =  daoService;
-	}
+    protected TransactionalDao daoService;
 
-	@Override
+    public DAOAdapter(TransactionalDao daoService)
+    {
+        this.daoService = daoService;
+    }
+
+    @Override
     public void flush()
     {
-      // NO-OP  
+        // NO-OP
     }
 
-	@Override
+    @Override
     public void beforeCommit(boolean readOnly)
     {
-		daoService.beforeCommit(readOnly);
+        daoService.beforeCommit(readOnly);
     }
 
-	@Override
+    @Override
     public void beforeCompletion()
     {
-       // NO-OP
+        // NO-OP
     }
 
-	@Override
+    @Override
     public void afterCommit()
     {
-		// NO-OP
+        // NO-OP
     }
 
-	@Override
+    @Override
     public void afterRollback()
     {
-		// NO-OP
+        // NO-OP
     }
-	
-	public TransactionalDao getService()
-	{
-		return daoService;
-	}
-	
-	public boolean equals(Object obj) 
-	{
-		if(obj instanceof DAOAdapter)
-		{
-			DAOAdapter other = (DAOAdapter)obj;
-			return daoService.equals(other.daoService);
-		}
-		return daoService.equals(obj);
-	}
 
-	/**
-	 * Return a hashcode for the request
-	 * 
-	 * @return int
-	 */
-	public int hashCode() 
-	{
-		return daoService.hashCode();
-	}
+    public TransactionalDao getService()
+    {
+        return daoService;
+    }
+
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof DAOAdapter)
+        {
+            DAOAdapter other = (DAOAdapter) obj;
+            return daoService.equals(other.daoService);
+        }
+        return daoService.equals(obj);
+    }
+
+    /**
+     * Return a hashcode for the request
+     * 
+     * @return int
+     */
+    public int hashCode()
+    {
+        return daoService.hashCode();
+    }
 }
-

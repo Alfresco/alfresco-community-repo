@@ -34,5 +34,5 @@ package org.alfresco.rest.framework.core.exceptions;
  */
 public interface ExceptionResolver<E extends Exception>
 {
-   ErrorResponse resolveException(E ex);
+    ErrorResponse resolveException(E ex);
 }

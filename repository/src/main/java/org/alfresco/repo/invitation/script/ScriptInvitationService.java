@@ -27,22 +27,22 @@ package org.alfresco.repo.invitation.script;
 
 import java.util.List;
 
+import org.mozilla.javascript.Scriptable;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.repo.invitation.InvitationSearchCriteriaImpl;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.invitation.Invitation;
-import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria.InvitationType;
+import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.util.ParameterCheck;
-import org.mozilla.javascript.Scriptable;
-import org.springframework.beans.factory.InitializingBean;
-
 
 /**
  * Script object representing the invitation service.
@@ -52,17 +52,17 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Mark Rogers
  */
 public class ScriptInvitationService extends BaseScopableProcessorExtension
-    implements InitializingBean
-{    
+        implements InitializingBean
+{
 
     static final int DEFAULT_MAX_LIST_INVITATIONS_RETURN_SIZE = 200;
 
     /** The invitation service */
     private InvitationService invitationService;
-    
+
     /** The node Service */
     private NodeService nodeService;
-    
+
     /** The person Service */
     private PersonService personService;
 
@@ -74,49 +74,54 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
     /**
      * Set the invitation service
      * 
-     * @param invitationService   the invitation service
+     * @param invitationService
+     *            the invitation service
      */
     public void setInvitationService(InvitationService invitationService)
     {
         this.invitationService = invitationService;
     }
-    
+
     /**
      * Set the node service
      * 
-     * @param nodeService the nodeService to set
+     * @param nodeService
+     *            the nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Sets the person service.
      * 
-     * @param personService the personService to set
+     * @param personService
+     *            the personService to set
      */
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-    
-    public void setSiteService(SiteService siteService) 
+
+    public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
     }
-    
+
     /**
-     * List the open invitations.
-     * props specifies optional properties to constrain the search.
+     * List the open invitations. props specifies optional properties to constrain the search.
      * 
-     * By default, if no "resultsLimit" property is specified in the props argument,
-     * this method will return a maximum of DEFAULT_MAX_LIST_INVITATIONS_RETURN_SIZE (200) results
+     * By default, if no "resultsLimit" property is specified in the props argument, this method will return a maximum of DEFAULT_MAX_LIST_INVITATIONS_RETURN_SIZE (200) results
      * 
-     * @param props inviteeUserName
-     * @param props resourceName
-     * @param props resourceType
-     * @param props invitationType
+     * @param props
+     *            inviteeUserName
+     * @param props
+     *            resourceName
+     * @param props
+     *            resourceType
+     * @param props
+     *            invitationType
      *
      * @return the invitations
      */
@@ -124,24 +129,24 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
     public ScriptInvitation<?>[] listInvitations(Scriptable props)
     {
         InvitationSearchCriteriaImpl crit = new InvitationSearchCriteriaImpl();
-        
+
         int resultsLimit = DEFAULT_MAX_LIST_INVITATIONS_RETURN_SIZE;
-        
+
         if (props.has("resourceName", props))
         {
-            crit.setResourceName((String)props.get("resourceName", props));
+            crit.setResourceName((String) props.get("resourceName", props));
         }
         if (props.has("resourceType", props))
         {
-            crit.setResourceType(ResourceType.valueOf((String)props.get("resourceType", props)));
+            crit.setResourceType(ResourceType.valueOf((String) props.get("resourceType", props)));
         }
         if (props.has("inviteeUserName", props))
         {
-            crit.setInvitee((String)props.get("inviteeUserName", props));
+            crit.setInvitee((String) props.get("inviteeUserName", props));
         }
         if (props.has("invitationType", props))
         {
-            String invitationType = (String)props.get("invitationType", props);
+            String invitationType = (String) props.get("invitationType", props);
             crit.setInvitationType(InvitationType.valueOf(invitationType));
         }
         if (props.has("resultsLimit", props))
@@ -159,8 +164,8 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
                 // ignore any parse exceptions; no need to log them
             }
         }
-    
-        //MNT-9905 Pending Invites created by one site manager aren't visible to other site managers
+
+        // MNT-9905 Pending Invites created by one site manager aren't visible to other site managers
         String currentUser = AuthenticationUtil.getRunAsUser();
         String siteShortName = crit.getResourceName();
         List<Invitation> invitations;
@@ -169,8 +174,7 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
         {
             final InvitationSearchCriteriaImpl criteria = crit;
             final int resultsLimitFinal = resultsLimit;
-            RunAsWork<List<Invitation>> runAsSystem = new RunAsWork<List<Invitation>>()
-            {
+            RunAsWork<List<Invitation>> runAsSystem = new RunAsWork<List<Invitation>>() {
                 public List<Invitation> doWork() throws Exception
                 {
                     return invitationService.searchInvitation(criteria, resultsLimitFinal);
@@ -183,10 +187,10 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
         {
             invitations = invitationService.searchInvitation(crit, resultsLimit);
         }
-        
+
         ScriptInvitation<?>[] ret = new ScriptInvitation[invitations.size()];
         int i = 0;
-        for(Invitation item : invitations)
+        for (Invitation item : invitations)
         {
             ret[i++] = scriptInvitationFactory.toScriptInvitation(item);
         }
@@ -194,8 +198,8 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+     * 
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet() */
     public void afterPropertiesSet() throws Exception
     {
         ParameterCheck.mandatory("nodeService", nodeService);

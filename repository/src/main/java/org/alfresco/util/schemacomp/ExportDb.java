@@ -38,8 +38,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-
 import javax.sql.DataSource;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.EncodedResource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 import org.alfresco.repo.domain.dialect.Dialect;
 import org.alfresco.repo.domain.dialect.TypeNames;
@@ -56,13 +63,6 @@ import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.EncodedResource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
 
 /**
  * Exports a database schema to an in-memory {@link Schema} object.
@@ -90,7 +90,7 @@ public class ExportDb
 
     /** Used to gain the repository's schema version */
     private DescriptorService descriptorService;
-    
+
     /** Only top-level tables starting with namePrefix will be exported, set to empty string for all objects */
     private String namePrefix = "alf_";
 
@@ -104,19 +104,22 @@ public class ExportDb
     public ExportDb(ApplicationContext context)
     {
         this((DataSource) context.getBean("dataSource"),
-             (Dialect) context.getBean("dialect"),
-             (DescriptorService) context.getBean("descriptorComponent"),
-             (DatabaseMetaDataHelper) context.getBean("databaseMetaDataHelper"));
+                (Dialect) context.getBean("dialect"),
+                (DescriptorService) context.getBean("descriptorComponent"),
+                (DatabaseMetaDataHelper) context.getBean("databaseMetaDataHelper"));
     }
-    
-    
+
     /**
      * Create a new instance of the tool within the context of an existing database connection
      * 
-     * @param dataSource            the database connection to use for metadata queries
-     * @param dialect               the Hibernate dialect
-     * @param descriptorService     descriptorService
-     * @param databaseMetaDataHelper     databaseMetaDataHelper
+     * @param dataSource
+     *            the database connection to use for metadata queries
+     * @param dialect
+     *            the Hibernate dialect
+     * @param descriptorService
+     *            descriptorService
+     * @param databaseMetaDataHelper
+     *            databaseMetaDataHelper
      */
     public ExportDb(final DataSource dataSource, final Dialect dialect, DescriptorService descriptorService, DatabaseMetaDataHelper databaseMetaDataHelper)
     {
@@ -126,8 +129,7 @@ public class ExportDb
         this.databaseMetaDataHelper = databaseMetaDataHelper;
         init();
     }
-    
-    
+
     private void init()
     {
         try
@@ -151,14 +153,14 @@ public class ExportDb
             throw new RuntimeException("Unable to generate type map using hibernate.", error);
         }
     }
-    
-    
+
     /**
-     * Initializes the fields ready to perform the database metadata reading 
+     * Initializes the fields ready to perform the database metadata reading
+     * 
      * @throws NoSuchFieldException
-     * @throws SecurityException 
-     * @throws IllegalAccessException 
-     * @throws IllegalArgumentException 
+     * @throws SecurityException
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
      */
     @SuppressWarnings("unchecked")
     private void attemptInit() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException
@@ -186,20 +188,20 @@ public class ExportDb
             }
         }
     }
-    
+
     public void execute()
     {
         PropertyCheck.mandatory(this, "dataSource", dataSource);
         PropertyCheck.mandatory(this, "dialect", dialect);
         PropertyCheck.mandatory(this, "descriptorService", descriptorService);
-        
+
         Connection connection = null;
         try
         {
             connection = dataSource.getConnection();
             connection.setAutoCommit(false);
             Descriptor descriptor = descriptorService.getServerDescriptor();
-            int schemaVersion = descriptor.getSchema();                
+            int schemaVersion = descriptor.getSchema();
             execute(connection, schemaVersion);
         }
         catch (Exception e)
@@ -222,8 +224,6 @@ public class ExportDb
         }
     }
 
-    
-    
     private void execute(Connection con, int schemaVersion) throws Exception
     {
         final DatabaseMetaData dbmd = con.getMetaData();
@@ -232,16 +232,15 @@ public class ExportDb
 
         schema = new Schema(schemaName, namePrefix, schemaVersion, true);
         String[] prefixFilters = namePrefixFilters(dbmd);
-        
+
         for (String filter : prefixFilters)
         {
             extractSchema(dbmd, schemaName, filter);
         }
     }
-    
-    
+
     private void extractSchema(DatabaseMetaData dbmd, String schemaName, String prefixFilter)
-                throws SQLException, IllegalArgumentException, IllegalAccessException, IOException
+            throws SQLException, IllegalArgumentException, IllegalAccessException, IOException
     {
         if (log.isDebugEnabled())
         {
@@ -252,24 +251,24 @@ public class ExportDb
         Resource sequencesRefResource = getSequencesReferenceResource();
         if (sequencesRefResource != null && sequencesRefResource.exists())
         {
-            tableTypes = new String[] {"TABLE", "VIEW"};
+            tableTypes = new String[]{"TABLE", "VIEW"};
 
             retrieveAndProcessSequences(dbmd, sequencesRefResource, schemaName, prefixFilter);
         }
         else
         {
-            tableTypes = new String[] { "TABLE", "VIEW", "SEQUENCE" };
+            tableTypes = new String[]{"TABLE", "VIEW", "SEQUENCE"};
         }
-        
+
         // No tables are returned when using MySQL8 - maybe this issue can be solved if we update the MySQL JDBC driver that we use (the new driver class is `com.mysql.cj.jdbc.Driver').
         final ResultSet tables = dbmd.getTables(null, schemaName, prefixFilter, tableTypes);
 
         processTables(dbmd, tables);
     }
 
-    private void processTables(DatabaseMetaData dbmd, ResultSet tables) 
-                throws SQLException, IllegalArgumentException, IllegalAccessException
-    {    
+    private void processTables(DatabaseMetaData dbmd, ResultSet tables)
+            throws SQLException, IllegalArgumentException, IllegalAccessException
+    {
         if (tables == null)
         {
             return;
@@ -283,7 +282,7 @@ public class ExportDb
             {
                 log.debug("Examining table tableName=[" + tableName + "]");
             }
-            
+
             // Oracle hack: ignore tables in the recycle bin
             // ALF-14129 fix, check whether schema already contains object with provided name
             if (tableName.startsWith("BIN$") || schema.containsByName(tableName))
@@ -297,51 +296,50 @@ public class ExportDb
                 schema.add(sequence);
                 continue;
             }
-            
+
             Table table = new Table(tableName);
             schema.add(table);
-            
+
             // Table columns
             final ResultSet columns = dbmd.getColumns(null, tables.getString("TABLE_SCHEM"), tableName, "%");
             while (columns.next())
             {
                 String columnName = columns.getString("COLUMN_NAME");
                 Column column = new Column(columnName);
-                
+
                 String dbType = columns.getString("TYPE_NAME");
                 int colSize = columns.getInt("COLUMN_SIZE");
                 int scale = columns.getInt("DECIMAL_DIGITS");
                 int jdbcType = columns.getInt("DATA_TYPE");
                 String type = generateType(dbType, colSize, scale, jdbcType);
                 column.setType(type);
-                
+
                 String nullableString = columns.getString("IS_NULLABLE");
                 column.setNullable(parseBoolean(nullableString));
-                
+
                 column.setOrder(columns.getInt("ORDINAL_POSITION"));
-                
+
                 try
                 {
                     String autoIncString = columns.getString("IS_AUTOINCREMENT");
                     column.setAutoIncrement(parseBoolean(autoIncString));
                 }
-                catch(SQLException jtdsDoesNOtHAveIsUatoincrement)
+                catch (SQLException jtdsDoesNOtHAveIsUatoincrement)
                 {
                     column.setAutoIncrement((dbType.endsWith("identity")));
                 }
-                
+
                 column.setParent(table);
                 table.getColumns().add(column);
             }
             columns.close();
-            
-            
+
             // Primary key - beware that getPrimaryKeys gets primary keys ordered by their column name
             final ResultSet primarykeycols = dbmd.getPrimaryKeys(null, tables.getString("TABLE_SCHEM"), tableName);
 
             PrimaryKey pk = null;
             Map<Integer, String> keySeqsAndColumnNames = new LinkedHashMap<>();
-            
+
             while (primarykeycols.next())
             {
                 if (pk == null)
@@ -359,7 +357,7 @@ public class ExportDb
 
             List<String> keyseqSortedColumnNames = new LinkedList<>();
             List<Integer> keySeqSortedColumnOrders = keySeqsAndColumnNames.keySet().stream().sorted().collect(Collectors.toList());
-            for (int keySeq: keySeqSortedColumnOrders)
+            for (int keySeq : keySeqSortedColumnOrders)
             {
                 keyseqSortedColumnNames.add(keySeqsAndColumnNames.get(keySeq));
             }
@@ -367,21 +365,20 @@ public class ExportDb
             pk.setColumnNames(keyseqSortedColumnNames);
 
             primarykeycols.close();
-            
-            // If this table has a primary key, add it. 
+
+            // If this table has a primary key, add it.
             if (pk != null)
             {
                 pk.setParent(table);
                 table.setPrimaryKey(pk);
             }
 
-            
             // Indexes
             final ResultSet indexes = dbmd.getIndexInfo(null, tables.getString("TABLE_SCHEM"), tableName, false, true);
             String lastIndexName = "";
-            
+
             Index index = null;
-            
+
             while (indexes.next())
             {
                 final String indexName = indexes.getString("INDEX_NAME");
@@ -395,7 +392,7 @@ public class ExportDb
                 {
                     continue;
                 }
-                
+
                 if (!indexName.equals(lastIndexName))
                 {
                     index = new Index(indexName);
@@ -412,13 +409,11 @@ public class ExportDb
             }
             indexes.close();
 
-            
-            
             final ResultSet foreignkeys = dbmd.getImportedKeys(null, tables.getString("TABLE_SCHEM"), tableName);
             String lastKeyName = "";
-            
+
             ForeignKey fk = null;
-            
+
             while (foreignkeys.next())
             {
                 final String keyName = foreignkeys.getString("FK_NAME");
@@ -441,11 +436,11 @@ public class ExportDb
         tables.close();
     }
 
-
     /**
      * Convert a boolean string as used in the database, to a boolean value.
      * 
-     * @param nullableString String
+     * @param nullableString
+     *            String
      * @return true if "YES", false if "NO"
      */
     private boolean parseBoolean(String nullableString)
@@ -460,17 +455,17 @@ public class ExportDb
         {
             return true;
         }
-        
+
         throw new IllegalArgumentException("Unsupported term \"" + nullableString +
-                    "\", perhaps this database doesn't use YES/NO for booleans?");
-        
+                "\", perhaps this database doesn't use YES/NO for booleans?");
+
     }
 
     protected String generateType(final String dbTypeRaw, int size, final int digits, int sqlType)
-        throws IllegalArgumentException, IllegalAccessException
+            throws IllegalArgumentException, IllegalAccessException
     {
         final String dbType = dbTypeRaw.toLowerCase();
-        
+
         final String sizeType = dbType + "(" + size + ")";
         if (this.reverseTypeMap.containsKey(sizeType))
         {
@@ -494,10 +489,10 @@ public class ExportDb
                 String popKey = key.replaceAll("\\$p", String.valueOf(size));
                 popKey = popKey.replaceAll("\\$s", String.valueOf(digits));
                 popKey = popKey.replaceAll("\\$l", String.valueOf(size));
-                
+
                 // Variation of the size type with size unit of char, e.g. varchar2(255 char)
                 final String charSizeType = dbType + "(" + size + " char)";
-                
+
                 // If the populated key matches a precision/scale type or a size type
                 // then the populated key gives us the string we're after.
                 if (popKey.equals(precisionScaleType) || popKey.equals(sizeType) || popKey.equals(charSizeType))
@@ -506,11 +501,10 @@ public class ExportDb
                 }
             }
         }
-        
+
         return dbType;
     }
 
-    
     /**
      * @return the schema
      */
@@ -519,7 +513,6 @@ public class ExportDb
         return this.schema;
     }
 
-    
     /**
      * @return the namePrefix
      */
@@ -533,16 +526,15 @@ public class ExportDb
         String filter = namePrefix + "%";
         // We're assuming the prefixes are either PREFIX_ or prefix_
         // but not mixed-case.
-        return new String[]
-        {
-            filter.toLowerCase(),
-            filter.toUpperCase()
+        return new String[]{
+                filter.toLowerCase(),
+                filter.toUpperCase()
         };
     }
 
-    
     /**
-     * @param namePrefix the namePrefix to set
+     * @param namePrefix
+     *            the namePrefix to set
      */
     public void setNamePrefix(String namePrefix)
     {
@@ -552,7 +544,8 @@ public class ExportDb
     /**
      * Set the default schema name
      *
-     * @param dbSchemaName the default schema name
+     * @param dbSchemaName
+     *            the default schema name
      */
     public void setDbSchemaName(String dbSchemaName)
     {
@@ -560,9 +553,7 @@ public class ExportDb
     }
 
     /**
-     * Attempts to find the schema reference sequences sql file. If not found, the
-     * dialect hierarchy will be walked until a compatible resource is found. This
-     * makes it possible to have resources that are generic to all dialects.
+     * Attempts to find the schema reference sequences sql file. If not found, the dialect hierarchy will be walked until a compatible resource is found. This makes it possible to have resources that are generic to all dialects.
      *
      * @return The Resource, otherwise null
      */

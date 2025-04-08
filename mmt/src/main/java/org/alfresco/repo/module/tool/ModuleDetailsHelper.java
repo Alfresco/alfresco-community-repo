@@ -31,12 +31,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
-import org.alfresco.repo.module.ModuleDetailsImpl;
-import org.alfresco.service.cmr.module.ModuleDetails;
-
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import de.schlichtherle.truezip.file.TFileOutputStream;
+
+import org.alfresco.repo.module.ModuleDetailsImpl;
+import org.alfresco.service.cmr.module.ModuleDetails;
 
 /**
  * Module details helper used by the module mangement tool
@@ -48,8 +48,10 @@ public class ModuleDetailsHelper
 {
     /**
      * Factory method to create module details from a stream of a properties file
-     * @param is                the properties input stream, which will be closed during the call
-     * @return                  Returns the initialized module details
+     * 
+     * @param is
+     *            the properties input stream, which will be closed during the call
+     * @return Returns the initialized module details
      */
     public static ModuleDetails createModuleDetailsFromPropertiesStream(InputStream is) throws IOException
     {
@@ -58,9 +60,12 @@ public class ModuleDetailsHelper
 
     /**
      * Factory method to create module details from a stream of a properties file
-     * @param is                the properties input stream, which will be closed during the call
-     * @param log               logger
-     * @return                  Returns the initialized module details
+     * 
+     * @param is
+     *            the properties input stream, which will be closed during the call
+     * @param log
+     *            logger
+     * @return Returns the initialized module details
      */
     public static ModuleDetails createModuleDetailsFromPropertiesStream(InputStream is, LogOutput log) throws IOException
     {
@@ -72,16 +77,22 @@ public class ModuleDetailsHelper
         }
         finally
         {
-            try { is.close(); } catch (Throwable e) {}
+            try
+            {
+                is.close();
+            }
+            catch (Throwable e)
+            {}
         }
     }
 
     /**
      * Creates a module details helper object based on a file location.
      * 
-     * @param location  file location
-     * @return          Returns the module details or null if the location points to nothing
-     * @throws IOException 
+     * @param location
+     *            file location
+     * @return Returns the module details or null if the location points to nothing
+     * @throws IOException
      */
     public static ModuleDetails createModuleDetailsFromPropertyLocation(String location) throws IOException
     {
@@ -91,10 +102,12 @@ public class ModuleDetailsHelper
     /**
      * Creates a module details helper object based on a file location.
      * 
-     * @param location  file location
-     * @param log       logger
-     * @return          Returns the module details or null if the location points to nothing
-     * @throws IOException 
+     * @param location
+     *            file location
+     * @param log
+     *            logger
+     * @return Returns the module details or null if the location points to nothing
+     * @throws IOException
      */
     public static ModuleDetails createModuleDetailsFromPropertyLocation(String location, LogOutput log) throws IOException
     {
@@ -108,7 +121,7 @@ public class ModuleDetailsHelper
         {
             error.printStackTrace(System.out);
             throw new ModuleManagementToolException("Unable to load module details from property file. File Not Found, " + error.getMessage(), error);
-            
+
         }
 
         try
@@ -118,7 +131,7 @@ public class ModuleDetailsHelper
         catch (IOException exception)
         {
             throw new ModuleManagementToolException(
-                        "Unable to load module details from property file." + exception.getMessage(), exception);
+                    "Unable to load module details from property file." + exception.getMessage(), exception);
         }
         finally
         {
@@ -127,27 +140,29 @@ public class ModuleDetailsHelper
 
         return result;
     }
-    
+
     /**
      * Creates a module details instance based on a war location and the module id
      * 
-     * @param warLocation   the war location
-     * @param moduleId      the module id
-     * @return              Returns the module details for the given module ID as it occurs in the WAR, or <tt>null</tt>
-     *                      if there are no module details available.
-     * @throws IOException 
+     * @param warLocation
+     *            the war location
+     * @param moduleId
+     *            the module id
+     * @return Returns the module details for the given module ID as it occurs in the WAR, or <tt>null</tt> if there are no module details available.
+     * @throws IOException
      */
     public static ModuleDetails createModuleDetailsFromWarAndId(String warLocation, String moduleId) throws IOException
     {
         String modulePropertiesFileLocation = ModuleDetailsHelper.getModulePropertiesFileLocation(warLocation, moduleId);
         return ModuleDetailsHelper.createModuleDetailsFromPropertyLocation(modulePropertiesFileLocation);
     }
-    
+
     /**
-     * @param warLocation   the location of the WAR file
-     * @param moduleId      the module ID within the WAR
-     * @return              Returns a file handle to the module properties file within the given WAR.
-     *                      The file may or may not exist.
+     * @param warLocation
+     *            the location of the WAR file
+     * @param moduleId
+     *            the module ID within the WAR
+     * @return Returns a file handle to the module properties file within the given WAR. The file may or may not exist.
      */
     public static TFile getModuleDetailsFileFromWarAndId(String warLocation, String moduleId)
     {
@@ -155,33 +170,38 @@ public class ModuleDetailsHelper
         TFile file = new TFile(location);
         return file;
     }
-    
+
     /**
      * Gets the file location
      * 
-     * @param warLocation   the war location
-     * @param moduleId      the module id
-     * @return              the file location
+     * @param warLocation
+     *            the war location
+     * @param moduleId
+     *            the module id
+     * @return the file location
      */
     public static String getModulePropertiesFileLocation(String warLocation, String moduleId)
     {
         return warLocation + getModulePropertiesFilePathInWar(moduleId);
     }
-    
+
     /**
-     * @param moduleId      the module ID
-     * @return              Returns the path of the module file within a WAR
+     * @param moduleId
+     *            the module ID
+     * @return Returns the path of the module file within a WAR
      */
     public static String getModulePropertiesFilePathInWar(String moduleId)
     {
         return WarHelper.MODULE_NAMESPACE_DIR + "/" + moduleId + WarHelper.MODULE_CONFIG_IN_WAR;
     }
-    
+
     /**
      * Saves the module details to the war in the correct location based on the module id
      * 
-     * @param warLocation   the war location
-     * @param moduleDetails      the module id
+     * @param warLocation
+     *            the war location
+     * @param moduleDetails
+     *            the module id
      */
     public static void saveModuleDetails(String warLocation, ModuleDetails moduleDetails)
     {
@@ -194,8 +214,8 @@ public class ModuleDetailsHelper
             if (file.exists() == false)
             {
                 file.createNewFile();
-            }  
-            
+            }
+
             // Get all the module properties
             Properties moduleProperties = moduleDetails.getProperties();
             OutputStream os = new TFileOutputStream(file);
@@ -212,8 +232,8 @@ public class ModuleDetailsHelper
         {
             throw new ModuleManagementToolException(
                     "Unable to save module details into WAR file: \n" +
-                    "   Module: " + moduleDetails.getId() + "\n" +
-                    "   Properties: " + moduleDetails.getProperties(),
+                            "   Module: " + moduleDetails.getId() + "\n" +
+                            "   Properties: " + moduleDetails.getProperties(),
                     exception);
         }
     }

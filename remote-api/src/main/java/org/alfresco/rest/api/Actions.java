@@ -26,9 +26,6 @@
 
 package org.alfresco.rest.api;
 
-
-import java.util.List;
-
 import org.alfresco.rest.api.model.Action;
 import org.alfresco.rest.api.model.ActionDefinition;
 import org.alfresco.rest.api.model.ActionParameterConstraint;
@@ -44,17 +41,17 @@ public interface Actions
     CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(Parameters params);
 
     ActionDefinition getActionDefinitionById(String actionDefinitionId);
-    
+
     enum SortKey
     {
-        NAME,
-        TITLE
+        NAME, TITLE
     }
-    
+
     Action executeAction(Action action, Parameters parameters);
 
     @Experimental
     ActionParameterConstraint getActionConstraint(String constraintName);
+
     @Experimental
     ActionDefinition getRuleActionDefinitionById(String actionDefinitionId);
 }

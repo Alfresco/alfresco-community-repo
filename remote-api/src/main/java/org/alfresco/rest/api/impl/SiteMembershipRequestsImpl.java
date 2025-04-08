@@ -33,6 +33,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.invitation.InvitationSearchCriteriaImpl;
@@ -73,9 +77,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Public REST API: centralises access to site membership requests and maps between representations.
@@ -86,445 +87,441 @@ import org.apache.commons.logging.LogFactory;
 public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 {
     private static final Log logger = LogFactory.getLog(SiteMembershipRequestsImpl.class);
-	
-	// Default role to assign to the site membership request
+
+    // Default role to assign to the site membership request
     public final static String DEFAULT_ROLE = SiteModel.SITE_CONSUMER;
 
     // List site memberships filtering (via where clause)
-    private final static Set<String> LIST_SITE_MEMBERSHIPS_EQUALS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] { PARAM_SITE_ID, PARAM_PERSON_ID }));
+    private final static Set<String> LIST_SITE_MEMBERSHIPS_EQUALS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[]{PARAM_SITE_ID, PARAM_PERSON_ID}));
 
-	private People people;
-	private Sites sites;
-	private SiteService siteService;
-	private NodeService nodeService;
-	private InvitationService invitationService;
-	private NetworksService networksService;
+    private People people;
+    private Sites sites;
+    private SiteService siteService;
+    private NodeService nodeService;
+    private InvitationService invitationService;
+    private NetworksService networksService;
 
-	public void setNetworksService(NetworksService networksService)
-	{
-		this.networksService = networksService;
-	}
-
-	public void setNodeService(NodeService nodeService)
-	{
-		this.nodeService = nodeService;
-	}
-
-	public void setPeople(People people)
-	{
-		this.people = people;
-	}
-
-	public void setSites(Sites sites)
-	{
-		this.sites = sites;
-	}
-
-	public void setSiteService(SiteService siteService)
-	{
-		this.siteService = siteService;
-	}
-
-	public void setInvitationService(InvitationService invitationService)
-	{
-		this.invitationService = invitationService;
-	}
-
-	private Invitation getSiteInvitation(String inviteeId, String siteId)
+    public void setNetworksService(NetworksService networksService)
     {
-		// Is there an outstanding site invite request for the invitee?
-		InvitationSearchCriteriaImpl criteria = new InvitationSearchCriteriaImpl();
-		criteria.setInvitationType(InvitationType.MODERATED);
-		criteria.setInvitee(inviteeId);
-		criteria.setResourceName(siteId);
-		criteria.setResourceType(ResourceType.WEB_SITE);
-		List<Invitation> invitations = invitationService.searchInvitation(criteria);
-		if(invitations.size() > 1)
-		{
-			// TODO exception
-			throw new AlfrescoRuntimeException("There should be only one outstanding site invitation");
-		}
-		return (invitations.size() == 0 ? null : invitations.get(0));
+        this.networksService = networksService;
     }
-	
-	private List<Invitation> getSiteInvitations(String inviteeId)
+
+    public void setNodeService(NodeService nodeService)
     {
-		InvitationSearchCriteriaImpl criteria = new InvitationSearchCriteriaImpl();
-		criteria.setInvitationType(InvitationType.MODERATED);
-		criteria.setInvitee(inviteeId);
-		criteria.setResourceType(ResourceType.WEB_SITE);
-		List<Invitation> invitations = invitationService.searchInvitation(criteria);
-		return invitations;
+        this.nodeService = nodeService;
     }
-	
-	private SiteMembershipRequest inviteToModeratedSite(final String message, final String inviteeId, final String siteId,
-			final String inviteeRole, final String clientName)
-	{
-		ModeratedInvitation invitation = invitationService.inviteModerated(message, inviteeId, ResourceType.WEB_SITE, siteId, inviteeRole, clientName);
 
-		SiteMembershipRequest ret = new SiteMembershipRequest();
-		ret.setId(siteId);
-		ret.setMessage(message);
-		ret.setCreatedAt(invitation.getCreatedAt());
-		return ret;
-	}
-	
-	private SiteMembershipRequest inviteToSite(String siteId, String inviteeId, String inviteeRole, String message)
-	{
-		siteService.setMembership(siteId, inviteeId, inviteeRole);
-		SiteMembershipRequest ret = new SiteMembershipRequest();
-		ret.setId(siteId);
-		ret.setMessage(message);
-		Date createdAt = new Date();
-		ret.setCreatedAt(createdAt);
-		return ret;
-	}
-	
-	private SiteMembershipRequest inviteToPublicSite(final SiteInfo siteInfo, final String message, final String inviteeId,
-			final String inviteeRole)
-	{
-		SiteMembershipRequest siteMembershipRequest = null;
+    public void setPeople(People people)
+    {
+        this.people = people;
+    }
 
-		final String siteId = siteInfo.getShortName();
-		NodeRef siteNodeRef = siteInfo.getNodeRef();
-		String siteCreator = (String)nodeService.getProperty(siteNodeRef, ContentModel.PROP_CREATOR);
+    public void setSites(Sites sites)
+    {
+        this.sites = sites;
+    }
 
-		final String siteNetwork = networksService.getUserDefaultNetwork(siteCreator);
-		if(StringUtils.isNotEmpty(siteNetwork))
-		{
-			// MT
-			siteMembershipRequest = TenantUtil.runAsUserTenant(new TenantRunAsWork<SiteMembershipRequest>()
-			{
-				@Override
-				public SiteMembershipRequest doWork() throws Exception
-				{
-					return inviteToSite(siteId, inviteeId, inviteeRole, message);
-				}
-			}, siteCreator, siteNetwork);
-		}
-		else
-		{
-			siteMembershipRequest = AuthenticationUtil.runAs(new RunAsWork<SiteMembershipRequest>()
-			{
-				@Override
-				public SiteMembershipRequest doWork() throws Exception
-				{
-					return inviteToSite(siteId, inviteeId, inviteeRole, message);
-				}
-			}, siteCreator);
-		}
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
+    }
 
-		return siteMembershipRequest;
-	}
+    public void setInvitationService(InvitationService invitationService)
+    {
+        this.invitationService = invitationService;
+    }
 
-    @Override
-	public SiteMembershipRequest createSiteMembershipRequest(String inviteeId, final SiteMembershipRequest siteInvite)
-	{
-    	SiteMembershipRequest request = null;
+    private Invitation getSiteInvitation(String inviteeId, String siteId)
+    {
+        // Is there an outstanding site invite request for the invitee?
+        InvitationSearchCriteriaImpl criteria = new InvitationSearchCriteriaImpl();
+        criteria.setInvitationType(InvitationType.MODERATED);
+        criteria.setInvitee(inviteeId);
+        criteria.setResourceName(siteId);
+        criteria.setResourceType(ResourceType.WEB_SITE);
+        List<Invitation> invitations = invitationService.searchInvitation(criteria);
+        if (invitations.size() > 1)
+        {
+            // TODO exception
+            throw new AlfrescoRuntimeException("There should be only one outstanding site invitation");
+        }
+        return (invitations.size() == 0 ? null : invitations.get(0));
+    }
 
-    	inviteeId = people.validatePerson(inviteeId, true);
+    private List<Invitation> getSiteInvitations(String inviteeId)
+    {
+        InvitationSearchCriteriaImpl criteria = new InvitationSearchCriteriaImpl();
+        criteria.setInvitationType(InvitationType.MODERATED);
+        criteria.setInvitee(inviteeId);
+        criteria.setResourceType(ResourceType.WEB_SITE);
+        List<Invitation> invitations = invitationService.searchInvitation(criteria);
+        return invitations;
+    }
 
-    	// Note that the order of error checking is important. The server first needs to check for the status 404 
-    	// conditions before checking for status 400 conditions. Otherwise the server is open to a probing attack. 
-		String siteId = siteInvite.getId();
-		final SiteInfo siteInfo = sites.validateSite(siteId);
-    	if(siteInfo == null)
-    	{
-    		// site does not exist
-    		throw new RelationshipResourceNotFoundException(inviteeId, siteId);
-    	}
-		// set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
-		siteId = siteInfo.getShortName();
+    private SiteMembershipRequest inviteToModeratedSite(final String message, final String inviteeId, final String siteId,
+            final String inviteeRole, final String clientName)
+    {
+        ModeratedInvitation invitation = invitationService.inviteModerated(message, inviteeId, ResourceType.WEB_SITE, siteId, inviteeRole, clientName);
 
-		final SiteVisibility siteVisibility = siteInfo.getVisibility();
+        SiteMembershipRequest ret = new SiteMembershipRequest();
+        ret.setId(siteId);
+        ret.setMessage(message);
+        ret.setCreatedAt(invitation.getCreatedAt());
+        return ret;
+    }
 
-		if(siteVisibility.equals(SiteVisibility.PRIVATE))
-		{
-			// note: security, no indication that this is a private site
-			throw new RelationshipResourceNotFoundException(inviteeId, siteId);
-		}
+    private SiteMembershipRequest inviteToSite(String siteId, String inviteeId, String inviteeRole, String message)
+    {
+        siteService.setMembership(siteId, inviteeId, inviteeRole);
+        SiteMembershipRequest ret = new SiteMembershipRequest();
+        ret.setId(siteId);
+        ret.setMessage(message);
+        Date createdAt = new Date();
+        ret.setCreatedAt(createdAt);
+        return ret;
+    }
 
-		// Is the invitee already a member of the site?
-		boolean isMember = siteService.isMember(siteId, inviteeId);
-		if(isMember)
-		{
-			// yes
-			throw new InvalidArgumentException(inviteeId + " is already a member of site " + siteId);
-		}
+    private SiteMembershipRequest inviteToPublicSite(final SiteInfo siteInfo, final String message, final String inviteeId,
+            final String inviteeRole)
+    {
+        SiteMembershipRequest siteMembershipRequest = null;
 
-		// Is there an outstanding site invite request for the (invitee, site)?
-		Invitation invitation = getSiteInvitation(inviteeId, siteId);
-		if(invitation != null)
-		{
-			// yes
-			throw new InvalidArgumentException(inviteeId + " is already invited to site " + siteId);
-		}
+        final String siteId = siteInfo.getShortName();
+        NodeRef siteNodeRef = siteInfo.getNodeRef();
+        String siteCreator = (String) nodeService.getProperty(siteNodeRef, ContentModel.PROP_CREATOR);
 
-		final String inviteeRole = DEFAULT_ROLE;
-		String message = siteInvite.getMessage();
-		if(message == null)
-		{
-			// the invitation service ignores null messages so convert to an empty message.
-			message = "";
-		}
+        final String siteNetwork = networksService.getUserDefaultNetwork(siteCreator);
+        if (StringUtils.isNotEmpty(siteNetwork))
+        {
+            // MT
+            siteMembershipRequest = TenantUtil.runAsUserTenant(new TenantRunAsWork<SiteMembershipRequest>() {
+                @Override
+                public SiteMembershipRequest doWork() throws Exception
+                {
+                    return inviteToSite(siteId, inviteeId, inviteeRole, message);
+                }
+            }, siteCreator, siteNetwork);
+        }
+        else
+        {
+            siteMembershipRequest = AuthenticationUtil.runAs(new RunAsWork<SiteMembershipRequest>() {
+                @Override
+                public SiteMembershipRequest doWork() throws Exception
+                {
+                    return inviteToSite(siteId, inviteeId, inviteeRole, message);
+                }
+            }, siteCreator);
+        }
 
-		if(siteVisibility.equals(SiteVisibility.MODERATED))
-		{
-			request = inviteToModeratedSite(message, inviteeId, siteId, inviteeRole, null);
-		}
-		else if(siteVisibility.equals(SiteVisibility.PUBLIC))
-		{
-			request = inviteToPublicSite(siteInfo, message, inviteeId, inviteeRole);
-		}
-		else
-		{
-			// note: security, no indication that this is a private site
-			throw new RelationshipResourceNotFoundException(inviteeId, siteId);
-		}
-
-		return request;
-	}
-
-	@Override
-	public SiteMembershipRequest createSiteMembershipRequest(String inviteeId, SiteMembershipRequest siteInvite, String client)
-	{
-		SiteMembershipRequest request = null;
-
-		inviteeId = people.validatePerson(inviteeId, true);
-
-		// Note that the order of error checking is important. The server first needs to check for the status 404
-		// conditions before checking for status 400 conditions. Otherwise the server is open to a probing attack.
-		String siteId = siteInvite.getId();
-		final SiteInfo siteInfo = sites.validateSite(siteId);
-		if(siteInfo == null)
-		{
-			// site does not exist
-			throw new RelationshipResourceNotFoundException(inviteeId, siteId);
-		}
-		// set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
-		siteId = siteInfo.getShortName();
-
-		final SiteVisibility siteVisibility = siteInfo.getVisibility();
-
-		if(siteVisibility.equals(SiteVisibility.PRIVATE))
-		{
-			// note: security, no indication that this is a private site
-			throw new RelationshipResourceNotFoundException(inviteeId, siteId);
-		}
-
-		// Is the invitee already a member of the site?
-		boolean isMember = siteService.isMember(siteId, inviteeId);
-		if(isMember)
-		{
-			// yes
-			throw new InvalidArgumentException(inviteeId + " is already a member of site " + siteId);
-		}
-
-		// Is there an outstanding site invite request for the (invitee, site)?
-		Invitation invitation = getSiteInvitation(inviteeId, siteId);
-		if(invitation != null)
-		{
-			// yes
-			throw new InvalidArgumentException(inviteeId + " is already invited to site " + siteId);
-		}
-
-		final String inviteeRole = DEFAULT_ROLE;
-		String message = siteInvite.getMessage();
-		if(message == null)
-		{
-			// the invitation service ignores null messages so convert to an empty message.
-			message = "";
-		}
-
-		if(siteVisibility.equals(SiteVisibility.MODERATED))
-		{
-			request = inviteToModeratedSite(message, inviteeId, siteId, inviteeRole, client);
-
-		}
-		else if(siteVisibility.equals(SiteVisibility.PUBLIC))
-		{
-			request = inviteToPublicSite(siteInfo, message, inviteeId, inviteeRole);
-		}
-		else
-		{
-			// note: security, no indication that this is a private site
-			throw new RelationshipResourceNotFoundException(inviteeId, siteId);
-		}
-
-		return request;
-	}
+        return siteMembershipRequest;
+    }
 
     @Override
-	public SiteMembershipRequest updateSiteMembershipRequest(String inviteeId, final SiteMembershipRequest siteInvite)
-	{
-    	SiteMembershipRequest updatedSiteInvite = null;
+    public SiteMembershipRequest createSiteMembershipRequest(String inviteeId, final SiteMembershipRequest siteInvite)
+    {
+        SiteMembershipRequest request = null;
 
-		inviteeId = people.validatePerson(inviteeId, true);
+        inviteeId = people.validatePerson(inviteeId, true);
 
-		String siteId = siteInvite.getId();
-		SiteInfo siteInfo = sites.validateSite(siteId);
-    	if(siteInfo == null)
-    	{
-    		// site does not exist
-    		throw new RelationshipResourceNotFoundException(inviteeId, siteId);
-    	}
-		// set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
-		siteId = siteInfo.getShortName();
+        // Note that the order of error checking is important. The server first needs to check for the status 404
+        // conditions before checking for status 400 conditions. Otherwise the server is open to a probing attack.
+        String siteId = siteInvite.getId();
+        final SiteInfo siteInfo = sites.validateSite(siteId);
+        if (siteInfo == null)
+        {
+            // site does not exist
+            throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+        }
+        // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
+        siteId = siteInfo.getShortName();
 
-		String message = siteInvite.getMessage();
-		if(message == null)
-		{
-			// the invitation service ignores null messages so convert to an empty message.
-			message = "";
-		}
+        final SiteVisibility siteVisibility = siteInfo.getVisibility();
 
-		try
-		{
-			ModeratedInvitation updatedInvitation = invitationService.updateModeratedInvitation(inviteeId, siteId, message);
-			if(updatedInvitation == null)
-			{
-	    		throw new RelationshipResourceNotFoundException(inviteeId, siteId);
-			}
-			updatedSiteInvite = getSiteMembershipRequest(updatedInvitation);
-		}
-		catch(InvitationExceptionNotFound e)
-		{
-			throw new RelationshipResourceNotFoundException(inviteeId, siteId);
-		}
+        if (siteVisibility.equals(SiteVisibility.PRIVATE))
+        {
+            // note: security, no indication that this is a private site
+            throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+        }
 
-		if(updatedSiteInvite == null)
-		{
-			throw new RelationshipResourceNotFoundException(inviteeId, siteId);
-		}
-		
-		return updatedSiteInvite;
-	}
+        // Is the invitee already a member of the site?
+        boolean isMember = siteService.isMember(siteId, inviteeId);
+        if (isMember)
+        {
+            // yes
+            throw new InvalidArgumentException(inviteeId + " is already a member of site " + siteId);
+        }
+
+        // Is there an outstanding site invite request for the (invitee, site)?
+        Invitation invitation = getSiteInvitation(inviteeId, siteId);
+        if (invitation != null)
+        {
+            // yes
+            throw new InvalidArgumentException(inviteeId + " is already invited to site " + siteId);
+        }
+
+        final String inviteeRole = DEFAULT_ROLE;
+        String message = siteInvite.getMessage();
+        if (message == null)
+        {
+            // the invitation service ignores null messages so convert to an empty message.
+            message = "";
+        }
+
+        if (siteVisibility.equals(SiteVisibility.MODERATED))
+        {
+            request = inviteToModeratedSite(message, inviteeId, siteId, inviteeRole, null);
+        }
+        else if (siteVisibility.equals(SiteVisibility.PUBLIC))
+        {
+            request = inviteToPublicSite(siteInfo, message, inviteeId, inviteeRole);
+        }
+        else
+        {
+            // note: security, no indication that this is a private site
+            throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+        }
+
+        return request;
+    }
 
     @Override
-	public void cancelSiteMembershipRequest(String inviteeId, String siteId)
-	{
-		inviteeId = people.validatePerson(inviteeId);
-		SiteInfo siteInfo = sites.validateSite(siteId);
-    	if(siteInfo == null)
-    	{
-    		// site does not exist
-    		throw new RelationshipResourceNotFoundException(inviteeId, siteId);
-    	}
-		// set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
-		siteId = siteInfo.getShortName();
+    public SiteMembershipRequest createSiteMembershipRequest(String inviteeId, SiteMembershipRequest siteInvite, String client)
+    {
+        SiteMembershipRequest request = null;
 
-		Invitation invitation = getSiteInvitation(inviteeId, siteId);
-		if(invitation == null)
-		{
-			// no such invitation
-    		throw new RelationshipResourceNotFoundException(inviteeId, siteId);
-		}
-		invitationService.cancel(invitation.getInviteId());
-	}
-	
-	public SiteMembershipRequest getSiteMembershipRequest(String inviteeId, final String siteId)
-	{
-		inviteeId = people.validatePerson(inviteeId);
+        inviteeId = people.validatePerson(inviteeId, true);
 
-		SiteInfo siteInfo = AuthenticationUtil.runAsSystem(new RunAsWork<SiteInfo>()
-		{
-			@Override
-			public SiteInfo doWork() throws Exception
-			{
-				SiteInfo siteInfo = sites.validateSite(siteId);
-				return siteInfo;
-			}
-		});
-		
-		if(siteInfo == null)
-		{
-			// site does not exist
-			throw new RelationshipResourceNotFoundException(inviteeId, siteId);
-		}
-		
-		if(siteInfo.getVisibility().equals(SiteVisibility.MODERATED))
-		{
-			// set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
-			String normalizedSiteId = siteInfo.getShortName();
-	
-			Invitation invitation = getSiteInvitation(inviteeId, normalizedSiteId);
-			if(invitation == null)
-			{
-				// no such invitation
-	    		throw new RelationshipResourceNotFoundException(inviteeId, normalizedSiteId);
-			}
-			if(invitation instanceof ModeratedInvitation)
-			{
-				ModeratedInvitation moderatedInvitation = (ModeratedInvitation)invitation;
-				SiteMembershipRequest siteInvite = getSiteMembershipRequest(moderatedInvitation);
-				return siteInvite;
-			}
-			else
-			{
-				throw new InvalidArgumentException("Expected moderated invitation");
-			}
-		}
-		else
-		{
-			// non-moderated sites cannot appear in a site membership request, so throw an exception
-			throw new RelationshipResourceNotFoundException(inviteeId, siteId);
-		}
-	}
+        // Note that the order of error checking is important. The server first needs to check for the status 404
+        // conditions before checking for status 400 conditions. Otherwise the server is open to a probing attack.
+        String siteId = siteInvite.getId();
+        final SiteInfo siteInfo = sites.validateSite(siteId);
+        if (siteInfo == null)
+        {
+            // site does not exist
+            throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+        }
+        // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
+        siteId = siteInfo.getShortName();
+
+        final SiteVisibility siteVisibility = siteInfo.getVisibility();
+
+        if (siteVisibility.equals(SiteVisibility.PRIVATE))
+        {
+            // note: security, no indication that this is a private site
+            throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+        }
+
+        // Is the invitee already a member of the site?
+        boolean isMember = siteService.isMember(siteId, inviteeId);
+        if (isMember)
+        {
+            // yes
+            throw new InvalidArgumentException(inviteeId + " is already a member of site " + siteId);
+        }
+
+        // Is there an outstanding site invite request for the (invitee, site)?
+        Invitation invitation = getSiteInvitation(inviteeId, siteId);
+        if (invitation != null)
+        {
+            // yes
+            throw new InvalidArgumentException(inviteeId + " is already invited to site " + siteId);
+        }
+
+        final String inviteeRole = DEFAULT_ROLE;
+        String message = siteInvite.getMessage();
+        if (message == null)
+        {
+            // the invitation service ignores null messages so convert to an empty message.
+            message = "";
+        }
+
+        if (siteVisibility.equals(SiteVisibility.MODERATED))
+        {
+            request = inviteToModeratedSite(message, inviteeId, siteId, inviteeRole, client);
+
+        }
+        else if (siteVisibility.equals(SiteVisibility.PUBLIC))
+        {
+            request = inviteToPublicSite(siteInfo, message, inviteeId, inviteeRole);
+        }
+        else
+        {
+            // note: security, no indication that this is a private site
+            throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+        }
+
+        return request;
+    }
+
+    @Override
+    public SiteMembershipRequest updateSiteMembershipRequest(String inviteeId, final SiteMembershipRequest siteInvite)
+    {
+        SiteMembershipRequest updatedSiteInvite = null;
+
+        inviteeId = people.validatePerson(inviteeId, true);
+
+        String siteId = siteInvite.getId();
+        SiteInfo siteInfo = sites.validateSite(siteId);
+        if (siteInfo == null)
+        {
+            // site does not exist
+            throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+        }
+        // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
+        siteId = siteInfo.getShortName();
+
+        String message = siteInvite.getMessage();
+        if (message == null)
+        {
+            // the invitation service ignores null messages so convert to an empty message.
+            message = "";
+        }
+
+        try
+        {
+            ModeratedInvitation updatedInvitation = invitationService.updateModeratedInvitation(inviteeId, siteId, message);
+            if (updatedInvitation == null)
+            {
+                throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+            }
+            updatedSiteInvite = getSiteMembershipRequest(updatedInvitation);
+        }
+        catch (InvitationExceptionNotFound e)
+        {
+            throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+        }
+
+        if (updatedSiteInvite == null)
+        {
+            throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+        }
+
+        return updatedSiteInvite;
+    }
+
+    @Override
+    public void cancelSiteMembershipRequest(String inviteeId, String siteId)
+    {
+        inviteeId = people.validatePerson(inviteeId);
+        SiteInfo siteInfo = sites.validateSite(siteId);
+        if (siteInfo == null)
+        {
+            // site does not exist
+            throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+        }
+        // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
+        siteId = siteInfo.getShortName();
+
+        Invitation invitation = getSiteInvitation(inviteeId, siteId);
+        if (invitation == null)
+        {
+            // no such invitation
+            throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+        }
+        invitationService.cancel(invitation.getInviteId());
+    }
+
+    public SiteMembershipRequest getSiteMembershipRequest(String inviteeId, final String siteId)
+    {
+        inviteeId = people.validatePerson(inviteeId);
+
+        SiteInfo siteInfo = AuthenticationUtil.runAsSystem(new RunAsWork<SiteInfo>() {
+            @Override
+            public SiteInfo doWork() throws Exception
+            {
+                SiteInfo siteInfo = sites.validateSite(siteId);
+                return siteInfo;
+            }
+        });
+
+        if (siteInfo == null)
+        {
+            // site does not exist
+            throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+        }
+
+        if (siteInfo.getVisibility().equals(SiteVisibility.MODERATED))
+        {
+            // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
+            String normalizedSiteId = siteInfo.getShortName();
+
+            Invitation invitation = getSiteInvitation(inviteeId, normalizedSiteId);
+            if (invitation == null)
+            {
+                // no such invitation
+                throw new RelationshipResourceNotFoundException(inviteeId, normalizedSiteId);
+            }
+            if (invitation instanceof ModeratedInvitation)
+            {
+                ModeratedInvitation moderatedInvitation = (ModeratedInvitation) invitation;
+                SiteMembershipRequest siteInvite = getSiteMembershipRequest(moderatedInvitation);
+                return siteInvite;
+            }
+            else
+            {
+                throw new InvalidArgumentException("Expected moderated invitation");
+            }
+        }
+        else
+        {
+            // non-moderated sites cannot appear in a site membership request, so throw an exception
+            throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+        }
+    }
 
     private SiteMembershipRequest getSiteMembershipRequest(ModeratedInvitation moderatedInvitation)
     {
-		return getSiteMembershipRequest(moderatedInvitation, false);
+        return getSiteMembershipRequest(moderatedInvitation, false);
     }
 
-	private SiteMembershipRequest getSiteMembershipRequest(ModeratedInvitation moderatedInvitation, boolean includePersonDetails)
-	{
-		SiteMembershipRequest siteMembershipRequest = null;
+    private SiteMembershipRequest getSiteMembershipRequest(ModeratedInvitation moderatedInvitation, boolean includePersonDetails)
+    {
+        SiteMembershipRequest siteMembershipRequest = null;
 
-		ResourceType resourceType = moderatedInvitation.getResourceType();
-		if(resourceType.equals(ResourceType.WEB_SITE))
-		{
-			final String siteId = moderatedInvitation.getResourceName();
-			
-			SiteInfo siteInfo = AuthenticationUtil.runAsSystem(new RunAsWork<SiteInfo>()
-			{
-				@Override
-				public SiteInfo doWork() throws Exception
-				{
-					SiteInfo siteInfo = sites.validateSite(siteId);
-					return siteInfo;
-				}
-			});
+        ResourceType resourceType = moderatedInvitation.getResourceType();
+        if (resourceType.equals(ResourceType.WEB_SITE))
+        {
+            final String siteId = moderatedInvitation.getResourceName();
 
-			if(siteInfo == null)
-			{
-				// site does not exist
-				throw new EntityNotFoundException(siteId);
-			}
+            SiteInfo siteInfo = AuthenticationUtil.runAsSystem(new RunAsWork<SiteInfo>() {
+                @Override
+                public SiteInfo doWork() throws Exception
+                {
+                    SiteInfo siteInfo = sites.validateSite(siteId);
+                    return siteInfo;
+                }
+            });
 
-			if(siteInfo.getVisibility().equals(SiteVisibility.MODERATED))
-			{
-				// return a site membership request only if this is a moderated site
-				siteMembershipRequest = new SiteMembershipRequest();
-				String title = siteInfo.getTitle();
-				siteMembershipRequest.setTitle(title);
-				siteMembershipRequest.setId(siteId);
-				siteMembershipRequest.setMessage(moderatedInvitation.getInviteeComments());
-				siteMembershipRequest.setCreatedAt(moderatedInvitation.getCreatedAt());
-				siteMembershipRequest.setModifiedAt(moderatedInvitation.getModifiedAt());
+            if (siteInfo == null)
+            {
+                // site does not exist
+                throw new EntityNotFoundException(siteId);
+            }
+
+            if (siteInfo.getVisibility().equals(SiteVisibility.MODERATED))
+            {
+                // return a site membership request only if this is a moderated site
+                siteMembershipRequest = new SiteMembershipRequest();
+                String title = siteInfo.getTitle();
+                siteMembershipRequest.setTitle(title);
+                siteMembershipRequest.setId(siteId);
+                siteMembershipRequest.setMessage(moderatedInvitation.getInviteeComments());
+                siteMembershipRequest.setCreatedAt(moderatedInvitation.getCreatedAt());
+                siteMembershipRequest.setModifiedAt(moderatedInvitation.getModifiedAt());
 
                 if (includePersonDetails)
                 {
                     Person person = people.getPerson(moderatedInvitation.getInviteeUserName());
                     siteMembershipRequest.setPerson(person);
                 }
-			}
-		}
-		else
-		{
-			logger.warn("Unexpected resource type " + resourceType + " for site membership request");
-		}
+            }
+        }
+        else
+        {
+            logger.warn("Unexpected resource type " + resourceType + " for site membership request");
+        }
 
-		return siteMembershipRequest;
+        return siteMembershipRequest;
     }
 
     private List<SiteMembershipRequest> toSiteMembershipRequests(List<Invitation> invitations)
@@ -534,27 +531,27 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 
     private List<SiteMembershipRequest> toSiteMembershipRequests(List<Invitation> invitations, boolean includePersonDetails)
     {
-		List<SiteMembershipRequest> siteMembershipRequests = new ArrayList<SiteMembershipRequest>(invitations.size());
-		for(Invitation invitation : invitations)
-		{
-			if(invitation instanceof ModeratedInvitation)
-			{
-				ModeratedInvitation moderatedInvitation = (ModeratedInvitation)invitation;
-				SiteMembershipRequest siteMembershipRequest = getSiteMembershipRequest(moderatedInvitation, includePersonDetails);
-				if(siteMembershipRequest != null)
-				{
-					// note: siteMembershipRequest may be null if the site is now no longer a moderated site
-					// or if the invitation is malformed and does not refer to a site.
-					siteMembershipRequests.add(siteMembershipRequest);
-				}
-			}
-			else
-			{
-				// just ignore, shouldn't happen because getSiteInvitations filters by ModeratedInvitation
-			}
-		}
-		
-		return siteMembershipRequests;
+        List<SiteMembershipRequest> siteMembershipRequests = new ArrayList<SiteMembershipRequest>(invitations.size());
+        for (Invitation invitation : invitations)
+        {
+            if (invitation instanceof ModeratedInvitation)
+            {
+                ModeratedInvitation moderatedInvitation = (ModeratedInvitation) invitation;
+                SiteMembershipRequest siteMembershipRequest = getSiteMembershipRequest(moderatedInvitation, includePersonDetails);
+                if (siteMembershipRequest != null)
+                {
+                    // note: siteMembershipRequest may be null if the site is now no longer a moderated site
+                    // or if the invitation is malformed and does not refer to a site.
+                    siteMembershipRequests.add(siteMembershipRequest);
+                }
+            }
+            else
+            {
+                // just ignore, shouldn't happen because getSiteInvitations filters by ModeratedInvitation
+            }
+        }
+
+        return siteMembershipRequests;
     }
 
     private CollectionWithPagingInfo<SiteMembershipRequest> createPagedSiteMembershipRequests(List<SiteMembershipRequest> siteMembershipRequests, Paging paging)
@@ -748,8 +745,7 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 
     private void addSiteMembership(final String invitee, final String siteName, final String role, final String runAsUser)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             public Void doWork() throws Exception
             {
                 siteService.setMembership(siteName, invitee, role);

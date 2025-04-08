@@ -27,11 +27,12 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
+import org.apache.chemistry.opencmis.commons.PropertyIds;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * Get the CMIS version series checked out by property
@@ -43,8 +44,10 @@ public class VersionSeriesCheckedOutByProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry ServiceRegistry
-     * @param connector CMISConnector
+     * @param serviceRegistry
+     *            ServiceRegistry
+     * @param connector
+     *            CMISConnector
      */
     public VersionSeriesCheckedOutByProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {
@@ -61,7 +64,8 @@ public class VersionSeriesCheckedOutByProperty extends AbstractProperty
         if (nodeInfo.isPWC())
         {
             return nodeInfo.getNodeProps().get(ContentModel.PROP_WORKING_COPY_OWNER);
-        } else
+        }
+        else
         {
             return getServiceRegistry().getNodeService().getProperty(nodeInfo.getCurrentNodeNodeRef(),
                     ContentModel.PROP_LOCK_OWNER);

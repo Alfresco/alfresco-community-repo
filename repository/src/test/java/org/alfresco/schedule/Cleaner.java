@@ -29,6 +29,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -39,12 +42,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * A test implementation similar to the trash can cleaner job implementation that will be used in
- * {@link AbstractScheduledLockedJobTest}
+ * A test implementation similar to the trash can cleaner job implementation that will be used in {@link AbstractScheduledLockedJobTest}
  * 
  * @author Tiago Salvado
  */
@@ -78,8 +78,7 @@ public class Cleaner
 
     /**
      *
-     * It deletes the {@link java.util.List List} of {@link org.alfresco.service.cmr.repository.NodeRef NodeRef}
-     * received as argument.
+     * It deletes the {@link java.util.List List} of {@link org.alfresco.service.cmr.repository.NodeRef NodeRef} received as argument.
      *
      * @param nodes
      *
@@ -115,8 +114,7 @@ public class Cleaner
 
     /**
      *
-     * It returns the {@link java.util.List List} of {@link org.alfresco.service.cmr.repository.NodeRef NodeRef} of the
-     * archive store set to be deleted according to configuration for <b>deleteBatchCount</b>.
+     * It returns the {@link java.util.List List} of {@link org.alfresco.service.cmr.repository.NodeRef NodeRef} of the archive store set to be deleted according to configuration for <b>deleteBatchCount</b>.
      *
      * @return
      */
@@ -127,9 +125,7 @@ public class Cleaner
 
     /**
      *
-     * It will return the first {@link #deleteBatchCount}
-     * {@link org.alfresco.service.cmr.repository.ChildAssociationRef}s of type {@link ContentModel}.ASSOC_CHILDREN from
-     * the archive store set.
+     * It will return the first {@link #deleteBatchCount} {@link org.alfresco.service.cmr.repository.ChildAssociationRef}s of type {@link ContentModel}.ASSOC_CHILDREN from the archive store set.
      *
      * @return
      */
@@ -143,8 +139,7 @@ public class Cleaner
 
     /**
      *
-     * The method that will clean the specified <b>archiveStoreUrl</b> to the limits defined by the values set for
-     * <b>deleteBatchCount</b>.
+     * The method that will clean the specified <b>archiveStoreUrl</b> to the limits defined by the values set for <b>deleteBatchCount</b>.
      */
     public void clean()
     {

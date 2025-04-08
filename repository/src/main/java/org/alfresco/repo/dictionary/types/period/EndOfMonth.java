@@ -29,6 +29,7 @@ import java.util.Calendar;
 
 /**
  * End of month
+ * 
  * @author andyh
  *
  */
@@ -37,40 +38,40 @@ public class EndOfMonth extends AbstractEndOfCalendarPeriodProvider
     /**
      * 
      */
-    public static final String PERIOD_TYPE = "monthend"; 
-    
+    public static final String PERIOD_TYPE = "monthend";
+
     @Override
     public void add(Calendar calendar, int value)
-    { 
+    {
         // Add a milli to nudge roll over given a month end date
         if (value > 0)
         {
             calendar.add(Calendar.MILLISECOND, 1);
         }
-        
+
         int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
-        if(dayOfMonth < getStartDayOfMonth())
+        if (dayOfMonth < getStartDayOfMonth())
         {
-            calendar.add(Calendar.MONTH, value-1);
+            calendar.add(Calendar.MONTH, value - 1);
         }
         else
         {
             calendar.add(Calendar.MONTH, value);
         }
-       
+
         calendar.set(Calendar.DAY_OF_MONTH, getStartDayOfMonth());
         calendar.add(Calendar.DAY_OF_YEAR, -1);
-        
+
         // Set the time one minute to midnight
         calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59); 
+        calendar.set(Calendar.MINUTE, 59);
         calendar.set(Calendar.SECOND, 59);
         calendar.set(Calendar.MILLISECOND, 999);
     }
 
     public String getPeriodType()
     {
-       return PERIOD_TYPE;
+        return PERIOD_TYPE;
     }
 
 }

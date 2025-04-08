@@ -33,6 +33,6 @@ import org.quartz.JobExecutionException;
 public interface FeedGenerator
 {
     public void execute() throws JobExecutionException;
-    
+
     public int getEstimatedGridSize();
 }

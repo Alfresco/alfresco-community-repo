@@ -73,8 +73,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
 
     private String createTestUser()
     {
-        return doTestInTransaction(new Test<String>()
-        {
+        return doTestInTransaction(new Test<String>() {
             public String run()
             {
                 String userName = GUID.generate();
@@ -90,8 +89,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
         final String elephant = createTestUser();
         final String snake = createTestUser();
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 assertFalse(extendedSecurityService.hasExtendedSecurity(filePlan));
@@ -118,7 +116,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
 
                 // test remove
                 extendedSecurityService.remove(recordToo);
-                
+
                 assertFalse(extendedSecurityService.hasExtendedSecurity(recordToo));
                 assertTrue(extendedSecurityService.getReaders(recordToo).isEmpty());
                 assertTrue(extendedSecurityService.getWriters(recordToo).isEmpty());
@@ -133,8 +131,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
         final String monkey = createTestUser();
         final String elephant = createTestUser();
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             Set<String> extendedReaders = new HashSet<>(2);
 
             public Void run() throws Exception
@@ -184,111 +181,101 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
 
     public void testDifferentUsersDifferentPermissions()
     {
-    	final String userNone = createTestUser();
-    	final String userRead = createTestUser();
-    	final String userWrite = createTestUser();
-    	final String siteShortName = GUID.generate();
+        final String userNone = createTestUser();
+        final String userRead = createTestUser();
+        final String userWrite = createTestUser();
+        final String siteShortName = GUID.generate();
 
-    	doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run() throws Exception
             {
-            	siteService.createSite(null, siteShortName, "test", "test", SiteVisibility.PRIVATE);
-            	return null;
+                siteService.createSite(null, siteShortName, "test", "test", SiteVisibility.PRIVATE);
+                return null;
             }
         });
 
-    	final NodeRef documentLibrary = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef documentLibrary = doTestInTransaction(new Test<NodeRef>() {
             public NodeRef run() throws Exception
             {
-            	siteService.setMembership(siteShortName, userRead, SiteModel.SITE_CONSUMER);
-            	siteService.setMembership(siteShortName, userWrite, SiteModel.SITE_COLLABORATOR);
-            	return siteService.createContainer(siteShortName, SiteService.DOCUMENT_LIBRARY, null, null);
+                siteService.setMembership(siteShortName, userRead, SiteModel.SITE_CONSUMER);
+                siteService.setMembership(siteShortName, userWrite, SiteModel.SITE_COLLABORATOR);
+                return siteService.createContainer(siteShortName, SiteService.DOCUMENT_LIBRARY, null, null);
             }
         });
 
-    	final NodeRef record = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef record = doTestInTransaction(new Test<NodeRef>() {
             public NodeRef run() throws Exception
             {
-            	NodeRef record = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
-            	recordService.createRecord(filePlan, record);
-            	return record;
+                NodeRef record = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+                recordService.createRecord(filePlan, record);
+                return record;
             }
         });
 
-    	doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run() throws Exception
             {
-            	AuthenticationUtil.runAs(new RunAsWork<Void>()
-            	{
-					public Void doWork() throws Exception
-					{
-						// check permissions
-		            	assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, READ_RECORDS));
-		            	assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, FILING));
-						return null;
-					}
-				}, userNone);
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
+                    public Void doWork() throws Exception
+                    {
+                        // check permissions
+                        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, READ_RECORDS));
+                        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, FILING));
+                        return null;
+                    }
+                }, userNone);
 
-            	AuthenticationUtil.runAs(new RunAsWork<Void>()
-            	{
-					public Void doWork() throws Exception
-					{
-						// check permissions
-		            	assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, READ_RECORDS));
-		            	assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, FILING));
-						return null;
-					}
-				}, userRead);
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
+                    public Void doWork() throws Exception
+                    {
+                        // check permissions
+                        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, READ_RECORDS));
+                        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, FILING));
+                        return null;
+                    }
+                }, userRead);
 
-            	AuthenticationUtil.runAs(new RunAsWork<Void>()
-            	{
-					public Void doWork() throws Exception
-					{
-						// check permissions
-		            	assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, READ_RECORDS));
-		            	assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, FILING));
-						return null;
-					}
-				}, userWrite);
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
+                    public Void doWork() throws Exception
+                    {
+                        // check permissions
+                        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, READ_RECORDS));
+                        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, FILING));
+                        return null;
+                    }
+                }, userWrite);
 
-            	AuthenticationUtil.runAs(new RunAsWork<Void>()
-            	{
-					public Void doWork() throws Exception
-					{
-						// check permissions
-		            	assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, READ_RECORDS));
-		            	assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, FILING));
-						return null;
-					}
-				}, userNone);
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
+                    public Void doWork() throws Exception
+                    {
+                        // check permissions
+                        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, READ_RECORDS));
+                        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, FILING));
+                        return null;
+                    }
+                }, userNone);
 
-            	AuthenticationUtil.runAs(new RunAsWork<Void>()
-            	{
-					public Void doWork() throws Exception
-					{
-						// check permissions
-		            	assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, READ_RECORDS));
-		            	assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, FILING));
-						return null;
-					}
-				}, userRead);
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
+                    public Void doWork() throws Exception
+                    {
+                        // check permissions
+                        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, READ_RECORDS));
+                        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, FILING));
+                        return null;
+                    }
+                }, userRead);
 
-            	AuthenticationUtil.runAs(new RunAsWork<Void>()
-            	{
-					public Void doWork() throws Exception
-					{
-						// check permissions
-		            	assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, READ_RECORDS));
-		            	assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, FILING));
-						return null;
-					}
-				}, userWrite);
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
+                    public Void doWork() throws Exception
+                    {
+                        // check permissions
+                        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, READ_RECORDS));
+                        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, FILING));
+                        return null;
+                    }
+                }, userWrite);
 
-            	return null;
+                return null;
             }
         });
     }

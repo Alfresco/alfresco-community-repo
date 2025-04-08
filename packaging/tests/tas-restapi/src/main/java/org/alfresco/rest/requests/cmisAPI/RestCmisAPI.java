@@ -25,24 +25,25 @@
  */
 package org.alfresco.rest.requests.cmisAPI;
 
+import io.restassured.RestAssured;
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.requests.ModelRequest;
 import org.alfresco.utility.model.ContentModel;
-import org.springframework.http.HttpMethod;
-
-import io.restassured.RestAssured;
 
 /**
  * @author Paul Brodner
  * 
- * Perform CMIS rest API calls "alfresco/api/-default-/public/cmis/versions/1.1/browser"
+ *         Perform CMIS rest API calls "alfresco/api/-default-/public/cmis/versions/1.1/browser"
  * 
- * Take a look at {@link org.alfresco.rest.cmis.CmisBrowserTest}
+ *         Take a look at {@link org.alfresco.rest.cmis.CmisBrowserTest}
  * @since 5.2.0-8
  */
-public class RestCmisAPI extends ModelRequest<RestCmisAPI> {
+public class RestCmisAPI extends ModelRequest<RestCmisAPI>
+{
 
     public RestCmisAPI(RestWrapper restWrapper)
     {

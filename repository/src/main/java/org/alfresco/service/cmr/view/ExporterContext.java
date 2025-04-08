@@ -30,7 +30,6 @@ import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
-
 public interface ExporterContext
 {
     /**
@@ -39,35 +38,35 @@ public interface ExporterContext
      * @return String
      */
     public String getExportedBy();
-    
+
     /**
      * Gets date at which export occured
      * 
      * @return Date
      */
     public Date getExportedDate();
-    
+
     /**
      * Gets version number of exporter
      * 
      * @return String
      */
     public String getExporterVersion();
-    
+
     /**
      * Gets active node for export
      * 
-     * @return NodeRef 
+     * @return NodeRef
      */
     public NodeRef getExportOf();
-    
+
     /**
      * Gets parent of exporting node
      * 
-     * @return NodeRef 
-     */    
+     * @return NodeRef
+     */
     public NodeRef getExportParent();
-    
+
     /**
      * Gets list of nodes for export
      * 
@@ -76,31 +75,31 @@ public interface ExporterContext
     public NodeRef[] getExportList();
 
     public Map<Integer, NodeRef[]> getExportMap();
-    
+
     /**
      * Gets list of parents for exporting nodes
      * 
      * @return NodeRef[]
      */
     public NodeRef[] getExportParentList();
-    
+
     /**
      * Return true if there is active node for export
      * 
      * @return boolean
      */
     public boolean canRetrieve();
-    
+
     /**
      * Set next active node from list
      * 
      * @return int
      */
     public int setNextValue();
-    
+
     /**
-     * Set first active node 
+     * Set first active node
      */
     public void resetContext();
-    
+
 }

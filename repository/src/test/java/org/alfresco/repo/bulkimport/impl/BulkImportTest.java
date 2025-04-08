@@ -25,6 +25,37 @@
  */
 package org.alfresco.repo.bulkimport.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.nio.charset.Charset;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.GZIPInputStream;
+import jakarta.transaction.HeuristicMixedException;
+import jakarta.transaction.HeuristicRollbackException;
+import jakarta.transaction.NotSupportedException;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.SystemException;
+
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.util.ResourceUtils;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
 import org.alfresco.repo.action.executer.CopyActionExecuter;
@@ -42,36 +73,6 @@ import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.util.ResourceUtils;
-
-import jakarta.transaction.HeuristicMixedException;
-import jakarta.transaction.HeuristicRollbackException;
-import jakarta.transaction.NotSupportedException;
-import jakarta.transaction.RollbackException;
-import jakarta.transaction.SystemException;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.nio.charset.Charset;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.GZIPInputStream;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @since 4.0
@@ -91,7 +92,7 @@ public class BulkImportTest extends AbstractBulkImportTests
     public void setup() throws SystemException, NotSupportedException
     {
         super.setup();
-        streamingNodeImporterFactory = (StreamingNodeImporterFactory)ctx.getBean("streamingNodeImporterFactory");
+        streamingNodeImporterFactory = (StreamingNodeImporterFactory) ctx.getBean("streamingNodeImporterFactory");
     }
 
     /**
@@ -117,14 +118,14 @@ public class BulkImportTest extends AbstractBulkImportTests
             bulkImportParameters.setBatchSize(40);
             bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             fail(e.getMessage());
         }
 
         System.out.println(bulkImporter.getStatus());
         assertEquals(false, bulkImporter.getStatus().inProgress());
-        
+
         List<FileInfo> folders = getFolders(folderNode, null);
         assertEquals(1, folders.size());
         FileInfo folder1 = folders.get(0);
@@ -151,7 +152,7 @@ public class BulkImportTest extends AbstractBulkImportTests
             bulkImportParameters.setBatchSize(40);
             bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             fail(e.getMessage());
         }
@@ -159,53 +160,46 @@ public class BulkImportTest extends AbstractBulkImportTests
         System.out.println(bulkImporter.getStatus());
 
         checkFiles(folderNode, null, 2, 9,
-                new ExpectedFile[]
-                {
-                    new ExpectedFile("quickImg1.xls", MimetypeMap.MIMETYPE_EXCEL),
-                    new ExpectedFile("quickImg1.doc", MimetypeMap.MIMETYPE_WORD),
-                    new ExpectedFile("quick.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN, "The quick brown fox jumps over the lazy dog"),
+                new ExpectedFile[]{
+                        new ExpectedFile("quickImg1.xls", MimetypeMap.MIMETYPE_EXCEL),
+                        new ExpectedFile("quickImg1.doc", MimetypeMap.MIMETYPE_WORD),
+                        new ExpectedFile("quick.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN, "The quick brown fox jumps over the lazy dog"),
                 },
-                new ExpectedFolder[]
-                {
-                    new ExpectedFolder("folder1"),
-                    new ExpectedFolder("folder2")
+                new ExpectedFolder[]{
+                        new ExpectedFolder("folder1"),
+                        new ExpectedFolder("folder2")
                 });
 
         List<FileInfo> folders = getFolders(folderNode, "folder1");
         assertEquals("", 1, folders.size());
         NodeRef folder1 = folders.get(0).getNodeRef();
         checkFiles(folder1, null, 1, 0, null,
-                new ExpectedFolder[]
-                {
-                    new ExpectedFolder("folder1.1")
+                new ExpectedFolder[]{
+                        new ExpectedFolder("folder1.1")
                 });
 
         folders = getFolders(folderNode, "folder2");
         assertEquals("", 1, folders.size());
         NodeRef folder2 = folders.get(0).getNodeRef();
         checkFiles(folder2, null, 1, 0,
-                new ExpectedFile[]
-                {
+                new ExpectedFile[]{
                 },
-                new ExpectedFolder[]
-                {
-                    new ExpectedFolder("folder2.1")
+                new ExpectedFolder[]{
+                        new ExpectedFolder("folder2.1")
                 });
 
         folders = getFolders(folder1, "folder1.1");
         assertEquals("", 1, folders.size());
         NodeRef folder1_1 = folders.get(0).getNodeRef();
         checkFiles(folder1_1, null, 2, 12,
-                new ExpectedFile[]
-                {
-                    new ExpectedFile("quick.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN, "The quick brown fox jumps over the lazy dog"),
-                    new ExpectedFile("quick.sxw", MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER),
-                    new ExpectedFile("quick.tar", "application/x-gtar"),
+                new ExpectedFile[]{
+                        new ExpectedFile("quick.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN, "The quick brown fox jumps over the lazy dog"),
+                        new ExpectedFile("quick.sxw", MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER),
+                        new ExpectedFile("quick.tar", "application/x-gtar"),
                 },
-                new ExpectedFolder[]
-                {
-                    new ExpectedFolder("folder1.1.1"),
-                    new ExpectedFolder("folder1.1.2")
+                new ExpectedFolder[]{
+                        new ExpectedFolder("folder1.1.1"),
+                        new ExpectedFolder("folder1.1.2")
                 });
 
         folders = getFolders(folder2, "folder2.1");
@@ -213,14 +207,12 @@ public class BulkImportTest extends AbstractBulkImportTests
         NodeRef folder2_1 = folders.get(0).getNodeRef();
 
         checkFiles(folder2_1, null, 0, 17,
-                new ExpectedFile[]
-                {
-                    new ExpectedFile("quick.png", MimetypeMap.MIMETYPE_IMAGE_PNG),
-                    new ExpectedFile("quick.pdf", MimetypeMap.MIMETYPE_PDF),
-                    new ExpectedFile("quick.odt", MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT),
+                new ExpectedFile[]{
+                        new ExpectedFile("quick.png", MimetypeMap.MIMETYPE_IMAGE_PNG),
+                        new ExpectedFile("quick.pdf", MimetypeMap.MIMETYPE_PDF),
+                        new ExpectedFile("quick.odt", MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT),
                 },
-                new ExpectedFolder[]
-                {
+                new ExpectedFolder[]{
                 });
     }
 
@@ -243,7 +235,7 @@ public class BulkImportTest extends AbstractBulkImportTests
 
         return rule;
     }
-    
+
     @Test
     public void testImportWithRules() throws Throwable
     {
@@ -260,7 +252,7 @@ public class BulkImportTest extends AbstractBulkImportTests
         this.ruleService.saveRule(folderNode, newRule);
 
         txn.commit();
-        
+
         txn = transactionService.getUserTransaction();
         txn.begin();
 
@@ -277,56 +269,56 @@ public class BulkImportTest extends AbstractBulkImportTests
 
         assertEquals(74, bulkImporter.getStatus().getNumberOfContentNodesCreated());
 
-        checkFiles(folderNode, null, 2, 9, new ExpectedFile[] {
+        checkFiles(folderNode, null, 2, 9, new ExpectedFile[]{
                 new ExpectedFile("quickImg1.xls", MimetypeMap.MIMETYPE_EXCEL),
                 new ExpectedFile("quickImg1.doc", MimetypeMap.MIMETYPE_WORD),
                 new ExpectedFile("quick.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN, "The quick brown fox jumps over the lazy dog"),
         },
-        new ExpectedFolder[] {
-                new ExpectedFolder("folder1"),
-                new ExpectedFolder("folder2")
-        });
+                new ExpectedFolder[]{
+                        new ExpectedFolder("folder1"),
+                        new ExpectedFolder("folder2")
+                });
 
         List<FileInfo> folders = getFolders(folderNode, "folder1");
         assertEquals("", 1, folders.size());
         NodeRef folder1 = folders.get(0).getNodeRef();
-        checkFiles(folder1, null, 1, 0, null, new ExpectedFolder[] {
+        checkFiles(folder1, null, 1, 0, null, new ExpectedFolder[]{
                 new ExpectedFolder("folder1.1")
         });
 
         folders = getFolders(folderNode, "folder2");
         assertEquals("", 1, folders.size());
         NodeRef folder2 = folders.get(0).getNodeRef();
-        checkFiles(folder2, null, 1, 0, new ExpectedFile[] {
+        checkFiles(folder2, null, 1, 0, new ExpectedFile[]{
         },
-        new ExpectedFolder[] {
-                new ExpectedFolder("folder2.1")
-        });
+                new ExpectedFolder[]{
+                        new ExpectedFolder("folder2.1")
+                });
 
         folders = getFolders(folder1, "folder1.1");
         assertEquals("", 1, folders.size());
         NodeRef folder1_1 = folders.get(0).getNodeRef();
-        checkFiles(folder1_1, null, 2, 12, new ExpectedFile[] {
+        checkFiles(folder1_1, null, 2, 12, new ExpectedFile[]{
                 new ExpectedFile("quick.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN, "The quick brown fox jumps over the lazy dog"),
                 new ExpectedFile("quick.sxw", MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER),
                 new ExpectedFile("quick.tar", "application/x-gtar"),
         },
-        new ExpectedFolder[] {
-                new ExpectedFolder("folder1.1.1"),
-                new ExpectedFolder("folder1.1.2")
-        });
+                new ExpectedFolder[]{
+                        new ExpectedFolder("folder1.1.1"),
+                        new ExpectedFolder("folder1.1.2")
+                });
 
         folders = getFolders(folder2, "folder2.1");
         assertEquals("", 1, folders.size());
         NodeRef folder2_1 = folders.get(0).getNodeRef();
 
-        checkFiles(folder2_1, null, 0, 17, new ExpectedFile[] {
+        checkFiles(folder2_1, null, 0, 17, new ExpectedFile[]{
                 new ExpectedFile("quick.png", MimetypeMap.MIMETYPE_IMAGE_PNG),
                 new ExpectedFile("quick.pdf", MimetypeMap.MIMETYPE_PDF),
                 new ExpectedFile("quick.odt", MimetypeMap.MIMETYPE_OPENDOCUMENT_TEXT),
         },
-        new ExpectedFolder[] {
-        });
+                new ExpectedFolder[]{
+                });
     }
 
     @Test
@@ -350,13 +342,13 @@ public class BulkImportTest extends AbstractBulkImportTests
 
         System.out.println(bulkImporter.getStatus());
 
-        checkFiles(folderNode, null, 0, 3, new ExpectedFile[] {
+        checkFiles(folderNode, null, 0, 3, new ExpectedFile[]{
                 new ExpectedFile("quick.gif", MimetypeMap.MIMETYPE_IMAGE_GIF),
                 new ExpectedFile("Amazing.ai", MimetypeMap.MIMETYPE_APPLICATION_ILLUSTRATOR),
                 new ExpectedFile("quick.eps", MimetypeMap.MIMETYPE_APPLICATION_EPS)
         },
-        new ExpectedFolder[] {
-        });
+                new ExpectedFolder[]{
+                });
     }
 
     /**
@@ -382,7 +374,7 @@ public class BulkImportTest extends AbstractBulkImportTests
             bulkImportParameters.setBatchSize(40);
             bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             fail(e.getMessage());
         }
@@ -402,7 +394,7 @@ public class BulkImportTest extends AbstractBulkImportTests
         assertEquals("Imported file should have 4 versions:", 4, history.getAllVersions().size());
         Version[] versions = history.getAllVersions().toArray(new Version[4]);
 
-        //compare the content of each version
+        // compare the content of each version
         ContentReader contentReader;
         contentReader = this.contentService.getReader(versions[0].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
         assertNotNull(contentReader);
@@ -434,7 +426,7 @@ public class BulkImportTest extends AbstractBulkImportTests
 
         NodeRef folderNode = topLevelFolder.getNodeRef();
 
-        //initial import
+        // initial import
         try
         {
             NodeImporter nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport3/initial"));
@@ -445,7 +437,7 @@ public class BulkImportTest extends AbstractBulkImportTests
             bulkImportParameters.setBatchSize(40);
             bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             fail(e.getMessage());
         }
@@ -468,8 +460,7 @@ public class BulkImportTest extends AbstractBulkImportTests
         VersionHistory history = versionService.getVersionHistory(fileNodeRef);
         assertEquals("Imported file should have 4 versions:", 4, history.getAllVersions().size());
 
-
-        //replace versioned file with new versioned file
+        // replace versioned file with new versioned file
         try
         {
             NodeImporter nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport3/replace_with_versioned"));
@@ -480,7 +471,7 @@ public class BulkImportTest extends AbstractBulkImportTests
             bulkImportParameters.setBatchSize(40);
             bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             fail(e.getMessage());
         }
@@ -503,12 +494,11 @@ public class BulkImportTest extends AbstractBulkImportTests
         history = versionService.getVersionHistory(fileNodeRef);
         assertNotNull(history);
 
-
         assertEquals("Imported file should have 9 versions:", 9, history.getAllVersions().size());
 
         Version[] versions = history.getAllVersions().toArray(new Version[9]);
 
-        //compare the content of each version
+        // compare the content of each version
         ContentReader contentReader;
         contentReader = this.contentService.getReader(versions[0].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
         assertNotNull(contentReader);
@@ -534,24 +524,24 @@ public class BulkImportTest extends AbstractBulkImportTests
         contentReader = this.contentService.getReader(versions[5].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
         assertNotNull(contentReader);
         assertEquals("This is the final version of fileWithVersions.txt.", contentReader.getContentString());
-        
+
         contentReader = this.contentService.getReader(versions[6].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
         assertNotNull(contentReader);
         assertEquals("This is version 3 of fileWithVersions.txt.", contentReader.getContentString());
-        
+
         contentReader = this.contentService.getReader(versions[7].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
         assertNotNull(contentReader);
         assertEquals("This is version 2 of fileWithVersions.txt.", contentReader.getContentString());
-        
+
         contentReader = this.contentService.getReader(versions[8].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
         assertNotNull(contentReader);
         assertEquals("This is version 1 of fileWithVersions.txt.", contentReader.getContentString());
-        
+
         txn.commit();
         txn = transactionService.getUserTransaction();
         txn.begin();
 
-        //import non versioned file
+        // import non versioned file
         try
         {
             NodeImporter nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport3/replace_with_non_versioned"));
@@ -562,7 +552,7 @@ public class BulkImportTest extends AbstractBulkImportTests
             bulkImportParameters.setBatchSize(40);
             bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             fail(e.getMessage());
         }
@@ -590,7 +580,7 @@ public class BulkImportTest extends AbstractBulkImportTests
         txn = transactionService.getUserTransaction();
         txn.begin();
 
-        //use initial file again to replace non versioned file
+        // use initial file again to replace non versioned file
         try
         {
             NodeImporter nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport3/initial"));
@@ -601,7 +591,7 @@ public class BulkImportTest extends AbstractBulkImportTests
             bulkImportParameters.setBatchSize(40);
             bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
         }
-        catch(Throwable e)
+        catch (Throwable e)
         {
             fail(e.getMessage());
         }
@@ -624,12 +614,11 @@ public class BulkImportTest extends AbstractBulkImportTests
         history = versionService.getVersionHistory(fileNodeRef);
         assertNotNull(history);
 
-
         assertEquals("Imported file should have 4 versions:", 4, history.getAllVersions().size());
 
         versions = history.getAllVersions().toArray(new Version[4]);
 
-        //compare the content of each version
+        // compare the content of each version
 
         contentReader = this.contentService.getReader(versions[0].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
         assertNotNull(contentReader);
@@ -648,7 +637,7 @@ public class BulkImportTest extends AbstractBulkImportTests
         assertEquals("This is version 1 of fileWithVersions.txt.", contentReader.getContentString());
 
     }
-    
+
     /**
      * MNT-15367: Unable to bulk import filenames with Portuguese characters in a Linux environment
      *
@@ -661,9 +650,9 @@ public class BulkImportTest extends AbstractBulkImportTests
         NodeImporter nodeImporter = null;
 
         File source = ResourceUtils.getFile("classpath:bulkimport4");
-        //Simulate the name of the file with an invalid encoding.
-        String fileName = new String("135 CarbonÔÇô13 NMR spectroscopy_DS_NS_final_cau.txt".getBytes(Charset.forName("ISO-8859-1")), 
-                                      Charset.forName("UTF-8"));
+        // Simulate the name of the file with an invalid encoding.
+        String fileName = new String("135 CarbonÔÇô13 NMR spectroscopy_DS_NS_final_cau.txt".getBytes(Charset.forName("ISO-8859-1")),
+                Charset.forName("UTF-8"));
         Path dest = source.toPath().resolve("encoding");
         try
         {
@@ -671,12 +660,12 @@ public class BulkImportTest extends AbstractBulkImportTests
         }
         catch (FileAlreadyExistsException ex)
         {
-            //It is fine if the folder already exists, though it should not.
+            // It is fine if the folder already exists, though it should not.
         }
         Path destFile = dest.resolve(fileName);
 
         unpack(source.toPath(), destFile);
-        
+
         txn = transactionService.getUserTransaction();
         txn.begin();
 
@@ -691,12 +680,12 @@ public class BulkImportTest extends AbstractBulkImportTests
 
         assertEquals(1, bulkImporter.getStatus().getNumberOfContentNodesCreated());
 
-        checkFiles(folderNode, null, 0, 1, 
-                   new ExpectedFile[] { new ExpectedFile(fileName, MimetypeMap.MIMETYPE_TEXT_PLAIN)}, 
-                   null);
+        checkFiles(folderNode, null, 0, 1,
+                new ExpectedFile[]{new ExpectedFile(fileName, MimetypeMap.MIMETYPE_TEXT_PLAIN)},
+                null);
 
-         Files.deleteIfExists(destFile);
-         Files.deleteIfExists(dest);
+        Files.deleteIfExists(destFile);
+        Files.deleteIfExists(dest);
     }
 
     /**
@@ -733,10 +722,10 @@ public class BulkImportTest extends AbstractBulkImportTests
     }
 
     /**
-     * Simplifies calling {@ResourceUtils.getFile} so that a {@link RuntimeException}
-     * is thrown rather than a checked {@link FileNotFoundException} exception.
+     * Simplifies calling {@ResourceUtils.getFile} so that a {@link RuntimeException} is thrown rather than a checked {@link FileNotFoundException} exception.
      *
-     * @param resourceName e.g. "classpath:folder/file"
+     * @param resourceName
+     *            e.g. "classpath:folder/file"
      * @return File object
      */
     private File resourceAsFile(String resourceName)
@@ -747,7 +736,7 @@ public class BulkImportTest extends AbstractBulkImportTests
         }
         catch (FileNotFoundException e)
         {
-            throw new RuntimeException("Resource "+resourceName+" not found", e);
+            throw new RuntimeException("Resource " + resourceName + " not found", e);
         }
     }
 
@@ -756,27 +745,26 @@ public class BulkImportTest extends AbstractBulkImportTests
             throws HeuristicMixedException, IOException, SystemException,
             HeuristicRollbackException, NotSupportedException, RollbackException
     {
-        testCanVersionDocsWithoutSpecialInputFileNameExtension(file ->
-            streamingNodeImporterFactory.getNodeImporter(resourceAsFile("classpath:bulkimport-autoversion/"+file)));
+        testCanVersionDocsWithoutSpecialInputFileNameExtension(file -> streamingNodeImporterFactory.getNodeImporter(resourceAsFile("classpath:bulkimport-autoversion/" + file)));
     }
 
     private void unpack(Path source, Path destFile)
     {
         Path archive = source.resolve("testbulk.gz");
-            
+
         try (GZIPInputStream gzis = new GZIPInputStream(Files.newInputStream(archive));
-             OutputStream out = Files.newOutputStream(destFile, StandardOpenOption.CREATE))
+                OutputStream out = Files.newOutputStream(destFile, StandardOpenOption.CREATE))
         {
             byte[] buffer = new byte[1024];
             int len;
-            while ((len = gzis.read(buffer)) > 0) 
+            while ((len = gzis.read(buffer)) > 0)
             {
                 out.write(buffer, 0, len);
             }
         }
         catch (IOException ex)
         {
-            ex.printStackTrace();   
+            ex.printStackTrace();
         }
     }
 

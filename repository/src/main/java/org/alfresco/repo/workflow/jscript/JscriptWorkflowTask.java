@@ -31,6 +31,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
+
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
@@ -41,7 +44,6 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.workflow.WorkflowNode;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -52,8 +54,6 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespacePrefixResolverProvider;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * This class represents a workflow task (an instance of a workflow task definition)
@@ -72,10 +72,9 @@ public class JscriptWorkflowTask extends BaseScopableProcessorExtension implemen
     private final DictionaryService dictionaryService;
     private MutableAuthenticationService authenticationService;
     private final DefaultNamespaceProvider namespaceProvider;
-    
+
     private WorkflowTask task;
 
-    
     /**
      * Creates a new instance of a workflow task from a WorkflowTask from the CMR workflow object model
      * 
@@ -84,9 +83,9 @@ public class JscriptWorkflowTask extends BaseScopableProcessorExtension implemen
      * @param serviceRegistry
      *            Service Registry object
      */
-    public JscriptWorkflowTask(WorkflowTask task, 
-                ServiceRegistry serviceRegistry,
-                Scriptable scope)
+    public JscriptWorkflowTask(WorkflowTask task,
+            ServiceRegistry serviceRegistry,
+            Scriptable scope)
     {
         this.serviceRegistry = serviceRegistry;
         this.namespaceProvider = new DefaultNamespaceProvider(serviceRegistry.getNamespaceService());
@@ -160,11 +159,11 @@ public class JscriptWorkflowTask extends BaseScopableProcessorExtension implemen
      */
     public void setProperties(ScriptableQNameMap<String, Serializable> properties)
     {
-        
+
         Map<QName, Serializable> qNameProps = properties.getMapOfQNames();
         this.task = workflowService.updateTask(task.getId(), qNameProps, null, null);
     }
-    
+
     /**
      * Returns whether the task is complete 'true':complete, 'false':in-progress
      * 
@@ -187,13 +186,13 @@ public class JscriptWorkflowTask extends BaseScopableProcessorExtension implemen
     }
 
     /**
-     * @deprecated pooled state cannot be altered. 
+     * @deprecated pooled state cannot be altered.
      * 
      */
     @Deprecated
     public void setPooled(boolean pooled)
     {
-    	
+
     }
 
     /**
@@ -235,7 +234,7 @@ public class JscriptWorkflowTask extends BaseScopableProcessorExtension implemen
     {
         List<NodeRef> contents = workflowService.getPackageContents(task.getId());
         List<ScriptNode> resources = new ArrayList<ScriptNode>(contents.size());
-        
+
         Collection<QName> allowedTypes = getAllowedPackageResourceTypes();
         for (NodeRef node : contents)
         {
@@ -261,17 +260,17 @@ public class JscriptWorkflowTask extends BaseScopableProcessorExtension implemen
     {
         if (nodeService.exists(node))
         {
-            //Check if the node is one of the allowedTypes.
+            // Check if the node is one of the allowedTypes.
             return allowedTypes.contains(nodeService.getType(node));
         }
         return false;
     }
-    
+
     private static class DefaultNamespaceProvider implements NamespacePrefixResolverProvider
     {
         private static final long serialVersionUID = -7015209142379905617L;
         private final NamespaceService namespaceService;
-        
+
         public DefaultNamespaceProvider(NamespaceService namespaceService)
         {
             this.namespaceService = namespaceService;
@@ -284,6 +283,6 @@ public class JscriptWorkflowTask extends BaseScopableProcessorExtension implemen
         {
             return namespaceService;
         }
-        
+
     }
 }

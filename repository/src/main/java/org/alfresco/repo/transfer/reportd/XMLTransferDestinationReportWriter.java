@@ -29,14 +29,15 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Date;
 
-import org.alfresco.repo.transfer.TransferDestinationReportWriter;
-import org.alfresco.repo.transfer.report.TransferReportModel;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import org.alfresco.repo.transfer.TransferDestinationReportWriter;
+import org.alfresco.repo.transfer.report.TransferReportModel;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Writes the Client Side Transfer Report out as XML.
@@ -46,15 +47,14 @@ import org.xml.sax.helpers.AttributesImpl;
 public class XMLTransferDestinationReportWriter implements TransferDestinationReportWriter
 {
     public XMLTransferDestinationReportWriter()
-    {
-    }
-    
+    {}
+
     private XMLWriter writer;
-    
+
     final AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
-    
+
     final String PREFIX = TransferDestinationReportModel.REPORT_PREFIX;
-    
+
     /**
      * Start the transfer report
      */
@@ -64,34 +64,34 @@ public class XMLTransferDestinationReportWriter implements TransferDestinationRe
         format.setNewLineAfterDeclaration(false);
         format.setIndentSize(3);
         format.setEncoding(encoding);
-        
-        try 
+
+        try
         {
-        
-        this.writer = new XMLWriter(writer, format);
-        this.writer.startDocument();
-        
-        this.writer.startPrefixMapping(PREFIX, TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI);
-    
-        // Start Transfer Manifest  // uri, name, prefix
-        this.writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_REPORT,  PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_REPORT, EMPTY_ATTRIBUTES);
-        
-        } 
+
+            this.writer = new XMLWriter(writer, format);
+            this.writer.startDocument();
+
+            this.writer.startPrefixMapping(PREFIX, TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI);
+
+            // Start Transfer Manifest // uri, name, prefix
+            this.writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_REPORT, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_REPORT, EMPTY_ATTRIBUTES);
+
+        }
         catch (SAXException se)
         {
             se.printStackTrace();
         }
     }
-    
+
     /**
-     * End the transfer report 
+     * End the transfer report
      */
     public void endTransferReport()
     {
-        try 
+        try
         {
             // End Transfer Manifest
-            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_REPORT,  PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_REPORT);
+            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_REPORT, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_REPORT);
             writer.endPrefixMapping(PREFIX);
             writer.endDocument();
             writer.flush();
@@ -101,7 +101,7 @@ public class XMLTransferDestinationReportWriter implements TransferDestinationRe
         {
             // TODO Auto-generated catch block
             se.printStackTrace();
-        } 
+        }
         catch (IOException e)
         {
             // TODO Auto-generated catch block
@@ -117,17 +117,17 @@ public class XMLTransferDestinationReportWriter implements TransferDestinationRe
             AttributesImpl attributes = new AttributesImpl();
             attributes.addAttribute(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "state", "state", "String", state);
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "date", "date", "dateTime", ISO8601DateFormat.format(new Date()));
-        
-            writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_STATE, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_STATE, attributes);        
-            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_STATE, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_STATE);        
+
+            writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_STATE, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_STATE, attributes);
+            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_STATE, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_STATE);
         }
         catch (SAXException se)
         {
             // TODO Auto-generated catch block
             se.printStackTrace();
-        } 
+        }
     }
-     
+
     /**
      * Write the exception to the report
      */
@@ -141,9 +141,8 @@ public class XMLTransferDestinationReportWriter implements TransferDestinationRe
             writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_EXCEPTION, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_EXCEPTION, attributes);
             writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_EXCEPTION, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_EXCEPTION);
         }
-        catch(SAXException se)
-        {
-        }
+        catch (SAXException se)
+        {}
     }
 
     @Override
@@ -157,9 +156,8 @@ public class XMLTransferDestinationReportWriter implements TransferDestinationRe
             writer.characters(comment.toCharArray(), 0, comment.length());
             writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_COMMENT, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_COMMENT);
         }
-        catch(SAXException se)
-        {
-        }
+        catch (SAXException se)
+        {}
     }
 
     @Override
@@ -172,16 +170,16 @@ public class XMLTransferDestinationReportWriter implements TransferDestinationRe
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "sourceNodeRef", "sourceNodeRef", "string", sourceNodeRef.toString());
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "destinationNodeRef", "destinationNodeRef", "string", newNode.toString());
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "parentNodeRef", "parentNodeRef", "string", newParentNodeRef.toString());
-             
-            writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_CREATED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_CREATED, attributes);        
+
+            writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_CREATED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_CREATED, attributes);
             writeDestinationPath(newPath);
-            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_CREATED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_CREATED);        
+            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_CREATED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_CREATED);
         }
         catch (SAXException se)
         {
             // TODO Auto-generated catch block
             se.printStackTrace();
-        }     
+        }
     }
 
     @Override
@@ -193,16 +191,16 @@ public class XMLTransferDestinationReportWriter implements TransferDestinationRe
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "date", "date", "dateTime", ISO8601DateFormat.format(new Date()));
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "sourceNodeRef", "sourceNodeRef", "string", sourceNodeRef.toString());
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "destinationNodeRef", "destinationNodeRef", "string", deletedNode.toString());
-        
-            writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_DELETED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_DELETED, attributes);        
+
+            writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_DELETED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_DELETED, attributes);
             writeDestinationPath(oldPath);
-            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_DELETED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_DELETED);        
+            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_DELETED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_DELETED);
         }
         catch (SAXException se)
         {
             // TODO Auto-generated catch block
             se.printStackTrace();
-        }            
+        }
     }
 
     @Override
@@ -214,17 +212,17 @@ public class XMLTransferDestinationReportWriter implements TransferDestinationRe
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "date", "date", "dateTime", ISO8601DateFormat.format(new Date()));
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "sourceNodeRef", "sourceNodeRef", "string", sourceNodeRef.toString());
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "destinationNodeRef", "destinationNodeRef", "string", updatedNode.toString());
-            attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "newParentNodeRef", "newParentNodeRef", "string", newParentNodeRef.toString());      
-            writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_MOVED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_MOVED, attributes);        
+            attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "newParentNodeRef", "newParentNodeRef", "string", newParentNodeRef.toString());
+            writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_MOVED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_MOVED, attributes);
             writeDestinationPath(newPath);
             writeOldPath(oldPath);
-            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_MOVED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_MOVED);        
+            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_MOVED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_MOVED);
         }
         catch (SAXException se)
         {
             // TODO Auto-generated catch block
             se.printStackTrace();
-        }         
+        }
     }
 
     @Override
@@ -236,50 +234,49 @@ public class XMLTransferDestinationReportWriter implements TransferDestinationRe
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "date", "date", "dateTime", ISO8601DateFormat.format(new Date()));
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "sourceNodeRef", "sourceNodeRef", "string", sourceNodeRef.toString());
             attributes.addAttribute(TransferReportModel.TRANSFER_REPORT_MODEL_1_0_URI, "destinationNodeRef", "destinationNodeRef", "string", updatedNode.toString());
-        
-            writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_UPDATED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_UPDATED, attributes);        
+
+            writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_UPDATED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_UPDATED, attributes);
             writeDestinationPath(updatedPath);
-            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_UPDATED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_UPDATED);        
+            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_UPDATED, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_UPDATED);
         }
         catch (SAXException se)
         {
             // TODO Auto-generated catch block
             se.printStackTrace();
-        } 
+        }
     }
-    
-    
+
     public void writeOldPath(String path)
     {
         try
         {
             AttributesImpl attributes = new AttributesImpl();
-           
-            writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_OLD_PATH, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_OLD_PATH, attributes);        
+
+            writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_OLD_PATH, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_OLD_PATH, attributes);
             writer.characters(path.toCharArray(), 0, path.length());
-            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_OLD_PATH, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_OLD_PATH);        
+            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_OLD_PATH, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_OLD_PATH);
         }
         catch (SAXException se)
         {
             // TODO Auto-generated catch block
             se.printStackTrace();
-        }    
+        }
     }
-    
+
     public void writeDestinationPath(String path)
     {
         try
         {
             AttributesImpl attributes = new AttributesImpl();
-           
-            writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_PATH, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_PATH, attributes);        
+
+            writer.startElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_PATH, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_PATH, attributes);
             writer.characters(path.toCharArray(), 0, path.length());
-            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_PATH, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_PATH);        
+            writer.endElement(TransferDestinationReportModel.TRANSFER_REPORT_MODEL_1_0_URI, TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_PATH, PREFIX + ":" + TransferDestinationReportModel.LOCALNAME_TRANSFER_DEST_PATH);
         }
         catch (SAXException se)
         {
             // TODO Auto-generated catch block
             se.printStackTrace();
-        }    
+        }
     }
 }

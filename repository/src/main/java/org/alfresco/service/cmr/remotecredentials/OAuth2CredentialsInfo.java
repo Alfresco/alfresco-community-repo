@@ -33,25 +33,25 @@ import java.util.Date;
  * @author Nick Burch
  * @since 4.0.2
  */
-public interface OAuth2CredentialsInfo extends BaseCredentialsInfo 
+public interface OAuth2CredentialsInfo extends BaseCredentialsInfo
 {
-   /**
-    * @return the OAuth Access Token
-    */
-   String getOAuthAccessToken();
-   
-   /**
-    * @return the OAuth Refresh
-    */
-   String getOAuthRefreshToken();
-   
-   /**
-    * @return When the Access Token was Issued
-    */
-   Date getOAuthTicketIssuedAt();
-   
-   /**
-    * @return When the Access Token will Expire
-    */
-   Date getOAuthTicketExpiresAt();
+    /**
+     * @return the OAuth Access Token
+     */
+    String getOAuthAccessToken();
+
+    /**
+     * @return the OAuth Refresh
+     */
+    String getOAuthRefreshToken();
+
+    /**
+     * @return When the Access Token was Issued
+     */
+    Date getOAuthTicketIssuedAt();
+
+    /**
+     * @return When the Access Token will Expire
+     */
+    Date getOAuthTicketExpiresAt();
 }

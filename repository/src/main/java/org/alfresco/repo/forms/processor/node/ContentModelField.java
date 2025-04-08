@@ -46,8 +46,8 @@ public class ContentModelField implements Field
     private final FieldDefinition fieldDefinition;
     private final ClassAttributeDefinition classDefinition;
     private final Object value;
-    
-    public ContentModelField(PropertyDefinition propertyDefinition, 
+
+    public ContentModelField(PropertyDefinition propertyDefinition,
             PropertyFieldDefinition fieldDef, Object value)
     {
         this.classDefinition = propertyDefinition;
@@ -55,7 +55,7 @@ public class ContentModelField implements Field
         this.value = value;
     }
 
-    public ContentModelField(AssociationDefinition assocDefinition, 
+    public ContentModelField(AssociationDefinition assocDefinition,
             AssociationFieldDefinition fieldDef, Object value)
     {
         this.classDefinition = assocDefinition;
@@ -65,7 +65,9 @@ public class ContentModelField implements Field
 
     /**
      * This constructor should only be used to create FieldInfo for transient properties such as encoding, mimetype or size.
-     * @param fieldDef The PropertyFieldDefinition for the transient property.
+     * 
+     * @param fieldDef
+     *            The PropertyFieldDefinition for the transient property.
      */
     public ContentModelField(FieldDefinition fieldDef, Object value)
     {
@@ -75,57 +77,55 @@ public class ContentModelField implements Field
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.task.Field#isTransient()
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.task.Field#isTransient() */
     public boolean isTransient()
     {
         return classDefinition == null;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.task.Field#isTransient()
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.task.Field#isTransient() */
     public boolean isProperty()
     {
         return fieldDefinition instanceof PropertyFieldDefinition;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.task.Field#getFieldDefinition()
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.task.Field#getFieldDefinition() */
     public FieldDefinition getFieldDefinition()
     {
         return this.fieldDefinition;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.task.Field#getFullName()
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.task.Field#getFullName() */
     public QName getFullName()
     {
         if (classDefinition == null)
         {
             return null;
         }
-        
+
         return classDefinition.getName();
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.task.Field#getFieldName()
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.task.Field#getFieldName() */
     public String getFieldName()
     {
         return fieldDefinition.getName();
     }
 
-    /*
-     * @see java.lang.Object#toString()
-     */
+    /* @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
-        String type = isTransient()?"Transient ":"";
+        String type = isTransient() ? "Transient " : "";
         type += isProperty() ? "Property" : "Association";
         return "Field: " + getFieldName() + " Type: " + type;
     }

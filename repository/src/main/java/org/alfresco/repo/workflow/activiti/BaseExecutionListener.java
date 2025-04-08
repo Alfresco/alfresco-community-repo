@@ -28,6 +28,7 @@ package org.alfresco.repo.workflow.activiti;
 import java.util.Map;
 
 import org.activiti.engine.delegate.ExecutionListener;
+
 import org.alfresco.service.ServiceRegistry;
 
 /**
@@ -38,7 +39,7 @@ import org.alfresco.service.ServiceRegistry;
 public abstract class BaseExecutionListener implements ExecutionListener
 {
     private ServiceRegistry serviceRegistry;
-    
+
     /**
      * Get the service-registry from the current Activiti-context.
      * 
@@ -50,20 +51,22 @@ public abstract class BaseExecutionListener implements ExecutionListener
     }
 
     /**
-     * @param serviceRegistry the serviceRegistry to set
+     * @param serviceRegistry
+     *            the serviceRegistry to set
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
     }
-    
+
     public void setBeanRegistry(Map<Object, Object> beanRegistry)
     {
         beanRegistry.put(getName(), this);
     }
-    
+
     /**
      * Defaults to the full {@link Class} Name.
+     * 
      * @return String
      */
     protected String getName()

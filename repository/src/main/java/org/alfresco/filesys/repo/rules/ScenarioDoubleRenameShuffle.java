@@ -28,16 +28,16 @@ package org.alfresco.filesys.repo.rules;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
-import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
+import org.alfresco.filesys.repo.rules.operations.RenameFileOperation;
 
 /**
  * A double rename shuffle
  * 
- * a) Existing file renamed out of the way.  X.fm to X.backup.fm
- * b) New file moved renamed into place. X.fm.C29
+ * a) Existing file renamed out of the way. X.fm to X.backup.fm b) New file moved renamed into place. X.fm.C29
  * 
  * Scenario is triggered by the first rename matching a pattern.
  */
@@ -46,8 +46,7 @@ public class ScenarioDoubleRenameShuffle implements Scenario
     private static Log logger = LogFactory.getLog(ScenarioDoubleRenameShuffle.class);
 
     /**
-     * The regex pattern of a create that will trigger a new instance of
-     * the scenario.
+     * The regex pattern of a create that will trigger a new instance of the scenario.
      */
     private Pattern pattern;
     private String strPattern;
@@ -55,26 +54,25 @@ public class ScenarioDoubleRenameShuffle implements Scenario
     private String strInterimPattern;
     private boolean deleteBackup;
     private boolean moveAsSystem;
-    
+
     private long timeout = 30000;
-    
+
     private Ranking ranking = Ranking.HIGH;
-    
+
     @Override
     public ScenarioInstance createInstance(final EvaluatorContext ctx, Operation operation)
     {
         /**
-         * This scenario is triggered by a rename of a file matching
-         * the pattern
+         * This scenario is triggered by a rename of a file matching the pattern
          */
-        if(operation instanceof RenameFileOperation)
-        {          
-            RenameFileOperation r = (RenameFileOperation)operation;
-            
+        if (operation instanceof RenameFileOperation)
+        {
+            RenameFileOperation r = (RenameFileOperation) operation;
+
             Matcher m = pattern.matcher(r.getTo());
-            if(m.matches())
+            if (m.matches())
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("New Scenario Double Rename Shuffle Instance strPattern:" + pattern + " matches" + r.getTo());
                 }
@@ -90,10 +88,10 @@ public class ScenarioDoubleRenameShuffle implements Scenario
                 return instance;
             }
         }
-        
+
         // No not interested.
         return null;
-       
+
     }
 
     public void setPattern(String pattern)
@@ -101,12 +99,12 @@ public class ScenarioDoubleRenameShuffle implements Scenario
         this.pattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
         this.strPattern = pattern;
     }
-    
+
     public String getPattern()
     {
         return this.strPattern;
     }
-    
+
     public void setTimeout(long timeout)
     {
         this.timeout = timeout;
@@ -136,7 +134,7 @@ public class ScenarioDoubleRenameShuffle implements Scenario
     {
         return deleteBackup;
     }
-    
+
     public boolean isMoveAsSystem()
     {
         return moveAsSystem;

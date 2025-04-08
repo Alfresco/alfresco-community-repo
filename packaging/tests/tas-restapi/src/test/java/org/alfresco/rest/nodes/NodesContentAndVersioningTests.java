@@ -1,6 +1,5 @@
 package org.alfresco.rest.nodes;
 
-import static org.alfresco.utility.report.log.Step.STEP;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotEquals;
@@ -10,15 +9,23 @@ import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 
 import io.restassured.http.Headers;
+import org.hamcrest.Matchers;
+import org.json.JSONObject;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.JsonBodyGenerator;
@@ -37,11 +44,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.hamcrest.Matchers;
-import org.json.JSONObject;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * 
@@ -65,8 +67,8 @@ public class NodesContentAndVersioningTests extends RestTest
         file2 = dataContent.usingUser(user2).usingSite(site2).createContent(DocumentType.TEXT_PLAIN);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify file name in Content-Disposition header")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.SANITY, description = "Verify file name in Content-Disposition header")
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
     public void checkFileNameWithRegularCharsInHeader()
     {
         restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("attachment=false").getNodeContent();
@@ -75,9 +77,9 @@ public class NodesContentAndVersioningTests extends RestTest
     }
 
     @Bug(id = "MNT-17545", description = "HTTP Header Injection in ContentStreamer", status = Bug.Status.FIXED)
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.NODES }, executionType = ExecutionType.REGRESSION, description = "Verify file name with special chars is escaped in Content-Disposition header")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API,
+            TestGroup.NODES}, executionType = ExecutionType.REGRESSION, description = "Verify file name with special chars is escaped in Content-Disposition header")
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
     public void checkFileNameWithSpecialCharsInHeader()
     {
         char c1 = 127;
@@ -89,9 +91,9 @@ public class NodesContentAndVersioningTests extends RestTest
         restClient.assertHeaderValueContains("Content-Disposition", "filename=\" test   \"");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify that alfresco returns the correct encoding for files created via REST.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API,
+            TestGroup.NODES}, executionType = ExecutionType.SANITY, description = "Verify that alfresco returns the correct encoding for files created via REST.")
     public void verifyFileEncodingUsingRestAPI()
     {
         STEP("1. Create a folder, two text file templates and define the expected encoding.");
@@ -118,11 +120,10 @@ public class NodesContentAndVersioningTests extends RestTest
         restClient.withCoreAPI().usingNode(iso8859File).getNodeContent().assertThat().contentType(iso8859Type);
     }
 
-
     // This test takes around 30 minutes to complete so it will be ignored by default
-    @Test(enabled=false, groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES },
-                executionType = ExecutionType.REGRESSION, description = "Verify that the node content is streamed directly to the client and not buffered in memory.")
+    @Test(enabled = false, groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES},
+            executionType = ExecutionType.REGRESSION, description = "Verify that the node content is streamed directly to the client and not buffered in memory.")
     public void verifyUploadDownloadLargeFileUsingRestAPI()
     {
         Integer largeFileSizeBytes = Integer.MAX_VALUE;
@@ -160,8 +161,8 @@ public class NodesContentAndVersioningTests extends RestTest
         return systemTempDir;
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify updating a node content.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.SANITY, description = "Verify updating a node content.")
     public void testUpdateNodeContent()
     {
         STEP("1. Retrieve the node in order to get data to compare after update GET /nodes/{nodeId}?include=path.");
@@ -183,8 +184,8 @@ public class NodesContentAndVersioningTests extends RestTest
         assertTrue(updatedBodyNodeVersion.charAt(0) > initialNodeVersion.charAt(0));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Test copy a node.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.SANITY, description = "Test copy a node.")
     public void testCopyNode()
     {
         STEP("1. Create a lock and lock the node POST /nodes/{nodeId}/lock?include=path,isLocked.");
@@ -215,9 +216,9 @@ public class NodesContentAndVersioningTests extends RestTest
     }
 
     @Bug(id = "REPO-4050")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API,
-            TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Test retrieving node versions, a specific version and version content.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API,
+            TestGroup.NODES}, executionType = ExecutionType.SANITY, description = "Test retrieving node versions, a specific version and version content.")
     public void testGetVersionContent() throws Exception
     {
         file2 = dataContent.usingUser(user2).usingSite(site2).createContent(DocumentType.TEXT_PLAIN);
@@ -276,8 +277,8 @@ public class NodesContentAndVersioningTests extends RestTest
         });
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Test revert and delete a node version.")
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.SANITY, description = "Test revert and delete a node version.")
     public void testRevertDeleteVersion()
     {
         STEP("1. Revert to version 1.0 POST /nodes/{nodeId}/versions/{versionId}/revert");
@@ -301,8 +302,8 @@ public class NodesContentAndVersioningTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify file name in Content Range header")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.SANITY, description = "Verify file name in Content Range header")
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
     public void checkFileNameContentRangeHeader()
     {
         restClient.configureRequestSpec().addHeader("content-range", "bytes=1-10");
@@ -312,7 +313,7 @@ public class NodesContentAndVersioningTests extends RestTest
         restClient.assertHeaderValueContains("content-length", String.valueOf(10));
     }
 
-    @Test (groups = { TestGroup.REST_API, TestGroup.NODES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES})
     public void checkUploadResponse()
     {
         STEP("Create a folder in the test site.");
@@ -328,7 +329,7 @@ public class NodesContentAndVersioningTests extends RestTest
                 .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
     }
 
-    @Test (groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
     public void checkTextFileDownload()
     {
         STEP("Create a folder in the test site.");
@@ -353,7 +354,7 @@ public class NodesContentAndVersioningTests extends RestTest
         assertNotNull(responseHeaders.getValue("Expires"), "\"Expires\" header is missing");
     }
 
-    @Test (groups = { TestGroup.REST_API, TestGroup.NODES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES})
     public void checkBinaryFileDownload() throws Exception
     {
         STEP("Create a folder in the test site.");
@@ -380,7 +381,7 @@ public class NodesContentAndVersioningTests extends RestTest
         assertNotNull(responseHeaders.getValue("Expires"), "\"Expires\" header is missing");
     }
 
-    @Test (groups = { TestGroup.REST_API, TestGroup.NODES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES})
     public void checkNotModifiedStatusCode()
     {
         STEP("Create a folder in the test site.");
@@ -404,7 +405,7 @@ public class NodesContentAndVersioningTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_MODIFIED);
     }
 
-    @Test (groups = { TestGroup.REST_API, TestGroup.NODES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES})
     public void checkModificationUpdatesLastModifiedHeader() throws InterruptedException
     {
         STEP("Create a folder in the test site.");
@@ -425,7 +426,7 @@ public class NodesContentAndVersioningTests extends RestTest
 
         STEP("Modify the description and check the Last-Modified header changes.");
         JsonObject json = Json.createObjectBuilder().add("properties", Json.createObjectBuilder()
-                                                                           .add("cm:description", "New description")).build();
+                .add("cm:description", "New description")).build();
         restClient.withCoreAPI().usingNode(fileModel).updateNode(json.toString());
 
         restClient.configureRequestSpec().addHeader("If-Modified-Since", oldLastModified);
@@ -435,7 +436,8 @@ public class NodesContentAndVersioningTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    private void createRandomFileInDirectory(String path, String fileName, int size) {
+    private void createRandomFileInDirectory(String path, String fileName, int size)
+    {
         String fullPath = new File(path, fileName).getPath();
 
         try

@@ -30,8 +30,6 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.cmr.rating.RatingScheme;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -39,6 +37,9 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.service.cmr.rating.RatingScheme;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * This class is the controller for the rating.post webscript.
@@ -67,7 +68,7 @@ public class RatingPost extends AbstractRatingWebScript
         {
             // read request json
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            
+
             // Check mandatory parameters.
             if (json.has(RATING) == false)
             {
@@ -77,7 +78,7 @@ public class RatingPost extends AbstractRatingWebScript
             {
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST, "schemeName parameter missing when applying rating");
             }
-            
+
             // Check that the scheme name actually exists
             final String schemeName = json.getString(RATING_SCHEME);
             RatingScheme scheme = ratingService.getRatingScheme(schemeName);
@@ -85,10 +86,10 @@ public class RatingPost extends AbstractRatingWebScript
             {
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Unknown scheme name: " + schemeName);
             }
-            
+
             // Range checking of the rating score will be done within the RatingService.
             // So we can just apply the rating.
-            final float rating = (float)json.getDouble(RATING);
+            final float rating = (float) json.getDouble(RATING);
             ratingService.applyRating(nodeRefToBeRated, rating, schemeName);
 
             // We'll return the URL to the ratings of the just-rated node.

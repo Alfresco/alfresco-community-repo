@@ -30,24 +30,20 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * A generic, immutable virtualized artefact reference.<br>
  * Refers virtualized artefacts through :<br>
  * <ul>
- * <li>a {@link Protocol} - defines what kind of virtualzied artefact is
- * referred by this reference as well as what virtualization process was applied
- * </li>
- * <li>a {@link Resource} - identifies the main resource used in the
- * virtualization (egg. a classpath location or repository node reference)</li>
- * <li>a list of {@link ResourceParameter}s - used in customizing the
- * virtualization process (egg. a resource pointing to the actual node of a
- * semi-virtual folder reference)</li>
+ * <li>a {@link Protocol} - defines what kind of virtualzied artefact is referred by this reference as well as what virtualization process was applied</li>
+ * <li>a {@link Resource} - identifies the main resource used in the virtualization (egg. a classpath location or repository node reference)</li>
+ * <li>a list of {@link ResourceParameter}s - used in customizing the virtualization process (egg. a resource pointing to the actual node of a semi-virtual folder reference)</li>
  * </ul>
  * 
  * @author Bogdan Horje
@@ -60,14 +56,11 @@ public class Reference
 
     /**
      * Quick Reference compliance check of a {@link NodeRef}.<br>
-     * NodeRef Reference representations validated by this method should produce
-     * valid Reference objects based on the given {@link NodeRef} when passed to
-     * the {@link #fromNodeRef(NodeRef)} method.
+     * NodeRef Reference representations validated by this method should produce valid Reference objects based on the given {@link NodeRef} when passed to the {@link #fromNodeRef(NodeRef)} method.
      * 
      * @deprecated
      * @param nodeRef
-     * @return <code>true</code> if the given {@link NodeRef} is a valid
-     *         Reference representation<br>
+     * @return <code>true</code> if the given {@link NodeRef} is a valid Reference representation<br>
      *         <code>false</code> otherwise
      */
     public static final boolean isReference(NodeRef nodeRef)
@@ -97,21 +90,12 @@ public class Reference
 
     /**
      * 
-     * {@link NodeRef} {@link Reference} representation decoder/converter
-     * method.<br>
-     * Creates a {@link Reference} representation based on the ID of the given
-     * {@link NodeRef}.<br>
-     * It expects a {@link #VIRTUAL_TOKEN} prefixed encoded string. The encoded
-     * string must start with a valid {@link Encoding} token. The Reference
-     * representation structure is (no delimiters between the 3 elements):
-     * VIRTUAL_TOKEN ENCODING_TOKEN referenceString Given that a valid encoding
-     * was detected {@link Encoding#urlNative} information is used to obtain a
-     * reference string. The reference string is parsed using the encoding
-     * configured parser.
+     * {@link NodeRef} {@link Reference} representation decoder/converter method.<br>
+     * Creates a {@link Reference} representation based on the ID of the given {@link NodeRef}.<br>
+     * It expects a {@link #VIRTUAL_TOKEN} prefixed encoded string. The encoded string must start with a valid {@link Encoding} token. The Reference representation structure is (no delimiters between the 3 elements): VIRTUAL_TOKEN ENCODING_TOKEN referenceString Given that a valid encoding was detected {@link Encoding#urlNative} information is used to obtain a reference string. The reference string is parsed using the encoding configured parser.
      * 
      * @param nodeRef
-     * @return the {@link Reference} object corresponding to the given
-     *         {@link NodeRef}
+     * @return the {@link Reference} object corresponding to the given {@link NodeRef}
      *
      */
     public static final Reference fromNodeRef(NodeRef nodeRef)
@@ -183,13 +167,11 @@ public class Reference
      * Constructor
      * 
      * @param encoding
-     *            the default {@link Encoding} of the new resource - to be used
-     *            where an encoding is required and none is specified
+     *            the default {@link Encoding} of the new resource - to be used where an encoding is required and none is specified
      * @param protocol
      * @param resource
      * @param parameters
-     *            resource parameters - a copy of the provided list will be
-     *            stored by this reference
+     *            resource parameters - a copy of the provided list will be stored by this reference
      */
     public Reference(Encoding encoding, Protocol protocol, Resource resource, List<? extends Parameter> parameters)
     {
@@ -205,8 +187,7 @@ public class Reference
     }
 
     /**
-     * @return a {@link String} representation of this reference using its
-     *         default {@link Encoding}
+     * @return a {@link String} representation of this reference using its default {@link Encoding}
      * @throws ReferenceEncodingException
      */
     public String encode() throws ReferenceEncodingException
@@ -216,8 +197,7 @@ public class Reference
 
     /**
      * @param anEncoding
-     * @return a {@link String} representation of this reference using the given
-     *         {@link Encoding}
+     * @return a {@link String} representation of this reference using the given {@link Encoding}
      * @throws ReferenceEncodingException
      */
     public String encode(Encoding anEncoding) throws ReferenceEncodingException
@@ -249,9 +229,7 @@ public class Reference
     }
 
     /**
-     * @return a {@link NodeRef} representation of this resource using the
-     *         {@link StoreRef#STORE_REF_WORKSPACE_SPACESSTORE} and the default
-     *         encoding of this resource
+     * @return a {@link NodeRef} representation of this resource using the {@link StoreRef#STORE_REF_WORKSPACE_SPACESSTORE} and the default encoding of this resource
      * @throws ReferenceEncodingException
      */
     public NodeRef toNodeRef() throws ReferenceEncodingException
@@ -261,8 +239,7 @@ public class Reference
 
     /**
      * @param storeRef
-     * @return a {@link NodeRef} representation of this resource using the given
-     *         {@link StoreRef} and the default encoding of this resource
+     * @return a {@link NodeRef} representation of this resource using the given {@link StoreRef} and the default encoding of this resource
      * @throws ReferenceEncodingException
      */
     public NodeRef toNodeRef(StoreRef storeRef) throws ReferenceEncodingException
@@ -273,8 +250,7 @@ public class Reference
     /**
      * @param storeRef
      * @param encoding
-     * @return a {@link NodeRef} representation of this resource using the given
-     *         {@link StoreRef} and {@link Encoding}
+     * @return a {@link NodeRef} representation of this resource using the given {@link StoreRef} and {@link Encoding}
      * @throws ReferenceEncodingException
      */
     public NodeRef toNodeRef(StoreRef storeRef, Encoding encoding) throws ReferenceEncodingException
@@ -302,10 +278,7 @@ public class Reference
 
     /**
      * Double-dispatches {@link ProtocolMethod}s.<br>
-     * Uses {@link Protocol#dispatch(ProtocolMethod, Reference)} to trigger
-     * concrete protocol based double dispatch
-     * <code>ProtocolMethod::execute</code> invocation on the given method
-     * object.
+     * Uses {@link Protocol#dispatch(ProtocolMethod, Reference)} to trigger concrete protocol based double dispatch <code>ProtocolMethod::execute</code> invocation on the given method object.
      * 
      * @param method
      * @return the dispatched method execution result
@@ -317,16 +290,11 @@ public class Reference
     }
 
     /**
-     * Despite claimed {@link NodeRef} opacity Alfresco sometimes alters
-     * NodeRefs representation to achieve functionality. For example see
-     * {@link VersionUtil#convertNodeRef(NodeRef)}.<br>
-     * We say that altered {@link NodeRef}s have suffered mutations and we try
-     * to detect those mutations and create a correspondent reference.
+     * Despite claimed {@link NodeRef} opacity Alfresco sometimes alters NodeRefs representation to achieve functionality. For example see {@link VersionUtil#convertNodeRef(NodeRef)}.<br>
+     * We say that altered {@link NodeRef}s have suffered mutations and we try to detect those mutations and create a correspondent reference.
      * 
      * @param mutatedNodeRef
-     * @return a mutated version of this {@link Reference} corresponding to the
-     *         given mutated node or <code>this</code> Reference if no mutations
-     *         are detected
+     * @return a mutated version of this {@link Reference} corresponding to the given mutated node or <code>this</code> Reference if no mutations are detected
      */
     public Reference propagateNodeRefMutations(NodeRef mutatedNodeRef)
     {

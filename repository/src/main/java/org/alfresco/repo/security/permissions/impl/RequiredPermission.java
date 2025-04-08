@@ -39,7 +39,8 @@ public final class RequiredPermission extends PermissionReferenceImpl
      */
     private static final long serialVersionUID = 4840771159714835909L;
 
-    public enum On {
+    public enum On
+    {
         PARENT, NODE, CHILDREN
     };
 

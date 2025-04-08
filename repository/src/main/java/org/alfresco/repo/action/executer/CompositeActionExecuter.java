@@ -44,16 +44,17 @@ public class CompositeActionExecuter extends ActionExecuterAbstractBase
      * Action constants
      */
     public static final String NAME = "composite-action";
-    
+
     /**
      * The action service
      */
     private RuntimeActionService actionService;
-    
+
     /**
      * Set the action service
      * 
-     * @param actionService  the action service
+     * @param actionService
+     *            the action service
      */
     public void setActionService(RuntimeActionService actionService)
     {
@@ -63,8 +64,10 @@ public class CompositeActionExecuter extends ActionExecuterAbstractBase
     /**
      * {@inheritDoc}
      */
-    public void verifyActionAccessRestrictions(Action action) {
-        for (Action subAction : ((CompositeAction)action).getActions()) {
+    public void verifyActionAccessRestrictions(Action action)
+    {
+        for (Action subAction : ((CompositeAction) action).getActions())
+        {
             this.actionService.verifyActionAccessRestrictions(subAction);
         }
     }
@@ -76,7 +79,7 @@ public class CompositeActionExecuter extends ActionExecuterAbstractBase
     {
         if (action instanceof CompositeAction)
         {
-            for (Action subAction : ((CompositeAction)action).getActions())
+            for (Action subAction : ((CompositeAction) action).getActions())
             {
                 // We don't check the conditions of sub-actions and they don't have an execution history
                 this.actionService.directActionExecution(subAction, actionedUponNodeRef);
@@ -88,7 +91,7 @@ public class CompositeActionExecuter extends ActionExecuterAbstractBase
      * Add parameter definitions
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         // No parameters
     }

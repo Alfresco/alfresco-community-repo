@@ -25,11 +25,6 @@
  */
 package org.alfresco.repo.domain.schema.script;
 
-import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import javax.sql.DataSource;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -39,15 +34,20 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import javax.sql.DataSource;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.util.Pair;
 
 /**
- * Extends <code>{@link DeleteNotExistsExecutor}</code> to cope with MySQL
- * specific fetch size limitation and restrictions.
+ * Extends <code>{@link DeleteNotExistsExecutor}</code> to cope with MySQL specific fetch size limitation and restrictions.
  */
 public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
 {
     private static final Log logger = LogFactory.getLog(MySQLDeleteNotExistsExecutor.class);
-    
+
     private final DataSource dataSource;
 
     public MySQLDeleteNotExistsExecutor(Connection connection, String sql, int line, File scriptFile, Properties globalProperties, DataSource dataSource)
@@ -86,7 +86,7 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
         try
         {
             connection.setAutoCommit(false);
-            
+
             primaryPrepStmt = connection.prepareStatement(createLimitPreparedSelectStatement(primaryTableName, primaryColumnName, primaryWhereClause));
             primaryPrepStmt.setLong(1, primaryId);
             primaryPrepStmt.setLong(2, tableUpperLimits[0]);

@@ -36,6 +36,7 @@ import org.activiti.engine.delegate.TaskListener;
 import org.activiti.engine.impl.persistence.entity.IdentityLinkEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.task.IdentityLink;
+
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.WorkflowQNameConverter;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
@@ -46,8 +47,7 @@ import org.alfresco.service.namespace.NamespaceService;
 /**
  * Tasklistener that is notified when a task completes.
  * 
- * This will set a few properties on the task, indicating it is complete
- * and preparing it for historic usage.
+ * This will set a few properties on the task, indicating it is complete and preparing it for historic usage.
  *
  * @author Frederik Heremans
  * @since 3.4.e
@@ -55,10 +55,10 @@ import org.alfresco.service.namespace.NamespaceService;
 public class TaskCompleteListener implements TaskListener
 {
     private static final long serialVersionUID = 1L;
-    
+
     private ActivitiPropertyConverter propertyConverter;
     private WorkflowQNameConverter qNameConverter;
-    
+
     @Override
     public void notify(DelegateTask task)
     {
@@ -72,26 +72,26 @@ public class TaskCompleteListener implements TaskListener
         // Set task status to completed
         String statusKey = qNameConverter.mapQNameToName(WorkflowModel.PROP_STATUS);
         endTaskVariables.put(statusKey, "Completed");
-        
+
         // Add pooled actors to task-variables to be preserved in history (if any)
         addPooledActorsAsVariable(task, endTaskVariables);
-        
+
         // Set variables locally on the task
         task.setVariablesLocal(endTaskVariables);
     }
 
     private void addPooledActorsAsVariable(DelegateTask task,
-                Map<String, Object> variables) 
+            Map<String, Object> variables)
     {
-        List<IdentityLinkEntity> links = ((TaskEntity)task).getIdentityLinks();
+        List<IdentityLinkEntity> links = ((TaskEntity) task).getIdentityLinks();
         if (links.size() > 0)
         {
             // Add to list of IdentityLink
             List<IdentityLink> identityLinks = new ArrayList<IdentityLink>();
             identityLinks.addAll(links);
-            
+
             List<NodeRef> pooledActorRefs = propertyConverter.getPooledActorsReference(identityLinks);
-            
+
             // Save references as a variable
             List<String> nodeIds = new ArrayList<String>();
             for (NodeRef ref : pooledActorRefs)
@@ -101,18 +101,18 @@ public class TaskCompleteListener implements TaskListener
             variables.put(ActivitiConstants.PROP_POOLED_ACTORS_HISTORY, nodeIds);
         }
     }
-    
+
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.qNameConverter = new WorkflowQNameConverter(namespaceService);
     }
-    
+
     /**
-     * @param propertyConverter the propertyConverter to set
+     * @param propertyConverter
+     *            the propertyConverter to set
      */
     public void setPropertyConverter(ActivitiPropertyConverter propertyConverter)
     {
         this.propertyConverter = propertyConverter;
     }
 }
-

@@ -34,7 +34,7 @@ public class UserNameMatcherImpl implements UserNameMatcher
     private boolean domainNamesAreCaseSensitive = false;
 
     private String domainSeparator = "";
-    
+
     public boolean getUserNamesAreCaseSensitive()
     {
         return userNamesAreCaseSensitive;
@@ -74,8 +74,8 @@ public class UserNameMatcherImpl implements UserNameMatcher
         return (((userNamesAreCaseSensitive && (real.getFirst().equals(search.getFirst()))) || (!userNamesAreCaseSensitive && (real.getFirst().equalsIgnoreCase(search
                 .getFirst())))) &&
 
-        ((domainNamesAreCaseSensitive && (real.getSecond().equals(search.getSecond()))) || (!domainNamesAreCaseSensitive && (real.getSecond().equalsIgnoreCase(search
-                .getSecond())))));
+                ((domainNamesAreCaseSensitive && (real.getSecond().equals(search.getSecond()))) || (!domainNamesAreCaseSensitive && (real.getSecond().equalsIgnoreCase(search
+                        .getSecond())))));
     }
 
     // Trailing domain only

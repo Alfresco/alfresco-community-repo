@@ -31,7 +31,7 @@ public class SSLEncryptionParameters
     private KeyStoreParameters trustStoreParameters;
 
     /**
-     *  Default constructor (for use by Spring)
+     * Default constructor (for use by Spring)
      */
     public SSLEncryptionParameters()
     {
@@ -49,7 +49,7 @@ public class SSLEncryptionParameters
     {
         return keyStoreParameters;
     }
-    
+
     public KeyStoreParameters getTrustStoreParameters()
     {
         return trustStoreParameters;

@@ -28,13 +28,14 @@ package org.alfresco.repo.action.constraint;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
+
 import org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
 
 /**
  * Action parameter constraint unit test
@@ -45,47 +46,47 @@ import org.junit.experimental.categories.Category;
 public class ActionParameterConstraintTest extends BaseSpringTest
 {
     private static final String COMPARE_OP = "ac-compare-operations";
-    
+
     private ActionService actionService;
-    
+
     @Before
     public void before() throws Exception
     {
-       actionService = (ActionService)applicationContext.getBean("ActionService");
+        actionService = (ActionService) applicationContext.getBean("ActionService");
     }
-    
+
     public void testGetConstraints()
     {
-        List<ParameterConstraint> constraints =  actionService.getParameterConstraints();
-        
+        List<ParameterConstraint> constraints = actionService.getParameterConstraints();
+
         assertNotNull(constraints);
         assertFalse(constraints.isEmpty());
     }
-    
+
     public void testGetConstraint()
     {
-        ParameterConstraint constraint = actionService.getParameterConstraint("junk");        
+        ParameterConstraint constraint = actionService.getParameterConstraint("junk");
         assertNull(constraint);
-        
-        constraint = actionService.getParameterConstraint(COMPARE_OP);        
+
+        constraint = actionService.getParameterConstraint(COMPARE_OP);
         assertNotNull(constraint);
     }
-    
+
     public void testCompareOperationsConstraint()
     {
-        ParameterConstraint constraint = actionService.getParameterConstraint(COMPARE_OP);        
+        ParameterConstraint constraint = actionService.getParameterConstraint(COMPARE_OP);
         assertNotNull(constraint);
         assertEquals(COMPARE_OP, constraint.getName());
-        
+
         assertEquals("Ends With", constraint.getValueDisplayLabel(ComparePropertyValueOperation.ENDS.toString()));
-        
+
         Map<String, String> values = constraint.getAllowableValues();
         for (Map.Entry<String, String> entry : values.entrySet())
         {
             System.out.println(entry.getKey() + " - " + entry.getValue());
         }
     }
-    
+
     public void testConstraints()
     {
         testConstraint("ac-aspects");
@@ -96,15 +97,15 @@ public class ActionParameterConstraintTest extends BaseSpringTest
         testConstraint("ac-scripts");
         testConstraint("ac-content-properties");
     }
-    
+
     private void testConstraint(String name)
     {
-        ParameterConstraint constraint = actionService.getParameterConstraint(name);        
+        ParameterConstraint constraint = actionService.getParameterConstraint(name);
         assertNotNull(constraint);
         assertEquals(name, constraint.getName());
-        
+
         Map<String, String> values = constraint.getAllowableValues();
-        assertTrue(values.size()>0);
+        assertTrue(values.size() > 0);
         System.out.println("== " + name + " ==\n");
         for (Map.Entry<String, String> entry : values.entrySet())
         {

@@ -33,6 +33,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -67,11 +73,6 @@ import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.UrlUtil;
 import org.alfresco.util.VmShutdownListener;
 import org.alfresco.util.VmShutdownListener.VmShutdownException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Implementation of the Activity Feed Notifier component
@@ -213,8 +214,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
                 logger.trace("Activities email notification started");
             }
 
-            jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, new JobLockRefreshCallback()
-            {
+            jobLockService.refreshLock(lockToken, LOCK_QNAME, LOCK_TTL, new JobLockRefreshCallback() {
                 @Override
                 public boolean isActive()
                 {
@@ -325,7 +325,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("Share URL configured as: "+shareUrl);
+            logger.debug("Share URL configured as: " + shareUrl);
         }
 
         final AtomicInteger userCnt = new AtomicInteger(0);
@@ -342,8 +342,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
             final String tenantDomain = TenantUtil.getCurrentDomain();
 
             // process the feeds using the batch processor {@link BatchProcessor}
-            BatchProcessor.BatchProcessWorker<PersonInfo> worker = new BatchProcessor.BatchProcessWorker<PersonInfo>()
-            {
+            BatchProcessor.BatchProcessWorker<PersonInfo> worker = new BatchProcessor.BatchProcessWorker<PersonInfo>() {
                 public String getIdentifier(final PersonInfo person)
                 {
                     StringBuilder sb = new StringBuilder("Person ");
@@ -367,13 +366,11 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
                     final RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
                     txHelper.setMaxRetries(0);
 
-                    TenantUtil.runAsTenant(new TenantRunAsWork<Void>()
-                    {
+                    TenantUtil.runAsTenant(new TenantRunAsWork<Void>() {
                         @Override
                         public Void doWork() throws Exception
                         {
-                            txHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-                            {
+                            txHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
                                 public Void execute() throws Throwable
                                 {
                                     processInternal(person);
@@ -390,7 +387,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
                     final NodeRef personNodeRef = person.getNodeRef();
                     try
                     {
-                        Pair<Integer, Long> result = userNotifier.notifyUser(personNodeRef, MSG_EMAIL_SUBJECT, new Object[] {ModelUtil.getProductName(repoAdminService)}, siteNames, shareUrl, repeatIntervalMins, emailTemplateRef);
+                        Pair<Integer, Long> result = userNotifier.notifyUser(personNodeRef, MSG_EMAIL_SUBJECT, new Object[]{ModelUtil.getProductName(repoAdminService)}, siteNames, shareUrl, repeatIntervalMins, emailTemplateRef);
                         if (result != null)
                         {
                             int entryCnt = result.getFirst();
@@ -415,8 +412,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
             };
 
             // grab people for the batch processor in chunks of size batchSize
-            BatchProcessWorkProvider<PersonInfo> provider = new BatchProcessWorkProvider<PersonInfo>()
-            {
+            BatchProcessWorkProvider<PersonInfo> provider = new BatchProcessWorkProvider<PersonInfo>() {
                 private int skip = 0;
                 private int maxItems = batchSize;
                 private boolean hasMore = true;
@@ -446,7 +442,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
                     hasMore = people.hasMoreItems();
                     return page;
                 }
-        };
+            };
 
             final RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
             txHelper.setMaxRetries(0);
@@ -485,7 +481,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
                     StringBuilder sb = new StringBuilder();
                     sb.append("Notified ").append(userCnt).append(" user").append(count != 1 ? "s" : "");
                     sb.append(" of ").append(feedEntryCnt).append(" activity feed entr").append(entryCount != 1 ? "ies" : "y");
-                    sb.append(" (in ").append(System.currentTimeMillis()-startTime).append(" msecs)");
+                    sb.append(" (in ").append(System.currentTimeMillis() - startTime).append(" msecs)");
                     logger.info(sb.toString());
                 }
             }
@@ -498,7 +494,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
             }
         }
     }
-    
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {

@@ -100,8 +100,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveDocumentToFolderInCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user) {
             private NodeRef folder1;
             private NodeRef folder2;
             private NodeRef document1;
@@ -136,8 +135,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveDocumentToDocumentLibraryInCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user) {
             private NodeRef folder1;
             private NodeRef document1;
             private String document1Name = GUID.generate();
@@ -175,8 +173,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveFolderToFolderInCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user) {
             private NodeRef folder1;
             private NodeRef folder2;
             private String folder1Name = GUID.generate();
@@ -205,8 +202,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveDocumentToFolderInDifferentCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user) {
             private NodeRef folder1;
             private NodeRef folder2;
             private NodeRef document1;
@@ -241,8 +237,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveDocumentToDocumentLibraryInDifferentCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user) {
             private NodeRef folder1;
             private NodeRef document1;
             private String document1Name = GUID.generate();
@@ -280,8 +275,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveFolderToFolderInDifferentCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user) {
             private NodeRef folder1;
             private NodeRef folder2;
             private String folder1Name = GUID.generate();
@@ -310,8 +304,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveDocumentInFilePlanInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user) {
             private NodeRef folder1;
             private NodeRef document1;
 
@@ -330,8 +323,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveDocumentInCategoryInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user) {
             private NodeRef folder1;
             private NodeRef document1;
             private NodeRef rmCategory;
@@ -341,8 +333,7 @@ public class RM978Test extends BaseRMTestCase
                 folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
                 document1 = fileFolderService.create(folder1, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
 
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
@@ -361,8 +352,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveDocumentInFolderInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user) {
             private NodeRef folder1;
             private NodeRef document1;
             private String document1Name = GUID.generate();
@@ -374,8 +364,7 @@ public class RM978Test extends BaseRMTestCase
                 folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
                 document1 = fileFolderService.create(folder1, document1Name, ContentModel.TYPE_CONTENT).getNodeRef();
 
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
@@ -388,8 +377,7 @@ public class RM978Test extends BaseRMTestCase
 
             public void when() throws FileExistsException, FileNotFoundException
             {
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         filePlanPermissionService.setPermission(rmFolder, user, RMPermissionModel.FILING);
@@ -419,8 +407,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveFolderInFilePlanInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user) {
             private NodeRef folder1;
 
             public void given()
@@ -437,8 +424,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveFolderInCategoryInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user) {
             private NodeRef folder1;
             private NodeRef rmCategory;
 
@@ -446,8 +432,7 @@ public class RM978Test extends BaseRMTestCase
             {
                 folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
 
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
@@ -466,8 +451,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveFolderInFolderInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user) {
             private NodeRef folder1;
             private NodeRef rmCategory;
             private NodeRef rmFolder;
@@ -476,8 +460,7 @@ public class RM978Test extends BaseRMTestCase
             {
                 folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
 
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
@@ -497,8 +480,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testCopyDocumentToFolderInCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user) {
             private NodeRef folder1;
             private NodeRef folder2;
             private NodeRef document1;
@@ -533,8 +515,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testCopyDocumentToDocumentLibraryInCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user) {
             private NodeRef folder1;
             private NodeRef document1;
             private String document1Name = GUID.generate();
@@ -572,8 +553,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testCopyFolderToFolderInCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user) {
             private NodeRef folder1;
             private NodeRef folder2;
             private String folder1Name = GUID.generate();
@@ -602,8 +582,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testCopyDocumentToFolderInDifferentCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user) {
             private NodeRef folder1;
             private NodeRef folder2;
             private NodeRef document1;
@@ -638,8 +617,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testCopyDocumentToDocumentLibraryInDifferentCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user) {
             private NodeRef folder1;
             private NodeRef document1;
             private String document1Name = GUID.generate();
@@ -677,8 +655,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testCopyFolderToFolderInDifferentCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user) {
             private NodeRef folder1;
             private NodeRef folder2;
             private String folder1Name = GUID.generate();
@@ -707,8 +684,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testCopyDocumentInFilePlanInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user) {
             private NodeRef folder1;
             private NodeRef document1;
 
@@ -727,8 +703,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testCopyDocumentInCategoryInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user) {
             private NodeRef folder1;
             private NodeRef document1;
             private NodeRef rmCategory;
@@ -738,8 +713,7 @@ public class RM978Test extends BaseRMTestCase
                 folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
                 document1 = fileFolderService.create(folder1, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
 
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
@@ -758,8 +732,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testCopyDocumentInFolderInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user) {
             private NodeRef folder1;
             private NodeRef document1;
             private String document1Name = GUID.generate();
@@ -771,8 +744,7 @@ public class RM978Test extends BaseRMTestCase
                 folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
                 document1 = fileFolderService.create(folder1, document1Name, ContentModel.TYPE_CONTENT).getNodeRef();
 
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
@@ -785,8 +757,7 @@ public class RM978Test extends BaseRMTestCase
 
             public void when() throws FileExistsException, FileNotFoundException
             {
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         filePlanPermissionService.setPermission(rmFolder, user, RMPermissionModel.FILING);
@@ -802,8 +773,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testCopyFolderInFilePlanInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user) {
             private NodeRef folder1;
 
             public void given()
@@ -820,8 +790,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testCopyFolderInCategoryInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user) {
             private NodeRef folder1;
             private NodeRef rmCategory;
 
@@ -829,8 +798,7 @@ public class RM978Test extends BaseRMTestCase
             {
                 folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
 
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
@@ -849,8 +817,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testCopyFolderInFolderInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user) {
             private NodeRef folder1;
             private NodeRef rmCategory;
             private NodeRef rmFolder;
@@ -859,8 +826,7 @@ public class RM978Test extends BaseRMTestCase
             {
                 folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
 
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());

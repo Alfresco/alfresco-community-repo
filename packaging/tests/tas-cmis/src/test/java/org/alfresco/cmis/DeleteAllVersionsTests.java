@@ -1,16 +1,16 @@
 package org.alfresco.cmis;
 
+import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.*;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Created by Claudia Agache on 9/26/2016.
@@ -42,9 +42,9 @@ public class DeleteAllVersionsTests extends CmisTest
         dataUser.addUserToSite(contributorUser, testSite, UserRole.SiteContributor);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to delete all document versions in DocumentLibrary with CMIS")
-    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
+    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS})
     public void siteManagerDeletesAllDocumentVersions() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.MSWORD);
@@ -53,9 +53,9 @@ public class DeleteAllVersionsTests extends CmisTest
                 .then().deleteAllVersions(true).and().assertThat().doesNotExistInRepo();
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to delete only latest document version in DocumentLibrary with CMIS")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
+    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS})
     public void siteManagerDeletesLatestDocumentVersion() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.MSWORD);
@@ -63,72 +63,72 @@ public class DeleteAllVersionsTests extends CmisTest
                 .createFile(testFile).and().update(testFile.getName())
                 .then().deleteAllVersions(false).and().assertThat().documentHasVersion(1.0);
     }
-    
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is NOT able to delete all versions of inexistent file with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisObjectNotFoundException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisObjectNotFoundException.class)
     public void siteManagerCannotDeleteAllVersionsOfInexistentFile() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.MSWORD);
         testFile.setCmisLocation("/fake-folder/inexistentFile.txt");
         cmisApi.authenticateUser(testUser).usingSite(testSite).usingResource(testFile).deleteAllVersions(true);
     }
-    
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to delete PWC file version of a file with multiple versions with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS})
     public void siteManagerCanDeletePWCFileWithDeleteAllVersionsTrue() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.MSWORD);
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFile(testFile)
                 .usingResource(testFile).update("content 1")
-                    .assertThat().documentHasVersion(1.1)
+                .assertThat().documentHasVersion(1.1)
                 .usingResource(testFile).update("content 2")
-                    .assertThat().documentHasVersion(1.2)
+                .assertThat().documentHasVersion(1.2)
                 .usingResource(testFile).checkOut()
-                    .assertThat().documentIsCheckedOut()
+                .assertThat().documentIsCheckedOut()
                 .usingPWCDocument().deleteAllVersions(true)
-                    .assertThat().doesNotExistInRepo()
+                .assertThat().doesNotExistInRepo()
                 .usingResource(testFile).assertThat().existsInRepo().and().assertThat().documentHasVersion(1.2);
     }
-    
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is able to delete PWC file version of a file with multiple versions set to false with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS})
     public void siteManagerCanDeletePWCFileWithDeleteAllVersionsFalse() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.MSWORD);
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFile(testFile)
                 .then().update("content 1")
-                    .assertThat().documentHasVersion(1.1)
+                .assertThat().documentHasVersion(1.1)
                 .then().update("content 2")
-                    .assertThat().documentHasVersion(1.2)
+                .assertThat().documentHasVersion(1.2)
                 .then().checkOut().refreshResource()
-                    .assertThat().documentIsCheckedOut()
+                .assertThat().documentIsCheckedOut()
                 .usingPWCDocument().deleteAllVersions(false)
                 .assertThat().doesNotExistInRepo()
                 .usingResource(testFile).assertThat().existsInRepo().and().assertThat().documentHasVersion(1.2);
     }
-    
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager is NOT able to delete file original multiple version which is checked out with CMIS")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisConstraintException.class, expectedExceptionsMessageRegExp = "^Could not delete/cancel checkout on the original checked out document$")
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS}, expectedExceptions = CmisConstraintException.class, expectedExceptionsMessageRegExp = "^Could not delete/cancel checkout on the original checked out document$")
     public void siteManagerCannotDeleteOriginalFileMultipleVersionWhenCheckedOut() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.MSWORD);
         cmisApi.authenticateUser(testUser).usingSite(testSite).createFile(testFile)
                 .then().update("content 1")
-                    .assertThat().documentHasVersion(1.1)
+                .assertThat().documentHasVersion(1.1)
                 .then().update("content 2")
-                    .assertThat().documentHasVersion(1.2)
+                .assertThat().documentHasVersion(1.2)
                 .refreshResource().then().checkOut()
-                    .assertThat().documentIsCheckedOut();
+                .assertThat().documentIsCheckedOut();
         cmisApi.usingResource(testFile).deleteAllVersions(true);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify unauthorized user is NOT able to delete a checked out document")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotDeletePWCDocument() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -139,9 +139,9 @@ public class DeleteAllVersionsTests extends CmisTest
                 .usingResource(testFile).usingPWCDocument().deleteAllVersions(true);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager can delete object Document")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS})
     public void siteManagerCanDeleteDocument() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -150,9 +150,9 @@ public class DeleteAllVersionsTests extends CmisTest
                 .assertThat().doesNotExistInRepo();
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site manager can delete object Folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteManagerCanDeleteFolder() throws Exception
     {
         testFolder = new FolderModel(RandomData.getRandomName("Folder"));
@@ -161,9 +161,9 @@ public class DeleteAllVersionsTests extends CmisTest
                 .assertThat().doesNotExistInRepo();
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify contributor can delete object Document created by self")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS})
     public void contributorCanDeleteDocumentCreatedBySelf() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -172,9 +172,9 @@ public class DeleteAllVersionsTests extends CmisTest
                 .assertThat().doesNotExistInRepo();
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify contributor cannot delete object Document created by site manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void contributorCannotDeleteDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -183,9 +183,9 @@ public class DeleteAllVersionsTests extends CmisTest
                 .when().authenticateUser(contributorUser).usingResource(testFile).deleteAllVersions(true);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify contributor can delete object Folder created by self")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void contributorCanDeleteFolderCreatedBySelf() throws Exception
     {
         testFolder = new FolderModel(RandomData.getRandomName("Folder"));
@@ -194,9 +194,9 @@ public class DeleteAllVersionsTests extends CmisTest
                 .assertThat().doesNotExistInRepo();
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify contributor cannot delete object Folder created by site manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void contributorCannotDeleteFolderCreatedByManager() throws Exception
     {
         testFolder = new FolderModel(RandomData.getRandomName("Folder"));
@@ -206,9 +206,9 @@ public class DeleteAllVersionsTests extends CmisTest
                 .usingResource(testFolder).deleteAllVersions(true);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify collaborator can delete object Document created by self")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS})
     public void collaboratorCanDeleteDocumentCreatedBySelf() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -217,9 +217,9 @@ public class DeleteAllVersionsTests extends CmisTest
                 .assertThat().doesNotExistInRepo();
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify collaborator cannot delete object Document created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void collaboratorCannotDeleteDocumentCreatedByManager() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -229,9 +229,9 @@ public class DeleteAllVersionsTests extends CmisTest
                 .usingResource(testFile).deleteAllVersions(true);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify collaborator can delete object Folder created by self")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void collaboratorCanDeleteFolderCreatedBySelf() throws Exception
     {
         testFolder = new FolderModel(RandomData.getRandomName("Folder"));
@@ -240,9 +240,9 @@ public class DeleteAllVersionsTests extends CmisTest
                 .assertThat().doesNotExistInRepo();
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify collaborator cannot delete object Folder created by manager")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void collaboratorCannotDeleteFolderCreatedByManager() throws Exception
     {
         testFolder = new FolderModel(RandomData.getRandomName("Folder"));
@@ -252,9 +252,9 @@ public class DeleteAllVersionsTests extends CmisTest
                 .usingResource(testFolder).deleteAllVersions(true);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify consumer cannot delete object Document")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotDeleteDocumentCreated() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);
@@ -264,9 +264,9 @@ public class DeleteAllVersionsTests extends CmisTest
                 .usingResource(testFile).deleteAllVersions(true);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify consumer cannot delete object Folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void consumerCannotDeleteFolderCreated() throws Exception
     {
         testFolder = new FolderModel(RandomData.getRandomName("Folder"));
@@ -276,9 +276,9 @@ public class DeleteAllVersionsTests extends CmisTest
                 .usingResource(testFolder).deleteAllVersions(true);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot delete Document from private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotDeleteDocumentFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();
@@ -289,9 +289,9 @@ public class DeleteAllVersionsTests extends CmisTest
                 .usingResource(testFile).deleteAllVersions(true);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot delete Folder from private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotDeleteFolderFromPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(testUser).createPrivateRandomSite();
@@ -300,9 +300,9 @@ public class DeleteAllVersionsTests extends CmisTest
         cmisApi.authenticateUser(unauthorizedUser).usingResource(testFolder).deleteAllVersions(true);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot delete Document from moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS, TestGroup.NOT_SUPPORTED_ON_CMIS_WS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotDeleteDocumentFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(testUser).createModeratedRandomSite();
@@ -311,9 +311,9 @@ public class DeleteAllVersionsTests extends CmisTest
         cmisApi.authenticateUser(unauthorizedUser).usingResource(testFile).deleteAllVersions(true);
     }
 
-    @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify unauthorized user cannot delete Folder from moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void unauthorizedUserCannotDeleteFolderFromModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingUser(testUser).createModeratedRandomSite();

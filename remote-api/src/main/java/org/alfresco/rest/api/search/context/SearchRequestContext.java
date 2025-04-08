@@ -32,12 +32,9 @@ import java.util.Set;
 
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
-import org.alfresco.service.cmr.search.FacetFormat;
 
 /**
- * This is a snapshot of the SearchQuery before the request is made.
- * It isn't a complete copy of SearchQuery but only has fields that are useful when building
- * the response
+ * This is a snapshot of the SearchQuery before the request is made. It isn't a complete copy of SearchQuery but only has fields that are useful when building the response
  */
 public class SearchRequestContext
 {
@@ -64,6 +61,7 @@ public class SearchRequestContext
     {
         return query;
     }
+
     public boolean includeRequest()
     {
         return includeRequest;
@@ -73,6 +71,7 @@ public class SearchRequestContext
     {
         return pivotKeys;
     }
+
     public Set<String> getStores()
     {
         return stores;

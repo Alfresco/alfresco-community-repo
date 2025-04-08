@@ -30,11 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.workflow.WorkflowInstance;
 
 /**
  * @author unknown
@@ -57,7 +58,7 @@ public class WorkflowInstancesForNodeGet extends AbstractWorkflowWebscript
 
         // list all active workflows for nodeRef
         List<WorkflowInstance> workflows = workflowService.getWorkflowsForContent(nodeRef, true);
-        
+
         List<Map<String, Object>> results = new ArrayList<Map<String, Object>>(workflows.size());
 
         for (WorkflowInstance workflow : workflows)

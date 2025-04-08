@@ -30,8 +30,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
 
 /**
- * The interceptor wraps {@link Holder} class in {@link TransactionAwareHolder}.
- * This is designed specifically for CMIS Service.
+ * The interceptor wraps {@link Holder} class in {@link TransactionAwareHolder}. This is designed specifically for CMIS Service.
  *
  * @author alex.mukha
  */

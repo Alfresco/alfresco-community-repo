@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 /**
  * Executes a JavaScript
  * 
- * Note:  This is a 'normal' dm action, rather than a records management action.
+ * Note: This is a 'normal' dm action, rather than a records management action.
  * 
  * @author Craig Tan
  */

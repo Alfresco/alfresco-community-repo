@@ -37,17 +37,16 @@ import java.io.UnsupportedEncodingException;
 import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterException;
 
-
 /**
  * Handler for importing Repository content streams from file system
  * 
  * @author David Caruana
  */
 public class FileImportPackageHandler
-    implements ImportPackageHandler
+        implements ImportPackageHandler
 {
-	public final static String DEFAULT_ENCODING = "UTF-8";
-	
+    public final static String DEFAULT_ENCODING = "UTF-8";
+
     protected File sourceDir;
     protected File dataFile;
     protected String dataFileEncoding;
@@ -55,9 +54,12 @@ public class FileImportPackageHandler
     /**
      * Construct
      * 
-     * @param sourceDir File
-     * @param dataFile File
-     * @param dataFileEncoding String
+     * @param sourceDir
+     *            File
+     * @param dataFile
+     *            File
+     * @param dataFileEncoding
+     *            String
      */
     public FileImportPackageHandler(File sourceDir, File dataFile, String dataFileEncoding)
     {
@@ -67,16 +69,16 @@ public class FileImportPackageHandler
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImportPackageHandler#startImport()
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ImportPackageHandler#startImport() */
     public void startImport()
     {
         log("Importing from package " + dataFile.getAbsolutePath());
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImportPackageHandler#getDataStream()
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ImportPackageHandler#getDataStream() */
     public Reader getDataStream()
     {
         try
@@ -85,19 +87,19 @@ public class FileImportPackageHandler
             Reader inputReader = (dataFileEncoding == null) ? new InputStreamReader(inputStream, DEFAULT_ENCODING) : new InputStreamReader(inputStream, dataFileEncoding);
             return new BufferedReader(inputReader);
         }
-        catch(UnsupportedEncodingException e)
+        catch (UnsupportedEncodingException e)
         {
             throw new ImporterException("Encoding " + dataFileEncoding + " is not supported");
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new ImporterException("Failed to read package " + dataFile.getAbsolutePath() + " due to " + e.getMessage());
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImportStreamHandler#importStream(java.lang.String)
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ImportStreamHandler#importStream(java.lang.String) */
     public InputStream importStream(String content)
     {
         File fileURL = new File(content);
@@ -105,32 +107,30 @@ public class FileImportPackageHandler
         {
             fileURL = new File(sourceDir, content);
         }
-        
+
         try
         {
             return new FileInputStream(fileURL);
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new ImporterException("Failed to read content url " + content + " from file " + fileURL.getAbsolutePath());
         }
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.view.ImportPackageHandler#endImport()
-     */
+     * 
+     * @see org.alfresco.service.cmr.view.ImportPackageHandler#endImport() */
     public void endImport()
-    {
-    }
-    
+    {}
+
     /**
      * Log Import Message
      * 
-     * @param message  message to log
+     * @param message
+     *            message to log
      */
     protected void log(String message)
-    {
-    }
-    
-}
+    {}
 
+}

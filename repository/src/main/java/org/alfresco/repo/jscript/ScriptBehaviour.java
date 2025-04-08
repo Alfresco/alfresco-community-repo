@@ -31,12 +31,12 @@ import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.repo.policy.BaseBehaviour;
 import org.alfresco.repo.policy.PolicyException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ScriptLocation;
-import org.springframework.extensions.surf.util.ParameterCheck;
-
 
 /**
  * JavaScript behaviour implementation
@@ -44,16 +44,16 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * @author Roy Wetherall
  */
 public class ScriptBehaviour extends BaseBehaviour
-{	
-	private ServiceRegistry serviceRegistry;
-	
-	private ScriptLocation location;
-	
-	public ScriptBehaviour()
-	{
-		super();
-	}
-	
+{
+    private ServiceRegistry serviceRegistry;
+
+    private ScriptLocation location;
+
+    public ScriptBehaviour()
+    {
+        super();
+    }
+
     public ScriptBehaviour(ServiceRegistry serviceRegistry, ScriptLocation location)
     {
         this(serviceRegistry, location, NotificationFrequency.EVERY_EVENT);
@@ -61,50 +61,49 @@ public class ScriptBehaviour extends BaseBehaviour
 
     public ScriptBehaviour(ServiceRegistry serviceRegistry, ScriptLocation location, NotificationFrequency frequency)
     {
-    	super(frequency);
+        super(frequency);
         ParameterCheck.mandatory("Location", location);
         ParameterCheck.mandatory("ServiceRegistry", serviceRegistry);
         this.location = location;
         this.serviceRegistry = serviceRegistry;
     }
-    
-    public void setServiceRegistry(ServiceRegistry serviceRegistry) 
-    {
-		this.serviceRegistry = serviceRegistry;
-	}
-    
-    public void setLocation(ScriptLocation location) 
-    {
-		this.location = location;
-	}
 
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
+        this.serviceRegistry = serviceRegistry;
+    }
+
+    public void setLocation(ScriptLocation location)
+    {
+        this.location = location;
+    }
 
     @Override
     public String toString()
     {
         return "JavaScript behaviour[location = " + this.location.toString() + "]";
     }
-    
+
     @SuppressWarnings("unchecked")
-	public synchronized <T> T getInterface(Class<T> policy) 
-	{
-	    ParameterCheck.mandatory("Policy class", policy);
-	    Object proxy = proxies.get(policy);
-	    if (proxy == null)
-	    {
-	    	Method[] policyIFMethods = policy.getMethods();
-	        if (policyIFMethods.length != 1)
-	        {
-	            throw new PolicyException("Policy interface " + policy.getCanonicalName() + " must have only one method");
-	        }
-	        
-	        InvocationHandler handler = new JavaScriptInvocationHandler(this);
-	        proxy = Proxy.newProxyInstance(policy.getClassLoader(), new Class[]{policy}, handler);
-	        proxies.put(policy, proxy);
-	    }
-	    return (T)proxy;
-	}   
-    
+    public synchronized <T> T getInterface(Class<T> policy)
+    {
+        ParameterCheck.mandatory("Policy class", policy);
+        Object proxy = proxies.get(policy);
+        if (proxy == null)
+        {
+            Method[] policyIFMethods = policy.getMethods();
+            if (policyIFMethods.length != 1)
+            {
+                throw new PolicyException("Policy interface " + policy.getCanonicalName() + " must have only one method");
+            }
+
+            InvocationHandler handler = new JavaScriptInvocationHandler(this);
+            proxy = Proxy.newProxyInstance(policy.getClassLoader(), new Class[]{policy}, handler);
+            proxies.put(policy, proxy);
+        }
+        return (T) proxy;
+    }
+
     /**
      * JavaScript Invocation Handler
      * 
@@ -113,7 +112,7 @@ public class ScriptBehaviour extends BaseBehaviour
     private static class JavaScriptInvocationHandler implements InvocationHandler
     {
         private ScriptBehaviour behaviour;
-        
+
         private JavaScriptInvocationHandler(ScriptBehaviour behaviour)
         {
             this.behaviour = behaviour;
@@ -141,7 +140,7 @@ public class ScriptBehaviour extends BaseBehaviour
                 }
                 return false;
             }
-            
+
             // Delegate to designated method pointer
             if (behaviour.isEnabled())
             {
@@ -158,17 +157,17 @@ public class ScriptBehaviour extends BaseBehaviour
             return null;
         }
 
-        private Object invokeScript(Method method, Object[] args) 
+        private Object invokeScript(Method method, Object[] args)
         {
-        	// Build the model
-        	Map<String, Object> model = new HashMap<String, Object>(1);
-        	model.put("behaviour", new org.alfresco.repo.jscript.Behaviour(this.behaviour.serviceRegistry, method.getName(), args));
-        	
-        	// Execute the script
-        	return this.behaviour.serviceRegistry.getScriptService().executeScript(this.behaviour.location, model);
-		}
+            // Build the model
+            Map<String, Object> model = new HashMap<String, Object>(1);
+            model.put("behaviour", new org.alfresco.repo.jscript.Behaviour(this.behaviour.serviceRegistry, method.getName(), args));
 
-		@Override
+            // Execute the script
+            return this.behaviour.serviceRegistry.getScriptService().executeScript(this.behaviour.location, model);
+        }
+
+        @Override
         public boolean equals(Object obj)
         {
             if (obj == this)
@@ -179,8 +178,8 @@ public class ScriptBehaviour extends BaseBehaviour
             {
                 return false;
             }
-            JavaScriptInvocationHandler other = (JavaScriptInvocationHandler)obj;
-            return  behaviour.location.equals(other.behaviour.location);
+            JavaScriptInvocationHandler other = (JavaScriptInvocationHandler) obj;
+            return behaviour.location.equals(other.behaviour.location);
         }
 
         @Override
@@ -194,5 +193,5 @@ public class ScriptBehaviour extends BaseBehaviour
         {
             return "JavaScriptBehaviour[location=" + behaviour.location.toString() + "]";
         }
-    }  
+    }
 }

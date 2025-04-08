@@ -33,12 +33,15 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.FormData;
+import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.forms.FormNotFoundException;
 import org.alfresco.repo.forms.Item;
-import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -46,12 +49,9 @@ import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * FormProcessor implementation that can generate and persist Form objects for
- * types in the Alfresco content model.
+ * FormProcessor implementation that can generate and persist Form objects for types in the Alfresco content model.
  * 
  * @author Gavin Cornwell
  * @author Nick Smith
@@ -61,23 +61,19 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(TypeFormProcessor.class);
-    
+
     private static QName ASPECT_FILE_PLAN_COMPONENT = QName.createQName("http://www.alfresco.org/model/recordsmanagement/1.0", "filePlanComponent");
 
     protected static final String NAME_PROP_DATA = PROP + DATA_KEY_SEPARATOR + "cm" + DATA_KEY_SEPARATOR + "name";
 
-    /*
-     * @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getLogger()
-     */
+    /* @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getLogger() */
     @Override
     protected Log getLogger()
     {
         return logger;
     }
 
-    /*
-     * @see org.alfresco.repo.forms.processor.node.NodeFormProcessor#getTypedItem(org.alfresco.repo.forms.Item)
-     */
+    /* @see org.alfresco.repo.forms.processor.node.NodeFormProcessor#getTypedItem(org.alfresco.repo.forms.Item) */
     @Override
     protected TypeDefinition getTypedItem(Item item)
     {
@@ -103,10 +99,10 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
             // retrieve the type from the dictionary
             typeDef = this.dictionaryService.getType(type);
 
-            if (typeDef == null) 
-            { 
-                throw new FormNotFoundException(item, 
-                            new IllegalArgumentException("Type does not exist: " + item.getId())); 
+            if (typeDef == null)
+            {
+                throw new FormNotFoundException(item,
+                        new IllegalArgumentException("Type does not exist: " + item.getId()));
             }
         }
         catch (InvalidQNameException iqne)
@@ -118,13 +114,11 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
         return typeDef;
     }
 
-    /*
-     * @see org.alfresco.repo.forms.processor.node.NodeFormProcessor#internalPersist(java.lang.Object, org.alfresco.repo.forms.FormData)
-     */
+    /* @see org.alfresco.repo.forms.processor.node.NodeFormProcessor#internalPersist(java.lang.Object, org.alfresco.repo.forms.FormData) */
     @Override
     protected NodeRef internalPersist(TypeDefinition item, final FormData data)
     {
-        if (logger.isDebugEnabled()) 
+        if (logger.isDebugEnabled())
             logger.debug("Persisting form for: " + item);
 
         // create a new instance of the type
@@ -133,15 +127,14 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
         if (nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) == true)
         {
             // persist the form data as the admin user
-            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-            {
-                public Object doWork() throws Exception 
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
+                public Object doWork() throws Exception
                 {
                     persistNode(nodeRef, data);
                     return null;
                 }
-            }, 
-            AuthenticationUtil.getSystemUserName());
+            },
+                    AuthenticationUtil.getSystemUserName());
         }
         else
         {
@@ -156,17 +149,16 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
     /**
      * Creates a new instance of the given type.
      * <p>
-     * If the form data has the name property present it is used as the name of
-     * the node.
+     * If the form data has the name property present it is used as the name of the node.
      * </p>
      * <p>
-     * The new node is placed in the location defined by the "destination" data
-     * item in the form data (this will usually be a hidden field), this will
-     * also be the NodeRef representation of the parent for the new node.
+     * The new node is placed in the location defined by the "destination" data item in the form data (this will usually be a hidden field), this will also be the NodeRef representation of the parent for the new node.
      * </p>
      * 
-     * @param typeDef The type defintion of the type to create
-     * @param data The form data
+     * @param typeDef
+     *            The type defintion of the type to create
+     * @param data
+     *            The form data
      * @return NodeRef representing the newly created node
      */
     protected NodeRef createNode(TypeDefinition typeDef, FormData data)
@@ -178,11 +170,11 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
             // firstly, ensure we have a destination to create the node in
             NodeRef parentRef = null;
             FieldData destination = data.getFieldData(DESTINATION);
-            if (destination == null) 
-            { 
+            if (destination == null)
+            {
                 throw new FormException("Failed to persist form for '"
-                        + typeDef.getName().toPrefixString(this.namespaceService) + 
-                        "' as '" + DESTINATION + "' data was not provided."); 
+                        + typeDef.getName().toPrefixString(this.namespaceService) +
+                        "' as '" + DESTINATION + "' data was not provided.");
             }
 
             // create the parent NodeRef
@@ -219,51 +211,52 @@ public class TypeFormProcessor extends ContentModelFormProcessor<TypeDefinition,
             Map<QName, Serializable> nodeProps = new HashMap<QName, Serializable>(1);
             nodeProps.put(ContentModel.PROP_NAME, nodeName);
             nodeRef = this.nodeService.createNode(
-                        parentRef,
-                        ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, 
-                        QName.createValidLocalName(nodeName)), typeDef.getName(), nodeProps).getChildRef();
+                    parentRef,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                            QName.createValidLocalName(nodeName)),
+                    typeDef.getName(), nodeProps).getChildRef();
         }
 
         return nodeRef;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemType(java.lang.Object)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemType(java.lang.Object) */
     @Override
     protected String getItemType(TypeDefinition item)
     {
         return item.getName().toPrefixString(namespaceService);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemURI(java.lang.Object)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.FilteredFormProcessor#getItemURI(java.lang.Object) */
     @Override
     protected String getItemURI(TypeDefinition item)
     {
         return "/api/classes/" + getItemType(item).replace(":", "_");
     }
-    
+
     @Override
-    protected TypeDefinition getBaseType(TypeDefinition type) 
+    protected TypeDefinition getBaseType(TypeDefinition type)
     {
         return type;
     }
-    
+
     @Override
     protected Map<QName, Serializable> getAssociationValues(TypeDefinition item)
     {
         return null;
     }
-    
+
     @Override
-    protected Map<QName, Serializable> getPropertyValues(TypeDefinition item) 
+    protected Map<QName, Serializable> getPropertyValues(TypeDefinition item)
     {
         return null;
     }
-    
+
     @Override
     protected Map<String, Object> getTransientValues(TypeDefinition item)
     {

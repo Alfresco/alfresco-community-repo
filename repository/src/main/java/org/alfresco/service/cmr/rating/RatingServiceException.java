@@ -40,9 +40,10 @@ public class RatingServiceException extends AlfrescoRuntimeException
     /**
      * Constructs a Rating Service Exception with the specified message.
      * 
-     * @param message 	the message string
+     * @param message
+     *            the message string
      */
-    public RatingServiceException(String message) 
+    public RatingServiceException(String message)
     {
         super(message);
     }
@@ -50,10 +51,12 @@ public class RatingServiceException extends AlfrescoRuntimeException
     /**
      * Constructs a Rating Service Exception with the specified message and source exception.
      * 
-     * @param message   the message string
-     * @param source	the source exception
+     * @param message
+     *            the message string
+     * @param source
+     *            the source exception
      */
-    public RatingServiceException(String message, Throwable source) 
+    public RatingServiceException(String message, Throwable source)
     {
         super(message, source);
     }

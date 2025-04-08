@@ -27,14 +27,14 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.surf.util.I18NUtil;
-
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * Abstract capability implementation.
@@ -43,7 +43,7 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
  * @author Roy Wetherall
  */
 public abstract class AbstractCapability extends RMSecurityCommon
-                                         implements Capability, RecordsManagementModel, RMPermissionModel
+        implements Capability, RecordsManagementModel, RMPermissionModel
 {
     /** Capability service */
     protected CapabilityService capabilityService;
@@ -65,7 +65,8 @@ public abstract class AbstractCapability extends RMSecurityCommon
     protected boolean isPrivate = false;
 
     /**
-     * @param capabilityService capability service
+     * @param capabilityService
+     *            capability service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -81,7 +82,8 @@ public abstract class AbstractCapability extends RMSecurityCommon
     }
 
     /**
-     * @param name  capability name
+     * @param name
+     *            capability name
      */
     public void setName(String name)
     {
@@ -98,7 +100,8 @@ public abstract class AbstractCapability extends RMSecurityCommon
     }
 
     /**
-     * @param   title   capability title
+     * @param title
+     *            capability title
      */
     public void setTitle(String title)
     {
@@ -125,7 +128,8 @@ public abstract class AbstractCapability extends RMSecurityCommon
     }
 
     /**
-     * @param description   capability description
+     * @param description
+     *            capability description
      */
     public void setDescription(String description)
     {
@@ -133,7 +137,8 @@ public abstract class AbstractCapability extends RMSecurityCommon
     }
 
     /**
-     * @param descriptionId     message id
+     * @param descriptionId
+     *            message id
      */
     public void setDescriptionId(String descriptionId)
     {
@@ -158,7 +163,8 @@ public abstract class AbstractCapability extends RMSecurityCommon
     }
 
     /**
-     * @param isPrivate indicates whether the capability is private or not
+     * @param isPrivate
+     *            indicates whether the capability is private or not
      */
     public void setPrivate(boolean isPrivate)
     {
@@ -199,8 +205,9 @@ public abstract class AbstractCapability extends RMSecurityCommon
      * <p>
      * Returns the raw permission value.
      *
-     * @param   nodeRef node reference
-     * @return  raw permission value
+     * @param nodeRef
+     *            node reference
+     * @return raw permission value
      */
     public int hasPermissionRaw(NodeRef nodeRef)
     {
@@ -216,18 +223,18 @@ public abstract class AbstractCapability extends RMSecurityCommon
             {
                 result = hasPermissionImpl(nodeRef);
             }
-    
+
             result = setTransactionCache(prefix, nodeRef, result);
         }
-        
+
         // Log information about evaluated capability
         RMMethodSecurityInterceptor.reportCapabilityStatus(getName(), result);
-        
+
         return result;
     }
 
     /**
-     * Default implementation.  Override if different behaviour required.
+     * Default implementation. Override if different behaviour required.
      *
      * @param nodeRef
      * @return

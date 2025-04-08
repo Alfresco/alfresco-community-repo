@@ -38,11 +38,11 @@ public class RegistryKey implements Serializable
     private static final long serialVersionUID = 1137822242292626854L;
 
     static final String REGISTRY_1_0_URI = "http://www.alfresco.org/system/registry/1.0";
-    
+
     private String namespaceUri;
     private String[] path;
     private String property;
-    
+
     /**
      * Build a registry key from a given array of elements.
      */
@@ -63,14 +63,24 @@ public class RegistryKey implements Serializable
         }
         return sb.toString();
     }
-    
+
     /**
-     * For path /a/b/c and property 'x', put in <pre>"a", "b", "c", "x"</pre>
-     * The property can also be <tt>null</tt> as in <pre>"a", "b", "c", null</pre>
+     * For path /a/b/c and property 'x', put in
      * 
-     * @param namespaceUri the key namespace to use.  If left <tt>null</tt> then the
-     *      {@link #REGISTRY_1_0_URI default} will be used.
-     * @param key the path elements followed by the property name.
+     * <pre>
+     * "a", "b", "c", "x"
+     * </pre>
+     * 
+     * The property can also be <tt>null</tt> as in
+     * 
+     * <pre>
+     * "a", "b", "c", null
+     * </pre>
+     * 
+     * @param namespaceUri
+     *            the key namespace to use. If left <tt>null</tt> then the {@link #REGISTRY_1_0_URI default} will be used.
+     * @param key
+     *            the path elements followed by the property name.
      */
     public RegistryKey(String namespaceUri, String... key)
     {
@@ -89,14 +99,16 @@ public class RegistryKey implements Serializable
         this.path = new String[length - 1];
         System.arraycopy(key, 0, path, 0, length - 1);
     }
-    
+
     /**
      * A constructor to specifically declare the path and property portions of the key.
      * 
-     * @param namespaceUri the key namespace to use.  If left <tt>null</tt> then the
-     *      {@link #REGISTRY_1_0_URI default} will be used.
-     * @param path          the path part of the key
-     * @param property      the property name for the key.  This may be <tt>null</tt>.
+     * @param namespaceUri
+     *            the key namespace to use. If left <tt>null</tt> then the {@link #REGISTRY_1_0_URI default} will be used.
+     * @param path
+     *            the path part of the key
+     * @param property
+     *            the property name for the key. This may be <tt>null</tt>.
      */
     public RegistryKey(String namespaceUri, String[] path, String property)
     {
@@ -118,8 +130,8 @@ public class RegistryKey implements Serializable
     {
         StringBuilder sb = new StringBuilder(128);
         sb.append("RegistryKey")
-          .append("[ ").append(RegistryKey.buildPathString(path)).append("/").append(property)
-          .append(" ]");
+                .append("[ ").append(RegistryKey.buildPathString(path)).append("/").append(property)
+                .append(" ]");
         return sb.toString();
     }
 

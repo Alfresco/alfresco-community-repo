@@ -28,7 +28,6 @@ package org.alfresco.rest.api.model;
 import java.io.Serializable;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -62,15 +61,14 @@ public class Folder extends Node
 
     @Override
     public void setContent(ContentInfo contentInfo)
-    {
-    }
+    {}
 
     @Override
     public String toString()
     {
         return "Folder [nodeRef=" + nodeRef + ", name=" + name + ", title="
-                    + title + ", description=" + description + ", createdAt="
-                    + createdAt + ", modifiedAt=" + modifiedAt + ", createdBy="
-                    + createdBy + ", modifiedBy=" + modifiedBy + "]";
+                + title + ", description=" + description + ", createdAt="
+                + createdAt + ", modifiedAt=" + modifiedAt + ", createdBy="
+                + createdBy + ", modifiedBy=" + modifiedBy + "]";
     }
 }

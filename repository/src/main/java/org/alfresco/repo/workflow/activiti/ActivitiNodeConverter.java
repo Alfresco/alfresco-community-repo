@@ -41,15 +41,15 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class ActivitiNodeConverter extends AbstractWorkflowNodeConverter
 {
     private final ServiceRegistry serviceRegistry;
-    
+
     public ActivitiNodeConverter(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public Object convertNode(NodeRef node)
     {
@@ -57,8 +57,8 @@ public class ActivitiNodeConverter extends AbstractWorkflowNodeConverter
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public List<? extends Object> convertNodes(Collection<NodeRef> values)
     {
@@ -71,17 +71,17 @@ public class ActivitiNodeConverter extends AbstractWorkflowNodeConverter
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public NodeRef convertToNode(Object toConvert)
     {
-        return ((ScriptNode)toConvert).getNodeRef();
+        return ((ScriptNode) toConvert).getNodeRef();
     }
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public boolean isSupported(Object object)
     {

@@ -49,13 +49,13 @@ public class NodeParameters
 
     private String storeProtocol;
     private String storeIdentifier;
-    
+
     private Set<QName> includeNodeTypes;
     private Set<QName> excludeNodeTypes;
-    
+
     private Set<QName> includeAspects;
     private Set<QName> excludeAspects;
-    
+
     private String shardProperty;
     private String coreName;
 
@@ -73,7 +73,7 @@ public class NodeParameters
     {
         return (storeProtocol != null || storeIdentifier != null);
     }
-    
+
     public void setStoreProtocol(String storeProtocol)
     {
         this.storeProtocol = storeProtocol;
@@ -93,7 +93,7 @@ public class NodeParameters
     {
         return storeIdentifier;
     }
-    
+
     public void setTransactionIds(List<Long> txnIds)
     {
         this.transactionIds = txnIds;
@@ -103,7 +103,7 @@ public class NodeParameters
     {
         return transactionIds;
     }
-    
+
     public Long getFromTxnId()
     {
         return fromTxnId;
@@ -194,13 +194,14 @@ public class NodeParameters
         this.shardProperty = shardProperty;
     }
 
-    public String getCoreName() {
+    public String getCoreName()
+    {
         return this.coreName;
     }
 
-    public void setCoreName(String coreName){
+    public void setCoreName(String coreName)
+    {
         this.coreName = coreName;
     }
-
 
 }

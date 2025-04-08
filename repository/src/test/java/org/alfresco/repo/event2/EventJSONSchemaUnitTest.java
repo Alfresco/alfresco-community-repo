@@ -28,9 +28,10 @@ package org.alfresco.repo.event2;
 
 import static org.junit.Assert.fail;
 
+import org.junit.Test;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.event.v1.model.EventType;
-import org.junit.Test;
 
 /**
  * Test event JSON schema mapping.

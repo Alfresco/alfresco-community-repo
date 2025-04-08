@@ -27,15 +27,16 @@ package org.alfresco.repo.webdav;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.sync.repo.Client;
-import org.alfresco.sync.repo.Client.ClientType;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.service.cmr.activities.ActivityPoster;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.alfresco.sync.repo.Client;
+import org.alfresco.sync.repo.Client.ClientType;
 
 /**
  * WebDAV methods may use an instance of this class to post activity data.
@@ -47,21 +48,22 @@ public class ActivityPosterImpl implements WebDAVActivityPoster
 {
     private String appTool;
     private ActivityPoster poster;
-    
+
     protected static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol.activity");
-    
+
     /**
-     * Default constructor. 
+     * Default constructor.
      */
     public ActivityPosterImpl()
-    {
-    }
+    {}
 
     /**
      * Constructor
      *
-     * @param appTool String
-     * @param poster ActivityPoster
+     * @param appTool
+     *            String
+     * @param poster
+     *            ActivityPoster
      */
     public ActivityPosterImpl(String appTool, ActivityPoster poster)
     {
@@ -69,19 +71,18 @@ public class ActivityPosterImpl implements WebDAVActivityPoster
         this.poster = poster;
     }
 
-    
     /**
      * {@inheritDoc}
      */
     @Override
     public void postFileFolderAdded(
-                String siteId,
-                String tenantDomain,
-                String path,
-                FileInfo nodeInfo) throws WebDAVServerException
+            String siteId,
+            String tenantDomain,
+            String path,
+            FileInfo nodeInfo) throws WebDAVServerException
     {
-        postFileFolderActivity(nodeInfo.isFolder() ? ActivityType.FOLDER_ADDED : ActivityType.FILE_ADDED, 
-                               siteId, tenantDomain, nodeInfo.isFolder() ? path : null, null, nodeInfo);
+        postFileFolderActivity(nodeInfo.isFolder() ? ActivityType.FOLDER_ADDED : ActivityType.FILE_ADDED,
+                siteId, tenantDomain, nodeInfo.isFolder() ? path : null, null, nodeInfo);
     }
 
     /**
@@ -89,47 +90,46 @@ public class ActivityPosterImpl implements WebDAVActivityPoster
      */
     @Override
     public void postFileFolderUpdated(
-                String siteId,
-                String tenantDomain,
-                FileInfo nodeInfo) throws WebDAVServerException
+            String siteId,
+            String tenantDomain,
+            FileInfo nodeInfo) throws WebDAVServerException
     {
-        if (! nodeInfo.isFolder())
+        if (!nodeInfo.isFolder())
         {
             postFileFolderActivity(ActivityType.FILE_UPDATED, siteId, tenantDomain, null, null, nodeInfo);
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @Override
     public void postFileFolderDeleted(
-                String siteId,
-                String tenantDomain,
-                String parentPath,
-                FileInfo parentNodeInfo,
-                FileInfo nodeInfo) throws WebDAVServerException
+            String siteId,
+            String tenantDomain,
+            String parentPath,
+            FileInfo parentNodeInfo,
+            FileInfo nodeInfo) throws WebDAVServerException
     {
         postFileFolderActivity(nodeInfo.isFolder() ? ActivityType.FOLDER_DELETED : ActivityType.FILE_DELETED, siteId, tenantDomain, parentPath, parentNodeInfo.getNodeRef(), nodeInfo);
     }
-    
-    
+
     private void postFileFolderActivity(
-                String activityType,
-                String siteId,
-                String tenantDomain,
-                String path,
-                NodeRef parentNodeRef,
-                FileInfo contentNodeInfo) throws WebDAVServerException
+            String activityType,
+            String siteId,
+            String tenantDomain,
+            String path,
+            NodeRef parentNodeRef,
+            FileInfo contentNodeInfo) throws WebDAVServerException
     {
         String fileName = contentNodeInfo.getName();
         NodeRef nodeRef = contentNodeInfo.getNodeRef();
-        
+
         try
         {
             poster.postFileFolderActivity(activityType, path, tenantDomain, siteId,
-                                   parentNodeRef, nodeRef, fileName,
-                                   appTool, Client.asType(ClientType.webdav),contentNodeInfo);
+                    parentNodeRef, nodeRef, fileName,
+                    appTool, Client.asType(ClientType.webdav), contentNodeInfo);
         }
         catch (AlfrescoRuntimeException are)
         {
@@ -137,7 +137,6 @@ public class ActivityPosterImpl implements WebDAVActivityPoster
             throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
-    
 
     public void setAppTool(String appTool)
     {

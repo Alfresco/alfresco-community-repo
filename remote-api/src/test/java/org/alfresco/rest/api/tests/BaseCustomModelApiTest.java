@@ -28,6 +28,16 @@ package org.alfresco.rest.api.tests;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.junit.After;
+import org.junit.Before;
+
 import org.alfresco.repo.dictionary.CustomModelServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -50,15 +60,6 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.Pair;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.junit.After;
-import org.junit.Before;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Base class for CMM API tests
@@ -112,8 +113,7 @@ public class BaseCustomModelApiTest extends AbstractBaseApiTest
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         for (final String user : users)
         {
-            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-            {
+            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
                 @Override
                 public Void execute() throws Throwable
                 {
@@ -132,7 +132,7 @@ public class BaseCustomModelApiTest extends AbstractBaseApiTest
     }
 
     protected CustomModel createCustomModel(String modelName, Pair<String, String> namespacePair, ModelStatus status, String desc, String author)
-                throws Exception
+            throws Exception
     {
         CustomModel customModel = new CustomModel();
         customModel.setName(modelName);
@@ -141,7 +141,7 @@ public class BaseCustomModelApiTest extends AbstractBaseApiTest
         customModel.setDescription(desc);
         customModel.setStatus(status);
         customModel.setAuthor(author);
-        
+
         // Create the model as a Model Administrator
         HttpResponse response = post("cmm", RestApiUtil.toJsonAsString(customModel), 201);
         CustomModel returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
@@ -159,7 +159,7 @@ public class BaseCustomModelApiTest extends AbstractBaseApiTest
     }
 
     protected <T extends AbstractCustomClass> T createTypeAspect(Class<T> glazz, String modelName, String typeAspectName, String title, String desc,
-                                                                 String parent) throws Exception
+            String parent) throws Exception
     {
         AbstractCustomClass classModel = null;
         String uri = "cmm/" + modelName;
@@ -230,7 +230,7 @@ public class BaseCustomModelApiTest extends AbstractBaseApiTest
 
         String typesAspects = (expectedDetails instanceof CustomAspect) ? "aspects" : "types";
         assertTrue("Two " + typesAspects + " are not equal. Expected:<" + expectedDetails.toString() + "> but was:<" + actualDetails.toString() + ">",
-                    (result && propEqualResult));
+                (result && propEqualResult));
     }
 
     protected void compareCustomModelConstraints(CustomModelConstraint expectedConstraint, CustomModelConstraint actualConstraint, String... excludeFields)
@@ -265,8 +265,7 @@ public class BaseCustomModelApiTest extends AbstractBaseApiTest
 
     protected CustomModelDefinition getModelDefinition(final String modelName)
     {
-        return transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>()
-        {
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>() {
             @Override
             public CustomModelDefinition execute() throws Throwable
             {

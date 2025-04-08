@@ -38,12 +38,12 @@ import org.alfresco.service.cmr.transfer.TransferVersion;
 public class TransferManifestHeader
 {
     private Date createdDate;
-    private int nodeCount; 
+    private int nodeCount;
     private String repositoryId;
     private boolean isSync;
     private boolean isReadOnly;
     private TransferVersion version;
-    
+
     public void setCreatedDate(Date createDate)
     {
         this.createdDate = createDate;
@@ -63,7 +63,8 @@ public class TransferManifestHeader
     }
 
     /**
-     * @param nodeCount the nodeCount to set
+     * @param nodeCount
+     *            the nodeCount to set
      */
     public void setNodeCount(int nodeCount)
     {
@@ -72,6 +73,7 @@ public class TransferManifestHeader
 
     /**
      * The repository ID of this, the sending system
+     * 
      * @param repositoryId
      */
     public void setRepositoryId(String repositoryId)
@@ -81,6 +83,7 @@ public class TransferManifestHeader
 
     /**
      * Get the repository ID of this, the sending system
+     * 
      * @return the repository Id
      */
     public String getRepositoryId()
@@ -107,12 +110,12 @@ public class TransferManifestHeader
     {
         return isReadOnly;
     }
-    
+
     public void setTransferVersion(TransferVersion version)
     {
         this.version = version;
     }
-    
+
     public TransferVersion getTransferVersion()
     {
         return version;

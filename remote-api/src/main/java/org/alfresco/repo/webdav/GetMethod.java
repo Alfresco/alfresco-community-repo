@@ -35,8 +35,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.URLEncoder;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentReader;
@@ -53,8 +55,6 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.surf.util.URLEncoder;
 
 /**
  * Implements the WebDAV GET method
@@ -79,8 +79,7 @@ public class GetMethod extends WebDAVMethod
      * Default constructor
      */
     public GetMethod()
-    {
-    }
+    {}
 
     /**
      * Parse the request headers
@@ -159,7 +158,7 @@ public class GetMethod extends WebDAVMethod
     }
 
     /**
-     * @return          Returns <tt>true</tt> always
+     * @return Returns <tt>true</tt> always
      */
     @Override
     protected boolean isReadOnly()
@@ -184,7 +183,7 @@ public class GetMethod extends WebDAVMethod
             // All of them require that the content length is set appropriately.
             m_response.setContentLength(0);
         }
-        
+
         FileInfo nodeInfo = null;
         try
         {
@@ -194,7 +193,7 @@ public class GetMethod extends WebDAVMethod
         {
             throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
         }
-        
+
         FileInfo realNodeInfo = nodeInfo;
 
         // ALF-12008: Due to Windows Explorer's URL concatenation behaviour, we must present links as shortcuts to the real URL, rather than direct hrefs
@@ -204,7 +203,7 @@ public class GetMethod extends WebDAVMethod
             Path pathToNode = getNodeService().getPath(nodeInfo.getLinkNodeRef());
             if (pathToNode.size() > 2)
             {
-                pathToNode = pathToNode.subPath(2, pathToNode.size() -1);
+                pathToNode = pathToNode.subPath(2, pathToNode.size() - 1);
             }
 
             String rootURL = getDAVHelper().getURLForPath(m_request, pathToNode.toDisplayPath(getNodeService(), getPermissionService()), true);
@@ -212,7 +211,7 @@ public class GetMethod extends WebDAVMethod
             {
                 rootURL = rootURL + WebDAVHelper.PathSeperator;
             }
-           
+
             String fname = (String) getNodeService().getProperty(nodeInfo.getLinkNodeRef(), ContentModel.PROP_NAME);
             StringBuilder urlStr = new StringBuilder(200);
             urlStr.append("[InternetShortcut]\r\n");
@@ -226,7 +225,7 @@ public class GetMethod extends WebDAVMethod
             }
             urlStr.append(rootURL).append(WebDAVHelper.encodeURL(fname, m_userAgent));
             urlStr.append("\r\n");
-           
+
             m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, "text/plain; charset=ISO-8859-1");
             m_response.setHeader(WebDAV.HEADER_CONTENT_LENGTH, String.valueOf(urlStr.length()));
             m_response.getWriter().write(urlStr.toString());
@@ -240,7 +239,7 @@ public class GetMethod extends WebDAVMethod
                 // ALF-7883 fix, HEAD for collection (see http://www.webdav.org/specs/rfc2518.html#rfc.section.8.4)
                 return;
             }
-            
+
             // Generate a folder listing
             m_response.setContentType("text/html;charset=UTF-8");
             generateDirectoryListing(nodeInfo);
@@ -260,7 +259,7 @@ public class GetMethod extends WebDAVMethod
                 long modDate = DefaultTypeConverter.INSTANCE.longValue(modifiedDate);
                 m_response.setHeader(WebDAV.HEADER_LAST_MODIFIED, WebDAV.formatHeaderDate(modDate));
             }
-            
+
             m_response.setHeader("Content-Disposition", getContentDispositionHeader(nodeInfo));
 
             ContentReader reader = fileFolderService.getReader(realNodeInfo.getNodeRef());
@@ -269,18 +268,17 @@ public class GetMethod extends WebDAVMethod
                     (ContentReader) reader,
                     I18NUtil.getMessage(FileContentReader.MSG_MISSING_CONTENT),
                     realNodeInfo.getNodeRef(), reader);
-            
+
             readContent(realNodeInfo, reader);
         }
     }
 
-
     protected void readContent(FileInfo realNodeInfo, ContentReader reader) throws IOException,
-                WebDAVServerException
+            WebDAVServerException
     {
         try
         {
-            attemptReadContent(realNodeInfo, reader);                
+            attemptReadContent(realNodeInfo, reader);
         }
         catch (final Throwable e)
         {
@@ -302,7 +300,7 @@ public class GetMethod extends WebDAVMethod
                     logAsError = false;
                 }
             }
-            
+
             if (logAsError && logger.isErrorEnabled())
             {
                 // Only log at ERROR level when not a SocketException as underlying cause.
@@ -311,9 +309,9 @@ public class GetMethod extends WebDAVMethod
             else if (logger.isDebugEnabled())
             {
                 // Log other errors at DEBUG level.
-                logger.debug("Error while reading content", e);                
+                logger.debug("Error while reading content", e);
             }
-            
+
             // Note no cause parameter supplied - avoid logging stack trace elsewhere.
             throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
@@ -325,7 +323,7 @@ public class GetMethod extends WebDAVMethod
         {
             HttpRangeProcessor rangeProcessor = new HttpRangeProcessor(getContentService());
             String userAgent = m_request.getHeader(WebDAV.HEADER_USER_AGENT);
-            
+
             if (m_returnContent)
             {
                 m_davHelper.publishReadEvent(realNodeInfo, reader.getMimetype(), reader.getSize(), byteRanges.substring(6), reader.getEncoding());
@@ -341,8 +339,8 @@ public class GetMethod extends WebDAVMethod
         }
         else
         {
-                if (m_returnContent)
-                {
+            if (m_returnContent)
+            {
                 // there is content associated with the node
                 m_response.setHeader(WebDAV.HEADER_CONTENT_LENGTH, Long.toString(reader.getSize()));
                 m_response.setHeader(WebDAV.HEADER_CONTENT_TYPE, reader.getMimetype());
@@ -358,10 +356,10 @@ public class GetMethod extends WebDAVMethod
         String filename = nodeInfo.getName();
         StringBuilder sb = new StringBuilder();
         sb.append("attachment; filename=\"");
-        for(int i = 0; i < filename.length(); i++)
+        for (int i = 0; i < filename.length(); i++)
         {
             char c = filename.charAt(i);
-            if(isValidQuotedStringHeaderParamChar(c))
+            if (isValidQuotedStringHeaderParamChar(c))
             {
                 sb.append(c);
             }
@@ -374,26 +372,28 @@ public class GetMethod extends WebDAVMethod
         sb.append(URLEncoder.encode(filename));
         return sb.toString();
     }
-    
+
     protected boolean isValidQuotedStringHeaderParamChar(char c)
     {
-        // see RFC2616 section 2.2: 
-        // qdtext         = <any TEXT except <">>
-        // TEXT           = <any OCTET except CTLs, but including LWS>
-        // CTL            = <any US-ASCII control character (octets 0 - 31) and DEL (127)>
+        // see RFC2616 section 2.2:
+        // qdtext = <any TEXT except <">>
+        // TEXT = <any OCTET except CTLs, but including LWS>
+        // CTL = <any US-ASCII control character (octets 0 - 31) and DEL (127)>
         // A CRLF is allowed in the definition of TEXT only as part of a header field continuation.
         // Note: we dis-allow header field continuation
-        return     (c < 256)  // message header param fields must be ISO-8859-1. Lower 256 codepoints of Unicode represent ISO-8859-1
+        return (c < 256) // message header param fields must be ISO-8859-1. Lower 256 codepoints of Unicode represent ISO-8859-1
                 && (c != 127) // CTL - see RFC2616 section 2.2
                 && (c != '"') // <">
-                && (c > 31);  // CTL - see RFC2616 section 2.2
+                && (c > 31); // CTL - see RFC2616 section 2.2
     }
 
     /**
      * Checks the If header conditions
      * 
-     * @param nodeInfo the node to check
-     * @throws WebDAVServerException if a pre-condition is not met
+     * @param nodeInfo
+     *            the node to check
+     * @throws WebDAVServerException
+     *             if a pre-condition is not met
      */
     private void checkPreConditions(FileInfo nodeInfo) throws WebDAVServerException
     {
@@ -458,7 +458,8 @@ public class GetMethod extends WebDAVMethod
     /**
      * Parses the given ETag header into a list of separate ETags
      * 
-     * @param strETagHeader The header to parse
+     * @param strETagHeader
+     *            The header to parse
      * @return A list of ETags
      */
     private ArrayList<String> parseETags(String strETagHeader)
@@ -477,7 +478,8 @@ public class GetMethod extends WebDAVMethod
     /**
      * Generates a HTML representation of the contents of the path represented by the given node
      * 
-     * @param fileInfo the file to use
+     * @param fileInfo
+     *            the file to use
      */
     private void generateDirectoryListing(FileInfo fileInfo)
     {
@@ -496,7 +498,7 @@ public class GetMethod extends WebDAVMethod
                 fileInfo = getFileFolderService().getFileInfo(fileInfo.getLinkNodeRef());
                 wasLink = true;
             }
-            
+
             // Get the list of child nodes for the parent node
             List<FileInfo> childNodeInfos = getDAVHelper().getChildren(fileInfo);
 
@@ -566,7 +568,7 @@ public class GetMethod extends WebDAVMethod
                 rootURL = rootURL + WebDAVHelper.encodeURL(fileInfo.getName(), m_userAgent) + WebDAVHelper.PathSeperator;
             }
             // Start with a link to the parent folder so we can navigate back up, unless we are at the root level
-            if (! getDAVHelper().isRootPath(getPath(), getServletPath()))
+            if (!getDAVHelper().isRootPath(getPath(), getServletPath()))
             {
                 writer.write("<tr class='rowOdd'>");
                 writer.write("<td colspan='4' class='textData'><a href=\"");
@@ -585,7 +587,7 @@ public class GetMethod extends WebDAVMethod
             // Send back what we have generated so far
             writer.flush();
             int rowId = 0;
-            
+
             for (FileInfo childNodeInfo : childNodeInfos)
             {
                 // Output the details for the current node
@@ -670,7 +672,7 @@ public class GetMethod extends WebDAVMethod
                     writer.write(mimetype);
                 }
                 writer.write("</td><td class='textData'>");
-                
+
                 // modified date field
                 Date modifiedDate = childNodeInfo.getModifiedDate();
                 if (modifiedDate != null)
@@ -682,14 +684,14 @@ public class GetMethod extends WebDAVMethod
                     writer.write("&nbsp;");
                 }
                 writer.write("</td></tr>\n");
-                
+
                 // flush every few rows
                 if ((rowId & 15) == 0)
                 {
                     writer.flush();
                 }
             }
-            
+
             writer.write("</table></body></html>");
         }
         catch (Throwable e)
@@ -706,17 +708,16 @@ public class GetMethod extends WebDAVMethod
                     writer.flush();
                 }
                 catch (IOException ioe)
-                {
-                }
+                {}
             }
         }
     }
 
     /**
-     * Given a path, will return the parent path. For example: /a/b/c
-     * will return /a/b and /a/b will return /a.
+     * Given a path, will return the parent path. For example: /a/b/c will return /a/b and /a/b will return /a.
      * 
-     * @param path The path to return the parent of - must be non-null.
+     * @param path
+     *            The path to return the parent of - must be non-null.
      * @return String - parent path.
      */
     private String parentFolder(String path)
@@ -738,7 +739,8 @@ public class GetMethod extends WebDAVMethod
     /**
      * Formats the given size for display in a directory listing
      * 
-     * @param strSize The content size
+     * @param strSize
+     *            The content size
      * @return The formatted size
      */
     private String formatSize(String strSize)

@@ -47,7 +47,8 @@ public interface TestData
 {
     /**
      * A user with ALFRESCO_ADMINISTRATORS role.
-     * <p>"GROUP_ANOTHER_ADMIN_EXISTS" The ANOTHER_ADMIN user has been created.
+     * <p>
+     * "GROUP_ANOTHER_ADMIN_EXISTS" The ANOTHER_ADMIN user has been created.
      */
     public static final String ANOTHER_ADMIN = "another_admin";
 
@@ -79,7 +80,7 @@ public interface TestData
     /**
      * The default record folder title used when creating folders
      */
-    public static  String RECORD_FOLDER_TITLE = "FOLDER TITLE" + getRandomAlphanumeric();
+    public static String RECORD_FOLDER_TITLE = "FOLDER TITLE" + getRandomAlphanumeric();
 
     /**
      * The default electronic record name used when creating electronic records

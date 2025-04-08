@@ -27,6 +27,20 @@ package org.alfresco.repo.usage;
 
 import java.util.Date;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.quartz.Job;
+import org.quartz.JobBuilder;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SimpleScheduleBuilder;
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
@@ -42,23 +56,9 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.quartz.Job;
-import org.quartz.JobBuilder;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.SimpleScheduleBuilder;
-import org.quartz.Trigger;
-import org.quartz.TriggerBuilder;
 
 /**
- * This component monitors the repository usages, issuing warnings and errors
- * as necessary.
+ * This component monitors the repository usages, issuing warnings and errors as necessary.
  * 
  * @author Derek Hulley
  * @since 3.5
@@ -75,9 +75,10 @@ public class RepoUsageMonitor implements RepoUsageComponent.RestrictionObserver
     private RepoUsageComponent repoUsageComponent;
     private JobLockService jobLockService;
     private final QName vetoName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "RepoUsageMonitor");
-    
+
     /**
-     * @param scheduler                 Timed updates
+     * @param scheduler
+     *            Timed updates
      */
     public void setScheduler(Scheduler scheduler)
     {
@@ -85,7 +86,8 @@ public class RepoUsageMonitor implements RepoUsageComponent.RestrictionObserver
     }
 
     /**
-     * @param transactionService        service that tells if the server is read-only or not
+     * @param transactionService
+     *            service that tells if the server is read-only or not
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -100,7 +102,8 @@ public class RepoUsageMonitor implements RepoUsageComponent.RestrictionObserver
     }
 
     /**
-     * @param repoUsageComponent        provides data on usages
+     * @param repoUsageComponent
+     *            provides data on usages
      */
     public void setRepoUsageComponent(RepoUsageComponent repoUsageComponent)
     {
@@ -108,7 +111,8 @@ public class RepoUsageMonitor implements RepoUsageComponent.RestrictionObserver
     }
 
     /**
-     * @param jobLockService            service to prevent duplicate work when updating usages
+     * @param jobLockService
+     *            service to prevent duplicate work when updating usages
      */
     public void setJobLockService(JobLockService jobLockService)
     {
@@ -141,19 +145,18 @@ public class RepoUsageMonitor implements RepoUsageComponent.RestrictionObserver
                 .build();
 
         repoUsageComponent.observeRestrictions(this);
-        
+
         // Unschedule in case it was scheduled in an earlier retry of the transaction
         scheduler.unscheduleJob(trigger.getKey());
         scheduler.scheduleJob(jobDetail, trigger);
     }
-    
+
     /**
      * Performs the physical checking of usages.
      */
     public void checkUsages()
     {
-        final RetryingTransactionCallback<Void> checkWork = new RetryingTransactionCallback<Void>()
-        {
+        final RetryingTransactionCallback<Void> checkWork = new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -164,7 +167,7 @@ public class RepoUsageMonitor implements RepoUsageComponent.RestrictionObserver
                     transactionService.setAllowWrite(true, vetoName);
                     return null;
                 }
-                
+
                 // Update user count, if required
                 if (restrictions.getUsers() != null)
                 {
@@ -175,15 +178,14 @@ public class RepoUsageMonitor implements RepoUsageComponent.RestrictionObserver
                 {
                     repoUsageComponent.updateUsage(UsageType.USAGE_DOCUMENTS);
                 }
-                
+
                 // Same as if restrictions have been changed
                 onChangeRestriction(restrictions);
-                
+
                 return null;
             }
         };
-        RunAsWork<Void> runAs = new RunAsWork<Void>()
-        {
+        RunAsWork<Void> runAs = new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -232,9 +234,9 @@ public class RepoUsageMonitor implements RepoUsageComponent.RestrictionObserver
         {
             logger.debug("Current status is " + status);
         }
-        
+
         status.logMessages(logger);
-        
+
         if (status.getLevel() == RepoUsageLevel.LOCKED_DOWN)
         {
             transactionService.setAllowWrite(false, vetoName);

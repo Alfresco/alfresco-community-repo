@@ -29,33 +29,32 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.version.VersionService;
 
 /**
- * Base Version Model interface containing the common local names (and other constants) 
- * used by the lightWeightVersionStore and version2Store implementations
+ * Base Version Model interface containing the common local names (and other constants) used by the lightWeightVersionStore and version2Store implementations
  *
  * @author Roy Wetherall, janv
  */
 public interface VersionBaseModel
 {
     /**
-    * The store protocol
-    */
+     * The store protocol
+     */
     public static final String STORE_PROTOCOL = VersionService.VERSION_STORE_PROTOCOL;
-    
+
     public static final String PROP_DESCRIPTION = "description";
-    
+
     public static final String PROP_VERSION_DESCRIPTION = "versionDescription";
-    
+
     public static final String PROP_VERSION_LABEL = "versionLabel";
     public static final String PROP_CREATED_DATE = ContentModel.PROP_CREATED.getLocalName();
     public static final String PROP_CREATOR = ContentModel.PROP_CREATOR.getLocalName();
     public static final String PROP_VERSION_TYPE = "versionType";
-    
+
     /**
      * @deprecated since 3.3
      */
     public static final String PROP_VERSION_NUMBER = "versionNumber";
 
-    /** The version store root aspect localname*/
+    /** The version store root aspect localname */
     public static final String ASPECT_LOCALNAME_VERSION_STORE_ROOT = "versionStoreRoot";
 
     /**
@@ -70,7 +69,6 @@ public interface VersionBaseModel
     public static final String PROP_VERSIONED_NODE_ID = "versionedNodeId";
     public static final String ASSOC_LOCALNAME_ROOT_VERSION = "rootVersion";
 
-
     /**
      * Child relationship names
      */
@@ -79,7 +77,7 @@ public interface VersionBaseModel
     public static final String CHILD_VERSIONED_ASSOCS = "versionedAssocs";
 
     // Used by ML service
-    
+
     /**
      * Created version associated to the deleted translations of an mlContainer
      */

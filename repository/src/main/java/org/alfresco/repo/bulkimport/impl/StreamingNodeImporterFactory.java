@@ -47,133 +47,134 @@ import org.alfresco.util.Triple;
  */
 public class StreamingNodeImporterFactory extends AbstractNodeImporterFactory
 {
-	public NodeImporter getNodeImporter(File sourceFolder)
-	{
-		StreamingNodeImporter nodeImporter = new StreamingNodeImporter();
-		nodeImporter.setNodeService(nodeService);
-		nodeImporter.setBehaviourFilter(behaviourFilter);
-		nodeImporter.setFileFolderService(fileFolderService);
-		nodeImporter.setMetadataLoader(metadataLoader);
-		nodeImporter.setVersionService(versionService);
-		nodeImporter.setImportStatus(importStatus);
+    public NodeImporter getNodeImporter(File sourceFolder)
+    {
+        StreamingNodeImporter nodeImporter = new StreamingNodeImporter();
+        nodeImporter.setNodeService(nodeService);
+        nodeImporter.setBehaviourFilter(behaviourFilter);
+        nodeImporter.setFileFolderService(fileFolderService);
+        nodeImporter.setMetadataLoader(metadataLoader);
+        nodeImporter.setVersionService(versionService);
+        nodeImporter.setImportStatus(importStatus);
 
-		nodeImporter.setSourceFolder(sourceFolder);
+        nodeImporter.setSourceFolder(sourceFolder);
 
-		return nodeImporter;
-	}
-	
-	/**
-	 * 
-	 * @since 4.0
-	 *
-	 */
-	private static class StreamingNodeImporter extends AbstractNodeImporter
-	{
-	    private File sourceFolder;
+        return nodeImporter;
+    }
 
-		public void setSourceFolder(File sourceFolder)
-		{
-			this.sourceFolder = sourceFolder;
-		}
-		
-	    protected final void importContentAndMetadata(NodeRef nodeRef, ImportableItem.ContentAndMetadata contentAndMetadata, MetadataLoader.Metadata metadata)
-	    {
-	    	// Write the content of the file
-	    	if (contentAndMetadata.contentFileExists())
-	    	{
-	    		String filename = getFileName(contentAndMetadata.getContentFile());
+    /**
+     * 
+     * @since 4.0
+     *
+     */
+    private static class StreamingNodeImporter extends AbstractNodeImporter
+    {
+        private File sourceFolder;
 
-	    		if (logger.isDebugEnabled())
-				{
-	    			logger.debug("Streaming contents of file '" + filename + "' into node '" + nodeRef.toString() + "'.");
-				}
+        public void setSourceFolder(File sourceFolder)
+        {
+            this.sourceFolder = sourceFolder;
+        }
 
-	    		ContentWriter writer = fileFolderService.getWriter(nodeRef);
-	    		try
-	    		{
-	    		    writer.putContent(Files.newInputStream(contentAndMetadata.getContentFile()));
-	    		}
-	    		catch (IOException e)
-	    		{
-	    		    throw new ContentIOException("Failed to copy content from file: \n" +
-	    		            "   writer: " + writer + "\n" +
-	    		            "   file: " + contentAndMetadata.getContentFile(),
-	    		            e);
-	    		}
-	    	}
-	    	else
-	    	{
-	    		if (logger.isDebugEnabled()) logger.debug("No content to stream into node '" + nodeRef.toString() + "' - importing metadata only.");
-	    	}
+        protected final void importContentAndMetadata(NodeRef nodeRef, ImportableItem.ContentAndMetadata contentAndMetadata, MetadataLoader.Metadata metadata)
+        {
+            // Write the content of the file
+            if (contentAndMetadata.contentFileExists())
+            {
+                String filename = getFileName(contentAndMetadata.getContentFile());
 
-	    	// Attach aspects and set all properties
-	    	importImportableItemMetadata(nodeRef, contentAndMetadata.getContentFile(), metadata);
-	    }
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Streaming contents of file '" + filename + "' into node '" + nodeRef.toString() + "'.");
+                }
 
-	    protected NodeRef importImportableItemImpl(ImportableItem importableItem, BulkImportParameters.ExistingFileMode existingFileMode)
-	    {
-	        NodeRef target = importableItem.getParent().getNodeRef();
-	        if(target == null)
-	        {
-	        	// the parent has not been created yet, retry
-	        	throw new AlfrescoRuntimeException("Bulk importer: target is not known for importable item: " + importableItem.getParent());
-	        }
-	        NodeRef result = null;
-	        MetadataLoader.Metadata metadata = loadMetadata(importableItem.getHeadRevision());
+                ContentWriter writer = fileFolderService.getWriter(nodeRef);
+                try
+                {
+                    writer.putContent(Files.newInputStream(contentAndMetadata.getContentFile()));
+                }
+                catch (IOException e)
+                {
+                    throw new ContentIOException("Failed to copy content from file: \n" +
+                            "   writer: " + writer + "\n" +
+                            "   file: " + contentAndMetadata.getContentFile(),
+                            e);
+                }
+            }
+            else
+            {
+                if (logger.isDebugEnabled())
+                    logger.debug("No content to stream into node '" + nodeRef.toString() + "' - importing metadata only.");
+            }
 
-	        // TODO: we'll get NodeState.REPLACED back from this method (i.e. the node WILL be replaced)
-			// even if we're using ExistingFileMode.ADD_VERSION - we need to do this currently, otherwise
-			// the file would be SKIPPED and various other checks that are only computed if replace is being used,
-			// wouldn't happen.
-			// TODO: sort this out.
-			Triple<NodeRef, Boolean, NodeState> node = createOrFindNode(
-					target,
-					importableItem,
-					existingFileMode,
-					metadata);
-	        boolean isDirectory = node.getSecond() == null ? false : node.getSecond();  // Watch out for NPEs during unboxing!
-	        NodeState nodeState = node.getThird();
-	        
-	        result = node.getFirst();
+            // Attach aspects and set all properties
+            importImportableItemMetadata(nodeRef, contentAndMetadata.getContentFile(), metadata);
+        }
 
-	        if (result != null && nodeState != NodeState.SKIPPED)
-	        {
-	            int numVersionProperties = 0;
+        protected NodeRef importImportableItemImpl(ImportableItem importableItem, BulkImportParameters.ExistingFileMode existingFileMode)
+        {
+            NodeRef target = importableItem.getParent().getNodeRef();
+            if (target == null)
+            {
+                // the parent has not been created yet, retry
+                throw new AlfrescoRuntimeException("Bulk importer: target is not known for importable item: " + importableItem.getParent());
+            }
+            NodeRef result = null;
+            MetadataLoader.Metadata metadata = loadMetadata(importableItem.getHeadRevision());
 
-	            importStatus.incrementImportableItemsRead(importableItem, isDirectory);
+            // TODO: we'll get NodeState.REPLACED back from this method (i.e. the node WILL be replaced)
+            // even if we're using ExistingFileMode.ADD_VERSION - we need to do this currently, otherwise
+            // the file would be SKIPPED and various other checks that are only computed if replace is being used,
+            // wouldn't happen.
+            // TODO: sort this out.
+            Triple<NodeRef, Boolean, NodeState> node = createOrFindNode(
+                    target,
+                    importableItem,
+                    existingFileMode,
+                    metadata);
+            boolean isDirectory = node.getSecond() == null ? false : node.getSecond(); // Watch out for NPEs during unboxing!
+            NodeState nodeState = node.getThird();
 
-	            // Load the item
-	            if (isDirectory)
-	            {
-	                importImportableItemDirectory(result, importableItem, metadata);
-	            }
-	            else
-	            {
-	                numVersionProperties = importImportableItemFile(result, importableItem, metadata, nodeState, existingFileMode);
-	            }
-	            
-	            importStatus.incrementNodesWritten(importableItem, isDirectory, nodeState, metadata.getProperties().size() + 4, numVersionProperties);
-	            importStatus.incrementContentBytesWritten(importableItem, isDirectory, nodeState);
-	        }
-	        else
-	        {
-	        	if(isDirectory)
-	        	{
-	        		skipImportableDirectory(importableItem);
-	        	}
-	        	else
-	        	{
-	        		skipImportableFile(importableItem);
-	        	}
-	        }
+            result = node.getFirst();
 
-	        return(result);
-	    }
+            if (result != null && nodeState != NodeState.SKIPPED)
+            {
+                int numVersionProperties = 0;
 
-		@Override
-		public File getSourceFolder()
-		{
-			return sourceFolder;
-		}
-	}
+                importStatus.incrementImportableItemsRead(importableItem, isDirectory);
+
+                // Load the item
+                if (isDirectory)
+                {
+                    importImportableItemDirectory(result, importableItem, metadata);
+                }
+                else
+                {
+                    numVersionProperties = importImportableItemFile(result, importableItem, metadata, nodeState, existingFileMode);
+                }
+
+                importStatus.incrementNodesWritten(importableItem, isDirectory, nodeState, metadata.getProperties().size() + 4, numVersionProperties);
+                importStatus.incrementContentBytesWritten(importableItem, isDirectory, nodeState);
+            }
+            else
+            {
+                if (isDirectory)
+                {
+                    skipImportableDirectory(importableItem);
+                }
+                else
+                {
+                    skipImportableFile(importableItem);
+                }
+            }
+
+            return (result);
+        }
+
+        @Override
+        public File getSourceFolder()
+        {
+            return sourceFolder;
+        }
+    }
 }

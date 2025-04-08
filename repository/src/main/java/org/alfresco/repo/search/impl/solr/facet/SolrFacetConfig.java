@@ -37,25 +37,22 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyCheck;
+
 /**
- * This class picks up all the loaded properties passed to it and uses a naming
- * convention to isolate the default and custom facets and related values.
+ * This class picks up all the loaded properties passed to it and uses a naming convention to isolate the default and custom facets and related values.
  * <p/>
- * So, if a new facet <b>filter_abc</b> is required for the
- * <b>cm:content.mimetype</b>, then the following needs to be put into a
- * properties file. The search for the additional custom properties file is <b>
- * tomcat/shared/classes/alfresco/extension/solr-facets-config-custom.properties</b>:
+ * So, if a new facet <b>filter_abc</b> is required for the <b>cm:content.mimetype</b>, then the following needs to be put into a properties file. The search for the additional custom properties file is <b> tomcat/shared/classes/alfresco/extension/solr-facets-config-custom.properties</b>:
  * <ul>
  * <li>custom.cm\:content.mimetype.filterID=filter_abc</li>
  * <li>custom.cm\:content.mimetype.displayName=faceted-search.facet-menu.facet.formats</li>
@@ -68,8 +65,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * <li>custom.cm\:content.mimetype.scopedSites=site1,site2,site3</li>
  * <li>custom.cm\:content.mimetype.isEnabled=true</li>
  * </ul>
- * Also, if there is a need to add additional properties, the following needs to be
- * put into a properties file:
+ * Also, if there is a need to add additional properties, the following needs to be put into a properties file:
  * <ul>
  * <li>custom.cm\:content.mimetype<b>.EXTRA-PROP.</b>blockIncludeFacetRequest=true</li>
  * <li>custom.cm\:content.mimetype<b>.EXTRA-PROP.</b>moreProp=additionalInfo</li>
@@ -77,9 +73,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * The inheritance order is strictly defined using property:<br/>
  * <b>${solr_facets.inheritanceHierarchy}</b><br/>
  * The default inheritance orders are:<br/>
- * <b>solr_facets.inheritanceHierarchy=default,custom</b> i.e. the default
- * facet's values are retrieved first and then overlayed with values from the
- * custom facet.
+ * <b>solr_facets.inheritanceHierarchy=default,custom</b> i.e. the default facet's values are retrieved first and then overlayed with values from the custom facet.
  * 
  * @author Jamal Kaabi-Mofrad
  */
@@ -89,10 +83,10 @@ public class SolrFacetConfig extends AbstractLifecycleBean
 
     private static final String KEY_EXTRA_INFO = ".EXTRA-PROP.";
     private static final int KEY_EXTRA_INFO_LENGTH = KEY_EXTRA_INFO.length();
-    
+
     private final Properties rawProperties;
     private final Set<String> propInheritanceOrder;
- 
+
     private Map<String, SolrFacetProperties> defaultFacets;
     private NamespaceService namespaceService;
 
@@ -100,9 +94,9 @@ public class SolrFacetConfig extends AbstractLifecycleBean
     {
         ParameterCheck.mandatory("rawProperties", rawProperties);
         ParameterCheck.mandatory("inheritanceOrder", inheritanceOrder);
-        
+
         this.rawProperties = rawProperties;
-        
+
         String[] order = inheritanceOrder.split(",");
         this.propInheritanceOrder = new LinkedHashSet<>(order.length);
         for (String ord : order)
@@ -115,7 +109,8 @@ public class SolrFacetConfig extends AbstractLifecycleBean
     }
 
     /**
-     * @param namespaceService the namespaceService to set
+     * @param namespaceService
+     *            the namespaceService to set
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -135,9 +130,9 @@ public class SolrFacetConfig extends AbstractLifecycleBean
     protected void onBootstrap(ApplicationEvent event)
     {
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
-        
+
         defaultFacets = ConfigHelper.getFacetPropertiesMap(rawProperties, propInheritanceOrder, namespaceService);
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("All bootstrapped facets: " + defaultFacets);
         }
@@ -152,21 +147,22 @@ public class SolrFacetConfig extends AbstractLifecycleBean
     public static class ConfigHelper
     {
         /**
-         * Convert Java properties into instances of {@link SolrFacetProperties}
-         * .
+         * Convert Java properties into instances of {@link SolrFacetProperties} .
          * 
-         * @param properties Java properties with values defining defaults or custom values
-         * @param inheritanceOrder the overriding order. E.g {default, custom} means, the custom will override the default values
-         * @param namespaceService the Namespace service 
-         * @return Map of {@code SolrFacetProperties} with the
-         *         {@code SolrFacetProperties.filterID} as the key or an empty map if none exists
+         * @param properties
+         *            Java properties with values defining defaults or custom values
+         * @param inheritanceOrder
+         *            the overriding order. E.g {default, custom} means, the custom will override the default values
+         * @param namespaceService
+         *            the Namespace service
+         * @return Map of {@code SolrFacetProperties} with the {@code SolrFacetProperties.filterID} as the key or an empty map if none exists
          */
         public static Map<String, SolrFacetProperties> getFacetPropertiesMap(Properties properties, Set<String> inheritanceOrder, NamespaceService namespaceService)
         {
             Set<String> allPropNames = new HashSet<String>(100);
             Set<String> propOrderControl = new HashSet<String>(2);
             getPropertyAndPropOderControl(properties, allPropNames, propOrderControl);
-            
+
             // Get property inheritance order
             Set<String> inheritance = getInheritanceOrder(inheritanceOrder, propOrderControl);
 
@@ -185,7 +181,7 @@ public class SolrFacetConfig extends AbstractLifecycleBean
             }
 
             Map<String, Set<String>> facetFields = new HashMap<>();
-            for(String key : propValues.keySet())
+            for (String key : propValues.keySet())
             {
                 String facetQName = null;
                 Set<String> extraProp = null;
@@ -235,19 +231,19 @@ public class SolrFacetConfig extends AbstractLifecycleBean
 
                 // Construct the FacetProperty object
                 SolrFacetProperties fp = new SolrFacetProperties.Builder()
-                            .filterID(filterID)
-                            .facetQName(fieldQName)
-                            .displayName(displayName)
-                            .displayControl(displayControl)
-                            .maxFilters(maxFilters)
-                            .hitThreshold(hitThreshold)
-                            .minFilterValueLength(minFilterValueLength)
-                            .sortBy(sortBy)
-                            .scope(scope)
-                            .isEnabled(isEnabled)
-                            .isDefault(true)
-                            .scopedSites(scopedSites)
-                            .customProperties(customProps).build();
+                        .filterID(filterID)
+                        .facetQName(fieldQName)
+                        .displayName(displayName)
+                        .displayControl(displayControl)
+                        .maxFilters(maxFilters)
+                        .hitThreshold(hitThreshold)
+                        .minFilterValueLength(minFilterValueLength)
+                        .sortBy(sortBy)
+                        .scope(scope)
+                        .isEnabled(isEnabled)
+                        .isDefault(true)
+                        .scopedSites(scopedSites)
+                        .customProperties(customProps).build();
 
                 facetProperties.put(filterID, fp);
             }
@@ -288,8 +284,8 @@ public class SolrFacetConfig extends AbstractLifecycleBean
                 }
                 int propKeyLength = propKey.length();
 
-                int propNameLength = (propKeyLength - propOrderControlEndDot) -1; // Length of characters between dots
-                if (propNameLength  < 1)
+                int propNameLength = (propKeyLength - propOrderControlEndDot) - 1; // Length of characters between dots
+                if (propNameLength < 1)
                 {
                     logger.debug("Ignoring property: " + propKey);
                     continue;
@@ -375,7 +371,7 @@ public class SolrFacetConfig extends AbstractLifecycleBean
             // Note that in resolving the QName string here, we expect there to be some facet QNames which are not
             // really QNames. These are SOLR/SearchService 'specials', examples being "SITE" or "TAG".
             // These will be resolved here to a QName with no namespace.
-            QName typeQName =  FacetQNameUtils.createQName( qnameStr, namespaceService);
+            QName typeQName = FacetQNameUtils.createQName(qnameStr, namespaceService);
             if (logger.isDebugEnabled())
             {
                 logger.debug("Resolved facet field [" + qnameStr + "] into [" + typeQName + "]");
@@ -387,9 +383,7 @@ public class SolrFacetConfig extends AbstractLifecycleBean
 
     public static enum ValueName
     {
-        PROP_FILTER_ID("filterID"), PROP_DISPLAY_NAME("displayName"), PROP_MAX_FILTERS("maxFilters"), PROP_HIT_THRESHOLD("hitThreshold"),
-        PROP_MIN_FILTER_VALUE_LENGTH("minFilterValueLength"), PROP_SORTBY("sortBy"), PROP_SCOPE("scope"), PROP_SCOPED_SITES("scopedSites"),
-        PROP_IS_ENABLED("isEnabled"), PROP_DISPLAY_CONTROL("displayControl");
+        PROP_FILTER_ID("filterID"), PROP_DISPLAY_NAME("displayName"), PROP_MAX_FILTERS("maxFilters"), PROP_HIT_THRESHOLD("hitThreshold"), PROP_MIN_FILTER_VALUE_LENGTH("minFilterValueLength"), PROP_SORTBY("sortBy"), PROP_SCOPE("scope"), PROP_SCOPED_SITES("scopedSites"), PROP_IS_ENABLED("isEnabled"), PROP_DISPLAY_CONTROL("displayControl");
 
         private ValueName(String propValueName)
         {

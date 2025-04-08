@@ -64,7 +64,7 @@ public class CMISResultSetRow implements ResultSetRow
     private NodeService nodeService;
 
     private Map<String, NodeRef> nodeRefs;
-    
+
     private Map<NodeRef, CMISNodeInfo> nodeInfos;
 
     private Query query;
@@ -85,31 +85,25 @@ public class CMISResultSetRow implements ResultSetRow
         this.nodeInfos = nodeInfos;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getIndex()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetRow#getIndex() */
     public int getIndex()
     {
         return index;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getResultSet()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetRow#getResultSet() */
     public ResultSet getResultSet()
     {
         return new ResultSetSPIWrapper<CMISResultSetRow, CMISResultSetMetaData>(resultSet);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getScore()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetRow#getScore() */
     public float getScore()
     {
         float count = 0;
@@ -121,51 +115,41 @@ public class CMISResultSetRow implements ResultSetRow
         return overall;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getScore(java.lang.String)
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetRow#getScore(java.lang.String) */
     public float getScore(String selectorName)
     {
         return scores.get(selectorName);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getScores()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetRow#getScores() */
     public Map<String, Float> getScores()
     {
         return scores;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getScore(java.lang.String)
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetRow#getScore(java.lang.String) */
     public NodeRef getNodeRef(String selectorName)
     {
         return nodeRefs.get(selectorName);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getScores()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetRow#getScores() */
     public Map<String, NodeRef> getNodeRefs()
     {
         return nodeRefs;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getValue(java.lang.String)
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetRow#getValue(java.lang.String) */
     public Serializable getValue(String columnName)
     {
         CmisFunctionEvaluationContext context = new CmisFunctionEvaluationContext();
@@ -179,8 +163,8 @@ public class CMISResultSetRow implements ResultSetRow
         {
             if (column.getAlias().equals(columnName))
             {
-                //When an SCORE selector is included, score must be adapted to range 0..1 due to CMIS specification
-                if (column.getFunction()!= null && column.getFunction().getName().equals(Score.NAME)) 
+                // When an SCORE selector is included, score must be adapted to range 0..1 due to CMIS specification
+                if (column.getFunction() != null && column.getFunction().getName().equals(Score.NAME))
                 {
                     return getNormalisedScore();
                 }
@@ -209,7 +193,8 @@ public class CMISResultSetRow implements ResultSetRow
                         return column.getFunction().getValue(column.getFunctionArguments(), context);
                     }
                 }
-            } else
+            }
+            else
             {
                 if (column.getFunction().getName().equals(PropertyAccessor.NAME))
                 {
@@ -227,23 +212,20 @@ public class CMISResultSetRow implements ResultSetRow
         }
         return null;
     }
-    
+
     /**
-     * CMIS Specification states that scoring results must be in a 0..1 range
-     * This function re-adapt the scores when any scoring field or expression is requested by the query. 
-     * It's a safe approach, as includes negative numbers and also paged requests.
+     * CMIS Specification states that scoring results must be in a 0..1 range This function re-adapt the scores when any scoring field or expression is requested by the query. It's a safe approach, as includes negative numbers and also paged requests.
+     * 
      * @return A value between 0 and 1
      */
-    private float getNormalisedScore() 
+    private float getNormalisedScore()
     {
-        return (float) (Math.atan(getScore()) / Math.PI) + 0.5f;  
+        return (float) (Math.atan(getScore()) / Math.PI) + 0.5f;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getValues()
-     */
+     * @see org.alfresco.cmis.search.CMISResultSetRow#getValues() */
     public Map<String, Serializable> getValues()
     {
         LinkedHashMap<String, Serializable> answer = new LinkedHashMap<String, Serializable>();
@@ -270,7 +252,8 @@ public class CMISResultSetRow implements ResultSetRow
         if (nodeRefs.size() == 1)
         {
             return nodeRefs.values().iterator().next();
-        } else if (allNodeRefsEqual(nodeRefs))
+        }
+        else if (allNodeRefsEqual(nodeRefs))
         {
             return nodeRefs.values().iterator().next();
         }
@@ -285,7 +268,8 @@ public class CMISResultSetRow implements ResultSetRow
             if (last == null)
             {
                 last = current;
-            } else
+            }
+            else
             {
                 if (!last.equals(current))
                 {

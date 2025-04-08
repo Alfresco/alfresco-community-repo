@@ -50,13 +50,13 @@ public class AclChangeSetParameters
 
     private String storeProtocol;
     private String storeIdentifier;
-    
+
     private Set<QName> includeNodeTypes;
     private Set<QName> excludeNodeTypes;
-    
+
     private Set<QName> includeAspects;
     private Set<QName> excludeAspects;
-    
+
     public int getMaxResults()
     {
         return maxResults;
@@ -71,7 +71,7 @@ public class AclChangeSetParameters
     {
         return (storeProtocol != null || storeIdentifier != null);
     }
-    
+
     public void setStoreProtocol(String storeProtocol)
     {
         this.storeProtocol = storeProtocol;
@@ -91,7 +91,7 @@ public class AclChangeSetParameters
     {
         return storeIdentifier;
     }
-    
+
     public void setTransactionIds(List<Long> txnIds)
     {
         this.transactionIds = txnIds;
@@ -101,7 +101,7 @@ public class AclChangeSetParameters
     {
         return transactionIds;
     }
-    
+
     public Long getFromTxnId()
     {
         return fromTxnId;

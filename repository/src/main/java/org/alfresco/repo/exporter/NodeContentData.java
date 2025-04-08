@@ -28,7 +28,6 @@ package org.alfresco.repo.exporter;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 
-
 /**
  * ContentData with associated NodeRef
  */
@@ -36,7 +35,7 @@ public class NodeContentData extends ContentData
 {
     private static final long serialVersionUID = -455291250695108108L;
     private NodeRef nodeRef;
-    
+
     /**
      * Construct
      */
@@ -48,7 +47,7 @@ public class NodeContentData extends ContentData
     }
 
     /**
-     * @return  noderef
+     * @return noderef
      */
     public NodeRef getNodeRef()
     {

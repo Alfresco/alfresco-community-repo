@@ -39,18 +39,21 @@ public class RenditionService2Exception extends AlfrescoRuntimeException
     /**
      * Constructs a Rendition Service 2 Exception with the specified message.
      *
-     * @param message   the message string
+     * @param message
+     *            the message string
      */
     public RenditionService2Exception(String message)
     {
         super(message);
-   }
+    }
 
     /**
      * Constructs a Rendition Service Exception 2 with the specified message and source exception.
      *
-     * @param message   the message string
-     * @param source    the source exception
+     * @param message
+     *            the message string
+     * @param source
+     *            the source exception
      */
     public RenditionService2Exception(String message, Throwable source)
     {

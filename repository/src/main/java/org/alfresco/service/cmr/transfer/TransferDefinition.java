@@ -39,10 +39,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * nodes Specifies which node to transfer
  * <p>
- * isSync specifies whether the list of nodes is to be sync'ed.  If sync then the transfer 
- * machinery can determine by the absence of a node or association in the transfer that the missing 
- * nodes should be deleted on the destination.
- * Else with a non sync transfer then the archive node ref is required to remote a node on the destination.
+ * isSync specifies whether the list of nodes is to be sync'ed. If sync then the transfer machinery can determine by the absence of a node or association in the transfer that the missing nodes should be deleted on the destination. Else with a non sync transfer then the archive node ref is required to remote a node on the destination.
  *
  *
  */
@@ -52,30 +49,26 @@ public class TransferDefinition implements Serializable
      * 
      */
     private static final long serialVersionUID = -8497919749300106861L;
-    
+
     // Which nodes to transfer
     private Set<NodeRef> nodes;
 
-    // Which nodes are to be explicitly removed from the target repository 
+    // Which nodes are to be explicitly removed from the target repository
     // (irrespective of their state in the source repository)
     private Set<NodeRef> nodesToRemove;
-    
+
     // Which aspects to exclude
     private Set<QName> excludedAspects;
 
     /**
-     * isSync specifies whether the list of nodes is to be sync'ed.  If sync then the transfer 
-     * machinery can determine by the absence of a node or association in the transfer that the missing 
-     * nodes should be deleted on the destination.
-     * Else with a non sync transfer then the archive node ref is required to remote a node on the destination.
+     * isSync specifies whether the list of nodes is to be sync'ed. If sync then the transfer machinery can determine by the absence of a node or association in the transfer that the missing nodes should be deleted on the destination. Else with a non sync transfer then the archive node ref is required to remote a node on the destination.
      */
     private boolean isSync = false;
-    
+
     /**
      * isReadOnly specifies whether the transferred nodes should be editable on the destination system.
      */
     private boolean isReadOnly = false;
-
 
     /**
      * Set which nodes to transfer
@@ -84,8 +77,8 @@ public class TransferDefinition implements Serializable
     {
         this.nodes = new HashSet<NodeRef>(nodes);
     }
-    
-    public void setNodes(NodeRef...nodes)
+
+    public void setNodes(NodeRef... nodes)
     {
         this.setNodes(Arrays.asList(nodes));
     }
@@ -97,12 +90,14 @@ public class TransferDefinition implements Serializable
     {
         this.nodesToRemove = new HashSet<NodeRef>(nodes);
     }
-    
+
     /**
      * Set nodes that are to be explicitly removed from the the target repository
-     * @param nodes NodeRef...
+     * 
+     * @param nodes
+     *            NodeRef...
      */
-    public void setNodesToRemove(NodeRef...nodes)
+    public void setNodesToRemove(NodeRef... nodes)
     {
         this.setNodesToRemove(Arrays.asList(nodes));
     }
@@ -126,7 +121,8 @@ public class TransferDefinition implements Serializable
     /**
      * Sets which aspects to exclude from transfer
      * 
-     * @param excludedAspects collection of aspects to exclude
+     * @param excludedAspects
+     *            collection of aspects to exclude
      */
     public void setExcludedAspects(Collection<QName> excludedAspects)
     {
@@ -136,7 +132,8 @@ public class TransferDefinition implements Serializable
     /**
      * Sets which aspects to exclude from transfer
      * 
-     * @param excludedAspects aspects to exclude from transfer
+     * @param excludedAspects
+     *            aspects to exclude from transfer
      */
     public void setExcludedAspects(QName... excludedAspects)
     {
@@ -152,30 +149,25 @@ public class TransferDefinition implements Serializable
     {
         return excludedAspects;
     }
-    
+
     /**
-    * isSync specifies whether the list of nodes is to be sync'ed.  If sync then the transfer 
-    * machinery can determine by the absence of a node or association in the transfer that the missing 
-    * nodes should be deleted on the destination.
-    * Else with a non sync transfer then the archive node ref is required to remote a node on the destination.
-    */ 
+     * isSync specifies whether the list of nodes is to be sync'ed. If sync then the transfer machinery can determine by the absence of a node or association in the transfer that the missing nodes should be deleted on the destination. Else with a non sync transfer then the archive node ref is required to remote a node on the destination.
+     */
     public void setSync(boolean isSync)
     {
         this.isSync = isSync;
     }
 
     /**
-     * isSync specifies whether the list of nodes is to be sync'ed.  If sync then the transfer 
-     * machinery can determine by the absence of a node or association in the transfer that missing 
-     * nodes should be deleted on the destination.
-     * Else with a non sync transfer then the archive node ref is required to remote a node on the destination.
+     * isSync specifies whether the list of nodes is to be sync'ed. If sync then the transfer machinery can determine by the absence of a node or association in the transfer that missing nodes should be deleted on the destination. Else with a non sync transfer then the archive node ref is required to remote a node on the destination.
+     * 
      * @return true if the transfer is in "sync" mode.
      */
     public boolean isSync()
     {
         return isSync;
     }
-    
+
     /**
      * isReadOnly specifies whether the transferred nodes should be editable on the destination system.
      */

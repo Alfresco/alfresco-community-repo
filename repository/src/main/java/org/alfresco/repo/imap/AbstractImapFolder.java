@@ -28,17 +28,9 @@ package org.alfresco.repo.imap;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-
 import jakarta.mail.Flags;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.search.SearchTerm;
-
-import org.alfresco.repo.imap.exception.AlfrescoImapFolderException;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.ServiceRegistry;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import com.icegreen.greenmail.foedus.util.MsgRangeFilter;
 import com.icegreen.greenmail.mail.MovingMessage;
@@ -46,10 +38,16 @@ import com.icegreen.greenmail.store.FolderException;
 import com.icegreen.greenmail.store.FolderListener;
 import com.icegreen.greenmail.store.MailFolder;
 import com.icegreen.greenmail.store.SimpleStoredMessage;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.alfresco.repo.imap.exception.AlfrescoImapFolderException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.ServiceRegistry;
 
 /**
- * Implementation of greenmail MailFolder. It represents an Alfresco content folder and handles
- * appendMessage, copyMessage, expunge (delete), getMessages, getMessage and so requests.
+ * Implementation of greenmail MailFolder. It represents an Alfresco content folder and handles appendMessage, copyMessage, expunge (delete), getMessages, getMessage and so requests.
  * 
  * @author Ivan Rybnikov
  */
@@ -62,16 +60,18 @@ public abstract class AbstractImapFolder implements MailFolder
     protected ServiceRegistry serviceRegistry;
     protected static int MAX_RETRIES = 20;
 
-    
     public AbstractImapFolder(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
     }
-    
+
     /**
      * Method that checks mandatory parameter.
-     * @param parameter The parameter instance to check.
-     * @param name The name of the parameter.
+     * 
+     * @param parameter
+     *            The parameter instance to check.
+     * @param name
+     *            The name of the parameter.
      */
     protected void checkParameter(Object parameter, String name)
     {
@@ -81,13 +81,15 @@ public abstract class AbstractImapFolder implements MailFolder
         }
     }
 
-
     /**
      * Appends message to the folder.
      * 
-     * @param message - message.
-     * @param flags - message flags.
-     * @param internalDate - not used. Current date used instead.
+     * @param message
+     *            - message.
+     * @param flags
+     *            - message flags.
+     * @param internalDate
+     *            - not used. Current date used instead.
      * @return long
      */
     public long appendMessage(final MimeMessage message, final Flags flags, final Date internalDate) throws FolderException
@@ -97,22 +99,22 @@ public abstract class AbstractImapFolder implements MailFolder
             throw new FolderException("Can't append message - Permission denied");
         }
 
-        CommandCallback<Long> command = new CommandCallback<Long>()
-        {
+        CommandCallback<Long> command = new CommandCallback<Long>() {
             public Long command() throws Throwable
             {
                 return appendMessageInternal(message, flags, internalDate);
             }
         };
         return command.runFeedback();
-     }
-
+    }
 
     /**
      * Copies message with the given UID to the specified {@link MailFolder}.
      * 
-     * @param uid - UID of the message
-     * @param toFolder - reference to the destination folder.
+     * @param uid
+     *            - UID of the message
+     * @param toFolder
+     *            - reference to the destination folder.
      */
     public long copyMessage(final long uid, final MailFolder toFolder) throws FolderException
     {
@@ -123,8 +125,7 @@ public abstract class AbstractImapFolder implements MailFolder
             throw new FolderException(AlfrescoImapFolderException.PERMISSION_DENIED);
         }
 
-        CommandCallback<Long> command = new CommandCallback<Long>()
-        {
+        CommandCallback<Long> command = new CommandCallback<Long>() {
             public Long command() throws Throwable
             {
                 return copyMessageInternal(uid, toFolder);
@@ -138,8 +139,7 @@ public abstract class AbstractImapFolder implements MailFolder
      */
     public void deleteAllMessages() throws FolderException
     {
-        CommandCallback<Object> command = new CommandCallback<Object>()
-        {
+        CommandCallback<Object> command = new CommandCallback<Object>() {
             public Object command() throws Throwable
             {
                 deleteAllMessagesInternal();
@@ -148,8 +148,6 @@ public abstract class AbstractImapFolder implements MailFolder
         };
         command.runFeedback();
     }
-
-    
 
     /**
      * Deletes messages marked with {@link javax.mail.Flags.Flag#DELETED}. Note that this message deletes all messages with this flag.
@@ -160,8 +158,7 @@ public abstract class AbstractImapFolder implements MailFolder
         {
             throw new FolderException("Can't expunge - Permission denied");
         }
-        CommandCallback<Object> command = new CommandCallback<Object>()
-        {
+        CommandCallback<Object> command = new CommandCallback<Object>() {
             public Object command() throws Throwable
             {
                 expungeInternal();
@@ -180,8 +177,7 @@ public abstract class AbstractImapFolder implements MailFolder
         {
             throw new FolderException("Can't expunge - Permission denied");
         }
-        CommandCallback<Object> command = new CommandCallback<Object>()
-        {
+        CommandCallback<Object> command = new CommandCallback<Object>() {
             public Object command() throws Throwable
             {
                 expungeInternal(uid);
@@ -190,17 +186,17 @@ public abstract class AbstractImapFolder implements MailFolder
         };
         command.runFeedback();
     }
-    
+
     /**
      * Returns message by its UID.
      * 
-     * @param uid - UID of the message.
+     * @param uid
+     *            - UID of the message.
      * @return message.
      */
     public SimpleStoredMessage getMessage(final long uid)
     {
-        CommandCallback<SimpleStoredMessage> command = new CommandCallback<SimpleStoredMessage>()
-        {
+        CommandCallback<SimpleStoredMessage> command = new CommandCallback<SimpleStoredMessage>() {
             public SimpleStoredMessage command() throws Throwable
             {
                 return getMessageInternal(uid);
@@ -208,7 +204,7 @@ public abstract class AbstractImapFolder implements MailFolder
         };
         return command.run();
     }
-    
+
     /**
      * Returns list of all messages in the folder.
      * 
@@ -216,8 +212,7 @@ public abstract class AbstractImapFolder implements MailFolder
      */
     public List<SimpleStoredMessage> getMessages()
     {
-        CommandCallback<List<SimpleStoredMessage>> command = new CommandCallback<List<SimpleStoredMessage>>()
-        {
+        CommandCallback<List<SimpleStoredMessage>> command = new CommandCallback<List<SimpleStoredMessage>>() {
             public List<SimpleStoredMessage> command() throws Throwable
             {
                 return getMessagesInternal();
@@ -229,13 +224,13 @@ public abstract class AbstractImapFolder implements MailFolder
     /**
      * Returns list of messages by filter.
      * 
-     * @param msgRangeFilter - {@link MsgRangeFilter} object representing filter.
+     * @param msgRangeFilter
+     *            - {@link MsgRangeFilter} object representing filter.
      * @return list of filtered messages.
      */
     public List<SimpleStoredMessage> getMessages(final MsgRangeFilter msgRangeFilter)
     {
-        CommandCallback <List<SimpleStoredMessage>> command = new CommandCallback <List<SimpleStoredMessage>>()
-        {
+        CommandCallback<List<SimpleStoredMessage>> command = new CommandCallback<List<SimpleStoredMessage>>() {
             public List<SimpleStoredMessage> command() throws Throwable
             {
                 return getMessagesInternal(msgRangeFilter);
@@ -251,31 +246,31 @@ public abstract class AbstractImapFolder implements MailFolder
      */
     public List<SimpleStoredMessage> getNonDeletedMessages()
     {
-        CommandCallback <List<SimpleStoredMessage>> command = new CommandCallback<List<SimpleStoredMessage>>()
-        {
+        CommandCallback<List<SimpleStoredMessage>> command = new CommandCallback<List<SimpleStoredMessage>>() {
             public List<SimpleStoredMessage> command() throws Throwable
             {
                 return getNonDeletedMessagesInternal();
             }
         };
-        List<SimpleStoredMessage> result = (List<SimpleStoredMessage>)command.run();
+        List<SimpleStoredMessage> result = (List<SimpleStoredMessage>) command.run();
         return result;
     }
 
     /**
-     * Replaces flags for the message with the given UID. If {@code addUid} is set to
-     * {@code true} {@link FolderListener} objects defined for this folder will be notified.
-     * {@code silentListener} can be provided - this listener wouldn't be notified.
+     * Replaces flags for the message with the given UID. If {@code addUid} is set to {@code true} {@link FolderListener} objects defined for this folder will be notified. {@code silentListener} can be provided - this listener wouldn't be notified.
      * 
-     * @param flags - new flags.
-     * @param uid - message UID.
-     * @param silentListener - listener that shouldn't be notified.
-     * @param addUid - defines whether or not listeners be notified.
+     * @param flags
+     *            - new flags.
+     * @param uid
+     *            - message UID.
+     * @param silentListener
+     *            - listener that shouldn't be notified.
+     * @param addUid
+     *            - defines whether or not listeners be notified.
      */
     public void replaceFlags(final Flags flags, final long uid, final FolderListener silentListener, final boolean addUid) throws FolderException
     {
-        CommandCallback<Object> command = new CommandCallback<Object>()
-        {
+        CommandCallback<Object> command = new CommandCallback<Object>() {
             public Object command() throws Throwable
             {
                 replaceFlagsInternal(flags, uid, silentListener, addUid);
@@ -285,17 +280,16 @@ public abstract class AbstractImapFolder implements MailFolder
         command.runFeedback();
     }
 
-    
     /**
      * Searches the mailbox for messages that match the given searching criteria
      * 
-     * @param searchTerm - search term that contains search criteria.
+     * @param searchTerm
+     *            - search term that contains search criteria.
      * @return UIDs of the messages
      */
     public long[] search(final SearchTerm searchTerm)
     {
-        CommandCallback<long[]> command = new CommandCallback<long[]>()
-        {
+        CommandCallback<long[]> command = new CommandCallback<long[]>() {
             public long[] command() throws Throwable
             {
                 return searchInternal(searchTerm);
@@ -305,15 +299,18 @@ public abstract class AbstractImapFolder implements MailFolder
     }
 
     /**
-     * Sets flags for the message with the given UID. If {@code addUid} is set to {@code true}
-     * {@link FolderListener} objects defined for this folder will be notified.
-     * {@code silentListener} can be provided - this listener wouldn't be notified.
+     * Sets flags for the message with the given UID. If {@code addUid} is set to {@code true} {@link FolderListener} objects defined for this folder will be notified. {@code silentListener} can be provided - this listener wouldn't be notified.
      * 
-     * @param flags - new flags.
-     * @param value - flags value.
-     * @param uid - message UID.
-     * @param silentListener - listener that shouldn't be notified.
-     * @param addUid - defines whether or not listeners be notified.
+     * @param flags
+     *            - new flags.
+     * @param value
+     *            - flags value.
+     * @param uid
+     *            - message UID.
+     * @param silentListener
+     *            - listener that shouldn't be notified.
+     * @param addUid
+     *            - defines whether or not listeners be notified.
      */
     public void setFlags(
             final Flags flags,
@@ -323,8 +320,7 @@ public abstract class AbstractImapFolder implements MailFolder
             final boolean addUid)
             throws FolderException
     {
-        CommandCallback<Object> command = new CommandCallback<Object>()
-        {
+        CommandCallback<Object> command = new CommandCallback<Object>() {
             public Object command() throws Throwable
             {
                 setFlagsInternal(flags, value, uid, silentListener, addUid);
@@ -334,8 +330,6 @@ public abstract class AbstractImapFolder implements MailFolder
         command.runFeedback();
     }
 
-
-    
     /**
      * Not supported. Added to implement {@link MailFolder#store(MovingMessage)}.
      */
@@ -352,32 +346,30 @@ public abstract class AbstractImapFolder implements MailFolder
         throw new UnsupportedOperationException("Method store(MimeMessage) is not suppoted.");
     }
 
-    
     /**
      * Adds {@link FolderListener} to the folder.
      * 
-     * @param listener - new listener.
+     * @param listener
+     *            - new listener.
      */
     public void addListener(FolderListener listener)
     {
         listeners.add(listener);
     }
 
-    
-    
     /**
      * Removes {@link FolderListener} from the folder.
      * 
-     * @param listener - Listener to remove.
+     * @param listener
+     *            - Listener to remove.
      */
     public void removeListener(FolderListener listener)
     {
         listeners.remove(listener);
     }
-    
+
     /**
-     * Method is called before the deletion of the folder. Notifies {@link FolderListener} objects with
-     * {@link FolderListener#mailboxDeleted()} method calls.
+     * Method is called before the deletion of the folder. Notifies {@link FolderListener} objects with {@link FolderListener#mailboxDeleted()} method calls.
      */
     public void signalDeletion()
     {
@@ -390,8 +382,7 @@ public abstract class AbstractImapFolder implements MailFolder
             }
         }
     }
-    
-    
+
     protected void notifyFlagUpdate(int msn, Flags flags, Long uidNotification, FolderListener silentListener)
     {
         synchronized (listeners)
@@ -408,13 +399,12 @@ public abstract class AbstractImapFolder implements MailFolder
         }
     }
 
-    
     protected abstract boolean isReadOnly();
 
     protected abstract long appendMessageInternal(MimeMessage message, Flags flags, Date internalDate) throws Exception;
 
     protected abstract long copyMessageInternal(long uid, MailFolder toFolder) throws Exception;
-    
+
     protected abstract void deleteAllMessagesInternal() throws Exception;
 
     protected abstract void expungeInternal() throws Exception;
@@ -424,7 +414,7 @@ public abstract class AbstractImapFolder implements MailFolder
     protected abstract SimpleStoredMessage getMessageInternal(long uid) throws Exception;
 
     protected abstract List<SimpleStoredMessage> getMessagesInternal();
-    
+
     protected abstract List<SimpleStoredMessage> getMessagesInternal(MsgRangeFilter msgRangeFilter);
 
     protected abstract List<SimpleStoredMessage> getNonDeletedMessagesInternal();
@@ -452,8 +442,7 @@ public abstract class AbstractImapFolder implements MailFolder
                 txHelper.setMaxRetries(MAX_RETRIES);
                 txHelper.setReadOnly(readOnly);
                 T result = txHelper.doInTransaction(
-                        new RetryingTransactionCallback<T>()
-                        {
+                        new RetryingTransactionCallback<T>() {
                             public T execute() throws Throwable
                             {
                                 return command();
@@ -464,12 +453,12 @@ public abstract class AbstractImapFolder implements MailFolder
             catch (Exception e)
             {
                 Throwable cause = e.getCause();
-                
+
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Exception is thrown : " + e + "\nCause : " + cause);
                 }
-                
+
                 String message;
                 if (cause != null)
                 {
@@ -487,15 +476,14 @@ public abstract class AbstractImapFolder implements MailFolder
         {
             return this.run(false);
         }
-        
+
         public T run(boolean readOnly)
         {
             RetryingTransactionHelper txHelper = serviceRegistry.getTransactionService().getRetryingTransactionHelper();
             txHelper.setMaxRetries(MAX_RETRIES);
             txHelper.setReadOnly(readOnly);
             T result = txHelper.doInTransaction(
-                    new RetryingTransactionCallback<T>()
-                    {
+                    new RetryingTransactionCallback<T>() {
                         public T execute() throws Throwable
                         {
                             return command();

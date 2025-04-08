@@ -39,6 +39,6 @@ import org.alfresco.repo.forms.FormData.FieldData;
 public interface FormPersister<T>
 {
     void addField(FieldData fieldData);
-    
+
     T persist();
 }

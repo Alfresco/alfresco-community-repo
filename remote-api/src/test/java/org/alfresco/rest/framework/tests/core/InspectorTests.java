@@ -39,6 +39,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Test;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.api.model.Comment;
 import org.alfresco.rest.api.nodes.NodeCommentsRelation;
 import org.alfresco.rest.framework.Api;
@@ -78,10 +83,6 @@ import org.alfresco.rest.framework.tests.api.mocks3.SlimGoat;
 import org.alfresco.rest.framework.tools.ResponseWriter;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.util.Pair;
-import org.junit.Test;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.http.HttpMethod;
 
 /**
  * Looks at resources to see what they can do
@@ -95,7 +96,7 @@ public class InspectorTests
     public void testInspectEntity()
     {
         List<ResourceMetadata> metainfo = ResourceInspector.inspect(SheepEntityResource.class);
-        assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
+        assertTrue("Must be one ResourceMetadata", metainfo.size() == 1);
         ResourceMetadata metaData = metainfo.get(0);
         assertNotNull(metaData);
         assertNotNull("SheepEntityResource supports GET", metaData.getOperation(HttpMethod.GET));
@@ -106,21 +107,21 @@ public class InspectorTests
         assertEquals("Sheep ReadALL should return ACCEPTED", Status.STATUS_ACCEPTED, op.getSuccessStatus());
         op = metaData.getOperation(HttpMethod.PUT);
         assertTrue("SheepEntityResource must support Sheep", Sheep.class.equals(metaData.getObjectType(op)));
-        
+
         metainfo = ResourceInspector.inspect(SheepNoActionEntityResource.class);
-        assertTrue("SheepNoActionEntityResource has no actions.",metainfo.isEmpty());
+        assertTrue("SheepNoActionEntityResource has no actions.", metainfo.isEmpty());
 
         metainfo = ResourceInspector.inspect(GoatEntityResource.class);
-        assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
+        assertTrue("Must be one ResourceMetadata", metainfo.size() == 1);
         metaData = metainfo.get(0);
         assertNotNull(metaData);
         assertNotNull("GoatEntityResource supports GET", metaData.getOperation(HttpMethod.GET));
         op = metaData.getOperation(HttpMethod.GET);
         List<ResourceParameter> params = op.getParameters();
         assertTrue("readById method should have 1 url param", params.size() == 1);
-        
+
         metainfo = ResourceInspector.inspect(FlockEntityResource.class);
-        assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
+        assertTrue("Must be one ResourceMetadata", metainfo.size() == 1);
         metaData = metainfo.get(0);
         assertNotNull(metaData);
         assertNotNull("FlockEntityResource supports GET", metaData.getOperation(HttpMethod.GET));
@@ -128,7 +129,7 @@ public class InspectorTests
         assertNotNull("FlockEntityResource supports DELETE", metaData.getOperation(HttpMethod.DELETE));
         assertNull("FlockEntityResource does not support POST", metaData.getOperation(HttpMethod.POST));
         metainfo = ResourceInspector.inspect(MultiPartTestEntityResource.class);
-        assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
+        assertTrue("Must be one ResourceMetadata", metainfo.size() == 1);
         metaData = metainfo.get(0);
         assertNotNull(metaData);
         assertNotNull("MultiPartTestEntityResource support POST", metaData.getOperation(HttpMethod.POST));
@@ -145,7 +146,7 @@ public class InspectorTests
     public void testInspectRelationship()
     {
         List<ResourceMetadata> metainfo = ResourceInspector.inspect(SheepBlackSheepResource.class);
-        assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
+        assertTrue("Must be one ResourceMetadata", metainfo.size() == 1);
         ResourceMetadata metaData = metainfo.get(0);
         assertNotNull(metaData);
         assertNotNull("SheepBlackSheepResource supports GET", metaData.getOperation(HttpMethod.GET));
@@ -164,19 +165,19 @@ public class InspectorTests
         assertNotNull(params);
         for (ResourceParameter resourceParameter : params)
         {
-           if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(resourceParameter.getParamType()))
-           {
-               assertFalse(resourceParameter.isAllowMultiple());  //set to not allow multiple
-           }
+            if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(resourceParameter.getParamType()))
+            {
+                assertFalse(resourceParameter.isAllowMultiple()); // set to not allow multiple
+            }
         }
         assertNotNull("SheepBlackSheepResource supports DELETE", metaData.getOperation(HttpMethod.DELETE));
         op = metaData.getOperation(HttpMethod.DELETE);
         assertEquals("SheepBlackSheepResource should return STATUS_CONFLICT", Status.STATUS_CONFLICT, op.getSuccessStatus());
         params = op.getParameters();
         assertTrue("DELETE method on a relations should have 2 url params.", params.size() == 2);
-        
+
         metainfo = ResourceInspector.inspect(MultiPartTestRelationshipResource.class);
-        assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
+        assertTrue("Must be one ResourceMetadata", metainfo.size() == 1);
         metaData = metainfo.get(0);
         assertNotNull(metaData);
         assertNotNull("MultiPartTestRelationshipResource support POST", metaData.getOperation(HttpMethod.POST));
@@ -192,29 +193,29 @@ public class InspectorTests
     {
         Api api = ResourceInspector.inspectApi(SheepBlackSheepResource.class);
         assertNotNull(api);
-        assertEquals(Api.SCOPE.PRIVATE,api.getScope());
-        assertEquals(1,api.getVersion());
-        
+        assertEquals(Api.SCOPE.PRIVATE, api.getScope());
+        assertEquals(1, api.getVersion());
+
         api = ResourceInspector.inspectApi(String.class);
         assertNull(api);
-        
+
         api = ResourceInspector.inspectApi(NodeCommentsRelation.class);
         assertNotNull(api);
-        assertEquals(Api.SCOPE.PUBLIC,api.getScope());
-        assertEquals(1,api.getVersion());
+        assertEquals(Api.SCOPE.PUBLIC, api.getScope());
+        assertEquals(1, api.getVersion());
     }
-    
+
     @Test
     public void testNodesCommentsRelation()
     {
         List<ResourceMetadata> metainfo = ResourceInspector.inspect(NodeCommentsRelation.class);
-        assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
+        assertTrue("Must be one ResourceMetadata", metainfo.size() == 1);
         ResourceMetadata metaData = metainfo.get(0);
         assertNotNull(metaData);
         ResourceOperation op = metaData.getOperation(HttpMethod.POST);
         assertTrue("NodeCommentsRelation must support Comment", Comment.class.equals(metaData.getObjectType(op)));
     }
-    
+
     @Test
     public void testUniqueIdAnnotation()
     {
@@ -224,18 +225,18 @@ public class InspectorTests
         uniqueId = ResourceInspector.findUniqueId(new Farmer("345"));
         assertNotNull(uniqueId);
         assertTrue("345".equals(uniqueId));
-        
-        //inherited classes are ok (with overidden unique id method)
+
+        // inherited classes are ok (with overidden unique id method)
         uniqueId = ResourceInspector.findUniqueId(new FarmersSon("567"));
         assertNotNull(uniqueId);
         assertTrue("567".equals(uniqueId));
-        
-        //inherited classes are ok (with overidden unique id method but @UniqueId annotation not specified)
+
+        // inherited classes are ok (with overidden unique id method but @UniqueId annotation not specified)
         uniqueId = ResourceInspector.findUniqueId(new FarmersGrandson("12"));
         assertNotNull(uniqueId);
         assertTrue("12".equals(uniqueId));
-        
-        //More than 1 annotation should throw IllegalArgumentException
+
+        // More than 1 annotation should throw IllegalArgumentException
         try
         {
             uniqueId = ResourceInspector.findUniqueId(new FarmersDaughter("21"));
@@ -243,78 +244,78 @@ public class InspectorTests
         }
         catch (IllegalArgumentException error)
         {
-            //this is correct
+            // this is correct
         }
 
     }
-    
+
     @Test
     public void testEmbeddedAnnotation()
     {
-        Map<String,Pair<String,Method>> embeds = ResourceInspector.findEmbeddedResources(Farmer.class);
+        Map<String, Pair<String, Method>> embeds = ResourceInspector.findEmbeddedResources(Farmer.class);
         assertNotNull(embeds);
         assertTrue(embeds.size() == 2);
         assertTrue("sheep".equals(embeds.get("sheep").getFirst()));
         assertTrue("goat".equals(embeds.get("goat").getFirst()));
-        
-        //inherited annotations on classes are ok.
+
+        // inherited annotations on classes are ok.
         embeds = ResourceInspector.findEmbeddedResources(FarmersSon.class);
         assertNotNull(embeds);
         assertTrue(embeds.size() == 2);
         assertTrue("sheep".equals(embeds.get("sheep").getFirst()));
         assertTrue("goat".equals(embeds.get("goat").getFirst()));
-        
-        //inherited annotations on classes are ok, with another added embedded
+
+        // inherited annotations on classes are ok, with another added embedded
         embeds = ResourceInspector.findEmbeddedResources(FarmersDaughter.class);
         assertNotNull(embeds);
         assertTrue(embeds.size() == 3);
         assertTrue("sheep".equals(embeds.get("sheep").getFirst()));
         assertTrue("goat".equals(embeds.get("goat").getFirst()));
         assertTrue("grass".equals(embeds.get("specialgrass").getFirst()));
-        
-        //inherited annotations on classes are ok, 
-        //Sheep is overridden but no annotation specified
-        //Goat is overridden and new annotation key is specified (THIS IS NOT RECOMMENDED)
+
+        // inherited annotations on classes are ok,
+        // Sheep is overridden but no annotation specified
+        // Goat is overridden and new annotation key is specified (THIS IS NOT RECOMMENDED)
         embeds = ResourceInspector.findEmbeddedResources(FarmersGrandson.class);
         assertNotNull(embeds);
         assertTrue(embeds.size() == 2);
         assertTrue("sheep".equals(embeds.get("sheep").getFirst()));
         assertTrue("goat".equals(embeds.get("grandgoat").getFirst()));
-        
+
         embeds = ResourceInspector.findEmbeddedResources(Sheep.class);
         assertNotNull(embeds);
         assertTrue("Sheep has no embedded entities", embeds.isEmpty());
-        
+
         embeds = ResourceInspector.findEmbeddedResources(Grass.class);
         assertNotNull(embeds);
         assertTrue("Grass has no embedded entities", embeds.isEmpty());
-        
+
         embeds = ResourceInspector.findEmbeddedResources(SlimGoat.class);
         assertNotNull(embeds);
         assertTrue("SlimGoat has no embedded entities", embeds.isEmpty());
     }
-    
+
     @Test
     public void testWebDeletedAnnotationOnMethods()
     {
-       Method aMethod = ResourceInspector.findMethod(EntityResourceAction.Read.class, SheepEntityResourceWithDeletedMethods.class);
-       assertNotNull("This method is untouched so should be found.",aMethod);
-       assertTrue("readAll".equals(aMethod.getName()));
-       
-       aMethod = ResourceInspector.findMethod(EntityResourceAction.ReadById.class, SheepEntityResourceWithDeletedMethods.class);
-       assertNotNull("This method is overriden but not deleted so should be found.",aMethod);
-       assertTrue("readById".equals(aMethod.getName()));
-       
-       aMethod = ResourceInspector.findMethod(EntityResourceAction.Update.class, SheepEntityResourceWithDeletedMethods.class);
-       assertTrue("Update method has been marketed as deleted.",ResourceInspector.isDeleted(aMethod));
-       
-       aMethod = ResourceInspector.findMethod(EntityResourceAction.Delete.class, SheepEntityResourceWithDeletedMethods.class);
-       assertTrue("Delete method has been marketed as deleted.",ResourceInspector.isDeleted(aMethod));
-       
-       aMethod = ResourceInspector.findMethod(EntityResourceAction.DeleteSet.class, SheepEntityResourceWithDeletedMethods.class);
-       assertTrue("Delete method has been marketed as deleted.",ResourceInspector.isDeleted(aMethod));
+        Method aMethod = ResourceInspector.findMethod(EntityResourceAction.Read.class, SheepEntityResourceWithDeletedMethods.class);
+        assertNotNull("This method is untouched so should be found.", aMethod);
+        assertTrue("readAll".equals(aMethod.getName()));
+
+        aMethod = ResourceInspector.findMethod(EntityResourceAction.ReadById.class, SheepEntityResourceWithDeletedMethods.class);
+        assertNotNull("This method is overriden but not deleted so should be found.", aMethod);
+        assertTrue("readById".equals(aMethod.getName()));
+
+        aMethod = ResourceInspector.findMethod(EntityResourceAction.Update.class, SheepEntityResourceWithDeletedMethods.class);
+        assertTrue("Update method has been marketed as deleted.", ResourceInspector.isDeleted(aMethod));
+
+        aMethod = ResourceInspector.findMethod(EntityResourceAction.Delete.class, SheepEntityResourceWithDeletedMethods.class);
+        assertTrue("Delete method has been marketed as deleted.", ResourceInspector.isDeleted(aMethod));
+
+        aMethod = ResourceInspector.findMethod(EntityResourceAction.DeleteSet.class, SheepEntityResourceWithDeletedMethods.class);
+        assertTrue("Delete method has been marketed as deleted.", ResourceInspector.isDeleted(aMethod));
     }
-    
+
     @Test
     public void testInspectOperation()
     {
@@ -327,37 +328,38 @@ public class InspectorTests
         assertTrue("".equals(op.getDescription()));
         assertNotNull(op.getParameters());
         assertTrue(op.getParameters().size() == 7);
-        
+
         for (ResourceParameter aParam : op.getParameters())
-        { 
+        {
             assertNotNull(aParam.getName());
             assertNotNull(aParam.getDescription());
             assertNotNull(aParam.getTitle());
-            
-            switch (aParam.getParamType()) {
-                case QUERY_STRING:
-                    if (("requiredParam".equals(aParam.getName())))
-                    {
-                        assertTrue(aParam.isRequired());
-                    }
-                    break;
-                case URL_PATH:
-                    assertTrue(("siteId".equals(aParam.getName())));
-                    assertFalse(aParam.isRequired());
-                    break;
-                case HTTP_BODY_OBJECT:
-                    assertTrue(("body".equals(aParam.getName())));
-                    assertFalse(aParam.isRequired());
-                    break;
-                case HTTP_HEADER:
-                    assertTrue(("who".equals(aParam.getName())));
-                    assertFalse(aParam.isRequired());
-                    
+
+            switch (aParam.getParamType())
+            {
+            case QUERY_STRING:
+                if (("requiredParam".equals(aParam.getName())))
+                {
+                    assertTrue(aParam.isRequired());
+                }
+                break;
+            case URL_PATH:
+                assertTrue(("siteId".equals(aParam.getName())));
+                assertFalse(aParam.isRequired());
+                break;
+            case HTTP_BODY_OBJECT:
+                assertTrue(("body".equals(aParam.getName())));
+                assertFalse(aParam.isRequired());
+                break;
+            case HTTP_HEADER:
+                assertTrue(("who".equals(aParam.getName())));
+                assertFalse(aParam.isRequired());
+
             }
 
         }
-        
-        //No @WebApiDescription or param (in future WebApiDescription will be mandatory)
+
+        // No @WebApiDescription or param (in future WebApiDescription will be mandatory)
         aMethod = ResourceInspector.findMethod(EntityResourceAction.ReadById.class, SheepEntityResource.class);
         op = ResourceInspector.inspectOperation(SheepEntityResource.class, aMethod, HttpMethod.GET);
         assertNotNull(op);
@@ -375,12 +377,12 @@ public class InspectorTests
         assertNotNull(singleParam.getTitle());
         assertNotNull(singleParam.getName());
         assertTrue(singleParam.isRequired());
-        
+
         aMethod = ResourceInspector.findMethod(BinaryResourceAction.Read.class, FlockEntityResource.class);
         op = ResourceInspector.inspectOperation(FlockEntityResource.class, aMethod, HttpMethod.GET);
         assertNotNull(op);
         assertTrue(op.getTitle().startsWith("Reads a photo as a Stream"));
-          
+
         aMethod = ResourceInspector.findMethod(BinaryResourceAction.Delete.class, FlockEntityResource.class);
         op = ResourceInspector.inspectOperation(FlockEntityResource.class, aMethod, HttpMethod.DELETE);
         assertNotNull(op);
@@ -413,9 +415,9 @@ public class InspectorTests
         Method aMethod = ResourceInspector.findMethod(BinaryResourceAction.Update.class, FlockEntityResource.class);
         ResourceOperation op = ResourceInspector.inspectOperation(FlockEntityResource.class, aMethod, HttpMethod.PUT);
         assertNotNull(op);
-        List<ResourceParameter> params  = op.getParameters();
-        assertTrue(params.size()==2);
-        for (ResourceParameter param:params)
+        List<ResourceParameter> params = op.getParameters();
+        assertTrue(params.size() == 2);
+        for (ResourceParameter param : params)
         {
             if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(param.getParamType()))
             {
@@ -426,9 +428,9 @@ public class InspectorTests
         aMethod = ResourceInspector.findMethod(RelationshipResourceAction.Create.class, SheepBlackSheepResource.class);
         op = ResourceInspector.inspectOperation(SheepBlackSheepResource.class, aMethod, HttpMethod.POST);
         assertNotNull(op);
-        params  = op.getParameters();
-        assertTrue(params.size()==2);
-        for (ResourceParameter param:params)
+        params = op.getParameters();
+        assertTrue(params.size() == 2);
+        for (ResourceParameter param : params)
         {
             if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(param.getParamType()))
             {
@@ -439,9 +441,9 @@ public class InspectorTests
         aMethod = ResourceInspector.findMethod(EntityResourceAction.Update.class, SheepEntityResourceWithDeletedMethods.class);
         op = ResourceInspector.inspectOperation(SheepEntityResourceWithDeletedMethods.class, aMethod, HttpMethod.POST);
         assertNotNull(op);
-        params  = op.getParameters();
+        params = op.getParameters();
         assertNotNull(params);
-        for (ResourceParameter param:params)
+        for (ResourceParameter param : params)
         {
             if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(param.getParamType()))
             {
@@ -457,7 +459,7 @@ public class InspectorTests
         List<ResourceMetadata> metainfo = new ArrayList<ResourceMetadata>();
 
         GrassEntityResource grassEntityResource = new GrassEntityResource();
-        ResourceInspector.inspectOperations(api, GrassEntityResource.class,"-root-", metainfo);
+        ResourceInspector.inspectOperations(api, GrassEntityResource.class, "-root-", metainfo);
         assertEquals(3, metainfo.size());
 
         for (ResourceMetadata resourceMetadata : metainfo)
@@ -470,62 +472,60 @@ public class InspectorTests
 
             switch (resourceMetadata.getUniqueId())
             {
-                case "/-root-/{id}/grow":
-                    assertNotNull("GrassEntityResource supports POST", resourceMetadata.getOperation(HttpMethod.POST));
-                    assertNull("GrassEntityResource does not support DELETE", resourceMetadata.getOperation(HttpMethod.DELETE));
-                    ResourceOperation op = resourceMetadata.getOperation(HttpMethod.POST);
-                    assertEquals("grow should return ACCEPTED", Status.STATUS_ACCEPTED, op.getSuccessStatus());
-                    Class paramType = resourceMetadata.getObjectType(op);
-                    Object paramObj = paramType.newInstance();
-                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", paramObj, Params.valueOf("notUsed", null, mock(WebScriptRequest.class)), wr);
-                    assertEquals("Growing well",result);
-                    assertFalse(operationResourceMetaData.isNoAuth(null));
-                    break;
-                case "/-root-/{id}/cut":
-                    assertNotNull("GrassEntityResource supports POST", resourceMetadata.getOperation(HttpMethod.POST));
-                    assertNull("GrassEntityResource does not support GET", resourceMetadata.getOperation(HttpMethod.GET));
-                    op = resourceMetadata.getOperation(HttpMethod.POST);
-                    assertNull(resourceMetadata.getObjectType(op));
-                    assertEquals("cut should return ACCEPTED", Status.STATUS_NOT_IMPLEMENTED, op.getSuccessStatus());
-                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", null, Params.valueOf("notUsed", null, mock(WebScriptRequest.class)), wr);
-                    assertEquals("All done",result);
-                    assertFalse(operationResourceMetaData.isNoAuth(null));
-                    break;
-                case "/-root-/{id}/cut-noAuth":
-                    assertNotNull("GrassEntityResource supports POST", resourceMetadata.getOperation(HttpMethod.POST));
-                    op = resourceMetadata.getOperation(HttpMethod.POST);
-                    assertNull(resourceMetadata.getObjectType(op));
-                    assertEquals("cut should return ACCEPTED", Status.STATUS_NOT_IMPLEMENTED, op.getSuccessStatus());
-                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", null, Params.valueOf("notUsed", null, mock(WebScriptRequest.class)), wr);
-                    assertEquals("All done without Auth",result);
-                    assertTrue(operationResourceMetaData.isNoAuth(null));
-                    break;
-                default:
-                    fail("Invalid action information.");
+            case "/-root-/{id}/grow":
+                assertNotNull("GrassEntityResource supports POST", resourceMetadata.getOperation(HttpMethod.POST));
+                assertNull("GrassEntityResource does not support DELETE", resourceMetadata.getOperation(HttpMethod.DELETE));
+                ResourceOperation op = resourceMetadata.getOperation(HttpMethod.POST);
+                assertEquals("grow should return ACCEPTED", Status.STATUS_ACCEPTED, op.getSuccessStatus());
+                Class paramType = resourceMetadata.getObjectType(op);
+                Object paramObj = paramType.newInstance();
+                result = (String) ResourceInspectorUtil.invokeMethod(actionMethod, grassEntityResource, "xyz", paramObj, Params.valueOf("notUsed", null, mock(WebScriptRequest.class)), wr);
+                assertEquals("Growing well", result);
+                assertFalse(operationResourceMetaData.isNoAuth(null));
+                break;
+            case "/-root-/{id}/cut":
+                assertNotNull("GrassEntityResource supports POST", resourceMetadata.getOperation(HttpMethod.POST));
+                assertNull("GrassEntityResource does not support GET", resourceMetadata.getOperation(HttpMethod.GET));
+                op = resourceMetadata.getOperation(HttpMethod.POST);
+                assertNull(resourceMetadata.getObjectType(op));
+                assertEquals("cut should return ACCEPTED", Status.STATUS_NOT_IMPLEMENTED, op.getSuccessStatus());
+                result = (String) ResourceInspectorUtil.invokeMethod(actionMethod, grassEntityResource, "xyz", null, Params.valueOf("notUsed", null, mock(WebScriptRequest.class)), wr);
+                assertEquals("All done", result);
+                assertFalse(operationResourceMetaData.isNoAuth(null));
+                break;
+            case "/-root-/{id}/cut-noAuth":
+                assertNotNull("GrassEntityResource supports POST", resourceMetadata.getOperation(HttpMethod.POST));
+                op = resourceMetadata.getOperation(HttpMethod.POST);
+                assertNull(resourceMetadata.getObjectType(op));
+                assertEquals("cut should return ACCEPTED", Status.STATUS_NOT_IMPLEMENTED, op.getSuccessStatus());
+                result = (String) ResourceInspectorUtil.invokeMethod(actionMethod, grassEntityResource, "xyz", null, Params.valueOf("notUsed", null, mock(WebScriptRequest.class)), wr);
+                assertEquals("All done without Auth", result);
+                assertTrue(operationResourceMetaData.isNoAuth(null));
+                break;
+            default:
+                fail("Invalid action information.");
             }
 
         }
     }
 
-
-
     @Test
     public void testInspectRelationshipProperties()
     {
         List<ResourceMetadata> metainfo = ResourceInspector.inspect(GoatRelationshipResource.class);
-        assertTrue(metainfo.size()==2);
+        assertTrue(metainfo.size() == 2);
         for (ResourceMetadata resourceMetadata : metainfo)
         {
             switch (resourceMetadata.getUniqueId())
             {
-                case "/goat/{entityId}/herd":
-                    assertNotNull("GoatRelationshipResource supports GET", resourceMetadata.getOperation(HttpMethod.GET));
-                    break;
-                case "/goat/{entityId}/herd/{id}/content":
-                    assertNotNull("GoatRelationshipResource supports GET", resourceMetadata.getOperation(HttpMethod.GET));
-                    break;
-                default:
-                    fail("Invalid information.");
+            case "/goat/{entityId}/herd":
+                assertNotNull("GoatRelationshipResource supports GET", resourceMetadata.getOperation(HttpMethod.GET));
+                break;
+            case "/goat/{entityId}/herd/{id}/content":
+                assertNotNull("GoatRelationshipResource supports GET", resourceMetadata.getOperation(HttpMethod.GET));
+                break;
+            default:
+                fail("Invalid information.");
             }
         }
     }
@@ -533,45 +533,45 @@ public class InspectorTests
     @Test
     public void testInspectAddressedProperties()
     {
-        
+
         Api api = Api.valueOf("alfrescomock", "private", "1");
         List<ResourceMetadata> metainfo = new ArrayList<ResourceMetadata>();
         ResourceInspector.inspectAddressedProperties(api, FlockEntityResource.class, "myroot", metainfo);
-        assertTrue(metainfo.size()==1);
+        assertTrue(metainfo.size() == 1);
         ResourceMetadata metaData = metainfo.get(0);
-        assertEquals("/myroot/{id}/photo",metaData.getUniqueId());
-        assertTrue(metaData.getOperations().size()==3);
+        assertEquals("/myroot/{id}/photo", metaData.getUniqueId());
+        assertTrue(metaData.getOperations().size() == 3);
         assertNotNull("FlockEntityResource supports GET", metaData.getOperation(HttpMethod.GET));
         assertNotNull("FlockEntityResource supports PUT", metaData.getOperation(HttpMethod.PUT));
         assertNotNull("FlockEntityResource supports DELETE", metaData.getOperation(HttpMethod.DELETE));
-        
+
         metainfo.clear();
         ResourceInspector.inspectAddressedProperties(api, FlocketEntityResource.class, "myroot", metainfo);
-        assertTrue(metainfo.size()==3);
+        assertTrue(metainfo.size() == 3);
         for (ResourceMetadata resourceMetadata : metainfo)
         {
-            //If this code is running on a Java 7 or above then please use the switch statement instead of an if.
-//            switch (resourceMetadata.getUniqueId())
-//            {
-//                case "/myroot/photo":
-//                    assertTrue("FlocketEntityResource supports GET", resourcemetaData.getOperation(HttpMethod.GET));
-//                    assertTrue("FlocketEntityResource supports PUT", resourcemetaData.getOperation(HttpMethod.PUT));
-//                    assertTrue("FlocketEntityResource supports DELETE", resourcemetaData.getOperation(HttpMethod.DELETE));
-//                    break;
-//                case "/myroot/album":
-//                    assertTrue("FlocketEntityResource supports GET", resourcemetaData.getOperation(HttpMethod.GET));
-//                    assertTrue("FlocketEntityResource supports PUT", resourcemetaData.getOperation(HttpMethod.PUT));
-//                    assertTrue("FlocketEntityResource does not support DELETE", !resourcemetaData.getOperation(HttpMethod.DELETE));
-//                    break;
-//                case "/myroot/madeUpProp":
-//                    assertTrue("FlocketEntityResource supports GET", resourcemetaData.getOperation(HttpMethod.GET));
-//                    assertTrue("FlocketEntityResource does not supports PUT", !resourcemetaData.getOperation(HttpMethod.PUT));
-//                    assertTrue("FlocketEntityResource does not support DELETE", !resourcemetaData.getOperation(HttpMethod.DELETE));
-//                    break;
-//                default:
-//                    fail("Invalid address property information.");
-//            }
-          
+            // If this code is running on a Java 7 or above then please use the switch statement instead of an if.
+            // switch (resourceMetadata.getUniqueId())
+            // {
+            // case "/myroot/photo":
+            // assertTrue("FlocketEntityResource supports GET", resourcemetaData.getOperation(HttpMethod.GET));
+            // assertTrue("FlocketEntityResource supports PUT", resourcemetaData.getOperation(HttpMethod.PUT));
+            // assertTrue("FlocketEntityResource supports DELETE", resourcemetaData.getOperation(HttpMethod.DELETE));
+            // break;
+            // case "/myroot/album":
+            // assertTrue("FlocketEntityResource supports GET", resourcemetaData.getOperation(HttpMethod.GET));
+            // assertTrue("FlocketEntityResource supports PUT", resourcemetaData.getOperation(HttpMethod.PUT));
+            // assertTrue("FlocketEntityResource does not support DELETE", !resourcemetaData.getOperation(HttpMethod.DELETE));
+            // break;
+            // case "/myroot/madeUpProp":
+            // assertTrue("FlocketEntityResource supports GET", resourcemetaData.getOperation(HttpMethod.GET));
+            // assertTrue("FlocketEntityResource does not supports PUT", !resourcemetaData.getOperation(HttpMethod.PUT));
+            // assertTrue("FlocketEntityResource does not support DELETE", !resourcemetaData.getOperation(HttpMethod.DELETE));
+            // break;
+            // default:
+            // fail("Invalid address property information.");
+            // }
+
             if ("/myroot/{id}/photo".equals(resourceMetadata.getUniqueId()))
             {
                 assertNotNull("FlocketEntityResource supports GET", resourceMetadata.getOperation(HttpMethod.GET));
@@ -600,24 +600,24 @@ public class InspectorTests
                     }
                 }
             }
-   
+
         }
     }
-    
+
     @Test
     public void testWebDeletedAnnotationOnClass()
     {
         List<ResourceMetadata> metainfo = ResourceInspector.inspect(GrassEntityResourceNowDeleted.class);
-        assertTrue("Must be at least one ResourceMetadata",metainfo.size()>0);
+        assertTrue("Must be at least one ResourceMetadata", metainfo.size() > 0);
         ResourceMetadata metaData = metainfo.get(0);
         assertNotNull(metaData);
         assertNull("GrassEntityResourceNowDeleted all methods deleted", metaData.getOperation(HttpMethod.GET));
         assertNull("GrassEntityResourceNowDeleted all methods deleted", metaData.getOperation(HttpMethod.PUT));
         assertNull("GrassEntityResourceNowDeleted all methods deleted", metaData.getOperation(HttpMethod.DELETE));
         assertNull("GrassEntityResourceNowDeleted all methods deleted", metaData.getOperation(HttpMethod.POST));
-        
+
         metainfo = ResourceInspector.inspect(SheepBlackSheepResourceIsNoMore.class);
-        assertTrue("Must be at least one ResourceMetadata",metainfo.size()>0);
+        assertTrue("Must be at least one ResourceMetadata", metainfo.size() > 0);
         metaData = metainfo.get(0);
         assertNotNull(metaData);
         assertNull("SheepBlackSheepResourceIsNoMore all methods deleted", metaData.getOperation(HttpMethod.GET));
@@ -630,16 +630,16 @@ public class InspectorTests
     @Test
     public void testValidSuccessCode()
     {
-        //Test defaults
-        assertEquals(Status.STATUS_OK,ResourceInspector.validSuccessCode(HttpMethod.GET, ResourceOperation.UNSET_STATUS));
-        assertEquals(Status.STATUS_CREATED,ResourceInspector.validSuccessCode(HttpMethod.POST, ResourceOperation.UNSET_STATUS));
-        assertEquals(Status.STATUS_OK,ResourceInspector.validSuccessCode(HttpMethod.PUT, ResourceOperation.UNSET_STATUS));
-        assertEquals(Status.STATUS_NO_CONTENT,ResourceInspector.validSuccessCode(HttpMethod.DELETE, ResourceOperation.UNSET_STATUS));
+        // Test defaults
+        assertEquals(Status.STATUS_OK, ResourceInspector.validSuccessCode(HttpMethod.GET, ResourceOperation.UNSET_STATUS));
+        assertEquals(Status.STATUS_CREATED, ResourceInspector.validSuccessCode(HttpMethod.POST, ResourceOperation.UNSET_STATUS));
+        assertEquals(Status.STATUS_OK, ResourceInspector.validSuccessCode(HttpMethod.PUT, ResourceOperation.UNSET_STATUS));
+        assertEquals(Status.STATUS_NO_CONTENT, ResourceInspector.validSuccessCode(HttpMethod.DELETE, ResourceOperation.UNSET_STATUS));
 
-        //Test custom values
-        assertEquals(Status.STATUS_ACCEPTED,ResourceInspector.validSuccessCode(HttpMethod.GET, Status.STATUS_ACCEPTED));
-        assertEquals(Status.STATUS_FOUND,ResourceInspector.validSuccessCode(HttpMethod.POST, Status.STATUS_FOUND));
-        assertEquals(Status.STATUS_ACCEPTED,ResourceInspector.validSuccessCode(HttpMethod.PUT, Status.STATUS_ACCEPTED));
-        assertEquals(Status.STATUS_NOT_MODIFIED,ResourceInspector.validSuccessCode(HttpMethod.DELETE, Status.STATUS_NOT_MODIFIED));
+        // Test custom values
+        assertEquals(Status.STATUS_ACCEPTED, ResourceInspector.validSuccessCode(HttpMethod.GET, Status.STATUS_ACCEPTED));
+        assertEquals(Status.STATUS_FOUND, ResourceInspector.validSuccessCode(HttpMethod.POST, Status.STATUS_FOUND));
+        assertEquals(Status.STATUS_ACCEPTED, ResourceInspector.validSuccessCode(HttpMethod.PUT, Status.STATUS_ACCEPTED));
+        assertEquals(Status.STATUS_NOT_MODIFIED, ResourceInspector.validSuccessCode(HttpMethod.DELETE, Status.STATUS_NOT_MODIFIED));
     }
 }

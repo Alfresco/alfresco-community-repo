@@ -40,11 +40,11 @@ public class CannedQueryTest extends TestCase
 {
     private static final String QUERY_TEST_ONE = "test.query.one";
     private static final String QUERY_TEST_TWO = "test.query.two";
-    
+
     private static final List<String> RESULTS_ONE;
     private static final List<Long> RESULTS_TWO;
     private static final Set<Object> ANTI_RESULTS;
-    
+
     static
     {
         RESULTS_ONE = new ArrayList<String>(10);
@@ -61,11 +61,11 @@ public class CannedQueryTest extends TestCase
         ANTI_RESULTS.add("ONE_5");
         ANTI_RESULTS.add(Long.valueOf(5));
     }
-    
+
     @SuppressWarnings("rawtypes")
     private NamedObjectRegistry<CannedQueryFactory> namedQueryFactoryRegistry;
-    
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public void setUp() throws Exception
     {
@@ -85,8 +85,8 @@ public class CannedQueryTest extends TestCase
         namedQueryFactoryTwo.setRegistry(namedQueryFactoryRegistry);
         namedQueryFactoryTwo.afterPropertiesSet();
     }
-    
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void testRegistry() throws Exception
     {
         CannedQueryFactory<String> one = namedQueryFactoryRegistry.getNamedObject(QUERY_TEST_ONE);
@@ -107,7 +107,7 @@ public class CannedQueryTest extends TestCase
             // Expected
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     public void testQueryAllResults() throws Exception
     {
@@ -142,7 +142,7 @@ public class CannedQueryTest extends TestCase
         assertEquals("No sorting was specified in the parameters", "ONE_0", qrOne.getPages().get(0).get(0));
         assertFalse("Should NOT have any more pages/items", qrOne.hasMoreItems());
     }
-    
+
     @SuppressWarnings("unchecked")
     public void testQueryMaxResults() throws Exception
     {
@@ -150,7 +150,7 @@ public class CannedQueryTest extends TestCase
         CannedQueryFactory<String> qfOne = namedQueryFactoryRegistry.getNamedObject(QUERY_TEST_ONE);
         CannedQuery<String> qOne = qfOne.getCannedQuery(null, 0, 9, null);
         CannedQueryResults<String> qrOne = qOne.execute();
-        
+
         // Get the paged result count
         int pagedResultCount = qrOne.getPagedResultCount();
         assertEquals("Incorrect number of results", 9, pagedResultCount);
@@ -161,7 +161,7 @@ public class CannedQueryTest extends TestCase
         assertEquals("No sorting was specified in the parameters", "ONE_9", qrOne.getPages().get(0).get(8));
         assertFalse("Should have more pages/items", qrOne.hasMoreItems());
     }
-    
+
     @SuppressWarnings("unchecked")
     public void testQueryPagedResults() throws Exception
     {
@@ -179,7 +179,7 @@ public class CannedQueryTest extends TestCase
         assertEquals("Incorrect results on page", 5, pages.get(0).size());
         assertEquals("Incorrect results on page", 4, pages.get(1).size());
         assertFalse("Should NOT have any more pages/items", qrOne.hasMoreItems());
-        
+
         // Skip some results and use different page sizes
         qPageDetails = new CannedQueryPageDetails(2, 3, 1, 3);
         params = new CannedQueryParameters(null, qPageDetails, null);
@@ -194,7 +194,7 @@ public class CannedQueryTest extends TestCase
         assertEquals("Incorrect results on page", 3, pages.get(1).size());
         assertEquals("Incorrect results on page", 1, pages.get(2).size());
         assertFalse("Should NOT have any more pages/items", qrOne.hasMoreItems());
-        
+
         // Skip some results and return less pages
         qPageDetails = new CannedQueryPageDetails(2, 3, 1, 2);
         params = new CannedQueryParameters(null, qPageDetails, null);
@@ -209,7 +209,7 @@ public class CannedQueryTest extends TestCase
         assertEquals("Incorrect results on page", 3, pages.get(1).size());
         assertTrue("Should have more pages/items", qrOne.hasMoreItems());
     }
-    
+
     @SuppressWarnings("unchecked")
     public void testQuerySortedResults() throws Exception
     {
@@ -225,7 +225,7 @@ public class CannedQueryTest extends TestCase
         assertEquals("Expected inverse sorting", "ONE_0", qrOne.getPages().get(0).get(8));
         assertFalse("Should NOT have any more pages/items", qrOne.hasMoreItems());
     }
-    
+
     @SuppressWarnings("unchecked")
     public void testQueryPermissionCheckedResults() throws Exception
     {
@@ -246,7 +246,7 @@ public class CannedQueryTest extends TestCase
         assertEquals("Incorrect result order", "ONE_9", qrOne.getPages().get(0).get(8));
         assertFalse("Should NOT have any more pages/items", qrOne.hasMoreItems());
     }
-    
+
     @SuppressWarnings("unchecked")
     public void testQueryPermissionCheckedPagedTotalCount() throws Exception
     {
@@ -259,16 +259,17 @@ public class CannedQueryTest extends TestCase
         CannedQueryResults<String> qrOne = qOne.execute();
         // Check pages
         assertEquals("Incorrect number of total results",
-                new Pair<Integer, Integer>(9,9), qrOne.getTotalResultCount()); // Pre-paging
-        assertEquals("Incorrect number of paged results", 1, qrOne.getPagedResultCount());             // Skipped 5
-        assertEquals("Incorrect result order", "ONE_3", qrOne.getPages().get(0).get(0));               // Order reversed
+                new Pair<Integer, Integer>(9, 9), qrOne.getTotalResultCount()); // Pre-paging
+        assertEquals("Incorrect number of paged results", 1, qrOne.getPagedResultCount()); // Skipped 5
+        assertEquals("Incorrect result order", "ONE_3", qrOne.getPages().get(0).get(0)); // Order reversed
         assertTrue("Should have more pages/items", qrOne.hasMoreItems());
     }
-    
+
     /**
      * Test factory to generate "queries" that just return a list of <tt>String</tt>s.
      *
-     * @param <T>           the type of the results
+     * @param <T>
+     *            the type of the results
      * 
      * @author Derek Hulley
      * @since 4.0
@@ -276,11 +277,12 @@ public class CannedQueryTest extends TestCase
     private static class TestCannedQueryFactory<T> extends AbstractCannedQueryFactory<T>
     {
         private final List<T> results;
+
         private TestCannedQueryFactory(List<T> results)
         {
             this.results = results;
         }
-        
+
         @Override
         public CannedQuery<T> getCannedQuery(CannedQueryParameters parameters)
         {
@@ -292,7 +294,8 @@ public class CannedQueryTest extends TestCase
     /**
      * Test query that just returns values passed in
      *
-     * @param <T>           the type of the results
+     * @param <T>
+     *            the type of the results
      * 
      * @author Derek Hulley
      * @since 4.0
@@ -301,6 +304,7 @@ public class CannedQueryTest extends TestCase
     {
         private final List<T> results;
         private final Set<Object> antiResults;
+
         private TestCannedQuery(
                 CannedQueryParameters params,
                 String queryExecutionId, List<T> results, Set<Object> antiResults)
@@ -309,7 +313,7 @@ public class CannedQueryTest extends TestCase
             this.results = results;
             this.antiResults = antiResults;
         }
-        
+
         @Override
         protected List<T> queryAndFilter(CannedQueryParameters parameters)
         {
@@ -345,7 +349,7 @@ public class CannedQueryTest extends TestCase
         protected List<T> applyPostQueryPermissions(List<T> results, int requestedCount)
         {
             boolean cutoffAllowed = (getParameters().getTotalResultCountMax() == 0);
-            
+
             final List<T> ret = new ArrayList<T>(results.size());
             for (T t : results)
             {
@@ -359,7 +363,7 @@ public class CannedQueryTest extends TestCase
                     break;
                 }
             }
-            
+
             return ret;
         }
     }

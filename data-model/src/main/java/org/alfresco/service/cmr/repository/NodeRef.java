@@ -34,8 +34,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.api.AlfrescoPublicApi;
 import org.apache.commons.logging.Log;
+
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Reference to a node
@@ -62,7 +63,7 @@ public final class NodeRef implements EntityRef, Serializable
     private static final long serialVersionUID = 3760844584074227768L;
     private static final String URI_FILLER = "/";
     private static final Pattern nodeRefPattern = Pattern.compile(".+://.+/.+");
-    
+
     private final StoreRef storeRef;
     private final String id;
 
@@ -74,12 +75,14 @@ public final class NodeRef implements EntityRef, Serializable
     {
         this(new StoreRef(protocol, identifier), id);
     }
-    
+
     /**
      * Construct a Node Reference from a Store Reference and Node Id
      * 
-     * @param storeRef store reference
-     * @param id the manually assigned identifier of the node
+     * @param storeRef
+     *            store reference
+     * @param id
+     *            the manually assigned identifier of the node
      */
     public NodeRef(StoreRef storeRef, String id)
     {
@@ -101,19 +104,23 @@ public final class NodeRef implements EntityRef, Serializable
      * <p>
      * The string representation of a Node Reference is as follows:
      * </p>
-     * <pre><storeref>/<nodeId></pre>
      * 
-     * @param nodeRef the string representation of a node ref
+     * <pre>
+     * <storeref>/<nodeId>
+     * </pre>
+     * 
+     * @param nodeRef
+     *            the string representation of a node ref
      */
     public NodeRef(String nodeRef)
     {
         int lastForwardSlash = nodeRef.lastIndexOf('/');
-        if(lastForwardSlash == -1)
+        if (lastForwardSlash == -1)
         {
             throw new MalformedNodeRefException("Invalid node ref - does not contain forward slash: " + nodeRef);
         }
         this.storeRef = new StoreRef(nodeRef.substring(0, lastForwardSlash));
-        this.id = nodeRef.substring(lastForwardSlash+1);
+        this.id = nodeRef.substring(lastForwardSlash + 1);
     }
 
     @Override
@@ -145,9 +152,9 @@ public final class NodeRef implements EntityRef, Serializable
             return false;
         }
     }
-    
+
     /**
-     * Hashes on ID alone.  As the number of copies of a particular node will be minimal, this is acceptable
+     * Hashes on ID alone. As the number of copies of a particular node will be minimal, this is acceptable
      */
     @Override
     public int hashCode()
@@ -174,35 +181,40 @@ public final class NodeRef implements EntityRef, Serializable
     /**
      * Determine if passed string conforms to the pattern of a node reference
      * 
-     * @param nodeRef  the node reference as a string
-     * @return  true => it matches the pattern of a node reference
+     * @param nodeRef
+     *            the node reference as a string
+     * @return true => it matches the pattern of a node reference
      */
     public static boolean isNodeRef(String nodeRef)
     {
-    	Matcher matcher = nodeRefPattern.matcher(nodeRef);
-    	return matcher.matches();
+        Matcher matcher = nodeRefPattern.matcher(nodeRef);
+        return matcher.matches();
     }
-    
+
     /**
      * Converts a {@link String} containing a comma-separated list of {@link NodeRef} Ids into NodeRefs.
-     * @param values the {@link String} of {@link NodeRef} ids.
+     * 
+     * @param values
+     *            the {@link String} of {@link NodeRef} ids.
      * @return A {@link List} of {@link NodeRef NodeRefs}.
      */
     public static List<NodeRef> getNodeRefs(String values)
     {
         return getNodeRefs(values, null);
     }
-    
+
     /**
-     * Converts a {@link String} containing a comma-separated list of {@link NodeRef} Ids into NodeRefs.
-     * If a <code>logger</code> is supplied then invalid ids are logged as warnings.
-     * @param values the {@link String} of {@link NodeRef} ids.
-     * @param logger Log
+     * Converts a {@link String} containing a comma-separated list of {@link NodeRef} Ids into NodeRefs. If a <code>logger</code> is supplied then invalid ids are logged as warnings.
+     * 
+     * @param values
+     *            the {@link String} of {@link NodeRef} ids.
+     * @param logger
+     *            Log
      * @return A {@link List} of {@link NodeRef NodeRefs}.
      */
     public static List<NodeRef> getNodeRefs(String values, Log logger)
     {
-        if(values==null || values.length()==0)
+        if (values == null || values.length() == 0)
             return Collections.emptyList();
         String[] nodeRefIds = values.split(",");
         List<NodeRef> nodeRefs = new ArrayList<NodeRef>(nodeRefIds.length);
@@ -214,7 +226,7 @@ public final class NodeRef implements EntityRef, Serializable
                 NodeRef nodeRef = new NodeRef(nodeRefId);
                 nodeRefs.add(nodeRef);
             }
-            else if (logger!=null)
+            else if (logger != null)
             {
                 logNodeRefError(nodeRefId, logger);
             }
@@ -232,7 +244,7 @@ public final class NodeRef implements EntityRef, Serializable
             logger.warn(msg.toString());
         }
     }
-    
+
     /**
      * Helper class to convey the status of a <b>node</b>.
      * 
@@ -245,7 +257,7 @@ public final class NodeRef implements EntityRef, Serializable
         private final String changeTxnId;
         private final Long dbTxnId;
         private final boolean deleted;
-        
+
         public Status(Long dbId, NodeRef nodeRef, String changeTxnId, Long dbTxnId, boolean deleted)
         {
             this.dbId = dbId;
@@ -254,6 +266,7 @@ public final class NodeRef implements EntityRef, Serializable
             this.dbTxnId = dbTxnId;
             this.deleted = deleted;
         }
+
         /**
          * Return the database ID for the node
          */
@@ -261,6 +274,7 @@ public final class NodeRef implements EntityRef, Serializable
         {
             return dbId;
         }
+
         /**
          * @return Returns the NodeRef that to which this status applies
          */
@@ -268,15 +282,17 @@ public final class NodeRef implements EntityRef, Serializable
         {
             return nodeRef;
         }
+
         /**
          * @return Returns the ID of the last transaction to change the node
          * 
-         * @deprecated  This will be removed when we have switched to SOLR tracking only
+         * @deprecated This will be removed when we have switched to SOLR tracking only
          */
         public String getChangeTxnId()
         {
             return changeTxnId;
         }
+
         /**
          * @return Returns the db ID of the last transaction to change the node
          */
@@ -284,6 +300,7 @@ public final class NodeRef implements EntityRef, Serializable
         {
             return dbTxnId;
         }
+
         /**
          * @return Returns true if the node has been deleted, otherwise false
          */
@@ -291,20 +308,20 @@ public final class NodeRef implements EntityRef, Serializable
         {
             return deleted;
         }
-        
+
         // debug display string
         @Override
         public String toString()
         {
             StringBuilder sb = new StringBuilder(50);
-            
+
             sb.append("Status[")
-              .append("id=").append(dbId)
-              .append("changeTxnId=").append(changeTxnId)
-              .append(", dbTxnId=").append(dbTxnId)
-              .append(", deleted=").append(deleted)
-              .append("]");
-            
+                    .append("id=").append(dbId)
+                    .append("changeTxnId=").append(changeTxnId)
+                    .append(", dbTxnId=").append(dbTxnId)
+                    .append(", deleted=").append(deleted)
+                    .append("]");
+
             return sb.toString();
         }
     }

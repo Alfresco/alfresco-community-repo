@@ -41,17 +41,14 @@ public interface ActionDefinition extends ParameterizedItemDefinition
     /**
      * Gets a list of the types that this action item is applicable for
      * 
-     * @return  set of types never <tt>null</tt>
+     * @return set of types never <tt>null</tt>
      */
     public Set<QName> getApplicableTypes();
-    
+
     /**
-     * Get whether the basic action definition supports action tracking
-     * or not.  This can be overridden for each {@link Action#getTrackStatus() action}
-     * but if not, this value is used.  Defaults to <tt>false</tt>.
+     * Get whether the basic action definition supports action tracking or not. This can be overridden for each {@link Action#getTrackStatus() action} but if not, this value is used. Defaults to <tt>false</tt>.
      * 
-     * @return      <tt>true</tt> to track action execution status or <tt>false</tt> (default)
-     *              to do no action tracking
+     * @return <tt>true</tt> to track action execution status or <tt>false</tt> (default) to do no action tracking
      * 
      * @since 3.4.1
      */

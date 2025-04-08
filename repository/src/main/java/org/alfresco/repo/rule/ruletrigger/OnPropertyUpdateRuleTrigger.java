@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -45,64 +48,65 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * On propety update trigger
  * 
  * @author Roy Wetherall
  */
-public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase 
-                                        implements NodeServicePolicies.OnUpdatePropertiesPolicy
+public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
+        implements NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     /**
      * The logger
      */
     private static Log logger = LogFactory.getLog(OnPropertyUpdateRuleTrigger.class);
-    
+
     /** True trigger on new content, false otherwise */
     private boolean onNewContent = false;
-    
+
     /** Should we consider zero byte content to be the same as no content? */
     private boolean ignoreEmptyContent = true;
 
     /** True trigger parent rules, false otherwise */
     private boolean triggerParentRules = true;
-    
+
     /** Runtime rule service */
     private RuntimeRuleService runtimeRuleService;
 
-   /**
-    * If set to true the trigger will fire on new content, otherwise it will fire on content update
-    * 
-    * @param onNewContent  indicates whether to fire on content create or update
-    */
-   public void setOnNewContent(boolean onNewContent)
-   {
-       this.onNewContent = onNewContent;
-   }
+    /**
+     * If set to true the trigger will fire on new content, otherwise it will fire on content update
+     * 
+     * @param onNewContent
+     *            indicates whether to fire on content create or update
+     */
+    public void setOnNewContent(boolean onNewContent)
+    {
+        this.onNewContent = onNewContent;
+    }
 
     /**
      * If set to true, then we consider zero byte content to be equivalent to no content.
      * 
-     * @param ignoreEmptyContent boolean
+     * @param ignoreEmptyContent
+     *            boolean
      */
     public void setIgnoreEmptyContent(boolean ignoreEmptyContent)
     {
         this.ignoreEmptyContent = ignoreEmptyContent;
     }
 
-   /**
+    /**
      * Indicates whether the parent rules should be triggered or the rules on the node itself
      * 
-     * @param triggerParentRules    true trigger parent rules, false otherwise
+     * @param triggerParentRules
+     *            true trigger parent rules, false otherwise
      */
     public void setTriggerParentRules(boolean triggerParentRules)
     {
         this.triggerParentRules = triggerParentRules;
     }
-    
+
     /**
      * Set the rule service
      */
@@ -111,15 +115,13 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
         this.runtimeRuleService = runtimeRuleService;
     }
 
-    /*
-     * @see org.alfresco.repo.rule.ruletrigger.RuleTrigger#registerRuleTrigger()
-     */
+    /* @see org.alfresco.repo.rule.ruletrigger.RuleTrigger#registerRuleTrigger() */
     public void registerRuleTrigger()
     {
         // Bind behaviour
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
-                this, 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
+                this,
                 new JavaBehaviour(this, "onUpdateProperties"));
     }
 
@@ -128,7 +130,7 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
         if (newContentOnly && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
         {
             return false;
-        }        
+        }
 
         Set<QName> keys = new HashSet<QName>(after.keySet());
         keys.addAll(before.keySet());
@@ -165,7 +167,7 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
                     if (afterValue != null)
                     {
                         nonNullContentProperties = true;
-                    }                    
+                    }
                     if (this.ignoreEmptyContent)
                     {
                         ContentData beforeContent = toContentData(before.get(name));
@@ -190,11 +192,11 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
                     {
                         if (beforeValue == null)
                         {
-                            newContentProperties = true;                            
+                            newContentProperties = true;
                         }
                         else
                         {
-                            nonNewModifiedContentProperties = true;                            
+                            nonNewModifiedContentProperties = true;
                         }
                     }
                 }
@@ -207,17 +209,16 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
 
         if (newContentOnly)
         {
-            return (newNode && !nonNullContentProperties ) || newContentProperties;
+            return (newNode && !nonNullContentProperties) || newContentProperties;
         }
         else
         {
             return modifiedNonContentProperties || nonNewModifiedContentProperties;
         }
     }
-    
+
     /**
-     * ALF-17483: It's possible that even for a single-valued contentdata property, its definition may have been changed
-     * and the previous persisted value is multi-valued, so let's be careful about converting to ContentData.
+     * ALF-17483: It's possible that even for a single-valued contentdata property, its definition may have been changed and the previous persisted value is multi-valued, so let's be careful about converting to ContentData.
      * 
      * @param object
      *            property value to convert
@@ -259,7 +260,6 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
             {
                 logger.debug("Receiving property update for node created in transaction: " + nodeRef);
             }
-            
 
             // A rule has already been fired for this new node, but now that we are aware of content properties, we may
             // want to withhold it until later
@@ -291,10 +291,10 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
         {
             // Only try and trigger the rules if a non protected property has been modified
             if (!wasCreatedInTxn &&
-            	before.size() != 0 &&  // ALF-4846: Do not trigger for newly created nodes	
-            	havePropertiesBeenModified(nodeRef, before, after, false, this.onNewContent))
+                    before.size() != 0 && // ALF-4846: Do not trigger for newly created nodes
+                    havePropertiesBeenModified(nodeRef, before, after, false, this.onNewContent))
             {
-                // Keep track of name changes explicitly.  This prevents the later association change from
+                // Keep track of name changes explicitly. This prevents the later association change from
                 // triggering 'inbound' rules
                 if (!EqualsHelper.nullSafeEquals(before.get(ContentModel.PROP_NAME), after.get(ContentModel.PROP_NAME)))
                 {
@@ -302,19 +302,20 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
                     Set<NodeRef> renamedNodeRefSet = TransactionalResourceHelper.getSet(RULE_TRIGGER_RENAMED_NODES);
                     renamedNodeRefSet.add(nodeRef);
                 }
-                
+
                 triggerRules(nodeRef);
             }
         }
     }
 
     /**
-     * @param nodeRef NodeRef
+     * @param nodeRef
+     *            NodeRef
      */
     private void triggerRules(NodeRef nodeRef)
     {
         if (triggerParentRules == true)
-        {            
+        {
             List<ChildAssociationRef> parentsAssocRefs = this.nodeService.getParentAssocs(nodeRef);
             for (ChildAssociationRef parentAssocRef : parentsAssocRefs)
             {
@@ -323,7 +324,7 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
                 {
                     logger.debug(
                             "OnPropertyUpdate rule triggered (parent); " +
-                    	    "nodeRef=" + parentAssocRef.getParentRef());
+                                    "nodeRef=" + parentAssocRef.getParentRef());
                 }
             }
         }

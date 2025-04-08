@@ -1,5 +1,11 @@
 package org.alfresco.cmis;
 
+import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FileModel;
@@ -10,12 +16,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisUnauthorizedException;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
 
 public class GetChildrenTests extends CmisTest
 {
@@ -44,42 +44,42 @@ public class GetChildrenTests extends CmisTest
         subFolder = FolderModel.getRandomFolderModel();
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.SANITY, description = "Get children from valid folder")
-    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.SANITY, description = "Get children from valid folder")
+    @Test(groups = {TestGroup.SANITY, TestGroup.CMIS})
     public void getChildrenFromValidFolder() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFolder(testFolder).assertThat().existsInRepo()
-            .and().usingResource(testFolder)
+                .createFolder(testFolder).assertThat().existsInRepo()
+                .and().usingResource(testFolder)
                 .createFile(testFile)
                 .createFile(secondFile)
                 .createFolder(subFolder)
-            .then().usingResource(testFolder).assertThat().hasChildren(testFile, secondFile, subFolder)
+                .then().usingResource(testFolder).assertThat().hasChildren(testFile, secondFile, subFolder)
                 .assertThat().hasFiles(testFile, secondFile)
                 .assertThat().hasFolders(subFolder);
     }
-    
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION, 
+
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Fails to get children from folder that was previously deleted")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS} , expectedExceptions = CmisObjectNotFoundException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisObjectNotFoundException.class)
     public void getChildrenFromDeletedFolder() throws Exception
     {
         /* @Category(IntermittentlyFailingTests.class) ACS-959 Intermittent failure. @Category not supported by TAS tests. */
         cmisApi.authenticateUser(testUser).usingSite(testSite)
-            .createFolder(testFolder)
-            .and().usingResource(testFolder)
+                .createFolder(testFolder)
+                .and().usingResource(testFolder)
                 .createFile(testFile)
                 .createFile(secondFile)
                 .createFolder(subFolder)
-            .then().usingResource(testFolder)
+                .then().usingResource(testFolder)
                 .assertThat().hasChildren(testFile, secondFile, subFolder)
-            .and().usingResource(testFolder).refreshResource().and().deleteFolderTree()
-            .then().usingResource(testFolder).assertThat().hasChildren(testFile, secondFile, subFolder);
+                .and().usingResource(testFolder).refreshResource().and().deleteFolderTree()
+                .then().usingResource(testFolder).assertThat().hasChildren(testFile, secondFile, subFolder);
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator can get children for a folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteCollaboratorCanGetChildrenFromValidFolderCreatedBySelf() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).usingSite(testSite)
@@ -93,9 +93,9 @@ public class GetChildrenTests extends CmisTest
                 .assertThat().hasFolders(subFolder);
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator can get children for a folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteCollaboratorCanGetChildrenFromValidFolderCreatedByManager() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite)
@@ -105,16 +105,15 @@ public class GetChildrenTests extends CmisTest
                 .createFile(secondFile)
                 .createFolder(subFolder);
 
-
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
                 .usingResource(testFolder).assertThat().hasChildren(testFile, secondFile, subFolder)
                 .assertThat().hasFiles(testFile, secondFile)
                 .assertThat().hasFolders(subFolder);
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor can get children for a folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteContributorCanGetChildrenFromValidFolderCreatedBySelf() throws Exception
     {
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).usingSite(testSite)
@@ -128,9 +127,9 @@ public class GetChildrenTests extends CmisTest
                 .assertThat().hasFolders(subFolder);
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor can get children for a folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteContributorCanGetChildrenFromValidFolderCreatedByManager() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite)
@@ -140,16 +139,15 @@ public class GetChildrenTests extends CmisTest
                 .createFile(secondFile)
                 .createFolder(subFolder);
 
-
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
                 .usingResource(testFolder).assertThat().hasChildren(testFile, secondFile, subFolder)
                 .assertThat().hasFiles(testFile, secondFile)
                 .assertThat().hasFolders(subFolder);
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify site consumer can get children for a folder")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS })
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteConsumerCanGetChildrenFromValidFolder() throws Exception
     {
         cmisApi.authenticateUser(testUser).usingSite(testSite)
@@ -159,16 +157,15 @@ public class GetChildrenTests extends CmisTest
                 .createFile(secondFile)
                 .createFolder(subFolder);
 
-
         cmisApi.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
                 .usingResource(testFolder).assertThat().hasChildren(testFile, secondFile, subFolder)
-                    .assertThat().hasFiles(testFile, secondFile)
-                    .assertThat().hasFolders(subFolder);
+                .assertThat().hasFiles(testFile, secondFile)
+                .assertThat().hasFolders(subFolder);
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify non site member cannot get children for a folder from a private site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotGetChildrenFromValidFolderFromAPrivateSite() throws Exception
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -184,9 +181,9 @@ public class GetChildrenTests extends CmisTest
                 .usingResource(testFolder).assertThat().hasChildren(testFile, secondFile, subFolder);
     }
 
-    @TestRail(section = { "cmis-api" }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {"cmis-api"}, executionType = ExecutionType.REGRESSION,
             description = "Verify non site member cannot get children for a folder from a moderated site")
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions = CmisPermissionDeniedException.class)
+    @Test(groups = {TestGroup.REGRESSION, TestGroup.CMIS}, expectedExceptions = CmisPermissionDeniedException.class)
     public void nonSiteMemberCannotGetChildrenFromValidFolderFromAModeratedSite() throws Exception
     {
         SiteModel moderatedSite = dataSite.usingAdmin().createModeratedRandomSite();

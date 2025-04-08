@@ -32,7 +32,6 @@ import org.alfresco.util.schemacomp.ComparisonUtils;
 import org.alfresco.util.schemacomp.DbProperty;
 import org.alfresco.util.schemacomp.DefaultComparisonUtils;
 import org.alfresco.util.schemacomp.DiffContext;
-import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.validator.DbValidator;
 
 /**
@@ -46,13 +45,14 @@ public abstract class AbstractDbObject implements DbObject
     private String name;
     protected ComparisonUtils comparisonUtils = new DefaultComparisonUtils();
     private final List<DbValidator> validators = new ArrayList<DbValidator>();
-    
 
     /**
      * Instantiate, giving the object a parent and a name.
      * 
-     * @param parent DbObject
-     * @param name String
+     * @param parent
+     *            DbObject
+     * @param name
+     *            String
      */
     public AbstractDbObject(DbObject parent, String name)
     {
@@ -73,7 +73,8 @@ public abstract class AbstractDbObject implements DbObject
     }
 
     /**
-     * @param name the name to set
+     * @param name
+     *            the name to set
      */
     public void setName(String name)
     {
@@ -100,7 +101,7 @@ public abstract class AbstractDbObject implements DbObject
         if (getName() != null && other != null && other.getName() != null)
         {
             boolean sameParent = false;
-            
+
             if (getParent() == null && other.getParent() == null)
             {
                 sameParent = true;
@@ -112,7 +113,7 @@ public abstract class AbstractDbObject implements DbObject
             // Same parent & same name - it must be considered the same object.
             return sameParent && getName().equalsIgnoreCase(other.getName());
         }
-        
+
         return false;
     }
 
@@ -129,20 +130,27 @@ public abstract class AbstractDbObject implements DbObject
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
         AbstractDbObject other = (AbstractDbObject) obj;
         if (this.name == null)
         {
-            if (other.name != null) return false;
+            if (other.name != null)
+                return false;
         }
-        else if (!this.name.equals(other.name)) return false;
+        else if (!this.name.equals(other.name))
+            return false;
         if (this.parent == null)
         {
-            if (other.parent != null) return false;
+            if (other.parent != null)
+                return false;
         }
-        else if (!this.parent.equals(other.parent)) return false;
+        else if (!this.parent.equals(other.parent))
+            return false;
         return true;
     }
 
@@ -152,7 +160,7 @@ public abstract class AbstractDbObject implements DbObject
         StringBuffer sb = new StringBuffer();
         sb.append(getClass().getSimpleName());
         sb.append("[name=");
-        
+
         if (getName() != null)
         {
             sb.append(getName());
@@ -161,77 +169,68 @@ public abstract class AbstractDbObject implements DbObject
         {
             sb.append("null");
         }
-        
+
         sb.append("]");
-        
+
         return sb.toString();
     }
 
     /**
-     * Provides an implementation of {@link DbObject#diff(DbObject, DiffContext)}. The template
-     * method {@link #doDiff(DbObject, DiffContext)} provides the subclass specific diffing logic,
-     * whilst this method handles the workflow required in most cases: set the path's prefix that will be
-     * used to explain where differences occur; compare the name fields of the two objects; delegate to the
-     * subclass specific diffing (if any); remove the last path addition ready for the next object to perform
-     * its diff correctly.
+     * Provides an implementation of {@link DbObject#diff(DbObject, DiffContext)}. The template method {@link #doDiff(DbObject, DiffContext)} provides the subclass specific diffing logic, whilst this method handles the workflow required in most cases: set the path's prefix that will be used to explain where differences occur; compare the name fields of the two objects; delegate to the subclass specific diffing (if any); remove the last path addition ready for the next object to perform its diff correctly.
      */
     @Override
     public void diff(DbObject right, DiffContext ctx)
-    {       
+    {
         DbProperty leftNameProp = new DbProperty(this, "name");
         DbProperty rightNameProp = new DbProperty(right, "name");
         comparisonUtils.compareSimple(leftNameProp, rightNameProp, ctx);
-        
+
         doDiff(right, ctx);
     }
-    
-    
+
     @Override
     public DbObject getParent()
     {
         return parent;
     }
-    
-    
+
     @Override
     public void setParent(DbObject parent)
     {
         this.parent = parent;
     }
 
-    
     /**
      * Override this method to provide subclass specific diffing logic.
      * 
-     * @param right DbObject
-     * @param ctx DiffContext
+     * @param right
+     *            DbObject
+     * @param ctx
+     *            DiffContext
      */
     protected void doDiff(DbObject right, DiffContext ctx)
-    {
-    }
-    
+    {}
 
     /**
-     * If a ComparisonUtils other than the default is required, then this setter can be used.
-     * Useful for testing, where a mock can be injected.
+     * If a ComparisonUtils other than the default is required, then this setter can be used. Useful for testing, where a mock can be injected.
      * 
-     * @param comparisonUtils the comparisonUtils to set
+     * @param comparisonUtils
+     *            the comparisonUtils to set
      */
     public void setComparisonUtils(ComparisonUtils comparisonUtils)
     {
         this.comparisonUtils = comparisonUtils;
     }
 
-    
     @Override
     public List<DbValidator> getValidators()
     {
         return validators;
     }
 
-    
     /**
-     * @param validators the validators to set
+     * @param validators
+     *            the validators to set
      */
     @Override
     public void setValidators(List<DbValidator> validators)

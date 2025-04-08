@@ -38,9 +38,9 @@ public class BasicAuthCredentials implements WebCredentials
 
     private String userName;
     private String password;
-    
+
     /**
-     * Default constructor 
+     * Default constructor
      */
     public BasicAuthCredentials(String userName, String password)
     {
@@ -61,20 +61,41 @@ public class BasicAuthCredentials implements WebCredentials
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj) { return true; }
-        if (obj == null) { return false; }
-        if (getClass() != obj.getClass()) { return false; }
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
         BasicAuthCredentials other = (BasicAuthCredentials) obj;
         if (this.password == null)
         {
-            if (other.password != null) { return false; }
+            if (other.password != null)
+            {
+                return false;
+            }
         }
-        else if (!this.password.equals(other.password)) { return false; }
+        else if (!this.password.equals(other.password))
+        {
+            return false;
+        }
         if (this.userName == null)
         {
-            if (other.userName != null) { return false; }
+            if (other.userName != null)
+            {
+                return false;
+            }
         }
-        else if (!this.userName.equals(other.userName)) { return false; }
+        else if (!this.userName.equals(other.userName))
+        {
+            return false;
+        }
         return true;
     }
 

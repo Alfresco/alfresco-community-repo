@@ -26,6 +26,13 @@
 
 package org.alfresco.repo.virtual.bundle;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -33,12 +40,6 @@ import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.repo.virtual.store.VirtualStoreImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class VirtualBehaviourFilterExtensionTest extends VirtualizationIntegrationTest
 {

@@ -39,11 +39,11 @@ public class CustomMapping
      * Default constructor.
      */
     public CustomMapping()
-    {
-    }
+    {}
 
     /**
      * Default constructor.
+     * 
      * @param from
      * @param to
      */
@@ -75,7 +75,7 @@ public class CustomMapping
 
     public int hashCode()
     {
-        if(from != null && to != null)
+        if (from != null && to != null)
         {
             return (from + to).hashCode();
         }
@@ -85,10 +85,9 @@ public class CustomMapping
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object) */
     @Override
     public boolean equals(Object obj)
     {

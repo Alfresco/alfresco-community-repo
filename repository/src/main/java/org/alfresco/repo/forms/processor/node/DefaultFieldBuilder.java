@@ -31,18 +31,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.processor.FieldProcessor;
 import org.alfresco.repo.forms.processor.FieldProcessorRegistry;
 import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Helper class for building the default fields for a form where an explicit
- * set of fields was not provided.
+ * Helper class for building the default fields for a form where an explicit set of fields was not provided.
  * 
  * @since 3.4
  * @author Nick Smith
@@ -53,13 +53,13 @@ public class DefaultFieldBuilder
     private static final String PROP_WARNING = "Could not build Property Field as no valid FieldProcessor was specified";
 
     private static final Log MY_LOGGER = LogFactory.getLog(DefaultFieldBuilder.class);
-    
+
     private final FormCreationData formData;
     private final ContentModelItemData<?> ItemData;
     private final FieldProcessorRegistry registry;
     private final NamespaceService namespaceService;
     private final List<String> ignoredFields;
-    
+
     private final Log logger;
 
     public DefaultFieldBuilder(FormCreationData data,
@@ -71,22 +71,22 @@ public class DefaultFieldBuilder
     }
 
     public DefaultFieldBuilder(FormCreationData formData,
-                FieldProcessorRegistry registry,
-                NamespaceService namespaceService,
-                List<String> ignoredFields,
-                Log logger)
+            FieldProcessorRegistry registry,
+            NamespaceService namespaceService,
+            List<String> ignoredFields,
+            Log logger)
     {
         this.logger = logger;
         this.formData = formData;
         this.registry = registry;
         this.namespaceService = namespaceService;
-        this.ignoredFields = getNonNullList(ignoredFields );
+        this.ignoredFields = getNonNullList(ignoredFields);
         this.ItemData = (ContentModelItemData<?>) formData.getItemData();
     }
 
     private <T> List<T> getNonNullList(List<T> list)
     {
-        return list == null ? Collections.<T>emptyList() : list;
+        return list == null ? Collections.<T> emptyList() : list;
     }
 
     public List<Field> buildDefaultFields()
@@ -101,7 +101,7 @@ public class DefaultFieldBuilder
         fields.addAll(transFields);
         return fields;
     }
-    
+
     public List<Field> buildDefaultPropertyFields()
     {
         Collection<QName> names = ItemData.getAllPropertyDefinitionNames();
@@ -115,7 +115,7 @@ public class DefaultFieldBuilder
         }
         return fields;
     }
-    
+
     private boolean ignoreQName(QName qname)
     {
         String name = qname.toPrefixString(namespaceService);
@@ -128,28 +128,28 @@ public class DefaultFieldBuilder
         List<Field> fields = new ArrayList<Field>(names.size());
         for (QName name : names)
         {
-            if(ignoreQName(name)==false)
+            if (ignoreQName(name) == false)
             {
                 fields.add(buildAssociationField(name));
             }
         }
         return fields;
     }
-    
+
     public List<Field> buildDefaultTransientFields()
     {
         Collection<String> names = ItemData.getAllTransientFieldNames();
         List<Field> fields = new ArrayList<Field>(names.size());
         for (String name : names)
         {
-            if(ignoredFields.contains(name)==false)
+            if (ignoredFields.contains(name) == false)
             {
                 fields.add(buildTransientField(name));
             }
         }
         return fields;
     }
-    
+
     public Field buildAssociationField(QName assocName)
     {
         return buildQNameField(assocName, FormFieldConstants.ASSOC, ASSOC_WARN);
@@ -168,10 +168,10 @@ public class DefaultFieldBuilder
             QNameFieldProcessor<?> qnameProcessor = (QNameFieldProcessor<?>) fieldProcessor;
             return qnameProcessor.generateField(assocName, ItemData, false);
         }
-        
+
         if (logger.isWarnEnabled())
             logger.warn(warningMsg);
-        
+
         return null;
     }
 
@@ -182,10 +182,10 @@ public class DefaultFieldBuilder
         {
             return fieldProcessor.generateField(name, formData);
         }
-        
+
         if (logger.isWarnEnabled())
-            logger.warn("Could not build Transient Field: "+ name +" as no FieldProcessor specified");
-        
+            logger.warn("Could not build Transient Field: " + name + " as no FieldProcessor specified");
+
         return null;
     }
 }

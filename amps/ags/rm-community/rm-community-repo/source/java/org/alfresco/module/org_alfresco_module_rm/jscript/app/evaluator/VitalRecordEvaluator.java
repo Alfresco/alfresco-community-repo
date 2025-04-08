@@ -37,12 +37,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class VitalRecordEvaluator extends BaseEvaluator
 {
     private VitalRecordService vitalRecordService;
-    
+
     public void setVitalRecordService(VitalRecordService vitalRecordService)
     {
         this.vitalRecordService = vitalRecordService;
     }
-    
+
     @Override
     protected boolean evaluateImpl(NodeRef nodeRef)
     {

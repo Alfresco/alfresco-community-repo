@@ -41,7 +41,8 @@ public class LuceneFunctionalConstraint<Q, S, E extends Throwable> extends BaseF
 {
 
     /**
-     * @param function Function
+     * @param function
+     *            Function
      */
     public LuceneFunctionalConstraint(Function function, Map<String, Argument> arguments)
     {
@@ -49,18 +50,18 @@ public class LuceneFunctionalConstraint<Q, S, E extends Throwable> extends BaseF
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService, java.lang.String)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService, java.lang.String) */
     public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext) throws E
     {
         Function function = getFunction();
-        if(function != null)
+        if (function != null)
         {
-            if(function instanceof LuceneQueryBuilderComponent)
+            if (function instanceof LuceneQueryBuilderComponent)
             {
                 @SuppressWarnings("unchecked")
-                LuceneQueryBuilderComponent<Q, S, E> luceneQueryBuilderComponent = (LuceneQueryBuilderComponent<Q, S, E>)function;
-                return luceneQueryBuilderComponent.addComponent(selectors, getFunctionArguments(), luceneContext, functionContext);            
+                LuceneQueryBuilderComponent<Q, S, E> luceneQueryBuilderComponent = (LuceneQueryBuilderComponent<Q, S, E>) function;
+                return luceneQueryBuilderComponent.addComponent(selectors, getFunctionArguments(), luceneContext, functionContext);
             }
             else
             {

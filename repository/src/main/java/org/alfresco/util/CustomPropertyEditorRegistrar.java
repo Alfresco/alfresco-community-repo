@@ -25,10 +25,11 @@
  */
 package org.alfresco.util;
 
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.springframework.beans.PropertyEditorRegistrar;
 import org.springframework.beans.PropertyEditorRegistry;
+
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Custom property editor registrar.
@@ -42,7 +43,8 @@ public class CustomPropertyEditorRegistrar implements PropertyEditorRegistrar
     private NamespaceService namespaceService;
 
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {

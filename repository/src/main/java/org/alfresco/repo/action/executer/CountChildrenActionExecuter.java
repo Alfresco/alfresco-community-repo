@@ -33,8 +33,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 
 /**
- * Action executer that counts the number of children the actioned upon node has.
- * This provides as example of how actions can return results.
+ * Action executer that counts the number of children the actioned upon node has. This provides as example of how actions can return results.
  * 
  * @author Roy Wetherall
  */
@@ -44,22 +43,23 @@ public class CountChildrenActionExecuter extends ActionExecuterAbstractBase
      * Action constants
      */
     public static final String NAME = "count-children";
-    
+
     /**
      * The node service
      */
     private NodeService nodeService;
-    
+
     /**
      * Set the node service
      * 
-     * @param nodeService  the node service
+     * @param nodeService
+     *            the node service
      */
-    public void setNodeService(NodeService nodeService) 
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(Action, NodeRef)
      */
@@ -67,7 +67,7 @@ public class CountChildrenActionExecuter extends ActionExecuterAbstractBase
     {
         if (this.nodeService.exists(actionedUponNodeRef) == true)
         {
-            // Get the parent node        
+            // Get the parent node
             int count = this.nodeService.getChildAssocs(actionedUponNodeRef).size();
             ruleAction.setParameterValue(PARAM_RESULT, Integer.valueOf(count));
         }
@@ -77,8 +77,7 @@ public class CountChildrenActionExecuter extends ActionExecuterAbstractBase
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-    {        
-    }
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
+    {}
 
 }

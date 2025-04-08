@@ -25,11 +25,12 @@
  */
 package org.alfresco.repo.activities.feed.cleanup;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * Executes scheduled feed cleaner quartz-job - refer to scheduled-jobs-context.xml
@@ -37,8 +38,7 @@ import org.quartz.JobExecutionException;
 public class FeedCleanupJob implements Job
 {
     public FeedCleanupJob()
-    {
-    }
+    {}
 
     /**
      * Calls the feed cleaner to do its work
@@ -53,7 +53,7 @@ public class FeedCleanupJob implements Job
             throw new AlfrescoRuntimeException(
                     "FeedCleanupJob data must contain valid 'feedCleaner' reference");
         }
-        FeedCleaner feedCleaner = (FeedCleaner)feedCleanerObj;
+        FeedCleaner feedCleaner = (FeedCleaner) feedCleanerObj;
         feedCleaner.execute();
     }
 }

@@ -25,12 +25,16 @@
  */
 package org.alfresco.rest.api.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.chemistry.opencmis.commons.data.PropertyData;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -43,9 +47,6 @@ import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
-import org.apache.chemistry.opencmis.commons.data.PropertyData;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Concrete class carrying general information for <b>alf_node</b> data
@@ -73,7 +74,7 @@ public class Node implements Comparable<Node>
     // Version info - specifically for version node - see Version History API
     protected String versionLabel;
     protected String versionComment;
-    protected String nodeId; //This is the frozen node id NOT the current node id
+    protected String nodeId; // This is the frozen node id NOT the current node id
 
     protected Boolean isFolder;
     protected Boolean isFile;
@@ -89,7 +90,6 @@ public class Node implements Comparable<Node>
     protected List<AssocChild> secondaryChildren;
     protected List<AssocTarget> targets;
 
-
     protected List<String> aspectNames;
     protected Map<String, Object> properties;
 
@@ -97,14 +97,14 @@ public class Node implements Comparable<Node>
     protected NodePermissions nodePermissions;
     protected ClassDefinition definition;
 
-    //optional SearchEntry (only ever returned from a search)
+    // optional SearchEntry (only ever returned from a search)
     protected SearchEntry search = null;
     protected String location;
     protected Boolean isFavorite;
 
     public Node(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
     {
-        if(nodeRef == null)
+        if (nodeRef == null)
         {
             throw new IllegalArgumentException();
         }
@@ -123,25 +123,25 @@ public class Node implements Comparable<Node>
     }
 
     public Node()
-    {
-    }
+    {}
 
-    protected void mapMinimalInfo(Map<QName, Serializable> nodeProps,  Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
+    protected void mapMinimalInfo(Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
     {
         PersonService personService = sr.getPersonService();
 
-        this.name = (String)nodeProps.get(ContentModel.PROP_NAME);
+        this.name = (String) nodeProps.get(ContentModel.PROP_NAME);
 
-        if (mapUserInfo == null) {
+        if (mapUserInfo == null)
+        {
             // minor: save one lookup if creator & modifier are the same
             mapUserInfo = new HashMap<>(2);
         }
 
-        this.createdAt = (Date)nodeProps.get(ContentModel.PROP_CREATED);
-        this.createdByUser = lookupUserInfo((String)nodeProps.get(ContentModel.PROP_CREATOR), mapUserInfo, personService);
+        this.createdAt = (Date) nodeProps.get(ContentModel.PROP_CREATED);
+        this.createdByUser = lookupUserInfo((String) nodeProps.get(ContentModel.PROP_CREATOR), mapUserInfo, personService);
 
-        this.modifiedAt = (Date)nodeProps.get(ContentModel.PROP_MODIFIED);
-        this.modifiedByUser = lookupUserInfo((String)nodeProps.get(ContentModel.PROP_MODIFIER), mapUserInfo, personService);
+        this.modifiedAt = (Date) nodeProps.get(ContentModel.PROP_MODIFIED);
+        this.modifiedByUser = lookupUserInfo((String) nodeProps.get(ContentModel.PROP_MODIFIER), mapUserInfo, personService);
     }
 
     public static UserInfo lookupUserInfo(String userName, Map<String, UserInfo> mapUserInfo, PersonService personService)
@@ -186,7 +186,7 @@ public class Node implements Comparable<Node>
                 }
                 else
                 {
-                    logger.warn("Unknown person: "+userName);
+                    logger.warn("Unknown person: " + userName);
                     userInfo = new UserInfo((displayNameOnly ? null : userName), userName, "");
                 }
             }
@@ -225,11 +225,13 @@ public class Node implements Comparable<Node>
         return modifiedAt;
     }
 
-    public UserInfo getModifiedByUser() {
+    public UserInfo getModifiedByUser()
+    {
         return modifiedByUser;
     }
 
-    public UserInfo getCreatedByUser() {
+    public UserInfo getCreatedByUser()
+    {
         return createdByUser;
     }
 
@@ -268,19 +270,23 @@ public class Node implements Comparable<Node>
         this.prefixTypeQName = prefixType;
     }
 
-    public Map<String, Object> getProperties() {
+    public Map<String, Object> getProperties()
+    {
         return this.properties;
     }
 
-    public void setProperties(Map<String, Object> props) {
+    public void setProperties(Map<String, Object> props)
+    {
         this.properties = props;
     }
 
-    public List<String> getAspectNames() {
+    public List<String> getAspectNames()
+    {
         return aspectNames;
     }
 
-    public void setAspectNames(List<String> aspectNames) {
+    public void setAspectNames(List<String> aspectNames)
+    {
         this.aspectNames = aspectNames;
     }
 
@@ -436,17 +442,17 @@ public class Node implements Comparable<Node>
 
     public boolean equals(Object other)
     {
-        if(this == other)
+        if (this == other)
         {
             return true;
         }
 
-        if(!(other instanceof Node))
+        if (!(other instanceof Node))
         {
             return false;
         }
 
-        Node node = (Node)other;
+        Node node = (Node) other;
         return EqualsHelper.nullSafeEquals(getNodeRef(), node.getNodeRef());
     }
 
@@ -542,7 +548,7 @@ public class Node implements Comparable<Node>
         }
         if (getProperties() != null)
         {
-            //sb.append(", properties=").append(getProperties());
+            // sb.append(", properties=").append(getProperties());
         }
         if (getRelativePath() != null)
         {
@@ -610,7 +616,8 @@ public class Node implements Comparable<Node>
     /**
      * @deprecated
      */
-    public NodeRef getGuid() {
+    public NodeRef getGuid()
+    {
         return guid;
     }
 

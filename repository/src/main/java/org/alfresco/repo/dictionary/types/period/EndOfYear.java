@@ -29,6 +29,7 @@ import java.util.Calendar;
 
 /**
  * End of year
+ * 
  * @author andyh
  *
  */
@@ -47,7 +48,7 @@ public class EndOfYear extends AbstractEndOfCalendarPeriodProvider
         {
             calendar.add(Calendar.MILLISECOND, 1);
         }
-        
+
         int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
         int month = calendar.get(Calendar.MONTH);
         if ((month < getStartMonth()) || ((dayOfMonth < getStartDayOfMonth()) && (month == getStartMonth())))

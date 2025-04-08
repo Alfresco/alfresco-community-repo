@@ -36,6 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -70,17 +73,13 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author brian
  * 
- * The primary manifest processor is responsible for the first parsing the snapshot 
- * file and writing nodes into the receiving repository.
+ *         The primary manifest processor is responsible for the first parsing the snapshot file and writing nodes into the receiving repository.
  * 
- * New nodes may be written into a "temporary" space if their primary parent node 
- * has not yet been transferred. 
+ *         New nodes may be written into a "temporary" space if their primary parent node has not yet been transferred.
  */
 public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorBase
 {
@@ -111,7 +110,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     private SearchService searchService;
     private CategoryService categoryService;
     private TaggingService taggingService;
-       
+
     // State within this class
     /**
      * The header of the manifest
@@ -119,30 +118,29 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     TransferManifestHeader header;
 
     /**
-     * The list of orphans, during processing orphans are added and removed from this list.
-     * If at the end of processing there are still orphans then an exception will be thrown.
+     * The list of orphans, during processing orphans are added and removed from this list. If at the end of processing there are still orphans then an exception will be thrown.
      */
     private Map<NodeRef, List<ChildAssociationRef>> orphans = new HashMap<NodeRef, List<ChildAssociationRef>>(89);
-    
+
     /**
      * node ref mapping from source to destination categories
      */
     private Map<NodeRef, NodeRef> categoryMap = new HashMap<NodeRef, NodeRef>();
 
     /**
-     * @param receiver TransferReceiver
-     * @param transferId String
+     * @param receiver
+     *            TransferReceiver
+     * @param transferId
+     *            String
      */
     public RepoPrimaryManifestProcessorImpl(TransferReceiver receiver, String transferId)
     {
         super(receiver, transferId);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @seeorg.alfresco.repo.transfer.manifest.TransferManifestProcessor# endTransferManifest()
-     */
+     * @seeorg.alfresco.repo.transfer.manifest.TransferManifestProcessor# endTransferManifest() */
     protected void endManifest()
     {
         if (!orphans.isEmpty())
@@ -163,7 +161,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         // If we can find a corresponding node then we'll delete it.
         // If we can't find a corresponding node then we'll do nothing.
         logComment("Primary Processing incoming deleted node: " + node.getNodeRef());
-        
+
         ChildAssociationRef origPrimaryParent = node.getPrimaryParentAssoc();
         NodeRef origNodeRef = new NodeRef(origPrimaryParent.getParentRef().getStoreRef(), node.getNodeRef().getId());
 
@@ -181,10 +179,10 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                         + " has been resolved to existing local noderef " + exNode
                         + "  - deleting");
             }
-            
-            logDeleted(node.getNodeRef(), exNode, nodeService.getPath(exNode).toString()); 
-            logSummaryDeleted(node.getNodeRef(), exNode, nodeService.getPath(exNode).toString()); 
-            
+
+            logDeleted(node.getNodeRef(), exNode, nodeService.getPath(exNode).toString());
+            logSummaryDeleted(node.getNodeRef(), exNode, nodeService.getPath(exNode).toString());
+
             delete(node, exNode);
         }
         else
@@ -193,17 +191,14 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             if (log.isDebugEnabled())
             {
                 log.debug("Incoming deleted noderef has no corresponding local noderef: " + node.getNodeRef()
-                            + "  - ignoring");
+                        + "  - ignoring");
             }
         }
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @seeorg.alfresco.repo.transfer.manifest.TransferManifestProcessor#
-     * processTransferManifestNode(org.alfresco.repo.transfer .manifest.TransferManifestNode)
-     */
+     * @seeorg.alfresco.repo.transfer.manifest.TransferManifestProcessor# processTransferManifestNode(org.alfresco.repo.transfer .manifest.TransferManifestNode) */
     protected void processNode(TransferManifestNormalNode node)
     {
         if (log.isDebugEnabled())
@@ -245,12 +240,12 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         }
         else
         {
-            // No, there is no corresponding node. 
+            // No, there is no corresponding node.
             NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, node.getNodeRef().getId());
             if (nodeService.exists(archiveNodeRef))
             {
                 // We have found a node in the archive store that has the same
-                // UUID as the one that we've been sent.    If it remains it may cause problems later on
+                // UUID as the one that we've been sent. If it remains it may cause problems later on
                 // We delete from the archive store and treat the new node as a create.
                 if (log.isInfoEnabled())
                 {
@@ -284,17 +279,18 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     /**
      * Create new node.
      * 
-     * @param node TransferManifestNormalNode
-     * @param resolvedNodes ResolvedParentChildPair
-     * @param primaryParentAssoc ChildAssociationRef
+     * @param node
+     *            TransferManifestNormalNode
+     * @param resolvedNodes
+     *            ResolvedParentChildPair
+     * @param primaryParentAssoc
+     *            ChildAssociationRef
      */
     private void create(TransferManifestNormalNode node, ResolvedParentChildPair resolvedNodes,
             ChildAssociationRef primaryParentAssoc)
     {
         log.info("Creating new node with noderef " + node.getNodeRef());
-        
 
-        
         QName parentAssocType = primaryParentAssoc.getTypeQName();
         QName parentAssocName = primaryParentAssoc.getQName();
         NodeRef parentNodeRef = resolvedNodes.resolvedParent;
@@ -325,39 +321,39 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         // We need to process content properties separately.
         // First, create a shallow copy of the supplied property map...
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(node.getProperties());
-        
+
         processCategories(props, node.getManifestCategories());
-        
+
         injectTransferred(props);
 
         // Split out the content properties and sanitise the others
         Map<QName, Serializable> contentProps = processProperties(null, props, null);
-            
-        // Remove the invadedBy property since that is used by the transfer service 
+
+        // Remove the invadedBy property since that is used by the transfer service
         // and is local to this repository.
         props.remove(TransferModel.PROP_INVADED_BY);
-         
+
         // Do we need to worry about locking this new node ?
-        if(header.isReadOnly())
+        if (header.isReadOnly())
         {
             log.debug("new node needs to be locked");
             props.put(ContentModel.PROP_LOCK_OWNER, AuthenticationUtil.getAdminUserName());
             props.put(ContentModel.PROP_LOCK_TYPE, LockType.NODE_LOCK.toString());
             props.put(ContentModel.PROP_EXPIRY_DATE, null);
-         }
- 
+        }
+
         // Create the corresponding node...
         ChildAssociationRef newNode = nodeService.createNode(parentNodeRef, parentAssocType, parentAssocName, node
                 .getType(), props);
-        
+
         if (log.isDebugEnabled())
         {
             log.debug("Created new node (" + newNode.getChildRef() + ") parented by node " + newNode.getParentRef());
         }
-        
+
         logCreated(node.getNodeRef(), newNode.getChildRef(), newNode.getParentRef(), nodeService.getPath(newNode.getChildRef()).toString(), false);
         logSummaryCreated(node.getNodeRef(), newNode.getChildRef(), newNode.getParentRef(), nodeService.getPath(newNode.getChildRef()).toString(), false);
-        
+
         // Deal with the content properties
         writeContent(newNode.getChildRef(), contentProps);
 
@@ -369,33 +365,32 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         {
             nodeService.addAspect(newNode.getChildRef(), aspect, null);
         }
-        
-        ManifestAccessControl acl = node.getAccessControl();        
+
+        ManifestAccessControl acl = node.getAccessControl();
         // Apply new ACL to this node
-        if(acl != null)
+        if (acl != null)
         {
             permissionService.setInheritParentPermissions(newNode.getChildRef(), acl.isInherited());
-            
-            if(acl.getPermissions() != null)
+
+            if (acl.getPermissions() != null)
             {
-                for(ManifestPermission permission : acl.getPermissions())
+                for (ManifestPermission permission : acl.getPermissions())
                 {
                     log.debug("setting permission on node");
                     AccessStatus status = AccessStatus.valueOf(permission.getStatus());
                     // The node has its own access control list
-                    permissionService.setPermission(newNode.getChildRef(), 
-                        permission.getAuthority(), 
-                        permission.getPermission(), 
-                        status == AccessStatus.ALLOWED);
+                    permissionService.setPermission(newNode.getChildRef(),
+                            permission.getAuthority(),
+                            permission.getPermission(),
+                            status == AccessStatus.ALLOWED);
                 }
             }
         }
-        
+
         /**
-         * are we adding an alien node here? The transfer service has policies disabled 
-         * so have to call the consequence of the policy directly.
-         */ 
-        if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED) || nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
+         * are we adding an alien node here? The transfer service has policies disabled so have to call the consequence of the policy directly.
+         */
+        if (nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED) || nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
         {
             alienProcessor.onCreateChild(newNode, header.getRepositoryId(), true);
         }
@@ -404,15 +399,18 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         // we've found earlier?
         checkOrphans(newNode.getChildRef());
     }
-    
+
     /**
      * Delete this node
-     * @param node TransferManifestDeletedNode
-     * @param nodeToDelete NodeRef
+     * 
+     * @param node
+     *            TransferManifestDeletedNode
+     * @param nodeToDelete
+     *            NodeRef
      */
     protected void delete(TransferManifestDeletedNode node, NodeRef nodeToDelete)
     {
-        if(alienProcessor.isAlien(nodeToDelete))
+        if (alienProcessor.isAlien(nodeToDelete))
         {
             logComment("Node contains alien content and can't be deleted: " + nodeToDelete);
             if (log.isDebugEnabled())
@@ -426,25 +424,25 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             /**
              * Check that if the destination is "from" the transferring repo if it is "from" another repo then ignore
              */
-            if(nodeService.hasAspect(nodeToDelete, TransferModel.ASPECT_TRANSFERRED))
+            if (nodeService.hasAspect(nodeToDelete, TransferModel.ASPECT_TRANSFERRED))
             {
-                String fromRepository = (String)nodeService.getProperty(nodeToDelete, TransferModel.PROP_FROM_REPOSITORY_ID);
+                String fromRepository = (String) nodeService.getProperty(nodeToDelete, TransferModel.PROP_FROM_REPOSITORY_ID);
                 String transferringRepo = header.getRepositoryId();
-                
-                if(fromRepository != null && transferringRepo != null)
+
+                if (fromRepository != null && transferringRepo != null)
                 {
-                    if(!fromRepository.equalsIgnoreCase(transferringRepo))
+                    if (!fromRepository.equalsIgnoreCase(transferringRepo))
                     {
                         logComment("Not deleting local node (not from the transferring repository): " + nodeToDelete);
                         return;
                     }
                 }
             }
-            
+
             // Not alien or from another repo - delete it.
             logDeleted(node.getNodeRef(), nodeToDelete, nodeService.getPath(nodeToDelete).toString());
             logSummaryDeleted(node.getNodeRef(), nodeToDelete, nodeService.getPath(nodeToDelete).toString());
-            
+
             nodeService.deleteNode(nodeToDelete);
             if (log.isDebugEnabled())
             {
@@ -464,11 +462,11 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                 logComment("Re-parenting previously orphaned node (" + orphan.getChildRef() + ") with found parent " + orphan.getParentRef());
                 ChildAssociationRef newRef = nodeService.moveNode(orphan.getChildRef(), orphan.getParentRef(), orphan.getTypeQName(), orphan
                         .getQName());
-                
+
                 /**
                  * We may be creating an alien node here and the policies are turned off.
                  */
-                if(nodeService.hasAspect(newRef.getParentRef(), TransferModel.ASPECT_TRANSFERRED))
+                if (nodeService.hasAspect(newRef.getParentRef(), TransferModel.ASPECT_TRANSFERRED))
                 {
                     alienProcessor.onCreateChild(newRef, header.getRepositoryId(), true);
                 }
@@ -481,27 +479,29 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
 
     /**
      * 
-     * @param node TransferManifestNormalNode
-     * @param resolvedNodes ResolvedParentChildPair
-     * @param primaryParentAssoc ChildAssociationRef
+     * @param node
+     *            TransferManifestNormalNode
+     * @param resolvedNodes
+     *            ResolvedParentChildPair
+     * @param primaryParentAssoc
+     *            ChildAssociationRef
      */
     private void update(TransferManifestNormalNode node, ResolvedParentChildPair resolvedNodes,
             ChildAssociationRef primaryParentAssoc)
     {
         NodeRef nodeToUpdate = resolvedNodes.resolvedChild;
-        
 
         /**
          * Check that if the destination is "from" the transferring repo if it is "from" another repo then ignore
          */
-        if(nodeService.hasAspect(nodeToUpdate, TransferModel.ASPECT_TRANSFERRED))
+        if (nodeService.hasAspect(nodeToUpdate, TransferModel.ASPECT_TRANSFERRED))
         {
-            String fromRepository = (String)nodeService.getProperty(nodeToUpdate, TransferModel.PROP_FROM_REPOSITORY_ID);
+            String fromRepository = (String) nodeService.getProperty(nodeToUpdate, TransferModel.PROP_FROM_REPOSITORY_ID);
             String transferringRepo = header.getRepositoryId();
-            
-            if(fromRepository != null && transferringRepo != null)
+
+            if (fromRepository != null && transferringRepo != null)
             {
-                if(!fromRepository.equalsIgnoreCase(transferringRepo))
+                if (!fromRepository.equalsIgnoreCase(transferringRepo))
                 {
                     logComment("Not updating local node (not from the transferring repository): " + node.getNodeRef());
                     return;
@@ -514,7 +514,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             // Not a transferred node.
             return;
         }
-        
+
         QName parentAssocType = primaryParentAssoc.getTypeQName();
         QName parentAssocName = primaryParentAssoc.getQName();
         NodeRef parentNodeRef = resolvedNodes.resolvedParent;
@@ -528,8 +528,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             parentAssocType = tempLocation.getTypeQName();
             parentAssocName = tempLocation.getQName();
             storeOrphanNode(primaryParentAssoc);
-        }        
-        
+        }
+
         // First of all, do we need to move the node? If any aspect of the
         // primary parent association has changed
         // then the answer is "yes"
@@ -538,38 +538,36 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                 || !currentParent.getTypeQName().equals(parentAssocType)
                 || !currentParent.getQName().equals(parentAssocName))
         {
-            
+
             /**
              * Yes, the parent assoc has changed so we need to move the node
              */
-            if(nodeService.hasAspect(currentParent.getParentRef(), TransferModel.ASPECT_ALIEN))
+            if (nodeService.hasAspect(currentParent.getParentRef(), TransferModel.ASPECT_ALIEN))
             {
                 // old parent node ref may be alien so treat as a delete
                 alienProcessor.beforeDeleteAlien(currentParent.getChildRef(), null);
             }
-            
+
             // Yes, we need to move the node
             ChildAssociationRef newNode = nodeService.moveNode(nodeToUpdate, parentNodeRef, parentAssocType, parentAssocName);
-            logMoved(node.getNodeRef(), nodeToUpdate, node.getParentPath().toString(), newNode.getParentRef(), 
+            logMoved(node.getNodeRef(), nodeToUpdate, node.getParentPath().toString(), newNode.getParentRef(),
                     nodeService.getPath(newNode.getChildRef()).toString());
-            logSummaryMoved(node.getNodeRef(), nodeToUpdate, node.getParentPath().toString(), newNode.getParentRef(), 
+            logSummaryMoved(node.getNodeRef(), nodeToUpdate, node.getParentPath().toString(), newNode.getParentRef(),
                     nodeService.getPath(newNode.getChildRef()).toString());
-            
+
             /**
-             * are we adding an alien node here? The transfer service has policies disabled 
-             * so have to call the consequence of the policy directly.
-             */ 
-            if(nodeService.hasAspect(newNode.getChildRef(), TransferModel.ASPECT_ALIEN))
+             * are we adding an alien node here? The transfer service has policies disabled so have to call the consequence of the policy directly.
+             */
+            if (nodeService.hasAspect(newNode.getChildRef(), TransferModel.ASPECT_ALIEN))
             {
-                alienProcessor.afterMoveAlien(newNode); 
+                alienProcessor.afterMoveAlien(newNode);
             }
             else
-            {    
+            {
                 /**
-                 * are we adding an alien node here? The transfer service has policies disabled 
-                 * so have to call the consequence of the policy directly.
-                 */ 
-                if(nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED) || nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
+                 * are we adding an alien node here? The transfer service has policies disabled so have to call the consequence of the policy directly.
+                 */
+                if (nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_TRANSFERRED) || nodeService.hasAspect(parentNodeRef, TransferModel.ASPECT_ALIEN))
                 {
                     alienProcessor.onCreateChild(newNode, header.getRepositoryId(), true);
                 }
@@ -582,23 +580,23 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         {
 
             logUpdated(node.getNodeRef(), nodeToUpdate, nodeService.getPath(nodeToUpdate).toString());
-            
+
             // We need to process content properties separately.
             // First, create a shallow copy of the supplied property map...
             Map<QName, Serializable> props = new HashMap<QName, Serializable>(node.getProperties());
             Map<QName, Serializable> existingProps = nodeService.getProperties(nodeToUpdate);
-            
+
             processCategories(props, node.getManifestCategories());
-            
+
             // inject transferred properties/aspect here
             injectTransferred(props);
-             
-            // Remove the invadedBy property since that is used by the transfer service 
+
+            // Remove the invadedBy property since that is used by the transfer service
             // and is local to this repository.
             props.remove(TransferModel.PROP_INVADED_BY);
-            
+
             // Do we need to worry about locking this updated ?
-            if(header.isReadOnly())
+            if (header.isReadOnly())
             {
                 props.put(ContentModel.PROP_LOCK_OWNER, AuthenticationUtil.getAdminUserName());
                 props.put(ContentModel.PROP_LOCK_TYPE, LockType.NODE_LOCK.toString());
@@ -608,9 +606,9 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
 
             // Split out the content properties and sanitise the others
             Map<QName, Serializable> contentProps = processProperties(nodeToUpdate, props, existingProps);
-            
+
             // If there was already a value for invadedBy then leave it alone rather than replacing it.
-            if(existingProps.containsKey(TransferModel.PROP_INVADED_BY))
+            if (existingProps.containsKey(TransferModel.PROP_INVADED_BY))
             {
                 props.put(TransferModel.PROP_INVADED_BY, existingProps.get(TransferModel.PROP_INVADED_BY));
             }
@@ -619,17 +617,17 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             nodeService.setProperties(nodeToUpdate, props);
 
             // Deal with the content properties
-           boolean contentUpdated = writeContent(nodeToUpdate, contentProps);
+            boolean contentUpdated = writeContent(nodeToUpdate, contentProps);
             if (contentUpdated)
             {
                 logSummaryUpdated(node.getNodeRef(), nodeToUpdate, nodeService.getPath(nodeToUpdate).toString());
             }
             // Change the type of the content
-            if(!nodeService.getType(nodeToUpdate).equals(node.getType()))
+            if (!nodeService.getType(nodeToUpdate).equals(node.getType()))
             {
                 // The type has changed, check the dictionary to contain the model for that type
                 TypeDefinition newTypeDef = dictionaryService.getType(node.getType());
-                if(newTypeDef == null)
+                if (newTypeDef == null)
                 {
                     log.warn("Failed to update the type: " + node.getType() + " for node: " + nodeToUpdate + ", as there is no type definition for it");
                 }
@@ -639,17 +637,17 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                     Map<QName, PropertyDefinition> typeProperties = newTypeDef.getProperties();
                     // Search if all the properties are in place
                     boolean fail = false;
-                    for(QName key : typeProperties.keySet())
+                    for (QName key : typeProperties.keySet())
                     {
                         PropertyDefinition propDef = typeProperties.get(key);
-                        if(!props.containsKey(key) && propDef.isMandatory())
+                        if (!props.containsKey(key) && propDef.isMandatory())
                         {
                             log.warn("Failed to update the type: " + node.getType() + " for node: " + nodeToUpdate + ", as the mandatory property '" + propDef.getName() + "' was not transferred.");
                             fail = true;
                             break;
                         }
                     }
-                    if(!fail)
+                    if (!fail)
                     {
                         // Set the new type
                         nodeService.setType(nodeToUpdate, node.getType());
@@ -661,27 +659,27 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             Set<QName> suppliedAspects = new HashSet<QName>(node.getAspects());
             Set<QName> existingAspects = nodeService.getAspects(nodeToUpdate);
             Set<QName> aspectsToRemove = new HashSet<QName>(existingAspects);
-            
+
             // Add mandatory aspects to the supplied aspects (eg. should not explicitly remove auditable aspect from a folder - see also DMDeploymentTarget for similar)
             List<AspectDefinition> aspectDefs = dictionaryService.getType(nodeService.getType(nodeToUpdate)).getDefaultAspects(true);
             for (AspectDefinition aspectDef : aspectDefs)
             {
                 suppliedAspects.add(aspectDef.getName());
             }
-            
-            if(header.isReadOnly())
+
+            if (header.isReadOnly())
             {
                 suppliedAspects.add(ContentModel.ASPECT_LOCKABLE);
             }
-            
+
             aspectsToRemove.removeAll(suppliedAspects);
-            
+
             /**
              * Don't remove the aspects that the transfer service uses itself.
              */
             aspectsToRemove.remove(TransferModel.ASPECT_TRANSFERRED);
             aspectsToRemove.remove(TransferModel.ASPECT_ALIEN);
-            
+
             suppliedAspects.removeAll(existingAspects);
 
             // Now aspectsToRemove contains the set of aspects to remove
@@ -695,31 +693,31 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             {
                 nodeService.removeAspect(nodeToUpdate, aspect);
             }
-            
+
             // Check the ACL of this updated node
-            
+
             ManifestAccessControl acl = node.getAccessControl();
-            if(acl != null)
+            if (acl != null)
             {
                 boolean existInherit = permissionService.getInheritParentPermissions(nodeToUpdate);
-                if(existInherit != acl.isInherited())
+                if (existInherit != acl.isInherited())
                 {
                     log.debug("changed inherit permissions flag");
                     permissionService.setInheritParentPermissions(nodeToUpdate, acl.isInherited());
                 }
-                
+
                 Set<AccessPermission> existingPermissions = permissionService.getAllSetPermissions(nodeToUpdate);
                 List<ManifestPermission> newPermissions = acl.getPermissions();
-                
-                if(existingPermissions.size() > 0 || newPermissions != null)
+
+                if (existingPermissions.size() > 0 || newPermissions != null)
                 {
                     // Yes we have explicit permissions on this node.
                     log.debug("have to check permissions");
 
-                    Set<ManifestPermission>work = new HashSet<ManifestPermission>();
-                    for(AccessPermission permission : existingPermissions)
+                    Set<ManifestPermission> work = new HashSet<ManifestPermission>();
+                    for (AccessPermission permission : existingPermissions)
                     {
-                        if(permission.isSetDirectly())
+                        if (permission.isSetDirectly())
                         {
                             ManifestPermission p = new ManifestPermission();
                             p.setAuthority(permission.getAuthority());
@@ -727,32 +725,32 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                             p.setStatus(permission.getAccessStatus().toString());
                             work.add(p);
                         }
-                    }                    
-                
+                    }
+
                     // Do we need to check whether to add any permissions ?
-                    if(newPermissions != null)
+                    if (newPermissions != null)
                     {
                         // Do we need to add any permissions ?
-                        for(ManifestPermission permission : acl.getPermissions())
+                        for (ManifestPermission permission : acl.getPermissions())
                         {
-                            if(!work.contains(permission))
+                            if (!work.contains(permission))
                             {
                                 log.debug("setting permission on node:" + permission);
                                 AccessStatus status = AccessStatus.valueOf(permission.getStatus());
-                                permissionService.setPermission(nodeToUpdate, 
-                                        permission.getAuthority(), 
-                                        permission.getPermission(), 
+                                permissionService.setPermission(nodeToUpdate,
+                                        permission.getAuthority(),
+                                        permission.getPermission(),
                                         status == AccessStatus.ALLOWED);
                             }
                         }
-                    
+
                         // Remove permissions from "work" that should be there
                         work.removeAll(newPermissions);
-                    
+
                     }
-                    
+
                     // Do we need to remove any permissions
-                    for(ManifestPermission permission : work)
+                    for (ManifestPermission permission : work)
                     {
                         log.debug("removing permission on node:" + permission);
                         permissionService.deletePermission(nodeToUpdate, permission.getAuthority(), permission.getPermission());
@@ -761,21 +759,16 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             }
         }
     }
-    
 
     /**
-     * This method takes all the received properties and separates them into two parts. The content properties are
-     * removed from the non-content properties such that the non-content properties remain in the "props" map and the
-     * content properties are returned from this method Subsequently, any properties that are to be retained from the
-     * local repository are copied over into the "props" map. The result of all this is that, upon return, "props"
-     * contains all the non-content properties that are to be written to the local repo, and "contentProps" contains all
-     * the content properties that are to be written to the local repo.
+     * This method takes all the received properties and separates them into two parts. The content properties are removed from the non-content properties such that the non-content properties remain in the "props" map and the content properties are returned from this method Subsequently, any properties that are to be retained from the local repository are copied over into the "props" map. The result of all this is that, upon return, "props" contains all the non-content properties that are to be written to the local repo, and "contentProps" contains all the content properties that are to be written to the local repo.
      * 
      * @param nodeToUpdate
-     *            The noderef of the existing node in the local repo that is to be updated with these properties. May be
-     *            null, indicating that these properties are destined for a brand new local node.
-     * @param props the new properties
-     * @param existingProps the existing properties, null if this is a create
+     *            The noderef of the existing node in the local repo that is to be updated with these properties. May be null, indicating that these properties are destined for a brand new local node.
+     * @param props
+     *            the new properties
+     * @param existingProps
+     *            the existing properties, null if this is a create
      * @return A map containing the content properties which are going to be replaced from the supplied "props" map
      */
     private Map<QName, Serializable> processProperties(NodeRef nodeToUpdate, Map<QName, Serializable> props,
@@ -796,9 +789,9 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             }
             if ((value != null) && ContentData.class.isAssignableFrom(value.getClass()))
             {
-                if(existingProps != null)
+                if (existingProps != null)
                 {
-                    // This is an update and we have content data 
+                    // This is an update and we have content data
                     File stagingDir = getStagingFolder();
                     ContentData contentData = (ContentData) propEntry.getValue();
                     String contentUrl = contentData.getContentUrl();
@@ -806,7 +799,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                     File stagedFile = new File(stagingDir, fileName);
                     if (stagedFile.exists())
                     {
-                        if(log.isDebugEnabled())
+                        if (log.isDebugEnabled())
                         {
                             log.debug("replace content for node:" + nodeToUpdate + ", " + key);
                         }
@@ -814,24 +807,24 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                         contentProps.put(propEntry.getKey(), propEntry.getValue());
                     }
                     else
-                    {    
+                    {
                         // Staging file does not exist
-                        if(props.containsKey(key))
+                        if (props.containsKey(key))
                         {
-                            if(log.isDebugEnabled())
+                            if (log.isDebugEnabled())
                             {
                                 log.debug("keep existing content for node:" + nodeToUpdate + ", " + key);
                             }
                             // keep the existing content value
                             props.put(propEntry.getKey(), existingProps.get(key));
-                        } 
+                        }
                     }
                 }
                 else
                 {
                     // This is a create so all content items are new
                     contentProps.put(propEntry.getKey(), propEntry.getValue());
-                }                  
+                }
             }
         }
 
@@ -864,8 +857,10 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     }
 
     /**
-     * @param nodeToUpdate NodeRef
-     * @param contentProps Map<QName, Serializable>
+     * @param nodeToUpdate
+     *            NodeRef
+     * @param contentProps
+     *            Map<QName, Serializable>
      * @return true if any content property has been updated for the needToUpdate node
      */
     private boolean writeContent(NodeRef nodeToUpdate, Map<QName, Serializable> contentProps)
@@ -876,7 +871,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         {
             ContentData contentData = (ContentData) contentEntry.getValue();
             String contentUrl = contentData.getContentUrl();
-            if(contentUrl == null || contentUrl.isEmpty())
+            if (contentUrl == null || contentUrl.isEmpty())
             {
                 log.debug("content data is null or empty:" + nodeToUpdate);
                 ContentData cd = new ContentData(null, null, 0, null);
@@ -907,24 +902,24 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         boolean updateNeeded = true;
         // Assumption: if the modified and modifier properties haven't changed, and the cm:content property
         // (if it exists) hasn't changed size then we can assume that properties don't need to be updated...
-//        Map<QName, Serializable> suppliedProps = node.getProperties();
-//        Date suppliedModifiedDate = (Date) suppliedProps.get(ContentModel.PROP_MODIFIED);
-//        String suppliedModifier = (String) suppliedProps.get(ContentModel.PROP_MODIFIER);
-//        ContentData suppliedContent = (ContentData) suppliedProps.get(ContentModel.PROP_CONTENT);
-//
-//        Map<QName, Serializable> existingProps = nodeService.getProperties(nodeToUpdate);
-//        Date existingModifiedDate = (Date) existingProps.get(ContentModel.PROP_MODIFIED);
-//        String existingModifier = (String) existingProps.get(ContentModel.PROP_MODIFIER);
-//        ContentData existingContent = (ContentData) existingProps.get(ContentModel.PROP_CONTENT);
-//
-//        updateNeeded = false;
-//        updateNeeded |= ((suppliedModifiedDate != null && !suppliedModifiedDate.equals(existingModifiedDate)) || 
-//                (existingModifiedDate != null && !existingModifiedDate.equals(suppliedModifiedDate)));
-//        updateNeeded |= ((suppliedContent != null && existingContent == null)
-//                || (suppliedContent == null && existingContent != null) || (suppliedContent != null
-//                && existingContent != null && suppliedContent.getSize() != existingContent.getSize()));
-//        updateNeeded |= ((suppliedModifier != null && !suppliedModifier.equals(existingModifier)) || 
-//                (existingModifier != null && !existingModifier.equals(suppliedModifier)));
+        // Map<QName, Serializable> suppliedProps = node.getProperties();
+        // Date suppliedModifiedDate = (Date) suppliedProps.get(ContentModel.PROP_MODIFIED);
+        // String suppliedModifier = (String) suppliedProps.get(ContentModel.PROP_MODIFIER);
+        // ContentData suppliedContent = (ContentData) suppliedProps.get(ContentModel.PROP_CONTENT);
+        //
+        // Map<QName, Serializable> existingProps = nodeService.getProperties(nodeToUpdate);
+        // Date existingModifiedDate = (Date) existingProps.get(ContentModel.PROP_MODIFIED);
+        // String existingModifier = (String) existingProps.get(ContentModel.PROP_MODIFIER);
+        // ContentData existingContent = (ContentData) existingProps.get(ContentModel.PROP_CONTENT);
+        //
+        // updateNeeded = false;
+        // updateNeeded |= ((suppliedModifiedDate != null && !suppliedModifiedDate.equals(existingModifiedDate)) ||
+        // (existingModifiedDate != null && !existingModifiedDate.equals(suppliedModifiedDate)));
+        // updateNeeded |= ((suppliedContent != null && existingContent == null)
+        // || (suppliedContent == null && existingContent != null) || (suppliedContent != null
+        // && existingContent != null && suppliedContent.getSize() != existingContent.getSize()));
+        // updateNeeded |= ((suppliedModifier != null && !suppliedModifier.equals(existingModifier)) ||
+        // (existingModifier != null && !existingModifier.equals(suppliedModifier)));
         return updateNeeded;
     }
 
@@ -936,7 +931,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     }
 
     /**
-     * @param primaryParentAssoc ChildAssociationRef
+     * @param primaryParentAssoc
+     *            ChildAssociationRef
      */
     private void storeOrphanNode(ChildAssociationRef primaryParentAssoc)
     {
@@ -950,8 +946,10 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     }
 
     /**
-     * @param node TransferManifestNode
-     * @param msgId String
+     * @param node
+     *            TransferManifestNode
+     * @param msgId
+     *            String
      */
     private void error(TransferManifestNode node, String msgId)
     {
@@ -961,7 +959,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     }
 
     /**
-     * @param msgId String
+     * @param msgId
+     *            String
      */
     private void error(String msgId)
     {
@@ -976,14 +975,11 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         this.header = header;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @seeorg.alfresco.repo.transfer.manifest.TransferManifestProcessor# startTransferManifest()
-     */
+     * @seeorg.alfresco.repo.transfer.manifest.TransferManifestProcessor# startTransferManifest() */
     protected void startManifest()
-    {
-    }
+    {}
 
     /**
      * @param nodeService
@@ -1002,7 +998,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     {
         this.contentService = contentService;
     }
-    
+
     /**
      * @param dictionaryService
      *            the dictionaryService to set
@@ -1030,194 +1026,197 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     {
         return permissionService;
     }
-    
+
     /**
      * Process categories.
      * 
      * CRUD of Categories and Tags - also maps noderefs of type d:content from source to target
      * 
      * 
-     * @param properties Map<QName, Serializable>
-     * @param manifestCategories Map<NodeRef, ManifestCategory>
+     * @param properties
+     *            Map<QName, Serializable>
+     * @param manifestCategories
+     *            Map<NodeRef, ManifestCategory>
      */
     private void processCategories(Map<QName, Serializable> properties, Map<NodeRef, ManifestCategory> manifestCategories)
-    {   
-    	if(manifestCategories != null)
-    	{
-    		for(Map.Entry<QName, Serializable> val : properties.entrySet())
-    		{
-    			PropertyDefinition def = dictionaryService.getProperty(val.getKey());
-    			if(def != null)
-    			{
-    			if(def.getDataType().getName().isMatch(DataTypeDefinition.CATEGORY))
-    			{
-    				Serializable thing = val.getValue();
-    				if(thing != null)
-    				{
-    					if(def.isMultiValued())
-    					{
-    						if(thing instanceof java.util.Collection)
-    						{
-    							List<NodeRef> newCategories = new ArrayList<NodeRef>();
-    							java.util.Collection<NodeRef> c = (java.util.Collection<NodeRef>)thing;
-    							for(NodeRef sourceCategoryNodeRef : c)
-    							{
-    								if(log.isDebugEnabled())
-    								{
-    									log.debug("sourceCategoryNodeRef" + sourceCategoryNodeRef);
-    								}
-    								// substitute target node ref fot source node ref
-    								NodeRef targetNodeRef = processCategory(sourceCategoryNodeRef, manifestCategories);
-    								newCategories.add(targetNodeRef);
-    							}
-    							// substitute target node refs for source node refs
-    							properties.put(val.getKey(), (Serializable)newCategories);
-    						}
-    						else
-    						{
-    							throw new AlfrescoRuntimeException("Multi valued object is not a collection" + val.getKey() );
-    						}
-    					}
-    					else
-    					{
-    						NodeRef sourceCategoryNodeRef = (NodeRef)thing;
-    						if(log.isDebugEnabled())
-    						{
-    							log.debug("sourceCategoryNodeRef:" + sourceCategoryNodeRef);
-    						}
-    						NodeRef targetNodeRef = processCategory(sourceCategoryNodeRef, manifestCategories);	
-    						// substitute target node ref for source node ref
-    						properties.put(val.getKey(), targetNodeRef);
-    					}
-    				}
-    			}
-    			}
-    		}   	
-    	}
+    {
+        if (manifestCategories != null)
+        {
+            for (Map.Entry<QName, Serializable> val : properties.entrySet())
+            {
+                PropertyDefinition def = dictionaryService.getProperty(val.getKey());
+                if (def != null)
+                {
+                    if (def.getDataType().getName().isMatch(DataTypeDefinition.CATEGORY))
+                    {
+                        Serializable thing = val.getValue();
+                        if (thing != null)
+                        {
+                            if (def.isMultiValued())
+                            {
+                                if (thing instanceof java.util.Collection)
+                                {
+                                    List<NodeRef> newCategories = new ArrayList<NodeRef>();
+                                    java.util.Collection<NodeRef> c = (java.util.Collection<NodeRef>) thing;
+                                    for (NodeRef sourceCategoryNodeRef : c)
+                                    {
+                                        if (log.isDebugEnabled())
+                                        {
+                                            log.debug("sourceCategoryNodeRef" + sourceCategoryNodeRef);
+                                        }
+                                        // substitute target node ref fot source node ref
+                                        NodeRef targetNodeRef = processCategory(sourceCategoryNodeRef, manifestCategories);
+                                        newCategories.add(targetNodeRef);
+                                    }
+                                    // substitute target node refs for source node refs
+                                    properties.put(val.getKey(), (Serializable) newCategories);
+                                }
+                                else
+                                {
+                                    throw new AlfrescoRuntimeException("Multi valued object is not a collection" + val.getKey());
+                                }
+                            }
+                            else
+                            {
+                                NodeRef sourceCategoryNodeRef = (NodeRef) thing;
+                                if (log.isDebugEnabled())
+                                {
+                                    log.debug("sourceCategoryNodeRef:" + sourceCategoryNodeRef);
+                                }
+                                NodeRef targetNodeRef = processCategory(sourceCategoryNodeRef, manifestCategories);
+                                // substitute target node ref for source node ref
+                                properties.put(val.getKey(), targetNodeRef);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
-    
+
     /**
      * process category - maps the category node ref from the source system to the target system.
      * 
      * It will lazily create any missing categories and tags as it executes.
      * 
-     * @param sourceCategoryNodeRef NodeRef
-     * @param manifestCategories Map<NodeRef, ManifestCategory>
+     * @param sourceCategoryNodeRef
+     *            NodeRef
+     * @param manifestCategories
+     *            Map<NodeRef, ManifestCategory>
      * @return targetNodeRef
      */
     private NodeRef processCategory(final NodeRef sourceCategoryNodeRef, final Map<NodeRef, ManifestCategory> manifestCategories)
     {
-    	
-    	// first check cache to see whether we have already mapped this category
-    	NodeRef destinationNodeRef = categoryMap.get(sourceCategoryNodeRef);
-    	if(destinationNodeRef != null)
-    	{
-    		return destinationNodeRef;
-    	}
-    	
-    	// No we havn't seen this category before, have we got the details in the manifest
-		ManifestCategory category = manifestCategories.get(sourceCategoryNodeRef);
-		if(category != null)
-		{
-			final String path = category.getPath();
-			final Path catPath = PathHelper.stringToPath(path);
-			
-			final Path.Element aspectName = catPath.get(2);
-			final QName aspectQName = QName.createQName(aspectName.getElementString());
-			
-			if(aspectQName.equals(ContentModel.ASPECT_TAGGABLE))
-			{
-				Path.Element tagName = catPath.get(3);
-				// Category is a tag
-				QName tagQName = QName.createQName(tagName.getElementString());
-				destinationNodeRef = taggingService.getTagNodeRef(sourceCategoryNodeRef.getStoreRef(), tagQName.getLocalName());
-				if(destinationNodeRef != null)
-				{
-					log.debug("found existing tag" + tagQName.getLocalName());
-					categoryMap.put(sourceCategoryNodeRef, destinationNodeRef);
-					return destinationNodeRef;
-				}
-				destinationNodeRef = taggingService.createTag(sourceCategoryNodeRef.getStoreRef(), tagQName.getLocalName());
-				if(destinationNodeRef != null)
-				{
-					log.debug("created new tag" + tagQName.getLocalName());
-					categoryMap.put(sourceCategoryNodeRef, destinationNodeRef);
-					return destinationNodeRef;
-				}
-			}
-			else
-			{
-				// Categories are finniky about permissions, so run as system
-				RunAsWork<NodeRef> processCategory = new RunAsWork<NodeRef>()
-				{
-					@Override
+
+        // first check cache to see whether we have already mapped this category
+        NodeRef destinationNodeRef = categoryMap.get(sourceCategoryNodeRef);
+        if (destinationNodeRef != null)
+        {
+            return destinationNodeRef;
+        }
+
+        // No we havn't seen this category before, have we got the details in the manifest
+        ManifestCategory category = manifestCategories.get(sourceCategoryNodeRef);
+        if (category != null)
+        {
+            final String path = category.getPath();
+            final Path catPath = PathHelper.stringToPath(path);
+
+            final Path.Element aspectName = catPath.get(2);
+            final QName aspectQName = QName.createQName(aspectName.getElementString());
+
+            if (aspectQName.equals(ContentModel.ASPECT_TAGGABLE))
+            {
+                Path.Element tagName = catPath.get(3);
+                // Category is a tag
+                QName tagQName = QName.createQName(tagName.getElementString());
+                destinationNodeRef = taggingService.getTagNodeRef(sourceCategoryNodeRef.getStoreRef(), tagQName.getLocalName());
+                if (destinationNodeRef != null)
+                {
+                    log.debug("found existing tag" + tagQName.getLocalName());
+                    categoryMap.put(sourceCategoryNodeRef, destinationNodeRef);
+                    return destinationNodeRef;
+                }
+                destinationNodeRef = taggingService.createTag(sourceCategoryNodeRef.getStoreRef(), tagQName.getLocalName());
+                if (destinationNodeRef != null)
+                {
+                    log.debug("created new tag" + tagQName.getLocalName());
+                    categoryMap.put(sourceCategoryNodeRef, destinationNodeRef);
+                    return destinationNodeRef;
+                }
+            }
+            else
+            {
+                // Categories are finniky about permissions, so run as system
+                RunAsWork<NodeRef> processCategory = new RunAsWork<NodeRef>() {
+                    @Override
                     public NodeRef doWork() throws Exception
                     {
-						QName rootCatName = QName.createQName(catPath.get(3).getElementString());
-						
-						Collection<ChildAssociationRef> roots = categoryService.getRootCategories(sourceCategoryNodeRef.getStoreRef(), aspectQName);
-						
-						/**
-						 * Get the root category node ref
-						 */
-						NodeRef rootCategoryNodeRef = null;
-						for(ChildAssociationRef ref : roots)
-						{
-							if(ref.getQName().equals(rootCatName))
-							{
-								rootCategoryNodeRef = ref.getChildRef();
-								break;
-							}					
-						}
-						
-						if(rootCategoryNodeRef == null)
-						{
-							// Root category does not exist
-							rootCategoryNodeRef = categoryService.createRootCategory(sourceCategoryNodeRef.getStoreRef(), aspectQName, rootCatName.getLocalName());
-						}
-						
-						NodeRef workingNodeRef = rootCategoryNodeRef;
-						// Root category does already exist - step through any sub-categories
-						for(int i = 4; i < catPath.size(); i++)
-						{
-							Path.Element element = catPath.get(i);
-							QName subCatName = QName.createQName(element.toString());
-							ChildAssociationRef child = categoryService.getCategory(workingNodeRef, aspectQName, subCatName.getLocalName());
-							if(child != null)
-							{
-								workingNodeRef = child.getChildRef();
-							}
-							else
-							{
-								workingNodeRef = categoryService.createCategory(workingNodeRef, subCatName.getLocalName());
-							}
-						}
-	                    return workingNodeRef;
+                        QName rootCatName = QName.createQName(catPath.get(3).getElementString());
+
+                        Collection<ChildAssociationRef> roots = categoryService.getRootCategories(sourceCategoryNodeRef.getStoreRef(), aspectQName);
+
+                        /**
+                         * Get the root category node ref
+                         */
+                        NodeRef rootCategoryNodeRef = null;
+                        for (ChildAssociationRef ref : roots)
+                        {
+                            if (ref.getQName().equals(rootCatName))
+                            {
+                                rootCategoryNodeRef = ref.getChildRef();
+                                break;
+                            }
+                        }
+
+                        if (rootCategoryNodeRef == null)
+                        {
+                            // Root category does not exist
+                            rootCategoryNodeRef = categoryService.createRootCategory(sourceCategoryNodeRef.getStoreRef(), aspectQName, rootCatName.getLocalName());
+                        }
+
+                        NodeRef workingNodeRef = rootCategoryNodeRef;
+                        // Root category does already exist - step through any sub-categories
+                        for (int i = 4; i < catPath.size(); i++)
+                        {
+                            Path.Element element = catPath.get(i);
+                            QName subCatName = QName.createQName(element.toString());
+                            ChildAssociationRef child = categoryService.getCategory(workingNodeRef, aspectQName, subCatName.getLocalName());
+                            if (child != null)
+                            {
+                                workingNodeRef = child.getChildRef();
+                            }
+                            else
+                            {
+                                workingNodeRef = categoryService.createCategory(workingNodeRef, subCatName.getLocalName());
+                            }
+                        }
+                        return workingNodeRef;
                     }
-					
-				};
-				destinationNodeRef = AuthenticationUtil.runAs(processCategory, AuthenticationUtil.SYSTEM_USER_NAME);
-			    categoryMap.put(sourceCategoryNodeRef, destinationNodeRef);
-			    return destinationNodeRef;
-			}
-		} // if manifest category exists
-		
-		return sourceCategoryNodeRef;
-    
+
+                };
+                destinationNodeRef = AuthenticationUtil.runAs(processCategory, AuthenticationUtil.SYSTEM_USER_NAME);
+                categoryMap.put(sourceCategoryNodeRef, destinationNodeRef);
+                return destinationNodeRef;
+            }
+        } // if manifest category exists
+
+        return sourceCategoryNodeRef;
+
     }
 
     /**
      * inject transferred
      */
     private void injectTransferred(Map<QName, Serializable> props)
-    {       
-        if(!props.containsKey(TransferModel.PROP_REPOSITORY_ID))
+    {
+        if (!props.containsKey(TransferModel.PROP_REPOSITORY_ID))
         {
             log.debug("injecting repositoryId property");
             props.put(TransferModel.PROP_REPOSITORY_ID, header.getRepositoryId());
         }
         props.put(TransferModel.PROP_FROM_REPOSITORY_ID, header.getRepositoryId());
-        
+
         /**
          * For each property
          */
@@ -1226,17 +1225,17 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         {
             if ((value != null) && ContentData.class.isAssignableFrom(value.getClass()))
             {
-                ContentData srcContent = (ContentData)value;
+                ContentData srcContent = (ContentData) value;
 
-                if(srcContent.getContentUrl() != null && !srcContent.getContentUrl().isEmpty())
+                if (srcContent.getContentUrl() != null && !srcContent.getContentUrl().isEmpty())
                 {
                     log.debug("adding part name to from content field");
                     contentProps.add(TransferCommons.URLToPartName(srcContent.getContentUrl()));
-                }  
+                }
             }
         }
-        
-        props.put(TransferModel.PROP_FROM_CONTENT, (Serializable)contentProps);
+
+        props.put(TransferModel.PROP_FROM_CONTENT, (Serializable) contentProps);
     }
 
     public void setAlienProcessor(AlienProcessor alienProcessor)
@@ -1249,24 +1248,24 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         return alienProcessor;
     }
 
-	public CategoryService getCategoryService()
+    public CategoryService getCategoryService()
     {
-	    return categoryService;
+        return categoryService;
     }
 
-	public void setCategoryService(CategoryService categoryService)
+    public void setCategoryService(CategoryService categoryService)
     {
-	    this.categoryService = categoryService;
+        this.categoryService = categoryService;
     }
 
-	public TaggingService getTaggingService()
+    public TaggingService getTaggingService()
     {
-	    return taggingService;
+        return taggingService;
     }
 
-	public void setTaggingService(TaggingService taggingService)
+    public void setTaggingService(TaggingService taggingService)
     {
-	    this.taggingService = taggingService;
+        this.taggingService = taggingService;
     }
 
 }

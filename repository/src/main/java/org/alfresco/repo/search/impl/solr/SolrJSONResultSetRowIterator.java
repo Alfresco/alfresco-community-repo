@@ -37,7 +37,8 @@ public class SolrJSONResultSetRowIterator extends AbstractResultSetRowIterator
 {
 
     /**
-     * @param resultSet ResultSet
+     * @param resultSet
+     *            ResultSet
      */
     public SolrJSONResultSetRowIterator(ResultSet resultSet)
     {
@@ -47,11 +48,11 @@ public class SolrJSONResultSetRowIterator extends AbstractResultSetRowIterator
 
     public ResultSetRow next()
     {
-        return new SolrJSONResultSetRow((SolrJSONResultSet)getResultSet(), moveToNextPosition());
+        return new SolrJSONResultSetRow((SolrJSONResultSet) getResultSet(), moveToNextPosition());
     }
 
     public ResultSetRow previous()
     {
-        return new SolrJSONResultSetRow((SolrJSONResultSet)getResultSet(), moveToPreviousPosition());
+        return new SolrJSONResultSetRow((SolrJSONResultSet) getResultSet(), moveToPreviousPosition());
     }
 }

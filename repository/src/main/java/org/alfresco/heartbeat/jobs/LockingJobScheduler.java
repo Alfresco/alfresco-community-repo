@@ -25,16 +25,15 @@
  */
 package org.alfresco.heartbeat.jobs;
 
-import org.alfresco.heartbeat.HBBaseDataCollector;
-import org.alfresco.repo.lock.JobLockService;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 
+import org.alfresco.heartbeat.HBBaseDataCollector;
+import org.alfresco.repo.lock.JobLockService;
 
 /**
  *
- * The scheduler is responsible for the scheduling and unscheduling of locking jobs {@link LockingJob}.
- * Only one repository node in a cluster will collect data for collectors with this type of job.
+ * The scheduler is responsible for the scheduling and unscheduling of locking jobs {@link LockingJob}. Only one repository node in a cluster will collect data for collectors with this type of job.
  */
 public class LockingJobScheduler extends QuartzJobScheduler
 {

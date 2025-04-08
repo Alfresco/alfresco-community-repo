@@ -44,66 +44,67 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * Content Filesystem Context Class
  * 
- * <p>Contains per filesystem context.
+ * <p>
+ * Contains per filesystem context.
  * 
  * @author GKSpencer
  */
 public class ContentContext extends AlfrescoContext
 {
     // Store and root path
-    
+
     private String m_storeName;
     private String m_rootPath;
-    
+
     // Root node
-    
+
     private NodeRef m_rootNodeRef;
-    
+
     private String m_relativePath;
-    
+
     private boolean m_offlineFiles;
-    
+
     private boolean m_disableNodeMonitor;
-    
+
     // Disable change notifications for CIFS
-    
+
     private boolean m_disableChangeNotifications;
-    
+
     private AccessControlListBean m_accessControlList;
-        
+
     // File state based lock/oplock manager
-    
+
     private FileStateLockManager m_lockManager;
 
     // Enable/disable oplocks
-    
+
     private boolean m_oplocksDisabled;
-    
+
     // Node monitor
-    
+
     private NodeMonitor m_nodeMonitor;
-    
+
     // Thread pool
-    
+
     private ThreadRequestPool m_threadPool;
-    
+
     // pattern is tested against full path after it has been lower cased.
     private Pattern renameShufflePattern = Pattern.compile("(.*[a-f0-9]{8}+$)|(.*\\.tmp$)|(.*\\.wbk$)|(.*\\.bak$)|(.*\\~$)");
-    
+
     /**
      * Default constructor allowing initialization by container.
      */
     public ContentContext()
     {
-//        // Create the I/O control handler
-        
-//        setIOHandler( createIOHandler( null));
+        // // Create the I/O control handler
+
+        // setIOHandler( createIOHandler( null));
     }
-    
+
     /**
      * Class constructor
      * 
-     *@param deviceName
+     * @param deviceName
      *            String
      * @param storeName
      *            String
@@ -113,7 +114,7 @@ public class ContentContext extends AlfrescoContext
      *            NodeRef
      */
     public ContentContext(String deviceName, String storeName, String rootPath, NodeRef rootNodeRef)
-    {       
+    {
         setDeviceName(deviceName);
         setStoreName(storeName);
         setRootPath(rootPath);
@@ -133,28 +134,31 @@ public class ContentContext extends AlfrescoContext
     public void setRelativePath(String path)
     {
         // Make sure the path is in CIFS format
-        m_relativePath = path.replace( '/', FileName.DOS_SEPERATOR);;
+        m_relativePath = path.replace('/', FileName.DOS_SEPERATOR);
+        ;
     }
 
     public void setOfflineFiles(boolean offlineFiles)
     {
         m_offlineFiles = offlineFiles;
-    }        
+    }
 
     public void setDisableNodeMonitor(boolean disableNodeMonitor)
     {
         m_disableNodeMonitor = disableNodeMonitor;
-    }        
+    }
 
     /**
      * Disable change notifications
      * 
-     * @param disableChangeNotify boolean
+     * @param disableChangeNotify
+     *            boolean
      */
-    public void setDisableChangeNotifications( boolean disableChangeNotify) {
+    public void setDisableChangeNotifications(boolean disableChangeNotify)
+    {
         m_disableChangeNotifications = disableChangeNotify;
     }
-    
+
     public void setAccessControlList(AccessControlListBean accessControlList)
     {
         m_accessControlList = accessControlList;
@@ -166,21 +170,21 @@ public class ContentContext extends AlfrescoContext
         setShareName(nodeRef.toString());
     }
 
-
     /**
      * Enable/disable oplock support
      * 
-     * @param disableOplocks boolean
+     * @param disableOplocks
+     *            boolean
      */
-    public void setDisableOplocks( boolean disableOplocks) {
-    	m_oplocksDisabled = disableOplocks;
+    public void setDisableOplocks(boolean disableOplocks)
+    {
+        m_oplocksDisabled = disableOplocks;
     }
 
     /**
-     * Get the regular expression pattern that will be applied to detected potential
-     * rename shuffles.
+     * Get the regular expression pattern that will be applied to detected potential rename shuffles.
      * 
-     * @return                          the regular expression pattern to match against
+     * @return the regular expression pattern to match against
      */
     public Pattern getRenameShufflePattern()
     {
@@ -188,13 +192,12 @@ public class ContentContext extends AlfrescoContext
     }
 
     /**
-     * Set the regular expression that will be applied to filenames during renames
-     * to detect whether clients are performing a renaming shuffle - common during
-     * file saving on various clients.
+     * Set the regular expression that will be applied to filenames during renames to detect whether clients are performing a renaming shuffle - common during file saving on various clients.
      * <p/>
      * <b>ALF-3856</b>
      * 
-     * @param renameShufflePattern      a regular expression filename match
+     * @param renameShufflePattern
+     *            a regular expression filename match
      */
     public void setRenameShufflePattern(Pattern renameShufflePattern)
     {
@@ -208,21 +211,21 @@ public class ContentContext extends AlfrescoContext
         {
             throw new AlfrescoRuntimeException("Device missing storeName");
         }
-        
+
         if (m_rootPath == null || m_rootPath.length() == 0)
         {
             throw new AlfrescoRuntimeException("Device missing rootPath");
         }
-        
+
         // Enable file state caching
-        
-        getStateCache().setCaseSensitive( false);
+
+        getStateCache().setCaseSensitive(false);
 
         // Create the file state based lock manager
-        
-        m_lockManager = new FileStateLockManager( getStateCache());        
+
+        m_lockManager = new FileStateLockManager(getStateCache());
     }
-    
+
     /**
      * Return the filesystem type, either FileSystem.TypeFAT or FileSystem.TypeNTFS.
      * 
@@ -232,7 +235,7 @@ public class ContentContext extends AlfrescoContext
     {
         return FileSystem.TypeNTFS;
     }
-    
+
     /**
      * Return the store name
      * 
@@ -242,7 +245,7 @@ public class ContentContext extends AlfrescoContext
     {
         return m_storeName;
     }
-    
+
     /**
      * Return the root path
      * 
@@ -252,7 +255,7 @@ public class ContentContext extends AlfrescoContext
     {
         return m_rootPath;
     }
-    
+
     /**
      * Return the relative path
      * 
@@ -263,7 +266,6 @@ public class ContentContext extends AlfrescoContext
         return m_relativePath;
     }
 
-    
     /**
      * Determines whether locked files should be marked as offline.
      * 
@@ -289,16 +291,18 @@ public class ContentContext extends AlfrescoContext
      * 
      * @return boolean
      */
-    public boolean getDisableOplocks() {
-    	return m_oplocksDisabled;
+    public boolean getDisableOplocks()
+    {
+        return m_oplocksDisabled;
     }
-    
+
     /**
      * Return the lock manager
      * 
      * @return FileStateLockManager
      */
-    public FileStateLockManager getLockManager() {
+    public FileStateLockManager getLockManager()
+    {
         return m_lockManager;
     }
 
@@ -307,10 +311,11 @@ public class ContentContext extends AlfrescoContext
      * 
      * @return boolean
      */
-    public boolean getDisableChangeNotifications() {
+    public boolean getDisableChangeNotifications()
+    {
         return m_disableChangeNotifications;
     }
-    
+
     /**
      * Gets the access control list.
      * 
@@ -336,90 +341,98 @@ public class ContentContext extends AlfrescoContext
      * 
      * @return ThreadRequestPool
      */
-    public final ThreadRequestPool getThreadPool() {
+    public final ThreadRequestPool getThreadPool()
+    {
         return m_threadPool;
     }
-    
+
     /**
      * Close the filesystem context
      */
-    public void CloseContext() {
+    public void CloseContext()
+    {
 
         // Stop the node monitor, if enabled
-        
-        if ( m_nodeMonitor != null)
+
+        if (m_nodeMonitor != null)
             m_nodeMonitor.shutdownRequest();
-        
-        //  Stop the quota manager, if enabled
-        
-        if ( hasQuotaManager()) {
-            try {
+
+        // Stop the quota manager, if enabled
+
+        if (hasQuotaManager())
+        {
+            try
+            {
                 getQuotaManager().stopManager(null, this);
             }
-            catch ( QuotaManagerException ex) {
-            }
+            catch (QuotaManagerException ex)
+            {}
         }
-        
-        //  Call the base class
-        
+
+        // Call the base class
+
         super.CloseContext();
     }
-    
-//    /**
-//     * Create the I/O control handler for this filesystem type
-//     * 
-//     * @param filesysDriver DiskInterface
-//     * @return IOControlHandler
-//     */
-//    protected IOControlHandler createIOHandler( DiskInterface filesysDriver)
-//    {
-//        return new ContentIOControlHandler();
-//    }
-    
+
+    // /**
+    // * Create the I/O control handler for this filesystem type
+    // *
+    // * @param filesysDriver DiskInterface
+    // * @return IOControlHandler
+    // */
+    // protected IOControlHandler createIOHandler( DiskInterface filesysDriver)
+    // {
+    // return new ContentIOControlHandler();
+    // }
+
     /**
      * Set the node monitor
      * 
-     * @param nodeMonitor node monitor
+     * @param nodeMonitor
+     *            node monitor
      */
-    protected void setNodeMonitor( NodeMonitor nodeMonitor) {
+    protected void setNodeMonitor(NodeMonitor nodeMonitor)
+    {
         m_nodeMonitor = nodeMonitor;
     }
 
     /**
      * Start the filesystem
      * 
-     * @param share DiskSharedDevice
+     * @param share
+     *            DiskSharedDevice
      * @exception DeviceContextException
      */
     public void startFilesystem(DiskSharedDevice share)
-        throws DeviceContextException {
-        
+            throws DeviceContextException
+    {
 
         // Call the base class
-        
+
         super.startFilesystem(share);
 
-        if ( getStateCache() != null)
-        	getStateCache().setCaseSensitive( false);
-        
+        if (getStateCache() != null)
+            getStateCache().setCaseSensitive(false);
+
         // Find the thread pool via the configuration
-        
-        CoreServerConfigSection coreConfig = (CoreServerConfigSection) share.getConfiguration().getConfigSection( CoreServerConfigSection.SectionName);
-        if ( coreConfig != null)
+
+        CoreServerConfigSection coreConfig = (CoreServerConfigSection) share.getConfiguration().getConfigSection(CoreServerConfigSection.SectionName);
+        if (coreConfig != null)
             m_threadPool = coreConfig.getThreadPool();
-        
+
         // Start the lock manager, use the thread pool if available
-        
-        if ( getLockManager() != null) {
-                    
+
+        if (getLockManager() != null)
+        {
+
             // Start the lock manager
-            
-            m_lockManager.startLockManager( "OplockExpire_" + share.getName(), m_threadPool);
+
+            m_lockManager.startLockManager("OplockExpire_" + share.getName(), m_threadPool);
         }
 
         // Start the node monitor, if enabled
-        
-        if ( m_nodeMonitor != null)
+
+        if (m_nodeMonitor != null)
             m_nodeMonitor.startMonitor();
     }
 }

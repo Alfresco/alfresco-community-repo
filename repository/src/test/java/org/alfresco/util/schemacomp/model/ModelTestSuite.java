@@ -34,16 +34,15 @@ import org.junit.runners.Suite;
  * @author Matt Ward
  */
 @RunWith(Suite.class)
-@Suite.SuiteClasses(
-{
-    AbstractDbObjectTest.class,
-    ColumnTest.class,
-    ForeignKeyTest.class,
-    IndexTest.class,
-    PrimaryKeyTest.class,
-    SchemaTest.class,
-    SequenceTest.class,
-    TableTest.class
+@Suite.SuiteClasses({
+        AbstractDbObjectTest.class,
+        ColumnTest.class,
+        ForeignKeyTest.class,
+        IndexTest.class,
+        PrimaryKeyTest.class,
+        SchemaTest.class,
+        SequenceTest.class,
+        TableTest.class
 })
 public class ModelTestSuite
 {

@@ -45,12 +45,14 @@ public interface AsynchronousActionExecutionQueuePolicies
     {
         /** QName of the policy */
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onAsyncActionExecute");
-        
+
         /**
-         * @param action                    action
-         * @param actionedUponNodeRef       actioned upon node reference
+         * @param action
+         *            action
+         * @param actionedUponNodeRef
+         *            actioned upon node reference
          */
         public void onAsyncActionExecute(Action action, NodeRef actionedUponNodeRef);
     }
-    
+
 }

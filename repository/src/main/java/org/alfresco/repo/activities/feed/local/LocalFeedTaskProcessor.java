@@ -33,6 +33,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import freemarker.core.TemplateClassResolver;
+import freemarker.template.Configuration;
+import freemarker.template.DefaultObjectWrapper;
+import freemarker.template.Version;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
@@ -60,22 +73,8 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.subscriptions.PagingFollowingResults;
 import org.alfresco.service.cmr.subscriptions.SubscriptionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
-
-import freemarker.core.TemplateClassResolver;
-import freemarker.template.Configuration;
-import freemarker.template.DefaultObjectWrapper;
-import freemarker.template.Version;
 
 /**
  * The local (ie. not grid) feed task processor is responsible for processing the individual feed job
@@ -143,7 +142,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
     {
         this.subscriptionService = subscriptionService;
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
@@ -198,7 +197,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         List<ActivityPostEntity> activityPosts = postDAO.selectPosts(selector, -1);
         if (logger.isTraceEnabled())
         {
-            for(ActivityPostEntity activityPost : activityPosts)
+            for (ActivityPostEntity activityPost : activityPosts)
             {
                 logger.trace("Selected post: " + activityPost.toString());
             }
@@ -233,14 +232,14 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         List<FeedControlEntity> userFeedControls = feedControlDAO.selectFeedControls(userId);
         if (logger.isTraceEnabled())
         {
-            for(FeedControlEntity userFeedControl : userFeedControls)
+            for (FeedControlEntity userFeedControl : userFeedControls)
             {
                 logger.trace("Selected user feed control: " + userFeedControl.toString());
             }
         }
         return userFeedControls;
     }
-    
+
     @Override
     protected String getTenantName(String name, String tenantDomain)
     {
@@ -248,11 +247,11 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         {
             return name;
         }
-        
+
         String nameDomain = getTenantDomain(name);
         if (nameDomain.equals(TenantService.DEFAULT_DOMAIN))
         {
-            if (! TenantService.DEFAULT_DOMAIN.equals(tenantDomain))
+            if (!TenantService.DEFAULT_DOMAIN.equals(tenantDomain))
             {
                 // no domain, so add it as a prefix (between two domain separators)
                 name = TenantService.SEPARATOR + tenantDomain + TenantService.SEPARATOR + name;
@@ -260,22 +259,21 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         }
         else
         {
-            if (! tenantDomain.equals(nameDomain))
+            if (!tenantDomain.equals(nameDomain))
             {
                 throw new AlfrescoRuntimeException("domain mismatch: expected = " + tenantDomain + ", actual = " + nameDomain);
             }
         }
-        
+
         return name;
     }
-    
+
     @Override
     protected String getTenantDomain(String name)
     {
         return tenantService.getDomain(name, false);
     }
 
-    
     @Override
     protected Set<String> getSiteMembers(final RepoCtx ctx, String siteIdIn, final String tenantDomain) throws Exception
     {
@@ -283,21 +281,20 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         {
             // as per 3.0, 3.1
             return super.getSiteMembers(ctx, siteIdIn, tenantDomain);
-        } 
+        }
         else
         {
             final String siteId = tenantService.getBaseName(siteIdIn, true);
-            
+
             // optimise for non-remote implementation - override remote repo callback (to "List Site Memberships" web script) with embedded call
-            return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Set<String>>()
-            {
+            return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Set<String>>() {
                 public Set<String> doWork() throws Exception
                 {
                     Set<String> members = new HashSet<String>();
                     if ((siteId != null) && (siteId.length() != 0))
                     {
                         Map<String, String> mapResult = siteService.listMembers(siteId, null, null, 0, true);
-                        
+
                         if ((mapResult != null) && (mapResult.size() != 0))
                         {
                             for (String userName : mapResult.keySet())
@@ -310,13 +307,13 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                             }
                         }
                     }
-                    
+
                     return members;
                 }
             }, tenantDomain);
         }
     }
-    
+
     @Override
     protected boolean canReadSite(final RepoCtx ctx, String siteIdIn, final String connectedUser, final String tenantDomain) throws Exception
     {
@@ -325,11 +322,10 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
             // note: not implemented
             throw new UnsupportedOperationException("Not implemented");
         }
-        
+
         final String siteId = tenantService.getBaseName(siteIdIn, true);
-        
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
-        {
+
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>() {
             public Boolean doWork() throws Exception
             {
                 boolean canRead = false;
@@ -363,29 +359,31 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
             // note: not implemented
             throw new UnsupportedOperationException("Not implemented");
         }
-        
+
         if (permissionService == null)
         {
             // if permission service not configured then fallback (ie. no read permission check)
             return true;
         }
-        
+
         String nodeRefStr = (String) model.get(PostLookup.JSON_NODEREF);
         if (nodeRefStr == null)
         {
             nodeRefStr = (String) model.get(PostLookup.JSON_NODEREF_PARENT);
         }
-        
+
         if (nodeRefStr != null)
         {
             final NodeRef nodeRef = new NodeRef(nodeRefStr);
-            
+
             // MT share
-            String tenantDomain = (String)model.get(PostLookup.JSON_TENANT_DOMAIN);
-            if (tenantDomain == null) { tenantDomain = TenantService.DEFAULT_DOMAIN; }
-            
-            return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Boolean>()
+            String tenantDomain = (String) model.get(PostLookup.JSON_TENANT_DOMAIN);
+            if (tenantDomain == null)
             {
+                tenantDomain = TenantService.DEFAULT_DOMAIN;
+            }
+
+            return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Boolean>() {
                 public Boolean doWork() throws Exception
                 {
                     return canReadImpl(connectedUser, nodeRef);
@@ -398,7 +396,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
             return true;
         }
     }
-    
+
     private boolean canReadImpl(final String connectedUser, final NodeRef nodeRef) throws Exception
     {
         // check for read permission
@@ -440,10 +438,10 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                 Set<AccessPermission> perms = permissionService.getAllSetPermissions(checkNodeRef);
                 for (AccessPermission perm : perms)
                 {
-                    if (perm.getAuthority().equals(PermissionService.ALL_AUTHORITIES) && 
-                        perm.getAuthorityType().equals(AuthorityType.EVERYONE) && 
-                        perm.getPermission().equals(PermissionService.READ_PERMISSIONS) && 
-                        perm.getAccessStatus().equals(AccessStatus.ALLOWED))
+                    if (perm.getAuthority().equals(PermissionService.ALL_AUTHORITIES) &&
+                            perm.getAuthorityType().equals(AuthorityType.EVERYONE) &&
+                            perm.getPermission().equals(PermissionService.READ_PERMISSIONS) &&
+                            perm.getAccessStatus().equals(AccessStatus.ALLOWED))
                     {
                         return true;
                     }
@@ -459,8 +457,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
             else
             {
                 // user feed
-                boolean allow = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
-                {
+                boolean allow = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>() {
                     public Boolean doWork() throws Exception
                     {
                         return (permissionService.hasPermission(checkNodeRef, PermissionService.READ) == AccessStatus.ALLOWED);
@@ -491,7 +488,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         {
             // as per 3.0, 3.1
             return super.getActivityTypeTemplates(repoEndPoint, ticket, subPath);
-        } 
+        }
         else
         {
             // optimisation - override remote repo callback (to "Activities Templates" web script) with local/embedded call
@@ -524,7 +521,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         {
             // as per 3.0, 3.1
             return super.getFreemarkerConfiguration(ctx);
-        } 
+        }
         else
         {
             Configuration cfg = new Configuration();
@@ -570,14 +567,14 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         {
             final StringBuilder pattern = new StringBuilder(128);
             pattern.append("classpath*:").append(classPath)
-                   .append(path)
-                   .append((includeSubPaths ? "**/" : ""))
-                   .append(documentPattern);
+                    .append(path)
+                    .append((includeSubPaths ? "**/" : ""))
+                    .append(documentPattern);
 
             try
             {
                 documentPaths.addAll(getPaths(pattern.toString(), classPath));
-            } 
+            }
             catch (IOException e)
             {
                 // Note: Ignore: no documents found
@@ -595,7 +592,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         for (Resource resource : resources)
         {
             String resourcePath = resource.getURL().toExternalForm();
-            
+
             int idx = resourcePath.lastIndexOf(classPath);
             if (idx != -1)
             {
@@ -610,7 +607,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         }
         return documentPaths;
     }
-    
+
     protected Set<String> getFollowers(final String userId, String tenantDomain) throws Exception
     {
         if (useRemoteCallbacks)
@@ -618,27 +615,26 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
             // note: not implemented
             throw new UnsupportedOperationException("Not implemented");
         }
-        
+
         final Set<String> result = new HashSet<String>();
-        
+
         if (subscriptionService.isActive())
         {
-            TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Void>()
-            {
+            TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Void>() {
                 public Void doWork() throws Exception
                 {
                     PagingFollowingResults fr = subscriptionService.getFollowers(userId, new PagingRequest(1000000, null));
-                    
+
                     if (fr.getPage() != null)
                     {
                         result.addAll(fr.getPage());
                     }
-                    
+
                     return null;
                 }
             }, tenantDomain);
         }
-        
+
         return result;
     }
 }

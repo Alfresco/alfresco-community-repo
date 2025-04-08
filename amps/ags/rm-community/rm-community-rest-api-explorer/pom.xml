@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-governance-services-community-repo-parent</artifactId>
-        <version>25.1.0.65-SNAPSHOT</version>
+        <version>25.2.0.12-SNAPSHOT</version>
     </parent>
 
     <build>

@@ -32,14 +32,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.util.GUID;
-import org.junit.Ignore;
+import com.google.common.collect.Lists;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
-import com.google.common.collect.Lists;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.GUID;
 
 /**
  * Unit test for the Export Web Script API of the Site Object.
@@ -67,15 +66,15 @@ public class SiteExportServiceTest extends AbstractSiteServiceTest
     {
         super.tearDown();
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
-        
+
         // Clear the users
         deleteUser(USER_ONE);
         deleteUser(USER_FROM_LDAP);
-                
-        //Delete the sites
+
+        // Delete the sites
         deleteSites();
     }
-    
+
     public void testExportSiteWithMutipleUsers() throws Exception
     {
         // Create a site

@@ -49,12 +49,9 @@ public class LuceneLower<Q, S, E extends Throwable> extends Lower implements Luc
         super();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(java.util.Set,
-     * java.util.Map, org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext,
-     * org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext) */
     public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
             throws E
     {

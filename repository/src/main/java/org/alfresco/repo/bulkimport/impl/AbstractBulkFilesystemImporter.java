@@ -30,6 +30,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import org.alfresco.repo.bulkimport.BulkFSImportEvent;
 import org.alfresco.repo.bulkimport.BulkFilesystemImporter;
 import org.alfresco.repo.bulkimport.BulkImportParameters;
@@ -54,12 +61,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * 
@@ -72,7 +73,7 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
     protected static final Log logger = LogFactory.getLog(BulkFilesystemImporter.class);
 
     protected ApplicationContext applicationContext;
-    
+
     protected FileFolderService fileFolderService;
     protected TransactionService transactionService;
     protected PermissionService permissionService;
@@ -83,68 +84,68 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
     protected DirectoryAnalyser directoryAnalyser = null;
 
     protected JobLockService jobLockService;
-    
-    protected BehaviourFilter behaviourFilter;
-    
-	public void setRuleService(RuleService ruleService)
-	{
-		this.ruleService = ruleService;
-	}
 
-	public void setBehaviourFilter(BehaviourFilter behaviourFilter)
-	{
-		this.behaviourFilter = behaviourFilter;
-	}
-	
-	public void setJobLockService(JobLockService jobLockService)
-	{
-		this.jobLockService = jobLockService;
-	}
-    
-	public void setImportStatus(BulkImportStatusImpl importStatus)
-	{
-		this.importStatus = importStatus;
-	}
-	
+    protected BehaviourFilter behaviourFilter;
+
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
+    }
+
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+
+    public void setJobLockService(JobLockService jobLockService)
+    {
+        this.jobLockService = jobLockService;
+    }
+
+    public void setImportStatus(BulkImportStatusImpl importStatus)
+    {
+        this.importStatus = importStatus;
+    }
+
     public final void setDirectoryAnalyser(DirectoryAnalyser directoryAnalyser)
     {
         this.directoryAnalyser = directoryAnalyser;
     }
 
-	public void setFileFolderService(FileFolderService fileFolderService)
-	{
-		this.fileFolderService = fileFolderService;
-	}
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
 
-	public void setTransactionService(TransactionService transactionService)
-	{
-		this.transactionService = transactionService;
-	}
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
 
-	public void setPermissionService(PermissionService permissionService)
-	{
-		this.permissionService = permissionService;
-	}
-    
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
     /**
      * @see org.alfresco.repo.bulkimport.BulkFilesystemImporter#getStatus()
      */
     public final BulkImportStatus getStatus()
     {
-        return(importStatus);
+        return (importStatus);
     }
-	
-	public void afterPropertiesSet() throws Exception
-	{
+
+    public void afterPropertiesSet() throws Exception
+    {
         PropertyCheck.mandatory(this, "fileFolderService", fileFolderService);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "permissionService", permissionService);
-        
+
         PropertyCheck.mandatory(this, "importStatus", importStatus);
         PropertyCheck.mandatory(this, "directoryAnalyser", directoryAnalyser);
-        
+
         this.transactionHelper = transactionService.getRetryingTransactionHelper();
-	}
+    }
 
     protected abstract void bulkImportImpl(BulkImportParameters bulkImportParameters, NodeImporter nodeImporter, String lockToken);
 
@@ -173,7 +174,7 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
         }
         jobLockService.refreshLock(lockToken, LOCK, time);
     }
-    
+
     protected void releaseLock(String lockToken)
     {
         if (lockToken == null)
@@ -182,14 +183,12 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
         }
         jobLockService.releaseLock(lockToken, LOCK);
     }
-    
-    /*
-     * Because commons-lang ToStringBuilder doesn't seem to like unmodifiable Maps
-     */
+
+    /* Because commons-lang ToStringBuilder doesn't seem to like unmodifiable Maps */
     protected final String mapToString(Map<?, ?> map)
     {
         StringBuffer result = new StringBuffer();
-        
+
         if (map != null)
         {
             result.append('[');
@@ -203,29 +202,29 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
                     result.append(String.valueOf(map.get(key)));
                     result.append(",\n");
                 }
-                
+
                 // Delete final dangling ", " value
                 result.delete(result.length() - 2, result.length());
             }
-            
+
             result.append(']');
         }
         else
         {
             result.append("(null)");
         }
-        
-        return(result.toString());
+
+        return (result.toString());
     }
-    
+
     protected final String getRepositoryPath(NodeRef nodeRef)
     {
         String result = null;
-        
+
         if (nodeRef != null)
         {
             List<FileInfo> pathElements = null;
-            
+
             try
             {
                 pathElements = fileFolderService.getNamePath(null, nodeRef);
@@ -233,13 +232,13 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
                 if (pathElements != null && pathElements.size() > 0)
                 {
                     StringBuilder temp = new StringBuilder();
-                    
+
                     for (FileInfo pathElement : pathElements)
                     {
                         temp.append("/");
                         temp.append(pathElement.getName());
                     }
-                    
+
                     result = temp.toString();
                 }
             }
@@ -248,8 +247,8 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
                 // Do nothing
             }
         }
-        
-        return(result);
+
+        return (result);
     }
 
     protected final void validateNodeRefIsWritableSpace(NodeRef target)
@@ -258,50 +257,49 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
         {
             throw new IllegalArgumentException("target must not be null.");
         }
-        
+
         if (!fileFolderService.exists(target))
         {
             throw new IllegalArgumentException("Target '" + target.toString() + "' doesn't exist.");
         }
-        
+
         if (AccessStatus.DENIED.equals(permissionService.hasPermission(target, PermissionService.ADD_CHILDREN)))
         {
             throw new IllegalArgumentException("Target '" + target.toString() + "' is not writeable.");
         }
-        
+
         if (!fileFolderService.getFileInfo(target).isFolder())
         {
             throw new IllegalArgumentException("Target '" + target.toString() + "' is not a space.");
         }
     }
-    
+
     protected String getFileName(File file)
     {
-    	return FileUtils.getFileName(file);
+        return FileUtils.getFileName(file);
     }
-    
+
     protected String getLockToken()
     {
-		// Take out a bulk filesystem import lock
-		RetryingTransactionCallback<String> txnWork = new RetryingTransactionCallback<String>()
-        {
+        // Take out a bulk filesystem import lock
+        RetryingTransactionCallback<String> txnWork = new RetryingTransactionCallback<String>() {
             public String execute() throws Exception
             {
-		        String lockToken = getLock(20000L);
-		        return lockToken;
+                String lockToken = getLock(20000L);
+                return lockToken;
             }
         };
 
         String lockToken = transactionService.getRetryingTransactionHelper().doInTransaction(txnWork, false, true);
-//        if(lockToken == null)
-//        {
-//            logger.warn("Can't get lock. Assume multiple bulk filesystem importers ...");
-//            return;
-//        }
-        
+        // if(lockToken == null)
+        // {
+        // logger.warn("Can't get lock. Assume multiple bulk filesystem importers ...");
+        // return;
+        // }
+
         return lockToken;
     }
-    
+
     public void validateSourceIsReadableDirectory(File source)
     {
         try
@@ -310,17 +308,17 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
             {
                 throw new IllegalArgumentException("source must not be null.");
             }
-            
+
             if (!source.exists())
             {
                 throw new IllegalArgumentException("Source '" + source.getCanonicalPath() + "' doesn't exist.");
             }
-            
+
             if (!source.canRead())
             {
                 throw new IllegalArgumentException("Source '" + source.getCanonicalPath() + "' is not readable.");
             }
-            
+
             if (!source.isDirectory())
             {
                 throw new IllegalArgumentException("Source '" + source.getCanonicalPath() + "' is not a directory.");
@@ -331,93 +329,89 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
             throw new RuntimeException(ioe);
         }
     }
-    
+
     public void asyncBulkImport(final BulkImportParameters bulkImportParameters, final NodeImporter nodeImporter)
     {
-    	final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
 
-        Runnable backgroundLogic = new Runnable()
-        {
+        Runnable backgroundLogic = new Runnable() {
             public void run()
             {
-            	AuthenticationUtil.runAs(new RunAsWork<Object>()
-            	{
-            		public Object doWork()
-            		{
-            			bulkImport(bulkImportParameters, nodeImporter);
-		            	return null;
-					}
-				}, currentUser);
+                AuthenticationUtil.runAs(new RunAsWork<Object>() {
+                    public Object doWork()
+                    {
+                        bulkImport(bulkImportParameters, nodeImporter);
+                        return null;
+                    }
+                }, currentUser);
             }
         };
 
         Thread backgroundThread = new Thread(backgroundLogic, "BulkFilesystemImport-BackgroundThread");
         backgroundThread.start();
     }
-    
+
     /**
      * @see org.alfresco.repo.bulkimport.BulkFilesystemImporter#bulkImport(org.alfresco.repo.bulkimport.BulkImportParameters, org.alfresco.repo.bulkimport.NodeImporter)
      */
     public void bulkImport(final BulkImportParameters bulkImportParameters, final NodeImporter nodeImporter)
     {
-    	final File sourceFolder = nodeImporter.getSourceFolder();
-    	final BulkFilesystemImporter importer = this;
+        final File sourceFolder = nodeImporter.getSourceFolder();
+        final BulkFilesystemImporter importer = this;
 
-    	transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-    	{
-    		@Override
-    		public Void execute() throws Throwable
-    		{
-    		    final String sourceDirectory = getFileName(sourceFolder);
-    		    final String targetSpace = getRepositoryPath(bulkImportParameters.getTarget());
-    		    final String lockToken = getLockToken();
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
+            {
+                final String sourceDirectory = getFileName(sourceFolder);
+                final String targetSpace = getRepositoryPath(bulkImportParameters.getTarget());
+                final String lockToken = getLockToken();
 
-    		    try
-    		    {
-    		        importStatus.startImport(sourceDirectory, targetSpace);
+                try
+                {
+                    importStatus.startImport(sourceDirectory, targetSpace);
 
-    		        BulkFSImportEvent bulkImportEvent = new BulkFSImportEvent(importer);
-    		        applicationContext.publishEvent(bulkImportEvent);
+                    BulkFSImportEvent bulkImportEvent = new BulkFSImportEvent(importer);
+                    applicationContext.publishEvent(bulkImportEvent);
 
-    		        validateNodeRefIsWritableSpace(bulkImportParameters.getTarget());
-    		        validateSourceIsReadableDirectory(sourceFolder);
+                    validateNodeRefIsWritableSpace(bulkImportParameters.getTarget());
+                    validateSourceIsReadableDirectory(sourceFolder);
 
-    		        if(logger.isDebugEnabled())
-    		        {
-    		            logger.debug("Bulk import started from '" + sourceFolder.getAbsolutePath() + "'...");
-    		        }
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Bulk import started from '" + sourceFolder.getAbsolutePath() + "'...");
+                    }
 
+                    bulkImportImpl(bulkImportParameters, nodeImporter, lockToken);
 
-    		        bulkImportImpl(bulkImportParameters, nodeImporter, lockToken);
+                    importStatus.stopImport();
 
-    		        importStatus.stopImport();
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Bulk import from '" + getFileName(sourceFolder) + "' succeeded.");
+                    }
 
-    		        if(logger.isDebugEnabled())
-    		        {
-    		            logger.debug("Bulk import from '" + getFileName(sourceFolder) + "' succeeded.");
-    		        }
+                    return null;
+                }
+                catch (Throwable e)
+                {
+                    importStatus.stopImport(e);
+                    throw e;
+                }
+                finally
+                {
+                    BulkFSImportEvent bulkImportEvent = new BulkFSImportEvent(importer);
+                    applicationContext.publishEvent(bulkImportEvent);
 
-    		        return null;
-    		    }
-    		    catch(Throwable e)
-    		    {
-    		        importStatus.stopImport(e);
-    		        throw e;
-    		    }
-    		    finally
-    		    {
-    		        BulkFSImportEvent bulkImportEvent = new BulkFSImportEvent(importer);
-    		        applicationContext.publishEvent(bulkImportEvent);
-
-    		        releaseLock(lockToken);
-    		    }
-    		}
-    	}, false, true);
+                    releaseLock(lockToken);
+                }
+            }
+        }, false, true);
     }
-        
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-	{
-		this.applicationContext = applicationContext;
-	}
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.applicationContext = applicationContext;
+    }
 }

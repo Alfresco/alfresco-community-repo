@@ -116,8 +116,7 @@ public class RM2192Test extends BaseRMTestCase
 
     public void testAccessToRecordAfterDeclaring()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -156,8 +155,7 @@ public class RM2192Test extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             NodeRef document;
 
             @Override

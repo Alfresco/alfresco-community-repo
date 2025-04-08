@@ -25,17 +25,21 @@
  */
 package org.alfresco.rest.rules;
 
-import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
-import static org.alfresco.rest.rules.RulesTestsUtils.MOVE_ACTION;
-import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
+import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
+import static org.alfresco.rest.rules.RulesTestsUtils.MOVE_ACTION;
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleSetLinkModel;
 import org.alfresco.rest.model.RestRuleSetModel;
@@ -48,13 +52,11 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Tests for GET /nodes/{nodeId}/rule-sets and /nodes/{nodeId}/rule-sets/{ruleSetId}.
  */
-@Test (groups = { TestGroup.RULES })
+@Test(groups = {TestGroup.RULES})
 public class GetRuleSetsTests extends RulesRestTest
 {
     private UserModel user;
@@ -67,7 +69,7 @@ public class GetRuleSetsTests extends RulesRestTest
     private RestRuleModel rule;
     private String ruleSetId;
 
-    @BeforeClass (alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
         STEP("Create a user, site and folder.");
@@ -81,16 +83,16 @@ public class GetRuleSetsTests extends RulesRestTest
         RestRuleSettingsModel doesntInherit = new RestRuleSettingsModel();
         doesntInherit.setValue(false);
         restClient.authenticateUser(user).withPrivateAPI().usingNode(notInheritingChildFolder)
-                  .usingIsInheritanceEnabledRuleSetting().updateSetting(doesntInherit);
+                .usingIsInheritanceEnabledRuleSetting().updateSetting(doesntInherit);
 
         STEP("Create a rule in the folder.");
         RestRuleModel ruleModel = rulesUtils.createRuleModel("ruleName");
         rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                       .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
 
         STEP("Get the rule sets for the folder and find the rule set id");
         RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
-                                                         .getListOfRuleSets();
+                .getListOfRuleSets();
         ruleSets.assertThat().entriesListCountIs(1);
         ruleSetId = ruleSets.getEntries().get(0).onModel().getId();
 
@@ -101,7 +103,7 @@ public class GetRuleSetsTests extends RulesRestTest
     }
 
     /** Check we can get an empty list of rule sets. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getEmptyRuleSetsList()
     {
         STEP("Create a folder in existing site");
@@ -109,19 +111,19 @@ public class GetRuleSetsTests extends RulesRestTest
 
         STEP("Get the rule sets for the folder");
         RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withPrivateAPI()
-                                                         .usingNode(folder).getListOfRuleSets();
+                .usingNode(folder).getListOfRuleSets();
 
         restClient.assertStatusCodeIs(OK);
         assertTrue("Expected no rule sets to be present.", ruleSets.isEmpty());
     }
 
     /** Check we can get a list of rule sets. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void getRuleSetsList()
     {
         STEP("Get the rule sets for the folder");
         RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
-                                                         .getListOfRuleSets();
+                .getListOfRuleSets();
 
         restClient.assertStatusCodeIs(OK);
         ruleSets.assertThat().entriesListCountIs(1);
@@ -130,7 +132,7 @@ public class GetRuleSetsTests extends RulesRestTest
     }
 
     /** Check we get a 404 if trying to load rule sets for a folder that doesn't exist. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getRuleSetsForNonExistentFolder()
     {
         STEP("Try to load rule sets for a non-existent folder.");
@@ -141,7 +143,7 @@ public class GetRuleSetsTests extends RulesRestTest
     }
 
     /** Check that we get a 403 error when trying to get rule sets for a folder we don't have read access to. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getRuleSetsWithoutPermission()
     {
         STEP("Check a user cannot list rule sets without read access.");
@@ -150,7 +152,7 @@ public class GetRuleSetsTests extends RulesRestTest
     }
 
     /** Check that we can still list some rule sets if we don't have permission to view them all. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void permissionsAreRespectedWhenListingRuleSets()
     {
         STEP("Create a public site containing a parent and child folder with rule inheritance enabled.");
@@ -179,18 +181,18 @@ public class GetRuleSetsTests extends RulesRestTest
         RestRuleSetModelsCollection userViewOfRuleSets = privateAPIForUser().usingNode(childFolder).getListOfRuleSets();
         restClient.assertStatusCodeIs(OK);
         userViewOfRuleSets.assertThat().entriesListContains("id", childRuleSet.getId())
-                          .and().entriesListDoesNotContain("id", parentRuleSet.getId());
+                .and().entriesListDoesNotContain("id", parentRuleSet.getId());
     }
 
     /** Check we can get the id of the folder that owns a list of rule sets. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getRuleSetsAndOwningFolders()
     {
         STEP("Get the rule sets and owning folders");
         RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withPrivateAPI()
-                                                 .usingNode(ruleFolder)
-                                                 .include("owningFolder")
-                                                 .getListOfRuleSets();
+                .usingNode(ruleFolder)
+                .include("owningFolder")
+                .getListOfRuleSets();
 
         restClient.assertStatusCodeIs(OK);
         ruleSets.getEntries().get(0).onModel()
@@ -200,14 +202,14 @@ public class GetRuleSetsTests extends RulesRestTest
     }
 
     /** Check we can get the reason that a rule set is included in the list. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getRuleSetsAndOwnedInclusionType()
     {
         STEP("Get the rule sets and inclusion type");
         RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withPrivateAPI()
-                                                         .usingNode(ruleFolder)
-                                                         .include("inclusionType")
-                                                         .getListOfRuleSets();
+                .usingNode(ruleFolder)
+                .include("inclusionType")
+                .getListOfRuleSets();
 
         restClient.assertStatusCodeIs(OK);
         ruleSets.getEntries().get(0).onModel()
@@ -217,14 +219,14 @@ public class GetRuleSetsTests extends RulesRestTest
     }
 
     /** Check we can tell that a rule set has been inherited. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getRuleSetsAndInheritedInclusionType()
     {
         STEP("Get the rule sets and inclusion type");
         RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withPrivateAPI()
-                                                         .usingNode(inheritingChildFolder)
-                                                         .include("inclusionType")
-                                                         .getListOfRuleSets();
+                .usingNode(inheritingChildFolder)
+                .include("inclusionType")
+                .getListOfRuleSets();
 
         restClient.assertStatusCodeIs(OK);
         ruleSets.getEntries().get(0).onModel()
@@ -234,50 +236,50 @@ public class GetRuleSetsTests extends RulesRestTest
     }
 
     /** Check that a rule set is not inherited if inheriting is disabled. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getRuleSetsWithoutInheriting()
     {
         STEP("Get the rule sets and inclusion type");
         RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withPrivateAPI()
-                                                         .usingNode(notInheritingChildFolder)
-                                                         .getListOfRuleSets();
+                .usingNode(notInheritingChildFolder)
+                .getListOfRuleSets();
 
         restClient.assertStatusCodeIs(OK);
         ruleSets.assertThat().entriesListCountIs(0);
     }
 
     /** Check we can get a rule set by its id. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void getRuleSetById()
     {
         STEP("Get the rule set using its rule set id");
         RestRuleSetModel ruleSet = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
-                                             .getRuleSet(ruleSetId);
+                .getRuleSet(ruleSetId);
 
         restClient.assertStatusCodeIs(OK);
         ruleSet.assertThat().field("id").is(ruleSetId)
-               // Also check that the optional fields are not included by default.
-               .assertThat().field("owningFolder").isNull()
-               .assertThat().field("inheritedBy").isNull()
-               .assertThat().field("linkedToBy").isNull()
-               .assertThat().field("isInherited").isNull()
-               .assertThat().field("isLinkedTo").isNull();
+                // Also check that the optional fields are not included by default.
+                .assertThat().field("owningFolder").isNull()
+                .assertThat().field("inheritedBy").isNull()
+                .assertThat().field("linkedToBy").isNull()
+                .assertThat().field("isInherited").isNull()
+                .assertThat().field("isLinkedTo").isNull();
     }
 
     /** Check we can get a rule set using the "-default-" synonym. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getDefaultRuleSetById()
     {
         STEP("Get the default rule set for the folder");
         RestRuleSetModel ruleSet = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
-                                                         .getDefaultRuleSet();
+                .getDefaultRuleSet();
 
         restClient.assertStatusCodeIs(OK);
         ruleSet.assertThat().field("id").isNotNull();
     }
 
     /** Check we get a 404 if trying to load the default rule set for a folder that doesn't exist. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getDefaultRuleSetForNonExistentFolder()
     {
         STEP("Try to load a rule set for a non-existent folder.");
@@ -288,7 +290,7 @@ public class GetRuleSetsTests extends RulesRestTest
     }
 
     /** Check we get 404 for a non-existing rule set id. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getRuleSetByNonExistingId()
     {
         STEP("Get the rule set using fake rule set id");
@@ -298,24 +300,25 @@ public class GetRuleSetsTests extends RulesRestTest
     }
 
     /** Check we can get the id of the folder that owns a rule set. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getRuleSetAndOwningFolder()
     {
         STEP("Get the rule set and owning folder");
         RestRuleSetModel ruleSet = restClient.authenticateUser(user).withPrivateAPI()
-                                             .usingNode(ruleFolder)
-                                             .include("owningFolder")
-                                             .getRuleSet(ruleSetId);
+                .usingNode(ruleFolder)
+                .include("owningFolder")
+                .getRuleSet(ruleSetId);
 
         restClient.assertStatusCodeIs(OK);
         ruleSet.assertThat().field("owningFolder").is(ruleFolder.getNodeRef())
-               .assertThat().field("id").is(ruleSetId);
+                .assertThat().field("id").is(ruleSetId);
     }
 
     /**
      * Check we can find out the id of any folders that inherit a rule set.
      * <p>
      * The test checks several different situations:
+     * 
      * <pre>
      *   folder --[owns]-> rule set
      *   +- publicFolder --[inherits]-> rule set (user has access)
@@ -326,7 +329,7 @@ public class GetRuleSetsTests extends RulesRestTest
      *         +- descendantFolder --[inherits]-> rule set (inherited via link)
      * </pre>
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getRuleSetAndInheritedBy()
     {
         STEP("Create a site owned by admin and add user as a contributor");
@@ -367,17 +370,17 @@ public class GetRuleSetsTests extends RulesRestTest
 
         STEP("Get the rule set and inheriting folders");
         RestRuleSetModel ruleSet = privateAPIForUser().usingNode(folder)
-                                                   .include("inheritedBy")
-                                                   .getRuleSet(ruleSetId);
+                .include("inheritedBy")
+                .getRuleSet(ruleSetId);
 
         restClient.assertStatusCodeIs(OK);
         List<String> expectedInheritors = List.of(publicFolder.getNodeRef(), descendantFolder.getNodeRef(), publicGrandchild.getNodeRef());
         ruleSet.assertThat().field("inheritedBy").is(expectedInheritors)
-               .assertThat().field("id").is(ruleSetId);
+                .assertThat().field("id").is(ruleSetId);
     }
 
     /** Check we can get the folders that link to a rule set and that this respects permissions. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void getRuleSetsAndLinkedToBy()
     {
         STEP("Create a site owned by admin and add user as a contributor");
@@ -405,12 +408,12 @@ public class GetRuleSetsTests extends RulesRestTest
 
         STEP("Get the rule set and linkedToBy field");
         RestRuleSetModel ruleSet = privateAPIForUser().usingNode(ruleFolder)
-                                                   .include("linkedToBy")
-                                                   .getRuleSet(ruleSetId);
+                .include("linkedToBy")
+                .getRuleSet(ruleSetId);
 
         restClient.assertStatusCodeIs(OK);
         ruleSet.assertThat().field("linkedToBy").is(List.of(publicFolder.getNodeRef()))
-               .assertThat().field("id").is(ruleSetId);
+                .assertThat().field("id").is(ruleSetId);
     }
 
     /** Check that a user can see that a rule set is inherited even if they don't have permission to view the inheriting folder. */
@@ -432,12 +435,12 @@ public class GetRuleSetsTests extends RulesRestTest
 
         STEP("Get the rule set and isInherited field");
         RestRuleSetModel ruleSet = privateAPIForUser().usingNode(ruleFolder)
-                                                   .include("isInherited", "inheritedBy")
-                                                   .getDefaultRuleSet();
+                .include("isInherited", "inheritedBy")
+                .getDefaultRuleSet();
 
         restClient.assertStatusCodeIs(OK);
         ruleSet.assertThat().field("isInherited").is(true)
-               .assertThat().field("inheritedBy").isEmpty();
+                .assertThat().field("inheritedBy").isEmpty();
 
     }
 
@@ -460,8 +463,8 @@ public class GetRuleSetsTests extends RulesRestTest
 
         STEP("Get the rule set and isInherited field");
         RestRuleSetModel ruleSet = privateAPIForUser().usingNode(ruleFolder)
-                                                   .include("isInherited")
-                                                   .getDefaultRuleSet();
+                .include("isInherited")
+                .getDefaultRuleSet();
 
         restClient.assertStatusCodeIs(OK);
         ruleSet.assertThat().field("isInherited").is(true);
@@ -487,13 +490,12 @@ public class GetRuleSetsTests extends RulesRestTest
 
         STEP("Get the rule set and isInherited field");
         RestRuleSetModel ruleSet = privateAPIForUser().usingNode(ruleFolder)
-                                                   .include("isInherited")
-                                                   .getDefaultRuleSet();
+                .include("isInherited")
+                .getDefaultRuleSet();
 
         restClient.assertStatusCodeIs(OK);
         ruleSet.assertThat().field("isInherited").is(false);
     }
-
 
     /** Check that a user can see that a rule set is linked to even if they don't have permission to view the linking folder. */
     @Test
@@ -519,12 +521,12 @@ public class GetRuleSetsTests extends RulesRestTest
 
         STEP("Get the rule set and isLinkedTo field");
         RestRuleSetModel ruleSet = privateAPIForUser().usingNode(ruleFolder)
-                                                   .include("isLinkedTo", "linkedToBy", "owningFolder")
-                                                   .getDefaultRuleSet();
+                .include("isLinkedTo", "linkedToBy", "owningFolder")
+                .getDefaultRuleSet();
 
         restClient.assertStatusCodeIs(OK);
         ruleSet.assertThat().field("isLinkedTo").is(true)
-               .assertThat().field("linkedToBy").isEmpty();
+                .assertThat().field("linkedToBy").isEmpty();
 
     }
 
@@ -543,15 +545,15 @@ public class GetRuleSetsTests extends RulesRestTest
 
         STEP("Get the rule set and isLinkedTo field");
         RestRuleSetModel ruleSet = privateAPIForUser().usingNode(ruleFolder)
-                                                   .include("isLinkedTo")
-                                                   .getDefaultRuleSet();
+                .include("isLinkedTo")
+                .getDefaultRuleSet();
 
         restClient.assertStatusCodeIs(OK);
         ruleSet.assertThat().field("isLinkedTo").is(false);
     }
 
     /** Check that we can only view a rule set if have read permission. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void permissionsChecksForFolderWithPrivateAndPublicRuleSets()
     {
         STEP("Create a public site containing a parent and child folder with rule inheritance enabled.");

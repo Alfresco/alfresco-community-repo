@@ -27,10 +27,11 @@ package org.alfresco.opencmis.mapping;
 
 import java.io.Serializable;
 
+import org.apache.chemistry.opencmis.commons.PropertyIds;
+
 import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * 'cmis:isPrivateWokringCopy' property accessor for CMIS 1.1 (<a href="https://issues.alfresco.com/jira/browse/MNT-11631">MNT-11631</a>)

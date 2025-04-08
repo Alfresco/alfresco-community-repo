@@ -26,6 +26,19 @@
  */
 package org.alfresco.rm.rest.api.retentionschedule;
 
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_DISPOSITION_AUTHORITY;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_DISPOSITION_INSTRUCTIONS;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_RECORD_LEVEL_DISPOSITION;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.TYPE_RECORD_CATEGORY;
+import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
+import static org.alfresco.util.ParameterCheck.mandatory;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -46,19 +59,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_DISPOSITION_AUTHORITY;
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_DISPOSITION_INSTRUCTIONS;
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_RECORD_LEVEL_DISPOSITION;
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.TYPE_RECORD_CATEGORY;
-import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
-import static org.alfresco.util.ParameterCheck.mandatory;
 
 /**
  * Retention schedule relation is used perform retention schedule operation for a record category.
@@ -94,7 +94,7 @@ public class RetentionScheduleRelation implements RelationshipResourceAction.Rea
     }
 
     @Override
-    @WebApiDescription(title="Create a retention schedule for the particular record category using the 'recordCategoryId'")
+    @WebApiDescription(title = "Create a retention schedule for the particular record category using the 'recordCategoryId'")
     public List<RetentionSchedule> create(String recordCategoryId, List<RetentionSchedule> nodeInfos, Parameters parameters)
     {
         checkNotBlank("recordCategoryId", recordCategoryId);

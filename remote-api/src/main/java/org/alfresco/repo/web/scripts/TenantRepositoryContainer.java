@@ -25,14 +25,15 @@
  */
 package org.alfresco.repo.web.scripts;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.Registry;
+
 import org.alfresco.repo.cache.AsynchronouslyRefreshedCache;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.Registry;
 
 /**
  * Tenant-aware Repository (server-tier) container for Web Scripts
@@ -50,23 +51,26 @@ public class TenantRepositoryContainer extends RepositoryContainer implements Te
     private AsynchronouslyRefreshedCache<Registry> registryCache;
 
     /**
-     * @param registryCache                 asynchronously maintained cache for script registries
+     * @param registryCache
+     *            asynchronously maintained cache for script registries
      */
     public void setWebScriptsRegistryCache(AsynchronouslyRefreshedCache<Registry> registryCache)
     {
         this.registryCache = registryCache;
     }
-    
+
     /**
-     * @param tenantAdminService            service to sort out tenant context
+     * @param tenantAdminService
+     *            service to sort out tenant context
      */
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
         this.tenantAdminService = tenantAdminService;
     }
-    
+
     /**
-     * @param transactionService            service to give transactions when reading from the container
+     * @param transactionService
+     *            service to give transactions when reading from the container
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -85,39 +89,38 @@ public class TenantRepositoryContainer extends RepositoryContainer implements Te
         }
         return registry;
     }
-    
+
     @Override
     public void onEnableTenant()
     {
         init();
     }
-    
+
     @Override
     public void onDisableTenant()
     {
         destroy();
     }
-    
+
     @Override
     public void init()
     {
         tenantAdminService.register(this);
         registryCache.refresh();
-        
+
         super.reset();
     }
-    
+
     @Override
     public void destroy()
     {
         registryCache.refresh();
     }
-    
+
     @Override
     public void reset()
     {
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() {
             public Object execute() throws Exception
             {
                 destroy();

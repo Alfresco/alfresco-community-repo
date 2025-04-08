@@ -25,6 +25,26 @@
  */
 package org.alfresco.rest.api.impl;
 
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsFirst;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.action.constraint.FolderContentsParameterConstraint;
@@ -37,7 +57,6 @@ import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.service.Experimental;
@@ -54,25 +73,6 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static java.util.Comparator.comparing;
-import static java.util.Comparator.naturalOrder;
-import static java.util.Comparator.nullsFirst;
 
 public class ActionsImpl implements Actions
 {
@@ -180,14 +180,14 @@ public class ActionsImpl implements Actions
         Comparator<? super ActionDefinition> comparator;
         switch (sortKey)
         {
-            case TITLE:
-                comparator = comparing(ActionDefinition::getTitle, nullsFirst(naturalOrder()));
-                break;
-            case NAME:
-                comparator = comparing(ActionDefinition::getName, nullsFirst(naturalOrder()));
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid sort key, must be either 'title' or 'name'.");
+        case TITLE:
+            comparator = comparing(ActionDefinition::getTitle, nullsFirst(naturalOrder()));
+            break;
+        case NAME:
+            comparator = comparing(ActionDefinition::getName, nullsFirst(naturalOrder()));
+            break;
+        default:
+            throw new IllegalArgumentException("Invalid sort key, must be either 'title' or 'name'.");
         }
 
         if (!sortAsc)
@@ -195,17 +195,10 @@ public class ActionsImpl implements Actions
             comparator = comparator.reversed();
         }
 
-
         final int maxItems = params.getPaging().getMaxItems();
         final int skip = params.getPaging().getSkipCount();
 
-        List<ActionDefinition> sortedPage = actionDefinitions.
-                stream().
-                map(this::mapFromServiceModel).
-                sorted(comparator).
-                skip(skip).
-                limit(maxItems).
-                collect(Collectors.toList());
+        List<ActionDefinition> sortedPage = actionDefinitions.stream().map(this::mapFromServiceModel).sorted(comparator).skip(skip).limit(maxItems).collect(Collectors.toList());
 
         boolean hasMoreItems = actionDefinitions.size() > (skip + maxItems);
 
@@ -228,17 +221,12 @@ public class ActionsImpl implements Actions
                 .filter(a -> actionDefinitionId.equals(a.getName()))
                 .map(this::mapFromServiceModel)
                 .findFirst()
-                .orElseThrow(() -> new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[] {actionDefinitionId}));
+                .orElseThrow(() -> new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[]{actionDefinitionId}));
     }
 
     private ActionDefinition mapFromServiceModel(org.alfresco.service.cmr.action.ActionDefinition actionDefinition)
     {
-        List<ActionDefinition.ParameterDefinition> paramDefs =
-                actionDefinition.
-                        getParameterDefinitions().
-                        stream().
-                        map(this::toModel).
-                        collect(Collectors.toList());
+        List<ActionDefinition.ParameterDefinition> paramDefs = actionDefinition.getParameterDefinitions().stream().map(this::toModel).collect(Collectors.toList());
         return new ActionDefinition(
                 actionDefinition.getName(), // ID is a synonym for name.
                 actionDefinition.getName(),
@@ -347,7 +335,8 @@ public class ActionsImpl implements Actions
             return convertNodeRefConstraintValues(constraintValues).entrySet().stream()
                     .map(e -> new ActionParameterConstraint.ConstraintData(e.getKey(), e.getValue()))
                     .collect(Collectors.toList());
-        } else
+        }
+        else
         {
             return constraintValues.entrySet().stream()
                     .map(e -> new ActionParameterConstraint.ConstraintData(e.getKey(), e.getValue()))
@@ -452,12 +441,9 @@ public class ActionsImpl implements Actions
 
     private List<String> toShortQNames(Set<QName> types)
     {
-        return types.
-                stream().
-                map(this::toShortQName).
-                collect(Collectors.toList());
+        return types.stream().map(this::toShortQName).collect(Collectors.toList());
     }
-    
+
     private String toShortQName(QName type)
     {
         return type.toPrefixString(prefixResolver);
@@ -471,7 +457,6 @@ public class ActionsImpl implements Actions
                 p.isMultiValued(),
                 p.isMandatory(),
                 p.getDisplayLabel(),
-                p.getParameterConstraintName()
-        );
+                p.getParameterConstraintName());
     }
 }

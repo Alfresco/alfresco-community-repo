@@ -47,22 +47,11 @@ import org.apache.chemistry.opencmis.tck.CmisTestResult;
 import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTest;
 
 /**
- * Class to test if bulk properties update works for the
- * description(cmis:description) property
+ * Class to test if bulk properties update works for the description(cmis:description) property
  * 
- * This test checks the fix from MNT-16376 is valid but only if the change in
- * MNT-13670 is not present in the code base. The fix from MNT-16376 ensures
- * that the correct call context is available to the working threads that
- * process bulk update. The fix from MNT-13670 added the description to the CMIS
- * version 1.0 mapping in RuntimePropertyAccessorMapping and that masks the
- * problem of the missing call context of the bulk update working threads for
- * the description property.
+ * This test checks the fix from MNT-16376 is valid but only if the change in MNT-13670 is not present in the code base. The fix from MNT-16376 ensures that the correct call context is available to the working threads that process bulk update. The fix from MNT-13670 added the description to the CMIS version 1.0 mapping in RuntimePropertyAccessorMapping and that masks the problem of the missing call context of the bulk update working threads for the description property.
  * 
- * Currently all of the properties in the RuntimePropertyAccessorMapping are
- * added to the CMIS version 1.0, except for isSecondaryTypesProperty and
- * IsPrivateWorkingCopy. I am not sure if/how and what would be the consequences
- * if we update in the bulk update operation the two properties that are
- * missing for version CMIS 1.0.
+ * Currently all of the properties in the RuntimePropertyAccessorMapping are added to the CMIS version 1.0, except for isSecondaryTypesProperty and IsPrivateWorkingCopy. I am not sure if/how and what would be the consequences if we update in the bulk update operation the two properties that are missing for version CMIS 1.0.
  *
  */
 public class BulkUpdatePropertiesCustomTest extends AbstractSessionTest

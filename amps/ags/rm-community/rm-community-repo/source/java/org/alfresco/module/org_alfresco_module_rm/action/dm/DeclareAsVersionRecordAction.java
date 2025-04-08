@@ -31,6 +31,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
@@ -50,19 +54,16 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Creates a new record from the 'current' document version.
  *
- * Note:  This is a 'normal' dm action, rather than a records management action.
+ * Note: This is a 'normal' dm action, rather than a records management action.
  *
  * @author Roy Wetherall
  */
 public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstractBase
-                                          implements RecordsManagementModel
+        implements RecordsManagementModel
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(DeclareAsVersionRecordAction.class);
@@ -78,7 +79,7 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
 
     /** Sync Model URI */
     private static final String SYNC_MODEL_1_0_URI = "http://www.alfresco.org/model/sync/1.0";
-    
+
     /** Synced aspect */
     private static final QName ASPECT_SYNCED = QName.createQName(SYNC_MODEL_1_0_URI, "synced");
 
@@ -90,10 +91,10 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
 
     /** Dictionary service */
     private DictionaryService dictionaryService;
-    
+
     /** Recordable version service */
     private RecordableVersionService recordableVersionService;
-    
+
     /** Authentication util */
     private AuthenticationUtil authenticationUtil;
 
@@ -104,7 +105,8 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     private CapabilityService capabilityService;
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -112,7 +114,8 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -120,23 +123,26 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     }
 
     /**
-     * @param dictionaryService dictionary service
+     * @param dictionaryService
+     *            dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
-     * @param recordableVersionService  recordable version service
+     * @param recordableVersionService
+     *            recordable version service
      */
     public void setRecordableVersionService(RecordableVersionService recordableVersionService)
     {
         this.recordableVersionService = recordableVersionService;
     }
-    
+
     /**
-     * @param authenticationUtil authentication util
+     * @param authenticationUtil
+     *            authentication util
      */
     public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
     {
@@ -144,7 +150,8 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     }
 
     /**
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -152,7 +159,8 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     }
 
     /**
-     * @param capabilityService capability service
+     * @param capabilityService
+     *            capability service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -183,7 +191,7 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
         }
         else if (isActionEligible(actionedUponNodeRef))
         {
-            NodeRef filePlan = (NodeRef)action.getParameterValue(PARAM_FILE_PLAN);
+            NodeRef filePlan = (NodeRef) action.getParameterValue(PARAM_FILE_PLAN);
             if (filePlan == null)
             {
                 filePlan = RecordActionUtils.getDefaultFilePlan(authenticationUtil, filePlanService, NAME);
@@ -235,12 +243,12 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> params)
     {
-        // NOTE:  commented out for now so that it doesn't appear in the UI ... enable later when multi-file plan support is added
-        //params.add(new ParameterDefinitionImpl(PARAM_FILE_PLAN, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_FILE_PLAN)));
+        // NOTE: commented out for now so that it doesn't appear in the UI ... enable later when multi-file plan support is added
+        // params.add(new ParameterDefinitionImpl(PARAM_FILE_PLAN, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_FILE_PLAN)));
         params.add(new ParameterDefinitionImpl(PARAM_PATH, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_PATH)));
     }
 
-    /* Check aspects that stop declaring the version as record.*/
+    /* Check aspects that stop declaring the version as record. */
     private boolean isActionEligible(NodeRef actionedUponNodeRef)
     {
         Map<QName, String> mappedAspects = new HashMap<>();

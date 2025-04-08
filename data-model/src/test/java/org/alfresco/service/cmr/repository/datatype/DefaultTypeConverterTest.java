@@ -39,8 +39,8 @@ import junit.framework.TestCase;
 
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.Period;
-import org.alfresco.util.VersionNumber;
 import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.util.VersionNumber;
 
 public class DefaultTypeConverterTest extends TestCase
 {
@@ -122,9 +122,9 @@ public class DefaultTypeConverterTest extends TestCase
         // Period
         assertEquals("period", DefaultTypeConverter.INSTANCE.convert(String.class, new Period("period")));
         assertEquals("period|12", DefaultTypeConverter.INSTANCE.convert(String.class, new Period("period|12")));
-        Map<String,String> periodMap = new HashMap<>();
-        periodMap.put("periodType","month");
-        periodMap.put("expression","1");
+        Map<String, String> periodMap = new HashMap<>();
+        periodMap.put("periodType", "month");
+        periodMap.put("expression", "1");
         assertEquals(new Period("month|1"), DefaultTypeConverter.INSTANCE.convert(Period.class, new Period(periodMap)));
         // Java Class
         assertEquals(this.getClass(), DefaultTypeConverter.INSTANCE.convert(Class.class, this.getClass().getName()));
@@ -161,24 +161,24 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals(isoDate, ISO8601DateFormat.format(DefaultTypeConverter.INSTANCE.convert(Date.class, isoDate)));
         assertEquals(new Duration("P25D"), DefaultTypeConverter.INSTANCE.convert(Duration.class, "P25D"));
         assertEquals("woof", DefaultTypeConverter.INSTANCE.convert(String.class, "woof"));
-        
+
         MLText converted = DefaultTypeConverter.INSTANCE.convert(MLText.class, "woof");
         assertEquals("woof", converted.getValue(Locale.getDefault()));
-        
+
         assertEquals(Locale.FRANCE, DefaultTypeConverter.INSTANCE.convert(Locale.class, "fr_FR"));
         assertEquals(Locale.FRANCE, DefaultTypeConverter.INSTANCE.convert(Locale.class, "fr_FR_"));
-        
+
         assertEquals(new VersionNumber("1.2.3"), DefaultTypeConverter.INSTANCE.convert(VersionNumber.class, "1.2.3"));
         assertEquals(new Period("period"), DefaultTypeConverter.INSTANCE.convert(Period.class, "period"));
         assertEquals(new Period("period|12"), DefaultTypeConverter.INSTANCE.convert(Period.class, "period|12"));
-        Map<String,String> periodMap = new HashMap<String, String>();
-        periodMap.put("periodType","month");
-        periodMap.put("expression","1");
+        Map<String, String> periodMap = new HashMap<String, String>();
+        periodMap.put("periodType", "month");
+        periodMap.put("expression", "1");
         assertEquals(new Period(periodMap), DefaultTypeConverter.INSTANCE.convert(Period.class, periodMap));
         // Java Class
         assertEquals(this.getClass().getName(), DefaultTypeConverter.INSTANCE.convert(String.class, this.getClass()));
     }
-    
+
     public void testPrimativeAccessors()
     {
         assertEquals(false, DefaultTypeConverter.INSTANCE.convert(Boolean.class, false).booleanValue());
@@ -191,7 +191,7 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals((float) 7.1, DefaultTypeConverter.INSTANCE.convert(Float.class, (float) 7.1).floatValue());
         assertEquals((double) 123.123, DefaultTypeConverter.INSTANCE.convert(Double.class, (double) 123.123).doubleValue());
     }
-    
+
     public void testInterConversions()
     {
         assertEquals(Byte.valueOf("1"), DefaultTypeConverter.INSTANCE.convert(Byte.class, Byte.valueOf("1")));
@@ -202,7 +202,7 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals(Double.valueOf("6"), DefaultTypeConverter.INSTANCE.convert(Double.class, Byte.valueOf("6")));
         assertEquals(new BigInteger("7"), DefaultTypeConverter.INSTANCE.convert(BigInteger.class, Byte.valueOf("7")));
         assertEquals(new BigDecimal("8"), DefaultTypeConverter.INSTANCE.convert(BigDecimal.class, Byte.valueOf("8")));
-        
+
         assertEquals(Byte.valueOf("1"), DefaultTypeConverter.INSTANCE.convert(Byte.class, Short.valueOf("1")));
         assertEquals(Short.valueOf("2"), DefaultTypeConverter.INSTANCE.convert(Short.class, Short.valueOf("2")));
         assertEquals(Integer.valueOf("3"), DefaultTypeConverter.INSTANCE.convert(Integer.class, Short.valueOf("3")));
@@ -211,7 +211,7 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals(Double.valueOf("6"), DefaultTypeConverter.INSTANCE.convert(Double.class, Short.valueOf("6")));
         assertEquals(new BigInteger("7"), DefaultTypeConverter.INSTANCE.convert(BigInteger.class, Short.valueOf("7")));
         assertEquals(new BigDecimal("8"), DefaultTypeConverter.INSTANCE.convert(BigDecimal.class, Short.valueOf("8")));
-        
+
         assertEquals(Byte.valueOf("1"), DefaultTypeConverter.INSTANCE.convert(Byte.class, Integer.valueOf("1")));
         assertEquals(Short.valueOf("2"), DefaultTypeConverter.INSTANCE.convert(Short.class, Integer.valueOf("2")));
         assertEquals(Integer.valueOf("3"), DefaultTypeConverter.INSTANCE.convert(Integer.class, Integer.valueOf("3")));
@@ -220,7 +220,7 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals(Double.valueOf("6"), DefaultTypeConverter.INSTANCE.convert(Double.class, Integer.valueOf("6")));
         assertEquals(new BigInteger("7"), DefaultTypeConverter.INSTANCE.convert(BigInteger.class, Integer.valueOf("7")));
         assertEquals(new BigDecimal("8"), DefaultTypeConverter.INSTANCE.convert(BigDecimal.class, Integer.valueOf("8")));
-        
+
         assertEquals(Boolean.TRUE, DefaultTypeConverter.INSTANCE.convert(Boolean.class, Long.valueOf("1")));
         assertEquals(Boolean.FALSE, DefaultTypeConverter.INSTANCE.convert(Boolean.class, Long.valueOf("0")));
         assertEquals(Byte.valueOf("1"), DefaultTypeConverter.INSTANCE.convert(Byte.class, Long.valueOf("1")));
@@ -231,7 +231,7 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals(Double.valueOf("6"), DefaultTypeConverter.INSTANCE.convert(Double.class, Long.valueOf("6")));
         assertEquals(new BigInteger("7"), DefaultTypeConverter.INSTANCE.convert(BigInteger.class, Long.valueOf("7")));
         assertEquals(new BigDecimal("8"), DefaultTypeConverter.INSTANCE.convert(BigDecimal.class, Long.valueOf("8")));
-        
+
         assertEquals(Byte.valueOf("1"), DefaultTypeConverter.INSTANCE.convert(Byte.class, Float.valueOf("1")));
         assertEquals(Short.valueOf("2"), DefaultTypeConverter.INSTANCE.convert(Short.class, Float.valueOf("2")));
         assertEquals(Integer.valueOf("3"), DefaultTypeConverter.INSTANCE.convert(Integer.class, Float.valueOf("3")));
@@ -239,10 +239,10 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals(Float.valueOf("5"), DefaultTypeConverter.INSTANCE.convert(Float.class, Float.valueOf("5")));
         assertEquals(Double.valueOf("6"), DefaultTypeConverter.INSTANCE.convert(Double.class, Float.valueOf("6")));
         assertEquals(new BigInteger("7"), DefaultTypeConverter.INSTANCE.convert(BigInteger.class, Float.valueOf("7")));
-        
+
         assertEquals(new BigDecimal("8.0"), DefaultTypeConverter.INSTANCE.convert(BigDecimal.class, Float.valueOf("8")));
         assertTrue(new BigDecimal("8").compareTo(DefaultTypeConverter.INSTANCE.convert(BigDecimal.class, Float.valueOf("8"))) == 0);
-        
+
         assertEquals(Byte.valueOf("1"), DefaultTypeConverter.INSTANCE.convert(Byte.class, Double.valueOf("1")));
         assertEquals(Short.valueOf("2"), DefaultTypeConverter.INSTANCE.convert(Short.class, Double.valueOf("2")));
         assertEquals(Integer.valueOf("3"), DefaultTypeConverter.INSTANCE.convert(Integer.class, Double.valueOf("3")));
@@ -250,10 +250,10 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals(Float.valueOf("5"), DefaultTypeConverter.INSTANCE.convert(Float.class, Double.valueOf("5")));
         assertEquals(Double.valueOf("6"), DefaultTypeConverter.INSTANCE.convert(Double.class, Double.valueOf("6")));
         assertEquals(new BigInteger("7"), DefaultTypeConverter.INSTANCE.convert(BigInteger.class, Double.valueOf("7")));
-        
+
         assertEquals(new BigDecimal("8.0"), DefaultTypeConverter.INSTANCE.convert(BigDecimal.class, Double.valueOf("8")));
         assertTrue(new BigDecimal("8").compareTo(DefaultTypeConverter.INSTANCE.convert(BigDecimal.class, Double.valueOf("8"))) == 0);
-        
+
         assertEquals(Byte.valueOf("1"), DefaultTypeConverter.INSTANCE.convert(Byte.class, new BigInteger("1")));
         assertEquals(Short.valueOf("2"), DefaultTypeConverter.INSTANCE.convert(Short.class, new BigInteger("2")));
         assertEquals(Integer.valueOf("3"), DefaultTypeConverter.INSTANCE.convert(Integer.class, new BigInteger("3")));
@@ -262,7 +262,7 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals(Double.valueOf("6"), DefaultTypeConverter.INSTANCE.convert(Double.class, new BigInteger("6")));
         assertEquals(new BigInteger("7"), DefaultTypeConverter.INSTANCE.convert(BigInteger.class, new BigInteger("7")));
         assertEquals(new BigDecimal("8"), DefaultTypeConverter.INSTANCE.convert(BigDecimal.class, new BigInteger("8")));
-        
+
         assertEquals(Byte.valueOf("1"), DefaultTypeConverter.INSTANCE.convert(Byte.class, new BigDecimal("1")));
         assertEquals(Short.valueOf("2"), DefaultTypeConverter.INSTANCE.convert(Short.class, new BigDecimal("2")));
         assertEquals(Integer.valueOf("3"), DefaultTypeConverter.INSTANCE.convert(Integer.class, new BigDecimal("3")));
@@ -272,11 +272,11 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals(new BigInteger("7"), DefaultTypeConverter.INSTANCE.convert(BigInteger.class, new BigDecimal("7")));
         assertEquals(new BigDecimal("8"), DefaultTypeConverter.INSTANCE.convert(BigDecimal.class, new BigDecimal("8")));
     }
-    
+
     public void testDate()
     {
         Date date = new Date(101);
-        
+
         assertEquals(Byte.valueOf("101"), DefaultTypeConverter.INSTANCE.convert(Byte.class, date));
         assertEquals(Short.valueOf("101"), DefaultTypeConverter.INSTANCE.convert(Short.class, date));
         assertEquals(Integer.valueOf("101"), DefaultTypeConverter.INSTANCE.convert(Integer.class, date));
@@ -285,32 +285,32 @@ public class DefaultTypeConverterTest extends TestCase
         assertEquals(Double.valueOf("101"), DefaultTypeConverter.INSTANCE.convert(Double.class, date));
         assertEquals(new BigInteger("101"), DefaultTypeConverter.INSTANCE.convert(BigInteger.class, date));
         assertEquals(new BigDecimal("101"), DefaultTypeConverter.INSTANCE.convert(BigDecimal.class, date));
-        
-        assertEquals(date, DefaultTypeConverter.INSTANCE.convert(Date.class, (byte)101));
-        assertEquals(date, DefaultTypeConverter.INSTANCE.convert(Date.class, (short)101));
-        assertEquals(date, DefaultTypeConverter.INSTANCE.convert(Date.class, (int)101));
-        assertEquals(date, DefaultTypeConverter.INSTANCE.convert(Date.class, (long)101));
-        assertEquals(date, DefaultTypeConverter.INSTANCE.convert(Date.class, (float)101));
-        assertEquals(date, DefaultTypeConverter.INSTANCE.convert(Date.class, (double)101));
-        
+
+        assertEquals(date, DefaultTypeConverter.INSTANCE.convert(Date.class, (byte) 101));
+        assertEquals(date, DefaultTypeConverter.INSTANCE.convert(Date.class, (short) 101));
+        assertEquals(date, DefaultTypeConverter.INSTANCE.convert(Date.class, (int) 101));
+        assertEquals(date, DefaultTypeConverter.INSTANCE.convert(Date.class, (long) 101));
+        assertEquals(date, DefaultTypeConverter.INSTANCE.convert(Date.class, (float) 101));
+        assertEquals(date, DefaultTypeConverter.INSTANCE.convert(Date.class, (double) 101));
+
         assertEquals(date, DefaultTypeConverter.INSTANCE.convert(Date.class, new BigInteger("101")));
-        assertEquals(date, DefaultTypeConverter.INSTANCE.convert(Date.class, (Object)(new BigDecimal("101"))));
-        
+        assertEquals(date, DefaultTypeConverter.INSTANCE.convert(Date.class, (Object) (new BigDecimal("101"))));
+
         assertEquals(101, DefaultTypeConverter.INSTANCE.intValue(date));
     }
-    
+
     public void testMultiValue()
     {
         ArrayList<Object> list = makeList();
-        
+
         assertEquals(true, DefaultTypeConverter.INSTANCE.isMultiValued(list));
         assertEquals(14, DefaultTypeConverter.INSTANCE.size(list));
-        
-        for(String stringValue: DefaultTypeConverter.INSTANCE.getCollection(String.class, list))
+
+        for (String stringValue : DefaultTypeConverter.INSTANCE.getCollection(String.class, list))
         {
-            System.out.println("Value is "+stringValue); 
+            System.out.println("Value is " + stringValue);
         }
-        
+
     }
 
     private ArrayList<Object> makeList()
@@ -332,21 +332,21 @@ public class DefaultTypeConverterTest extends TestCase
         list.add("Hello mum");
         return list;
     }
-    
+
     public void testSingleValuseAsMultiValue()
     {
         Integer integer = Integer.valueOf(43);
-        
+
         assertEquals(false, DefaultTypeConverter.INSTANCE.isMultiValued(integer));
         assertEquals(1, DefaultTypeConverter.INSTANCE.size(integer));
-        
-        for(String stringValue: DefaultTypeConverter.INSTANCE.getCollection(String.class, integer))
+
+        for (String stringValue : DefaultTypeConverter.INSTANCE.getCollection(String.class, integer))
         {
-            System.out.println("Value is "+stringValue); 
+            System.out.println("Value is " + stringValue);
         }
-        
+
     }
-    
+
     public void testNullAndEmpty()
     {
         assertNull(DefaultTypeConverter.INSTANCE.convert(Boolean.class, null));
@@ -354,6 +354,6 @@ public class DefaultTypeConverterTest extends TestCase
         assertNotNull(DefaultTypeConverter.INSTANCE.convert(Boolean.class, list));
         list.add(null);
         assertNotNull(DefaultTypeConverter.INSTANCE.convert(Boolean.class, list));
-        
+
     }
 }

@@ -25,14 +25,14 @@
  */
 package org.alfresco.rest.requests.authAPI;
 
+import io.restassured.RestAssured;
+import org.springframework.http.HttpMethod;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestTicketBodyModel;
 import org.alfresco.rest.model.RestTicketModel;
 import org.alfresco.rest.requests.ModelRequest;
-import org.springframework.http.HttpMethod;
-
-import io.restassured.RestAssured;
 
 public class RestAuthAPI extends ModelRequest<RestAuthAPI>
 {

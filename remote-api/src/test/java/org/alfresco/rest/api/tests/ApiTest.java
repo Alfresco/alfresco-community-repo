@@ -25,12 +25,12 @@
  */
 package org.alfresco.rest.api.tests;
 
-
-import org.alfresco.rest.DeletedNodesTest;
-import org.alfresco.rest.api.search.BasicSearchApiIntegrationTest;
 import org.junit.AfterClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+
+import org.alfresco.rest.DeletedNodesTest;
+import org.alfresco.rest.api.search.BasicSearchApiIntegrationTest;
 
 /**
  * Public V1 REST API tests
@@ -43,50 +43,50 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        
-    NodeApiTest.class,
-    NodeAssociationsApiTest.class,
-    NodeVersionsApiTest.class,
-    BasicSearchApiIntegrationTest.class,
-    QueriesNodesApiTest.class,
-    QueriesPeopleApiTest.class,
-    QueriesSitesApiTest.class,
-    RenditionsTest.class,
-    SharedLinkApiTest.class,
-    ActivitiesPostingTest.class,
-    DeletedNodesTest.class,
-    AuthenticationsTest.class,
-    ModulePackagesApiTest.class,
-    WherePredicateApiTest.class,
-    DiscoveryApiTest.class,
-    TestSites.class,
-    TestNodeComments.class,
-    TestFavouriteSites.class,
-    TestSiteContainers.class,
-    TestNodeRatings.class,
-    TestUserPreferences.class,
-    TestTags.class,
-    TestNetworks.class,
-    TestActivities.class,
-    GroupsTest.class,
-    TestPeople.class,
-    TestSiteMembers.class,
-    TestSiteGroups.class,
-    TestPersonSites.class,
-    TestSiteMembershipRequests.class,
-    TestFavourites.class,
-    TestPublicApi128.class,
-    TestPublicApiCaching.class,
-    TestDownloads.class,
-    AuditAppTest.class,
-    TempOutputStreamTest.class,
-    BufferedResponseTest.class
+
+        NodeApiTest.class,
+        NodeAssociationsApiTest.class,
+        NodeVersionsApiTest.class,
+        BasicSearchApiIntegrationTest.class,
+        QueriesNodesApiTest.class,
+        QueriesPeopleApiTest.class,
+        QueriesSitesApiTest.class,
+        RenditionsTest.class,
+        SharedLinkApiTest.class,
+        ActivitiesPostingTest.class,
+        DeletedNodesTest.class,
+        AuthenticationsTest.class,
+        ModulePackagesApiTest.class,
+        WherePredicateApiTest.class,
+        DiscoveryApiTest.class,
+        TestSites.class,
+        TestNodeComments.class,
+        TestFavouriteSites.class,
+        TestSiteContainers.class,
+        TestNodeRatings.class,
+        TestUserPreferences.class,
+        TestTags.class,
+        TestNetworks.class,
+        TestActivities.class,
+        GroupsTest.class,
+        TestPeople.class,
+        TestSiteMembers.class,
+        TestSiteGroups.class,
+        TestPersonSites.class,
+        TestSiteMembershipRequests.class,
+        TestFavourites.class,
+        TestPublicApi128.class,
+        TestPublicApiCaching.class,
+        TestDownloads.class,
+        AuditAppTest.class,
+        TempOutputStreamTest.class,
+        BufferedResponseTest.class
 })
 public class ApiTest
 {
     @AfterClass
     public static void after() throws Exception
     {
-//        EnterprisePublicApiTestFixture.cleanup();
+        // EnterprisePublicApiTestFixture.cleanup();
     }
 }

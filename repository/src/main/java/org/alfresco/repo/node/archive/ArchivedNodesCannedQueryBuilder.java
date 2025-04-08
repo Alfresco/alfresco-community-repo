@@ -77,15 +77,15 @@ public class ArchivedNodesCannedQueryBuilder
     public ArchivedNodesCannedQueryBuilder(Builder builder)
     {
         ParameterCheck.mandatory("storeRef", (this.archiveRootNodeRef = builder.archiveRootNodeRef));
-        ParameterCheck.mandatory("pagingRequest", builder.pagingRequest);        
-      
+        ParameterCheck.mandatory("pagingRequest", builder.pagingRequest);
+
         // Defensive copy
         PagingRequest pr = new PagingRequest(builder.pagingRequest.getSkipCount(),
-                    builder.pagingRequest.getMaxItems(),
-                    builder.pagingRequest.getQueryExecutionId());
+                builder.pagingRequest.getMaxItems(),
+                builder.pagingRequest.getQueryExecutionId());
         pr.setRequestTotalCountMax(builder.pagingRequest.getRequestTotalCountMax());
         this.pagingRequest = pr;
-        this.filter = builder.filter;        
+        this.filter = builder.filter;
         this.sortOrderAscending = builder.sortOrderAscending;
     }
 
@@ -94,13 +94,12 @@ public class ArchivedNodesCannedQueryBuilder
         return this.archiveRootNodeRef;
     }
 
-
     public PagingRequest getPagingRequest()
     {
         PagingRequest pr = new PagingRequest(this.pagingRequest.getSkipCount(),
-                    this.pagingRequest.getMaxItems(), this.pagingRequest.getQueryExecutionId());
+                this.pagingRequest.getMaxItems(), this.pagingRequest.getQueryExecutionId());
         pr.setRequestTotalCountMax(this.pagingRequest.getRequestTotalCountMax());
-        
+
         return pr;
     }
 

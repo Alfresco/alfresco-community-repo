@@ -34,11 +34,11 @@ public class SimpleAccessControlEntryContext implements AccessControlEntryContex
     private static final long serialVersionUID = -5679179194140822827L;
 
     private String classContext;
-    
+
     private String KVPContext;
 
     private String propertyContext;
-    
+
     public String getClassContext()
     {
         return classContext;
@@ -68,6 +68,5 @@ public class SimpleAccessControlEntryContext implements AccessControlEntryContex
     {
         this.propertyContext = propertyContext;
     }
-    
 
 }

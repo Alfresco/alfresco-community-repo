@@ -43,7 +43,7 @@ public enum ACLType
             return 0;
         }
     },
-    
+
     /**
      * Defining permission - not reused anywhere
      */
@@ -54,7 +54,7 @@ public enum ACLType
             return 1;
         }
     },
-    
+
     /**
      * Shared permission, reused for inhertiance from defining permission
      */
@@ -65,7 +65,7 @@ public enum ACLType
             return 2;
         }
     },
-    
+
     /**
      * An ACL defined in its own right - there is no inheriance context
      * 
@@ -77,7 +77,7 @@ public enum ACLType
             return 3;
         }
     },
-    
+
     /**
      * A single instance for global permissions
      */
@@ -88,7 +88,7 @@ public enum ACLType
             return 4;
         }
     },
-    
+
     /**
      * Layered types
      */
@@ -99,23 +99,24 @@ public enum ACLType
             return 5;
         }
     };
-    
-    
+
     /**
      * Get the id for the ACLType stored in the DB
      * 
      * @return int
      */
     public abstract int getId();
-    
+
     /**
      * Get the ACLType from the value stored in the DB
-     * @param id int
+     * 
+     * @param id
+     *            int
      * @return ACLType
      */
     public static ACLType getACLTypeFromId(int id)
     {
-        switch(id)
+        switch (id)
         {
         case 0:
             return ACLType.OLD;
@@ -130,7 +131,7 @@ public enum ACLType
         case 5:
             return ACLType.LAYERED;
         default:
-            throw new IllegalArgumentException("Unknown acl type "+id);
+            throw new IllegalArgumentException("Unknown acl type " + id);
         }
     }
 }

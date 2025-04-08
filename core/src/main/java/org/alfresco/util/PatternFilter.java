@@ -28,18 +28,19 @@ import java.util.regex.Pattern;
 public class PatternFilter
 {
     private List<Pattern> patterns;
-    
+
     /**
      * A list of regular expressions that represent patterns of files.
      * 
-     * @param regexps list of regular expressions
+     * @param regexps
+     *            list of regular expressions
      * 
      * @see String#matches(java.lang.String)
      */
     public void setPatterns(List<String> regexps)
     {
         this.patterns = new ArrayList<Pattern>(regexps.size());
-        for(String regexp : regexps)
+        for (String regexp : regexps)
         {
             this.patterns.add(Pattern.compile(regexp));
         }
@@ -52,7 +53,7 @@ public class PatternFilter
 
         for (Pattern regexp : patterns)
         {
-            if(!regexp.matcher(path).matches())
+            if (!regexp.matcher(path).matches())
             {
                 // it is not a match - try next one
                 continue;

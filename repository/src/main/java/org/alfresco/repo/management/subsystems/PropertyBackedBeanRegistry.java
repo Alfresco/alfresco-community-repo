@@ -31,18 +31,14 @@ import java.util.Map;
 import org.springframework.context.ApplicationListener;
 
 /**
- * An object that tracks the initialization and destruction of {@link PropertyBackedBean} instances. A
- * <code>PropertyBackedBean</code> should call {@link #register(PropertyBackedBean)} after initialization and
- * {@link #deregister(PropertyBackedBean, boolean)} when discarded. Other classes may register for notification of these
- * events by calling {@link #addListener(ApplicationListener)}.
+ * An object that tracks the initialization and destruction of {@link PropertyBackedBean} instances. A <code>PropertyBackedBean</code> should call {@link #register(PropertyBackedBean)} after initialization and {@link #deregister(PropertyBackedBean, boolean)} when discarded. Other classes may register for notification of these events by calling {@link #addListener(ApplicationListener)}.
  * 
  * @author dward
  */
 public interface PropertyBackedBeanRegistry
 {
     /**
-     * Registers a listener object that will be notified of register and deregister calls via a
-     * {@link PropertyBackedBeanEvent}.
+     * Registers a listener object that will be notified of register and deregister calls via a {@link PropertyBackedBeanEvent}.
      * 
      * @param listener
      *            the listener
@@ -63,9 +59,7 @@ public interface PropertyBackedBeanRegistry
      * @param bean
      *            the bean
      * @param isPermanent
-     *            is the component being destroyed forever, i.e. should persisted values be removed? On server shutdown,
-     *            this value would be <code>false</code>, whereas on the removal of a dynamically created instance, this
-     *            value would be <code>true</code>.
+     *            is the component being destroyed forever, i.e. should persisted values be removed? On server shutdown, this value would be <code>false</code>, whereas on the removal of a dynamically created instance, this value would be <code>true</code>.
      */
     public void deregister(PropertyBackedBean bean, boolean isPermanent);
 
@@ -77,7 +71,6 @@ public interface PropertyBackedBeanRegistry
      */
     public void broadcastStart(PropertyBackedBean bean);
 
-
     /**
      * Signals that a {@link PropertyBackedBean} has been stopped.
      * 
@@ -85,10 +78,9 @@ public interface PropertyBackedBeanRegistry
      *            the bean
      */
     public void broadcastStop(PropertyBackedBean bean);
-    
+
     /**
-     * Signals that a {@link PropertyBackedBean} has been asked to
-     * update a property.
+     * Signals that a {@link PropertyBackedBean} has been asked to update a property.
      * 
      * @param bean
      *            the bean
@@ -98,10 +90,9 @@ public interface PropertyBackedBeanRegistry
      *            the value
      */
     public void broadcastSetProperty(PropertyBackedBean bean, String name, String value);
-    
+
     /**
-     * Signals that a {@link PropertyBackedBean} has been asked to
-     * update properties.
+     * Signals that a {@link PropertyBackedBean} has been asked to update properties.
      * 
      * @param bean
      *            the bean
@@ -109,8 +100,7 @@ public interface PropertyBackedBeanRegistry
     public void broadcastSetProperties(PropertyBackedBean bean, Map<String, String> properties);
 
     /**
-     * Signals that a {@link PropertyBackedBean} has been asked to
-     * remove properties.
+     * Signals that a {@link PropertyBackedBean} has been asked to remove properties.
      * 
      * @param bean
      *            the bean

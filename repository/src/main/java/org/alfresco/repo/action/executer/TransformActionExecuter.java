@@ -28,6 +28,9 @@ package org.alfresco.repo.action.executer;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -55,8 +58,6 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Transfor action executer
@@ -64,30 +65,26 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  */
 @Deprecated
-public class TransformActionExecuter extends ActionExecuterAbstractBase 
-{    
+public class TransformActionExecuter extends ActionExecuterAbstractBase
+{
     /* Error messages */
     public static final String ERR_OVERWRITE = "Unable to overwrite copy because more than one have been found.";
     private static final String CONTENT_READER_NOT_FOUND_MESSAGE = "Can not find Content Reader for document. Operation can't be performed";
     private static final String TRANSFORMING_ERROR_MESSAGE = "Some error occurred during document transforming. Error message: ";
 
     public static final String TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN = "Transformer for '%s' -> '%s' with options '%s' was not found.";
-    
-    private static Log logger = LogFactory.getLog(TransformActionExecuter.class); 
-    
-    /*
-     * Action constants
-     */
+
+    private static Log logger = LogFactory.getLog(TransformActionExecuter.class);
+
+    /* Action constants */
     public static final String NAME = "transform";
     public static final String PARAM_MIME_TYPE = "mime-type";
     public static final String PARAM_DESTINATION_FOLDER = "destination-folder";
     public static final String PARAM_ASSOC_TYPE_QNAME = "assoc-type";
     public static final String PARAM_ASSOC_QNAME = "assoc-name";
     public static final String PARAM_OVERWRITE_COPY = "overwrite-copy";
-    
-    /*
-     * Injected services
-     */
+
+    /* Injected services */
     private DictionaryService dictionaryService;
     private NodeService nodeService;
     private CheckOutCheckInService checkOutCheckInService;
@@ -102,11 +99,11 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
      */
     @Deprecated
     protected TransformationOptions options;
-    
+
     /**
      * Set the mime type service
      */
-    public void setMimetypeService(MimetypeService mimetypeService) 
+    public void setMimetypeService(MimetypeService mimetypeService)
     {
         this.mimetypeService = mimetypeService;
     }
@@ -114,7 +111,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     /**
      * Set the node service
      */
-    public void setNodeService(NodeService nodeService) 
+    public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
@@ -130,23 +127,23 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     /**
      * Set the dictionary service
      */
-    public void setDictionaryService(DictionaryService dictionaryService) 
+    public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * Set the content service
      */
-    public void setContentService(ContentService contentService) 
+    public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
     }
-    
+
     /**
      * Set the copy service
      */
-    public void setCopyService(CopyService copyService) 
+    public void setCopyService(CopyService copyService)
     {
         this.copyService = copyService;
     }
@@ -165,7 +162,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
      * Add parameter definitions
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_MIME_TYPE, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_MIME_TYPE), false, "ac-mimetypes"));
         paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
@@ -180,7 +177,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     @Override
     protected void executeImpl(
             Action ruleAction,
-            NodeRef actionedUponNodeRef) 
+            NodeRef actionedUponNodeRef)
     {
         if (this.nodeService.exists(actionedUponNodeRef) == false)
         {
@@ -194,9 +191,9 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             // it is not content, so can't transform
             return;
         }
-        
+
         // Get the mime type
-        String mimeType = (String)ruleAction.getParameterValue(PARAM_MIME_TYPE);
+        String mimeType = (String) ruleAction.getParameterValue(PARAM_MIME_TYPE);
         // Get the content reader
         ContentReader contentReader = this.contentService.getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
         if (null == contentReader || !contentReader.exists())
@@ -207,7 +204,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         TransformationOptions transformationOptions = newTransformationOptions(ruleAction, actionedUponNodeRef);
         // getExecuteAsynchronously() is not true for async convert content rules, so using Thread name
         // options.setUse(ruleAction.getExecuteAsynchronously() ? "asyncRule" :"syncRule");
-        transformationOptions.setUse(Thread.currentThread().getName().contains("Async") ? "asyncRule" :"syncRule");
+        transformationOptions.setUse(Thread.currentThread().getName().contains("Async") ? "asyncRule" : "syncRule");
 
         String sourceMimetype = contentReader.getMimetype();
         long sourceSizeInBytes = contentReader.getSize();
@@ -220,12 +217,12 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             throw new RuleServiceException(String.format(TRANSFORMER_NOT_EXISTS_MESSAGE_PATTERN, sourceMimetype,
                     mimeType, optionsString));
         }
-        
+
         // Get the details of the copy destination
-        NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
-        QName destinationAssocTypeQName = (QName)ruleAction.getParameterValue(PARAM_ASSOC_TYPE_QNAME);
-        QName destinationAssocQName = (QName)ruleAction.getParameterValue(PARAM_ASSOC_QNAME);
-        
+        NodeRef destinationParent = (NodeRef) ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
+        QName destinationAssocTypeQName = (QName) ruleAction.getParameterValue(PARAM_ASSOC_TYPE_QNAME);
+        QName destinationAssocQName = (QName) ruleAction.getParameterValue(PARAM_ASSOC_QNAME);
+
         // default the assoc params if they're not present
         if (destinationAssocTypeQName == null)
         {
@@ -235,19 +232,19 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         {
             destinationAssocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "copy");
         }
-        
+
         // Get the overwirte value
         boolean overwrite = true;
-        Boolean overwriteValue = (Boolean)ruleAction.getParameterValue(PARAM_OVERWRITE_COPY);
+        Boolean overwriteValue = (Boolean) ruleAction.getParameterValue(PARAM_OVERWRITE_COPY);
         if (overwriteValue != null)
         {
             overwrite = overwriteValue.booleanValue();
         }
-        
+
         // Calculate the destination name
-        String originalName = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
+        String originalName = (String) nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
         String newName = transformName(this.mimetypeService, originalName, mimeType, true);
-        
+
         // Since we are overwriting we need to figure out whether the destination node exists
         NodeRef copyNodeRef = null;
         if (overwrite == true)
@@ -284,33 +281,33 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
                 }
             }
         }
-        
+
         if (copyNodeRef == null)
         {
             // Copy the content node
             copyNodeRef = this.copyService.copy(
-                    actionedUponNodeRef, 
+                    actionedUponNodeRef,
                     destinationParent,
                     destinationAssocTypeQName,
                     QName.createQName(destinationAssocQName.getNamespaceURI(), newName));
 
             // Adjust the name of the copy
             nodeService.setProperty(copyNodeRef, ContentModel.PROP_NAME, newName);
-            String originalTitle = (String)nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_TITLE);
-            
+            String originalTitle = (String) nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_TITLE);
+
             if (originalTitle != null)
             {
                 nodeService.setProperty(copyNodeRef, ContentModel.PROP_TITLE, originalTitle);
             }
         }
-        
+
         // Only do the transformation if some content is available
         if (contentReader != null)
         {
             // get the writer and set it up
             ContentWriter contentWriter = this.contentService.getWriter(copyNodeRef, ContentModel.PROP_CONTENT, true);
-            contentWriter.setMimetype(mimeType);                        // new mimetype
-            contentWriter.setEncoding(contentReader.getEncoding());     // original encoding
+            contentWriter.setMimetype(mimeType); // new mimetype
+            contentWriter.setEncoding(contentReader.getEncoding()); // original encoding
 
             // Try and transform the content - failures are caught and allowed to fail silently.
             // This is unique to this action, and is essentially a broken pattern.
@@ -321,7 +318,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
                 doTransform(ruleAction, actionedUponNodeRef, contentReader, copyNodeRef, contentWriter);
                 ruleAction.setParameterValue(PARAM_RESULT, copyNodeRef);
             }
-            catch(NoTransformerException e)
+            catch (NoTransformerException e)
             {
                 if (logger.isDebugEnabled())
                 {
@@ -329,7 +326,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
                             "   reader: " + contentReader + "\n" +
                             "   writer: " + contentWriter + "\n" +
                             "   action: " + this);
-                }             
+                }
                 throw new RuleServiceException(TRANSFORMING_ERROR_MESSAGE + e.getMessage());
             }
         }
@@ -338,14 +335,14 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     protected TransformationOptions newTransformationOptions(Action ruleAction, NodeRef sourceNodeRef)
     {
         return new TransformationOptions(sourceNodeRef, ContentModel.PROP_NAME, null, ContentModel.PROP_NAME);
-    }    
-    
+    }
+
     /**
      * Executed in a new transaction so that failures don't cause the entire transaction to rollback.
      */
-    protected void doTransform( Action ruleAction, 
-                                NodeRef sourceNodeRef, ContentReader contentReader, 
-                                NodeRef destinationNodeRef, ContentWriter contentWriter)    
+    protected void doTransform(Action ruleAction,
+            NodeRef sourceNodeRef, ContentReader contentReader,
+            NodeRef destinationNodeRef, ContentWriter contentWriter)
 
     {
         // transform - will throw NoTransformerException if there are no transformers
@@ -355,20 +352,20 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         Map<String, String> options = converter.getOptions(transformationOptions, sourceMimetype, contentWriter.getMimetype());
         synchronousTransformClient.transform(contentReader, contentWriter, options, null, sourceNodeRef);
     }
-    
+
     /**
-     * Transform a name from original extension to new extension, if appropriate.
-     * If the original name seems to end with a reasonable file extension, then the name
-     * will be transformed such that the old extension is replaced with the new.
-     * Otherwise the name will be returned unaltered.
+     * Transform a name from original extension to new extension, if appropriate. If the original name seems to end with a reasonable file extension, then the name will be transformed such that the old extension is replaced with the new. Otherwise the name will be returned unaltered.
      * <P/>
-     * The original name will be deemed to have a reasonable extension if there are one
-     * or more characters after the (required) final dot, none of which are spaces.
+     * The original name will be deemed to have a reasonable extension if there are one or more characters after the (required) final dot, none of which are spaces.
      * 
-     * @param mimetypeService the mimetype service
-     * @param original the original name
-     * @param newMimetype the new mime type
-     * @param alwaysAdd if the name has no extension, then add the new one
+     * @param mimetypeService
+     *            the mimetype service
+     * @param original
+     *            the original name
+     * @param newMimetype
+     *            the new mime type
+     * @param alwaysAdd
+     *            if the name has no extension, then add the new one
      * 
      * @return name with new extension as appropriate for the mimetype
      */
@@ -382,7 +379,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             // we found it
             String nameBeforeDot = original.substring(0, dotIndex);
             String originalExtension = original.substring(dotIndex + 1, original.length());
-            
+
             // See ALF-1937, which actually relates to cm:title not cm:name.
             // It is possible that the text after the '.' is not actually an extension
             // in which case it should not be replaced.
@@ -410,9 +407,9 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
         {
             // no extension so don't add a new one
             sb.append(original);
-            
+
             if (alwaysAdd == true)
-            {               
+            {
                 // add the new extension - defaults to .bin
                 String newExtension = mimetypeService.getExtension(newMimetype);
                 sb.append('.').append(newExtension);
@@ -423,13 +420,10 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     }
 
     /**
-     * Given a String, this method tries to determine whether it is a reasonable filename extension.
-     * There are a number of checks that could be performed here, including checking whether the characters
-     * in the string are all 'letters'. However these are complicated by unicode and other
-     * considerations. Therefore this method adopts a simple approach and returns true if the
-     * string is of non-zero length and contains no spaces.
+     * Given a String, this method tries to determine whether it is a reasonable filename extension. There are a number of checks that could be performed here, including checking whether the characters in the string are all 'letters'. However these are complicated by unicode and other considerations. Therefore this method adopts a simple approach and returns true if the string is of non-zero length and contains no spaces.
      * 
-     * @param potentialExtensionString the string which may be a file extension.
+     * @param potentialExtensionString
+     *            the string which may be a file extension.
      * @return <code>true</code> if it is deemed reasonable, else <code>false</code>
      * @since 3.3
      */
@@ -437,11 +431,11 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     {
         return potentialExtensionString.length() > 0 && potentialExtensionString.indexOf(' ') == -1;
     }
-    
+
     @Override
     public boolean onLogException(Log logger, Throwable t, String message)
     {
-        if (t instanceof UnimportantTransformException )
+        if (t instanceof UnimportantTransformException)
         {
             logger.debug(message);
             return true;

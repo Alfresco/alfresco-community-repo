@@ -34,24 +34,20 @@ public interface AccessControlList extends Serializable
 {
     /**
      * Get the properties
+     * 
      * @return AccessControlListProperties
      */
     public AccessControlListProperties getProperties();
-    
+
     /**
-     * Get the members of the ACL in order
-     * Ordered by:
-     * position, 
-     * then deny followed by allow, 
-     * then by authority type 
-     * then ....
+     * Get the members of the ACL in order Ordered by: position, then deny followed by allow, then by authority type then ....
      * 
      * To make permission evaluation faster for the common cases
      * 
      */
     public List<AccessControlEntry> getEntries();
-    
+
     public SimpleNodePermissionEntry getCachedSimpleNodePermissionEntry();
-    
+
     public void setCachedSimpleNodePermissionEntry(SimpleNodePermissionEntry cachedSimpleNodePermissionEntry);
 }

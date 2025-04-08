@@ -31,8 +31,7 @@ public class SiteMembershipRejection extends org.alfresco.rest.api.model.SiteMem
 {
 
     public SiteMembershipRejection()
-    {
-    }
+    {}
 
     public SiteMembershipRejection(String comment)
     {

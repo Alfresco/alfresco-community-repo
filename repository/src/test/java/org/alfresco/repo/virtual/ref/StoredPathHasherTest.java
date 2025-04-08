@@ -27,10 +27,10 @@
 package org.alfresco.repo.virtual.ref;
 
 import junit.framework.TestCase;
-
-import org.alfresco.util.Pair;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
+
+import org.alfresco.util.Pair;
 
 public class StoredPathHasherTest extends TestCase
 {
@@ -40,7 +40,7 @@ public class StoredPathHasherTest extends TestCase
     {
         hashStore = new HashStore();
         hashStore.put("/com/alfresco",
-                      "1");
+                "1");
     }
 
     @Test
@@ -48,33 +48,33 @@ public class StoredPathHasherTest extends TestCase
     {
 
         hashStore.put("/org/alfresco",
-                      "2");
+                "2");
 
         StoredPathHasher hasher = new StoredPathHasher(hashStore);
 
         assertEquals(new Pair<String, String>("1",
-                                              null),
-                     hasher.hash("/com/alfresco/"));
+                null),
+                hasher.hash("/com/alfresco/"));
 
         assertEquals(new Pair<String, String>("1",
-                                              null),
-                     hasher.hash("/com/alfresco"));
+                null),
+                hasher.hash("/com/alfresco"));
 
         assertEquals(new Pair<String, String>(null,
-                                              Base64.encodeBase64String("/com".getBytes())),
-                     hasher.hash("/com"));
+                Base64.encodeBase64String("/com".getBytes())),
+                hasher.hash("/com"));
 
         assertEquals(new Pair<String, String>(null,
-                                              Base64.encodeBase64String("/com".getBytes())),
-                     hasher.hash("/com/"));
+                Base64.encodeBase64String("/com".getBytes())),
+                hasher.hash("/com/"));
 
         assertEquals(new Pair<String, String>("1",
-                                              Base64.encodeBase64String("foo/bar".getBytes())),
-                     hasher.hash("/com/alfresco/foo/bar"));
+                Base64.encodeBase64String("foo/bar".getBytes())),
+                hasher.hash("/com/alfresco/foo/bar"));
 
         assertEquals(new Pair<String, String>("2",
-                                              Base64.encodeBase64String("foo/bar".getBytes())),
-                     hasher.hash("/org/alfresco/foo/bar"));
+                Base64.encodeBase64String("foo/bar".getBytes())),
+                hasher.hash("/org/alfresco/foo/bar"));
     }
 
     @Test
@@ -83,8 +83,8 @@ public class StoredPathHasherTest extends TestCase
         StoredPathHasher hasher = new StoredPathHasher(hashStore);
 
         assertEquals(new Pair<String, String>(null,
-                                              ""),
-                     hasher.hash("/"));
+                ""),
+                hasher.hash("/"));
     }
 
     @Test

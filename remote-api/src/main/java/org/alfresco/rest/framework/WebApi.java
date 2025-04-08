@@ -42,7 +42,9 @@ import java.lang.annotation.Target;
 public @interface WebApi
 {
     String name();
+
     Api.SCOPE scope();
+
     int version();
 
 }

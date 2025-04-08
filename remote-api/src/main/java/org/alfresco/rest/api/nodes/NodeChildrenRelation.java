@@ -28,6 +28,9 @@ package org.alfresco.rest.api.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.webscripts.servlet.FormData;
+
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -39,20 +42,16 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
  * Node Children
  *
- * - list folder children
- * - create folder &/or empty file
- * - create (ie. upload) file with content
+ * - list folder children - create folder &/or empty file - create (ie. upload) file with content
  * 
  * @author janv
  * @author Jamal Kaabi-Mofrad
  */
-@RelationshipResource(name = "children",  entityResource = NodesEntityResource.class, title = "Folder children")
+@RelationshipResource(name = "children", entityResource = NodesEntityResource.class, title = "Folder children")
 public class NodeChildrenRelation implements
         RelationshipResourceAction.Read<Node>,
         RelationshipResourceAction.Create<Node>,
@@ -74,22 +73,16 @@ public class NodeChildrenRelation implements
     /**
      * List folder children - returns a filtered/sorted/paged list of nodes that are immediate children of the parent folder
      *
-     * @param parentFolderNodeId String id of parent folder - will also accept well-known alias, eg. -root- or -my- or -shared-
+     * @param parentFolderNodeId
+     *            String id of parent folder - will also accept well-known alias, eg. -root- or -my- or -shared-
      * 
-     * Optional query parameters:
+     *            Optional query parameters:
      *
-     * - include
-     * - fields
-     * - where
-     * - orderBy
-     * - skipCount
-     * - maxItems
-     * - ... etc
-     *                        
-     * Please refer to OpenAPI spec for more details !    
+     *            - include - fields - where - orderBy - skipCount - maxItems - ... etc
      * 
-     * If parentFolderNodeId does not exist, EntityNotFoundException (status 404).
-     * If parentFolderNodeId does not represent a folder, InvalidArgumentException (status 400).
+     *            Please refer to OpenAPI spec for more details !
+     * 
+     *            If parentFolderNodeId does not exist, EntityNotFoundException (status 404). If parentFolderNodeId does not represent a folder, InvalidArgumentException (status 400).
      */
     @Override
     @WebApiDescription(title = "Return a paged list of nodes for the document/folder identified by parentFolderNodeId")
@@ -103,11 +96,10 @@ public class NodeChildrenRelation implements
      *
      * Note: for parent folder nodeId, can also use well-known alias, eg. -root- or -my- or -shared-
      *
-     * If parentFolderNodeId does not exist, EntityNotFoundException (status 404).
-     * If parentFolderNodeId does not represent a folder, InvalidArgumentException (status 400).
+     * If parentFolderNodeId does not exist, EntityNotFoundException (status 404). If parentFolderNodeId does not represent a folder, InvalidArgumentException (status 400).
      */
     @Override
-    @WebApiDescription(title="Create one (or more) nodes as children of folder identified by parentFolderNodeId")
+    @WebApiDescription(title = "Create one (or more) nodes as children of folder identified by parentFolderNodeId")
     public List<Node> create(String parentFolderNodeId, List<Node> nodeInfos, Parameters parameters)
     {
         List<Node> result = new ArrayList<>(nodeInfos.size());

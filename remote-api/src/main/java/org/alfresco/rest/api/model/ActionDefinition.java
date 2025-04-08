@@ -42,17 +42,16 @@ public class ActionDefinition
      * For Jackson deserialisation.
      */
     public ActionDefinition()
-    {
-    }
+    {}
 
     public ActionDefinition(String id,
-                            String name,
-                            String title,
-                            String description,
-                            List<String> applicableTypes,
-                            boolean adhocPropertiesAllowed,
-                            boolean trackStatus,
-                            List<ParameterDefinition> parameterDefinitions)
+            String name,
+            String title,
+            String description,
+            List<String> applicableTypes,
+            boolean adhocPropertiesAllowed,
+            boolean trackStatus,
+            List<ParameterDefinition> parameterDefinitions)
     {
         this.id = id;
         this.name = name;
@@ -71,7 +70,7 @@ public class ActionDefinition
     {
         return id;
     }
-    
+
     public String getName()
     {
         return name;
@@ -120,15 +119,14 @@ public class ActionDefinition
          * For Jackson deserialisation.
          */
         public ParameterDefinition()
-        {
-        }
+        {}
 
         public ParameterDefinition(String name,
-                                   String type,
-                                   boolean multiValued,
-                                   boolean mandatory,
-                                   String displayLabel,
-                                   String parameterConstraintName)
+                String type,
+                boolean multiValued,
+                boolean mandatory,
+                String displayLabel,
+                String parameterConstraintName)
         {
             this.name = name;
             this.type = type;

@@ -35,10 +35,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 /**
  * Class to represent a multilingual (ML) text value.
  * <p>
- * The language codes used should conform to the
- * <a href="http://www.loc.gov/standards/iso639-2/php/English_list.php">ISO639-2</a>
- * language code standard, although there is no enforcement of the standard in this
- * class.
+ * The language codes used should conform to the <a href="http://www.loc.gov/standards/iso639-2/php/English_list.php">ISO639-2</a> language code standard, although there is no enforcement of the standard in this class.
  * <p>
  * This is a simple extension of a <code>HashMap</code> with a few convenience methods.
  * 
@@ -67,11 +64,12 @@ public class MLText extends HashMap<Locale, String>
     {
         super(3, 0.75F);
     }
-    
+
     /**
      * Construct an instance with a value corresponding to the current context locale.
      * 
-     * @param value the value for the current default locale
+     * @param value
+     *            the value for the current default locale
      * 
      * @see #getDefaultLocale()
      * @see #MLText(Locale, String)
@@ -81,12 +79,14 @@ public class MLText extends HashMap<Locale, String>
     {
         this(getDefaultLocale(), value);
     }
-    
+
     /**
      * Construct an instance with a value for the given locale.
      * 
-     * @param locale the locale
-     * @param value the value
+     * @param locale
+     *            the locale
+     * @param value
+     *            the value
      * 
      * @see #getDefaultValue()
      */
@@ -103,7 +103,7 @@ public class MLText extends HashMap<Locale, String>
     {
         return keySet();
     }
-    
+
     /**
      * @return Returns all the values stored
      */
@@ -115,24 +115,27 @@ public class MLText extends HashMap<Locale, String>
     /**
      * Add a multilingual text value
      * 
-     * @param locale the language locale
-     * @param value the multilingual text
+     * @param locale
+     *            the language locale
+     * @param value
+     *            the multilingual text
      */
     public void addValue(Locale locale, String value)
     {
         put(locale, value);
     }
-    
+
     /**
      * Retrieve a multilingual text value
      * 
-     * @param locale the language locale
+     * @param locale
+     *            the language locale
      */
     public String getValue(Locale locale)
     {
         return get(locale);
     }
-    
+
     /**
      * Retrieves a default value from the set of available locales.<br/>
      * 
@@ -150,22 +153,20 @@ public class MLText extends HashMap<Locale, String>
         Locale locale = getDefaultLocale();
         return getClosestValue(locale);
     }
-    
+
     /**
      * The given locale is used to search for a matching value according to:
      * <ul>
-     *   <li>An exact locale match</li>
-     *   <li>A match of locale ISO language codes</li>
-     *   <li>The value for the locale provided in the {@link MLText#MLText(Locale, String) constructor}</li>
-     *   <li>An arbitrary value</li>
-     *   <li><tt>null</tt></li>
+     * <li>An exact locale match</li>
+     * <li>A match of locale ISO language codes</li>
+     * <li>The value for the locale provided in the {@link MLText#MLText(Locale, String) constructor}</li>
+     * <li>An arbitrary value</li>
+     * <li><tt>null</tt></li>
      * </ul>
      * 
-     * @param locale the locale to use as the starting point of the value search
-     * @return Returns a default <tt>String</tt> value or null if one isn't available.
-     *      <tt>null</tt> will only be returned if there are no values associated with
-     *      this instance.  With or without a match, the return value may be <tt>null</tt>,
-     *      depending on the values associated with the locales.
+     * @param locale
+     *            the locale to use as the starting point of the value search
+     * @return Returns a default <tt>String</tt> value or null if one isn't available. <tt>null</tt> will only be returned if there are no values associated with this instance. With or without a match, the return value may be <tt>null</tt>, depending on the values associated with the locales.
      */
     public String getClosestValue(Locale locale)
     {
@@ -199,11 +200,12 @@ public class MLText extends HashMap<Locale, String>
             return get(match);
         }
     }
-    
+
     /**
      * Remove a multilingual text value
      * 
-     * @param locale the language locale
+     * @param locale
+     *            the language locale
      */
     public void removeValue(Locale locale)
     {

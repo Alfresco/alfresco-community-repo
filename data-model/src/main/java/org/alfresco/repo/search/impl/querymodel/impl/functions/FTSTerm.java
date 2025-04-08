@@ -42,13 +42,13 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
  *
  */
 public class FTSTerm extends BaseFunction
-{   
+{
     public final static String NAME = "FTSTerm";
 
     public final static String ARG_TERM = "Term";
-    
+
     public final static String ARG_PROPERTY = "Property";
-    
+
     public final static String ARG_TOKENISATION_MODE = "TokenisationMode";
 
     public static LinkedHashMap<String, ArgumentDefinition> args;
@@ -65,10 +65,10 @@ public class FTSTerm extends BaseFunction
     {
         super(NAME, DataTypeDefinition.BOOLEAN, args);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set) */
     public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
         throw new UnsupportedOperationException();

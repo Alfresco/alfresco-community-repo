@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
@@ -36,9 +38,6 @@ import org.apache.chemistry.opencmis.tck.CmisTestResult;
 import org.apache.chemistry.opencmis.tck.tests.basics.BasicsTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.basics.RootFolderTest;
 
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
 class AlfrescoCMISBasicsTestGroup extends BasicsTestGroup
 {
     @Override
@@ -49,10 +48,10 @@ class AlfrescoCMISBasicsTestGroup extends BasicsTestGroup
         replaceRootFolderTest();
     }
 
-    private void replaceRootFolderTest() throws Exception {
+    private void replaceRootFolderTest() throws Exception
+    {
         getTests().removeIf(t -> t instanceof RootFolderTest);
-        addTest(new RootFolderTest()
-        {
+        addTest(new RootFolderTest() {
             @Override
             protected CmisTestResult assertEquals(CmisObject expected, CmisObject actual, CmisTestResult success, CmisTestResult failure, boolean checkAcls, boolean checkPolicies)
             {

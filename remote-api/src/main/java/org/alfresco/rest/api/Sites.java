@@ -35,50 +35,75 @@ import org.alfresco.service.cmr.site.SiteInfo;
 
 public interface Sites
 {
-	SiteInfo validateSite(String siteShortName);
-	SiteInfo validateSite(NodeRef nodeRef);
-    CollectionWithPagingInfo<SiteMember> getSiteMembers(String siteShortName, Parameters parameters);
-    Site getSite(String siteId);
-	void deleteSite(String siteId, Parameters parameters);
-    Site createSite(Site site, Parameters parameters);
-	Site updateSite(String siteId, SiteUpdate site, Parameters parameters);
+    SiteInfo validateSite(String siteShortName);
 
-	/**
-	 * people/<personId>/sites/<siteId>
-	 * 
-	 * @param personId String
-     * @param siteShortName String
+    SiteInfo validateSite(NodeRef nodeRef);
+
+    CollectionWithPagingInfo<SiteMember> getSiteMembers(String siteShortName, Parameters parameters);
+
+    Site getSite(String siteId);
+
+    void deleteSite(String siteId, Parameters parameters);
+
+    Site createSite(Site site, Parameters parameters);
+
+    Site updateSite(String siteId, SiteUpdate site, Parameters parameters);
+
+    /**
+     * people/<personId>/sites/<siteId>
+     * 
+     * @param personId
+     *            String
+     * @param siteShortName
+     *            String
      * @return MemberOfSite
-	 */
-	MemberOfSite getMemberOfSite(String personId, String siteShortName);
-	SiteMember getSiteMember(String personId, String siteShortName);
-	SiteMember addSiteMember(String siteShortName, SiteMember siteMember);
-	void removeSiteMember(String personId, String siteId);
-	SiteMember updateSiteMember(String siteShortName, SiteMember siteMember);
-	CollectionWithPagingInfo<MemberOfSite> getSites(String personId, Parameters parameters);
-	SiteContainer getSiteContainer(String siteShortName, String containerId);
-	PagingResults<SiteContainer> getSiteContainers(String siteShortName, Paging paging);
-	CollectionWithPagingInfo<Site> getSites(Parameters parameters);
+     */
+    MemberOfSite getMemberOfSite(String personId, String siteShortName);
+
+    SiteMember getSiteMember(String personId, String siteShortName);
+
+    SiteMember addSiteMember(String siteShortName, SiteMember siteMember);
+
+    void removeSiteMember(String personId, String siteId);
+
+    SiteMember updateSiteMember(String siteShortName, SiteMember siteMember);
+
+    CollectionWithPagingInfo<MemberOfSite> getSites(String personId, Parameters parameters);
+
+    SiteContainer getSiteContainer(String siteShortName, String containerId);
+
+    PagingResults<SiteContainer> getSiteContainers(String siteShortName, Paging paging);
+
+    CollectionWithPagingInfo<Site> getSites(Parameters parameters);
+
     FavouriteSite getFavouriteSite(String personId, String siteShortName);
+
     void addFavouriteSite(String personId, FavouriteSite favouriteSite);
+
     void removeFavouriteSite(String personId, String siteId);
+
     CollectionWithPagingInfo<FavouriteSite> getFavouriteSites(String personId, Parameters parameters);
 
     String getSiteRole(String siteId);
+
     String getSiteRole(String siteId, String personId);
 
     CollectionWithPagingInfo<SiteGroup> getSiteGroupMemberships(String siteId, Parameters parameters);
+
     SiteGroup addSiteGroupMembership(String siteId, SiteGroup group);
+
     SiteGroup getSiteGroupMembership(String siteId, String groupId);
+
     SiteGroup updateSiteGroupMembership(String siteId, SiteGroup group);
+
     void removeSiteGroupMembership(String groupId, String siteId);
 
     String PARAM_PERMANENT = "permanent";
     String PARAM_SKIP_ADDTOFAVORITES = "skipAddToFavorites";
     String PARAM_SKIP_SURF_CONFIGURATION = "skipConfiguration";
 
-    String PARAM_SITE_ID          = "id";
-    String PARAM_SITE_TITLE       = "title";
+    String PARAM_SITE_ID = "id";
+    String PARAM_SITE_TITLE = "title";
     String PARAM_SITE_DESCRIPTION = "description";
 
     String PARAM_SITE_ROLE = "role";

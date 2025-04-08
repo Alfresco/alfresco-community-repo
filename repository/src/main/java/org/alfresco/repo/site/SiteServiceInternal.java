@@ -31,13 +31,14 @@ import org.alfresco.service.cmr.site.SiteService;
 
 /**
  * Internal interface used to expose the getSiteRoot() method without polluting the public interface {@link SiteService}.
+ * 
  * @author Nick Smith
  * @since 4.0
  *
  */
 public interface SiteServiceInternal extends SiteService
 {
-    
+
     /**
      * Get the node reference that is the site root
      * 

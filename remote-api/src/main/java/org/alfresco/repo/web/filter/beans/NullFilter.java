@@ -26,7 +26,6 @@
 package org.alfresco.repo.web.filter.beans;
 
 import java.io.IOException;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -36,8 +35,7 @@ import jakarta.servlet.ServletResponse;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 
 /**
- * A Benign filter that does nothing more than invoke the filter chain. Allows strategic points of the filter chain to
- * be configured in and out according to the authentication subsystem in use.
+ * A Benign filter that does nothing more than invoke the filter chain. Allows strategic points of the filter chain to be configured in and out according to the authentication subsystem in use.
  * 
  * @author dward
  */
@@ -57,23 +55,20 @@ public class NullFilter implements DependencyInjectedFilter, ActivateableBean
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
-     */
+     * 
+     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive() */
     public boolean isActive()
     {
         return this.isActive;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.web.filter.beans.DependencyInjectedFilter#doFilter(jakarta.servlet.ServletContext,
-     * jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse, jakarta.servlet.FilterChain)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.web.filter.beans.DependencyInjectedFilter#doFilter(jakarta.servlet.ServletContext, jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse, jakarta.servlet.FilterChain) */
     public void doFilter(ServletContext context, ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException
     {
         chain.doFilter(request, response);
     }
-    
-    
+
 }

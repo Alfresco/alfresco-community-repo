@@ -32,31 +32,32 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 
 public class NodeRefDeserializer extends JsonDeserializer<NodeRef>
 {
-	private NodeRef getNodeRef(String nodeRefString)
-	{
-		NodeRef nodeRef = null;
+    private NodeRef getNodeRef(String nodeRefString)
+    {
+        NodeRef nodeRef = null;
 
-        if(!NodeRef.isNodeRef(nodeRefString))
+        if (!NodeRef.isNodeRef(nodeRefString))
         {
-        	nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeRefString);
+            nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeRefString);
         }
         else
         {
-        	nodeRef = new NodeRef(nodeRefString);
+            nodeRef = new NodeRef(nodeRefString);
         }
 
-		return nodeRef;
-	}
+        return nodeRef;
+    }
 
-	@Override
-	public NodeRef deserialize(JsonParser jp, DeserializationContext ctxt)
-			throws IOException, JsonProcessingException
-	{
+    @Override
+    public NodeRef deserialize(JsonParser jp, DeserializationContext ctxt)
+            throws IOException, JsonProcessingException
+    {
         JsonToken curr = jp.getCurrentToken();
 
         if (curr == JsonToken.VALUE_STRING)
@@ -67,7 +68,7 @@ public class NodeRefDeserializer extends JsonDeserializer<NodeRef>
         }
         else
         {
-        	throw new IOException("Unable to deserialize nodeRef: " + curr.asString());
+            throw new IOException("Unable to deserialize nodeRef: " + curr.asString());
         }
-	}
+    }
 }

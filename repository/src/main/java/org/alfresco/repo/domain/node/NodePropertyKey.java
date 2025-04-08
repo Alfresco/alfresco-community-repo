@@ -38,31 +38,29 @@ import org.alfresco.util.EqualsHelper;
 public class NodePropertyKey implements Serializable, Comparable<NodePropertyKey>
 {
     private static final long serialVersionUID = 3258695403221300023L;
-    
+
     private Long qnameId;
     private Long localeId;
     private Integer listIndex;
-    
+
     public NodePropertyKey()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
         sb.append("NodePropertyKey ")
-          .append(" [listIndex=").append(listIndex)
-          .append(", localeId=").append(localeId)
-          .append(", qnameId=").append(qnameId)
-          .append("]");
+                .append(" [listIndex=").append(listIndex)
+                .append(", localeId=").append(localeId)
+                .append(", qnameId=").append(qnameId)
+                .append("]");
         return sb.toString();
     }
 
     public int hashCode()
     {
-        return
-                (qnameId == null ? 0 : qnameId.hashCode()) +
+        return (qnameId == null ? 0 : qnameId.hashCode()) +
                 (listIndex == null ? 0 : listIndex.hashCode());
     }
 
@@ -80,12 +78,11 @@ public class NodePropertyKey implements Serializable, Comparable<NodePropertyKey
         NodePropertyKey that = (NodePropertyKey) obj;
         return (EqualsHelper.nullSafeEquals(this.qnameId, that.qnameId) &&
                 EqualsHelper.nullSafeEquals(this.listIndex, that.listIndex) &&
-                EqualsHelper.nullSafeEquals(this.localeId, that.localeId)
-                );
+                EqualsHelper.nullSafeEquals(this.localeId, that.localeId));
     }
 
     /**
-     * throws ClassCastException        if the object is not of the correct type
+     * throws ClassCastException if the object is not of the correct type
      */
     public int compareTo(NodePropertyKey that)
     {

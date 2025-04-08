@@ -34,6 +34,8 @@ package org.alfresco.repo.solr;
 public interface Acl extends Comparable<Acl>
 {
     Long getId();
+
     Long getInheritedId();
+
     Long getAclChangeSetId();
 }

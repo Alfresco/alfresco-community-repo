@@ -28,15 +28,24 @@ package org.alfresco.repo.webdav;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.util.Map;
-
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.apache.chemistry.opencmis.commons.spi.Holder;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.context.ApplicationContext;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
-import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.nodelocator.CompanyHomeNodeLocator;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
@@ -50,17 +59,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.apache.chemistry.opencmis.commons.spi.Holder;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.context.ApplicationContext;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * Tests {@link GetMethod} in real environment, using {@link Mock} HTTP request and {@link Mock} HTTP response
@@ -72,7 +70,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 public class GetMethodRegressionTest extends TestCase
 {
     private static final int DOCUMENTS_AMOUNT_FOR_GET_METHOD_TEST = 25;
-
 
     private static final String HTTP_METHOD_GET = "GET";
 
@@ -92,7 +89,6 @@ public class GetMethodRegressionTest extends TestCase
 
     private static final String TEXT_DOCUMENT_CONTENT_PATTERN = "Text content for '%s' document";
 
-
     private ApplicationContext applicationContext;
 
     private WebDAVHelper davHelper;
@@ -105,7 +101,6 @@ public class GetMethodRegressionTest extends TestCase
 
     private TransactionService transactionService;
 
-
     private UserTransaction transaction;
 
     private GetMethod testingMethod;
@@ -115,7 +110,6 @@ public class GetMethodRegressionTest extends TestCase
     private NodeRef rootTestFolder;
 
     private MockHttpServletResponse mockResponse;
-
 
     @Before
     public void setUp() throws Exception
@@ -252,7 +246,8 @@ public class GetMethodRegressionTest extends TestCase
     /**
      * Commits or rolls back or does nothing with the current transaction and begins a new {@link UserTransaction}
      * 
-     * @param transactionAction - one of the {@link TransactionActionEnum} values which specifies action to be done for the current transaction
+     * @param transactionAction
+     *            - one of the {@link TransactionActionEnum} values which specifies action to be done for the current transaction
      * @throws Exception
      */
     private void restartTransaction(TransactionActionEnum transactionAction) throws Exception
@@ -280,8 +275,7 @@ public class GetMethodRegressionTest extends TestCase
         AuditQueryParameters parameters = new AuditQueryParameters();
         parameters.setForward(false);
 
-        auditService.auditQuery(new AuditQueryCallback()
-        {
+        auditService.auditQuery(new AuditQueryCallback() {
             @Override
             public boolean valuesRequired()
             {

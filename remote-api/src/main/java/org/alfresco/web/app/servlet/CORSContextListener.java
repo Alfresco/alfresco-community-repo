@@ -25,18 +25,18 @@
  */
 package org.alfresco.web.app.servlet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
-
+import java.util.EnumSet;
+import java.util.Properties;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.FilterRegistration;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
-import java.util.EnumSet;
-import java.util.Properties;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * The CORSContextListener adds the Tomcat CORS filter org.apache.catalina.filters.CorsFilter which allows to enable/disable and configure Cross-Origin Resource Sharing (CORS) with alfresco properties.
@@ -74,9 +74,9 @@ public class CORSContextListener implements ServletContextListener
         Properties gP = (Properties) wc.getBean(BEAN_GLOBAL_PROPERTIES);
         Boolean corsEnabled = Boolean.valueOf(gP.getProperty(CORS_ENABLED));
 
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
-            logger.debug("CORS filter is" + (corsEnabled?" ":" not ") + "enabled");
+            logger.debug("CORS filter is" + (corsEnabled ? " " : " not ") + "enabled");
         }
         if (corsEnabled)
         {

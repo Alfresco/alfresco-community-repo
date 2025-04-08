@@ -32,9 +32,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * A delegating namespace prefix resolver which allows local over rides from the
- * delegate. Allows standard/default prefixes to be available but over ridden as
- * required.
+ * A delegating namespace prefix resolver which allows local over rides from the delegate. Allows standard/default prefixes to be available but over ridden as required.
  * 
  * @author andyh
  */
@@ -50,24 +48,24 @@ public class DynamicNamespacePrefixResolver implements NamespaceService
      */
     private HashMap<String, String> map = new HashMap<String, String>();
 
-    
     public DynamicNamespacePrefixResolver(NamespacePrefixResolver delegate)
     {
         super();
         this.delegate = delegate;
     }
-    
+
     public DynamicNamespacePrefixResolver()
     {
         this(null);
     }
 
-    
     /**
      * Add prefix to name space mapping override
      * 
-     * @param prefix String
-     * @param uri String
+     * @param prefix
+     *            String
+     * @param uri
+     *            String
      */
     public void registerNamespace(String prefix, String uri)
     {
@@ -77,7 +75,8 @@ public class DynamicNamespacePrefixResolver implements NamespaceService
     /**
      * Remove a prefix to namespace mapping
      * 
-     * @param prefix String
+     * @param prefix
+     *            String
      */
     public void unregisterNamespace(String prefix)
     {
@@ -123,23 +122,23 @@ public class DynamicNamespacePrefixResolver implements NamespaceService
 
     public Collection<String> getPrefixes()
     {
-       Set<String> prefixes = new HashSet<String>();
-       if(delegate != null)
-       {
-          prefixes.addAll(delegate.getPrefixes());
-       }
-       prefixes.addAll(map.keySet());
-       return prefixes;
+        Set<String> prefixes = new HashSet<String>();
+        if (delegate != null)
+        {
+            prefixes.addAll(delegate.getPrefixes());
+        }
+        prefixes.addAll(map.keySet());
+        return prefixes;
     }
-    
+
     public Collection<String> getURIs()
     {
-       Set<String> uris = new HashSet<String>();
-       if(delegate != null)
-       {
-          uris.addAll(delegate.getURIs());
-       }
-       uris.addAll(map.values());
-       return uris;
+        Set<String> uris = new HashSet<String>();
+        if (delegate != null)
+        {
+            uris.addAll(delegate.getURIs());
+        }
+        uris.addAll(map.values());
+        return uris;
     }
 }

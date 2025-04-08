@@ -31,8 +31,7 @@ import java.io.FileFilter;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Interface to load files and directories into the hub.
- * All will be created as new - there is no detection if a file exists or has changed etc..
+ * Interface to load files and directories into the hub. All will be created as new - there is no detection if a file exists or has changed etc..
  * 
  * @author andyh
  */
@@ -41,32 +40,40 @@ public interface FileImporter
     /**
      * Load a file or directory into the repository
      * 
-     * @param container - the node into which to insert the file or directory
-     * @param file - the start point for the import
-     * @param recurse - if the start point is a directoty then recurse
+     * @param container
+     *            - the node into which to insert the file or directory
+     * @param file
+     *            - the start point for the import
+     * @param recurse
+     *            - if the start point is a directoty then recurse
      * @return Returns the number of successfully imported files and directories
      * @throws FileImporterException
      */
     public int loadFile(NodeRef container, File file, boolean recurse) throws FileImporterException;
-    
+
     /**
      * Load all files or directories that match the file filter in the given directory
      * 
-     * @param container NodeRef
-     * @param file File
-     * @param filter FileFilter
-     * @param recurse boolean
+     * @param container
+     *            NodeRef
+     * @param file
+     *            File
+     * @param filter
+     *            FileFilter
+     * @param recurse
+     *            boolean
      * @return Returns the number of successfully imported files and directories
      * @throws FileImporterException
      */
     public int loadFile(NodeRef container, File file, FileFilter filter, boolean recurse) throws FileImporterException;
-    
-    
+
     /**
      * Load a single file or directory without any recursion
      * 
-     * @param container NodeRef
-     * @param file File
+     * @param container
+     *            NodeRef
+     * @param file
+     *            File
      * @return Returns the number of successfully imported files and directories
      * @throws FileImporterException
      */
@@ -75,10 +82,14 @@ public interface FileImporter
     /**
      * Load a file into a given location, giving it a new name.
      * 
-     * @param container the target parent to load into
-     * @param file the source file to upload
-     * @param recurse true to recurse into subfolders
-     * @param name the new name of the file or folder when it gets uploaded
+     * @param container
+     *            the target parent to load into
+     * @param file
+     *            the source file to upload
+     * @param recurse
+     *            true to recurse into subfolders
+     * @param name
+     *            the new name of the file or folder when it gets uploaded
      * @return Returns the number of files loaded
      * @throws FileImporterException
      */

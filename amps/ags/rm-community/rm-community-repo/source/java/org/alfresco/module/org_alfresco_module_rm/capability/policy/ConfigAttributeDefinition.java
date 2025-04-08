@@ -31,12 +31,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import net.sf.acegisecurity.ConfigAttribute;
+
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
-
-import net.sf.acegisecurity.ConfigAttribute;
 
 /**
  * RM security configuration definition.
@@ -72,8 +72,10 @@ public class ConfigAttributeDefinition
     /**
      * Default constructor
      * 
-     * @param attr                      configuration attribute instance 
-     * @param namespacePrefixResolver   namespace prefix resolver
+     * @param attr
+     *            configuration attribute instance
+     * @param namespacePrefixResolver
+     *            namespace prefix resolver
      */
     public ConfigAttributeDefinition(ConfigAttribute attr, NamespacePrefixResolver namespacePrefixResolver)
     {
@@ -86,12 +88,12 @@ public class ConfigAttributeDefinition
         typeString = st.nextToken();
 
         // check that the configuration is valid
-        if (!(typeString.equals(RM) || 
-              typeString.equals(RM_ALLOW) || 
-              typeString.equals(RM_CAP) || 
-              typeString.equals(RM_DENY) || 
-              typeString.equals(RM_QUERY) || 
-              typeString.equals(RM_ABSTAIN)))
+        if (!(typeString.equals(RM) ||
+                typeString.equals(RM_ALLOW) ||
+                typeString.equals(RM_CAP) ||
+                typeString.equals(RM_DENY) ||
+                typeString.equals(RM_QUERY) ||
+                typeString.equals(RM_ABSTAIN)))
         {
             throw new ACLEntryVoterException("Invalid type: must be ACL_NODE, ACL_PARENT or ACL_ALLOW");
         }

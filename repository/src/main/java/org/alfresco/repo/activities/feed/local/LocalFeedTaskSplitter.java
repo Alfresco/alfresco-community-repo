@@ -38,19 +38,19 @@ import org.alfresco.repo.activities.feed.JobSettings;
  * The local feed task splitter is responsible for splitting the feed task into feed jobs
  */
 public class LocalFeedTaskSplitter
-{   
+{
     private FeedTaskProcessor feedTaskProcessor;
-    
+
     public void setFeedTaskProcessor(FeedTaskProcessor feedTaskProcessor)
     {
         this.feedTaskProcessor = feedTaskProcessor;
     }
-    
+
     public Collection<FeedGridJob> split(int gridSize, Object o) throws Exception
     {
         FeedTaskSplit feedSplitter = new FeedTaskSplit();
-        Collection<JobSettings> jobs = feedSplitter.split(gridSize, (JobSettings)o);
-        
+        Collection<JobSettings> jobs = feedSplitter.split(gridSize, (JobSettings) o);
+
         List<FeedGridJob> gridJobs = new ArrayList<FeedGridJob>(jobs.size());
         for (JobSettings job : jobs)
         {
@@ -60,6 +60,6 @@ public class LocalFeedTaskSplitter
             gridJobs.add(gridJob);
         }
         return gridJobs;
-        //return (Collection<FeedGridJob>)feedSplitter.split(gridSize, (JobSettings)o, new LocalFeedGridJob());
+        // return (Collection<FeedGridJob>)feedSplitter.split(gridSize, (JobSettings)o, new LocalFeedGridJob());
     }
 }

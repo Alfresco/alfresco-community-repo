@@ -62,7 +62,7 @@ public class RestModelProperty
         {
             ArrayProperty arrayProperty = (ArrayProperty) property.getValue();
             Entry<String, io.swagger.models.properties.Property> itemsEntry = new AbstractMap.SimpleEntry<String, io.swagger.models.properties.Property>(
-                        arrayProperty.getName(), arrayProperty.getItems());
+                    arrayProperty.getName(), arrayProperty.getItems());
             model.setItemsType(RestModelProperty.build(itemsEntry));
         }
 
@@ -88,18 +88,18 @@ public class RestModelProperty
     {
         switch (this.type)
         {
-            case "string":
-                return "String";
-            case "integer":
-                return "int";
-            case "object":
-                return "Object";
-            case "ref":
-                return "Rest" + getSimpleRef() + "Model";
-            case "array":
-                return "List<" + getItemsType().getType() + ">";
-            default:
-                return type;
+        case "string":
+            return "String";
+        case "integer":
+            return "int";
+        case "object":
+            return "Object";
+        case "ref":
+            return "Rest" + getSimpleRef() + "Model";
+        case "array":
+            return "List<" + getItemsType().getType() + ">";
+        default:
+            return type;
         }
     }
 

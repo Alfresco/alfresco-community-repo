@@ -33,5 +33,4 @@ import java.util.concurrent.atomic.AtomicInteger;
  * An immutable POJO to represent the progress of a bulk operation
  */
 public record BulkProgress(long totalItems, String processId, AtomicBoolean cancelled, AtomicInteger currentNodeNumber)
-{
-}
+{}

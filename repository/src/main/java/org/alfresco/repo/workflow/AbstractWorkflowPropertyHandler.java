@@ -47,14 +47,16 @@ import org.alfresco.service.namespace.QName;
 public abstract class AbstractWorkflowPropertyHandler implements WorkflowPropertyHandler
 {
     private static final String ERR_SET_TASK_PROPS_INVALID_VALUE = "activiti.engine.set.task.properties.invalid.value";
-    private  static final TypeConverter typeConverter = DefaultTypeConverter.INSTANCE;
-    
+    private static final TypeConverter typeConverter = DefaultTypeConverter.INSTANCE;
+
     protected WorkflowNodeConverter nodeConverter;
     protected MessageService messageService;
-    
+
     /**
-     * @param value Serializable
-     * @param assocDef AssociationDefinition
+     * @param value
+     *            Serializable
+     * @param assocDef
+     *            AssociationDefinition
      */
     protected Object handleAssociation(Serializable value, AssociationDefinition assocDef)
     {
@@ -67,8 +69,10 @@ public abstract class AbstractWorkflowPropertyHandler implements WorkflowPropert
     }
 
     /**
-     * @param value Serializable
-     * @param propDef PropertyDefinition
+     * @param value
+     *            Serializable
+     * @param propDef
+     *            PropertyDefinition
      * @return Object
      */
     protected Object handleProperty(Serializable value, PropertyDefinition propDef)
@@ -89,7 +93,7 @@ public abstract class AbstractWorkflowPropertyHandler implements WorkflowPropert
         if (value instanceof Collection<?>)
         {
             // Convert a collecion of values
-            newValue =typeConverter.convert(propDef.getDataType(), (Collection<?>) value);
+            newValue = typeConverter.convert(propDef.getDataType(), (Collection<?>) value);
         }
         else
         {
@@ -110,7 +114,7 @@ public abstract class AbstractWorkflowPropertyHandler implements WorkflowPropert
     {
         return nodeConverter.convertNodes(value, assocDef.isTargetMany());
     }
-    
+
     protected WorkflowException getInvalidPropertyValueException(QName key, Object value)
     {
         String msg = messageService.getMessage(ERR_SET_TASK_PROPS_INVALID_VALUE, value, key);
@@ -119,33 +123,37 @@ public abstract class AbstractWorkflowPropertyHandler implements WorkflowPropert
 
     /**
      * Register this WorkflowPropertyHandler with the provided registry.
-     * @param registry WorkflowPropertyHandlerRegistry
+     * 
+     * @param registry
+     *            WorkflowPropertyHandlerRegistry
      */
     public void setRegistry(WorkflowPropertyHandlerRegistry registry)
     {
         QName key = getKey();
-        if (key!=null)
+        if (key != null)
         {
             registry.registerHandler(key, this);
         }
     }
 
     /**
-     * @param nodeConverter the nodeConverter to set
+     * @param nodeConverter
+     *            the nodeConverter to set
      */
     public void setNodeConverter(WorkflowNodeConverter nodeConverter)
     {
         this.nodeConverter = nodeConverter;
     }
-    
+
     /**
-     * @param messageService the messageService to set
+     * @param messageService
+     *            the messageService to set
      */
     public void setMessageService(MessageService messageService)
     {
         this.messageService = messageService;
     }
-    
+
     protected abstract QName getKey();
 
     protected void checkType(QName key, Object value, Class<?> type)
@@ -172,7 +180,7 @@ public abstract class AbstractWorkflowPropertyHandler implements WorkflowPropert
             }
             else if (value instanceof NodeRef)
             {
-                return nodeConverter.convertNode((NodeRef)value, false);
+                return nodeConverter.convertNode((NodeRef) value, false);
             }
         }
         return value;

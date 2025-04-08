@@ -50,7 +50,7 @@ public enum Protocols
             protocolsMap = new HashMap<>();
         }
         protocolsMap.put(protocol.name,
-                         protocol);
+                protocol);
     }
 
     public final Protocol protocol;

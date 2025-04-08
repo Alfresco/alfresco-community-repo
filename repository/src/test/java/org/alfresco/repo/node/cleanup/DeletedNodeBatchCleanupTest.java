@@ -29,7 +29,6 @@ package org.alfresco.repo.node.cleanup;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.of;
 
-import jakarta.transaction.UserTransaction;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +36,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import jakarta.transaction.UserTransaction;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.extensions.webscripts.GUID;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
@@ -58,16 +67,8 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.testing.category.DBTests;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.extensions.webscripts.GUID;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 
-@Category({ OwnJVMTestsCategory.class, DBTests.class })
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 @DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
 public class DeletedNodeBatchCleanupTest extends BaseSpringTest
 {
@@ -77,8 +78,7 @@ public class DeletedNodeBatchCleanupTest extends BaseSpringTest
     @Autowired
     private NodeDAO nodeDAO;
     @Autowired
-    @Qualifier("node.nodesSharedCache")
-    private SimpleCache<Serializable, Serializable> nodesCache;
+    @Qualifier("node.nodesSharedCache") private SimpleCache<Serializable, Serializable> nodesCache;
     @Autowired
     private DeletedNodeCleanupWorker worker;
     @Autowired
@@ -103,8 +103,8 @@ public class DeletedNodeBatchCleanupTest extends BaseSpringTest
         // create 5 test nodes
         final NodeRef companyHome = getCompanyHome();
         testNodes = IntStream.range(0, 5)
-            .mapToObj(i -> helper.doInTransaction(createNodeCallback(companyHome), false, true))
-            .collect(toList());
+                .mapToObj(i -> helper.doInTransaction(createNodeCallback(companyHome), false, true))
+                .collect(toList());
 
         // clean up pre-existing data
         helper.doInTransaction(() -> worker.doClean(), false, true);
@@ -122,7 +122,7 @@ public class DeletedNodeBatchCleanupTest extends BaseSpringTest
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
         NodeRef storeRoot = nodeService.getRootNode(storeRef);
         List<NodeRef> nodeRefs = searchService.selectNodes(storeRoot, "/app:company_home", null, namespaceService,
-            false);
+                false);
 
         return nodeRefs.get(0);
     }
@@ -130,14 +130,14 @@ public class DeletedNodeBatchCleanupTest extends BaseSpringTest
     private RetryingTransactionCallback<NodeRef> createNodeCallback(NodeRef companyHome)
     {
         return () -> nodeService.createNode(
-            companyHome, ContentModel.ASSOC_CONTAINS, QName.createQName("test", GUID.generate()),
-            ContentModel.TYPE_CONTENT).getChildRef();
+                companyHome, ContentModel.ASSOC_CONTAINS, QName.createQName("test", GUID.generate()),
+                ContentModel.TYPE_CONTENT).getChildRef();
     }
 
     private void deleteNodes(NodeRef nodeRef, NodeRef... additionalNodeRefs)
     {
         Stream.concat(of(nodeRef), of(additionalNodeRefs))
-            .forEach(this::deleteNode);
+                .forEach(this::deleteNode);
     }
 
     private void deleteNode(NodeRef nodeRef)
@@ -222,9 +222,9 @@ public class DeletedNodeBatchCleanupTest extends BaseSpringTest
 
         // Get transactions committed after the test started
         RetryingTransactionHelper.RetryingTransactionCallback<List<Transaction>> getTxnsCallback = () -> ((NodeDAOImpl) nodeDAO).selectTxns(
-            start, Long.MAX_VALUE, Integer.MAX_VALUE, null, null, true);
+                start, Long.MAX_VALUE, Integer.MAX_VALUE, null, null, true);
         List<Transaction> txns = transactionService.getRetryingTransactionHelper()
-            .doInTransaction(getTxnsCallback, true, false);
+                .doInTransaction(getTxnsCallback, true, false);
 
         List<String> expectedUnusedTxnIds = new ArrayList<>(10);
         expectedUnusedTxnIds.addAll(txnIds1.subList(0, txnIds1.size() - 1));
@@ -238,29 +238,29 @@ public class DeletedNodeBatchCleanupTest extends BaseSpringTest
         // check that the correct transactions have been purged i.e. all except the last one to update the node
         // i.e. in this case, all but the last one in txnIds1
         List<String> unusedTxnsNotPurged = expectedUnusedTxnIds.stream()
-            .filter(txnId -> containsTransaction(txns, txnId))
-            .collect(toList());
+                .filter(txnId -> containsTransaction(txns, txnId))
+                .collect(toList());
         if (!unusedTxnsNotPurged.isEmpty())
         {
             fail("Unused transaction(s) were not purged: " + unusedTxnsNotPurged);
         }
 
         long numFoundUnusedTxnIds = expectedUnusedTxnIds.stream()
-            .filter(txnId -> !containsTransaction(txns, txnId))
-            .count();
+                .filter(txnId -> !containsTransaction(txns, txnId))
+                .count();
         assertEquals(9, numFoundUnusedTxnIds);
 
         // check that the correct transactions remain i.e. all those in txnIds2, txnIds3, txnIds4 and txnIds5
         long numFoundUsedTxnIds = expectedUsedTxnIds.stream()
-            .filter(txnId -> containsTransaction(txns, txnId))
-            .count();
+                .filter(txnId -> containsTransaction(txns, txnId))
+                .count();
         assertEquals(3, numFoundUsedTxnIds);
 
         // Get transactions committed after the test started
         RetryingTransactionHelper.RetryingTransactionCallback<List<Long>> getTxnsUnusedCallback = () -> nodeDAO.getTxnsUnused(
-            minTxnId, Long.MAX_VALUE, Integer.MAX_VALUE);
+                minTxnId, Long.MAX_VALUE, Integer.MAX_VALUE);
         List<Long> txnsUnused = transactionService.getRetryingTransactionHelper()
-            .doInTransaction(getTxnsUnusedCallback, true, false);
+                .doInTransaction(getTxnsUnusedCallback, true, false);
         assertEquals(0, txnsUnused.size());
 
         // Double-check that n4 and n5 were removed as well
@@ -272,11 +272,11 @@ public class DeletedNodeBatchCleanupTest extends BaseSpringTest
     private boolean containsTransaction(List<Transaction> txns, String txnId)
     {
         return txns.stream()
-            .map(Transaction::getChangeTxnId)
-            .filter(changeTxnId -> changeTxnId.equals(txnId))
-            .map(match -> true)
-            .findFirst()
-            .orElse(false);
+                .map(Transaction::getChangeTxnId)
+                .filter(changeTxnId -> changeTxnId.equals(txnId))
+                .map(match -> true)
+                .findFirst()
+                .orElse(false);
     }
 
     private Map<NodeRef, List<String>> createTransactions()

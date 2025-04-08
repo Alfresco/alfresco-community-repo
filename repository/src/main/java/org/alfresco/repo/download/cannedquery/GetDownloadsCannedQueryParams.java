@@ -41,7 +41,7 @@ public class GetDownloadsCannedQueryParams extends DownloadEntity
         super(parentNodeId, nameQNameId, contentTypeQNameId);
         this.before = before;
     }
-    
+
     public Date getBefore()
     {
         return before;

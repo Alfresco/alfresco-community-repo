@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.solr;
 
-
 /**
  * 
  * @since 4.0
@@ -33,9 +32,10 @@ package org.alfresco.repo.solr;
  */
 public class SolrInactiveEvent extends SolrEvent
 {
-	private static final long serialVersionUID = 376796464819899697L;
-	
-	public SolrInactiveEvent(Object source) {
+    private static final long serialVersionUID = 376796464819899697L;
+
+    public SolrInactiveEvent(Object source)
+    {
         super(source);
     }
 }

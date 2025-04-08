@@ -34,6 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -50,25 +53,22 @@ import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Implementation of registry service to provide generic storage
- * and retrieval of system-related metadata.
+ * Implementation of registry service to provide generic storage and retrieval of system-related metadata.
  * 
  * @author Derek Hulley
  */
 public class RegistryServiceImpl implements RegistryService
 {
     private static Log logger = LogFactory.getLog(RegistryServiceImpl.class);
-    
+
     private NamespaceService namespaceService;
     private NodeService nodeService;
     private SearchService searchService;
     private StoreRef registryStoreRef;
     private String registryRootPath;
-    
+
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
@@ -85,13 +85,14 @@ public class RegistryServiceImpl implements RegistryService
     }
 
     /**
-     * @param registryStoreRef the store in which the registry root is found
+     * @param registryStoreRef
+     *            the store in which the registry root is found
      */
     public void setRegistryStoreRef(StoreRef registryStoreRef)
     {
         this.registryStoreRef = registryStoreRef;
     }
-    
+
     /**
      * @see #setRegistryStoreRef(StoreRef)
      */
@@ -103,7 +104,8 @@ public class RegistryServiceImpl implements RegistryService
     /**
      * A root path e.g. <b>/sys:systemRegistry</b>
      * 
-     * @param registryRootPath the path to the root of the registry
+     * @param registryRootPath
+     *            the path to the root of the registry
      */
     public void setRegistryRootPath(String registryRootPath)
     {
@@ -119,7 +121,7 @@ public class RegistryServiceImpl implements RegistryService
         PropertyCheck.mandatory(this, "registryStore", registryStoreRef);
         PropertyCheck.mandatory(this, "registryRootPath", registryRootPath);
     }
-    
+
     private NodeRef getRegistryRootNodeRef()
     {
         NodeRef registryRootNodeRef = null;
@@ -128,7 +130,7 @@ public class RegistryServiceImpl implements RegistryService
         List<NodeRef> nodeRefs = searchService.selectNodes(
                 storeRootNodeRef,
                 registryRootPath,
-                new QueryParameterDefinition[] {},
+                new QueryParameterDefinition[]{},
                 namespaceService,
                 false,
                 SearchService.LANGUAGE_XPATH);
@@ -136,48 +138,46 @@ public class RegistryServiceImpl implements RegistryService
         {
             throw new AlfrescoRuntimeException(
                     "Registry root not present: \n" +
-                    "   Store: " + registryStoreRef + "\n" +
-                    "   Path:  " + registryRootPath);
+                            "   Store: " + registryStoreRef + "\n" +
+                            "   Path:  " + registryRootPath);
         }
         else if (nodeRefs.size() > 1)
         {
             throw new AlfrescoRuntimeException(
                     "Registry root path has multiple targets: \n" +
-                    "   Store: " + registryStoreRef + "\n" +
-                    "   Path:  " + registryRootPath);
+                            "   Store: " + registryStoreRef + "\n" +
+                            "   Path:  " + registryRootPath);
         }
         else
         {
             registryRootNodeRef = nodeRefs.get(0);
         }
-        
+
         // Check the root
         QName typeQName = nodeService.getType(registryRootNodeRef);
         if (!typeQName.equals(ContentModel.TYPE_CONTAINER))
         {
             throw new AlfrescoRuntimeException(
                     "Registry root is not of type " + ContentModel.TYPE_CONTAINER + ": \n" +
-                    "   Node: " + registryRootNodeRef + "\n" +
-                    "   Type: " + typeQName);
+                            "   Node: " + registryRootNodeRef + "\n" +
+                            "   Type: " + typeQName);
         }
         // Done
         if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Found root for registry: \n" +
-                    "   Store: " + registryStoreRef + "\n" +
-                    "   Path : " + registryRootPath + "\n" +
-                    "   Root:  " + registryRootNodeRef);
+                            "   Store: " + registryStoreRef + "\n" +
+                            "   Path : " + registryRootPath + "\n" +
+                            "   Root:  " + registryRootNodeRef);
         }
         return registryRootNodeRef;
     }
-    
+
     /**
-     * Get the node-qname pair for the key.  If the key doesn't have a value element,
-     * i.e. if it is purely path-based, then the QName will be null.
+     * Get the node-qname pair for the key. If the key doesn't have a value element, i.e. if it is purely path-based, then the QName will be null.
      * 
-     * @return Returns the node and property name represented by the key or <tt>null</tt>
-     *      if it doesn't exist and was not allowed to be created.
+     * @return Returns the node and property name represented by the key or <tt>null</tt> if it doesn't exist and was not allowed to be created.
      */
     private Pair<NodeRef, QName> getPath(RegistryKey key, boolean create)
     {
@@ -193,16 +193,16 @@ public class RegistryServiceImpl implements RegistryService
             QName assocQName = QName.createQName(
                     namespaceUri,
                     QName.createValidLocalName(pathElement));
-            
+
             // Find the node
             List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(
                     currentNodeRef,
                     ContentModel.ASSOC_CHILDREN,
                     assocQName);
             int size = childAssocRefs.size();
-            if (size == 0)                          // Found nothing with that path
+            if (size == 0) // Found nothing with that path
             {
-                if (create)                         // Must create the path
+                if (create) // Must create the path
                 {
                     // Create the node (with a name)
                     PropertyMap properties = new PropertyMap();
@@ -221,9 +221,9 @@ public class RegistryServiceImpl implements RegistryService
                     break;
                 }
             }
-            else                                    // Found some results for that path
+            else // Found some results for that path
             {
-                if (size > 1 && create)             // More than one association by that name
+                if (size > 1 && create) // More than one association by that name
                 {
                     // Too many, so trim it down
                     boolean first = true;
@@ -284,7 +284,7 @@ public class RegistryServiceImpl implements RegistryService
         {
             throw new NamespaceException("Unable to add a registry value with an unregistered namespace: " + namespaceUri);
         }
-        
+
         // Get the path, with creation support
         Pair<NodeRef, QName> keyPair = getPath(key, true);
         // We know that the node exists, so just set the value
@@ -328,7 +328,7 @@ public class RegistryServiceImpl implements RegistryService
         if (keyPair == null)
         {
             // Nothing at that path
-            return Collections.<String>emptyList();
+            return Collections.<String> emptyList();
         }
         // Use a query to find the children
         RegexQNamePattern qnamePattern = new RegexQNamePattern(key.getNamespaceUri(), ".*");
@@ -358,15 +358,15 @@ public class RegistryServiceImpl implements RegistryService
         {
             throw new AlfrescoRuntimeException(
                     "Registry keys must both be path specific for a copy: \n" +
-                    "   Source: " + sourceKey + "\n" +
-                    "   Target: " + targetKey);
+                            "   Source: " + sourceKey + "\n" +
+                            "   Target: " + targetKey);
         }
         else if ((sourceKey.getProperty() != null) && (targetKey.getProperty() == null))
         {
             throw new AlfrescoRuntimeException(
                     "Registry keys must both be value specific for a copy: \n" +
-                    "   Source: " + sourceKey + "\n" +
-                    "   Target: " + targetKey);
+                            "   Source: " + sourceKey + "\n" +
+                            "   Target: " + targetKey);
         }
         // If the source is missing, then do nothing
         Pair<NodeRef, QName> sourceKeyPair = getPath(sourceKey, false);
@@ -403,11 +403,14 @@ public class RegistryServiceImpl implements RegistryService
                     "   Target: " + targetKey);
         }
     }
-    
+
     /**
-     * @param sourceKey             the source path that must exist
-     * @param targetKey             the target path that will be created
-     * @param processedNodeRefs     a set to help avoid infinite loops
+     * @param sourceKey
+     *            the source path that must exist
+     * @param targetKey
+     *            the target path that will be created
+     * @param processedNodeRefs
+     *            a set to help avoid infinite loops
      */
     private void copyRecursive(RegistryKey sourceKey, RegistryKey targetKey, Set<NodeRef> processedNodeRefs)
     {
@@ -436,7 +439,7 @@ public class RegistryServiceImpl implements RegistryService
         // Make sure that the target exists
         Pair<NodeRef, QName> targetKeyPair = getPath(targetKey, true);
         NodeRef targetNodeRef = targetKeyPair.getFirst();
-        
+
         // Copy properties of the source namespace
         Map<QName, Serializable> sourceProperties = nodeService.getProperties(sourceNodeRef);
         Map<QName, Serializable> targetProperties = nodeService.getProperties(targetNodeRef);
@@ -461,14 +464,14 @@ public class RegistryServiceImpl implements RegistryService
         }
         // We have processed the source node
         processedNodeRefs.add(sourceNodeRef);
-        
+
         // Now get the child elements of the source
         Collection<String> sourceChildElements = getChildElements(sourceKey);
         String[] sourcePath = sourceKey.getPath();
-        String[] childSourcePath = new String[sourcePath.length + 1];   //
+        String[] childSourcePath = new String[sourcePath.length + 1]; //
         System.arraycopy(sourcePath, 0, childSourcePath, 0, sourcePath.length);
         String[] targetPath = targetKey.getPath();
-        String[] childTargetPath = new String[targetPath.length + 1];   //
+        String[] childTargetPath = new String[targetPath.length + 1]; //
         System.arraycopy(targetPath, 0, childTargetPath, 0, targetPath.length);
         for (String sourceChildElement : sourceChildElements)
         {

@@ -36,15 +36,13 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterBinding;
+import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.cmr.view.ImporterContentCache;
 import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
-import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
 import org.alfresco.service.namespace.QName;
-
-
 
 /**
  * Import Tool.
@@ -55,8 +53,7 @@ public class Import extends Tool
 {
     /** Import Tool Context */
     private ImportContext context;
-    
-    
+
     /**
      * Entry Point
      * 
@@ -67,13 +64,13 @@ public class Import extends Tool
         Tool tool = new Import();
         tool.start(args);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.tools.Tool#processArgs(java.lang.String[])
-     */
+     * 
+     * @see org.alfresco.tools.Tool#processArgs(java.lang.String[]) */
     protected @Override
-    /*package*/ ToolContext processArgs(String[] args)
-    	throws ToolArgumentException
+    /* package */ ToolContext processArgs(String[] args)
+            throws ToolArgumentException
     {
         context = new ImportContext();
         context.setLogin(true);
@@ -147,7 +144,7 @@ public class Import extends Tool
                 {
                     context.uuidBinding = UUID_BINDING.valueOf(UUID_BINDING.class, args[i]);
                 }
-                catch(IllegalArgumentException e)
+                catch (IllegalArgumentException e)
                 {
                     throw new ToolArgumentException("The value " + args[i] + " is an invalid uuidBinding");
                 }
@@ -178,16 +175,16 @@ public class Import extends Tool
 
         return context;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.tools.Tool#displayHelp()
-     */
+     * 
+     * @see org.alfresco.tools.Tool#displayHelp() */
     protected @Override
-    /*package*/ void displayHelp()
+    /* package */ void displayHelp()
     {
-    	logError("Usage: import -user username -s[tore] store [options] packagename");
-    	logError("");
-    	logError("username: username for login");
+        logError("Usage: import -user username -s[tore] store [options] packagename");
+        logError("");
+        logError("username: username for login");
         logError("store: the store to import into the form of scheme://store_name");
         logError("packagename: the filename to import from (with or without extension)");
         logError("");
@@ -201,27 +198,27 @@ public class Import extends Tool
         logError(" -quiet do not display any messages during import");
         logError(" -verbose report import progress");
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.tools.Tool#getToolName()
-     */
+     * 
+     * @see org.alfresco.tools.Tool#getToolName() */
     @Override
     protected String getToolName()
     {
         return "Alfresco Repository Importer";
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.tools.Tool#execute()
-     */
+     * 
+     * @see org.alfresco.tools.Tool#execute() */
     @Override
     protected int execute() throws ToolException
     {
         ImporterService importer = getServiceRegistry().getImporterService();
-        
+
         // determine type of import (from zip or file system)
         ImportPackageHandler importHandler;
-        
+
         int status = 0;
         for (int i = 0; i < context.packageNames.length; i++)
         {
@@ -252,7 +249,7 @@ public class Import extends Tool
                 status = handleError(t);
             }
         }
-        
+
         return status;
     }
 
@@ -278,14 +275,15 @@ public class Import extends Tool
         /**
          * Log Export Message
          * 
-         * @param message  message to log
+         * @param message
+         *            message to log
          */
         protected void log(String message)
         {
             Import.this.logInfo(message);
         }
     }
-    
+
     /**
      * Handler for importing Repository content from file system files
      * 
@@ -308,14 +306,15 @@ public class Import extends Tool
         /**
          * Log Export Message
          * 
-         * @param message  message to log
+         * @param message
+         *            message to log
          */
         protected void log(String message)
         {
             Import.this.logInfo(message);
         }
     }
-    
+
     /**
      * Report Import Progress
      * 
@@ -324,71 +323,62 @@ public class Import extends Tool
     private class ImportProgress implements ImporterProgress
     {
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterProgress#nodeCreated(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.ImporterProgress#nodeCreated(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName) */
         public void nodeCreated(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName)
         {
-            logVerbose("Imported node " + nodeRef + " (parent=" + parentRef + ", childname=" + childName + ", association=" + assocName + ")");            
+            logVerbose("Imported node " + nodeRef + " (parent=" + parentRef + ", childname=" + childName + ", association=" + assocName + ")");
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterProgress#nodeLinked(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName)
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.service.cmr.view.ImporterProgress#nodeLinked(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName) */
         public void nodeLinked(NodeRef nodeRef, NodeRef parentRef, QName assocName, QName childName)
-        {
-        }
-        
+        {}
+
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterProgress#contentCreated(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.ImporterProgress#contentCreated(org.alfresco.service.cmr.repository.NodeRef, java.lang.String) */
         public void contentCreated(NodeRef nodeRef, String sourceUrl)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterProgress#propertySet(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.ImporterProgress#propertySet(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable) */
         public void propertySet(NodeRef nodeRef, QName property, Serializable value)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterProgress#permissionSet(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.security.AccessPermission)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.ImporterProgress#permissionSet(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.security.AccessPermission) */
         public void permissionSet(NodeRef nodeRef, AccessPermission permission)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterProgress#aspectAdded(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.ImporterProgress#aspectAdded(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName) */
         public void aspectAdded(NodeRef nodeRef, QName aspect)
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterProgress#started()
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.ImporterProgress#started() */
         public void started()
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterProgress#completed()
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.ImporterProgress#completed() */
         public void completed()
-        {
-        }
+        {}
 
         /* (non-Javadoc)
-         * @see org.alfresco.service.cmr.view.ImporterProgress#error(java.lang.Throwable)
-         */
+         * 
+         * @see org.alfresco.service.cmr.view.ImporterProgress#error(java.lang.Throwable) */
         public void error(Throwable e)
-        {
-        }
+        {}
     }
-    
+
     /**
      * Import Tool Context
      * 
@@ -412,13 +402,13 @@ public class Import extends Tool
         private boolean[] zipFile;
 
         /* (non-Javadoc)
-         * @see org.alfresco.tools.ToolContext#validate()
-         */
+         * 
+         * @see org.alfresco.tools.ToolContext#validate() */
         @Override
-        /*package*/ void validate()
+        /* package */ void validate()
         {
             super.validate();
-            
+
             if (storeRef == null)
             {
                 throw new ToolArgumentException("Store to import into has not been specified.");
@@ -468,7 +458,7 @@ public class Import extends Tool
             location.setPath(path);
             return location;
         }
-        
+
         /**
          * Get the source directory
          * 
@@ -476,7 +466,7 @@ public class Import extends Tool
          */
         private File getSourceDir()
         {
-            File dir = (sourceDir == null) ? null : new File(sourceDir); 
+            File dir = (sourceDir == null) ? null : new File(sourceDir);
             return dir;
         }
 
@@ -488,10 +478,10 @@ public class Import extends Tool
         private File getDataFile(int i)
         {
             String dataFile = (packageNames[i].indexOf('.') != -1) ? packageNames[i] : packageNames[i] + ".xml";
-            File file = new File(dataFile); 
+            File file = new File(dataFile);
             return file;
         }
-        
+
         /**
          * Get the zip import file (.acp - alfresco content package)
          * 
@@ -500,9 +490,8 @@ public class Import extends Tool
         private File getPackageFile(int i)
         {
             return (zipFile[i]) ? new File(packageNames[i]) : getDataFile(i);
-        }        
+        }
     }
- 
 
     /**
      * Import Tool Binding
@@ -512,7 +501,7 @@ public class Import extends Tool
     private class ImportBinding implements ImporterBinding
     {
         private UUID_BINDING uuidBinding = null;
-    
+
         /**
          * Construct
          * 
@@ -544,7 +533,7 @@ public class Import extends Tool
         @Override
         public QName[] getExcludedClasses()
         {
-            return new QName[] {};
+            return new QName[]{};
         }
 
         @Override

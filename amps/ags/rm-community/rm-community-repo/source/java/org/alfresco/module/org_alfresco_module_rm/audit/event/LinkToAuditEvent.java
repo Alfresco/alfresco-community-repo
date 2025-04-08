@@ -50,7 +50,8 @@ public class LinkToAuditEvent extends AuditEvent implements OnCreateChildAssocia
     /**
      * Sets the node service
      *
-     * @param nodeService nodeService to set
+     * @param nodeService
+     *            nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -61,11 +62,9 @@ public class LinkToAuditEvent extends AuditEvent implements OnCreateChildAssocia
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.ASSOCIATION,
-            type = "rma:filePlanComponent"
-    )
+            type = "rma:filePlanComponent")
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
         final NodeRef parentRef = childAssocRef.getParentRef();

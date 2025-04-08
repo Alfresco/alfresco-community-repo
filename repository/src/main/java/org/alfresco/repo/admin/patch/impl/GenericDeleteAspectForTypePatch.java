@@ -27,6 +27,8 @@ package org.alfresco.repo.admin.patch.impl;
 
 import java.util.List;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
@@ -35,7 +37,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * A patch to delete aspect for nodes of specific type.
@@ -56,21 +57,20 @@ public class GenericDeleteAspectForTypePatch extends AbstractPatch
     private RetryingTransactionHelper retryingTransactionHelper;
 
     private static long BATCH_SIZE = 100000L;
-    
-    
 
     public void setQnameStringType(String qnameStringType)
     {
         this.qnameStringType = qnameStringType;
     }
-    
+
     public void setQnameStringAspect(String qnameStringAspect)
     {
         this.qnameStringAspect = qnameStringAspect;
     }
-    
+
     /**
-     * @param qnameDAO the qnameDAO to set
+     * @param qnameDAO
+     *            the qnameDAO to set
      */
     public void setQnameDAO(QNameDAO qnameDAO)
     {
@@ -78,7 +78,8 @@ public class GenericDeleteAspectForTypePatch extends AbstractPatch
     }
 
     /**
-     * @param patchDAO the patchDAO to set
+     * @param patchDAO
+     *            the patchDAO to set
      */
     public void setPatchDAO(PatchDAO patchDAO)
     {
@@ -86,7 +87,8 @@ public class GenericDeleteAspectForTypePatch extends AbstractPatch
     }
 
     /**
-     * @param nodeDAO the nodeDAO to set
+     * @param nodeDAO
+     *            the nodeDAO to set
      */
     public void setNodeDAO(NodeDAO nodeDAO)
     {
@@ -94,7 +96,8 @@ public class GenericDeleteAspectForTypePatch extends AbstractPatch
     }
 
     /**
-     * @param retryingTransactionHelper the retryingTransactionHelper to set
+     * @param retryingTransactionHelper
+     *            the retryingTransactionHelper to set
      */
     public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
@@ -111,7 +114,7 @@ public class GenericDeleteAspectForTypePatch extends AbstractPatch
         checkPropertyNotNull(qnameStringType, "qnameStringType");
         checkPropertyNotNull(qnameStringAspect, "qnameStringAspect");
     }
-    
+
     @Override
     protected String applyInternal() throws Exception
     {
@@ -121,22 +124,22 @@ public class GenericDeleteAspectForTypePatch extends AbstractPatch
         QName qnameAspect = QName.createQName(this.qnameStringAspect);
 
         Long maxNodeId = patchDAO.getMaxAdmNodeID();
-        
+
         Pair<Long, QName> type = qnameDAO.getQName(qnameType);
         Pair<Long, QName> aspect = qnameDAO.getQName(qnameAspect);
-        
+
         if (type != null && aspect != null)
         {
-            for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
+            for (Long i = 0L; i < maxNodeId; i += BATCH_SIZE)
             {
                 Work work = new Work(type, aspect, i);
                 retryingTransactionHelper.doInTransaction(work, false, true);
             }
         }
-    
+
         return I18NUtil.getMessage(MSG_SUCCESS, qnameAspect, qnameType);
     }
-    
+
     private class Work implements RetryingTransactionHelper.RetryingTransactionCallback<Integer>
     {
         Pair<Long, QName> type;
@@ -150,22 +153,21 @@ public class GenericDeleteAspectForTypePatch extends AbstractPatch
             this.lower = lower;
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute() */
         @Override
         public Integer execute() throws Throwable
         {
-                List<Long> nodeIds = patchDAO.getNodesByTypeQNameAndAspectQNameId(type.getFirst(), aspect.getFirst(), lower, lower + BATCH_SIZE);
-                for (Long nodeId : nodeIds)
-                {
-                    NodeRef nodeRef = nodeService.getNodeRef(nodeId);
-                    // removes aspect with associated properties and touches the node to trigger reindex
-                    nodeService.removeAspect(nodeRef, aspect.getSecond());
+            List<Long> nodeIds = patchDAO.getNodesByTypeQNameAndAspectQNameId(type.getFirst(), aspect.getFirst(), lower, lower + BATCH_SIZE);
+            for (Long nodeId : nodeIds)
+            {
+                NodeRef nodeRef = nodeService.getNodeRef(nodeId);
+                // removes aspect with associated properties and touches the node to trigger reindex
+                nodeService.removeAspect(nodeRef, aspect.getSecond());
 
-                }
-                return nodeIds.size();
+            }
+            return nodeIds.size();
         }
     }
 

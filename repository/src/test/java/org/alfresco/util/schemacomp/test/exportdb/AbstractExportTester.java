@@ -25,17 +25,18 @@
  */
 package org.alfresco.util.schemacomp.test.exportdb;
 
-import org.alfresco.util.schemacomp.ExportDb;
-import org.alfresco.util.schemacomp.ExportDbTest;
-import org.alfresco.util.schemacomp.model.DbObject;
-import org.alfresco.util.schemacomp.model.Schema;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import org.alfresco.util.schemacomp.ExportDb;
+import org.alfresco.util.schemacomp.ExportDbTest;
+import org.alfresco.util.schemacomp.model.DbObject;
+import org.alfresco.util.schemacomp.model.Schema;
 
 /**
  * Base class for DBMS-specific ExportDb tests.
@@ -49,18 +50,18 @@ public abstract class AbstractExportTester
     protected PlatformTransactionManager tx;
     protected JdbcTemplate jdbcTemplate;
     private final static Log log = LogFactory.getLog(AbstractExportTester.class);
-    
+
     public AbstractExportTester(ExportDb exporter, PlatformTransactionManager tx, JdbcTemplate jdbcTemplate)
     {
         this.exporter = exporter;
         this.tx = tx;
         this.jdbcTemplate = jdbcTemplate;
     }
-    
+
     protected abstract void doExportTest() throws Exception;
 
     protected abstract void doDatabaseSetup();
-    
+
     public void runExportTest() throws Exception
     {
         doDatabaseSetup();
@@ -70,11 +71,9 @@ public abstract class AbstractExportTester
         commonPostExportChecks();
         doExportTest();
     }
-    
-    
+
     /**
-     * Common checks that do not need to be coded into every test implementation.
-     * May be overridden if required.
+     * Common checks that do not need to be coded into every test implementation. May be overridden if required.
      */
     protected void commonPostExportChecks()
     {
@@ -89,11 +88,12 @@ public abstract class AbstractExportTester
     }
 
     /**
-     * Check that all top level database objects are prefixed as expected
-     * (no other objects should have been retrieved)
+     * Check that all top level database objects are prefixed as expected (no other objects should have been retrieved)
      * 
-     * @param schema Schema
-     * @param prefix String
+     * @param schema
+     *            Schema
+     * @param prefix
+     *            String
      */
     protected void checkResultsFiltered(Schema schema, String prefix)
     {
@@ -105,8 +105,7 @@ public abstract class AbstractExportTester
             }
         }
     }
-    
-    
+
     private void dumpSchema()
     {
         if (log.isDebugEnabled())
@@ -121,7 +120,7 @@ public abstract class AbstractExportTester
             {
                 // Log the object's toString() - indented for clarity.
                 log.debug("    " + dbo);
-            }   
+            }
         }
         if (log.isDebugEnabled())
         {

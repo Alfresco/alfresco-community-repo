@@ -32,16 +32,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService.AuditApplication;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * @author Derek Hulley
@@ -53,10 +54,10 @@ public class AuditQueryGet extends AbstractAuditWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         final Map<String, Object> model = new HashMap<String, Object>(7);
-        
+
         String appName = getParamAppName(req);
         String path = getParamPath(req);
-        
+
         Serializable value = getParamValue(req);
         String valueType = getParamValueType(req);
         Long fromTime = getParamFromTime(req);
@@ -67,7 +68,7 @@ public class AuditQueryGet extends AbstractAuditWebScript
         boolean forward = getParamForward(req);
         int limit = getParamLimit(req);
         final boolean verbose = getParamVerbose(req);
-        
+
         if (appName == null)
         {
             Map<String, AuditApplication> appsByName = auditService.getAuditApplications();
@@ -77,7 +78,7 @@ public class AuditQueryGet extends AbstractAuditWebScript
                 throw new WebScriptException(Status.STATUS_NOT_FOUND, "audit.err.app.notFound", appName);
             }
         }
-        
+
         // Transform the value to the correct type
         if (value != null && valueType != null)
         {
@@ -96,7 +97,7 @@ public class AuditQueryGet extends AbstractAuditWebScript
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST, "audit.err.value.convertFailed", value, valueType);
             }
         }
-        
+
         // Execute the query
         AuditQueryParameters params = new AuditQueryParameters();
         params.setApplicationName(appName);
@@ -110,22 +111,21 @@ public class AuditQueryGet extends AbstractAuditWebScript
         {
             params.addSearchKey(path, value);
         }
-        
-        final List<Map<String, Object>> entries = new ArrayList<Map<String,Object>>(limit);
-        AuditQueryCallback callback = new AuditQueryCallback()
-        {
+
+        final List<Map<String, Object>> entries = new ArrayList<Map<String, Object>>(limit);
+        AuditQueryCallback callback = new AuditQueryCallback() {
             @Override
             public boolean valuesRequired()
             {
                 return verbose;
             }
-            
+
             @Override
             public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
             {
                 return true;
             }
-            
+
             @Override
             public boolean handleAuditEntry(
                     Long entryId,
@@ -172,21 +172,21 @@ public class AuditQueryGet extends AbstractAuditWebScript
                             // Use the toString()
                             valueStrings.put(key, value.toString());
                         }
-                        
+
                     }
                     entry.put(JSON_KEY_ENTRY_VALUES, valueStrings);
                 }
                 entries.add(entry);
-                
+
                 return true;
             }
         };
-        
+
         auditService.auditQuery(callback, params, limit);
-        
+
         model.put(JSON_KEY_ENTRY_COUNT, entries.size());
         model.put(JSON_KEY_ENTRIES, entries);
-        
+
         // Done
         if (logger.isDebugEnabled())
         {

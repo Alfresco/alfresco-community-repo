@@ -42,16 +42,18 @@ public class PrimaryKey extends AbstractDbObject
     private final List<String> columnNames = new ArrayList<String>();
     private final List<Integer> columnOrders = new ArrayList<Integer>();
 
-
     public PrimaryKey(String name)
     {
         super(null, name);
     }
-    
+
     /**
      * Constructor
-     * @param table the parent table
-     * @param name String
+     * 
+     * @param table
+     *            the parent table
+     * @param name
+     *            String
      */
     public PrimaryKey(Table table, String name, List<String> columnNames, List<Integer> columnOrders)
     {
@@ -62,8 +64,7 @@ public class PrimaryKey extends AbstractDbObject
     }
 
     /**
-     * Ensure that if columnOrders are being used, there are
-     * as many of them as there are column names.
+     * Ensure that if columnOrders are being used, there are as many of them as there are column names.
      */
     private void checkColumnOrders()
     {
@@ -82,14 +83,15 @@ public class PrimaryKey extends AbstractDbObject
     }
 
     /**
-     * @param columnNames the columnNames to set
+     * @param columnNames
+     *            the columnNames to set
      */
     public void setColumnNames(List<String> columnNames)
     {
         this.columnNames.clear();
         this.columnNames.addAll(columnNames);
     }
-    
+
     /**
      * @return the columnOrders
      */
@@ -97,17 +99,16 @@ public class PrimaryKey extends AbstractDbObject
     {
         return this.columnOrders;
     }
-    
+
     /**
-     * @param columnOrders the columnOrders to set
+     * @param columnOrders
+     *            the columnOrders to set
      */
     public void setColumnOrders(List<Integer> columnOrders)
     {
         this.columnOrders.clear();
         this.columnOrders.addAll(columnOrders);
     }
-
-    
 
     @Override
     public int hashCode()
@@ -122,20 +123,27 @@ public class PrimaryKey extends AbstractDbObject
     @Override
     public boolean equals(Object obj)
     {
-        if (this == obj) return true;
-        if (!super.equals(obj)) return false;
-        if (getClass() != obj.getClass()) return false;
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
         PrimaryKey other = (PrimaryKey) obj;
         if (this.columnNames == null)
         {
-            if (other.columnNames != null) return false;
+            if (other.columnNames != null)
+                return false;
         }
-        else if (!this.columnNames.equals(other.columnNames)) return false;
+        else if (!this.columnNames.equals(other.columnNames))
+            return false;
         if (this.columnOrders == null)
         {
-            if (other.columnOrders != null) return false;
+            if (other.columnOrders != null)
+                return false;
         }
-        else if (!this.columnOrders.equals(other.columnOrders)) return false;
+        else if (!this.columnOrders.equals(other.columnOrders))
+            return false;
         return true;
     }
 
@@ -143,15 +151,15 @@ public class PrimaryKey extends AbstractDbObject
     protected void doDiff(DbObject right, DiffContext ctx)
     {
         checkColumnOrders();
-        PrimaryKey rightPK = (PrimaryKey) right;        
+        PrimaryKey rightPK = (PrimaryKey) right;
         comparisonUtils.compareSimpleOrderedLists(
-                    new DbProperty(this, "columnNames"),
-                    new DbProperty(rightPK, "columnNames"),
-                    ctx);
+                new DbProperty(this, "columnNames"),
+                new DbProperty(rightPK, "columnNames"),
+                ctx);
         comparisonUtils.compareSimpleOrderedLists(
-                    new DbProperty(this, "columnOrders"),
-                    new DbProperty(rightPK, "columnOrders"),
-                    ctx);
+                new DbProperty(this, "columnOrders"),
+                new DbProperty(rightPK, "columnOrders"),
+                ctx);
     }
 
     @Override
@@ -160,7 +168,7 @@ public class PrimaryKey extends AbstractDbObject
         checkColumnOrders();
         visitor.visit(this);
     }
-    
+
     @Override
     public String getTypeName()
     {
@@ -182,7 +190,7 @@ public class PrimaryKey extends AbstractDbObject
         {
             return true;
         }
-        
+
         return false;
     }
 }

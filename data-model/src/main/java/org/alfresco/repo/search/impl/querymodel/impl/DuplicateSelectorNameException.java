@@ -35,9 +35,12 @@ public class DuplicateSelectorNameException extends AlfrescoRuntimeException
 {
 
     /**
-     * @param msgId String
-     * @param msgParams Object[]
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param msgParams
+     *            Object[]
+     * @param cause
+     *            Throwable
      */
     public DuplicateSelectorNameException(String msgId, Object[] msgParams, Throwable cause)
     {
@@ -46,8 +49,10 @@ public class DuplicateSelectorNameException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId String
-     * @param msgParams Object[]
+     * @param msgId
+     *            String
+     * @param msgParams
+     *            Object[]
      */
     public DuplicateSelectorNameException(String msgId, Object[] msgParams)
     {
@@ -56,8 +61,10 @@ public class DuplicateSelectorNameException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId String
-     * @param cause Throwable
+     * @param msgId
+     *            String
+     * @param cause
+     *            Throwable
      */
     public DuplicateSelectorNameException(String msgId, Throwable cause)
     {
@@ -66,7 +73,8 @@ public class DuplicateSelectorNameException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId String
+     * @param msgId
+     *            String
      */
     public DuplicateSelectorNameException(String msgId)
     {

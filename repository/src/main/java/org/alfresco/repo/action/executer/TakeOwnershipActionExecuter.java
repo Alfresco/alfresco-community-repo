@@ -42,18 +42,26 @@ import org.alfresco.service.cmr.security.OwnableService;
 public class TakeOwnershipActionExecuter extends ActionExecuterAbstractBase
 {
     public static final String NAME = "take-ownership";
-    
-    private NodeService    nodeService;
+
+    private NodeService nodeService;
     private OwnableService ownableService;
-    
-    public void setNodeService   (NodeService service)    { this.nodeService    = service; }
-    public void setOwnableService(OwnableService service) { this.ownableService = service; }
-    
-    @Override protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+
+    public void setNodeService(NodeService service)
+    {
+        this.nodeService = service;
+    }
+
+    public void setOwnableService(OwnableService service)
+    {
+        this.ownableService = service;
+    }
+
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         // Intentionally empty. There are no parameters for this action.
     }
-    
+
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
         if (nodeService.exists(actionedUponNodeRef) && isApplicableType(actionedUponNodeRef))

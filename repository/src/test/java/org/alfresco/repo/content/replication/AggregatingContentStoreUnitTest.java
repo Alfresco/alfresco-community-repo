@@ -26,20 +26,6 @@
 
 package org.alfresco.repo.content.replication;
 
-import org.alfresco.repo.content.ContentRestoreParams;
-import org.alfresco.repo.content.ContentStore;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -48,6 +34,21 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.repo.content.ContentRestoreParams;
+import org.alfresco.repo.content.ContentStore;
 
 /**
  * Unit tests class for {@code AggregatingContentStore}
@@ -63,28 +64,29 @@ public class AggregatingContentStoreUnitTest
     private static final String VALUE_1 = "value1";
     private static final String X_AMZ_HEADER_2 = "x-amz-header2";
     private static final String VALUE_2 = "value2";
-    
-    private List<ContentStore> secondaryStores;    
+
+    private List<ContentStore> secondaryStores;
     @Mock
     ContentStore primaryStore;
     @Mock
     ContentStore secondaryStore;
-    
+
     @InjectMocks
     private AggregatingContentStore objectUnderTest;
-    
+
     @Before
-    public void setUp() {
+    public void setUp()
+    {
         secondaryStores = List.of(secondaryStore);
         objectUnderTest.setSecondaryStores(secondaryStores);
     }
-
 
     @Test
     public void shouldReturnStoragePropertiesFromPrimaryStore()
     {
         final String contentUrl = "url";
-        final Map<String, String> primaryStorePropertiesMap = Map.of(X_AMZ_HEADER_1, VALUE_1, X_AMZ_HEADER_2, VALUE_2);;
+        final Map<String, String> primaryStorePropertiesMap = Map.of(X_AMZ_HEADER_1, VALUE_1, X_AMZ_HEADER_2, VALUE_2);
+        ;
         when(primaryStore.getStorageProperties(contentUrl)).thenReturn(primaryStorePropertiesMap);
 
         final Map<String, String> storageProperties = objectUnderTest.getStorageProperties(contentUrl);
@@ -98,7 +100,8 @@ public class AggregatingContentStoreUnitTest
     public void shouldReturnStoragePropertiesFromSecondaryStore()
     {
         final String contentUrl = "url";
-        final Map<String, String> secondaryStorePropertiesMap = Map.of(X_AMZ_HEADER_1, VALUE_1, X_AMZ_HEADER_2, VALUE_2);;
+        final Map<String, String> secondaryStorePropertiesMap = Map.of(X_AMZ_HEADER_1, VALUE_1, X_AMZ_HEADER_2, VALUE_2);
+        ;
         when(primaryStore.getStorageProperties(contentUrl)).thenReturn(Collections.emptyMap());
         when(secondaryStore.getStorageProperties(contentUrl)).thenReturn(secondaryStorePropertiesMap);
 
@@ -135,7 +138,7 @@ public class AggregatingContentStoreUnitTest
         boolean sendContentToArchive = objectUnderTest.requestSendContentToArchive(contentUrl, archiveParams);
 
         assertEquals(expectedResult, sendContentToArchive);
-        verify(secondaryStore, never()).requestSendContentToArchive(contentUrl,archiveParams);
+        verify(secondaryStore, never()).requestSendContentToArchive(contentUrl, archiveParams);
     }
 
     @Test

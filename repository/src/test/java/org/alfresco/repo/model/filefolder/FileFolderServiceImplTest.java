@@ -35,13 +35,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.Map.Entry;
-
+import java.util.Set;
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -89,9 +91,6 @@ import org.alfresco.util.FileFilterMode;
 import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @see org.alfresco.repo.model.filefolder.FileFolderServiceImpl
@@ -125,7 +124,7 @@ public class FileFolderServiceImplTest extends TestCase
     private TenantService tenantService;
     private MutableAuthenticationService authenticationService;
     private CheckOutCheckInService cociService;
-    
+
     private DictionaryDAO dictionaryDAO;
     private UserTransaction txn;
     private NodeRef rootNodeRef;
@@ -144,7 +143,7 @@ public class FileFolderServiceImplTest extends TestCase
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
         tenantService = (TenantService) ctx.getBean("tenantService");
         cociService = serviceRegistry.getCheckOutCheckInService();
-        
+
         // start the transaction
         txn = transactionService.getUserTransaction();
         txn.begin();
@@ -188,7 +187,7 @@ public class FileFolderServiceImplTest extends TestCase
         bootstrap.setDictionaryDAO(dictionaryDAO);
         bootstrap.setTenantService(tenantService);
         bootstrap.bootstrap();
-        
+
         workingRootNodeRef1 = nodeService.createNode(
                 rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
@@ -204,7 +203,7 @@ public class FileFolderServiceImplTest extends TestCase
                 QName.createQName("http://www.alfresco.org/test/filefoldertest/1.0", "contains1"),
                 QName.createQName(NamespaceService.ALFRESCO_URI, "node2"),
                 ContentModel.TYPE_CONTENT).getChildRef();
-        
+
         // Make sure we hit the MLTranslationInterceptor, which is part of the Foundation API
         // See MNT-9114: FileFolderService method not registered in MLTranslationInterceptor
         I18NUtil.setContentLocale(Locale.ENGLISH);
@@ -228,10 +227,14 @@ public class FileFolderServiceImplTest extends TestCase
     /**
      * Checks that the names and numbers of files and folders in the provided list is correct
      * 
-     * @param files the list of files
-     * @param expectedFileCount the number of uniquely named files expected
-     * @param expectedFolderCount the number of uniquely named folders expected
-     * @param expectedNames the names of the files and folders expected
+     * @param files
+     *            the list of files
+     * @param expectedFileCount
+     *            the number of uniquely named files expected
+     * @param expectedFolderCount
+     *            the number of uniquely named folders expected
+     * @param expectedNames
+     *            the names of the files and folders expected
      */
     private void checkFileList(
             List<FileInfo> files,
@@ -267,8 +270,7 @@ public class FileFolderServiceImplTest extends TestCase
     {
         List<FileInfo> files = fileFolderService.list(workingRootNodeRef);
         // check
-        String[] expectedNames = new String[]
-        { NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
+        String[] expectedNames = new String[]{NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C};
         checkFileList(files, 2, 3, expectedNames);
     }
 
@@ -280,8 +282,7 @@ public class FileFolderServiceImplTest extends TestCase
             I18NUtil.setContentLocale(Locale.CANADA);
             List<FileInfo> files = fileFolderService.list(workingRootNodeRef);
             // check
-            String[] expectedNames = new String[]
-            { NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
+            String[] expectedNames = new String[]{NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C};
             checkFileList(files, 2, 3, expectedNames);
         }
         finally
@@ -289,13 +290,12 @@ public class FileFolderServiceImplTest extends TestCase
             I18NUtil.setContentLocale(savedLocale);
         }
     }
-    
+
     public void testShallowFilesOnlyList() throws Exception
     {
         List<FileInfo> files = fileFolderService.listFiles(workingRootNodeRef);
         // check
-        String[] expectedNames = new String[]
-        { NAME_L0_FILE_A, NAME_L0_FILE_B };
+        String[] expectedNames = new String[]{NAME_L0_FILE_A, NAME_L0_FILE_B};
         checkFileList(files, 2, 0, expectedNames);
     }
 
@@ -303,8 +303,7 @@ public class FileFolderServiceImplTest extends TestCase
     {
         List<FileInfo> files = fileFolderService.listFolders(workingRootNodeRef);
         // check
-        String[] expectedNames = new String[]
-        { NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
+        String[] expectedNames = new String[]{NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C};
         checkFileList(files, 0, 3, expectedNames);
     }
 
@@ -312,8 +311,7 @@ public class FileFolderServiceImplTest extends TestCase
     {
         List<FileInfo> files = fileFolderService.search(workingRootNodeRef, NAME_L0_FILE_B, true, false, false);
         // check
-        String[] expectedNames = new String[]
-        { NAME_L0_FILE_B };
+        String[] expectedNames = new String[]{NAME_L0_FILE_B};
         checkFileList(files, 1, 0, expectedNames);
     }
 
@@ -323,58 +321,56 @@ public class FileFolderServiceImplTest extends TestCase
         {
             List<FileInfo> files = fileFolderService.search(workingRootNodeRef, "?1-*", true, true, true);
             // check
-            String[] expectedNames = new String[]
-               { NAME_L1_FOLDER_A, NAME_L1_FOLDER_B, NAME_L1_FILE_A, NAME_L1_FILE_B, NAME_L1_FILE_C };
+            String[] expectedNames = new String[]{NAME_L1_FOLDER_A, NAME_L1_FOLDER_B, NAME_L1_FILE_A, NAME_L1_FILE_B, NAME_L1_FILE_C};
             checkFileList(files, 3, 2, expectedNames);
         }
-        
+
         // Search for a particular file
         {
             List<FileInfo> files = fileFolderService.search(workingRootNodeRef, NAME_L1_FILE_B, true, true, true);
             // check
-            String[] expectedNames = new String[]
-               { NAME_L1_FILE_B };
+            String[] expectedNames = new String[]{NAME_L1_FILE_B};
             checkFileList(files, 1, 0, expectedNames);
         }
-        
+
         // Search for all files with wildcard
         {
             List<FileInfo> files = fileFolderService.search(workingRootNodeRef, "*", true, true, true);
             // check
-            String[] expectedNames = new String[]
-               { 
-                 NAME_CHECK_FOLDER,       
-                 NAME_L0_FOLDER_A, 
-                 NAME_L0_FOLDER_B, 
-                 NAME_L0_FOLDER_C, 
-                 NAME_L1_FOLDER_A, 
-                 NAME_L1_FOLDER_B,
-                 NAME_CHECK_FILE,
-                 NAME_L0_FILE_A, 
-                 NAME_L0_FILE_B, 
-                 NAME_L1_FILE_A, 
-                 NAME_L1_FILE_B, 
-                 NAME_L1_FILE_C 
-               };
+            String[] expectedNames = new String[]{
+                    NAME_CHECK_FOLDER,
+                    NAME_L0_FOLDER_A,
+                    NAME_L0_FOLDER_B,
+                    NAME_L0_FOLDER_C,
+                    NAME_L1_FOLDER_A,
+                    NAME_L1_FOLDER_B,
+                    NAME_CHECK_FILE,
+                    NAME_L0_FILE_A,
+                    NAME_L0_FILE_B,
+                    NAME_L1_FILE_A,
+                    NAME_L1_FILE_B,
+                    NAME_L1_FILE_C
+            };
             checkFileList(files, 6, 6, expectedNames);
         }
-        
+
     }
 
     public void testDeepFilesOnlySearch() throws Exception
     {
         List<FileInfo> files = fileFolderService.search(workingRootNodeRef, "?1-*", true, false, true);
         // check
-        String[] expectedNames = new String[]
-        { NAME_L1_FILE_A, NAME_L1_FILE_B, NAME_L1_FILE_C };
+        String[] expectedNames = new String[]{NAME_L1_FILE_A, NAME_L1_FILE_B, NAME_L1_FILE_C};
         checkFileList(files, 3, 0, expectedNames);
     }
 
     /**
      * Helper to fetch a file or folder by name
      * 
-     * @param name the name of the file or folder
-     * @param isFolder true if we want a folder, otherwise false if we want a file
+     * @param name
+     *            the name of the file or folder
+     * @param isFolder
+     *            true if we want a folder, otherwise false if we want a file
      * @return Returns the info for the file or folder
      */
     private FileInfo getByName(String name, boolean isFolder) throws Exception
@@ -480,33 +476,33 @@ public class FileFolderServiceImplTest extends TestCase
             // expected
         }
     }
-    
+
     public void testRenameDiscussionALF5569() throws Exception
     {
         FileInfo fileInfo = getByName(NAME_L0_FILE_A, false);
         assertNotNull(fileInfo);
-        
+
         // create a discussion for the file, this happens in a behaviour
         // when adding the discussable aspect
         nodeService.addAspect(fileInfo.getNodeRef(), ForumModel.ASPECT_DISCUSSABLE, null);
         List<ChildAssociationRef> destChildren = nodeService.getChildAssocs(
-              fileInfo.getNodeRef(),
-              ForumModel.ASSOC_DISCUSSION,
-              RegexQNamePattern.MATCH_ALL);
+                fileInfo.getNodeRef(),
+                ForumModel.ASSOC_DISCUSSION,
+                RegexQNamePattern.MATCH_ALL);
         assertEquals(1, destChildren.size());
-        
+
         // get the first child
         NodeRef discussionNodeRef = destChildren.get(0).getChildRef();
-        
+
         // check the current name
-        String currentName = (String)nodeService.getProperty(discussionNodeRef, ContentModel.PROP_NAME);
+        String currentName = (String) nodeService.getProperty(discussionNodeRef, ContentModel.PROP_NAME);
         assertFalse(NAME_DISCUSSION_FOLDER.equals(currentName));
-        
+
         // rename the discussion node
         FileInfo newFileInfo = fileFolderService.rename(discussionNodeRef, NAME_DISCUSSION_FOLDER);
-        
+
         // get the name now
-        String newName = (String)nodeService.getProperty(newFileInfo.getNodeRef(), ContentModel.PROP_NAME);
+        String newName = (String) nodeService.getProperty(newFileInfo.getNodeRef(), ContentModel.PROP_NAME);
         assertEquals(NAME_DISCUSSION_FOLDER, newName);
     }
 
@@ -517,7 +513,7 @@ public class FileFolderServiceImplTest extends TestCase
         // start a new one
         txn = transactionService.getNonPropagatingUserTransaction();
         txn.begin();
-        
+
         FileInfo folderToMoveInfo = getByName(NAME_L1_FOLDER_A, true);
         assertNotNull(folderToMoveInfo);
         NodeRef folderToMoveRef = folderToMoveInfo.getNodeRef();
@@ -540,7 +536,7 @@ public class FileFolderServiceImplTest extends TestCase
         {
             // expected
         }
-        
+
         txn.rollback();
         txn = transactionService.getNonPropagatingUserTransaction();
         txn.begin();
@@ -567,17 +563,16 @@ public class FileFolderServiceImplTest extends TestCase
         // Move to a target folder but with a rename to avoid the name clash
         fileFolderService.move(fileA.getNodeRef(), folderB.getNodeRef(), NAME_L1_FILE_B);
     }
-    
+
     /**
      * <a href="https://issues.alfresco.com/jira/browse/ALF-7692">ALF-7692</a>
      */
     public void testMovePermissions() throws Exception
     {
         txn.commit();
-        
-        // Create a target folder to write to.  Folder owner is 'system'.
-        RunAsWork<NodeRef> createTargetWork = new RunAsWork<NodeRef>()
-        {
+
+        // Create a target folder to write to. Folder owner is 'system'.
+        RunAsWork<NodeRef> createTargetWork = new RunAsWork<NodeRef>() {
             @Override
             public NodeRef doWork() throws Exception
             {
@@ -608,8 +603,7 @@ public class FileFolderServiceImplTest extends TestCase
                 "SOURCE ONE",
                 ContentModel.TYPE_CONTENT).getNodeRef();
         // Deny anyone access to the target
-        RunAsWork<Void> setPermissionsWork = new RunAsWork<Void>()
-        {
+        RunAsWork<Void> setPermissionsWork = new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -918,8 +912,7 @@ public class FileFolderServiceImplTest extends TestCase
         // generate a path where the file is the last element: ok
         List<FileInfo> path = fileFolderService.getNamePath(parentFolderRef, fileInfo.getNodeRef());
         assertEquals(2, path.size());
-        
-        
+
         // create hierarchy: folder > file > file
         FileInfo fileInfo2 = fileFolderService.create(fileInfo.getNodeRef(), "newFile2", ContentModel.TYPE_CONTENT);
         // generate a path where a file is not the last element in the path: not ok
@@ -928,13 +921,12 @@ public class FileFolderServiceImplTest extends TestCase
             fileFolderService.getNamePath(parentFolderRef, fileInfo2.getNodeRef());
             fail("Shouldn't create path for non-leaf file.");
         }
-        catch(InvalidTypeException e)
+        catch (InvalidTypeException e)
         {
             // Good
         }
     }
-    
-    
+
     public void testGetNamePathDoesNotCrossIntoNonFileFolderHierarchy() throws Exception
     {
         FileInfo parentFolderInfo = getByName(NAME_L0_FOLDER_A, true);
@@ -947,26 +939,25 @@ public class FileFolderServiceImplTest extends TestCase
         // generate a path where the file is the last element: ok
         List<FileInfo> path = fileFolderService.getNamePath(parentFolderRef, fileInfo.getNodeRef());
         assertEquals(2, path.size());
-        
+
         NodeRef cmContainer = nodeService.createNode(
-                    rootNodeRef,
-                    ContentModel.ASSOC_CHILDREN,
-                    QName.createQName(NamespaceService.ALFRESCO_URI, "container"),
-                    ContentModel.TYPE_CONTAINER).getChildRef();
-        
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.ALFRESCO_URI, "container"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+
         NodeRef cmChild = nodeService.moveNode(
-                    fileInfo.getNodeRef(),
-                    cmContainer, 
-                    ContentModel.ASSOC_CONTAINS, 
-                    QName.createQName(NamespaceService.ALFRESCO_URI, "contains")).getChildRef();
-        
+                fileInfo.getNodeRef(),
+                cmContainer,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.ALFRESCO_URI, "contains")).getChildRef();
+
         // This is ok, since the root - whilst not a folder - directly contains a file
         List<FileInfo> path2 = fileFolderService.getNamePath(cmContainer, cmChild);
         assertEquals(1, path2.size());
         assertEquals("newFile", path2.get(0).getName());
     }
-    
-    
+
     public void testSearchSimple() throws Exception
     {
         FileInfo folderInfo = getByName(NAME_L0_FOLDER_A, true);
@@ -1067,7 +1058,7 @@ public class FileFolderServiceImplTest extends TestCase
             I18NUtil.setContentLocale(savedLocale);
         }
     }
-    
+
     public void testETHREEOH_3088_MoveIntoSelf() throws Exception
     {
         FileInfo folderInfo = fileFolderService.create(workingRootNodeRef, "NotGood.txt", ContentModel.TYPE_FOLDER);
@@ -1083,27 +1074,26 @@ public class FileFolderServiceImplTest extends TestCase
             // Expected
         }
     }
-    
+
     public void testAlf6560MimetypeSetting() throws Exception
     {
         FileInfo fileInfo = fileFolderService.create(workingRootNodeRef, "Something.html", ContentModel.TYPE_CONTENT);
         NodeRef fileNodeRef = fileInfo.getNodeRef();
-        
+
         // Write the content but without setting the mimetype
         ContentWriter writer = fileFolderService.getWriter(fileNodeRef);
         writer.putContent("CONTENT");
-        
+
         ContentReader reader = fileFolderService.getReader(fileNodeRef);
         assertEquals("Mimetype was not automatically set", MimetypeMap.MIMETYPE_HTML, reader.getMimetype());
-        
-        
+
         // Now ask for encoding too
         writer = fileFolderService.getWriter(fileNodeRef);
         writer.guessEncoding();
         OutputStream out = writer.getContentOutputStream();
-        out.write( "<html><body>hall\u00e5 v\u00e4rlden</body></html>".getBytes("UnicodeBig") );
+        out.write("<html><body>hall\u00e5 v\u00e4rlden</body></html>".getBytes("UnicodeBig"));
         out.close();
-        
+
         reader = fileFolderService.getReader(fileNodeRef);
         assertEquals("Mimetype was not automatically set", MimetypeMap.MIMETYPE_HTML, reader.getMimetype());
         assertEquals("Encoding was not automatically set", "UTF-16BE", reader.getEncoding());
@@ -1118,7 +1108,7 @@ public class FileFolderServiceImplTest extends TestCase
         NodeRef nodeFrFr = fileFolderService.create(workingRootNodeRef, "Something_fr_FR..ftl", ContentModel.TYPE_CONTENT).getNodeRef();
         NodeRef nodeEn = fileFolderService.create(workingRootNodeRef, "Something_en.ftl", ContentModel.TYPE_CONTENT).getNodeRef();
         NodeRef nodeEnUs = fileFolderService.create(workingRootNodeRef, "Something_en_US.ftl", ContentModel.TYPE_CONTENT).getNodeRef();
-        
+
         I18NUtil.setLocale(Locale.US);
         assertEquals("Match fail for " + I18NUtil.getLocale(), nodeEnUs, fileFolderService.getLocalizedSibling(node));
         I18NUtil.setLocale(Locale.UK);
@@ -1127,20 +1117,19 @@ public class FileFolderServiceImplTest extends TestCase
         assertEquals("Match fail for " + I18NUtil.getLocale(), node, fileFolderService.getLocalizedSibling(node));
 
         // Now use French as the base and check that the original is returned
-        
+
         I18NUtil.setLocale(Locale.US);
         assertEquals("Match fail for " + I18NUtil.getLocale(), nodeFr, fileFolderService.getLocalizedSibling(nodeFr));
         I18NUtil.setLocale(Locale.UK);
         assertEquals("Match fail for " + I18NUtil.getLocale(), nodeFr, fileFolderService.getLocalizedSibling(nodeFr));
         I18NUtil.setLocale(Locale.CHINESE);
         assertEquals("Match fail for " + I18NUtil.getLocale(), nodeFr, fileFolderService.getLocalizedSibling(nodeFr));
-        
-        
+
         // Check that extensions like .get.html.ftl work
         FileInfo mbase = fileFolderService.create(workingRootNodeRef, "Another.get.html.ftl", ContentModel.TYPE_CONTENT);
         NodeRef mnode = mbase.getNodeRef();
         NodeRef mnodeFr = fileFolderService.create(workingRootNodeRef, "Another_fr.get.html.ftl", ContentModel.TYPE_CONTENT).getNodeRef();
-        
+
         // Should get the base version, except for when French
         I18NUtil.setLocale(Locale.UK);
         assertEquals("Match fail for " + I18NUtil.getLocale(), mnode, fileFolderService.getLocalizedSibling(mnode));
@@ -1160,7 +1149,7 @@ public class FileFolderServiceImplTest extends TestCase
     {
         // Terminate the transaction
         txn.commit();
-        
+
         nodeService.addAspect(workingRootNodeRef, ContentModel.ASPECT_AUDITABLE, null);
 
         FileInfo folderInfo = fileFolderService.create(workingRootNodeRef, "SomeFolder", ContentModel.TYPE_FOLDER);
@@ -1170,7 +1159,7 @@ public class FileFolderServiceImplTest extends TestCase
         Date createdExpected = (Date) nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATED);
         String modifierExpected = (String) nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIER);
         Date modifiedExpected = (Date) nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED);
-        
+
         // Get the current dates for the parent folder (one level up)
         String creatorTooHigh = (String) nodeService.getProperty(workingRootNodeRef, ContentModel.PROP_CREATOR);
         Date createdTooHigh = (Date) nodeService.getProperty(workingRootNodeRef, ContentModel.PROP_CREATED);
@@ -1185,12 +1174,12 @@ public class FileFolderServiceImplTest extends TestCase
         }
         catch (InterruptedException e)
         {
-            //Respect but ignore
+            // Respect but ignore
         }
         FileInfo fileInfo = fileFolderService.create(folderNodeRef, "Something.html", ContentModel.TYPE_CONTENT);
         NodeRef fileNodeRef = fileInfo.getNodeRef();
         nodeService.addAspect(fileNodeRef, ContentModel.ASPECT_AUDITABLE, null);
-        
+
         assertEquals("cm:creator should not have changed",
                 creatorExpected,
                 nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATOR));
@@ -1201,7 +1190,7 @@ public class FileFolderServiceImplTest extends TestCase
                 nodeService.getProperty(fileNodeRef, ContentModel.PROP_MODIFIER),
                 nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIER));
         assertTrue("cm:modified should have changed",
-                beforeSleep.compareTo((Date)nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED)) < 0);
+                beforeSleep.compareTo((Date) nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED)) < 0);
 
         // Update the child and check parent (expect NO changes)
         modifiedExpected = (Date) nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED);
@@ -1212,7 +1201,7 @@ public class FileFolderServiceImplTest extends TestCase
         }
         catch (InterruptedException e)
         {
-            //Respect but ignore
+            // Respect but ignore
         }
         nodeService.setProperty(fileNodeRef, ContentModel.PROP_TITLE, "Hippo");
         assertEquals("cm:creator should not have changed",
@@ -1226,7 +1215,7 @@ public class FileFolderServiceImplTest extends TestCase
                 nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIER));
         assertTrue("cm:modified should not have changed",
                 modifiedExpected.equals(nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED)));
-        
+
         // Rename the child and check parent (expect NO changes)
         modifiedExpected = (Date) nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED);
         try
@@ -1235,7 +1224,7 @@ public class FileFolderServiceImplTest extends TestCase
         }
         catch (InterruptedException e)
         {
-            //Respect but ignore
+            // Respect but ignore
         }
         nodeService.setProperty(fileNodeRef, ContentModel.PROP_TITLE, "Something-new.html");
         assertEquals("cm:creator should not have changed",
@@ -1250,7 +1239,7 @@ public class FileFolderServiceImplTest extends TestCase
         assertEquals("cm:modified should not have changed",
                 modifiedExpected,
                 nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED));
-        
+
         // Delete node and check parent (expect modifier changes)
         beforeSleep = new Date();
         try
@@ -1259,7 +1248,7 @@ public class FileFolderServiceImplTest extends TestCase
         }
         catch (InterruptedException e)
         {
-            //Respect but ignore
+            // Respect but ignore
         }
         fileFolderService.delete(fileNodeRef);
         assertEquals("cm:creator should not have changed",
@@ -1269,10 +1258,10 @@ public class FileFolderServiceImplTest extends TestCase
                 createdExpected,
                 nodeService.getProperty(folderNodeRef, ContentModel.PROP_CREATED));
         assertEquals("cm:modifier should have changed",
-                    modifierExpected,
-                    nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIER));
+                modifierExpected,
+                nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIER));
         assertTrue("cm:modified should have changed",
-                beforeSleep.compareTo((Date)nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED)) < 0);
+                beforeSleep.compareTo((Date) nodeService.getProperty(folderNodeRef, ContentModel.PROP_MODIFIED)) < 0);
 
         // Finally check that the second level up was NOT modified
         assertEquals("cm:creator should not have changed (level too high)",
@@ -1293,7 +1282,7 @@ public class FileFolderServiceImplTest extends TestCase
         FileInfo sourceFolderInfo = fileFolderService.create(workingRootNodeRef, "SourceFolder", ContentModel.TYPE_FOLDER);
         NodeRef sourceFolderNodeRef = sourceFolderInfo.getNodeRef();
 
-        //Create destination folder
+        // Create destination folder
         FileInfo destinationFolderInfo = fileFolderService.create(workingRootNodeRef, "DestinationFolder", ContentModel.TYPE_FOLDER);
         NodeRef destinationFolderNodeRef = destinationFolderInfo.getNodeRef();
 
@@ -1322,7 +1311,7 @@ public class FileFolderServiceImplTest extends TestCase
         }
         catch (InterruptedException e)
         {
-            //Respect but ignore
+            // Respect but ignore
         }
         fileFolderService.moveFrom(relocatableFileNodeRef, sourceFolderNodeRef, destinationFolderNodeRef, "MoveMePlease.html");
 
@@ -1337,7 +1326,7 @@ public class FileFolderServiceImplTest extends TestCase
                 sourceFolderModifierExpected,
                 nodeService.getProperty(sourceFolderNodeRef, ContentModel.PROP_MODIFIER));
         assertTrue("cm:modified for source folder should have changed",
-                beforeSleep.compareTo((Date)nodeService.getProperty(sourceFolderNodeRef, ContentModel.PROP_MODIFIED)) < 0);
+                beforeSleep.compareTo((Date) nodeService.getProperty(sourceFolderNodeRef, ContentModel.PROP_MODIFIED)) < 0);
 
         // Check the destination folder
         assertEquals("cm:creator for destination folder should not have changed",
@@ -1350,60 +1339,57 @@ public class FileFolderServiceImplTest extends TestCase
                 destinationFolderModifierExpected,
                 nodeService.getProperty(destinationFolderNodeRef, ContentModel.PROP_MODIFIER));
         assertTrue("cm:modified for destination folder should have changed",
-                beforeSleep.compareTo((Date)nodeService.getProperty(destinationFolderNodeRef, ContentModel.PROP_MODIFIED)) < 0);
+                beforeSleep.compareTo((Date) nodeService.getProperty(destinationFolderNodeRef, ContentModel.PROP_MODIFIED)) < 0);
     }
-    
+
     public void testPatterns()
     {
         // sanity checks only (see also GetChildrenCannedQueryTest)
-        
+
         I18NUtil.setContentLocale(Locale.CANADA);
 
         // test 1
         PagingRequest pagingRequest = new PagingRequest(100, null);
         PagingResults<FileInfo> pagingResults = fileFolderService.list(workingRootNodeRef, true, true, "L0*", null, null, pagingRequest);
-        
+
         assertNotNull(pagingResults);
         assertFalse(pagingResults.hasMoreItems());
         assertNull(pagingResults.getTotalResultCount());
-        
+
         List<FileInfo> files = pagingResults.getPage();
-        
+
         // check
-        String[] expectedNames = new String[]
-        { NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
+        String[] expectedNames = new String[]{NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C};
         checkFileList(files, 2, 3, expectedNames);
-       
+
         // test 2
         pagingResults = fileFolderService.list(workingRootNodeRef, true, true, "L1*", null, null, pagingRequest);
-        
+
         assertNotNull(pagingResults);
         assertFalse(pagingResults.hasMoreItems());
         assertNull(pagingResults.getTotalResultCount());
-        
+
         files = pagingResults.getPage();
-        
+
         // check
-        expectedNames = new String[]
-        { };
+        expectedNames = new String[]{};
         checkFileList(files, 0, 0, expectedNames);
 
         // test 3
         pagingResults = fileFolderService.list(workingRootNodeRef, true, true, "L0*File*", null, null, pagingRequest);
-        
+
         assertNotNull(pagingResults);
         assertFalse(pagingResults.hasMoreItems());
         assertNull(pagingResults.getTotalResultCount());
-        
+
         files = pagingResults.getPage();
-        
+
         // check
-        expectedNames = new String[]
-        { NAME_L0_FILE_A, NAME_L0_FILE_B };
+        expectedNames = new String[]{NAME_L0_FILE_A, NAME_L0_FILE_B};
         checkFileList(files, 2, 0, expectedNames);
 
     }
-    
+
     public void testALF12758()
     {
         // test that the FileFolderService returns only cm:contains children
@@ -1413,38 +1399,36 @@ public class FileFolderServiceImplTest extends TestCase
         assertNotNull(pagingResults.getPage());
         assertEquals(1, pagingResults.getPage().size());
     }
-    
+
     public void testListPage() throws Exception
     {
         // sanity checks only (see also GetChildrenCannedQueryTest)
-        
+
         PagingRequest pagingRequest = new PagingRequest(100, null);
         PagingResults<FileInfo> pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, null, null, pagingRequest);
-        
+
         assertNotNull(pagingResults);
         assertFalse(pagingResults.hasMoreItems());
         assertTrue((pagingResults.getQueryExecutionId() != null) && (pagingResults.getQueryExecutionId().length() > 0));
         assertNull(pagingResults.getTotalResultCount());
-        
+
         List<FileInfo> files = pagingResults.getPage();
-        
+
         // check
-        String[] expectedNames = new String[]
-        { NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
+        String[] expectedNames = new String[]{NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C};
         checkFileList(files, 2, 3, expectedNames);
-        
-        
+
         // empty list if skip count greater than number of results (ALF-7884)
         pagingRequest = new PagingRequest(1000, 3, null);
         pagingResults = fileFolderService.list(workingRootNodeRef, true, true, null, null, null, pagingRequest);
-        
+
         assertNotNull(pagingResults);
         assertFalse(pagingResults.hasMoreItems());
         assertEquals(0, pagingResults.getPage().size());
-        
+
         // TODO add more here
     }
-    
+
     public void testList_HiddenFiles()
     {
         // Test that hidden files are not returned for clients that should not be able to see them,
@@ -1456,13 +1440,13 @@ public class FileFolderServiceImplTest extends TestCase
             // create some hidden files
             NodeRef nodeRef = fileFolderService.create(workingRootNodeRef, "" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
             NodeRef nodeRef1 = fileFolderService.create(nodeRef, "parent", ContentModel.TYPE_CONTENT).getNodeRef();
-            for(int i = 0; i < 10; i++)
+            for (int i = 0; i < 10; i++)
             {
                 fileFolderService.create(nodeRef1, ".child" + i, ContentModel.TYPE_CONTENT).getNodeRef();
             }
-            
+
             // and some visible files
-            for(int i = 0; i < 10; i++)
+            for (int i = 0; i < 10; i++)
             {
                 fileFolderService.create(nodeRef1, "visiblechild" + i, ContentModel.TYPE_CONTENT).getNodeRef();
             }
@@ -1478,7 +1462,7 @@ public class FileFolderServiceImplTest extends TestCase
             assertEquals("Total result lower count should be 10", 10, totalResultCount.getFirst().intValue());
             assertNotNull(totalResultCount.getSecond());
             assertEquals("Total result upper count should be 10", 10, totalResultCount.getSecond().intValue());
-            for(FileInfo fileInfo : results.getPage())
+            for (FileInfo fileInfo : results.getPage())
             {
                 assertTrue(fileInfo.getName().startsWith("visiblechild"));
             }
@@ -1489,51 +1473,51 @@ public class FileFolderServiceImplTest extends TestCase
             FileFilterMode.setClient(saveClient);
         }
     }
-    
+
     public void testList_notCheckedOut_ALF_13602()
     {
         // Test that, eg. in the case of Share doclib, when listing files that have been checked-out we only list the working copy (ie. not the original checkedOut copy)
-        
+
         int totalItems = 165;
-        int pageSize   = 50;
-        
+        int pageSize = 50;
+
         // create some files
         NodeRef nodeRef = fileFolderService.create(workingRootNodeRef, "" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
         NodeRef nodeRef1 = fileFolderService.create(nodeRef, "parent", ContentModel.TYPE_CONTENT).getNodeRef();
-        
+
         NodeRef[] children = new NodeRef[totalItems];
         for (int i = 0; i < totalItems; i++)
         {
             String suffix = String.format("%05d", i);
             children[i] = fileFolderService.create(nodeRef1, "child-" + suffix, ContentModel.TYPE_CONTENT).getNodeRef();
         }
-        
+
         checkPages(nodeRef1, pageSize, totalItems, false, -1);
-        
+
         // checkout 5th child
         cociService.checkout(children[4]);
-        
+
         checkPages(nodeRef1, pageSize, totalItems, false, 4);
-        
+
         checkPages(nodeRef1, pageSize, totalItems, true, 4);
     }
-    
+
     public void testListNotIgnoreSpaces()
     {
-        String [] foldersToTest = new String[] { 
-            "A B", 
-            "AA", 
-            "AC" 
+        String[] foldersToTest = new String[]{
+                "A B",
+                "AA",
+                "AC"
         };
-        
+
         NodeRef testFolder = fileFolderService.create(workingRootNodeRef, "" + System.currentTimeMillis(), ContentModel.TYPE_FOLDER).getNodeRef();
-        
+
         // create provided nodes
         for (String folder : foldersToTest)
         {
             fileFolderService.create(testFolder, folder, ContentModel.TYPE_FOLDER).getNodeRef();
         }
-        
+
         PagingRequest pagingRequest = new PagingRequest(100, null);
         // ensure sort by property name
         List<Pair<QName, Boolean>> sortProps = new ArrayList<Pair<QName, Boolean>>(1);
@@ -1541,9 +1525,9 @@ public class FileFolderServiceImplTest extends TestCase
         // list nodes
         PagingResults<FileInfo> pagingResults = fileFolderService.list(testFolder, true, true, null, null, sortProps, pagingRequest);
         List<FileInfo> files = pagingResults.getPage();
-         
+
         assertEquals(files.size(), foldersToTest.length);
-        
+
         for (int index = 0; index < files.size(); index++)
         {
             // ensure node order is expected
@@ -1551,10 +1535,10 @@ public class FileFolderServiceImplTest extends TestCase
             String excpectedFolderName = foldersToTest[index];
             assertEquals(folderName, excpectedFolderName);
         }
-        
+
         System.out.println(files);
     }
-    
+
     private void checkPages(NodeRef parentRef, int pageSize, int totalItems, boolean hideCheckedOut, int checkedOutChildIdx)
     {
         Set<QName> ignoreQNameTypes = null;
@@ -1570,44 +1554,44 @@ public class FileFolderServiceImplTest extends TestCase
                 totalItems++;
             }
         }
-        
+
         List<Pair<QName, Boolean>> sortProps = new ArrayList<Pair<QName, Boolean>>(1);
         sortProps.add(new Pair<QName, Boolean>(ContentModel.PROP_NAME, true));
-        
+
         int pageCount = (totalItems / pageSize) + 1;
-        
+
         for (int i = 1; i <= pageCount; i++)
         {
-            int offset = (i-1)*pageSize;
-            
+            int offset = (i - 1) * pageSize;
+
             PagingRequest pagingRequest = new PagingRequest(offset, pageSize);
             pagingRequest.setRequestTotalCountMax(10000); // need this so that total count is set
-            
+
             PagingResults<FileInfo> results = fileFolderService.list(parentRef, true, true, ignoreQNameTypes, sortProps, pagingRequest);
-            
+
             Pair<Integer, Integer> totalResultCount = results.getTotalResultCount();
             assertNotNull(totalResultCount.getFirst());
             assertEquals(totalItems, totalResultCount.getFirst().intValue());
             assertNotNull(totalResultCount.getSecond());
             assertEquals(totalItems, totalResultCount.getSecond().intValue());
-            
-            assertEquals((i != pageCount ? pageSize : (totalItems - ((pageCount-1)*pageSize))), results.getPage().size());
-            
+
+            assertEquals((i != pageCount ? pageSize : (totalItems - ((pageCount - 1) * pageSize))), results.getPage().size());
+
             int j = offset;
             for (FileInfo fileInfo : results.getPage())
             {
                 String suffix = String.format("%05d", j);
                 if (checkedOutChildIdx > -1)
                 {
-                    if (! hideCheckedOut)
+                    if (!hideCheckedOut)
                     {
-                        if (j == checkedOutChildIdx+1)
+                        if (j == checkedOutChildIdx + 1)
                         {
-                            suffix = String.format("%05d", j-1) + " (Working Copy)";
+                            suffix = String.format("%05d", j - 1) + " (Working Copy)";
                         }
-                        else if (j > checkedOutChildIdx+1)
+                        else if (j > checkedOutChildIdx + 1)
                         {
-                            suffix = String.format("%05d", j-1);
+                            suffix = String.format("%05d", j - 1);
                         }
                     }
                     else
@@ -1618,10 +1602,10 @@ public class FileFolderServiceImplTest extends TestCase
                         }
                     }
                 }
-                
+
                 String actual = fileInfo.getName();
-                String expected = "child-"+suffix;
-                assertTrue("Expected: "+expected+", Actual: "+actual+" (j="+j+")", expected.equals(actual));
+                String expected = "child-" + suffix;
+                assertTrue("Expected: " + expected + ", Actual: " + actual + " (j=" + j + ")", expected.equals(actual));
                 j++;
             }
         }
@@ -1629,24 +1613,24 @@ public class FileFolderServiceImplTest extends TestCase
 
     public void testCopyOfWorkingCopy_ALF_8863() throws Exception
     {
-         // create test node to checkout
-         NodeRef testNodeRef = fileFolderService.create(workingRootNodeRef, "" + System.currentTimeMillis() + ".txt", ContentModel.TYPE_CONTENT).getNodeRef();
-         // create folder to copy to
-         FileInfo destDirInfo = fileFolderService.create(workingRootNodeRef, "destDir", ContentModel.TYPE_FOLDER);
+        // create test node to checkout
+        NodeRef testNodeRef = fileFolderService.create(workingRootNodeRef, "" + System.currentTimeMillis() + ".txt", ContentModel.TYPE_CONTENT).getNodeRef();
+        // create folder to copy to
+        FileInfo destDirInfo = fileFolderService.create(workingRootNodeRef, "destDir", ContentModel.TYPE_FOLDER);
 
-         NodeRef workingCopyRef = cociService.checkout(testNodeRef);
-         String workingCopyName = (String)nodeService.getProperty(workingCopyRef, ContentModel.PROP_NAME);
+        NodeRef workingCopyRef = cociService.checkout(testNodeRef);
+        String workingCopyName = (String) nodeService.getProperty(workingCopyRef, ContentModel.PROP_NAME);
 
-         FileInfo copyInfo = fileFolderService.copy(workingCopyRef, destDirInfo.getNodeRef(), null);
-         String checkedOutName = (String)nodeService.getProperty(testNodeRef, ContentModel.PROP_NAME);
-         int origExtIndex = checkedOutName.lastIndexOf('.');
-         int copyExtIndex = copyInfo.getName().lastIndexOf('.');
+        FileInfo copyInfo = fileFolderService.copy(workingCopyRef, destDirInfo.getNodeRef(), null);
+        String checkedOutName = (String) nodeService.getProperty(testNodeRef, ContentModel.PROP_NAME);
+        int origExtIndex = checkedOutName.lastIndexOf('.');
+        int copyExtIndex = copyInfo.getName().lastIndexOf('.');
 
-         assertFalse(workingCopyName.equals(copyInfo.getName()));
-         assertFalse(copyInfo.getName().contains("(Working Copy)"));
-         assertTrue(copyInfo.getName().substring(0, copyExtIndex).startsWith(checkedOutName.substring(0, origExtIndex)));
+        assertFalse(workingCopyName.equals(copyInfo.getName()));
+        assertFalse(copyInfo.getName().contains("(Working Copy)"));
+        assertTrue(copyInfo.getName().substring(0, copyExtIndex).startsWith(checkedOutName.substring(0, origExtIndex)));
     }
-    
+
     public void testSortingCustomFields()
     {
         // Test sorting based on MNT-11120
@@ -1679,7 +1663,7 @@ public class FileFolderServiceImplTest extends TestCase
         sortProps.add(new Pair<QName, Boolean>(customPropB, true));
         PagingResults<FileInfo> results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
         List<FileInfo> pageRes = results.getPage();
-        String[] expectedNames = new String[] { "A-null", "B-null", "B-baz", "B-biz", "A-bar", "A-foo" };
+        String[] expectedNames = new String[]{"A-null", "B-null", "B-baz", "B-biz", "A-bar", "A-foo"};
         checkFileList(pageRes, 6, 0, expectedNames);
 
         // {("user:a", false),("user:b", true")}
@@ -1687,7 +1671,7 @@ public class FileFolderServiceImplTest extends TestCase
         sortProps.add(new Pair<QName, Boolean>(customPropA, false));
         sortProps.add(new Pair<QName, Boolean>(customPropB, true));
         results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
-        expectedNames = new String[] { "A-foo", "A-bar", "A-null", "B-null", "B-baz", "B-biz" };
+        expectedNames = new String[]{"A-foo", "A-bar", "A-null", "B-null", "B-baz", "B-biz"};
         checkFileList(pageRes, 6, 0, expectedNames);
 
         // {(\"user:a", true),("user:b", false")}
@@ -1695,7 +1679,7 @@ public class FileFolderServiceImplTest extends TestCase
         sortProps.add(new Pair<QName, Boolean>(customPropA, true));
         sortProps.add(new Pair<QName, Boolean>(customPropB, false));
         results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
-        expectedNames = new String[] { "B-biz", "B-baz", "A-null", "B-null", "A-bar", "A-foo" };
+        expectedNames = new String[]{"B-biz", "B-baz", "A-null", "B-null", "A-bar", "A-foo"};
         checkFileList(pageRes, 6, 0, expectedNames);
 
         // {(\"user:a", false),("user:b", false")}
@@ -1703,7 +1687,7 @@ public class FileFolderServiceImplTest extends TestCase
         sortProps.add(new Pair<QName, Boolean>(customPropA, false));
         sortProps.add(new Pair<QName, Boolean>(customPropB, false));
         results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
-        expectedNames = new String[] { "A-foo", "A-bar", "B-biz", "B-baz", "A-null", "B-null" };
+        expectedNames = new String[]{"A-foo", "A-bar", "B-biz", "B-baz", "A-null", "B-null"};
         checkFileList(pageRes, 6, 0, expectedNames);
 
         // {(\"user:b", true),("user:a", true")}
@@ -1711,7 +1695,7 @@ public class FileFolderServiceImplTest extends TestCase
         sortProps.add(new Pair<QName, Boolean>(customPropB, true));
         sortProps.add(new Pair<QName, Boolean>(customPropA, true));
         results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
-        expectedNames = new String[] { "A-null", "B-null", "A-bar", "A-foo", "B-baz", "B-biz" };
+        expectedNames = new String[]{"A-null", "B-null", "A-bar", "A-foo", "B-baz", "B-biz"};
         checkFileList(pageRes, 6, 0, expectedNames);
 
         // {("user:b", false),("user:a", true")}
@@ -1719,7 +1703,7 @@ public class FileFolderServiceImplTest extends TestCase
         sortProps.add(new Pair<QName, Boolean>(customPropB, false));
         sortProps.add(new Pair<QName, Boolean>(customPropA, true));
         results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
-        expectedNames = new String[] { "B-biz", "B-baz", "A-null", "B-null", "A-bar", "A-foo" };
+        expectedNames = new String[]{"B-biz", "B-baz", "A-null", "B-null", "A-bar", "A-foo"};
         checkFileList(pageRes, 6, 0, expectedNames);
 
         // {("user:b", true),("user:a", false")}
@@ -1727,7 +1711,7 @@ public class FileFolderServiceImplTest extends TestCase
         sortProps.add(new Pair<QName, Boolean>(customPropB, true));
         sortProps.add(new Pair<QName, Boolean>(customPropA, false));
         results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
-        expectedNames = new String[] { "A-foo", "A-bar", "A-null", "B-null", "B-baz", "B-biz" };
+        expectedNames = new String[]{"A-foo", "A-bar", "A-null", "B-null", "B-baz", "B-biz"};
         checkFileList(pageRes, 6, 0, expectedNames);
 
         // {("user:b", false),("user:a", false")}
@@ -1735,29 +1719,29 @@ public class FileFolderServiceImplTest extends TestCase
         sortProps.add(new Pair<QName, Boolean>(customPropB, false));
         sortProps.add(new Pair<QName, Boolean>(customPropA, false));
         results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
-        expectedNames = new String[] { "B-biz", "B-baz", "A-foo", "A-bar", "A-null", "B-null" };
+        expectedNames = new String[]{"B-biz", "B-baz", "A-foo", "A-bar", "A-null", "B-null"};
         checkFileList(pageRes, 6, 0, expectedNames);
 
         // no sort
         sortProps.clear();
         results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
-        expectedNames = new String[] { "B-null", "A-foo", "A-bar", "B-baz", "A-null", "B-biz" };
+        expectedNames = new String[]{"B-null", "A-foo", "A-bar", "B-baz", "A-null", "B-biz"};
         checkFileList(pageRes, 6, 0, expectedNames);
-    }	
-    
+    }
+
     public void testMoveCopyLotsOfFiles() throws FileNotFoundException
     {
         final String CONTAINING_FOLDER = "CONTAINING FOLDER " + GUID.generate(),
-                     FOLDER_1 = "FOLDER 1 " + GUID.generate(),
-                     FOLDER_2 = "FOLDER 2 " + GUID.generate();
-        
+                FOLDER_1 = "FOLDER 1 " + GUID.generate(),
+                FOLDER_2 = "FOLDER 2 " + GUID.generate();
+
         FileInfo containingFolder = fileFolderService.create(workingRootNodeRef, CONTAINING_FOLDER, ContentModel.TYPE_FOLDER),
-                 folder1 = fileFolderService.create(containingFolder.getNodeRef(), FOLDER_1, ContentModel.TYPE_FOLDER),
-                 folder2 = fileFolderService.create(containingFolder.getNodeRef(), FOLDER_2, ContentModel.TYPE_FOLDER);
-        
+                folder1 = fileFolderService.create(containingFolder.getNodeRef(), FOLDER_1, ContentModel.TYPE_FOLDER),
+                folder2 = fileFolderService.create(containingFolder.getNodeRef(), FOLDER_2, ContentModel.TYPE_FOLDER);
+
         // create thousand(s) of files within the folder
         int COUNT = 3000;
-        
+
         Dialect dialect = (Dialect) ctx.getBean("dialect");
         if (dialect instanceof MySQLClusterNDBDialect)
         {
@@ -1766,44 +1750,44 @@ public class FileFolderServiceImplTest extends TestCase
             // also consider splitting into separate txns (eg. after each bulk create, move, delete, copy, ...)
             COUNT = 1000;
         }
-        
+
         for (int index = 0; index < COUNT; index++)
         {
             fileFolderService.create(folder1.getNodeRef(), "Name " + index, ContentModel.TYPE_CONTENT);
         }
-        
+
         assertEquals(COUNT, fileFolderService.listFiles(folder1.getNodeRef()).size());
         assertEquals(0, fileFolderService.list(folder2.getNodeRef()).size());
-        
+
         // move the folder
         fileFolderService.move(folder1.getNodeRef(), folder2.getNodeRef(), null);
-        
+
         assertEquals(COUNT, fileFolderService.listFiles(folder1.getNodeRef()).size());
         assertEquals(1, fileFolderService.list(folder2.getNodeRef()).size());
-        
+
         // move it back
         fileFolderService.move(folder1.getNodeRef(), containingFolder.getNodeRef(), null);
-        
+
         assertEquals(0, fileFolderService.list(folder2.getNodeRef()).size());
         assertEquals(2, fileFolderService.list(containingFolder.getNodeRef()).size());
-        
+
         // lets copy it
         fileFolderService.copy(folder1.getNodeRef(), folder2.getNodeRef(), null);
-        
+
         assertEquals(2, fileFolderService.list(containingFolder.getNodeRef()).size());
-        
+
         List<FileInfo> folders = fileFolderService.listFolders(folder2.getNodeRef());
         assertEquals(1, folders.size());
         assertEquals(COUNT, fileFolderService.listFiles(folders.get(0).getNodeRef()).size());
-        
+
         fileFolderService.delete(folder1.getNodeRef());
-        
+
         assertEquals(1, fileFolderService.list(containingFolder.getNodeRef()).size());
-        
+
         folder1 = folders.get(0);
         // copy back
         FileInfo newFolder = fileFolderService.copy(folder1.getNodeRef(), containingFolder.getNodeRef(), null);
-        
+
         assertEquals(2, fileFolderService.list(containingFolder.getNodeRef()).size());
         assertEquals(COUNT, fileFolderService.list(newFolder.getNodeRef()).size());
     }

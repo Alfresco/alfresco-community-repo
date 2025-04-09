@@ -25,16 +25,6 @@
  */
 package org.alfresco.repo.security.authentication;
 
-import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.service.cmr.security.PersonService;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -47,6 +37,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.service.cmr.security.PersonService;
 
 /**
  * Mocked test for {@link AuthenticationServiceImpl}
@@ -238,7 +239,7 @@ public class AuthenticationServiceImplTest
 
         final String protectedUserKey = authService.getProtectedUserKey(USERNAME);
         assertEquals("The number of recorded logins did not match.", attempts, cache.get(protectedUserKey).getNumLogins());
-        Thread.sleep(timeLimit*1000 + 1);
+        Thread.sleep(timeLimit * 1000 + 1);
         assertFalse("The user should not be protected any more.", authService.isUserProtected(USERNAME));
         assertEquals("The number of recorded logins should stay the same after protection period ends.",
                 attempts, cache.get(protectedUserKey).getNumLogins());
@@ -275,12 +276,17 @@ public class AuthenticationServiceImplTest
                 .when(authenticationComponent).authenticate(USERNAME, PASSWORD);
 
         // Authentication fails on first run.
-        for (int i = 0; i < attempts; i++) {
-            for (AuthenticationServiceImpl authentication : authenticationChain) {
-                try {
+        for (int i = 0; i < attempts; i++)
+        {
+            for (AuthenticationServiceImpl authentication : authenticationChain)
+            {
+                try
+                {
                     authentication.authenticate(USERNAME, PASSWORD);
                     fail("An " + AuthenticationException.class.getName() + " should be thrown.");
-                } catch (AuthenticationException ae) {
+                }
+                catch (AuthenticationException ae)
+                {
                     // normal
                 }
             }
@@ -291,7 +297,7 @@ public class AuthenticationServiceImplTest
             assertTrue("The user should be protected.", authentication.isUserProtected(USERNAME));
         }
 
-        Thread.sleep(timeLimit*1000 + 1);
+        Thread.sleep(timeLimit * 1000 + 1);
 
         for (AuthenticationServiceImpl authentication : authenticationChain)
         {
@@ -303,7 +309,9 @@ public class AuthenticationServiceImplTest
         {
             authenticationChain[0].authenticate(USERNAME, PASSWORD);
             fail("An " + AuthenticationException.class.getName() + " should be thrown.");
-        } catch (AuthenticationException ae) {
+        }
+        catch (AuthenticationException ae)
+        {
             // normal
         }
 
@@ -351,9 +359,9 @@ public class AuthenticationServiceImplTest
         assertNull("The user should not be in the cache.", cache.get(USERNAME));
     }
 
-    private class MockCache<K extends Serializable, V> implements SimpleCache<K,V>
+    private class MockCache<K extends Serializable, V> implements SimpleCache<K, V>
     {
-        private Map<K,V> internalCache;
+        private Map<K, V> internalCache;
 
         MockCache()
         {

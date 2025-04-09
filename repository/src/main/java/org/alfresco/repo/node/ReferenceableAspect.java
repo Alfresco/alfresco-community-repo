@@ -36,8 +36,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Registers and contains the behaviour specific to the
- * {@link org.alfresco.model.ContentModel#ASPECT_REFERENCEABLE referencable aspect}.
+ * Registers and contains the behaviour specific to the {@link org.alfresco.model.ContentModel#ASPECT_REFERENCEABLE referencable aspect}.
  * 
  * @author Derek Hulley
  */
@@ -47,18 +46,18 @@ public class ReferenceableAspect implements CopyServicePolicies.OnCopyNodePolicy
     private PolicyComponent policyComponent;
 
     /**
-     * @param policyComponent the policy component to register behaviour with
+     * @param policyComponent
+     *            the policy component to register behaviour with
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * Initialise the Referencable Aspect
      * <p>
-     * Ensures that the {@link ContentModel#ASPECT_REFERENCEABLE referencable aspect}
-     * copy behaviour is disabled.
+     * Ensures that the {@link ContentModel#ASPECT_REFERENCEABLE referencable aspect} copy behaviour is disabled.
      */
     public void init()
     {
@@ -70,7 +69,7 @@ public class ReferenceableAspect implements CopyServicePolicies.OnCopyNodePolicy
     }
 
     /**
-     * @return          Returns {@link DoNothingCopyBehaviourCallback}
+     * @return Returns {@link DoNothingCopyBehaviourCallback}
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {

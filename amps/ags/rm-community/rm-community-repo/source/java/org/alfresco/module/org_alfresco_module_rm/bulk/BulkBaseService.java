@@ -33,6 +33,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
@@ -45,9 +49,6 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * A base class for executing bulk operations on nodes based on search query results
@@ -79,8 +80,10 @@ public abstract class BulkBaseService<T> implements InitializingBean
     /**
      * Execute bulk operation on node based on the search query results
      *
-     * @param nodeRef       node reference
-     * @param bulkOperation bulk operation
+     * @param nodeRef
+     *            node reference
+     * @param bulkOperation
+     *            bulk operation
      * @return bulk status
      */
     public T execute(NodeRef nodeRef, BulkOperation bulkOperation)
@@ -101,19 +104,19 @@ public abstract class BulkBaseService<T> implements InitializingBean
         bulkMonitor.registerProcess(nodeRef, processId, bulkOperation);
 
         BulkProgress bulkProgress = new BulkProgress(totalItems, processId, new AtomicBoolean(false),
-            new AtomicInteger(0));
+                new AtomicInteger(0));
         BatchProcessWorker<NodeRef> batchProcessWorker = getWorkerProvider(nodeRef, bulkOperation, bulkProgress);
         BulkStatusUpdater bulkStatusUpdater = getBulkStatusUpdater();
 
         BatchProcessor<NodeRef> batchProcessor = new BatchProcessor<>(
-            processId,
-            transactionService.getRetryingTransactionHelper(),
-            getWorkProvider(bulkOperation, bulkStatusUpdater, bulkProgress),
-            threadCount,
-            itemsPerTransaction,
-            bulkStatusUpdater,
-            LOG,
-            loggingInterval);
+                processId,
+                transactionService.getRetryingTransactionHelper(),
+                getWorkProvider(bulkOperation, bulkStatusUpdater, bulkProgress),
+                threadCount,
+                itemsPerTransaction,
+                bulkStatusUpdater,
+                LOG,
+                loggingInterval);
 
         runAsyncBatchProcessor(batchProcessor, batchProcessWorker, bulkStatusUpdater);
         return initBulkStatus;
@@ -123,7 +126,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
      * Run batch processor
      */
     protected void runAsyncBatchProcessor(BatchProcessor<NodeRef> batchProcessor,
-        BatchProcessWorker<NodeRef> batchProcessWorker, BulkStatusUpdater bulkStatusUpdater)
+            BatchProcessWorker<NodeRef> batchProcessWorker, BulkStatusUpdater bulkStatusUpdater)
     {
         Runnable backgroundLogic = () -> {
             try
@@ -154,8 +157,10 @@ public abstract class BulkBaseService<T> implements InitializingBean
     /**
      * Get initial bulk status
      *
-     * @param processId  process id
-     * @param totalItems total items
+     * @param processId
+     *            process id
+     * @param totalItems
+     *            total items
      * @return bulk status
      */
     protected abstract T getInitBulkStatus(String processId, long totalItems);
@@ -170,30 +175,38 @@ public abstract class BulkBaseService<T> implements InitializingBean
     /**
      * Get work provider
      *
-     * @param bulkOperation     bulk operation
-     * @param bulkStatusUpdater bulk status updater
-     * @param bulkProgress      bulk progress
+     * @param bulkOperation
+     *            bulk operation
+     * @param bulkStatusUpdater
+     *            bulk status updater
+     * @param bulkProgress
+     *            bulk progress
      * @return work provider
      */
     protected abstract BatchProcessWorkProvider<NodeRef> getWorkProvider(BulkOperation bulkOperation,
-        BulkStatusUpdater bulkStatusUpdater, BulkProgress bulkProgress);
+            BulkStatusUpdater bulkStatusUpdater, BulkProgress bulkProgress);
 
     /**
      * Get worker provider
      *
-     * @param nodeRef       node reference
-     * @param bulkOperation bulk operation
-     * @param bulkProgress  bulk progress
+     * @param nodeRef
+     *            node reference
+     * @param bulkOperation
+     *            bulk operation
+     * @param bulkProgress
+     *            bulk progress
      * @return worker provider
      */
     protected abstract BatchProcessWorker<NodeRef> getWorkerProvider(NodeRef nodeRef, BulkOperation bulkOperation,
-        BulkProgress bulkProgress);
+            BulkProgress bulkProgress);
 
     /**
      * Check permissions
      *
-     * @param nodeRef       node reference
-     * @param bulkOperation bulk operation
+     * @param nodeRef
+     *            node reference
+     * @param bulkOperation
+     *            bulk operation
      */
     protected abstract void checkPermissions(NodeRef nodeRef, BulkOperation bulkOperation);
 

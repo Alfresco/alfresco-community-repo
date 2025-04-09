@@ -28,8 +28,7 @@ package org.alfresco.service.cmr.repository;
 import org.alfresco.api.AlfrescoPublicApi;
 
 /**
- * Thrown when an operation cannot be performed because the <b>node</b> reference
- * no longer exists.
+ * Thrown when an operation cannot be performed because the <b>node</b> reference no longer exists.
  * 
  * @author Derek Hulley
  */
@@ -39,7 +38,7 @@ public class InvalidNodeRefException extends RuntimeException
     private static final long serialVersionUID = 3689345520586273336L;
 
     private NodeRef nodeRef;
-    
+
     public InvalidNodeRefException(NodeRef nodeRef)
     {
         this(null, nodeRef);

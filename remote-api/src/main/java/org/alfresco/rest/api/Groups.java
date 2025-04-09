@@ -53,25 +53,23 @@ public interface Groups
     /**
      * Create a group.
      *
-     * @param group the group to create.
-     * @param parameters the {@link Parameters} object to get the parameters passed into the request
-     *        including:
-     *        - include param (parentIds, zones)
+     * @param group
+     *            the group to create.
+     * @param parameters
+     *            the {@link Parameters} object to get the parameters passed into the request including: - include param (parentIds, zones)
      * @return a {@code org.alfresco.rest.api.model.Group} object
      */
     Group create(Group group, Parameters parameters);
 
     /**
-     * Update the given group. Not all fields are used, only those as defined in
-     * the Open API spec.
+     * Update the given group. Not all fields are used, only those as defined in the Open API spec.
      *
      * @param groupId
      *            the group ID
      * @param group
      *            details to use for the update
      * @param parameters
-     *            the {@link Parameters} object to get the parameters passed
-     *            into the request including: - include param (parentIds, zones)
+     *            the {@link Parameters} object to get the parameters passed into the request including: - include param (parentIds, zones)
      * @return Updated group
      */
     Group update(String groupId, Group group, Parameters parameters);
@@ -79,10 +77,10 @@ public interface Groups
     /**
      * Get a group by it's id.
      *
-     * @param groupId the identifier of a group.
-     * @param parameters the {@link Parameters} object to get the parameters passed into the request
-     *        including:
-     *        - include param (parentIds, zones)
+     * @param groupId
+     *            the identifier of a group.
+     * @param parameters
+     *            the {@link Parameters} object to get the parameters passed into the request including: - include param (parentIds, zones)
      * @return a {@code org.alfresco.rest.api.model.Group} object
      * @throws EntityNotFoundException
      */
@@ -91,10 +89,8 @@ public interface Groups
     /**
      * Gets a list of groups.
      * 
-     * @param parameters the {@link Parameters} object to get the parameters passed into the request
-     *        including:
-     *        - filter, sort & paging params (where, orderBy, skipCount, maxItems)
-     *        - include param (parentIds, zones)
+     * @param parameters
+     *            the {@link Parameters} object to get the parameters passed into the request including: - filter, sort & paging params (where, orderBy, skipCount, maxItems) - include param (parentIds, zones)
      * @return a paged list of {@code org.alfresco.rest.api.model.Group} objects
      */
     CollectionWithPagingInfo<Group> getGroups(Parameters parameters);
@@ -102,10 +98,10 @@ public interface Groups
     /**
      * Gets the list of groups for which the specified person is a member.
      *
-     * @param personId the person's ID ("-me-" may be used as an alias for the current user.)
-     * @param parameters the {@link Parameters} object to get the parameters passed into the request
-     *        including:
-     *        - sort & paging params (orderBy, skipCount, maxItems)
+     * @param personId
+     *            the person's ID ("-me-" may be used as an alias for the current user.)
+     * @param parameters
+     *            the {@link Parameters} object to get the parameters passed into the request including: - sort & paging params (orderBy, skipCount, maxItems)
      * @return a paged list of {@code org.alfresco.rest.api.model.Group} objects
      */
     CollectionWithPagingInfo<Group> getGroupsByPersonId(String personId, Parameters parameters);
@@ -116,19 +112,17 @@ public interface Groups
      * @param groupId
      *            the group ID
      * @param parameters
-     *            the {@link Parameters} object to get the parameters passed
-     *            into the request including: - include param (parentIds, zones)
+     *            the {@link Parameters} object to get the parameters passed into the request including: - include param (parentIds, zones)
      */
     void delete(String groupId, Parameters parameters);
 
     /**
      * Gets a list of groups.
      *
-     * @param groupId the identifier of a group.
-     * @param parameters the {@link Parameters} object to get the parameters passed into the request
-     *        including:
-     *        - filter, sort & paging params (where, orderBy, skipCount, maxItems)
-     *        - include param (parentIds, zones)
+     * @param groupId
+     *            the identifier of a group.
+     * @param parameters
+     *            the {@link Parameters} object to get the parameters passed into the request including: - filter, sort & paging params (where, orderBy, skipCount, maxItems) - include param (parentIds, zones)
      * @return a paged list of {@code org.alfresco.rest.api.model.GroupMember} objects
      */
     CollectionWithPagingInfo<GroupMember> getGroupMembers(String groupId, Parameters parameters);
@@ -136,7 +130,8 @@ public interface Groups
     /**
      * Create a group member.
      *
-     * @param groupId the identifier of a group.
+     * @param groupId
+     *            the identifier of a group.
      * @return a {@code org.alfresco.rest.api.model.GroupMember} object
      */
     GroupMember createGroupMember(String groupId, GroupMember groupMember);

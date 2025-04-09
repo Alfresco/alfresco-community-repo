@@ -32,11 +32,9 @@ import org.alfresco.repo.admin.BaseInterpreter;
 import org.alfresco.repo.processor.BaseProcessorExtension;
 
 /**
- * Console Interpeter script extension - dynamically binds to the configured BaseInterpreter instance.
- * This avoids the need for a specific bean class per script interpreter.
+ * Console Interpeter script extension - dynamically binds to the configured BaseInterpreter instance. This avoids the need for a specific bean class per script interpreter.
  * 
- * @see org.alfresco.repo.admin.BaseInterpreter
- * See script beans configured in 'web-scripts-application-context.xml'.
+ * @see org.alfresco.repo.admin.BaseInterpreter See script beans configured in 'web-scripts-application-context.xml'.
  * 
  * @author Kevin Roast
  * @since 5.1
@@ -47,33 +45,35 @@ public class DynamicInterpreterExtension extends BaseProcessorExtension
     private long duration;
     private String result = "";
     private String command = "";
-    
+
     /**
      * Set the BaseInterpreter to use when executing commands and retrieving the command result.
      * 
-     * @param interpreter   For example, repoAdminInterpreter
+     * @param interpreter
+     *            For example, repoAdminInterpreter
      */
     public void setInterpreter(BaseInterpreter interpreter)
     {
         this.interpreter = interpreter;
     }
-    
+
     private BaseInterpreter getInterpreter()
     {
         return this.interpreter;
     }
-    
+
     /**
      * Script execute command gateway.
      * 
-     * @param command string to execute
+     * @param command
+     *            string to execute
      */
     public void executeCmd(String command)
     {
         this.command = command;
         this.interpretCommand(command);
     }
-    
+
     /**
      * @return the command duration
      */
@@ -101,7 +101,8 @@ public class DynamicInterpreterExtension extends BaseProcessorExtension
     /**
      * Interpret console command using the configured Interpreter
      *
-     * @param command  command
+     * @param command
+     *            command
      */
     private void interpretCommand(String command)
     {

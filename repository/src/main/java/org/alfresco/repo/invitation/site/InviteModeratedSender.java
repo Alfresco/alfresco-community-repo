@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.i18n.MessageService;
@@ -48,8 +50,6 @@ import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.util.ModelUtil;
 import org.alfresco.util.UrlUtil;
-import org.apache.commons.lang3.StringUtils;
-
 
 /**
  * This class is responsible for sending email notifications to site managers informing about users requesting access.
@@ -57,7 +57,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Constantin Popa
  */
 public class InviteModeratedSender extends InviteSender
-{    
+{
     private static final String DATA_DICTIONARY_XPATH_PREFIX = "app:";
     public static final String WF_PACKAGE = "wf_package";
     public static final String SHARE_PENDING_INVITES_LINK = "{0}/page/site/{1}/pending-invites";
@@ -70,7 +70,6 @@ public class InviteModeratedSender extends InviteSender
             WorkflowModelModeratedInvitation.bpmGroupAssignee,
             WorkflowModelModeratedInvitation.wfVarResourceType);
 
-    
     public InviteModeratedSender(ServiceRegistry services, Repository repository, MessageService messageService)
     {
         super(services, repository, messageService);
@@ -85,15 +84,16 @@ public class InviteModeratedSender extends InviteSender
         mail.setParameterValue(MailActionExecuter.PARAM_FROM, (String) nodeService.getProperty(invitee, ContentModel.PROP_EMAIL));
         mail.setParameterValue(MailActionExecuter.PARAM_TO_MANY, properties.get(bpmGroupAssignee));
         mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT, emailSubjectKey);
-        mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[] { getSiteName(properties) });
+        mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[]{getSiteName(properties)});
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, getEmailTemplate(emailTemplatePath));
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) buildMailTextModel(properties));
         mail.setParameterValue(MailActionExecuter.PARAM_IGNORE_SEND_FAILURE, true);
         actionService.executeAction(mail, new NodeRef(properties.get(WF_PACKAGE)));
     }
-    
-    private Serializable getEmailTemplate(String emailTemplatePath){
-        return emailTemplatePath.startsWith(DATA_DICTIONARY_XPATH_PREFIX)? getEmailTemplateNodeRef(emailTemplatePath) : emailTemplatePath;
+
+    private Serializable getEmailTemplate(String emailTemplatePath)
+    {
+        return emailTemplatePath.startsWith(DATA_DICTIONARY_XPATH_PREFIX) ? getEmailTemplateNodeRef(emailTemplatePath) : emailTemplatePath;
     }
 
     @Override
@@ -106,7 +106,7 @@ public class InviteModeratedSender extends InviteSender
         model.put(TemplateService.KEY_PRODUCT_NAME, ModelUtil.getProductName(repoAdminService));
 
         PersonInfo inviteePerson = personService.getPerson(invitee);
-        model.put("inviteeName", StringUtils.join(new String[] { inviteePerson.getFirstName(), inviteePerson.getLastName() }, " "));
+        model.put("inviteeName", StringUtils.join(new String[]{inviteePerson.getFirstName(), inviteePerson.getLastName()}, " "));
         model.put("siteName", getSiteName(properties));
         model.put("sharePendingInvitesLink", StringUtils.stripStart(getPendingInvitesLink(properties), "/"));
         model.put("workspacePendingInvitesLink", StringUtils.stripStart(getWorkSpaceInvitesLink(properties), "/"));
@@ -117,22 +117,23 @@ public class InviteModeratedSender extends InviteSender
     protected String getPendingInvitesLink(Map<String, String> properties)
     {
         return MessageFormat.format(SHARE_PENDING_INVITES_LINK, TenantUtil.getCurrentDomain(),
-                                    properties.get(WorkflowModelModeratedInvitation.wfVarResourceName));
+                properties.get(WorkflowModelModeratedInvitation.wfVarResourceName));
     }
 
     protected String getWorkSpaceInvitesLink(Map<String, String> properties)
     {
         String path = properties.get(WorkflowModelModeratedInvitation.wfVarWorkspaceUrl);
-        boolean hasValidBaseUrl =  path != null && !StringUtils.isAllBlank(path) && path.length() > 1;
+        boolean hasValidBaseUrl = path != null && !StringUtils.isAllBlank(path) && path.length() > 1;
         String workspaceUrl = sysAdminParams.getAlfrescoProtocol() + "://" + sysAdminParams.getAlfrescoHost() + ":" + sysAdminParams.getAlfrescoPort()
-                + ( hasValidBaseUrl ?   "/" + path.trim() : "");
+                + (hasValidBaseUrl ? "/" + path.trim() : "");
 
         return MessageFormat.format(WORKSPACE_PENDING_INVITES_LINK, workspaceUrl, properties.get(WorkflowModelModeratedInvitation.wfVarResourceName));
     }
 
     protected String getTemplateAssetsLink(Map<String, String> properties)
     {
-        if (properties.get(WorkflowModelModeratedInvitation.wfVarTemplateAssetsUrl) != null) {
+        if (properties.get(WorkflowModelModeratedInvitation.wfVarTemplateAssetsUrl) != null)
+        {
             return UrlUtil.replaceAlfrescoUrlPlaceholder(properties.get(WorkflowModelModeratedInvitation.wfVarTemplateAssetsUrl), this.sysAdminParams);
         }
         return UrlUtil.getAlfrescoUrl(this.sysAdminParams);

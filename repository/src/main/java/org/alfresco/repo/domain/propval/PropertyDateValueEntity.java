@@ -31,6 +31,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
+
 import org.alfresco.util.Pair;
 
 /**
@@ -44,8 +45,9 @@ public class PropertyDateValueEntity
     /**
      * Converts the given date (with arbitrary time values) to a date-only (no time or milliseconds)
      * 
-     * @param value                 the Java date, possibly containing hours, minutes, seconds and milliseconds
-     * @return                      the Java date truncated to day-accuracy in GMT
+     * @param value
+     *            the Java date, possibly containing hours, minutes, seconds and milliseconds
+     * @return the Java date truncated to day-accuracy in GMT
      */
     public static Date truncateDate(java.util.Date value)
     {
@@ -61,7 +63,7 @@ public class PropertyDateValueEntity
         // Done
         return dayOnlyDate;
     }
-    
+
     private long dateValue;
     private short fullYear;
     private short halfOfYear;
@@ -72,17 +74,16 @@ public class PropertyDateValueEntity
     private short dayOfYear;
     private short dayOfMonth;
     private short dayOfWeek;
-    
+
     public PropertyDateValueEntity()
-    {
-    }
-    
+    {}
+
     @Override
     public int hashCode()
     {
-        return (int) dateValue; 
+        return (int) dateValue;
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -100,48 +101,48 @@ public class PropertyDateValueEntity
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("PropertyDateValueEntity")
-          .append("[ value=").append(dateValue)
-          .append(" (").append(ISO8601DateFormat.format(new Date(dateValue))).append(")")
-          .append("]");
+                .append("[ value=").append(dateValue)
+                .append(" (").append(ISO8601DateFormat.format(new Date(dateValue))).append(")")
+                .append("]");
         return sb.toString();
     }
-    
+
     /**
-     * @return          Returns the ID-value pair
+     * @return Returns the ID-value pair
      */
     public Pair<Long, Date> getEntityPair()
     {
         return new Pair<Long, Date>(dateValue, new Date(dateValue));
     }
-    
+
     public void setValue(Date value)
     {
         long valueInMs = value.getTime();
         this.dateValue = valueInMs;
-        
+
         Calendar cal = GregorianCalendar.getInstance();
         cal.setTimeZone(TimeZone.getTimeZone("GMT"));
         cal.setTimeInMillis(valueInMs);
-        
+
         // We need month_of_year for further calculations
         this.monthOfYear = (short) cal.get(Calendar.MONTH);
-        
+
         this.fullYear = (short) cal.get(Calendar.YEAR);
-        this.halfOfYear = (short) monthOfYear < Calendar.JUNE ? (short)0 : (short)1;
-        this.quarterOfYear = (short) (monthOfYear / (short)3);
+        this.halfOfYear = (short) monthOfYear < Calendar.JUNE ? (short) 0 : (short) 1;
+        this.quarterOfYear = (short) (monthOfYear / (short) 3);
         this.weekOfYear = (short) cal.get(Calendar.WEEK_OF_YEAR);
         this.weekOfMonth = (short) cal.get(Calendar.WEEK_OF_MONTH);
         this.dayOfYear = (short) cal.get(Calendar.DAY_OF_YEAR);
         this.dayOfMonth = (short) cal.get(Calendar.DAY_OF_MONTH);
         this.dayOfWeek = (short) cal.get(Calendar.DAY_OF_MONTH);
     }
-    
+
     public long getDateValue()
     {
         return dateValue;

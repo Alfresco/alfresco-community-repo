@@ -27,6 +27,9 @@ package org.alfresco.repo.search.impl;
 
 import java.util.Arrays;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.impl.solr.SolrActionAclReportResult;
 import org.alfresco.repo.search.impl.solr.SolrActionAclTxReportResult;
@@ -36,32 +39,22 @@ import org.alfresco.repo.search.impl.solr.SolrActionNodeReportResult;
 import org.alfresco.repo.search.impl.solr.SolrActionReportResult;
 import org.alfresco.repo.search.impl.solr.SolrActionStatusResult;
 import org.alfresco.repo.search.impl.solr.SolrActionTxReportResult;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
- * JSON API Results factory
- * SOLR JSON responses are parsed according to required Action, Command or Handler 
+ * JSON API Results factory SOLR JSON responses are parsed according to required Action, Command or Handler
  *
  * @author aborroy
  * @since 6.2
  */
 public class JSONAPIResultFactory
 {
-    
+
     /**
      * SOLR CoreAdmin API Actions (partial list)
      */
-    public static enum ACTION 
+    public static enum ACTION
     {
-        STATUS,
-        REPORT,
-        TXREPORT,
-        ACLTXREPORT,
-        NODEREPORT,
-        ACLREPORT,
-        FIX,
-        CHECK
+        STATUS, REPORT, TXREPORT, ACLTXREPORT, NODEREPORT, ACLREPORT, FIX, CHECK
     }
 
     /**
@@ -82,8 +75,11 @@ public class JSONAPIResultFactory
 
     /**
      * Build a JSON Parser Result object according to required SOLR Action
-     * @param action SOLR Action invoked
-     * @param json Result in JSON of the SOLR Action invoked
+     * 
+     * @param action
+     *            SOLR Action invoked
+     * @param json
+     *            Result in JSON of the SOLR Action invoked
      * @return
      * @throws JSONException
      */
@@ -129,5 +125,5 @@ public class JSONAPIResultFactory
         }
         }
     }
-    
+
 }

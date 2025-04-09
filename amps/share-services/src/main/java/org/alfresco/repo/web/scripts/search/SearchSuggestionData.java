@@ -52,7 +52,7 @@ public class SearchSuggestionData
     {
         StringBuilder builder = new StringBuilder(100);
         builder.append("SearchSuggestionData [term=").append(this.term).append(", weight=").append(this.weight)
-                    .append("]");
+                .append("]");
         return builder.toString();
     }
 }

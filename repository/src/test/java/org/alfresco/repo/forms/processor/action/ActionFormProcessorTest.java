@@ -28,7 +28,6 @@ package org.alfresco.repo.forms.processor.action;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,6 +36,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -66,15 +73,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.util.ApplicationContextHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.alfresco.util.BaseAlfrescoSpringTest;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Test class for the {@link ActionFormProcessor}.
@@ -84,7 +83,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Category(BaseSpringTestsCategory.class)
 @Transactional
-@ContextConfiguration({ "classpath:alfresco/application-context.xml",
+@ContextConfiguration({"classpath:alfresco/application-context.xml",
         "classpath:org/alfresco/repo/forms/MNT-7383-context.xml"})
 public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
 {
@@ -96,17 +95,16 @@ public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
     private NodeRef testNode;
     private List<NodeRef> testNodesToBeTidiedUp;
 
-
     @SuppressWarnings("deprecation")
-	@Before
+    @Before
     public void before() throws Exception
     {
         super.before();
 
-        this.formService = (FormService)this.applicationContext.getBean("FormService");
-        this.namespaceService = (NamespaceService)this.applicationContext.getBean("NamespaceService");
-        this.repositoryHelper = (Repository)this.applicationContext.getBean("repositoryHelper");
-        this.transactionHelper = (RetryingTransactionHelper)this.applicationContext.getBean("retryingTransactionHelper");
+        this.formService = (FormService) this.applicationContext.getBean("FormService");
+        this.namespaceService = (NamespaceService) this.applicationContext.getBean("NamespaceService");
+        this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
+        this.transactionHelper = (RetryingTransactionHelper) this.applicationContext.getBean("retryingTransactionHelper");
 
         NodeRef companyHome = repositoryHelper.getCompanyHome();
         testNode = createNode(companyHome,
@@ -132,7 +130,8 @@ public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
 
         for (NodeRef node : testNodesToBeTidiedUp)
         {
-            if (nodeService.exists(node)) nodeService.deleteNode(node);
+            if (nodeService.exists(node))
+                nodeService.deleteNode(node);
         }
         authenticationService.clearCurrentSecurityContext();
     }
@@ -146,10 +145,10 @@ public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
         props.put(ContentModel.PROP_NAME, name);
         QName docContentQName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, name);
         NodeRef node = this.nodeService.createNode(parentNode,
-                    ContentModel.ASSOC_CONTAINS,
-                    docContentQName,
-                    type,
-                    props).getChildRef();
+                ContentModel.ASSOC_CONTAINS,
+                docContentQName,
+                type,
+                props).getChildRef();
         return node;
     }
 
@@ -161,9 +160,9 @@ public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
             this.formService.getForm(new Item(ActionFormProcessor.ITEM_KIND, "noSuchActionBean"));
             fail("Expected FormNotFoundException");
         }
-        catch(FormNotFoundException e)
+        catch (FormNotFoundException e)
         {
-            //NOOP
+            // NOOP
         }
 
     }
@@ -171,40 +170,40 @@ public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
     @Test
     public void testGenerateDefaultFormForParameterlessAction() throws Exception
     {
-        this.transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        this.transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
             {
-                @Override
-                public Void execute() throws Throwable
+                Form form = formService.getForm(new Item(ActionFormProcessor.ITEM_KIND, "extract-metadata"));
+
+                // check a form got returned
+                assertNotNull("Expecting form to be present", form);
+
+                // get the fields into a Map
+                Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+
+                assertEquals("Wrong number of fieldDefs", 1, fieldDefs.size());
+
+                Map<String, FieldDefinition> fieldDefMap = new HashMap<String, FieldDefinition>(fieldDefs.size());
+                for (FieldDefinition fieldDef : fieldDefs)
                 {
-                    Form form = formService.getForm(new Item(ActionFormProcessor.ITEM_KIND, "extract-metadata"));
-                    
-                    // check a form got returned
-                    assertNotNull("Expecting form to be present", form);
-                    
-                    // get the fields into a Map
-                    Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
-                    
-                    assertEquals("Wrong number of fieldDefs", 1, fieldDefs.size());
-                    
-                    Map<String, FieldDefinition> fieldDefMap = new HashMap<String, FieldDefinition>(fieldDefs.size());
-                    for (FieldDefinition fieldDef : fieldDefs)
-                    {
-                        fieldDefMap.put(fieldDef.getName(), fieldDef);
-                    }
-                    
-                    validateExecuteAsynchronouslyField(fieldDefMap);
-                    
-                    return null;
+                    fieldDefMap.put(fieldDef.getName(), fieldDef);
                 }
-            });
+
+                validateExecuteAsynchronouslyField(fieldDefMap);
+
+                return null;
+            }
+        });
     }
-    
+
     @Test
     public void testGenerateDefaultFormForActionWithNodeRefParam() throws Exception
     {
         this.transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
-            public Void execute() throws Throwable {
+            public Void execute() throws Throwable
+            {
                 Form form = formService.getForm(new Item(ActionFormProcessor.ITEM_KIND, "script"));
 
                 // check a form got returned
@@ -215,7 +214,8 @@ public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
 
                 assertEquals("Wrong number of fieldDefs", 2, fieldDefs.size());
                 Map<String, FieldDefinition> fieldDefMap = new HashMap<String, FieldDefinition>(fieldDefs.size());
-                for (FieldDefinition fieldDef : fieldDefs) {
+                for (FieldDefinition fieldDef : fieldDefs)
+                {
                     fieldDefMap.put(fieldDef.getName(), fieldDef);
                 }
 
@@ -242,7 +242,7 @@ public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
     private void validateExecuteAsynchronouslyField(Map<String, FieldDefinition> fieldDefMap)
     {
         // executeAsynchronously
-        PropertyFieldDefinition execAsync = (PropertyFieldDefinition)fieldDefMap.get("executeAsynchronously");
+        PropertyFieldDefinition execAsync = (PropertyFieldDefinition) fieldDefMap.get("executeAsynchronously");
         assertNotNull("'executeAsynchronously' field defn was missing.", execAsync);
         assertEquals("'executeAsynchronously' name was wrong", "executeAsynchronously", execAsync.getName());
         assertEquals("'executeAsynchronously' label was wrong", "executeAsynchronously", execAsync.getLabel());
@@ -260,13 +260,12 @@ public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
         try
         {
             I18NUtil.setLocale(Locale.GERMANY); // de-DE
-            
+
             transactionHelper.doInTransaction(() -> {
                 Form form = formService.getForm(new Item(ActionFormProcessor.ITEM_KIND, "transform"));
                 // Field definitions keyed by name.
-                Map<String, FieldDefinition> fieldDefMap = form.getFieldDefinitions().stream().
-                        collect(Collectors.toMap(FieldDefinition::getName, Function.identity()));
-                
+                Map<String, FieldDefinition> fieldDefMap = form.getFieldDefinitions().stream().collect(Collectors.toMap(FieldDefinition::getName, Function.identity()));
+
                 assertEquals("Zielordner", fieldDefMap.get(TransformActionExecuter.PARAM_DESTINATION_FOLDER).getLabel());
                 assertEquals("MIME-Type", fieldDefMap.get(TransformActionExecuter.PARAM_MIME_TYPE).getLabel());
                 return null;
@@ -277,53 +276,53 @@ public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
             I18NUtil.setLocale(originalLocale);
         }
     }
-    
+
     @Test
     public void testGenerateFormWithSelectedFields() throws Exception
     {
-        this.transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        this.transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
             {
-                @Override
-                public Void execute() throws Throwable
+                // request a certain set of fields
+                List<String> fields = new ArrayList<String>();
+                fields.add(MoveActionExecuter.PARAM_DESTINATION_FOLDER);
+                fields.add(ActionFormProcessor.EXECUTE_ASYNCHRONOUSLY);
+
+                Form form = formService.getForm(new Item(ActionFormProcessor.ITEM_KIND, "move"), fields);
+
+                // check a form got returned
+                assertNotNull("Expecting form to be present", form);
+
+                // get the fields into a Map
+                Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+                Map<String, FieldDefinition> fieldDefMap = new HashMap<String, FieldDefinition>(fieldDefs.size());
+                for (FieldDefinition fieldDef : fieldDefs)
                 {
-                    // request a certain set of fields
-                    List<String> fields = new ArrayList<String>();
-                    fields.add(MoveActionExecuter.PARAM_DESTINATION_FOLDER);
-                    fields.add(ActionFormProcessor.EXECUTE_ASYNCHRONOUSLY);
-                    
-                    Form form = formService.getForm(new Item(ActionFormProcessor.ITEM_KIND, "move"), fields);
-                    
-                    // check a form got returned
-                    assertNotNull("Expecting form to be present", form);
-                    
-                    // get the fields into a Map
-                    Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
-                    Map<String, FieldDefinition> fieldDefMap = new HashMap<String, FieldDefinition>(fieldDefs.size());
-                    for (FieldDefinition fieldDef : fieldDefs)
-                    {
-                        fieldDefMap.put(fieldDef.getName(), fieldDef);
-                    }
-                    
-                    // check there are 2 field
-                    assertEquals(2, fieldDefMap.size());
-                    
-                    // check the 2 fields are the correct ones!
-                    AssociationFieldDefinition destFolderField = (AssociationFieldDefinition)fieldDefMap.get(MoveActionExecuter.PARAM_DESTINATION_FOLDER);
-                    assertNotNull(destFolderField);
-                    PropertyFieldDefinition execAsyncField = (PropertyFieldDefinition)fieldDefMap.get(ActionFormProcessor.EXECUTE_ASYNCHRONOUSLY);
-                    assertNotNull(execAsyncField);
-                    
-                    return null;
+                    fieldDefMap.put(fieldDef.getName(), fieldDef);
                 }
-            });
+
+                // check there are 2 field
+                assertEquals(2, fieldDefMap.size());
+
+                // check the 2 fields are the correct ones!
+                AssociationFieldDefinition destFolderField = (AssociationFieldDefinition) fieldDefMap.get(MoveActionExecuter.PARAM_DESTINATION_FOLDER);
+                assertNotNull(destFolderField);
+                PropertyFieldDefinition execAsyncField = (PropertyFieldDefinition) fieldDefMap.get(ActionFormProcessor.EXECUTE_ASYNCHRONOUSLY);
+                assertNotNull(execAsyncField);
+
+                return null;
+            }
+        });
     }
-    
+
     @Test
     public void testPersistForm_executeTransformAction() throws Exception
     {
         this.transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
-            public Void execute() throws Throwable {
+            public Void execute() throws Throwable
+            {
                 Form form = formService.getForm(new Item(ActionFormProcessor.ITEM_KIND, "transform"));
 
                 // This is the actionedUponNodeRef. A special parameter with no prop_ prefix
@@ -337,7 +336,8 @@ public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
 
                 formService.saveForm(form.getItem(), form.getFormData());
 
-                for (ChildAssociationRef chAssRef : nodeService.getChildAssocs(repositoryHelper.getCompanyHome())) {
+                for (ChildAssociationRef chAssRef : nodeService.getChildAssocs(repositoryHelper.getCompanyHome()))
+                {
                     System.err.println(nodeService.getProperty(chAssRef.getChildRef(), ContentModel.PROP_NAME));
                 }
 
@@ -357,8 +357,7 @@ public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
     @Test
     public void testMNT7383() throws Exception
     {
-        this.transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        this.transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -384,12 +383,12 @@ public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
         });
     }
 
-
     public static class ActionFormProcessorTestActionExecuter extends ActionExecuterAbstractBase
     {
         public static final String NAME = "actionFormProcessorTestActionExecuter";
 
-        @Override protected void addParameterDefinitions(List<ParameterDefinition> paramList)
+        @Override
+        protected void addParameterDefinitions(List<ParameterDefinition> paramList)
         {
             paramList.add(new ParameterDefinitionImpl("check", DataTypeDefinition.BOOLEAN, false, "Check"));
             paramList.add(new ParameterDefinitionImpl("date", DataTypeDefinition.DATE, false, "Date"));
@@ -398,7 +397,8 @@ public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
         }
 
         @SuppressWarnings("unchecked")
-		@Override protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
+        @Override
+        protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
         {
             Object checkValue = action.getParameterValue("check");
             assertEquals("Parameter value should be Boolean", checkValue.getClass(), Boolean.class);
@@ -408,14 +408,14 @@ public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
 
             Object qnameValue = action.getParameterValue("qname");
             assertEquals("Parameter value should be ArrayList", qnameValue.getClass(), ArrayList.class);
-            for (QName qname : (ArrayList<QName>)qnameValue)
+            for (QName qname : (ArrayList<QName>) qnameValue)
             {
                 assertEquals("The item value should be QName", qname.getClass(), QName.class);
             }
 
             Object nodeRefsValue = action.getParameterValue("nodeRefs");
             assertEquals("Parameter value should be ArrayList", nodeRefsValue.getClass(), ArrayList.class);
-            for (NodeRef nodeRef : (ArrayList<NodeRef>)nodeRefsValue)
+            for (NodeRef nodeRef : (ArrayList<NodeRef>) nodeRefsValue)
             {
                 assertEquals("The item value should be NodeRef", nodeRef.getClass(), NodeRef.class);
             }

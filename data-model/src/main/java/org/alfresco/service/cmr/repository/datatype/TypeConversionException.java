@@ -25,7 +25,7 @@
  */
 package org.alfresco.service.cmr.repository.datatype;
 
-import org.alfresco.api.AlfrescoPublicApi;     
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Base Exception of Type Converter Exceptions.
@@ -39,12 +39,12 @@ public class TypeConversionException extends RuntimeException
 
     public TypeConversionException(String msg)
     {
-       super(msg);
+        super(msg);
     }
-    
+
     public TypeConversionException(String msg, Throwable cause)
     {
-       super(msg, cause);
+        super(msg, cause);
     }
 
 }

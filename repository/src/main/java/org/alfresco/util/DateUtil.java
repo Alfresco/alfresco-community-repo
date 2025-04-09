@@ -40,15 +40,16 @@ public class DateUtil
 {
     private DateUtil()
     {
-        //Private constructor to suppress default constructor for non-instantiability
+        // Private constructor to suppress default constructor for non-instantiability
     }
 
     /**
-     * Calculate the number of days between start and end dates based on the <b>default</b> timezone.
-     * If the end date is before the start date, the returned value is negative.
+     * Calculate the number of days between start and end dates based on the <b>default</b> timezone. If the end date is before the start date, the returned value is negative.
      *
-     * @param startMs start date in milliseconds
-     * @param endMs   end date in milliseconds
+     * @param startMs
+     *            start date in milliseconds
+     * @param endMs
+     *            end date in milliseconds
      * @return number days between
      */
     public static int calculateDays(long startMs, long endMs)
@@ -71,13 +72,14 @@ public class DateUtil
         }
         return days;
     }
-    
+
     /**
-     * Calculate the number of milliseconds between start and end dates based on the <b>default</b> timezone.
-     * If the end date is before the start date, the returned value is negative.
+     * Calculate the number of milliseconds between start and end dates based on the <b>default</b> timezone. If the end date is before the start date, the returned value is negative.
      *
-     * @param startMs start date in milliseconds
-     * @param endMs   end date in milliseconds
+     * @param startMs
+     *            start date in milliseconds
+     * @param endMs
+     *            end date in milliseconds
      * @return number milliseconds between
      */
     public static int calculateMs(long startMs, long endMs)
@@ -100,5 +102,5 @@ public class DateUtil
         }
         return milliseconds;
     }
-    
+
 }

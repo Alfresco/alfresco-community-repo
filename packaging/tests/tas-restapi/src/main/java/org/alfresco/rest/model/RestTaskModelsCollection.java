@@ -40,12 +40,12 @@ import org.alfresco.utility.model.UserModel;
  * @author Critina Axinte
  */
 public class RestTaskModelsCollection extends RestModels<RestTaskModel, RestTaskModelsCollection>
-{    
+{
     public RestTaskModel getTaskModelByAssignee(UserModel assigneeName)
     {
         List<RestTaskModel> tasksList = getEntries();
 
-        for (RestTaskModel taskModel: tasksList)
+        for (RestTaskModel taskModel : tasksList)
         {
             if (taskModel.onModel().getAssignee().equals(assigneeName.getUsername()))
             {
@@ -56,12 +56,12 @@ public class RestTaskModelsCollection extends RestModels<RestTaskModel, RestTask
 
         return null;
     }
-    
+
     public RestTaskModel getTaskModelByDescription(SiteModel siteModel)
     {
         List<RestTaskModel> tasksList = getEntries();
 
-        for (RestTaskModel taskModel: tasksList)
+        for (RestTaskModel taskModel : tasksList)
         {
             if (taskModel.onModel().getDescription().equals(String.format("Request to join %s site", siteModel.getId())))
             {
@@ -72,12 +72,12 @@ public class RestTaskModelsCollection extends RestModels<RestTaskModel, RestTask
 
         return null;
     }
-    
+
     public RestTaskModel getTaskModelByProcess(ProcessModel process)
     {
         List<RestTaskModel> tasksList = getEntries();
 
-        for (RestTaskModel taskModel: tasksList)
+        for (RestTaskModel taskModel : tasksList)
         {
             if (taskModel.onModel().getProcessId().equals(process.getId()))
             {
@@ -88,4 +88,4 @@ public class RestTaskModelsCollection extends RestModels<RestTaskModel, RestTask
 
         return null;
     }
-}    
+}

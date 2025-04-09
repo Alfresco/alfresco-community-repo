@@ -38,8 +38,8 @@ public class CMISUtils
     public static <T> T copy(T source)
     {
         T target = null;
-        try ( CopyOutputStream cos = new CopyOutputStream();
-                ObjectOutputStream out = new ObjectOutputStream(cos) )
+        try (CopyOutputStream cos = new CopyOutputStream();
+                ObjectOutputStream out = new ObjectOutputStream(cos))
         {
             out.writeObject(source);
             out.flush();
@@ -48,7 +48,8 @@ public class CMISUtils
             {
                 target = (T) in.readObject();
             }
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             throw new CmisRuntimeException("Object copy failed!", e);
         }

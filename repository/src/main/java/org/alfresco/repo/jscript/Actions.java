@@ -45,13 +45,14 @@ public final class Actions extends BaseScopableProcessorExtension
     /**
      * Set the service registry
      * 
-     * @param serviceRegistry	the service registry
+     * @param serviceRegistry
+     *            the service registry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
-    	this.services = serviceRegistry;
+        this.services = serviceRegistry;
     }
-    
+
     /**
      * Gets the list of registered action names
      * 
@@ -89,5 +90,5 @@ public final class Actions extends BaseScopableProcessorExtension
             scriptAction.setScope(getScope());
         }
         return scriptAction;
-    } 
+    }
 }

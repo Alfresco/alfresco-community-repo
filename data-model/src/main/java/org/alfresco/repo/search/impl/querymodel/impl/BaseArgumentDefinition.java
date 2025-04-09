@@ -37,11 +37,11 @@ public class BaseArgumentDefinition implements ArgumentDefinition
     private Multiplicity multiplicity;
 
     private String name;
-    
+
     private QName type;
-    
+
     private boolean mandatory;
-    
+
     public BaseArgumentDefinition(Multiplicity multiplicity, String name, QName type, boolean mandatory)
     {
         this.multiplicity = multiplicity;
@@ -49,45 +49,37 @@ public class BaseArgumentDefinition implements ArgumentDefinition
         this.type = type;
         this.mandatory = mandatory;
     }
-    
-    /*
-     * (non-Javadoc)
+
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#getMutiplicity()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#getMutiplicity() */
     public Multiplicity getMutiplicity()
     {
         return multiplicity;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#getName()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#getName() */
     public String getName()
     {
         return name;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#getType()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#getType() */
     public QName getType()
     {
         return type;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#isMandatory()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#isMandatory() */
     public boolean isMandatory()
     {
-       return mandatory;
+        return mandatory;
     }
 
     public String toString()
@@ -130,6 +122,5 @@ public class BaseArgumentDefinition implements ArgumentDefinition
             return false;
         return true;
     }
- 
-    
+
 }

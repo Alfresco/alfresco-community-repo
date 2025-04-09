@@ -31,11 +31,11 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 
-import org.alfresco.repo.dictionary.ValueDataTypeValidator;
-import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.apache.commons.io.IOUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import org.alfresco.util.test.junitrules.ApplicationContextInit;
 
 /**
  * Tests for {@link ValueDataTypeValidatorImpl}
@@ -62,7 +62,7 @@ public class ValueDataTypeValidatorImplTest
             final String intDataType = "d:int";
 
             validate_invalid(intDataType, " ");// space
-            validate_invalid(intDataType,"abc"); // text
+            validate_invalid(intDataType, "abc"); // text
             validate_invalid(intDataType, "1.0"); // double
             validate_invalid(intDataType, "1,2,3"); // text
             validate_invalid("int", "1"); // invalid data type
@@ -77,22 +77,22 @@ public class ValueDataTypeValidatorImplTest
             final String longDataType = "d:long";
 
             validate_invalid(longDataType, " ");// space
-            validate_invalid(longDataType,"abc"); // text
+            validate_invalid(longDataType, "abc"); // text
             validate_invalid(longDataType, "1.0"); // double
-            validate_invalid(longDataType, "1,2,3"); //  text
+            validate_invalid(longDataType, "1,2,3"); // text
             validate_invalid("long", "10"); // invalid data type
 
             validate_valid(longDataType, null); // no validation
             validate_valid(longDataType, ""); // no validation
             validate_valid(longDataType, "20"); // valid value
         }
-        
+
         // d:float tests
         {
             final String floatDataType = "d:float";
 
             validate_invalid(floatDataType, " ");// space
-            validate_invalid(floatDataType,"abc"); // text
+            validate_invalid(floatDataType, "abc"); // text
             validate_invalid(floatDataType, "1.0,2.0,3.0"); // text
             validate_invalid("float", "10.0"); // invalid data type
 
@@ -109,7 +109,7 @@ public class ValueDataTypeValidatorImplTest
             final String doubleDataType = "d:double";
 
             validate_invalid(doubleDataType, " ");// space
-            validate_invalid(doubleDataType,"abc"); // text
+            validate_invalid(doubleDataType, "abc"); // text
             validate_invalid(doubleDataType, "1.0,2.0,3.0"); // text
             validate_invalid("double", "10.0"); // invalid data type
 
@@ -128,7 +128,7 @@ public class ValueDataTypeValidatorImplTest
         final String booleanDataType = "d:boolean";
 
         validate_invalid(booleanDataType, " ");// space
-        validate_invalid(booleanDataType,"abc"); // text
+        validate_invalid(booleanDataType, "abc"); // text
         validate_invalid(booleanDataType, "1"); // number
         validate_invalid("boolean", "true"); // invalid data type
 
@@ -144,7 +144,7 @@ public class ValueDataTypeValidatorImplTest
         final String dateDataType = "d:date";
 
         validate_invalid(dateDataType, " ");// space
-        validate_invalid(dateDataType,"abcd"); // text
+        validate_invalid(dateDataType, "abcd"); // text
         validate_invalid(dateDataType, "20/05/15"); // non-ISO8601 date
         validate_invalid(dateDataType, "20-05-2015"); // non-ISO8601 date
         validate_invalid("date", "2015-05-20"); // invalid data type
@@ -162,7 +162,7 @@ public class ValueDataTypeValidatorImplTest
         final String datetimeDataType = "d:datetime";
 
         validate_invalid(datetimeDataType, " ");// space
-        validate_invalid(datetimeDataType,"abcd"); // text
+        validate_invalid(datetimeDataType, "abcd"); // text
         validate_invalid(datetimeDataType, "20/05/15T12:00:00+01:00"); // non-ISO8601 date
         validate_invalid(datetimeDataType, "20-05-2015T12:00:00+01:00"); // non-ISO8601 date
         validate_invalid("datetime", "2015-05-20T12:00:00+01:00"); // invalid data type
@@ -220,7 +220,7 @@ public class ValueDataTypeValidatorImplTest
             ByteArrayInputStream is = new ByteArrayInputStream("very long text".getBytes("UTF-8"));
             StringWriter writer = new StringWriter();
             IOUtils.copy(is, writer, "UTF-8");
-            validate_valid(contentDataType,  writer.toString()); // valid value
+            validate_valid(contentDataType, writer.toString()); // valid value
         }
     }
 
@@ -230,7 +230,7 @@ public class ValueDataTypeValidatorImplTest
         {
             validator.validateValue(dataType, value);
             fail("Validation should have failed.");
-            
+
         }
         catch (Exception ex)
         {

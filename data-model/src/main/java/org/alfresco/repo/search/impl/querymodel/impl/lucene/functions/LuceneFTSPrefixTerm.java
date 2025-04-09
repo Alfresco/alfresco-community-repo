@@ -39,6 +39,7 @@ import org.alfresco.repo.search.impl.querymodel.impl.lucene.QueryBuilderContext;
 
 /**
  * Perfix term
+ * 
  * @author andyh
  *
  */
@@ -52,13 +53,9 @@ public class LuceneFTSPrefixTerm<Q, S, E extends Throwable> extends FTSPrefixTer
         super();
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery,
-     *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
-     *      java.lang.String)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService, java.lang.String) */
     public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
             throws E
     {
@@ -66,11 +63,11 @@ public class LuceneFTSPrefixTerm<Q, S, E extends Throwable> extends FTSPrefixTer
         Argument argument = functionArgs.get(ARG_TERM);
         String term = (String) argument.getValue(functionContext);
         // strip trailing wildcard *
-        term = term.substring(0, term.length()-1);
+        term = term.substring(0, term.length() - 1);
 
         argument = functionArgs.get(ARG_TOKENISATION_MODE);
         AnalysisMode mode = (AnalysisMode) argument.getValue(functionContext);
-        
+
         PropertyArgument propArg = (PropertyArgument) functionArgs.get(ARG_PROPERTY);
         Q query;
         if (propArg != null)
@@ -81,7 +78,7 @@ public class LuceneFTSPrefixTerm<Q, S, E extends Throwable> extends FTSPrefixTer
         else
         {
             query = lqpa.getPrefixQuery(lqpa.getField(), term, mode);
-            
+
         }
         return query;
     }

@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.dictionary;
 
-
 /**
  * Property Type Definition
  * 
@@ -41,8 +40,7 @@ public class M2DataType
     private String javaClassName = null;
     private String analyserResourceBundleName = null;
 
-
-    /*package*/ M2DataType()
+    /* package */ M2DataType()
     {
         super();
     }
@@ -66,24 +64,25 @@ public class M2DataType
     {
         this.title = title;
     }
-    
+
     public String getDescription()
     {
         return description;
     }
-    
+
     public void setDescription(String description)
     {
         this.description = description;
     }
-    
+
     public String getJavaClassName()
     {
         return javaClassName;
     }
-    
+
     public void setJavaClassName(String javaClassName)
     {
-        this.javaClassName = javaClassName;;
+        this.javaClassName = javaClassName;
+        ;
     }
 }

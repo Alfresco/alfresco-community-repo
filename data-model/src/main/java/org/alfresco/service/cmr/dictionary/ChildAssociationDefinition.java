@@ -41,14 +41,14 @@ public interface ChildAssociationDefinition extends AssociationDefinition
      * @return the required name of children (or null if none)
      */
     public String getRequiredChildName();
-    
+
     /**
-     * @return whether duplicate child names allowed within this association? 
+     * @return whether duplicate child names allowed within this association?
      */
     public boolean getDuplicateChildNamesAllowed();
 
     /**
-     * @return  whether timestamps should be propagated upwards along primary associations
+     * @return whether timestamps should be propagated upwards along primary associations
      */
     public boolean getPropagateTimestamps();
 }

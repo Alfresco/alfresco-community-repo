@@ -47,14 +47,21 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import jakarta.mail.Flags;
-import jakarta.mail.Header;
 import jakarta.mail.Flags.Flag;
+import jakarta.mail.Header;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+
+import com.icegreen.greenmail.store.FolderException;
+import com.icegreen.greenmail.store.SimpleStoredMessage;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -98,7 +105,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -112,14 +118,6 @@ import org.alfresco.util.MaxSizeMap;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.springframework.extensions.surf.util.I18NUtil;
-
-import com.icegreen.greenmail.store.FolderException;
-import com.icegreen.greenmail.store.SimpleStoredMessage;
 
 /**
  * @author Dmitry Vaserin
@@ -135,11 +133,11 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     private static final String ERROR_MAILBOX_NAME_IS_MANDATORY = "imap.server.error.mailbox_name_is_mandatory";
     private static final String ERROR_CANNOT_GET_A_FOLDER = "imap.server.error.cannot_get_a_folder";
     private static final String ERROR_CANNOT_PARSE_DEFAULT_EMAIL = "imap.server.error.cannot_parse_default_email";
-    
+
     private static final String CHECKED_NODES = "imap.flaggable.aspect.checked.list";
     private static final String FAVORITE_SITES = "imap.favorite.sites.list";
     private static final String UIDVALIDITY_TRANSACTION_LISTENER = "imap.uidvalidity.txn.listener";
-    
+
     private SysAdminParams sysAdminParams;
     private FileFolderService fileFolderService;
     private NodeService nodeService;
@@ -150,8 +148,8 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     private SearchService searchService;
     private AttachmentsExtractor attachmentsExtractor;
 
-    // Note that this cache need not be cluster synchronized, as it is keyed by the cluster-safe 
-    // change token.  Key is username, changeToken
+    // Note that this cache need not be cluster synchronized, as it is keyed by the cluster-safe
+    // change token. Key is username, changeToken
     private Map<Pair<String, String>, FolderStatus> folderCache;
     private int folderCacheSize = 1000;
     private ReentrantReadWriteLock folderCacheLock = new ReentrantReadWriteLock();
@@ -160,7 +158,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     private Map<String, Integer> mountPointIds;
     private RepositoryFolderConfigBean[] ignoreExtractionFoldersBeans;
     private RepositoryFolderConfigBean imapHomeConfigBean;
-    
+
     private NodeRef imapHomeNodeRef;
     private Set<NodeRef> ignoreExtractionFolders;
 
@@ -179,7 +177,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
 
     private boolean imapServerEnabled = false;
 
-    private List<String> messageHeadersToPersist = Collections.<String>emptyList();
+    private List<String> messageHeadersToPersist = Collections.<String> emptyList();
 
     static
     {
@@ -224,8 +222,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         @Override
         protected void onShutdown(ApplicationEvent event)
         {
-            AuthenticationUtil.runAs(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAs(new RunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -243,7 +240,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     {
         this.sysAdminParams = sysAdminParams;
     }
-    
+
     public void setMessageCache(SimpleCache<NodeRef, CacheItem> messageCache)
     {
         this.messageCache = messageCache;
@@ -268,12 +265,11 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     {
         this.serviceRegistry = serviceRegistry;
     }
-    
+
     public void setPolicyFilter(BehaviourFilter policyFilter)
     {
         this.policyBehaviourFilter = policyFilter;
     }
-
 
     public void setAttachmentsExtractor(AttachmentsExtractor attachmentsExtractor)
     {
@@ -284,7 +280,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     {
         this.imapHomeConfigBean = imapHomeConfigBean;
     }
-    
+
     public void setFolderCacheSize(int folderCacheSize)
     {
         this.folderCacheSize = folderCacheSize;
@@ -299,7 +295,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     {
         this.defaultFromAddress = defaultFromAddress;
     }
-    
+
     public String getDefaultToAddress()
     {
         return defaultToAddress;
@@ -357,17 +353,17 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     {
         this.imapServerEnabled = enabled;
     }
-    
+
     public void setMessageHeadersToPersist(List<String> headers)
     {
-        this.messageHeadersToPersist  = headers;
+        this.messageHeadersToPersist = headers;
     }
 
     public void setImapServerShuffleMoveDeleteDelay(long imapServerShuffleMoveDeleteDelay)
     {
         this.imapServerShuffleMoveDeleteDelay = imapServerShuffleMoveDeleteDelay;
     }
-    
+
     public boolean getImapServerEnabled()
     {
         return this.imapServerEnabled;
@@ -380,7 +376,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         PropertyCheck.mandatory(this, "imapConfigMountPoints", imapConfigMountPoints);
         PropertyCheck.mandatory(this, "ignoreExtractionFoldersBeans", ignoreExtractionFoldersBeans);
         PropertyCheck.mandatory(this, "imapHome", imapHomeConfigBean);
-        
+
         PropertyCheck.mandatory(this, "fileFolderService", fileFolderService);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "permissionService", permissionService);
@@ -391,8 +387,8 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         PropertyCheck.mandatory(this, "policyBehaviourFilter", policyBehaviourFilter);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
         PropertyCheck.mandatory(this, "searchService", getSearchService());
-        this.folderCache = new MaxSizeMap<Pair<String,String>, FolderStatus>(folderCacheSize, false);
-        
+        this.folderCache = new MaxSizeMap<Pair<String, String>, FolderStatus>(folderCacheSize, false);
+
         // be sure that a default e-mail is correct
         try
         {
@@ -402,9 +398,9 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         {
             throw new AlfrescoRuntimeException(
                     ERROR_CANNOT_PARSE_DEFAULT_EMAIL,
-                    new Object[] {defaultFromAddress});
+                    new Object[]{defaultFromAddress});
         }
-        
+
         try
         {
             InternetAddress.parse(defaultToAddress);
@@ -413,7 +409,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         {
             throw new AlfrescoRuntimeException(
                     ERROR_CANNOT_PARSE_DEFAULT_EMAIL,
-                    new Object[] {defaultToAddress});
+                    new Object[]{defaultToAddress});
         }
     }
 
@@ -423,7 +419,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     public void startup()
     {
         bindBehaviour();
-                        
+
         // Get NodeRefs for folders to ignore
         this.ignoreExtractionFolders = new HashSet<NodeRef>(ignoreExtractionFoldersBeans.length * 2);
 
@@ -439,52 +435,49 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                         + "   Folder: " + ignoreExtractionFoldersBean);
             }
         }
-        
+
         // Locate or create IMAP home
-        imapHomeNodeRef = imapHomeConfigBean.getOrCreateFolderPath(namespaceService, nodeService, searchService, fileFolderService);        
+        imapHomeNodeRef = imapHomeConfigBean.getOrCreateFolderPath(namespaceService, nodeService, searchService, fileFolderService);
     }
 
     public void shutdown()
-    {
-    }
-    
+    {}
+
     protected void startupInTxn(boolean force)
     {
         if (force || getImapServerEnabled())
         {
-            AuthenticationUtil.runAs(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAs(new RunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
                     List<AlfrescoImapFolder> mailboxes = serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(
-                            new RetryingTransactionCallback<List<AlfrescoImapFolder>>()
-                            {
+                            new RetryingTransactionCallback<List<AlfrescoImapFolder>>() {
                                 @Override
                                 public List<AlfrescoImapFolder> execute() throws Throwable
                                 {
                                     startup();
-                                    
+
                                     List<AlfrescoImapFolder> result = new LinkedList<AlfrescoImapFolder>();
-                                    
+
                                     // Hit the mount points and warm the caches for early failure
                                     for (String mountPointName : imapConfigMountPoints.keySet())
                                     {
                                         result.addAll(listMailboxes(new AlfrescoImapUser(null, AuthenticationUtil
                                                 .getSystemUserName(), null), mountPointName + "*", false));
                                     }
-                                    
+
                                     return result;
                                 }
                             });
-                    
+
                     // Let each mailbox search trigger its own distinct transaction
                     for (AlfrescoImapFolder mailbox : mailboxes)
                     {
                         mailbox.getUidNext();
                     }
-                    
-                    return null;                    
+
+                    return null;
                 }
             }, AuthenticationUtil.getSystemUserName());
         }
@@ -529,9 +522,9 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     {
         NodeRef nodeRef = mesInfo.getNodeRef();
         Date modified = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
-        if(modified != null)
+        if (modified != null)
         {
-            CacheItem cached =  messageCache.get(nodeRef);
+            CacheItem cached = messageCache.get(nodeRef);
             if (cached != null)
             {
                 if (cached.getModified().equals(modified))
@@ -540,7 +533,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                 }
             }
             SimpleStoredMessage message = createImapMessage(mesInfo, true);
-            messageCache.put(nodeRef, new CacheItem(modified, message));            
+            messageCache.put(nodeRef, new CacheItem(modified, message));
             return message;
         }
         else
@@ -549,7 +542,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             return message;
         }
     }
-        
+
     public SimpleStoredMessage createImapMessage(FileInfo fileInfo, boolean generateBody) throws MessagingException
     {
         // TODO MER 26/11/2010- this test should really be that the content of the node is of type message/RFC822
@@ -570,15 +563,17 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         if (flags.contains(Flags.Flag.DELETED))
         {
             // See MNT-12259
-            //fileFolderService.delete(fileInfo.getNodeRef());
+            // fileFolderService.delete(fileInfo.getNodeRef());
             hideAndDelete(fileInfo.getNodeRef());
             messageCache.remove(fileInfo.getNodeRef());
         }
     }
-    
+
     /**
      * Workaround for MNT-12259
-     * @param nodeRef NodeRef
+     * 
+     * @param nodeRef
+     *            NodeRef
      */
     @SuppressWarnings("deprecation")
     private void hideAndDelete(final NodeRef nodeRef)
@@ -589,18 +584,15 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             // Get the current user
             final String deleteDelayUser = AuthenticationUtil.getFullyAuthenticatedUser();
             // Add a timed task to really delete the file
-            TimerTask deleteDelayTask = new TimerTask()
-            {
+            TimerTask deleteDelayTask = new TimerTask() {
                 @Override
                 public void run()
                 {
-                    RunAsWork<Void> deleteDelayRunAs = new RunAsWork<Void>()
-                    {
+                    RunAsWork<Void> deleteDelayRunAs = new RunAsWork<Void>() {
                         @Override
                         public Void doWork() throws Exception
                         {
-                            return serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-                            {
+                            return serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
                                 @Override
                                 public Void execute() throws Throwable
                                 {
@@ -650,7 +642,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             deleteDelayTimer.schedule(deleteDelayTask, imapServerShuffleMoveDeleteDelay);
         }
     }
-    
+
     /**
      * @throws AlfrescoImapRuntimeException
      */
@@ -706,13 +698,13 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         }
         catch (FileNotFoundException e)
         {
-            throw new AlfrescoImapRuntimeException(ERROR_CANNOT_GET_A_FOLDER, new String[] { mailboxName }, new FolderException(FolderException.NOT_LOCAL));
+            throw new AlfrescoImapRuntimeException(ERROR_CANNOT_GET_A_FOLDER, new String[]{mailboxName}, new FolderException(FolderException.NOT_LOCAL));
         }
         if (mailFolder == null)
         {
             if (!mayCreate)
             {
-                throw new AlfrescoImapRuntimeException(ERROR_CANNOT_GET_A_FOLDER, new String[] { mailboxName }, new FolderException(FolderException.NOT_LOCAL));
+                throw new AlfrescoImapRuntimeException(ERROR_CANNOT_GET_A_FOLDER, new String[]{mailboxName}, new FolderException(FolderException.NOT_LOCAL));
             }
             if (logger.isDebugEnabled())
             {
@@ -745,7 +737,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
 
         AlfrescoImapFolder folder = getOrCreateMailbox(user, mailboxName, true, false);
         NodeRef nodeRef = folder.getFolderInfo().getNodeRef();
-        
+
         List<FileInfo> childFolders = fileFolderService.listFolders(nodeRef);
 
         if (childFolders.isEmpty())
@@ -780,14 +772,14 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         {
             throw new IllegalArgumentException(ERROR_MAILBOX_NAME_IS_MANDATORY);
         }
-		
-		AlfrescoImapFolder sourceNode = getOrCreateMailbox(user, oldMailboxName, true, false);
-			  
+
+        AlfrescoImapFolder sourceNode = getOrCreateMailbox(user, oldMailboxName, true, false);
+
         if (logger.isDebugEnabled())
         {
             logger.debug("Renaming folder oldMailboxName=" + oldMailboxName + " newMailboxName=" + newMailboxName);
         }
-        
+
         NodeRef newMailParent;
         String newMailName;
         int index = newMailboxName.lastIndexOf(AlfrescoImapConst.HIERARCHY_DELIMITER);
@@ -832,8 +824,10 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
      * 
      * Shallow list of files
      * 
-     * @param contextNodeRef context folder for search
-     * @param viewMode context folder view mode
+     * @param contextNodeRef
+     *            context folder for search
+     * @param viewMode
+     *            context folder view mode
      * @return list of emails that context folder contains.
      */
     public FolderStatus getFolderStatus(final String userName, final NodeRef contextNodeRef, ImapViewMode viewMode)
@@ -844,8 +838,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         }
 
         // No need to ACL check the change token read
-        String changeToken = AuthenticationUtil.runAs(new RunAsWork<String>()
-        {
+        String changeToken = AuthenticationUtil.runAs(new RunAsWork<String>() {
             @Override
             public String doWork() throws Exception
             {
@@ -871,7 +864,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                 this.folderCacheLock.readLock().unlock();
             }
         }
-        
+
         List<FileInfo> fileInfos = null;
         FileFilterMode.setClient(Client.imap);
         try
@@ -882,7 +875,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         {
             FileFilterMode.clearClient();
         }
-        
+
         final NavigableMap<Long, FileInfo> currentSearch = new TreeMap<Long, FileInfo>();
 
         switch (viewMode)
@@ -938,8 +931,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             changeToken = GUID.generate();
             cacheKey = new Pair<String, String>(userName, changeToken);
             final String finalToken = changeToken;
-            doAsSystem(new RunAsWork<Void>()
-            {
+            doAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -959,16 +951,16 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             FolderStatus oldResult = this.folderCache.get(cacheKey);
             if (oldResult != null)
             {
-                if(logger.isDebugEnabled())
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("At end of getFolderStatus. Found info in cache, changeToken:" + changeToken);
                 }
-         
+
                 return oldResult;
             }
             this.folderCache.put(cacheKey, result);
 
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("At end of getFolderStatus. Found files:" + currentSearch.size() + ", changeToken:" + changeToken);
             }
@@ -1000,7 +992,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             logger.debug("Unsubscribing: " + user + ", " + mailbox);
         }
         AlfrescoImapFolder mailFolder = getOrCreateMailbox(user, mailbox, true, false);
-        if(mailFolder.getFolderInfo() != null)
+        if (mailFolder.getFolderInfo() != null)
         {
             PersonService personService = serviceRegistry.getPersonService();
             NodeRef userRef = personService.getPerson(user.getLogin());
@@ -1016,7 +1008,8 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     /**
      * Return flags that belong to the specified imap folder.
      * 
-     * @param messageInfo imap folder info.
+     * @param messageInfo
+     *            imap folder info.
      * @return flags.
      */
     public Flags getFlags(FileInfo messageInfo)
@@ -1032,21 +1025,23 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                 flags.add(qNameToFlag.get(key));
             }
         }
-        
+
         return flags;
     }
 
     /**
      * Set flags to the specified imapFolder.
      * 
-     * @param messageInfo FileInfo of imap Folder.
-     * @param flags flags to set.
-     * @param value value to set.
+     * @param messageInfo
+     *            FileInfo of imap Folder.
+     * @param flags
+     *            flags to set.
+     * @param value
+     *            value to set.
      */
     public void setFlags(FileInfo messageInfo, Flags flags, boolean value)
     {
         checkForFlaggableAspect(messageInfo.getNodeRef());
-        
 
         for (Flags.Flag flag : flags.getSystemFlags())
         {
@@ -1057,9 +1052,12 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     /**
      * Set flags to the specified message.
      * 
-     * @param messageInfo FileInfo of imap Folder
-     * @param flag flag to set.
-     * @param value value value to set.
+     * @param messageInfo
+     *            FileInfo of imap Folder
+     * @param flag
+     *            flag to set.
+     * @param value
+     *            value value to set.
      */
     public void setFlag(FileInfo messageInfo, Flag flag, boolean value)
     {
@@ -1069,25 +1067,24 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     private void setFlag(NodeRef nodeRef, Flag flag, boolean value)
     {
         String permission = (flag == Flag.DELETED ? PermissionService.DELETE_NODE : PermissionService.WRITE_PROPERTIES);
-        
-        
+
         AccessStatus status = permissionService.hasPermission(nodeRef, permission);
         if (status == AccessStatus.DENIED)
         {
-            if(flag == Flag.DELETED)
+            if (flag == Flag.DELETED)
             {
                 logger.debug("[setFlag] Access denied to set DELETED FLAG:" + nodeRef);
                 throw new AccessDeniedException("No permission to set DELETED flag");
             }
-            if(flag == Flag.SEEN)
+            if (flag == Flag.SEEN)
             {
                 logger.debug("[setFlag] Access denied to set SEEN FLAG:" + nodeRef);
-                //TODO - should we throw an exception here?
-                //throw new AccessDeniedException("No permission to set DELETED flag");
+                // TODO - should we throw an exception here?
+                // throw new AccessDeniedException("No permission to set DELETED flag");
             }
             else
             {
-               
+
                 logger.debug("[setFlag] Access denied to set flag:" + nodeRef);
                 throw new AccessDeniedException("No permission to set flag:" + flag.toString());
             }
@@ -1098,8 +1095,8 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
             policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
             try
-            {                    
-                if(logger.isDebugEnabled())
+            {
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("set flag nodeRef:" + nodeRef + ",flag:" + flagToQname.get(flag) + ", value:" + value);
                 }
@@ -1109,7 +1106,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             finally
             {
                 policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
-                policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);                
+                policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
             }
         }
     }
@@ -1119,17 +1116,17 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
      */
     public List<AlfrescoImapFolder> listMailboxes(AlfrescoImapUser user, String mailboxPattern, boolean listSubscribed)
     {
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("[listMailboxes] user:" + user.getLogin() + ", mailboxPattern:" + mailboxPattern + ", listSubscribed:" + listSubscribed);
         }
         List<AlfrescoImapFolder> result = new LinkedList<AlfrescoImapFolder>();
-        
+
         // List mailboxes that are in mount points
         int index = mailboxPattern.indexOf(AlfrescoImapConst.HIERARCHY_DELIMITER);
         String rootPath = index == -1 ? mailboxPattern : mailboxPattern.substring(0, index);
         boolean found = false;
-        
+
         String userName = user.getLogin();
         Set<NodeRef> unsubscribedFodlers = getUnsubscribedFolders(userName);
 
@@ -1151,15 +1148,15 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                             result.add(new AlfrescoImapFolder(mountPointFileInfo, userName, mountPointName, mountPointName, viewMode,
                                     isExtractionEnabled(mountPointFileInfo.getNodeRef()), this, serviceRegistry, mountPointId));
                         }
-                        else if (rootPath.endsWith("%") && !expandFolder(mountPoint, user, mountPointName, "%", true, viewMode, mountPointId).isEmpty()) // \NoSelect 
+                        else if (rootPath.endsWith("%") && !expandFolder(mountPoint, user, mountPointName, "%", true, viewMode, mountPointId).isEmpty()) // \NoSelect
                         {
                             result.add(new AlfrescoImapFolder(mountPointFileInfo, userName, mountPointName, mountPointName, viewMode,
                                     this, serviceRegistry, false, isExtractionEnabled(mountPointFileInfo.getNodeRef()), mountPointId));
                         }
                         if (rootPath.endsWith("*"))
                         {
-                            result.addAll(expandFolder(mountPoint, user, mountPointName, "*", listSubscribed, viewMode, mountPointId));                            
-                        }                        
+                            result.addAll(expandFolder(mountPoint, user, mountPointName, "*", listSubscribed, viewMode, mountPointId));
+                        }
                     }
                     else
                     {
@@ -1182,12 +1179,12 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             NodeRef root = getUserImapHomeRef(user.getLogin());
             result.addAll(expandFolder(root, user, "", mailboxPattern, listSubscribed, ImapViewMode.ARCHIVE, 0));
         }
-            
+
         logger.debug("listMailboxes returning size:" + result.size());
-        
+
         return result;
     }
-    
+
     /**
      * Recursively search the given root to get a list of folders
      * 
@@ -1219,7 +1216,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         {
             name = mailboxPattern.substring(0, index);
         }
-        String rootPathPrefix = rootPath.length() == 0 ? "" : rootPath + AlfrescoImapConst.HIERARCHY_DELIMITER; 
+        String rootPathPrefix = rootPath.length() == 0 ? "" : rootPath + AlfrescoImapConst.HIERARCHY_DELIMITER;
 
         if (logger.isDebugEnabled())
         {
@@ -1256,15 +1253,15 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         {
             NodeRef nodeRef = fileFolderService.searchSimple(root, name);
             FileInfo fileInfo;
-            list = nodeRef == null || !(fileInfo = fileFolderService.getFileInfo(nodeRef)).isFolder() ? Collections.<FileInfo>emptyList() : Collections.singletonList(fileInfo);
+            list = nodeRef == null || !(fileInfo = fileFolderService.getFileInfo(nodeRef)).isFolder() ? Collections.<FileInfo> emptyList() : Collections.singletonList(fileInfo);
         }
-        
+
         if (index < 0)
         {
             String userName = user.getLogin();
             Set<NodeRef> unsubscribedFodlers = getUnsubscribedFolders(userName);
 
-            // This is the last level            
+            // This is the last level
             for (FileInfo fileInfo : list)
             {
                 if (!filter.isEnterSubfolder(fileInfo.getNodeRef()))
@@ -1277,19 +1274,19 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                     fullList.add(new AlfrescoImapFolder(fileInfo, userName, fileInfo.getName(), folderPath, viewMode,
                             isExtractionEnabled(fileInfo.getNodeRef()), this, serviceRegistry, mountPointId));
                 }
-                else if (name.endsWith("%") && !expandFolder(fileInfo.getNodeRef(), user, folderPath, "%", true, viewMode, mountPointId).isEmpty()) // \NoSelect 
+                else if (name.endsWith("%") && !expandFolder(fileInfo.getNodeRef(), user, folderPath, "%", true, viewMode, mountPointId).isEmpty()) // \NoSelect
                 {
                     fullList.add(new AlfrescoImapFolder(fileInfo, userName, fileInfo.getName(), folderPath, viewMode,
                             this, serviceRegistry, false, isExtractionEnabled(fileInfo.getNodeRef()), mountPointId));
                 }
                 if (name.endsWith("*"))
                 {
-                    fullList.addAll(expandFolder(fileInfo.getNodeRef(), user, folderPath, "*", listSubscribed, viewMode, mountPointId));                            
+                    fullList.addAll(expandFolder(fileInfo.getNodeRef(), user, folderPath, "*", listSubscribed, viewMode, mountPointId));
                 }
             }
         }
         else
-        {    
+        {
             // If (index != -1) this is not the last level
             for (FileInfo folder : list)
             {
@@ -1315,8 +1312,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         try
         {
             // Get node reference. Do it in new transaction to avoid RollBack in case when AccessDeniedException is thrown.
-            return serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
-            {
+            return serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>() {
                 public NodeRef execute() throws Exception
                 {
                     try
@@ -1348,16 +1344,15 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     }
 
     /**
-     * Get the node ref of the user's imap home.   Will create it on demand if it 
-     * does not already exist.
+     * Get the node ref of the user's imap home. Will create it on demand if it does not already exist.
      * 
-     * @param userName user name
+     * @param userName
+     *            user name
      * @return user IMAP home reference and create it if it doesn't exist.
      */
     public NodeRef getUserImapHomeRef(final String userName)
     {
-        NodeRef userHome = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
-        {
+        NodeRef userHome = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>() {
             public NodeRef doWork() throws Exception
             {
                 // Look for user imap home
@@ -1367,21 +1362,21 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                     // user imap home does not exist
                     NodeRef result = fileFolderService.create(imapHomeNodeRef, userName, ContentModel.TYPE_FOLDER).getNodeRef();
                     nodeService.setProperty(result, ContentModel.PROP_DESCRIPTION, userName);
-                    
+
                     // create user inbox
                     fileFolderService.create(result, AlfrescoImapConst.INBOX_NAME, ContentModel.TYPE_FOLDER);
-                    
+
                     // Set permissions on user's imap home
                     permissionService.setInheritParentPermissions(result, false);
                     permissionService.setPermission(result, PermissionService.OWNER_AUTHORITY, PermissionService.ALL_PERMISSIONS, true);
-                    
+
                     return result;
                 }
 
                 return userHome;
             }
         }, AuthenticationUtil.getSystemUserName());
-        
+
         return userHome;
     }
 
@@ -1408,8 +1403,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
 
         return result;
     }
-    
-    
+
     private String getCurrentUser()
     {
         return AuthenticationUtil.getFullyAuthenticatedUser();
@@ -1418,13 +1412,14 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     /**
      * Return list of "favourite" sites, that belong to the specified user and are marked as "Imap favourite"
      * 
-     * @param userName name of user
+     * @param userName
+     *            name of user
      * @return List of favourite sites.
      */
     private List<NodeRef> getFavouriteSites(final String userName)
     {
         PersonService personService = serviceRegistry.getPersonService();
-        
+
         if (logger.isDebugEnabled())
         {
             logger.debug("[getFavouriteSites] entry for user: " + userName);
@@ -1444,7 +1439,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         if (favSites == null)
         {
             favSites = new LinkedList<NodeRef>();
-            
+
             if (personService.personExists(userName))
             {
                 PreferenceService preferenceService = (PreferenceService) serviceRegistry.getService(ServiceRegistry.PREFERENCE_SERVICE);
@@ -1497,8 +1492,10 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     }
 
     /**
-     * Checks for the existence of the flaggable aspect and adds it if it is not already present on the folder. 
-     * @param nodeRef NodeRef
+     * Checks for the existence of the flaggable aspect and adds it if it is not already present on the folder.
+     * 
+     * @param nodeRef
+     *            NodeRef
      */
     private void checkForFlaggableAspect(NodeRef nodeRef)
     {
@@ -1536,7 +1533,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                 logger.debug("[checkForFlaggableAspect] No permissions to add FLAGGABLE aspect" + nodeRef);
             }
             else
-            {    
+            {
                 try
                 {
                     policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
@@ -1555,7 +1552,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         alreadyChecked.add(nodeRef);
         AlfrescoTransactionSupport.bindResource(CHECKED_NODES, alreadyChecked);
     }
-    
+
     private boolean isExtractionEnabled(NodeRef nodeRef)
     {
         return extractAttachmentsEnabled && !ignoreExtractionFolders.contains(nodeRef);
@@ -1566,7 +1563,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         if (defaultBodyTemplates == null)
         {
             defaultBodyTemplates = new HashMap<EmailBodyFormat, String>(4);
-            
+
             for (EmailBodyFormat onetype : EmailBodyFormat.values())
             {
                 String result = onetype.getClasspathTemplatePath();
@@ -1574,7 +1571,6 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                 {
                     // This query uses cm:name to find the template node(s).
                     // For the case where the templates are renamed, it would be better to use a QName path-based query.
-                    
 
                     final StringBuilder templateName = new StringBuilder(DICTIONARY_TEMPLATE_PREFIX).append("_").append(onetype.getTypeSubtype()).append("_").append(onetype.getWebApp()).append(".ftl");
 
@@ -1598,20 +1594,20 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                         logger.debug("[getDefaultEmailBodyTemplate] Query: " + query);
                     }
                     StoreRef storeRef = new StoreRef(storePath);
-                    
+
                     NodeRef rootNode = nodeService.getRootNode(storeRef);
-                    
+
                     List<NodeRef> templates = searchService.selectNodes(rootNode, query, null, namespaceService, true);
                     if (templates == null || templates.size() == 0)
                     {
-                        if(logger.isDebugEnabled())
+                        if (logger.isDebugEnabled())
                         {
                             logger.debug("template not found:" + templateName);
                         }
                         throw new AlfrescoRuntimeException(String.format("[getDefaultEmailBodyTemplate] IMAP message template '%1$s' does not exist in the path '%2$s'.", templateName, repositoryTemplatePath));
                     }
                     final NodeRef defaultLocaleTemplate = templates.get(0);
-      
+
                     NodeRef localisedSibling = serviceRegistry.getFileFolderService().getLocalizedSibling(defaultLocaleTemplate);
                     result = localisedSibling.toString();
                 }
@@ -1627,10 +1623,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     }
 
     /**
-     * This method should returns a unique identifier of Alfresco server. The possible UID may be calculated based on IP address, Server port, MAC address, Web Application context.
-     * This UID should be parseable into initial components. This necessary for the implementation of the following case: If the message being copied (e.g. drag-and-drop) between
-     * two different Alfresco accounts in the IMAP client, we must unambiguously identify from which Alfresco server this message being copied. The message itself does not contain
-     * content data, so we must download it from the initial server (e.g. using download content servlet) and save it into destination repository.
+     * This method should returns a unique identifier of Alfresco server. The possible UID may be calculated based on IP address, Server port, MAC address, Web Application context. This UID should be parseable into initial components. This necessary for the implementation of the following case: If the message being copied (e.g. drag-and-drop) between two different Alfresco accounts in the IMAP client, we must unambiguously identify from which Alfresco server this message being copied. The message itself does not contain content data, so we must download it from the initial server (e.g. using download content servlet) and save it into destination repository.
      * 
      * @return String representation of unique identifier of Alfresco server
      */
@@ -1639,7 +1632,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         // TODO Implement as javadoc says.
         return "Not-Implemented";
     }
-    
+
     /**
      * Share Site Exclusion Filter
      */
@@ -1656,18 +1649,19 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
          * Exclude folders which represent components with these IDs
          */
         private List<String> excludedComponentIds;
-        
+
         ImapSubFolderFilter(ImapViewMode imapViewMode)
         {
             this.imapViewMode = imapViewMode;
             this.typesToExclude = ImapServiceImpl.this.serviceRegistry.getDictionaryService().getSubTypes(SiteModel.TYPE_SITE, true);
             this.favs = getFavouriteSites(getCurrentUser());
         }
-        
+
         ImapSubFolderFilter(ImapViewMode imapViewMode, String mailboxPattern)
         {
             this(imapViewMode);
-            this.mailboxPattern = mailboxPattern.replaceAll("\\*", "(.)*");;
+            this.mailboxPattern = mailboxPattern.replaceAll("\\*", "(.)*");
+            ;
         }
 
         ImapSubFolderFilter(ImapViewMode imapViewMode, String mailboxPattern, List<String> excludedComponentIds)
@@ -1675,7 +1669,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             this(imapViewMode, mailboxPattern);
             this.excludedComponentIds = excludedComponentIds;
         }
-        
+
         @Override
         public boolean isEnterSubfolder(ChildAssociationRef subfolderRef)
         {
@@ -1686,9 +1680,9 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         {
             return list.stream().anyMatch((e) -> e.equalsIgnoreCase(s));
         }
-        
+
         public boolean isEnterSubfolder(NodeRef folder)
-        {        
+        {
             String name = (String) nodeService.getProperty(folder, ContentModel.PROP_NAME);
             if (mailboxPattern != null)
             {
@@ -1702,8 +1696,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             }
 
             /**
-             * Exclude folders which represent unsupported components, like calendar and dataLists.
-             * See REPO-830
+             * Exclude folders which represent unsupported components, like calendar and dataLists. See REPO-830
              */
             if (excludedComponentIds != null && !excludedComponentIds.isEmpty())
             {
@@ -1749,7 +1742,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             }
             return true;
         }
-        
+
     }
 
     private UidValidityTransactionListener getUidValidityTransactionListener(NodeRef folderRef)
@@ -1762,19 +1755,18 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             AlfrescoTransactionSupport.bindListener(txnListener);
             AlfrescoTransactionSupport.bindResource(key, txnListener);
         }
-        return txnListener;        
+        return txnListener;
     }
 
     @Override
     public void onCreateChildAssociation(final ChildAssociationRef childAssocRef, boolean isNewNode)
     {
-        doAsSystem(new RunAsWork<Void>()
-        {
+        doAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
                 NodeRef childNodeRef = childAssocRef.getChildRef();
-                
+
                 if (serviceRegistry.getDictionaryService().isSubClass(nodeService.getType(childNodeRef), ContentModel.TYPE_CONTENT))
                 {
                     long newId = (Long) nodeService.getProperty(childNodeRef, ContentModel.PROP_NODE_DBID);
@@ -1784,7 +1776,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                     // Flag new content as recent
                     setFlag(childNodeRef, Flags.Flag.RECENT, true);
                 }
-                
+
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("[onCreateChildAssociation] Association " + childAssocRef + " created. CHANGETOKEN will be changed.");
@@ -1793,12 +1785,11 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             }
         });
     }
-    
+
     @Override
     public void onDeleteChildAssociation(final ChildAssociationRef childAssocRef)
     {
-        doAsSystem(new RunAsWork<Void>()
-        {
+        doAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -1821,55 +1812,51 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             }
         });
     }
-    
+
     @Override
     public void onUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before,
             final Map<QName, Serializable> after)
     {
-        doAsSystem(new RunAsWork<Void>()
-        {
+        doAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
-            { 
+            {
                 /**
-                 * Imap only cares about a few properties however if those properties 
-                 * change then the uidvalidity needs to be reset otherwise the new content
-                 * won't get re-loaded.   This is nonsense for an email server, but needed for 
-                 * modifiable repository.  Also we need to ignore certain properties.
+                 * Imap only cares about a few properties however if those properties change then the uidvalidity needs to be reset otherwise the new content won't get re-loaded. This is nonsense for an email server, but needed for modifiable repository. Also we need to ignore certain properties.
                  */
                 boolean hasChanged = false;
-                
-                if(!hasChanged)
+
+                if (!hasChanged)
                 {
                     hasChanged = !EqualsHelper.nullSafeEquals(before.get(ContentModel.PROP_NAME), after.get(ContentModel.PROP_NAME));
                 }
-                if(!hasChanged)
+                if (!hasChanged)
                 {
                     hasChanged = !EqualsHelper.nullSafeEquals(before.get(ContentModel.PROP_AUTHOR), after.get(ContentModel.PROP_AUTHOR));
                 }
-                if(!hasChanged)
+                if (!hasChanged)
                 {
                     hasChanged = !EqualsHelper.nullSafeEquals(before.get(ContentModel.PROP_TITLE), after.get(ContentModel.PROP_TITLE));
                 }
-                if(!hasChanged)
+                if (!hasChanged)
                 {
                     hasChanged = !EqualsHelper.nullSafeEquals(before.get(ContentModel.PROP_DESCRIPTION), after.get(ContentModel.PROP_DESCRIPTION));
                 }
-                
-                if(!hasChanged)
+
+                if (!hasChanged)
                 {
                     Serializable s1 = before.get(ContentModel.PROP_CONTENT);
                     Serializable s2 = after.get(ContentModel.PROP_CONTENT);
-                
-                    if(s1 != null && s2 != null)
+
+                    if (s1 != null && s2 != null)
                     {
-                        ContentData c1 = (ContentData)s1;
-                        ContentData c2 = (ContentData)s2;
-                        
+                        ContentData c1 = (ContentData) s1;
+                        ContentData c2 = (ContentData) s2;
+
                         hasChanged = !EqualsHelper.nullSafeEquals(c1.getContentUrl(), c2.getContentUrl());
                     }
                 }
-                
+
                 for (ChildAssociationRef parentAssoc : nodeService.getParentAssocs(nodeRef))
                 {
                     NodeRef folderRef = parentAssoc.getParentRef();
@@ -1879,9 +1866,9 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
 
                         // Force generation of a new change token for the parent folders
                         UidValidityTransactionListener listener = getUidValidityTransactionListener(folderRef);
-                
+
                         // if we have a significant change then we need to force a new uidvalidity.
-                        if(hasChanged)
+                        if (hasChanged)
                         {
                             logger.debug("message has changed - force new uidvalidity for the parent folder");
                             listener.forceNewUidvalidity();
@@ -1896,8 +1883,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     @Override
     public void onRestoreNode(final ChildAssociationRef childAssocRef)
     {
-        doAsSystem(new RunAsWork<Void>()
-        {
+        doAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -1912,7 +1898,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                 long newId = (Long) nodeService.getProperty(childNodeRef, ContentModel.PROP_NODE_DBID);
                 if (nodeService.hasAspect(folderRef, ImapModel.ASPECT_IMAP_FOLDER))
                 {
-                    // Force generation of a new change token and updating the UIDVALIDITY 
+                    // Force generation of a new change token and updating the UIDVALIDITY
                     getUidValidityTransactionListener(folderRef).recordNewUid(newId);
                 }
                 return null;
@@ -1923,8 +1909,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     @Override
     public void beforeDeleteNode(final NodeRef nodeRef)
     {
-        doAsSystem(new RunAsWork<Void>()
-        {
+        doAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -1967,17 +1952,17 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         private Long minUid;
         private Long maxUid;
         private boolean forceNewUidValidity = false;
-        
+
         public UidValidityTransactionListener(NodeRef folderNodeRef)
         {
             this.folderNodeRef = folderNodeRef;
         }
-        
+
         public void forceNewUidvalidity()
         {
             this.forceNewUidValidity = true;
         }
-        
+
         public void recordNewUid(long newUid)
         {
             if (this.minUid == null)
@@ -2002,8 +1987,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                 return;
             }
 
-            doAsSystem(new RunAsWork<Void>()
-            {
+            doAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -2012,7 +1996,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                     {
                         return null;
                     }
-                    
+
                     if (UidValidityTransactionListener.this.forceNewUidValidity || UidValidityTransactionListener.this.minUid != null)
                     {
                         long modifDate = System.currentTimeMillis();
@@ -2020,13 +2004,13 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                         // Only update UIDVALIDITY if a new node has and ID that is smaller or equals the old maximum (as UIDs are always meant to increase)
                         if (UidValidityTransactionListener.this.forceNewUidValidity || oldMax == null || UidValidityTransactionListener.this.minUid <= oldMax)
                         {
-                            nodeService.setProperty(folderNodeRef, ImapModel.PROP_UIDVALIDITY, modifDate);                            
+                            nodeService.setProperty(folderNodeRef, ImapModel.PROP_UIDVALIDITY, modifDate);
                             if (logger.isDebugEnabled())
                             {
                                 logger.debug("UIDVALIDITY was modified for folder, nodeRef:" + folderNodeRef);
                             }
                         }
-                        if(UidValidityTransactionListener.this.maxUid != null)
+                        if (UidValidityTransactionListener.this.maxUid != null)
                         {
                             nodeService.setProperty(folderNodeRef, ImapModel.PROP_MAXUID, UidValidityTransactionListener.this.maxUid);
                             if (logger.isDebugEnabled())
@@ -2035,17 +2019,16 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                             }
                         }
                     }
-                    nodeService.setProperty(folderNodeRef, ImapModel.PROP_CHANGE_TOKEN, changeToken);                            
+                    nodeService.setProperty(folderNodeRef, ImapModel.PROP_CHANGE_TOKEN, changeToken);
                     return null;
-                }                        
+                }
             });
         }
     }
 
     public NodeRef getNodeSiteContainer(final NodeRef inputNodeRef)
     {
-        return doAsSystem(new RunAsWork<NodeRef>()
-        {
+        return doAsSystem(new RunAsWork<NodeRef>() {
             @Override
             public NodeRef doWork() throws Exception
             {
@@ -2097,45 +2080,45 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             String componentId = (String) nodeService.getProperty(siteContainerNodeRef, SiteModel.PROP_COMPONENT_ID);
             switch (componentId.toLowerCase())
             {
-                case "datalists":
-                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/data-lists");
-                    break;
-                case "wiki":
-                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/wiki");
-                    break;
-                case "links":
-                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/links");
-                    break;
-                case "calendar":
-                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/calendar");
-                    break;
-                case "discussions":
-                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/discussions-topiclist");
-                    break;
-                case "blog":
-                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/blog-postlist");
-                    break;
-                case "documentlibrary":
-                    String pathFromSites = getPathFromSites(nodeService.getPrimaryParent(contentNodeRef).getParentRef());
-                    StringBuilder parsedPath = new StringBuilder();
-                    String[] pathParts = pathFromSites.split("/");
-                    if (pathParts.length > 2)
+            case "datalists":
+                url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/data-lists");
+                break;
+            case "wiki":
+                url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/wiki");
+                break;
+            case "links":
+                url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/links");
+                break;
+            case "calendar":
+                url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/calendar");
+                break;
+            case "discussions":
+                url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/discussions-topiclist");
+                break;
+            case "blog":
+                url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/blog-postlist");
+                break;
+            case "documentlibrary":
+                String pathFromSites = getPathFromSites(nodeService.getPrimaryParent(contentNodeRef).getParentRef());
+                StringBuilder parsedPath = new StringBuilder();
+                String[] pathParts = pathFromSites.split("/");
+                if (pathParts.length > 2)
+                {
+                    parsedPath.append(pathParts[0] + "/" + pathParts[1]);
+                    parsedPath.append("?filter=path|");
+                    for (int i = 2; i < pathParts.length; i++)
                     {
-                        parsedPath.append(pathParts[0] + "/" + pathParts[1]);
-                        parsedPath.append("?filter=path|");
-                        for (int i = 2; i < pathParts.length; i++)
-                        {
-                            parsedPath.append("/").append(pathParts[i]);
-                        }
+                        parsedPath.append("/").append(pathParts[i]);
                     }
-                    else
-                    {
-                        parsedPath.append(pathFromSites);
-                    }
-                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), parsedPath.toString());
-                    break;
-                default:
-                    break;
+                }
+                else
+                {
+                    parsedPath.append(pathFromSites);
+                }
+                url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), parsedPath.toString());
+                break;
+            default:
+                break;
             }
         }
         else
@@ -2193,7 +2176,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
 
     public String generateUniqueFilename(NodeRef destFolderNodeRef, String fileName)
     {
-        if(fileFolderService.searchSimple(destFolderNodeRef, fileName) != null)
+        if (fileFolderService.searchSimple(destFolderNodeRef, fileName) != null)
         {
             String name = fileName;
             String ext = "";
@@ -2208,12 +2191,12 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             {
                 copyNum++;
             } while (fileFolderService.searchSimple(destFolderNodeRef, name + " (" + copyNum + ")" + ext) != null);
-                fileName =  name + " (" + copyNum + ")" + ext;
+            fileName = name + " (" + copyNum + ")" + ext;
         }
-     	
+
         return fileName;
     }
-    
+
     @SuppressWarnings("unchecked")
     public void persistMessageHeaders(NodeRef messageRef, MimeMessage message)
     {
@@ -2221,31 +2204,31 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         {
             Enumeration<Header> headers = message.getAllHeaders();
             List<String> messaheHeadersProperties = new ArrayList<String>();
-            while(headers.hasMoreElements())
+            while (headers.hasMoreElements())
             {
                 Header header = headers.nextElement();
                 if (isPersistableHeader(header))
                 {
                     messaheHeadersProperties.add(header.getName() + ImapModel.MESSAGE_HEADER_TO_PERSIST_SPLITTER + header.getValue());
-                    
+
                     if (logger.isDebugEnabled())
                     {
                         logger.debug("[persistHeaders] Persisting Header " + header.getName() + " : " + header.getValue());
                     }
                 }
             }
-            
+
             Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-            props.put(ImapModel.PROP_MESSAGE_HEADERS, (Serializable)messaheHeadersProperties);
-            
+            props.put(ImapModel.PROP_MESSAGE_HEADERS, (Serializable) messaheHeadersProperties);
+
             serviceRegistry.getNodeService().addAspect(messageRef, ImapModel.ASPECT_IMAP_MESSAGE_HEADERS, props);
         }
-        catch(MessagingException me)
+        catch (MessagingException me)
         {
-            
+
         }
     }
-    
+
     private boolean isPersistableHeader(Header header)
     {
         for (String headerToPersist : messageHeadersToPersist)
@@ -2255,14 +2238,14 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                 return true;
             }
         }
-        return false; 
+        return false;
     }
-    
+
     static class CacheItem
     {
         private Date modified;
         private SimpleStoredMessage message;
-        
+
         public CacheItem(Date modified, SimpleStoredMessage message)
         {
             this.setMessage(message);
@@ -2288,13 +2271,12 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         {
             return message;
         }
-    }    
+    }
 
     @Override
     public String getPathFromSites(final NodeRef ref)
     {
-        return doAsSystem(new RunAsWork<String>()
-        {
+        return doAsSystem(new RunAsWork<String>() {
             @Override
             public String doWork() throws Exception
             {
@@ -2315,8 +2297,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     @Override
     public String getPathFromRepo(final ChildAssociationRef assocRef)
     {
-        return doAsSystem(new RunAsWork<String>()
-        {
+        return doAsSystem(new RunAsWork<String>() {
             @Override
             public String doWork() throws Exception
             {

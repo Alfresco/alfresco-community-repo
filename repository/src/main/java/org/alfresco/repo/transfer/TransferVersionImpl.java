@@ -37,10 +37,14 @@ public class TransferVersionImpl implements TransferVersion
 
     /**
      *
-     * @param versionMajor String
-     * @param versionMinor String
-     * @param versionRevision String
-     * @param edition String
+     * @param versionMajor
+     *            String
+     * @param versionMinor
+     *            String
+     * @param versionRevision
+     *            String
+     * @param edition
+     *            String
      */
     public TransferVersionImpl(String versionMajor, String versionMinor, String versionRevision, String edition)
     {
@@ -52,7 +56,9 @@ public class TransferVersionImpl implements TransferVersion
 
     /**
      * Construct a transferVersion from a system descriptor
-     * @param d the system descriptor
+     * 
+     * @param d
+     *            the system descriptor
      */
     public TransferVersionImpl(Descriptor d)
     {
@@ -102,7 +108,7 @@ public class TransferVersionImpl implements TransferVersion
 
     public int hashCode()
     {
-        if(edition != null && versionMinor != null)
+        if (edition != null && versionMinor != null)
         {
             return edition.hashCode() + versionMinor.hashCode() * 37;
         }
@@ -114,28 +120,28 @@ public class TransferVersionImpl implements TransferVersion
 
     public boolean equals(Object other)
     {
-        if(other == null)
+        if (other == null)
         {
             return false;
         }
 
         if (other instanceof TransferVersion)
         {
-            TransferVersion v = (TransferVersion)other;
+            TransferVersion v = (TransferVersion) other;
 
-            if(!edition.equalsIgnoreCase(v.getEdition()))
+            if (!edition.equalsIgnoreCase(v.getEdition()))
             {
                 return false;
             }
-            if(!versionMajor.equalsIgnoreCase(v.getVersionMajor()))
+            if (!versionMajor.equalsIgnoreCase(v.getVersionMajor()))
             {
                 return false;
             }
-            if(!versionMinor.equalsIgnoreCase(v.getVersionMinor()))
+            if (!versionMinor.equalsIgnoreCase(v.getVersionMinor()))
             {
                 return false;
             }
-            if(!versionRevision.equalsIgnoreCase(v.getVersionRevision()))
+            if (!versionRevision.equalsIgnoreCase(v.getVersionRevision()))
             {
                 return false;
             }

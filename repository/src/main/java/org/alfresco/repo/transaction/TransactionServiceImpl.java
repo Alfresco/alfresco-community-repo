@@ -30,8 +30,12 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-
 import jakarta.transaction.UserTransaction;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.namespace.NamespaceService;
@@ -39,10 +43,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.VmShutdownListener;
 import org.alfresco.util.transaction.SpringAwareUserTransaction;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
 
 /**
  * Default implementation of Transaction Service.
@@ -60,16 +60,16 @@ public class TransactionServiceImpl implements TransactionService
     private int minRetryWaitMs = -1;
     private int maxRetryWaitMs = -1;
     private int retryWaitIncrementMs = -1;
-    
+
     private static final Log logger = LogFactory.getLog(TransactionServiceImpl.class);
 
     // Veto for allow write
     private Set<QName> writeVeto = new HashSet<QName>();
     private final QName generalVetoName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "GeneralVeto");
-    
+
     private ReadLock vetoReadLock;
     private WriteLock vetoWriteLock;
-    
+
     /**
      * Construct defaults
      */
@@ -104,35 +104,33 @@ public class TransactionServiceImpl implements TransactionService
             vetoReadLock.unlock();
         }
     }
-    
+
     /**
      * Set the read-only mode for all generated transactions.
      * <p>
-     * Intended for use by spring configuration only.   Alfresco code should call the method which 
-     * specifies a veto name.
+     * Intended for use by spring configuration only. Alfresco code should call the method which specifies a veto name.
      * 
-     * @param allowWrite        false if all transactions must be read-only
+     * @param allowWrite
+     *            false if all transactions must be read-only
      */
     public void setAllowWrite(boolean allowWrite)
     {
         setAllowWrite(allowWrite, generalVetoName);
     }
-    
+
     /**
      * Set the read-only mode for all generated transactions.
      * <p>
-     * By default read/write transactions are allowed however vetos may be applied that make the 
-     * transactions read only.   
+     * By default read/write transactions are allowed however vetos may be applied that make the transactions read only.
      * <p>
      * Prevent writes by calling allowWrite with false and a given veto name.
      * <p>
-     * The veto is removed by calling allowWrite with true for the given veto name
-     * when all vetos are removed then read/write transactions are allowed.
+     * The veto is removed by calling allowWrite with true for the given veto name when all vetos are removed then read/write transactions are allowed.
      * 
      * @param allowWrite
      *            false if all transactions must be read-only
      * @param nameOfVeto
-     *             the name of the veto           
+     *            the name of the veto
      */
     public void setAllowWrite(boolean allowWrite, QName nameOfVeto)
     {
@@ -143,7 +141,7 @@ public class TransactionServiceImpl implements TransactionService
         vetoWriteLock.lock();
         try
         {
-            if(allowWrite)
+            if (allowWrite)
             {
                 boolean removed = writeVeto.remove(nameOfVeto);
                 if (removed)
@@ -161,7 +159,7 @@ public class TransactionServiceImpl implements TransactionService
         {
             vetoWriteLock.unlock();
         }
-    }   
+    }
 
     /**
      * {@inheritDoc}
@@ -306,8 +304,7 @@ public class TransactionServiceImpl implements TransactionService
     }
 
     /**
-     * Creates a new helper instance. It can be reused or customized by the client code: each instance is new and
-     * initialized afresh.
+     * Creates a new helper instance. It can be reused or customized by the client code: each instance is new and initialized afresh.
      */
     public RetryingTransactionHelper getRetryingTransactionHelper()
     {

@@ -36,9 +36,7 @@ import org.json.JSONObject;
 
 /**
  *
- * 1. If the actual query contains one or more misspelled terms which leads to no hits, and if a suggestion is available, the spellcheck manager, auto-executes the suggested term in the background and returns: Searched for London instead of Lndon.
- * 2. If the actual query contains a rare term resulting in a few hits and suggestions are available and have more hits, the manager returns “didYouMean”…
- * 3. If the actual query contains a correctly spelled term, but also suggestions are available and they have a fewer or equal hits as the actual query term. In this case, the manager just returns the Solr response.
+ * 1. If the actual query contains one or more misspelled terms which leads to no hits, and if a suggestion is available, the spellcheck manager, auto-executes the suggested term in the background and returns: Searched for London instead of Lndon. 2. If the actual query contains a rare term resulting in a few hits and suggestions are available and have more hits, the manager returns “didYouMean”… 3. If the actual query contains a correctly spelled term, but also suggestions are available and they have a fewer or equal hits as the actual query term. In this case, the manager just returns the Solr response.
  *
  * @author Jamal Kaabi-Mofrad
  * @since 5.0
@@ -53,7 +51,7 @@ public class SpellCheckDecisionManager
     private JSONObject spellCheckJsonValue;
 
     public SpellCheckDecisionManager(JSONObject resultJson, String origURL, JSONObject reguestJsonBody,
-                String spellCheckParams)
+            String spellCheckParams)
     {
         try
         {
@@ -68,50 +66,55 @@ public class SpellCheckDecisionManager
 
             JSONArray collations = null;
             /**
-            * A top level collations key will be present in Solr 6 only.
-            **/
-            if(spellcheck.has("collations"))
+             * A top level collations key will be present in Solr 6 only.
+             **/
+            if (spellcheck.has("collations"))
             {
                 collations = spellcheck.getJSONArray("collations");
             }
 
-            /*
-            * If the top level collations array exists use it, we are talking to Solr 6. Otherwise use the suggestions
-            * array, we are talking to Solr4.
-            */
+            /* If the top level collations array exists use it, we are talking to Solr 6. Otherwise use the suggestions array, we are talking to Solr4. */
 
-            JSONArray jsonArray = (collations!=null) ? collations : suggestions;
+            JSONArray jsonArray = (collations != null) ? collations : suggestions;
 
-            /*
-            * The code below will work for both Solr 4 and Solr 6.
-            */
+            /* The code below will work for both Solr 4 and Solr 6. */
 
-            for (int key = 0, value = 1, length = jsonArray.length(); value < length; key += 2, value += 2) {
+            for (int key = 0, value = 1, length = jsonArray.length(); value < length; key += 2, value += 2)
+            {
                 String jsonName = jsonArray.getString(key);
 
-                if (COLLATION.equals(jsonName)) {
+                if (COLLATION.equals(jsonName))
+                {
                     JSONObject valueJsonObject = jsonArray.getJSONObject(value);
                     long collationHit = valueJsonObject.getLong("hits");
 
                     this.collate = numberFound == 0 && collationHit > 0;
-                    if (collate) {
+                    if (collate)
+                    {
                         reguestJsonBody.put("query", valueJsonObject.getString("collationQuery"));
                         spellCheckJsonValue = new JSONObject();
                         spellCheckJsonValue.put("searchInsteadFor", valueJsonObject.getString("collationQueryString"));
                         break;
-                    } else if (collationHit > numberFound) {
+                    }
+                    else if (collationHit > numberFound)
+                    {
                         collationQueriesList.add(valueJsonObject.getString("collationQueryString"));
                     }
                 }
             }
 
-            if (collate) {
+            if (collate)
+            {
                 this.url = origURL.replace(spellCheckParams, "");
-            } else if (collationQueriesList.size() > 0) {
+            }
+            else if (collationQueriesList.size() > 0)
+            {
                 spellCheckJsonValue = new JSONObject();
                 JSONArray jsonArray1 = new JSONArray(collationQueriesList);
                 spellCheckJsonValue.put("didYouMean", jsonArray1);
-            } else {
+            }
+            else
+            {
                 spellCheckJsonValue = new JSONObject();
             }
         }

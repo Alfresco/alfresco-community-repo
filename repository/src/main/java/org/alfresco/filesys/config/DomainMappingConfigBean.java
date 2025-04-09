@@ -62,8 +62,8 @@ public class DomainMappingConfigBean implements BeanNameAware
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
-     */
+     * 
+     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String) */
     public void setBeanName(String name)
     {
         this.name = name;

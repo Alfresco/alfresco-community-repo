@@ -34,6 +34,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentReader;
@@ -52,8 +55,6 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Simple import of content into the repository
@@ -94,7 +95,7 @@ public class FileImporterImpl implements FileImporter
                     e);
         }
     }
-    
+
     public int loadNamedFile(NodeRef container, File file, boolean recurse, String name) throws FileImporterException
     {
         try
@@ -149,15 +150,17 @@ public class FileImporterImpl implements FileImporter
                     e);
         }
     }
-    
+
     /** Helper class for mutable int */
     private static class Counter
     {
         private int count = 0;
+
         public void increment()
         {
             count++;
         }
+
         public int getCount()
         {
             return count;
@@ -175,8 +178,7 @@ public class FileImporterImpl implements FileImporter
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
         if (containerName != null)
         {
-            RetryingTransactionCallback<NodeRef> createDirectoryWork = new RetryingTransactionCallback<NodeRef>()
-            {
+            RetryingTransactionCallback<NodeRef> createDirectoryWork = new RetryingTransactionCallback<NodeRef>() {
                 public NodeRef execute() throws Exception
                 {
                     return createDirectory(container, containerName, containerName);
@@ -184,13 +186,12 @@ public class FileImporterImpl implements FileImporter
             };
             NodeRef newContainer = txnHelper.doInTransaction(createDirectoryWork);
             return create(counter, newContainer, file, filter, recurse, null);
-          
+
         }
         if (file.isDirectory())
         {
             counter.increment();
-            RetryingTransactionCallback<NodeRef> createDirectoryWork = new RetryingTransactionCallback<NodeRef>()
-            {
+            RetryingTransactionCallback<NodeRef> createDirectoryWork = new RetryingTransactionCallback<NodeRef>() {
                 public NodeRef execute() throws Exception
                 {
                     return createDirectory(container, file);
@@ -205,23 +206,22 @@ public class FileImporterImpl implements FileImporter
             {
                 directoryNodeRef = createDirectoryWork.execute();
             }
-            
+
             if (recurse)
             {
                 File[] files = ((filter == null) ? file.listFiles() : file.listFiles(filter));
-                for(int i = 0; i < files.length; i++)
+                for (int i = 0; i < files.length; i++)
                 {
                     create(counter, directoryNodeRef, files[i], filter, recurse, null);
                 }
             }
-            
+
             return directoryNodeRef;
         }
         else
         {
             counter.increment();
-            RetryingTransactionCallback<NodeRef> createFileWork = new RetryingTransactionCallback<NodeRef>()
-            {
+            RetryingTransactionCallback<NodeRef> createFileWork = new RetryingTransactionCallback<NodeRef>() {
                 public NodeRef execute() throws Exception
                 {
                     return createFile(container, file);
@@ -243,9 +243,9 @@ public class FileImporterImpl implements FileImporter
     /**
      * Get the type of child association that should be created.
      * 
-     * @param parentNodeRef the parent
-     * @return Returns the appropriate child association type qualified name for the type of the
-     *      parent.  Null will be returned if it can't be determined.
+     * @param parentNodeRef
+     *            the parent
+     * @return Returns the appropriate child association type qualified name for the type of the parent. Null will be returned if it can't be determined.
      */
     private QName getAssocTypeQName(NodeRef parentNodeRef)
     {
@@ -273,9 +273,9 @@ public class FileImporterImpl implements FileImporter
         {
             throw new IllegalArgumentException(
                     "Unable to create file.  " +
-                    "Parent type is inappropriate: " + nodeService.getType(parentNodeRef));
+                            "Parent type is inappropriate: " + nodeService.getType(parentNodeRef));
         }
-        
+
         // Identify the type of the file
         FileContentReader reader = new FileContentReader(file);
         String mimetype = mimetypeService.guessMimetype(file.getName(), reader);
@@ -298,7 +298,6 @@ public class FileImporterImpl implements FileImporter
                 ContentModel.TYPE_CONTENT, contentProps);
 
         NodeRef fileNodeRef = assocRef.getChildRef();
-        
 
         if (logger.isDebugEnabled())
             logger.debug("Created file node for file: " + file.getName());
@@ -322,22 +321,22 @@ public class FileImporterImpl implements FileImporter
         }
         catch (ContentIOException e)
         {
-            throw new FileImporterException("Failed to load content from "+file.getPath(), e);
+            throw new FileImporterException("Failed to load content from " + file.getPath(), e);
         }
         catch (FileNotFoundException e)
         {
-            throw new FileImporterException("Failed to load content (file not found) "+file.getPath(), e);
+            throw new FileImporterException("Failed to load content (file not found) " + file.getPath(), e);
         }
-        
+
         return fileNodeRef;
     }
 
     private NodeRef createDirectory(NodeRef parentNodeRef, File file)
     {
         return createDirectory(parentNodeRef, file.getName(), file.getPath());
-        
+
     }
-    
+
     private NodeRef createDirectory(NodeRef parentNodeRef, String name, String path)
     {
         // check the parent node's type to determine which association to use
@@ -346,23 +345,23 @@ public class FileImporterImpl implements FileImporter
         {
             throw new IllegalArgumentException(
                     "Unable to create directory.  " +
-                    "Parent type is inappropriate: " + nodeService.getType(parentNodeRef));
+                            "Parent type is inappropriate: " + nodeService.getType(parentNodeRef));
         }
-        
+
         String qname = QName.createValidLocalName(name);
         ChildAssociationRef assocRef = this.nodeService.createNode(
-              parentNodeRef,
-              assocTypeQName,
-              QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, qname),
-              ContentModel.TYPE_FOLDER);
-        
+                parentNodeRef,
+                assocTypeQName,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, qname),
+                ContentModel.TYPE_FOLDER);
+
         NodeRef nodeRef = assocRef.getChildRef();
-        
+
         // set the name property on the node
         this.nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, name);
-        
+
         if (logger.isDebugEnabled())
-           logger.debug("Created folder node with name: " + name);
+            logger.debug("Created folder node with name: " + name);
 
         // apply the uifacets aspect - icon, title and description props
         Map<QName, Serializable> uiFacetsProps = new HashMap<QName, Serializable>(5);
@@ -370,10 +369,10 @@ public class FileImporterImpl implements FileImporter
         uiFacetsProps.put(ContentModel.PROP_TITLE, name);
         uiFacetsProps.put(ContentModel.PROP_DESCRIPTION, path);
         this.nodeService.addAspect(nodeRef, ApplicationModel.ASPECT_UIFACETS, uiFacetsProps);
-        
+
         if (logger.isDebugEnabled())
-           logger.debug("Added uifacets aspect with properties: " + uiFacetsProps);
-        
+            logger.debug("Added uifacets aspect with properties: " + uiFacetsProps);
+
         return nodeRef;
     }
 
@@ -381,17 +380,17 @@ public class FileImporterImpl implements FileImporter
     {
         this.authenticationService = authenticationService;
     }
-    
+
     protected void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
     }
-    
+
     protected void setMimetypeService(MimetypeService mimetypeService)
     {
         this.mimetypeService = mimetypeService;
     }
-    
+
     protected void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -408,8 +407,8 @@ public class FileImporterImpl implements FileImporter
     }
 
     /**
-     * @param txnPerFile true to force each file or directory creation to be in its
-     *      own file
+     * @param txnPerFile
+     *            true to force each file or directory creation to be in its own file
      */
     public void setTxnPerFile(boolean txnPerFile)
     {

@@ -27,17 +27,17 @@ package org.alfresco.rest.framework.core.exceptions;
 
 import org.springframework.extensions.webscripts.WebScriptException;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 /**
  * Resolves WebScriptExceptions
  *
  * @author Gethin James
  */
-public class WebScriptExceptionResolver implements ExceptionResolver<WebScriptException> {
+public class WebScriptExceptionResolver implements ExceptionResolver<WebScriptException>
+{
 
     @Override
-    public ErrorResponse resolveException(WebScriptException ex) {
+    public ErrorResponse resolveException(WebScriptException ex)
+    {
         return new ErrorResponse(DefaultExceptionResolver.DEFAULT_MESSAGE_ID, ex.getStatus(), ex.getLocalizedMessage(), ex.getStackTrace(), null);
     }
 }

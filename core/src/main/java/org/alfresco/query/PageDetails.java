@@ -66,14 +66,14 @@ public class PageDetails
     {
         return pageSize;
     }
-    
+
     public static PageDetails getPageDetails(PagingRequest pagingRequest, int totalSize)
     {
         int skipCount = pagingRequest.getSkipCount();
         int maxItems = pagingRequest.getMaxItems();
         int end = skipCount + maxItems;
         int pageSize = -1;
-        if(end < 0 || end > totalSize)
+        if (end < 0 || end > totalSize)
         {
             // overflow or greater than the total
             end = totalSize;
@@ -83,7 +83,7 @@ public class PageDetails
         {
             pageSize = maxItems;
         }
-        if(pageSize < 0)
+        if (pageSize < 0)
         {
             pageSize = 0;
         }

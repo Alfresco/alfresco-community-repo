@@ -39,7 +39,7 @@ public class RestoreFileCommand implements Command
     private String path;
     private long allocationSize;
     private NodeRef originalNodeRef;
-    
+
     public RestoreFileCommand(String name, NodeRef rootNode, String path, long allocationSize, NodeRef originalNodeRef)
     {
         this.name = name;
@@ -53,17 +53,17 @@ public class RestoreFileCommand implements Command
     {
         return name;
     }
-    
+
     public NodeRef getRootNode()
     {
         return rootNode;
     }
-    
+
     public String getPath()
     {
         return path;
     }
-    
+
     public NodeRef getOriginalNodeRef()
     {
         return originalNodeRef;
@@ -84,5 +84,5 @@ public class RestoreFileCommand implements Command
     {
         return allocationSize;
     }
-    
+
 }

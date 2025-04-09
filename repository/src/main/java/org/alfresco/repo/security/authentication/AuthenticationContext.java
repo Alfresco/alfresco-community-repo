@@ -41,8 +41,7 @@ public interface AuthenticationContext
     public void clearCurrentSecurityContext();
 
     /**
-     * Explicitly set the current suthentication. If the authentication is <tt>null</tt> the the current authentication
-     * is {@link #clearCurrentSecurityContext() cleared}.
+     * Explicitly set the current suthentication. If the authentication is <tt>null</tt> the the current authentication is {@link #clearCurrentSecurityContext() cleared}.
      * 
      * @param authentication
      *            the current authentication (may be <tt>null</tt>).
@@ -88,7 +87,7 @@ public interface AuthenticationContext
      * True if this is the System user ?
      */
     public boolean isSystemUserName(String userName);
-    
+
     /**
      * Is the current user the system user?
      */

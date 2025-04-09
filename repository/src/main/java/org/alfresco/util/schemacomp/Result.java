@@ -29,15 +29,13 @@ import java.util.Locale;
 
 /**
  * Base class for the result of a differencing or validation operation.
- *  
+ * 
  * @author Matt Ward
  */
 public abstract class Result
-{    
+{
     /**
-     * A loggable message to describe the comparison result. Default implementation
-     * delegates to toString() but this should generally be overridden as toString()
-     * is used in a multitude of contexts.
+     * A loggable message to describe the comparison result. Default implementation delegates to toString() but this should generally be overridden as toString() is used in a multitude of contexts.
      * 
      * @return String
      */
@@ -47,10 +45,10 @@ public abstract class Result
     }
 
     /**
-     * An overload of the {@link #describe()} that allows you to specify what locale
-     * to use for the loggable message that describes the comparison result.
+     * An overload of the {@link #describe()} that allows you to specify what locale to use for the loggable message that describes the comparison result.
      *
-     * @param locale The locale to use for comparison description.
+     * @param locale
+     *            The locale to use for comparison description.
      * @return String
      */
     public abstract String describe(Locale locale);

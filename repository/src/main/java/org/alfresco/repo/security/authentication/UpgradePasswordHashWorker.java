@@ -35,6 +35,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.quartz.Job;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
@@ -54,31 +65,17 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.quartz.Job;
-import org.quartz.JobDataMap;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * <h1>Upgrade Password Hash Worker</h1>
  * 
- * <h2>What it is</h2>
- * A worker for a scheduled job that checks and upgrades users passwords to the system's preferred encoding.
+ * <h2>What it is</h2> A worker for a scheduled job that checks and upgrades users passwords to the system's preferred encoding.
  * 
  * <h2>Settings that control the behaviour</h2>
  * <ul>
- *  <li><b>${system.upgradePasswordHash.jobBatchSize}</b> - the number of users to process at one time.</li>
- *  <li><b>${system.upgradePasswordHash.jobQueryRange}</b> - the node ID range to query for.
- *         The process will repeat from the first to the last node, querying for up to this many nodes.
- *         Only reduce the value if the NodeDAO query takes a long time.</li>
- *  <li><b>${system.upgradePasswordHash.jobThreadCount}</b> - the number of threads that will handle user checks and changes.
- *         Increase or decrease this to allow for free CPU capacity on the machine executing the job.</li>
+ * <li><b>${system.upgradePasswordHash.jobBatchSize}</b> - the number of users to process at one time.</li>
+ * <li><b>${system.upgradePasswordHash.jobQueryRange}</b> - the node ID range to query for. The process will repeat from the first to the last node, querying for up to this many nodes. Only reduce the value if the NodeDAO query takes a long time.</li>
+ * <li><b>${system.upgradePasswordHash.jobThreadCount}</b> - the number of threads that will handle user checks and changes. Increase or decrease this to allow for free CPU capacity on the machine executing the job.</li>
  * </ul>
  *
  * @author Gavin Cornwell
@@ -87,31 +84,31 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
 {
     private static final QName LOCK = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "UpgradePasswordHashWorker");
     private static final long LOCK_TTL = 60000L;
-    
+
     private static Log logger = LogFactory.getLog(UpgradePasswordHashWorker.class);
-    
+
     private JobLockService jobLockService;
     private TransactionService transactionService;
-    
+
     private MutableAuthenticationDao authenticationDao;
     private CompositePasswordEncoder passwordEncoder;
-    
+
     private NodeDAO nodeDAO;
     private PatchDAO patchDAO;
     private QNameDAO qnameDAO;
-    
+
     private BehaviourFilter behaviourFilter;
     private ApplicationContext ctx;
-    
+
     private int queryRange = 10000;
     private int threadCount = 2;
     private int batchSize = 100;
-    
+
     public void setJobLockService(JobLockService jobLockService)
     {
         this.jobLockService = jobLockService;
     }
-    
+
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
@@ -121,12 +118,12 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
     {
         this.authenticationDao = authenticationDao;
     }
-    
+
     public void setCompositePasswordEncoder(CompositePasswordEncoder passwordEncoder)
     {
         this.passwordEncoder = passwordEncoder;
     }
-    
+
     public void setPatchDAO(PatchDAO patchDAO)
     {
         this.patchDAO = patchDAO;
@@ -146,31 +143,34 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
     {
         this.behaviourFilter = behaviourFilter;
     }
-    
+
     /**
      * Sets the number of users to retrieve from the repository in each query.
-     *  
-     * @param queryRange The query range
+     * 
+     * @param queryRange
+     *            The query range
      */
     public void setQueryRange(int queryRange)
     {
         this.queryRange = queryRange;
     }
-    
+
     /**
      * Sets the number of threads to use to process users.
      * 
-     * @param threadCount Number of threads
+     * @param threadCount
+     *            Number of threads
      */
     public void setThreadCount(int threadCount)
     {
         this.threadCount = threadCount;
     }
-    
+
     /**
      * Sets the number of users to process at one time.
      * 
-     * @param batchSize The batch size
+     * @param batchSize
+     *            The batch size
      */
     public void setBatchSize(int batchSize)
     {
@@ -185,7 +185,7 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
     {
         this.ctx = applicationContext;
     }
-    
+
     @Override
     public void afterPropertiesSet() throws Exception
     {
@@ -198,7 +198,7 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
         ParameterCheck.mandatory("qnameDAO", qnameDAO);
         ParameterCheck.mandatory("behaviourFilter", behaviourFilter);
     }
-    
+
     /**
      * Performs the work, including logging details of progress.
      */
@@ -206,29 +206,28 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
     {
         // Build refresh callback
         final UpgradePasswordHashWorkResult progress = new UpgradePasswordHashWorkResult();
-        JobLockRefreshCallback lockCallback = new JobLockRefreshCallback()
-        {
+        JobLockRefreshCallback lockCallback = new JobLockRefreshCallback() {
             @Override
             public void lockReleased()
             {
                 progress.inProgress.set(false);
             }
-            
+
             @Override
             public boolean isActive()
             {
                 return progress.inProgress.get();
             }
         };
-        
+
         String lockToken = null;
         try
         {
             progress.inProgress.set(true);
-            
+
             // Get the lock
             lockToken = jobLockService.getLock(LOCK, LOCK_TTL);
-            
+
             // Start the refresh timer
             jobLockService.refreshLock(lockToken, LOCK, LOCK_TTL, lockCallback);
 
@@ -237,10 +236,10 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
             {
                 logger.info("Starting upgrade password hash job.");
             }
-            
+
             // Do the work
             doWork(progress);
-            
+
             // Done
             if (logger.isInfoEnabled())
             {
@@ -266,29 +265,30 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
             {
                 jobLockService.releaseLock(lockToken, LOCK);
             }
-            
+
             progress.inProgress.set(false);
         }
-        
+
         // Done
         return progress;
     }
-    
+
     /**
      * Processes the user properties, re-hashing the password, if required.
      * 
-     * @param properties The properties for the user.
+     * @param properties
+     *            The properties for the user.
      * @return true if the password was upgraded, false if no changes were made.
      */
     public boolean processPasswordHash(Map<QName, Serializable> properties)
     {
         // retrieve the password and hash indicator
         Pair<List<String>, String> passwordHash = RepositoryAuthenticationDao.determinePasswordHash(properties);
-        
+
         // determine if current password hash matches the preferred encoding
         if (!passwordEncoder.lastEncodingIsPreferred(passwordHash.getFirst()))
         {
-            String username = (String)properties.get(ContentModel.PROP_USER_USERNAME);
+            String username = (String) properties.get(ContentModel.PROP_USER_USERNAME);
 
             // We need to double hash
             List<String> nowHashed = new ArrayList<String>();
@@ -302,8 +302,8 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
                     logger.trace("Double hashing user '" + username + "'.");
                 }
                 Object salt = properties.get(ContentModel.PROP_SALT);
-                properties.put(ContentModel.PROP_PASSWORD_HASH,  passwordEncoder.encodePreferred(new String(passwordHash.getSecond()), salt));
-                properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable)nowHashed);
+                properties.put(ContentModel.PROP_PASSWORD_HASH, passwordEncoder.encodePreferred(new String(passwordHash.getSecond()), salt));
+                properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable) nowHashed);
                 properties.remove(ContentModel.PROP_PASSWORD);
                 properties.remove(ContentModel.PROP_PASSWORD_SHA256);
                 return true;
@@ -324,11 +324,11 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
             // Already the preferred encoding, just set it
             if (logger.isTraceEnabled())
             {
-                String username = (String)properties.get(ContentModel.PROP_USER_USERNAME);
+                String username = (String) properties.get(ContentModel.PROP_USER_USERNAME);
                 logger.trace("User '" + username + "' has preferred encoding, just updating properties to match.");
             }
-            properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable)passwordHash.getFirst());
-            properties.put(ContentModel.PROP_PASSWORD_HASH,  passwordHash.getSecond());
+            properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable) passwordHash.getFirst());
+            properties.put(ContentModel.PROP_PASSWORD_HASH, passwordHash.getSecond());
             properties.remove(ContentModel.PROP_PASSWORD);
             properties.remove(ContentModel.PROP_PASSWORD_SHA256);
             return true;
@@ -337,9 +337,10 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
         // if we get here no changes were made
         return false;
     }
-    
+
     /**
-     * @param progress          the thread-safe progress
+     * @param progress
+     *            the thread-safe progress
      */
     private synchronized void doWork(UpgradePasswordHashWorkResult progress) throws Exception
     {
@@ -349,9 +350,8 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
         RetryingTransactionHelper retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
         retryingTransactionHelper.setForceWritable(true);
 
-        //Create the QNames if they don't exist
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        // Create the QNames if they don't exist
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -372,7 +372,7 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
                 1000);
         batchProcessor.process(worker, true);
     }
-    
+
     /**
      * Work provider for batch job providing noderefs representing users to process
      */
@@ -381,26 +381,26 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
         private final long maxNodeId;
         private final UpgradePasswordHashWorkResult progress;
         private final Pair<Long, QName> userTypeId;
-        
+
         private UpgradePasswordHashWorkProvider(UpgradePasswordHashWorkResult progress)
         {
             this.progress = progress;
             this.maxNodeId = patchDAO.getMaxAdmNodeID();
             this.userTypeId = qnameDAO.getQName(ContentModel.TYPE_USER);
-            
+
             if (logger.isDebugEnabled())
             {
                 logger.debug("Max NodeID: " + this.maxNodeId);
             }
         }
-        
+
         @Override
         public int getTotalEstimatedWorkSize()
         {
             // execute a query to get total number of user nodes in the system.
             long totalUserCount = patchDAO.getCountNodesWithTypId(ContentModel.TYPE_USER);
-            
-            return (int)totalUserCount;
+
+            return (int) totalUserCount;
         }
 
         @Override
@@ -421,7 +421,7 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
                 logger.warn("Upgrade password hash work terminating; too many errors.");
                 return Collections.emptyList();
             }
-            
+
             // Keep shifting the query window up until we get results or we hit the original max node ID
             List<Long> ret = Collections.emptyList();
             while (ret.isEmpty() && progress.currentMinNodeId.get() < maxNodeId)
@@ -438,28 +438,28 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
                     minNodeId = progress.currentMinNodeId.addAndGet(queryRange);
                 }
                 long maxNodeId = minNodeId + queryRange;
-                
+
                 // Query for the next set of users
                 ret = patchDAO.getNodesByTypeQNameId(this.userTypeId.getFirst(), minNodeId, maxNodeId);
             }
-            
+
             // Done
             if (logger.isDebugEnabled())
             {
                 logger.debug("Upgrade password hash work provider found " + ret.size() + " users.");
             }
-            
+
             return ret;
         }
     }
-    
+
     /**
      * Class that does the actual node manipulation to upgrade the password hash.
      */
     private class UpgradePasswordHashBatch extends BatchProcessWorkerAdaptor<Long>
     {
         private final UpgradePasswordHashWorkResult progress;
-        
+
         private UpgradePasswordHashBatch(UpgradePasswordHashWorkResult progress)
         {
             this.progress = progress;
@@ -471,25 +471,25 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
             // Run as the systemuser
             AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
         }
-        
+
         @Override
         public void process(Long nodeId) throws Throwable
         {
             progress.usersProcessed.incrementAndGet();
-            
+
             try
             {
                 // get properties for the user
                 Map<QName, Serializable> userProps = nodeDAO.getNodeProperties(nodeId);
-                
+
                 // get the username
-                String username = (String)userProps.get(ContentModel.PROP_USER_USERNAME);
-                
+                String username = (String) userProps.get(ContentModel.PROP_USER_USERNAME);
+
                 // determine whether the password requires re-hashing
                 if (processPasswordHash(userProps))
                 {
                     progress.usersChanged.incrementAndGet();
-                    
+
                     try
                     {
                         // disable auditing
@@ -499,7 +499,7 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
                         {
                             logger.debug("Saving password hash for user: " + username);
                         }
-                        
+
                         // persist the changes
                         nodeDAO.setNodeProperties(nodeId, userProps);
                     }
@@ -518,7 +518,7 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
             {
                 // Record the failure
                 progress.errors.incrementAndGet();
-                
+
                 // Rethrow so that the processing framework can handle things
                 throw e;
             }
@@ -527,9 +527,9 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
         @Override
         public String getIdentifier(Long nodeId)
         {
-            return (String)nodeDAO.getNodeProperty(nodeId, ContentModel.PROP_USER_USERNAME);
+            return (String) nodeDAO.getNodeProperty(nodeId, ContentModel.PROP_USER_USERNAME);
         }
-        
+
         @Override
         public void afterProcess() throws Throwable
         {
@@ -547,7 +547,7 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
         private final AtomicInteger usersChanged = new AtomicInteger(0);
         private final AtomicInteger errors = new AtomicInteger(0);
         private final AtomicLong currentMinNodeId = new AtomicLong(0L);
-        
+
         @Override
         public String toString()
         {
@@ -556,29 +556,29 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
             String part3 = String.format("[%2d Errors]", errors.get());
             return part1 + part2 + part3;
         }
-        
+
         public int getUsersProcessed()
         {
             return usersProcessed.get();
         }
-        
+
         public int getUsersChanged()
         {
             return usersChanged.get();
         }
-        
+
         public int getErrors()
         {
             return errors.get();
         }
     }
-    
+
     /**
      * A scheduled job that checks and upgrades users passwords to the system's preferred encoding.
      * <p>
-     * Job data: 
+     * Job data:
      * <ul>
-     *  <li><b>upgradePasswordHashWorker</b> - The worker that performs the actual processing.</li>
+     * <li><b>upgradePasswordHashWorker</b> - The worker that performs the actual processing.</li>
      * </ul>
      * 
      * @see UpgradePasswordHashWorker
@@ -586,11 +586,11 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
     public static class UpgradePasswordHashJob implements Job
     {
         public static final String JOB_DATA_WORKER = "upgradePasswordHashWorker";
-        
+
         public void execute(JobExecutionContext context) throws JobExecutionException
         {
             JobDataMap jobData = context.getJobDetail().getJobDataMap();
-            
+
             // extract the content Cleanup to use
             Object upgradePasswordHashWorkerObj = jobData.get(JOB_DATA_WORKER);
             if (upgradePasswordHashWorkerObj == null || !(upgradePasswordHashWorkerObj instanceof UpgradePasswordHashWorker))
@@ -598,8 +598,8 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
                 throw new AlfrescoRuntimeException(
                         "UpgradePasswordHashJob data '" + JOB_DATA_WORKER + "' must reference a " + UpgradePasswordHashWorker.class.getSimpleName());
             }
-            
-            UpgradePasswordHashWorker worker = (UpgradePasswordHashWorker)upgradePasswordHashWorkerObj;
+
+            UpgradePasswordHashWorker worker = (UpgradePasswordHashWorker) upgradePasswordHashWorkerObj;
             worker.execute();
         }
     }

@@ -34,10 +34,10 @@ import org.springframework.context.ApplicationEvent;
  */
 public abstract class SolrEvent extends ApplicationEvent
 {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public SolrEvent(Object source)
-	{
-		super(source);
-	}
+    public SolrEvent(Object source)
+    {
+        super(source);
+    }
 }

@@ -39,8 +39,6 @@ public class SolrQueryLanguage extends AbstractLuceneQueryLanguage
 {
     private SolrQueryClient solrQueryHTTPClient;
 
-    
-    
     public void setSolrQueryHTTPClient(SolrQueryClient solrQueryHTTPClient)
     {
         this.solrQueryHTTPClient = solrQueryHTTPClient;
@@ -51,15 +49,17 @@ public class SolrQueryLanguage extends AbstractLuceneQueryLanguage
     {
         return solrQueryHTTPClient.executeQuery(searchParameters, getName());
     }
-    
+
     /**
      * Executes a stats query using solr.
-     * @param searchParameters StatsParameters
+     * 
+     * @param searchParameters
+     *            StatsParameters
      * @return StatsResultSet
      */
     public StatsResultSet executeStatsQuery(StatsParameters searchParameters)
     {
-       return solrQueryHTTPClient.executeStatsQuery( searchParameters);
+        return solrQueryHTTPClient.executeStatsQuery(searchParameters);
     }
 
 }

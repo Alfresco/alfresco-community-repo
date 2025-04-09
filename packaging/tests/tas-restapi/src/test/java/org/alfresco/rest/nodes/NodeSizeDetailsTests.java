@@ -97,6 +97,45 @@ public class NodeSizeDetailsTests extends RestTest
     }
 
     /**
+     * calculateNodeSizeForEmptyFolder testcase
+     */
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.SANITY)
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
+    public void calculateNodeSizeForEmptyFolder() throws Exception
+    {
+
+        STEP("1. Create a folder in the test site.");
+        folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
+
+        RestSizeDetailsModel restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).executeSizeDetails();
+        restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
+        restSizeDetailsModel.assertThat().field("jobId").isNotEmpty();
+
+        jobId = restSizeDetailsModel.getJobId();
+
+        STEP("2. Wait for 5 seconds for the processing to complete.");
+        Awaitility
+                .await()
+                .atMost(Duration.ofSeconds(5))
+                .pollInterval(Durations.ONE_SECOND)
+                .ignoreExceptions()
+                .untilAsserted(() -> {
+                    RestSizeDetailsModel sizeDetailsModel = restClient.authenticateUser(user1)
+                            .withCoreAPI()
+                            .usingNode(folder)
+                            .getSizeDetails(jobId);
+                    restClient.assertStatusCodeIs(HttpStatus.OK);
+                    sizeDetailsModel.assertThat()
+                            .field("sizeInBytes")
+                            .isNotEmpty();
+                    Assert.assertEquals(sizeDetailsModel.getSizeInBytes(), 0,
+                            "Value of sizeInBytes should be 0 " + sizeDetailsModel.getSizeInBytes());
+                    Assert.assertEquals(sizeDetailsModel.getStatus().name(), "COMPLETED",
+                            "Status should be - COMPLETED" + sizeDetailsModel.getStatus().name());
+                });
+    }
+
+    /**
      * checkJobIdPresentInCache testcase
      */
 

@@ -18,7 +18,6 @@
  */
 package org.alfresco.util;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.Scheduler;
@@ -26,10 +25,12 @@ import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+
 public class SchedulerStarterBean extends AbstractLifecycleBean
 {
-    protected final static Log log = LogFactory.getLog(SchedulerStarterBean.class);    
-    
+    protected final static Log log = LogFactory.getLog(SchedulerStarterBean.class);
+
     private Scheduler scheduler;
 
     @Override
@@ -50,7 +51,7 @@ public class SchedulerStarterBean extends AbstractLifecycleBean
     protected void onShutdown(ApplicationEvent event)
     {
         // Nothing required
-        // This is done by the SchedulerFactoryBean.destroy() - DisposableBean 
+        // This is done by the SchedulerFactoryBean.destroy() - DisposableBean
     }
 
     public Scheduler getScheduler()

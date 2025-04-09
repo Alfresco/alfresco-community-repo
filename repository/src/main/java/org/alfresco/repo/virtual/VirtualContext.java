@@ -52,22 +52,22 @@ public class VirtualContext
     public VirtualContext(VirtualContext context)
     {
         this(context.actualEnviroment,
-             context.actualNodeRef,
-             new HashMap<String, Object>(context.parameters));
+                context.actualNodeRef,
+                new HashMap<String, Object>(context.parameters));
     }
 
     public VirtualContext(ActualEnvironment actualEnviroment, NodeRef actualNodeRef)
     {
         this(actualEnviroment,
-             actualNodeRef,
-             new HashMap<String, Object>());
+                actualNodeRef,
+                new HashMap<String, Object>());
     }
 
     public VirtualContext(ActualEnvironment actualEnviroment, NodeRef actualNodeRef, Map<String, Object> parameters)
     {
         this.parameters = parameters;
         this.parameters.put(CONTEXT_PARAM,
-                            this);
+                this);
         this.actualEnviroment = actualEnviroment;
         this.actualNodeRef = actualNodeRef;
     }
@@ -85,7 +85,7 @@ public class VirtualContext
     public void setParameter(String parameter, Object value)
     {
         parameters.put(parameter,
-                       value);
+                value);
     }
 
     public Map<String, Object> getParameters()

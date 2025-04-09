@@ -26,6 +26,8 @@
 package org.alfresco.repo.tenant;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -33,20 +35,18 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
- * @see MultiTNodeServiceInterceptor 
+ * @see MultiTNodeServiceInterceptor
  * 
- * @since 3.0 
+ * @since 3.0
  * @author Derek Hulley
  */
 @Category(OwnJVMTestsCategory.class)
 public class MultiTNodeServiceInterceptorTest extends TestCase
 {
     public static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    
+
     private String tenant1 = "tenant-" + GUID.generate();
     private String tenant1Pwd = "pwd1";
     private boolean enableTest = true;
@@ -54,7 +54,7 @@ public class MultiTNodeServiceInterceptorTest extends TestCase
     private TenantAdminService tenantAdminService;
     private TenantService tenantService;
     private MultiTNodeServiceInterceptor interceptor;
-    
+
     @Override
     public void setUp() throws Exception
     {
@@ -62,7 +62,7 @@ public class MultiTNodeServiceInterceptorTest extends TestCase
         tenantAdminService = (TenantAdminService) ctx.getBean("tenantAdminService");
         tenantService = (TenantService) ctx.getBean("tenantService");
         interceptor = (MultiTNodeServiceInterceptor) ctx.getBean("multiTNodeServiceInterceptor");
-        
+
         // If MT is disabled, then disable all tests
         if (!tenantAdminService.isEnabled())
         {
@@ -71,11 +71,11 @@ public class MultiTNodeServiceInterceptorTest extends TestCase
         }
 
         // Create a tenant
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>(){
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
             @Override
-            public Void doWork() throws Exception {
-                RetryingTransactionCallback<Object> createTenantCallback = new RetryingTransactionCallback<Object>()
-                {
+            public Void doWork() throws Exception
+            {
+                RetryingTransactionCallback<Object> createTenantCallback = new RetryingTransactionCallback<Object>() {
                     public Object execute() throws Throwable
                     {
                         tenantAdminService.createTenant(tenant1, tenant1Pwd.toCharArray());
@@ -87,7 +87,7 @@ public class MultiTNodeServiceInterceptorTest extends TestCase
             }
         }, AuthenticationUtil.getAdminUserName());
     }
-    
+
     @Override
     public void tearDown() throws Exception
     {
@@ -98,11 +98,11 @@ public class MultiTNodeServiceInterceptorTest extends TestCase
         }
 
         // Delete a tenant
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>(){
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
             @Override
-            public Void doWork() throws Exception {
-                RetryingTransactionCallback<Object> deleteTenantCallback = new RetryingTransactionCallback<Object>()
-                {
+            public Void doWork() throws Exception
+            {
+                RetryingTransactionCallback<Object> deleteTenantCallback = new RetryingTransactionCallback<Object>() {
                     public Object execute() throws Throwable
                     {
                         tenantAdminService.deleteTenant(tenant1);
@@ -114,11 +114,10 @@ public class MultiTNodeServiceInterceptorTest extends TestCase
             }
         }, AuthenticationUtil.getAdminUserName());
     }
-    
+
     /**
      * Control case.
      */
     public void testSetUp()
-    {
-    }
+    {}
 }

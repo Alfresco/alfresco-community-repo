@@ -26,14 +26,15 @@
 
 package org.alfresco.rest.framework.webscripts;
 
-import org.alfresco.rest.framework.resource.content.ContentInfo;
-import org.springframework.extensions.webscripts.Cache;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.extensions.webscripts.Cache;
+
+import org.alfresco.rest.framework.resource.content.ContentInfo;
 
 /**
  * Values to be set on the response at the appropriate time.
@@ -70,7 +71,8 @@ public class WithResponse
     /**
      * Sets the Response Status
      *
-     * @param status int
+     * @param status
+     *            int
      */
     public void setStatus(int status)
     {
@@ -78,11 +80,12 @@ public class WithResponse
     }
 
     /**
-     * Set a response header with the given name and value.  If the header has
-     * already been set, the new value overwrites the previous one.
+     * Set a response header with the given name and value. If the header has already been set, the new value overwrites the previous one.
      *
-     * @param name  header name
-     * @param value  header value
+     * @param name
+     *            header name
+     * @param value
+     *            header value
      */
     public void setHeader(String name, String value)
     {
@@ -90,11 +93,12 @@ public class WithResponse
     }
 
     /**
-     * Adds a response header with the given name and value.  This method
-     * allows a response header to have multiple values.
+     * Adds a response header with the given name and value. This method allows a response header to have multiple values.
      *
-     * @param name  header name
-     * @param value  header value
+     * @param name
+     *            header name
+     * @param value
+     *            header value
      */
     public void addHeader(String name, String value)
     {
@@ -112,7 +116,8 @@ public class WithResponse
     /**
      * Sets the Cache control
      *
-     * @param  cache  cache control
+     * @param cache
+     *            cache control
      */
     public void setCache(Cache cache)
     {

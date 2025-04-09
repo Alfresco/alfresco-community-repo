@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.chemistry.opencmis.commons.PropertyIds;
+
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.search.impl.querymodel.Argument;
@@ -51,8 +53,6 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * @author Andy
@@ -61,24 +61,18 @@ public class DBExists extends Exists implements DBQueryBuilderComponent
 {
     DBQueryBuilderComponent builderSupport;
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported() */
     @Override
     public boolean isSupported()
     {
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace
-     * .NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService,
-     * org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map,
-     * org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#prepare(org.alfresco.service.namespace .NamespaceService, org.alfresco.service.cmr.dictionary.DictionaryService, org.alfresco.repo.domain.qname.QNameDAO, org.alfresco.repo.domain.node.NodeDAO, java.util.Set, java.util.Map, org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext) */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
             Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
@@ -146,7 +140,7 @@ public class DBExists extends Exists implements DBQueryBuilderComponent
         else if (propertyArgument.getPropertyName().equals(PropertyIds.CONTENT_STREAM_MIME_TYPE))
         {
             PropertySupport propertySupport = new PropertySupport();
-            
+
             QName basePropertyQName = QName.createQName(DBQuery.expandQName(functionContext.getAlfrescoPropertyName(propertyArgument.getPropertyName()), namespaceService));
             propertySupport.setPropertyQName(basePropertyQName);
             propertySupport.setPropertyDataType(DBQuery.getDataTypeDefinition(dictionaryService, basePropertyQName));
@@ -167,7 +161,7 @@ public class DBExists extends Exists implements DBQueryBuilderComponent
         else if (propertyArgument.getPropertyName().equals(PropertyIds.CONTENT_STREAM_LENGTH))
         {
             PropertySupport propertySupport = new PropertySupport();
-            
+
             QName basePropertyQName = QName.createQName(DBQuery.expandQName(functionContext.getAlfrescoPropertyName(propertyArgument.getPropertyName()), namespaceService));
             propertySupport.setPropertyQName(basePropertyQName);
             propertySupport.setPropertyDataType(DBQuery.getDataTypeDefinition(dictionaryService, basePropertyQName));
@@ -210,11 +204,9 @@ public class DBExists extends Exists implements DBQueryBuilderComponent
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map,
-     * java.util.List)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildJoins(java.util.Map, java.util.List) */
     @Override
     public void buildJoins(Map<QName, DBQueryBuilderJoinCommand> singleJoins, List<DBQueryBuilderJoinCommand> multiJoins)
     {
@@ -222,11 +214,9 @@ public class DBExists extends Exists implements DBQueryBuilderComponent
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util.List)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#buildPredicateCommands(java.util.List) */
     @Override
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {

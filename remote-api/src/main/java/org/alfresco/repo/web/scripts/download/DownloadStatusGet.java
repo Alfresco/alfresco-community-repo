@@ -28,14 +28,15 @@ package org.alfresco.repo.web.scripts.download;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.cmr.download.DownloadStatus;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.service.cmr.download.DownloadStatus;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 /**
  * Webscript for retrieving the status of a download.
@@ -53,32 +54,32 @@ public class DownloadStatusGet extends AbstractDownloadWebscript
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         if (templateVars == null)
         {
-           String error = "No parameters supplied";
-           throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
+            String error = "No parameters supplied";
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
         }
 
-        if (! ( templateVars.containsKey("store_type") 
+        if (!(templateVars.containsKey("store_type")
                 && templateVars.containsKey("store_id")
-                && templateVars.containsKey("node_id")) )
+                && templateVars.containsKey("node_id")))
         {
             String error = "Missing template variables (store_type, store_id or node_id).";
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
         }
-        
+
         StoreRef store = new StoreRef(templateVars.get("store_type"), templateVars.get("store_id"));
         NodeRef nodeRef = new NodeRef(store, templateVars.get("node_id"));
-        if (! nodeService.exists(nodeRef))
+        if (!nodeService.exists(nodeRef))
         {
             String error = "Could not find node: " + nodeRef;
             throw new WebScriptException(Status.STATUS_NOT_FOUND, error);
         }
-        
+
         DownloadStatus downloadStatus = downloadService.getDownloadStatus(nodeRef);
-        
+
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("downloadStatus", downloadStatus);
         return result;
-        
+
     }
 
     public void setNodeService(NodeService nodeSerivce)

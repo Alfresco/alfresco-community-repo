@@ -66,7 +66,7 @@ public class FTPConfigBean
     private FTPAuthenticator authenticator;
 
     // Data port range
-    
+
     private int dataPortFrom;
     private int dataPortTo;
 
@@ -76,23 +76,23 @@ public class FTPConfigBean
     // FTPS configuration
     //
     // Keystore/truststore details
-    
+
     private String m_keyStorePath;
     private String m_keyStoreType;
     private String m_keyStorePass;
-    
+
     private String m_trustStorePath;
     private String m_trustStoreType;
     private String m_trustStorePass;
-    
+
     // Only allow FTPS/encrypted session logons
-    
+
     private boolean m_requireSecureSess;
-    
+
     // SSL engine debug enable
-    
+
     private boolean m_sslDebug;
-    
+
     /**
      * Checks if is server enabled.
      * 
@@ -158,7 +158,9 @@ public class FTPConfigBean
 
     /**
      * Sets the timeout for socket session.
-     * @param sessionTimeout the new timeout
+     * 
+     * @param sessionTimeout
+     *            the new timeout
      */
     public void setSessionTimeout(Integer sessionTimeout)
     {
@@ -167,6 +169,7 @@ public class FTPConfigBean
 
     /**
      * Gets the sesion timeout
+     * 
      * @return Integer
      */
     public Integer getSessionTimeout()
@@ -305,35 +308,41 @@ public class FTPConfigBean
      * 
      * @return int
      */
-    public int getDataPortFrom() {
-    	return dataPortFrom;
+    public int getDataPortFrom()
+    {
+        return dataPortFrom;
     }
-    
+
     /**
      * Set the data port range from port
      * 
-     * @param fromPort int
+     * @param fromPort
+     *            int
      */
-    public void setDataPortFrom(int fromPort) {
-    	dataPortFrom = fromPort;
+    public void setDataPortFrom(int fromPort)
+    {
+        dataPortFrom = fromPort;
     }
-    
+
     /**
      * Return the data port to range port
      * 
      * @return int
      */
-    public int getDataPortTo() {
-    	return dataPortTo;
+    public int getDataPortTo()
+    {
+        return dataPortTo;
     }
-    
+
     /**
      * Set the data port range to port
      * 
-     * @param toPort int
+     * @param toPort
+     *            int
      */
-    public void setDataPortTo(int toPort) {
-    	dataPortTo = toPort;
+    public void setDataPortTo(int toPort)
+    {
+        dataPortTo = toPort;
     }
 
     /**
@@ -357,142 +366,166 @@ public class FTPConfigBean
      * 
      * @return String
      */
-    public final String getKeyStorePath() {
-  	  return m_keyStorePath;
+    public final String getKeyStorePath()
+    {
+        return m_keyStorePath;
     }
-    
+
     /**
      * Return the key store type
      * 
      * @return String
      */
-    public final String getKeyStoreType() {
-    	return m_keyStoreType;
+    public final String getKeyStoreType()
+    {
+        return m_keyStoreType;
     }
-    
+
     /**
      * Return the trust store path
      * 
      * @return String
      */
-    public final String getTrustStorePath() {
-  	  return m_trustStorePath;
+    public final String getTrustStorePath()
+    {
+        return m_trustStorePath;
     }
-    
+
     /**
      * Return the trust store type
      * 
      * @return String
      */
-    public final String getTrustStoreType() {
-    	return m_trustStoreType;
+    public final String getTrustStoreType()
+    {
+        return m_trustStoreType;
     }
-    
+
     /**
      * Return the passphrase for the key store
      * 
      * @return String
      */
-    public final String getKeyStorePassphrase() {
-  	  return m_keyStorePass;
+    public final String getKeyStorePassphrase()
+    {
+        return m_keyStorePass;
     }
-    
+
     /**
      * Return the passphrase for the trust store
      * 
      * @return String
      */
-    public final String getTrustStorePassphrase() {
-  	  return m_trustStorePass;
+    public final String getTrustStorePassphrase()
+    {
+        return m_trustStorePass;
     }
-    
+
     /**
      * Determine if only secure sessions will be allowed to logon
      * 
      * @return boolean
      */
-    public final boolean hasRequireSecureSession() {
-  	  return m_requireSecureSess;
+    public final boolean hasRequireSecureSession()
+    {
+        return m_requireSecureSess;
     }
-    
+
     /**
      * Set/clear the require secure sessions flag
      * 
-     * @param reqSec boolean
+     * @param reqSec
+     *            boolean
      */
-    public final void setRequireSecureSession( boolean reqSec) {
-    	m_requireSecureSess = reqSec;
+    public final void setRequireSecureSession(boolean reqSec)
+    {
+        m_requireSecureSess = reqSec;
     }
-    
+
     /**
      * Set the key store path
      * 
-     * @param path String
+     * @param path
+     *            String
      */
-    public final void setKeyStorePath( String path) {
-    	m_keyStorePath = path;
+    public final void setKeyStorePath(String path)
+    {
+        m_keyStorePath = path;
     }
-    
+
     /**
      * Set the key store type
      * 
-     * @param typ String
+     * @param typ
+     *            String
      */
-    public final void setKeyStoreType( String typ) {
-    	m_keyStoreType = typ;
+    public final void setKeyStoreType(String typ)
+    {
+        m_keyStoreType = typ;
     }
-    
+
     /**
      * Set the trust store path
      * 
-     * @param path String
+     * @param path
+     *            String
      */
-    public final void setTrustStorePath( String path) {
-    	m_trustStorePath = path;
+    public final void setTrustStorePath(String path)
+    {
+        m_trustStorePath = path;
     }
-    
+
     /**
      * Set the trust store type
      * 
-     * @param typ String
+     * @param typ
+     *            String
      */
-    public final void setTrustStoreType( String typ) {
-    	m_trustStoreType = typ;
+    public final void setTrustStoreType(String typ)
+    {
+        m_trustStoreType = typ;
     }
-    
+
     /**
      * Set the key store passphrase
      * 
-     * @param phrase String
+     * @param phrase
+     *            String
      */
-    public final void setKeyStorePassphrase( String phrase) {
-    	m_keyStorePass = phrase;
+    public final void setKeyStorePassphrase(String phrase)
+    {
+        m_keyStorePass = phrase;
     }
-    
+
     /**
      * Set the trust store passphrase
      * 
-     * @param phrase String
+     * @param phrase
+     *            String
      */
-    public final void setTrustStorePassphrase( String phrase) {
-    	m_trustStorePass = phrase;
+    public final void setTrustStorePassphrase(String phrase)
+    {
+        m_trustStorePass = phrase;
     }
-    
+
     /**
      * Check if SSLEngine debug output should be enabled
      * 
      * @return boolean
      */
-    public final boolean hasSslEngineDebug() {
-    	return m_sslDebug;
+    public final boolean hasSslEngineDebug()
+    {
+        return m_sslDebug;
     }
-    
+
     /**
      * Enable SSLEngine class debug output
      * 
-     *  @param sslDebug boolean
+     * @param sslDebug
+     *            boolean
      */
-    public final void setSslEngineDebug( boolean sslDebug) {
-    	m_sslDebug = sslDebug;
+    public final void setSslEngineDebug(boolean sslDebug)
+    {
+        m_sslDebug = sslDebug;
     }
 }

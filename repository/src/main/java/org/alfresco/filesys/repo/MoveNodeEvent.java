@@ -34,61 +34,68 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author gkspencer
  */
-public class MoveNodeEvent extends NodeEvent {
+public class MoveNodeEvent extends NodeEvent
+{
 
-	// Moved node path and destination node
-	
-	private String fromPath;
-	private String toPath;
-	
-	/**
-	 * Class constructor
-	 * 
-	 * @param fType FileFolderServiceTtype
-	 * @param nodeRef NodeRef
-	 * @param fromPath String
-	 * @param toPath String
-	 */
-	public MoveNodeEvent( FileFolderServiceType fType, NodeRef nodeRef, String fromPath, String toPath) {
-		super( fType, nodeRef);
-		
-		this.fromPath = fromPath;
-		this.toPath = toPath;
-	}
-	
-	/**
-	 * Return the relative path of the target node
-	 * 
-	 * @return String
-	 */
-	public final String getFromPath() 
-	{
-		return fromPath;
-	}
-	
-	public final String getToPath() 
-	{
-	    return fromPath;
-	}
-	
-	/**
-	 * Return the node event as a string
-	 * 
-	 * @return String
-	 */
-	public String toString() {
-		StringBuilder str = new StringBuilder();
-		
-		str.append("[Move:fType=");
-		str.append(getFileType());
-		str.append(",nodeRef=");
-		str.append(getNodeRef());
-		str.append(",fromPath=");
-		str.append(getFromPath());
-		str.append(",toPath=");
-		str.append(getToPath());
-		str.append("]");
-		
-		return str.toString();
-	}
+    // Moved node path and destination node
+
+    private String fromPath;
+    private String toPath;
+
+    /**
+     * Class constructor
+     * 
+     * @param fType
+     *            FileFolderServiceTtype
+     * @param nodeRef
+     *            NodeRef
+     * @param fromPath
+     *            String
+     * @param toPath
+     *            String
+     */
+    public MoveNodeEvent(FileFolderServiceType fType, NodeRef nodeRef, String fromPath, String toPath)
+    {
+        super(fType, nodeRef);
+
+        this.fromPath = fromPath;
+        this.toPath = toPath;
+    }
+
+    /**
+     * Return the relative path of the target node
+     * 
+     * @return String
+     */
+    public final String getFromPath()
+    {
+        return fromPath;
+    }
+
+    public final String getToPath()
+    {
+        return fromPath;
+    }
+
+    /**
+     * Return the node event as a string
+     * 
+     * @return String
+     */
+    public String toString()
+    {
+        StringBuilder str = new StringBuilder();
+
+        str.append("[Move:fType=");
+        str.append(getFileType());
+        str.append(",nodeRef=");
+        str.append(getNodeRef());
+        str.append(",fromPath=");
+        str.append(getFromPath());
+        str.append(",toPath=");
+        str.append(getToPath());
+        str.append("]");
+
+        return str.toString();
+    }
 }

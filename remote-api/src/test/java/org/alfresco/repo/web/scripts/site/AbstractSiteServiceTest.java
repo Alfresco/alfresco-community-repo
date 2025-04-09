@@ -27,21 +27,20 @@ package org.alfresco.repo.web.scripts.site;
 
 import java.util.List;
 
+import com.google.common.collect.Lists;
+import org.json.JSONObject;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.PropertyMap;
-import org.json.JSONObject;
-import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-
-import com.google.common.collect.Lists;
 
 /**
  * Unit test for the Export Web Script API of the Site Object.
@@ -74,7 +73,7 @@ public class AbstractSiteServiceTest extends BaseWebScriptTest
         this.authenticationComponent.setSystemUserAsCurrentUser();
     }
 
-    protected void deleteSites() throws Exception 
+    protected void deleteSites() throws Exception
     {
         // Tidy-up any sites create during the execution of the test
         for (String shortName : this.createdSites)
@@ -85,7 +84,7 @@ public class AbstractSiteServiceTest extends BaseWebScriptTest
         // Clear the list
         this.createdSites.clear();
     }
-    
+
     protected void createUser(String userName)
     {
         if (this.authenticationService.authenticationExists(userName) == false)

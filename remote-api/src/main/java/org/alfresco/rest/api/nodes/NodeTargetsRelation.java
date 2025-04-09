@@ -49,7 +49,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  * 
  * @author janv
  */
-@RelationshipResource(name = "targets",  entityResource = NodesEntityResource.class, title = "Node Targets")
+@RelationshipResource(name = "targets", entityResource = NodesEntityResource.class, title = "Node Targets")
 public class NodeTargetsRelation extends AbstractNodeRelation implements
         RelationshipResourceAction.Read<Node>,
         RelationshipResourceAction.Create<AssocTarget>,
@@ -58,7 +58,8 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
     /**
      * List targets
      *
-     * @param sourceNodeId String id of source node
+     * @param sourceNodeId
+     *            String id of source node
      */
     @Override
     @WebApiDescription(title = "Return a paged list of target nodes based on (peer) assocs")
@@ -74,7 +75,7 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
     }
 
     @Override
-    @WebApiDescription(title="Add node assoc")
+    @WebApiDescription(title = "Add node assoc")
     public List<AssocTarget> create(String sourceNodeId, List<AssocTarget> entities, Parameters parameters)
     {
         return nodes.addTargets(sourceNodeId, entities);
@@ -107,9 +108,9 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
             }
         }
 
-        if (! found)
+        if (!found)
         {
-            throw new EntityNotFoundException(sourceNodeId+","+assocTypeStr+","+targetNodeId);
+            throw new EntityNotFoundException(sourceNodeId + "," + assocTypeStr + "," + targetNodeId);
         }
     }
 }

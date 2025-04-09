@@ -13,15 +13,13 @@ public interface AlfrescoHttpClient
      * Send Request to the repository
      */
     public Response sendRequest(Request req) throws AuthenticationException, IOException;
-    
-    
+
     /**
-     * Set the base url to alfresco
-     * - normally /alfresco
+     * Set the base url to alfresco - normally /alfresco
+     * 
      * @param baseUrl
      */
     public void setBaseUrl(String baseUrl);
-
 
     /**
      * 

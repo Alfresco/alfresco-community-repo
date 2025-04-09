@@ -43,11 +43,12 @@ public class Form
     protected List<FieldDefinition> fieldDefinitions;
     protected Collection<FieldGroup> fieldGroups;
     protected FormData data;
-    
+
     /**
      * Constructs a Form
      * 
-     * @param item The item the form is for
+     * @param item
+     *            The item the form is for
      */
     public Form(Item item)
     {
@@ -63,7 +64,7 @@ public class Form
     {
         return this.item;
     }
-    
+
     /**
      * Returns the submission URL to use for the form
      * 
@@ -73,17 +74,18 @@ public class Form
     {
         return this.submissionUrl;
     }
-    
+
     /**
      * Sets the submission URL the form should use
      * 
-     * @param url URL to submit to
+     * @param url
+     *            URL to submit to
      */
     public void setSubmissionUrl(String url)
     {
         this.submissionUrl = url;
     }
-       
+
     /**
      * Returns the list of field definitions for the form
      * 
@@ -93,7 +95,7 @@ public class Form
     {
         return this.fieldDefinitions;
     }
-    
+
     public List<String> getFieldDefinitionNames()
     {
         List<String> result = new ArrayList<String>(fieldDefinitions.size());
@@ -103,27 +105,25 @@ public class Form
         }
         return result;
     }
-    
+
     /**
-     * Sets the list of FieldDefinition objects representing the fields the
-     * form is able to display
+     * Sets the list of FieldDefinition objects representing the fields the form is able to display
      * 
-     * @param fieldDefinitions List of FieldDefinition objects
+     * @param fieldDefinitions
+     *            List of FieldDefinition objects
      */
     public void setFieldDefinitions(List<FieldDefinition> fieldDefinitions)
     {
         this.fieldDefinitions = fieldDefinitions;
     }
-    
+
     /**
      * Adds the given FieldDefinition to the form.
      * <p>
-     * NOTE: Multiple fields with the same name can be added to the list,
-     *       it is therefore the form processor and the client of the 
-     *       FormService responsibility to differentiate the fields in
-     *       some way i.e. by type, property vs. association.
+     * NOTE: Multiple fields with the same name can be added to the list, it is therefore the form processor and the client of the FormService responsibility to differentiate the fields in some way i.e. by type, property vs. association.
      * 
-     * @param definition The FieldDefinition to add
+     * @param definition
+     *            The FieldDefinition to add
      */
     public void addFieldDefinition(FieldDefinition definition)
     {
@@ -131,12 +131,12 @@ public class Form
         {
             this.fieldDefinitions = new ArrayList<FieldDefinition>(8);
         }
-        
+
         this.fieldDefinitions.add(definition);
     }
-    
+
     /**
-     * Returns the collection of field groups for the form 
+     * Returns the collection of field groups for the form
      * 
      * @return Collection of FieldGroup objects or null if there are no groups
      */
@@ -144,23 +144,22 @@ public class Form
     {
         return this.fieldGroups;
     }
-    
+
     /**
-     * Sets the collection of FieldGroup objects representing the groups of
-     * fields the form should display and maintain
+     * Sets the collection of FieldGroup objects representing the groups of fields the form should display and maintain
      * 
-     * @param fieldGroups Collection of FieldGroup objects
+     * @param fieldGroups
+     *            Collection of FieldGroup objects
      */
     public void setFieldGroups(Collection<FieldGroup> fieldGroups)
     {
         this.fieldGroups = fieldGroups;
     }
-    
+
     /**
      * Returns the data to display in the form
      * 
-     * @return FormData object holding the data of the form or null
-     *         if there is no data i.e. for a create form
+     * @return FormData object holding the data of the form or null if there is no data i.e. for a create form
      */
     public FormData getFormData()
     {
@@ -168,10 +167,10 @@ public class Form
     }
 
     /**
-     * Sets the data this form should display. This will overwrite
-     * any existing form data being held
+     * Sets the data this form should display. This will overwrite any existing form data being held
      * 
-     * @param data FormData instance containing the data
+     * @param data
+     *            FormData instance containing the data
      */
     public void setFormData(FormData data)
     {
@@ -179,24 +178,26 @@ public class Form
     }
 
     /**
-     * Returns <code>true</code> if the Form contains {@link FieldData} for the
-     * specified <code>dataKey</code>.
+     * Returns <code>true</code> if the Form contains {@link FieldData} for the specified <code>dataKey</code>.
      * 
-     * @param dataKey The dataKey for the field.
+     * @param dataKey
+     *            The dataKey for the field.
      * @return boolean
      */
     public boolean dataExists(String dataKey)
     {
-        if(data == null)
+        if (data == null)
             return false;
         return data.getFieldNames().contains(dataKey);
     }
-    
+
     /**
      * Adds some data to be displayed by the form
      * 
-     * @param fieldName Name of the field the data is for
-     * @param fieldData The value
+     * @param fieldName
+     *            Name of the field the data is for
+     * @param fieldData
+     *            The value
      */
     public void addData(String fieldName, Object fieldData)
     {
@@ -204,15 +205,15 @@ public class Form
         {
             this.data = new FormData();
         }
-        
+
         this.data.addFieldData(fieldName, fieldData);
     }
-    
-     /**
-     * Adds a {@link Field} to the form by adding the {@link FieldDefinition}
-     * and the value if any.
+
+    /**
+     * Adds a {@link Field} to the form by adding the {@link FieldDefinition} and the value if any.
      * 
-     * @param field Field
+     * @param field
+     *            Field
      */
     public void addField(Field field)
     {
@@ -220,32 +221,29 @@ public class Form
         {
             return;
         }
-        
+
         FieldDefinition fieldDefinition = field.getFieldDefinition();
         addFieldDefinition(fieldDefinition);
         Object value = field.getValue();
-        
+
         if (value != null)
         {
             addData(fieldDefinition.getDataKeyName(), value);
         }
     }
-    
+
     /**
-     * Adds a {@link Collection} of {@link Field Fields} to the form by adding the {@link FieldDefinition FieldDefinitions}
-     * and the values if any.
+     * Adds a {@link Collection} of {@link Field Fields} to the form by adding the {@link FieldDefinition FieldDefinitions} and the values if any.
      */
     public void addFields(Collection<Field> fields)
     {
-        for (Field field : fields) 
+        for (Field field : fields)
         {
             addField(field);
         }
     }
-    
-    /*
-     * @see java.lang.Object#toString()
-     */
+
+    /* @see java.lang.Object#toString() */
     @Override
     public String toString()
     {

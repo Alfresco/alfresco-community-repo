@@ -31,5 +31,5 @@ public class FeedCleanerTestCaseInsensitivity extends AbstractFeedCleanerTest
     {
         System.setProperty("user.name.caseSensitive", "false");
     }
-    
+
 }

@@ -40,19 +40,19 @@ import org.alfresco.service.cmr.repository.StoreRef;
 public class StoreArchiveMap
 {
     private Map<StoreRef, StoreRef> storeArchiveMap;
-    
+
     private TenantService tenantService;
-    
+
     public StoreArchiveMap()
     {
         storeArchiveMap = new HashMap<StoreRef, StoreRef>(0);
     }
-    
+
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
     }
-    
+
     public void setArchiveMap(Map<String, String> archiveMap)
     {
         // translate all the entries to references
@@ -74,7 +74,7 @@ public class StoreArchiveMap
             storeArchiveMap.put(storeRefKey, storeRefValue);
         }
     }
-    
+
     public StoreRef get(StoreRef storeRef)
     {
         if (tenantService.isEnabled())
@@ -86,12 +86,12 @@ public class StoreArchiveMap
             return storeArchiveMap.get(storeRef);
         }
     }
-    
+
     public void put(StoreRef workStoreRef, StoreRef archiveStoreRef)
     {
         storeArchiveMap.put(workStoreRef, archiveStoreRef);
     }
-    
+
     public void clear()
     {
         storeArchiveMap.clear();

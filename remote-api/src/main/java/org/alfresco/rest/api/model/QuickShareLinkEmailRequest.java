@@ -86,10 +86,10 @@ public class QuickShareLinkEmailRequest
     {
         final StringBuilder sb = new StringBuilder(250);
         sb.append("QuickShareLinkEmailRequest [client=").append(client)
-                    .append(", message=").append(message)
-                    .append(", locale=").append(locale)
-                    .append(", recipientEmails=").append(recipientEmails)
-                    .append(']');
+                .append(", message=").append(message)
+                .append(", locale=").append(locale)
+                .append(", recipientEmails=").append(recipientEmails)
+                .append(']');
         return sb.toString();
     }
 }

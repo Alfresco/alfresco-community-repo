@@ -35,9 +35,13 @@ import java.util.List;
  */
 public interface StatsResultSet
 {
-    long getNumberFound(); //long For compatibility with SolrJSONResultSet
+    long getNumberFound(); // long For compatibility with SolrJSONResultSet
+
     Long getSum();
+
     Long getMax();
+
     Long getMean();
+
     List<StatsResultStat> getStats();
 }

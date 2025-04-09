@@ -37,8 +37,7 @@ public interface ReferenceParser extends Serializable
     {
 
         /**
-         * Tokens obtained by splitting the reference string using
-         * {@link PlainEncoding#DELIMITER}
+         * Tokens obtained by splitting the reference string using {@link PlainEncoding#DELIMITER}
          */
         String[] tokens;
 

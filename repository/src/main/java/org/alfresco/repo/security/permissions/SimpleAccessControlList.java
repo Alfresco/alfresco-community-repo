@@ -38,11 +38,11 @@ public class SimpleAccessControlList implements AccessControlList
     private static final long serialVersionUID = -1859514919998903150L;
 
     private AccessControlListProperties properties;
-    
+
     private List<AccessControlEntry> entries = new ArrayList<AccessControlEntry>();
-    
+
     private transient SimpleNodePermissionEntry cachedSimpleNodePermissionEntry;
-    
+
     public List<AccessControlEntry> getEntries()
     {
         return entries;
@@ -50,7 +50,7 @@ public class SimpleAccessControlList implements AccessControlList
 
     public AccessControlListProperties getProperties()
     {
-       return properties;
+        return properties;
     }
 
     public void setEntries(List<AccessControlEntry> entries)
@@ -72,7 +72,5 @@ public class SimpleAccessControlList implements AccessControlList
     {
         this.cachedSimpleNodePermissionEntry = cachedSimpleNodePermissionEntry;
     }
-    
-    
 
 }

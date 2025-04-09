@@ -25,6 +25,19 @@
  */
 package org.alfresco.heartbeat;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
@@ -34,18 +47,6 @@ import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.transaction.TransactionService;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author eknizat
@@ -79,7 +80,7 @@ public class ModelUsageDataCollectorTest
         when(mockRetryingTransactionHelper.doInTransaction(any(RetryingTransactionHelper.RetryingTransactionCallback.class), anyBoolean())).thenReturn(mockCustomModelsInfo);
         when(mockTransactionService.getRetryingTransactionHelper()).thenReturn(mockRetryingTransactionHelper);
 
-        usageModelCollector = new ModelUsageDataCollector("acs.repository.usage.model","1.0", "0 0 0 ? * *", mockScheduler);
+        usageModelCollector = new ModelUsageDataCollector("acs.repository.usage.model", "1.0", "0 0 0 ? * *", mockScheduler);
 
         usageModelCollector.setHbDataCollectorService(mockCollectorService);
         usageModelCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
@@ -92,7 +93,7 @@ public class ModelUsageDataCollectorTest
     @Test
     public void testHBDataFields()
     {
-        for(HBData data : this.collectedData)
+        for (HBData data : this.collectedData)
         {
             assertNotNull(data.getCollectorId());
             assertNotNull(data.getCollectorVersion());
@@ -108,7 +109,7 @@ public class ModelUsageDataCollectorTest
         HBData modelUsage = grabDataByCollectorId(usageModelCollector.getCollectorId());
         assertNotNull("Model usage data missing.", modelUsage);
 
-        Map<String,Object> data = modelUsage.getData();
+        Map<String, Object> data = modelUsage.getData();
         assertTrue(data.containsKey("numOfActiveModels"));
         assertTrue(data.containsKey("numOfActiveTypes"));
         assertTrue(data.containsKey("numOfActiveAspects"));
@@ -119,7 +120,7 @@ public class ModelUsageDataCollectorTest
     {
         for (HBData d : this.collectedData)
         {
-            if(d.getCollectorId()!=null && d.getCollectorId().equals(collectorId))
+            if (d.getCollectorId() != null && d.getCollectorId().equals(collectorId))
             {
                 return d;
             }

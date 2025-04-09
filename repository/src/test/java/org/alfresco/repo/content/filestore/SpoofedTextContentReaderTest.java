@@ -29,15 +29,15 @@ import java.io.InputStream;
 import java.util.Locale;
 
 import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
+import org.springframework.util.FileCopyUtils;
 
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
-import org.springframework.util.FileCopyUtils;
 
 /**
  * Text spoofing as a {@link ContentReader}
@@ -55,7 +55,7 @@ public class SpoofedTextContentReaderTest extends TestCase
     {
         // Nothing
     }
-    
+
     public void testStaticUrlHandlingErr()
     {
         try
@@ -108,7 +108,7 @@ public class SpoofedTextContentReaderTest extends TestCase
             // Expected
         }
     }
-    
+
     public void testStaticUrlForm_01()
     {
         // To URL
@@ -131,7 +131,7 @@ public class SpoofedTextContentReaderTest extends TestCase
         assertEquals(1, reader.getWords().length);
         assertEquals("harry", reader.getWords()[0]);
     }
-    
+
     public void testStaticUrlForm_02()
     {
         // To URL
@@ -153,7 +153,7 @@ public class SpoofedTextContentReaderTest extends TestCase
         assertNotNull(reader.getWords());
         assertEquals(0, reader.getWords().length);
     }
-    
+
     public void testGetContentString_01()
     {
         // To URL
@@ -177,7 +177,7 @@ public class SpoofedTextContentReaderTest extends TestCase
         // Get exactly the same text
         assertEquals(readerText, reader.getContentString());
     }
-    
+
     public void testGetContentBinary_01() throws Exception
     {
         // To URL

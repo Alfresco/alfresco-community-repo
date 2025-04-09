@@ -29,16 +29,16 @@ package org.alfresco.repo.web.scripts.nodelocator;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.nodelocator.NodeLocatorService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.repo.nodelocator.NodeLocatorService;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author Nick Smith
@@ -51,10 +51,10 @@ public class NodeLocatorGet extends DeclarativeWebScript
     private static final String STORE_TYPE = "store_type";
     private static final String NODE_LOCATOR_NAME = "node_locator_name";
     private NodeLocatorService locatorService;
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {
@@ -70,26 +70,26 @@ public class NodeLocatorGet extends DeclarativeWebScript
 
         NodeRef source = null;
         String storeType = vars.get(STORE_TYPE);
-        String storeId= vars.get(STORE_ID);
-        String nodeId= vars.get(NODE_ID);
+        String storeId = vars.get(STORE_ID);
+        String nodeId = vars.get(NODE_ID);
         if (storeType != null && storeId != null && nodeId != null)
         {
             source = new NodeRef(storeType, storeId, nodeId);
         }
-        
+
         Map<String, Serializable> params = mapParams(req);
-        
+
         NodeRef node = locatorService.getNode(locatorName, source, params);
-        
+
         Map<String, Object> model = new HashMap<String, Object>();
-        model.put("nodeRef", node==null ? null : node.toString());
+        model.put("nodeRef", node == null ? null : node.toString());
         return model;
     }
 
     private Map<String, Serializable> mapParams(WebScriptRequest req)
     {
         Map<String, Serializable> params = new HashMap<String, Serializable>();
-        for (String key: req.getParameterNames())
+        for (String key : req.getParameterNames())
         {
             String value = req.getParameter(key);
             if (value != null)
@@ -103,7 +103,8 @@ public class NodeLocatorGet extends DeclarativeWebScript
     }
 
     /**
-     * @param locatorService the locatorService to set
+     * @param locatorService
+     *            the locatorService to set
      */
     public void setNodeLocatorService(NodeLocatorService locatorService)
     {

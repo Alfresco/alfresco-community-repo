@@ -30,12 +30,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 
+import org.apache.chemistry.opencmis.commons.PropertyIds;
+
 import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
 
 /**
  * 
@@ -60,21 +61,21 @@ public class SecondaryTypesProperty extends AbstractProperty
     {
         NodeRef nodeRef = nodeInfo.getNodeRef();
 
-        if(nodeRef == null || nodeInfo.getType() == null)
+        if (nodeRef == null || nodeInfo.getType() == null)
         {
-        	// If the nodeRef or type is null, we can't handle it so return an empty list	
-        	return (Serializable) Collections.emptyList();
+            // If the nodeRef or type is null, we can't handle it so return an empty list
+            return (Serializable) Collections.emptyList();
         }
 
         Set<QName> aspects = nodeInfo.getNodeAspects();
         ArrayList<String> results = new ArrayList<String>(aspects.size());
         for (QName aspect : aspects)
         {
-        	String typeId = cmisMapping.getCmisTypeId(aspect);
-        	if (typeId != null)
-        	{
-        		results.add(typeId);
-        	}
+            String typeId = cmisMapping.getCmisTypeId(aspect);
+            if (typeId != null)
+            {
+                results.add(typeId);
+            }
         }
         return results;
     }

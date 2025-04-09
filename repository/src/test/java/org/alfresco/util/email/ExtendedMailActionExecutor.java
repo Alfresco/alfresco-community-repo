@@ -26,19 +26,20 @@
 
 package org.alfresco.util.email;
 
-import org.alfresco.repo.action.executer.MailActionExecuter;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.mail.javamail.MimeMessageHelper;
-
-import jakarta.mail.internet.InternetAddress;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
+import jakarta.mail.internet.InternetAddress;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.mail.javamail.MimeMessageHelper;
+
+import org.alfresco.repo.action.executer.MailActionExecuter;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.Pair;
 
 /**
  * Extension of {@link MailActionExecuter} for test purposes.
@@ -53,7 +54,7 @@ public class ExtendedMailActionExecutor extends MailActionExecuter
 
     @Override
     public MimeMessageHelper prepareEmail(Action ruleAction, NodeRef actionedUponNodeRef, Pair<String, Locale> recipient,
-                Pair<InternetAddress, Locale> sender)
+            Pair<InternetAddress, Locale> sender)
     {
         parameterValues = ruleAction.getParameterValues();
         return super.prepareEmail(ruleAction, actionedUponNodeRef, recipient, sender);

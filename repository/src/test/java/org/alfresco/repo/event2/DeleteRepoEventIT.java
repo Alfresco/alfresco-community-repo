@@ -26,6 +26,8 @@
 
 package org.alfresco.repo.event2;
 
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.event.v1.model.EventData;
 import org.alfresco.repo.event.v1.model.EventType;
@@ -36,7 +38,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.junit.Test;
 
 /**
  * @author Iulian Aftene
@@ -80,7 +81,7 @@ public class DeleteRepoEventIT extends AbstractContextAwareRepoEvent
         // There should be no resourceBefore
         EventData<NodeResource> eventData = getEventData(resultRepoEvent);
         assertNull("There should be no 'resourceBefore' object for the Deleted event type.",
-            eventData.getResourceBefore());
+                eventData.getResourceBefore());
     }
 
     @Test
@@ -105,15 +106,15 @@ public class DeleteRepoEventIT extends AbstractContextAwareRepoEvent
         retryingTransactionHelper.doInTransaction(() -> {
 
             NodeRef nodeRef = nodeService.createNode(
-                rootNodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(TEST_NAMESPACE, GUID.generate()),
-                ContentModel.TYPE_CONTENT).getChildRef();
+                    rootNodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(TEST_NAMESPACE, GUID.generate()),
+                    ContentModel.TYPE_CONTENT).getChildRef();
 
             nodeService.deleteNode(nodeRef);
             return null;
         });
-        //Create and delete node are done in the same transaction so no events are expected
+        // Create and delete node are done in the same transaction so no events are expected
         // to be generated
         checkNumOfEvents(0);
     }

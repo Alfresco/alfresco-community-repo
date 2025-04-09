@@ -33,8 +33,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 
 /**
- * Permissible actions for an Relationship Resources
- * Based around CRUD - Create, ReadAll, ReadById, Update, Delete, DeleteSet
+ * Permissible actions for an Relationship Resources Based around CRUD - Create, ReadAll, ReadById, Update, Delete, DeleteSet
  * 
  * @author Gethin James
  */
@@ -49,9 +48,12 @@ public interface RelationshipResourceAction
         /**
          * Reads set the relationship entities from the collection using the related entityResourceId.
          * 
-         * Paging information is provided.  
-         * @param entityResourceId Entity resource context for this relationship
-         * @param params - will never be null and will have the PAGING default values
+         * Paging information is provided.
+         * 
+         * @param entityResourceId
+         *            Entity resource context for this relationship
+         * @param params
+         *            - will never be null and will have the PAGING default values
          */
         public CollectionWithPagingInfo<E> readAll(String entityResourceId, Parameters params);
     }
@@ -65,9 +67,11 @@ public interface RelationshipResourceAction
          * Reads all the relationship entities from the collection using the related entityResourceId.
          *
          * Paging information is provided.
-         * @param entityResourceId Entity resource context for this relationship
-         * @param params will never be null and will have the PAGING default values, 
-         *               implementation may choose to filter the set based on params (ie. not necessarily "all")
+         * 
+         * @param entityResourceId
+         *            Entity resource context for this relationship
+         * @param params
+         *            will never be null and will have the PAGING default values, implementation may choose to filter the set based on params (ie. not necessarily "all")
          */
         public CollectionWithPagingInfo<E> readAll(String entityResourceId, Parameters params, WithResponse withResponse);
     }
@@ -77,7 +81,7 @@ public interface RelationshipResourceAction
      */
     public static interface ReadById<E> extends ResourceAction
     {
-        public E readById(String entityResourceId, String id,  Parameters parameters) throws RelationshipResourceNotFoundException;
+        public E readById(String entityResourceId, String id, Parameters parameters) throws RelationshipResourceNotFoundException;
     }
 
     /**
@@ -85,7 +89,7 @@ public interface RelationshipResourceAction
      */
     public static interface ReadByIdWithResponse<E> extends ResourceAction
     {
-        public E readById(String entityResourceId, String id,  Parameters parameters, WithResponse withResponse) throws RelationshipResourceNotFoundException;
+        public E readById(String entityResourceId, String id, Parameters parameters, WithResponse withResponse) throws RelationshipResourceNotFoundException;
     }
 
     /**
@@ -93,7 +97,7 @@ public interface RelationshipResourceAction
      */
     public static interface Update<E> extends ResourceAction
     {
-        public E update(String entityResourceId, E entity,  Parameters parameters);
+        public E update(String entityResourceId, E entity, Parameters parameters);
     }
 
     /**
@@ -101,7 +105,7 @@ public interface RelationshipResourceAction
      */
     public static interface UpdateWithResponse<E> extends ResourceAction
     {
-        public E update(String entityResourceId, E entity,  Parameters parameters, WithResponse withResponse);
+        public E update(String entityResourceId, E entity, Parameters parameters, WithResponse withResponse);
     }
 
     /**
@@ -109,7 +113,7 @@ public interface RelationshipResourceAction
      */
     public static interface Create<E> extends ResourceAction
     {
-        public List<E> create(String entityResourceId, List<E> entity,  Parameters parameters);
+        public List<E> create(String entityResourceId, List<E> entity, Parameters parameters);
     }
 
     /**
@@ -117,7 +121,7 @@ public interface RelationshipResourceAction
      */
     public static interface CreateWithResponse<E> extends ResourceAction
     {
-        public List<E> create(String entityResourceId, List<E> entity,  Parameters parameters, WithResponse withResponse);
+        public List<E> create(String entityResourceId, List<E> entity, Parameters parameters, WithResponse withResponse);
     }
 
     /**
@@ -125,7 +129,7 @@ public interface RelationshipResourceAction
      */
     public static interface Delete extends ResourceAction
     {
-        public void delete(String entityResourceId, String id,  Parameters parameters);
+        public void delete(String entityResourceId, String id, Parameters parameters);
     }
 
     /**
@@ -133,7 +137,7 @@ public interface RelationshipResourceAction
      */
     public static interface DeleteWithResponse extends ResourceAction
     {
-        public void delete(String entityResourceId, String id,  Parameters parameters, WithResponse withResponse);
+        public void delete(String entityResourceId, String id, Parameters parameters, WithResponse withResponse);
     }
 
     /**
@@ -144,8 +148,10 @@ public interface RelationshipResourceAction
         /**
          * Deletes related entities from the collection
          *
-         * @param entityResourceId Entity resource context for this relationship
-         * @param params implementation may choose to restrict the set to be be deleted based on params (ie. not necessarily "all")
+         * @param entityResourceId
+         *            Entity resource context for this relationship
+         * @param params
+         *            implementation may choose to restrict the set to be be deleted based on params (ie. not necessarily "all")
          */
         public void deleteSet(String entityResourceId, Parameters params);
     }
@@ -158,8 +164,10 @@ public interface RelationshipResourceAction
         /**
          * Deletes related entities from the collection
          *
-         * @param entityResourceId Entity resource context for this relationship
-         * @param params implementation may choose to restrict the set to be be deleted based on params (ie. not necessarily "all")
+         * @param entityResourceId
+         *            Entity resource context for this relationship
+         * @param params
+         *            implementation may choose to restrict the set to be be deleted based on params (ie. not necessarily "all")
          */
         public void deleteSet(String entityResourceId, Parameters params, WithResponse withResponse);
     }

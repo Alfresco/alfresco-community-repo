@@ -58,10 +58,9 @@ public class ProtocolAccessControlBean extends AccessControlBean
         return this.checkList;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.filesys.config.acl.AccessControlBean#toAccessControl()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.filesys.config.acl.AccessControlBean#toAccessControl() */
     @Override
     public AccessControl toAccessControl()
     {

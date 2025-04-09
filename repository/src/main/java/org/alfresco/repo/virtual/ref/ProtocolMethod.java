@@ -29,10 +29,10 @@ package org.alfresco.repo.virtual.ref;
 /**
  * A double-dispatched method abstraction.<br>
  * The method execution is dispatched based on concrete protocol type.<br>
- * Implementor encapsulate high-level reference protocol based semantic
- * functionality.
+ * Implementor encapsulate high-level reference protocol based semantic functionality.
  * 
- * @param <R> method return type
+ * @param <R>
+ *            method return type
  * @see Reference#execute(ProtocolMethod)
  * @author Bogdan Horje
  */

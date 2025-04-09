@@ -36,12 +36,13 @@ import org.alfresco.service.NotAuditable;
  * @author Roy Wetherall
  * @since 4.0
  */
-public interface NotificationService 
+public interface NotificationService
 {
     /**
      * Registers a notification provider with the notification service.
      * 
-     * @param notificationProvider  notification provider
+     * @param notificationProvider
+     *            notification provider
      */
     @NotAuditable
     void register(NotificationProvider notificationProvider);
@@ -57,8 +58,9 @@ public interface NotificationService
     /**
      * Indicates whether a notification provider exists or not.
      * 
-     * @param notificationProvider  notification provider
-     * @return boolean              true if exists, false otherwise
+     * @param notificationProvider
+     *            notification provider
+     * @return boolean true if exists, false otherwise
      */
     @NotAuditable
     boolean exists(String notificationProvider);
@@ -66,9 +68,11 @@ public interface NotificationService
     /**
      * Send notification using the names notification provider and notification context.
      * 
-     * @param notificationProvider  notification provider
-     * @param notificationContext   notification context
+     * @param notificationProvider
+     *            notification provider
+     * @param notificationContext
+     *            notification context
      */
     @NotAuditable
-    void sendNotification(String notificationProvider, NotificationContext notificationContext);	
+    void sendNotification(String notificationProvider, NotificationContext notificationContext);
 }

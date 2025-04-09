@@ -48,9 +48,9 @@ public class AuthorityNameConstraint extends AbstractConstraint
         {
             throw new ConstraintException(ERR_NON_STRING, value);
         }
-        
+
         AuthorityType type = AuthorityType.getAuthorityType(checkValue);
-        if((type != AuthorityType.GROUP) && (type != AuthorityType.ROLE))
+        if ((type != AuthorityType.GROUP) && (type != AuthorityType.ROLE))
         {
             throw new ConstraintException(ERR_INVALID_AUTHORITY_NAME, value, type);
         }

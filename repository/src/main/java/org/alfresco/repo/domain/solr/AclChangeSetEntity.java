@@ -43,35 +43,40 @@ public class AclChangeSetEntity implements AclChangeSet
     public String toString()
     {
         return "AclChangeSetEntity " +
-        		"[id=" + id +
-        		", commitTimeMs=" + commitTimeMs +
-        		", aclCount=" + aclCount +
-        		"]";
+                "[id=" + id +
+                ", commitTimeMs=" + commitTimeMs +
+                ", aclCount=" + aclCount +
+                "]";
     }
-    
+
     @Override
     public Long getId()
     {
         return id;
     }
+
     public void setId(Long id)
     {
         this.id = id;
     }
+
     @Override
     public Long getCommitTimeMs()
     {
         return commitTimeMs;
     }
+
     public void setCommitTimeMs(Long commitTimeMs)
     {
         this.commitTimeMs = commitTimeMs;
     }
+
     @Override
     public int getAclCount()
     {
         return aclCount;
     }
+
     public void setAclCount(int aclCount)
     {
         this.aclCount = aclCount;

@@ -38,6 +38,6 @@ import org.alfresco.service.namespace.QName;
 public interface WorkflowPropertyHandler
 {
     static final String DO_NOT_ADD = "*£$DO NOT ADD THIS PROPERTY $£*";
-    
+
     Object handleProperty(QName key, Serializable value, TypeDefinition type, Object object, Class<?> objectType);
 }

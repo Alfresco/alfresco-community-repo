@@ -31,15 +31,16 @@ package org.alfresco.service.cmr.search;
  * @author Gethin James
  * @since 5.0
  */
-public class StatsResultStat {
-    
+public class StatsResultStat
+{
+
     private String name;
     private final Long sum;
     private final Long count;
     private final Long min;
     private final Long max;
     private final Long mean;
-    
+
     public StatsResultStat(String name, Long sum, Long count, Long min, Long max, Long mean)
     {
         super();
@@ -85,17 +86,16 @@ public class StatsResultStat {
     {
         this.name = name;
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
         builder.append("Stat [name=").append(this.name).append(", sum=").append(this.sum)
-                    .append(", count=").append(this.count).append(", min=").append(this.min)
-                    .append(", max=").append(this.max).append(", mean=").append(this.mean)
-                    .append("]");
+                .append(", count=").append(this.count).append(", min=").append(this.min)
+                .append(", max=").append(this.max).append(", mean=").append(this.mean)
+                .append("]");
         return builder.toString();
     }
-
 
 }

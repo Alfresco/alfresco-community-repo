@@ -27,12 +27,15 @@ package org.alfresco.repo.webdav.auth;
 
 import java.io.IOException;
 import java.io.Reader;
-
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
+import org.apache.commons.logging.Log;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.SessionUser;
@@ -48,9 +51,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * A base class for authentication filters. Handles management of the session user.
@@ -60,42 +60,40 @@ import org.json.JSONObject;
 public abstract class BaseAuthenticationFilter
 {
     /** Indication by an up-stream filter that no authentication checks are required. */
-    protected static final String NO_AUTH_REQUIRED = "alfNoAuthRequired"; 
+    protected static final String NO_AUTH_REQUIRED = "alfNoAuthRequired";
 
     /** The default session attribute used to cache the user. Subclasses may override this with {@link #setUserAttributeName(String)}. */
     public static final String AUTHENTICATION_USER = "_alfDAVAuthTicket";
-    
+
     /** The session attribute that indicates external authentication. */
     private static final String LOGIN_EXTERNAL_AUTH = "_alfExternalAuth";
-    
+
     /** The name of the ticket argument. */
     protected static final String ARG_TICKET = "ticket";
-    
+
     /** The authentication service. */
     protected AuthenticationService authenticationService;
-    
+
     /** The person service. */
     protected PersonService personService;
-    
+
     /** The node service. */
     protected NodeService nodeService;
-    
+
     /** The transaction service. */
     protected TransactionService transactionService;
-    
+
     /** The authentication component. */
     protected AuthenticationComponent authenticationComponent;
-    
+
     /** The remote user mapper. */
     protected RemoteUserMapper remoteUserMapper;
-    
+
     /** The authentication listener. */
     protected AuthenticationListener authenticationListener;
 
     /** The configured user attribute name. */
     private String userAttributeName = AUTHENTICATION_USER;
-
-    
 
     /**
      * Sets the authentication service.
@@ -151,11 +149,12 @@ public abstract class BaseAuthenticationFilter
     {
         this.authenticationComponent = authenticationComponent;
     }
-    
+
     /**
      * Sets the authentication listener.
      * 
-     * @param authenticationListener AuthenticationListener
+     * @param authenticationListener
+     *            AuthenticationListener
      */
     public void setAuthenticationListener(AuthenticationListener authenticationListener)
     {
@@ -219,8 +218,8 @@ public abstract class BaseAuthenticationFilter
                 getLogger().trace("Found a remote user: " + AuthenticationUtil.maskUsername(userId));
             }
         }
-        
-        String sessionAttrib = getUserAttributeName(); 
+
+        String sessionAttrib = getUserAttributeName();
         HttpSession session = httpServletRequest.getSession();
         SessionUser sessionUser = (SessionUser) session.getAttribute(sessionAttrib);
         if (sessionUser != null)
@@ -244,7 +243,7 @@ public abstract class BaseAuthenticationFilter
                 sessionUser = null;
             }
         }
-        
+
         if (userId != null)
         {
             if (getLogger().isDebugEnabled())
@@ -264,35 +263,36 @@ public abstract class BaseAuthenticationFilter
 
             if (sessionUser == null)
             {
-               // If we have been authenticated by other means, just propagate through the user identity
-               if (getLogger().isDebugEnabled())
-               {
-                   getLogger().debug("Propagating through the user identity: " + AuthenticationUtil.maskUsername(userId));
-               }
-               authenticationComponent.setCurrentUser(userId);
-               session = httpServletRequest.getSession();
+                // If we have been authenticated by other means, just propagate through the user identity
+                if (getLogger().isDebugEnabled())
+                {
+                    getLogger().debug("Propagating through the user identity: " + AuthenticationUtil.maskUsername(userId));
+                }
+                authenticationComponent.setCurrentUser(userId);
+                session = httpServletRequest.getSession();
 
-               try
-               {
-                   sessionUser = createUserEnvironment(session, authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(), true);
-               }
-               catch (Throwable e)
-               {
-                   if (getLogger().isDebugEnabled())
-                   {
-                       getLogger().debug("Error during ticket validation and user creation: " + e.getMessage(), e);
-                   }
-               }
+                try
+                {
+                    sessionUser = createUserEnvironment(session, authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(), true);
+                }
+                catch (Throwable e)
+                {
+                    if (getLogger().isDebugEnabled())
+                    {
+                        getLogger().debug("Error during ticket validation and user creation: " + e.getMessage(), e);
+                    }
+                }
             }
         }
-        
+
         return sessionUser;
     }
 
     /**
      * Remove the user from the session and expire the session - after failed ticket auth.
      * 
-     * @param req HttpServletRequest
+     * @param req
+     *            HttpServletRequest
      */
     protected void invalidateSession(HttpServletRequest req)
     {
@@ -304,7 +304,7 @@ public abstract class BaseAuthenticationFilter
             session.invalidate();
         }
     }
-    
+
     /**
      * Executes a callback in a transaction as the system user
      * 
@@ -314,8 +314,7 @@ public abstract class BaseAuthenticationFilter
      */
     protected <T> T doInSystemTransaction(final RetryingTransactionHelper.RetryingTransactionCallback<T> callback)
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<T>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<T>() {
             public T doWork() throws Exception
             {
                 return transactionService.getRetryingTransactionHelper().doInTransaction(callback, transactionService.isReadOnly());
@@ -330,7 +329,7 @@ public abstract class BaseAuthenticationFilter
      */
     protected final String getUserAttributeName()
     {
-    	return userAttributeName;
+        return userAttributeName;
     }
 
     /**
@@ -341,7 +340,7 @@ public abstract class BaseAuthenticationFilter
      */
     protected final void setUserAttributeName(String userAttr)
     {
-    	userAttributeName = userAttr;
+        userAttributeName = userAttr;
     }
 
     /**
@@ -368,8 +367,7 @@ public abstract class BaseAuthenticationFilter
         {
             getLogger().trace("Create the User environment for: " + AuthenticationUtil.maskUsername(userName));
         }
-        SessionUser user = doInSystemTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<SessionUser>()
-        {
+        SessionUser user = doInSystemTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<SessionUser>() {
             public SessionUser execute() throws Throwable
             {
                 // Setup User object and Home space ID etc.
@@ -397,7 +395,7 @@ public abstract class BaseAuthenticationFilter
         }
         else
         {
-           session.removeAttribute(LOGIN_EXTERNAL_AUTH);
+            session.removeAttribute(LOGIN_EXTERNAL_AUTH);
         }
     }
 
@@ -416,8 +414,7 @@ public abstract class BaseAuthenticationFilter
             ServletException
     {
         return this.transactionService.getRetryingTransactionHelper().doInTransaction(
-                new RetryingTransactionHelper.RetryingTransactionCallback<SessionUser>()
-                {
+                new RetryingTransactionHelper.RetryingTransactionCallback<SessionUser>() {
 
                     public SessionUser execute() throws Throwable
                     {
@@ -433,7 +430,7 @@ public abstract class BaseAuthenticationFilter
      * @return Log
      */
     protected abstract Log getLogger();
-    
+
     /**
      * Handles the login form directly, allowing management of the session user.
      * 
@@ -496,7 +493,7 @@ public abstract class BaseAuthenticationFilter
             }
 
             authenticationService.authenticate(username, password.toCharArray());
-            session = req.getSession();            
+            session = req.getSession();
             createUserEnvironment(session, username, authenticationService.getCurrentTicket(), false);
             res.setStatus(HttpServletResponse.SC_NO_CONTENT);
             return true;

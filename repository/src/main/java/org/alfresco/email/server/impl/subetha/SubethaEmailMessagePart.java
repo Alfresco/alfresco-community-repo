@@ -29,15 +29,15 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import jakarta.mail.MessagingException;
 import jakarta.mail.Part;
 
-import org.alfresco.service.cmr.email.EmailMessageException;
-import org.alfresco.service.cmr.email.EmailMessagePart;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
+import org.alfresco.service.cmr.email.EmailMessageException;
+import org.alfresco.service.cmr.email.EmailMessagePart;
 
 /**
  * @since 2.2
@@ -47,7 +47,7 @@ public class SubethaEmailMessagePart implements EmailMessagePart
     private static final String ERR_UNSUPPORTED_ENCODING = "email.server.err.usupported_encoding";
     private static final String ERR_FAILED_TO_READ_CONTENT_STREAM = "email.server.err.failed_to_read_content_stream";
     private static final String ERR_INCORRECT_MESSAGE_PART = "email.server.err.incorrect_message_part";
-    
+
     private static final long serialVersionUID = -8530238872199733096L;
 
     static final Log log = LogFactory.getLog(SubethaEmailMessagePart.class);
@@ -59,7 +59,7 @@ public class SubethaEmailMessagePart implements EmailMessagePart
     private int fileSize = -1;
     private String contentType;
     private InputStream contentInputStream;
-    
+
     protected SubethaEmailMessagePart()
     {
         super();
@@ -68,7 +68,8 @@ public class SubethaEmailMessagePart implements EmailMessagePart
     /**
      * Object can be built on existing message part only.
      * 
-     * @param messagePart Message part.
+     * @param messagePart
+     *            Message part.
      */
     public SubethaEmailMessagePart(Part messagePart)
     {
@@ -92,7 +93,7 @@ public class SubethaEmailMessagePart implements EmailMessagePart
 
             try
             {
-                contentInputStream = messagePart.getInputStream(); 
+                contentInputStream = messagePart.getInputStream();
             }
             catch (Exception ex)
             {
@@ -110,7 +111,6 @@ public class SubethaEmailMessagePart implements EmailMessagePart
         this(messagePart);
         this.fileName = fileName;
     }
-
 
     public InputStream getContent()
     {
@@ -136,6 +136,5 @@ public class SubethaEmailMessagePart implements EmailMessagePart
     {
         return fileSize;
     }
-
 
 }

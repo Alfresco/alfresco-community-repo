@@ -32,6 +32,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.rometools.utils.Strings;
+import org.apache.commons.collections.MapUtils;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.evaluator.CompareMimeTypeEvaluator;
@@ -53,7 +55,6 @@ import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.collections.MapUtils;
 
 @Experimental
 public class RestRuleSimpleConditionModelMapper implements RestModelMapper<SimpleCondition, ActionCondition>
@@ -85,21 +86,21 @@ public class RestRuleSimpleConditionModelMapper implements RestModelMapper<Simpl
 
         switch (actionCondition.getActionConditionDefinitionName())
         {
-            case ComparePropertyValueEvaluator.NAME:
-                return createComparePropertyValueCondition(actionCondition, namespaceService);
-            case CompareMimeTypeEvaluator.NAME:
-                return createCompareMimeTypeCondition(actionCondition);
-            case HasAspectEvaluator.NAME:
-                return createHasAspectCondition(actionCondition, namespaceService);
-            case HasTagEvaluator.NAME:
-                return createHasTagCondition(actionCondition);
-            case InCategoryEvaluator.NAME:
-                return createInCategoryCondition(actionCondition);
-            case IsSubTypeEvaluator.NAME:
-                return createIsSubtypeCondition(actionCondition, namespaceService);
-            case NoConditionEvaluator.NAME:
-            default:
-                return null;
+        case ComparePropertyValueEvaluator.NAME:
+            return createComparePropertyValueCondition(actionCondition, namespaceService);
+        case CompareMimeTypeEvaluator.NAME:
+            return createCompareMimeTypeCondition(actionCondition);
+        case HasAspectEvaluator.NAME:
+            return createHasAspectCondition(actionCondition, namespaceService);
+        case HasTagEvaluator.NAME:
+            return createHasTagCondition(actionCondition);
+        case InCategoryEvaluator.NAME:
+            return createInCategoryCondition(actionCondition);
+        case IsSubTypeEvaluator.NAME:
+            return createIsSubtypeCondition(actionCondition, namespaceService);
+        case NoConditionEvaluator.NAME:
+        default:
+            return null;
         }
     }
 
@@ -116,51 +117,53 @@ public class RestRuleSimpleConditionModelMapper implements RestModelMapper<Simpl
 
         switch (field)
         {
-            case HasAspectEvaluator.PARAM_ASPECT:
-                conditionDefinitionId = HasAspectEvaluator.NAME;
-                parameterValues.put(HasAspectEvaluator.PARAM_ASPECT, QName.createQName(parameter, namespaceService));
-                break;
-            case HasTagEvaluator.PARAM_TAG:
-                conditionDefinitionId = HasTagEvaluator.NAME;
-                parameterValues.put(HasTagEvaluator.PARAM_TAG, parameter);
-                break;
-            case PARAM_CATEGORY:
-                conditionDefinitionId = InCategoryEvaluator.NAME;
-                parameterValues.put(InCategoryEvaluator.PARAM_CATEGORY_ASPECT, ContentModel.ASPECT_GEN_CLASSIFIABLE);
-                try
-                {
-                    parameterValues.put(InCategoryEvaluator.PARAM_CATEGORY_VALUE, nodes.validateOrLookupNode(parameter));
-                } catch (EntityNotFoundException e) {
-                    throw new InvalidArgumentException(CATEGORY_INVALID_MSG);
-                }
-                break;
-            case IsSubTypeEvaluator.PARAM_TYPE:
-                conditionDefinitionId = IsSubTypeEvaluator.NAME;
-                parameterValues.put(IsSubTypeEvaluator.PARAM_TYPE, QName.createQName(parameter, namespaceService));
-                break;
-            case PARAM_MIMETYPE:
-                conditionDefinitionId = CompareMimeTypeEvaluator.NAME;
+        case HasAspectEvaluator.PARAM_ASPECT:
+            conditionDefinitionId = HasAspectEvaluator.NAME;
+            parameterValues.put(HasAspectEvaluator.PARAM_ASPECT, QName.createQName(parameter, namespaceService));
+            break;
+        case HasTagEvaluator.PARAM_TAG:
+            conditionDefinitionId = HasTagEvaluator.NAME;
+            parameterValues.put(HasTagEvaluator.PARAM_TAG, parameter);
+            break;
+        case PARAM_CATEGORY:
+            conditionDefinitionId = InCategoryEvaluator.NAME;
+            parameterValues.put(InCategoryEvaluator.PARAM_CATEGORY_ASPECT, ContentModel.ASPECT_GEN_CLASSIFIABLE);
+            try
+            {
+                parameterValues.put(InCategoryEvaluator.PARAM_CATEGORY_VALUE, nodes.validateOrLookupNode(parameter));
+            }
+            catch (EntityNotFoundException e)
+            {
+                throw new InvalidArgumentException(CATEGORY_INVALID_MSG);
+            }
+            break;
+        case IsSubTypeEvaluator.PARAM_TYPE:
+            conditionDefinitionId = IsSubTypeEvaluator.NAME;
+            parameterValues.put(IsSubTypeEvaluator.PARAM_TYPE, QName.createQName(parameter, namespaceService));
+            break;
+        case PARAM_MIMETYPE:
+            conditionDefinitionId = CompareMimeTypeEvaluator.NAME;
+            parameterValues.put(ComparePropertyValueEvaluator.PARAM_PROPERTY, ContentModel.TYPE_CONTENT);
+            parameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, parameter);
+            break;
+        default:
+            conditionDefinitionId = ComparePropertyValueEvaluator.NAME;
+            try
+            {
+                // if size or encoding create content property evaluator
+                ContentPropertyName.valueOf(field.toUpperCase());
+                parameterValues.put(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY, field.toUpperCase());
                 parameterValues.put(ComparePropertyValueEvaluator.PARAM_PROPERTY, ContentModel.TYPE_CONTENT);
-                parameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, parameter);
-                break;
-            default:
-                conditionDefinitionId = ComparePropertyValueEvaluator.NAME;
-                try
-                {
-                    // if size or encoding create content property evaluator
-                    ContentPropertyName.valueOf(field.toUpperCase());
-                    parameterValues.put(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY, field.toUpperCase());
-                    parameterValues.put(ComparePropertyValueEvaluator.PARAM_PROPERTY, ContentModel.TYPE_CONTENT);
-                }
-                catch (IllegalArgumentException ignore)
-                {
-                    // else create common property evaluator
-                    parameterValues.put(ComparePropertyValueEvaluator.PARAM_PROPERTY, QName.createQName(field, namespaceService));
-                }
-                checkStringNotBlank(restModel.getComparator(), COMPARATOR_NOT_NULL);
-                parameterValues.put(ComparePropertyValueEvaluator.PARAM_OPERATION, getComparatorValue(restModel.getComparator()));
-                parameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, parameter);
-                break;
+            }
+            catch (IllegalArgumentException ignore)
+            {
+                // else create common property evaluator
+                parameterValues.put(ComparePropertyValueEvaluator.PARAM_PROPERTY, QName.createQName(field, namespaceService));
+            }
+            checkStringNotBlank(restModel.getComparator(), COMPARATOR_NOT_NULL);
+            parameterValues.put(ComparePropertyValueEvaluator.PARAM_OPERATION, getComparatorValue(restModel.getComparator()));
+            parameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, parameter);
+            break;
         }
         return new ActionConditionImpl(UUID.randomUUID().toString(), conditionDefinitionId, parameterValues);
     }
@@ -170,12 +173,15 @@ public class RestRuleSimpleConditionModelMapper implements RestModelMapper<Simpl
         try
         {
             return ComparePropertyValueOperation.valueOf(comparator.toUpperCase()).toString();
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e)
+        {
             throw new InvalidArgumentException(String.format(INVALID_COMPARATOR_VALUE, comparator));
         }
     }
 
-    private void checkStringNotBlank(final String string, final String message) {
+    private void checkStringNotBlank(final String string, final String message)
+    {
         if (Strings.isBlank(string))
         {
             throw new InvalidArgumentException(message);
@@ -188,7 +194,9 @@ public class RestRuleSimpleConditionModelMapper implements RestModelMapper<Simpl
         if (actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY) != null)
         {
             builder.field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY).toString().toLowerCase());
-        } else {
+        }
+        else
+        {
             builder.field(((QName) actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY)).toPrefixString(namespaceService));
         }
         return builder

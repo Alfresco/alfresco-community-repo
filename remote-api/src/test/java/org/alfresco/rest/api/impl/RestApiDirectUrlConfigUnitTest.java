@@ -30,10 +30,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
-import org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
+import org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig;
 
 /**
  * Tests for REST API direct access URL configuration settings.

@@ -34,6 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.transfer.reportd.XMLTransferDestinationReportWriter;
@@ -45,15 +48,12 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferProgress.Status;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class TransferSummaryReportImpl implements TransferSummaryReport
 {
@@ -255,7 +255,7 @@ public class TransferSummaryReportImpl implements TransferSummaryReport
         }
         else
         {
-            throw new TransferException(MSG_INBOUND_TRANSFER_FOLDER_NOT_FOUND, new Object[] { transferSummaryReportLocation });
+            throw new TransferException(MSG_INBOUND_TRANSFER_FOLDER_NOT_FOUND, new Object[]{transferSummaryReportLocation});
         }
         return reportParentFolder;
     }

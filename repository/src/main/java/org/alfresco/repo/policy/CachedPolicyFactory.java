@@ -31,19 +31,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.alfresco.api.AlfrescoPublicApi;
-import org.alfresco.util.LockHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.util.LockHelper;
 
 /**
  * Policy Factory with caching support.
  *
  * @author David Caruana
  *
- * @param <B>  the type of Binding
- * @param <P>  the type of Policy
+ * @param <B>
+ *            the type of Binding
+ * @param <P>
+ *            the type of Policy
  */
 @AlfrescoPublicApi
 public class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> extends PolicyFactory<B, P>
@@ -53,15 +55,15 @@ public class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> e
 
     // Behaviour Filter
     private BehaviourFilter behaviourFilter = null;
-    
+
     // Cache Lock
-    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock(); 
+    private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
     /**
      * Cache for a single Policy interface (keyed by Binding)
      */
     private Map<B, P> singleCache = new HashMap<B, P>();
-    
+
     /**
      * Cache for a collection of Policy interfaces (keyed by Binding)
      */
@@ -70,28 +72,27 @@ public class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> e
     // Try lock timeout (MNT-11371)
     private long tryLockTimeout;
 
-
     public void setTryLockTimeout(long tryLockTimeout)
     {
         this.tryLockTimeout = tryLockTimeout;
     }
 
-
     /**
      * Construct cached policy factory
      * 
-     * @param policyClass  the policy interface class
-     * @param index  the behaviour index to search on
+     * @param policyClass
+     *            the policy interface class
+     * @param index
+     *            the behaviour index to search on
      */
-    /*package*/ CachedPolicyFactory(Class<P> policyClass, BehaviourIndex<B> index)
+    /* package */ CachedPolicyFactory(Class<P> policyClass, BehaviourIndex<B> index)
     {
         super(policyClass, index);
         behaviourFilter = index.getFilter();
 
         // Register this cached policy factory as a change observer of the behaviour index
         // to allow for cache to be cleared appropriately.
-        index.addChangeObserver(new BehaviourChangeObserver<B>()
-        {
+        index.addChangeObserver(new BehaviourChangeObserver<B>() {
             public void addition(B binding, Behaviour behaviour)
             {
                 clearCache("aggregate delegate", singleCache, binding);
@@ -106,16 +107,15 @@ public class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> e
         });
     }
 
-
     @Override
     public P create(B binding)
     {
-        // When behaviour filters are activated bypass the cache 
+        // When behaviour filters are activated bypass the cache
         if (behaviourFilter != null && behaviourFilter.isActivated())
         {
             return super.create(binding);
         }
-        
+
         LockHelper.tryLock(lock.readLock(), tryLockTimeout, "getting policy from cache in 'CachedPolicyFactory.create()'");
         try
         {
@@ -129,7 +129,7 @@ public class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> e
         {
             lock.readLock().unlock();
         }
-        
+
         // There wasn't one
         LockHelper.tryLock(lock.writeLock(), tryLockTimeout, "putting new policy to cache in 'CachedPolicyFactory.create()'");
         try
@@ -141,10 +141,10 @@ public class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> e
             }
             policyInterface = super.create(binding);
             singleCache.put(binding, policyInterface);
-            
+
             if (logger.isDebugEnabled())
                 logger.debug("Cached delegate interface " + policyInterface + " for " + binding + " and policy " + getPolicyClass());
-            
+
             return policyInterface;
         }
         finally
@@ -152,17 +152,16 @@ public class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> e
             lock.writeLock().unlock();
         }
     }
-    
 
     @Override
     public Collection<P> createList(B binding)
     {
-        // When behaviour filters are activated bypass the cache 
+        // When behaviour filters are activated bypass the cache
         if (behaviourFilter != null && behaviourFilter.isActivated())
         {
             return super.createList(binding);
         }
-        
+
         LockHelper.tryLock(lock.readLock(), tryLockTimeout, "getting policy list from cache in 'CachedPolicyFactory.createList()'");
         try
         {
@@ -176,7 +175,7 @@ public class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> e
         {
             lock.readLock().unlock();
         }
-        
+
         // There wasn't one
         LockHelper.tryLock(lock.writeLock(), tryLockTimeout, "putting policy list to cache in 'CachedPolicyFactory.createList()'");
         try
@@ -188,10 +187,10 @@ public class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> e
             }
             policyInterfaces = super.createList(binding);
             listCache.put(binding, policyInterfaces);
-    
+
             if (logger.isDebugEnabled())
                 logger.debug("Cached delegate interface collection " + policyInterfaces + " for " + binding + " and policy " + getPolicyClass());
-            
+
             return policyInterfaces;
         }
         finally
@@ -199,13 +198,16 @@ public class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> e
             lock.writeLock().unlock();
         }
     }
-    
+
     /**
      * Clear entries in the cache based on binding changes.
      * 
-     * @param cacheDescription  description of cache to clear
-     * @param cache  the cache to clear
-     * @param binding  the binding
+     * @param cacheDescription
+     *            description of cache to clear
+     * @param cache
+     *            the cache to clear
+     * @param binding
+     *            the binding
      */
     private void clearCache(String cacheDescription, Map<B, ?> cache, B binding)
     {
@@ -216,7 +218,7 @@ public class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> e
             {
                 // A specific binding has not been provided, so clear all entries
                 cache.clear();
-                
+
                 if (logger.isDebugEnabled() && cache.isEmpty() == false)
                     logger.debug("Cleared " + cacheDescription + " cache (all class bindings) for policy " + getPolicyClass());
             }
@@ -227,15 +229,15 @@ public class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> e
         }
         else
         {
-            // A specific binding has been provided.  Build a list of entries
-            // that require removal.  An entry is removed if the binding in the
-            // list is equal or derived from the changed binding. 
+            // A specific binding has been provided. Build a list of entries
+            // that require removal. An entry is removed if the binding in the
+            // list is equal or derived from the changed binding.
             Collection<B> invalidBindings = new ArrayList<B>();
             for (B cachedBinding : cache.keySet())
             {
                 // Determine if binding is equal or derived from changed binding
                 BehaviourBinding generalisedBinding = cachedBinding;
-                while(generalisedBinding != null)
+                while (generalisedBinding != null)
                 {
                     if (generalisedBinding.equals(binding))
                     {
@@ -255,7 +257,7 @@ public class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> e
                     for (B invalidBinding : invalidBindings)
                     {
                         cache.remove(invalidBinding);
-                        
+
                         if (logger.isDebugEnabled())
                             logger.debug("Cleared " + cacheDescription + " cache for " + invalidBinding + " and policy " + getPolicyClass());
                     }

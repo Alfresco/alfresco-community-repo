@@ -25,7 +25,8 @@
  */
 package org.alfresco.messaging.camel;
 
-import org.alfresco.util.testing.category.NeverRunsTests;
+import static org.junit.Assert.assertEquals;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
@@ -36,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.junit.Assert.assertEquals;
+import org.alfresco.util.testing.category.NeverRunsTests;
 
 /**
  * Tests Camel components defined in the application's Spring context
@@ -44,7 +45,8 @@ import static org.junit.Assert.assertEquals;
 @RunWith(SpringJUnit4ClassRunner.class)
 @Category(NeverRunsTests.class)
 @ContextConfiguration(locations = "/test-messaging-context.xml")
-public class CamelComponentsTest {
+public class CamelComponentsTest
+{
     @Autowired
     protected CamelContext camelContext;
 

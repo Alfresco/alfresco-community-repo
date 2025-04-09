@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.web.auth;
 
-
 /**
  * {@link WebCredentials} where credentials are undetermined.
  *
@@ -47,5 +46,4 @@ public class UnknownCredentials implements WebCredentials
         return getClass().hashCode();
     }
 
-    
 }

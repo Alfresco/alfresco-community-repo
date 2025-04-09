@@ -61,17 +61,15 @@ public class PropertyAccessor extends BaseFunction
         super(NAME, DataTypeDefinition.ANY, args);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set) */
     public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
         Argument arg = args.get(ARG_PROPERTY);
-        if(!(arg instanceof PropertyArgument))
+        if (!(arg instanceof PropertyArgument))
         {
-            throw new QueryModelException("Function "+NAME+" requires a property argument");
+            throw new QueryModelException("Function " + NAME + " requires a property argument");
         }
         return arg.getValue(context);
     }

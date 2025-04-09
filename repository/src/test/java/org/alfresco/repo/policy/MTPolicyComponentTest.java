@@ -37,7 +37,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import junit.framework.TestCase;
 
-import org.alfresco.repo.cache.MemoryCache;
 import org.alfresco.repo.dictionary.CompiledModelsCache;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
@@ -74,22 +73,20 @@ public class MTPolicyComponentTest extends TestCase
 
     private PolicyComponent policyComponent = null;
 
-
     static final String BASE_PROTOCOL = "baseProtocol";
     static final String BASE_IDENTIFIER = "baseIdentifier";
     static final String BASE_ID = "baseId";
-    	
+
     @Override
     protected void setUp() throws Exception
     {
-    	TenantService mockTenantService = mock(TenantService.class);
-    	when(mockTenantService.isEnabled()).thenReturn(true);
-    	when(mockTenantService.getCurrentUserDomain()).thenReturn("test.com");
-    	when(mockTenantService.getDomainUser(any(String.class), any(String.class))).thenReturn("System");
-    	when(mockTenantService.getBaseName(any(NodeRef.class))).thenReturn(new NodeRef(BASE_PROTOCOL, BASE_IDENTIFIER, BASE_ID));
-    	when(mockTenantService.getBaseName(any(StoreRef.class))).thenReturn(new StoreRef(BASE_PROTOCOL, BASE_IDENTIFIER));
+        TenantService mockTenantService = mock(TenantService.class);
+        when(mockTenantService.isEnabled()).thenReturn(true);
+        when(mockTenantService.getCurrentUserDomain()).thenReturn("test.com");
+        when(mockTenantService.getDomainUser(any(String.class), any(String.class))).thenReturn("System");
+        when(mockTenantService.getBaseName(any(NodeRef.class))).thenReturn(new NodeRef(BASE_PROTOCOL, BASE_IDENTIFIER, BASE_ID));
+        when(mockTenantService.getBaseName(any(StoreRef.class))).thenReturn(new StoreRef(BASE_PROTOCOL, BASE_IDENTIFIER));
 
-    	
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(mockTenantService);
         initDictionaryCaches(dictionaryDAO, mockTenantService);
@@ -140,38 +137,37 @@ public class MTPolicyComponentTest extends TestCase
         assertEquals("", "ValidTest: argument", result.getString());
         assertEquals("", nodeRef, result.getNodeRef());
     }
-    
-    
+
     @SuppressWarnings("unchecked")
     public void testRegisterDefinitions()
     {
         try
         {
-            @SuppressWarnings("unused") ClassPolicyDelegate<InvalidMetaDataPolicy> delegate = policyComponent.registerClassPolicy(InvalidMetaDataPolicy.class);
+            @SuppressWarnings("unused")
+            ClassPolicyDelegate<InvalidMetaDataPolicy> delegate = policyComponent.registerClassPolicy(InvalidMetaDataPolicy.class);
             fail("Failed to catch hidden metadata");
         }
-        catch(PolicyException e)
-        {
-        }
-    
-        try
-        {
-            @SuppressWarnings("unused") ClassPolicyDelegate<NoMethodPolicy> delegate = policyComponent.registerClassPolicy(NoMethodPolicy.class);
-            fail("Failed to catch no methods defined in policy");
-        }
-        catch(PolicyException e)
-        {
-        }
+        catch (PolicyException e)
+        {}
 
         try
         {
-            @SuppressWarnings("unused") ClassPolicyDelegate<MultiMethodPolicy> delegate = policyComponent.registerClassPolicy(MultiMethodPolicy.class);
+            @SuppressWarnings("unused")
+            ClassPolicyDelegate<NoMethodPolicy> delegate = policyComponent.registerClassPolicy(NoMethodPolicy.class);
+            fail("Failed to catch no methods defined in policy");
+        }
+        catch (PolicyException e)
+        {}
+
+        try
+        {
+            @SuppressWarnings("unused")
+            ClassPolicyDelegate<MultiMethodPolicy> delegate = policyComponent.registerClassPolicy(MultiMethodPolicy.class);
             fail("Failed to catch multiple methods defined in policy");
         }
-        catch(PolicyException e)
-        {
-        }
-        
+        catch (PolicyException e)
+        {}
+
         QName policyName = QName.createQName(TEST_NAMESPACE, "test");
         boolean isRegistered = policyComponent.isRegisteredPolicy(PolicyType.Class, policyName);
         assertFalse(isRegistered);
@@ -185,20 +181,20 @@ public class MTPolicyComponentTest extends TestCase
         assertEquals(PolicyType.Class, definition.getType());
         assertEquals(TestClassPolicy.class, definition.getPolicyInterface());
     }
-    
-    
+
     public void testBindBehaviour()
     {
         QName policyName = QName.createQName(TEST_NAMESPACE, "test");
         Behaviour validBehaviour = new JavaBehaviour(this, "validClassTest");
-        
+
         // Test null policy
         try
         {
             policyComponent.bindClassBehaviour(null, FILE_TYPE, validBehaviour);
             fail("Failed to catch null policy whilst binding behaviour");
         }
-        catch(IllegalArgumentException e) {}
+        catch (IllegalArgumentException e)
+        {}
 
         // Test null Class Reference
         try
@@ -206,7 +202,8 @@ public class MTPolicyComponentTest extends TestCase
             policyComponent.bindClassBehaviour(policyName, null, validBehaviour);
             fail("Failed to catch null class reference whilst binding behaviour");
         }
-        catch(IllegalArgumentException e) {}
+        catch (IllegalArgumentException e)
+        {}
 
         // Test invalid Class Reference
         try
@@ -214,15 +211,17 @@ public class MTPolicyComponentTest extends TestCase
             policyComponent.bindClassBehaviour(policyName, INVALID_TYPE, validBehaviour);
             fail("Failed to catch invalid class reference whilst binding behaviour");
         }
-        catch(IllegalArgumentException e) {}
-        
+        catch (IllegalArgumentException e)
+        {}
+
         // Test null Behaviour
         try
         {
             policyComponent.bindClassBehaviour(policyName, FILE_TYPE, null);
             fail("Failed to catch null behaviour whilst binding behaviour");
         }
-        catch(IllegalArgumentException e) {}
+        catch (IllegalArgumentException e)
+        {}
 
         // Test invalid behaviour (for registered policy)
         Behaviour invalidBehaviour = new JavaBehaviour(this, "methoddoesnotexist");
@@ -232,8 +231,9 @@ public class MTPolicyComponentTest extends TestCase
             policyComponent.bindClassBehaviour(policyName, FILE_TYPE, invalidBehaviour);
             fail("Failed to catch invalid behaviour whilst binding behaviour");
         }
-        catch(PolicyException e) {}
-        
+        catch (PolicyException e)
+        {}
+
         // Test valid behaviour (for registered policy)
         try
         {
@@ -242,27 +242,26 @@ public class MTPolicyComponentTest extends TestCase
             assertEquals(policyName, definition.getPolicy());
             assertEquals(FILE_TYPE, definition.getBinding().getClassQName());
         }
-        catch(PolicyException e)
+        catch (PolicyException e)
         {
             fail("Policy exception thrown for valid behaviour" + e.toString());
         }
     }
 
-
     public void testClassDelegate()
     {
         // Register Policy
         ClassPolicyDelegate<TestClassPolicy> delegate = policyComponent.registerClassPolicy(TestClassPolicy.class);
-        
+
         // Bind Class Behaviour
         QName policyName = QName.createQName(TEST_NAMESPACE, "test");
         Behaviour fileBehaviour = new JavaBehaviour(this, "fileTest");
         policyComponent.bindClassBehaviour(policyName, FILE_TYPE, fileBehaviour);
-        
+
         NodeRef nodeRef = new NodeRef("workspace", "SpacesStore", "123");
         // base node ref gets set by mocked mt service
         NodeRef baseNodeRef = new NodeRef(BASE_PROTOCOL, BASE_IDENTIFIER, BASE_ID);
-        
+
         Date date = new Date();
         StoreRef storeRef = new StoreRef("workspace", "SpacesStore");
 
@@ -275,7 +274,7 @@ public class MTPolicyComponentTest extends TestCase
         TestClassPolicyResult baseResult = basePolicy.test("womble", nodeRef, date, storeRef);
         // we don't expect a result from the NO-OP handler
         assertNull("noop handler unexpectedly returned a result", baseResult);
-        
+
         // Test single Policy delegate
         Collection<TestClassPolicy> filePolicies = delegate.getList(FILE_TYPE);
         assertNotNull(filePolicies);
@@ -284,8 +283,7 @@ public class MTPolicyComponentTest extends TestCase
         assertNotNull(filePolicy);
         TestClassPolicyResult fileResult = filePolicy.test("womble", nodeRef, date, storeRef);
         assertEquals("argument type of NodeRef not replaced by base node ref", fileResult.getNodeRef(), baseNodeRef);
-        
-        
+
         // Bind Service Behaviour
         Behaviour serviceBehaviour = new JavaBehaviour(this, "serviceTest");
         policyComponent.bindClassBehaviour(policyName, this, serviceBehaviour);
@@ -298,7 +296,7 @@ public class MTPolicyComponentTest extends TestCase
         assertNotNull(filePolicy2);
         TestClassPolicyResult fileResult2 = filePolicy2.test("womble", nodeRef, date, storeRef);
         assertEquals("argument type of NodeRef not replaced by base node ref", fileResult2.getNodeRef(), baseNodeRef);
-        
+
         // Test multiple class behaviours
         Behaviour file2Behaviour = new JavaBehaviour(this, "fileTest2");
         policyComponent.bindClassBehaviour(policyName, FILE_TYPE, file2Behaviour);
@@ -310,106 +308,110 @@ public class MTPolicyComponentTest extends TestCase
         TestClassPolicyResult fileResult3 = filePolicy3.test("womble", nodeRef, date, storeRef);
         assertEquals("argument type of NodeRef not replaced by base node ref", fileResult3.getNodeRef(), baseNodeRef);
     }
-    
+
     //
     // The following interfaces represents policies
     //
-    
+
     public class TestClassPolicyResult
     {
-    	String s;    // Not affected by MT
-    	NodeRef nodeRef;
-    	StoreRef storeRef;
-    	ChildAssociationRef childAssociationRef;
-    	Date date;   // Not affected by MT
-    	String getString()
-    	{
-    		return s;
-    	}
-    	NodeRef getNodeRef()
-    	{
-    		return nodeRef;
-    	}
+        String s; // Not affected by MT
+        NodeRef nodeRef;
+        StoreRef storeRef;
+        ChildAssociationRef childAssociationRef;
+        Date date; // Not affected by MT
+
+        String getString()
+        {
+            return s;
+        }
+
+        NodeRef getNodeRef()
+        {
+            return nodeRef;
+        }
     }
-    
+
     public interface TestClassPolicy extends ClassPolicy
     {
         static String NAMESPACE = TEST_NAMESPACE;
+
         public TestClassPolicyResult test(String argument, NodeRef nodeRef, Date date, StoreRef storeRef);
     }
 
     public interface TestPropertyPolicy extends PropertyPolicy
     {
         static String NAMESPACE = TEST_NAMESPACE;
+
         public String test(String argument);
     }
 
     public interface TestAssociationPolicy extends AssociationPolicy
     {
         static String NAMESPACE = TEST_NAMESPACE;
+
         public String test(String argument);
     }
 
     public interface InvalidMetaDataPolicy extends ClassPolicy
     {
         static int NAMESPACE = 0;
+
         public String test(String nodeRef);
     }
 
     public interface NoMethodPolicy extends ClassPolicy
-    {
-    }
-    
+    {}
+
     public interface MultiMethodPolicy extends ClassPolicy
     {
         public void a();
+
         public void b();
     }
-    
-    
+
     //
     // The following methods represent Java Behaviours
-    // 
-    
+    //
+
     public TestClassPolicyResult validClassTest(String argument, NodeRef nodeRef, Date date, StoreRef storeRef)
     {
-    	TestClassPolicyResult result = new TestClassPolicyResult();
-    	result.s = "ValidTest: " + argument;
-    	result.nodeRef = nodeRef;
-    	result.date = date;
-    	result.storeRef = storeRef;
+        TestClassPolicyResult result = new TestClassPolicyResult();
+        result.s = "ValidTest: " + argument;
+        result.nodeRef = nodeRef;
+        result.date = date;
+        result.storeRef = storeRef;
         return result;
     }
-        
+
     public TestClassPolicyResult fileTest(String argument, NodeRef nodeRef, Date date, StoreRef storeRef)
-    {    	
-    	TestClassPolicyResult result = new TestClassPolicyResult();
-	    result.s = "ValidTest: " + argument;
-	    result.nodeRef = nodeRef;
-	    result.date = date;
-	    result.storeRef = storeRef;
+    {
+        TestClassPolicyResult result = new TestClassPolicyResult();
+        result.s = "ValidTest: " + argument;
+        result.nodeRef = nodeRef;
+        result.date = date;
+        result.storeRef = storeRef;
         return result;
     }
 
     public TestClassPolicyResult fileTest2(String argument, NodeRef nodeRef, Date date, StoreRef storeRef)
     {
-    	TestClassPolicyResult result = new TestClassPolicyResult();
-    	result.s = "ValidTest: " + argument;
-    	result.nodeRef = nodeRef;
-    	result.date = date;
-    	result.storeRef = storeRef;
+        TestClassPolicyResult result = new TestClassPolicyResult();
+        result.s = "ValidTest: " + argument;
+        result.nodeRef = nodeRef;
+        result.date = date;
+        result.storeRef = storeRef;
         return result;
     }
-
 
     public TestClassPolicyResult serviceTest(String argument, NodeRef nodeRef, Date date, StoreRef storeRef)
     {
-    	TestClassPolicyResult result = new TestClassPolicyResult();
-    	result.s = "ValidTest: " + argument;
-    	result.nodeRef = nodeRef;
-    	result.date = date;
-    	result.storeRef = storeRef;
+        TestClassPolicyResult result = new TestClassPolicyResult();
+        result.s = "ValidTest: " + argument;
+        result.nodeRef = nodeRef;
+        result.date = date;
+        result.storeRef = storeRef;
         return result;
     }
-    
+
 }

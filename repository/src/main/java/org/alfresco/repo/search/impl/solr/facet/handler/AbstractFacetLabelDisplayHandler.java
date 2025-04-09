@@ -44,8 +44,7 @@ public abstract class AbstractFacetLabelDisplayHandler implements FacetLabelDisp
     private FacetLabelDisplayHandlerRegistry registry;
 
     /**
-     * Registers this instance of the facet handler with the registry. This will
-     * call the {@link #init()} method and then register if the registry is available.
+     * Registers this instance of the facet handler with the registry. This will call the {@link #init()} method and then register if the registry is available.
      * 
      */
     public final void register()
@@ -67,7 +66,8 @@ public abstract class AbstractFacetLabelDisplayHandler implements FacetLabelDisp
     }
 
     /**
-     * @param supportedFieldFacets the supportedFieldFacets to set
+     * @param supportedFieldFacets
+     *            the supportedFieldFacets to set
      */
     public void setSupportedFieldFacets(Set<String> supportedFieldFacets)
     {
@@ -77,7 +77,8 @@ public abstract class AbstractFacetLabelDisplayHandler implements FacetLabelDisp
     /**
      * Set the service registry
      * 
-     * @param serviceRegistry the service registry
+     * @param serviceRegistry
+     *            the service registry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
@@ -87,7 +88,8 @@ public abstract class AbstractFacetLabelDisplayHandler implements FacetLabelDisp
     /**
      * Set the registry to register with
      * 
-     * @param registry a facet label display handler registry
+     * @param registry
+     *            a facet label display handler registry
      */
     public void setRegistry(FacetLabelDisplayHandlerRegistry registry)
     {

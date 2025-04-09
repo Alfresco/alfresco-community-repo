@@ -1,6 +1,14 @@
 package org.alfresco.tas.integration;
 
+import static org.alfresco.utility.report.log.Step.STEP;
+
+import java.util.HashMap;
+
 import io.restassured.RestAssured;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestPersonModel;
@@ -9,19 +17,12 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.Test;
-
-import java.util.HashMap;
-
-import static org.alfresco.utility.report.log.Step.STEP;
 
 public class IntegrationWithWebScriptsTests extends IntegrationTest
 {
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.REST_API, TestGroup.FULL })
-    @TestRail(section = { TestGroup.INTEGRATION,
-            TestGroup.REST_API }, executionType = ExecutionType.REGRESSION, description = "Verify when importing multiple users via CSV, if the password is not set in the CSV file, user will be disable")
+    @Test(groups = {TestGroup.INTEGRATION, TestGroup.REST_API, TestGroup.FULL})
+    @TestRail(section = {TestGroup.INTEGRATION,
+            TestGroup.REST_API}, executionType = ExecutionType.REGRESSION, description = "Verify when importing multiple users via CSV, if the password is not set in the CSV file, user will be disable")
     public void verifyCSVUserImportDisableUserAndGivesRandomPasswordIfItIsMissing() throws Exception
     {
         STEP("1.Upload the CSV File that contains the users.");

@@ -27,10 +27,11 @@ package org.alfresco.repo.web.scripts.subscriptions;
 
 import java.io.IOException;
 
-import org.alfresco.service.cmr.subscriptions.PagingFollowingResults;
 import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+
+import org.alfresco.service.cmr.subscriptions.PagingFollowingResults;
 
 public class SubscriptionServiceFollowersGet extends AbstractSubscriptionServiceWebScript
 {

@@ -25,7 +25,12 @@
  */
 package org.alfresco.rest.api.impl;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -35,11 +40,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.extensions.webscripts.ClassPathStoreResourceResolver;
 import org.springframework.util.FileCopyUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import org.alfresco.error.AlfrescoRuntimeException;
 
 // note: based on HomeSiteSurfConfig in Cloud/Thor module
 public class SiteSurfConfig implements ApplicationContextAware, InitializingBean

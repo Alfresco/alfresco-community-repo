@@ -52,8 +52,7 @@ public class CustomModel implements Comparable<CustomModel>
     private List<CustomModelConstraint> constraints;
 
     public CustomModel()
-    {
-    }
+    {}
 
     public CustomModel(CustomModelDefinition modelDefinition)
     {
@@ -216,9 +215,9 @@ public class CustomModel implements Comparable<CustomModel>
     {
         StringBuilder builder = new StringBuilder(512);
         builder.append("CustomModel [name=").append(this.name).append(", author=").append(this.author)
-                    .append(", description=").append(this.description).append(", status=").append(this.status)
-                    .append(", namespaceUri=").append(this.namespaceUri).append(", namespacePrefix=")
-                    .append(this.namespacePrefix).append(']');
+                .append(", description=").append(this.description).append(", status=").append(this.status)
+                .append(", namespaceUri=").append(this.namespaceUri).append(", namespacePrefix=")
+                .append(this.namespacePrefix).append(']');
         return builder.toString();
     }
 }

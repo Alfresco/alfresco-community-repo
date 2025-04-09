@@ -2,6 +2,14 @@ package org.alfresco.tas.integration;
 
 import java.lang.reflect.Method;
 
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
+
 import org.alfresco.cmis.CmisProperties;
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.dataprep.WorkflowService;
@@ -20,35 +28,28 @@ import org.alfresco.utility.data.DataWorkflow;
 import org.alfresco.utility.extension.ExtentionPointTestUtility;
 import org.alfresco.utility.network.ServerHealth;
 import org.alfresco.webdav.WebDavWrapper;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeSuite;
 
 @ContextConfiguration("classpath:alfresco-integration-context.xml")
 public abstract class IntegrationTest extends AbstractTestNGSpringContextTests
 {
     private static Logger LOG = LogFactory.getLogger();
-    
+
     @Autowired
     protected DataUser dataUser;
 
     @Autowired
     protected DataSite dataSite;
-    
+
     @Autowired
     protected DataContent dataContent;
-    
+
     @Autowired
     protected DataGroup dataGroup;
 
     @Autowired
     protected DataWorkflow dataWorkflow;
 
-    @Autowired 
+    @Autowired
     protected WorkflowService workflow;
 
     @Autowired
@@ -59,7 +60,7 @@ public abstract class IntegrationTest extends AbstractTestNGSpringContextTests
 
     @Autowired
     protected CmisWrapper cmisAPI;
-    
+
     @Autowired
     protected CmisProperties cmisProperties;
 
@@ -91,13 +92,13 @@ public abstract class IntegrationTest extends AbstractTestNGSpringContextTests
         serverHealth.assertServerIsOnline();
     }
 
-    @BeforeMethod(alwaysRun=true)
+    @BeforeMethod(alwaysRun = true)
     public void showStartTestInfo(Method method)
     {
-        LOG.info(String.format("*** STARTING Test: [%s] ***",method.getName()));
+        LOG.info(String.format("*** STARTING Test: [%s] ***", method.getName()));
     }
 
-    @AfterMethod(alwaysRun=true)
+    @AfterMethod(alwaysRun = true)
     public void showEndTestInfo(Method method)
     {
         LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));

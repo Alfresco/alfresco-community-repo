@@ -45,19 +45,19 @@ public class ManualEventParameterConstraint extends BaseParameterConstraint
 {
     /** Name constant */
     public static final String NAME = "rm-ac-manual-events";
-    
+
     private RecordsManagementEventService recordsManagementEventService;
-    
+
     public void setRecordsManagementEventService(RecordsManagementEventService recordsManagementEventService)
     {
         this.recordsManagementEventService = recordsManagementEventService;
     }
-          
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
      */
     protected Map<String, String> getAllowableValuesImpl()
-    {   
+    {
         List<RecordsManagementEvent> events = recordsManagementEventService.getEvents();
         Map<String, String> result = new HashMap<>(events.size());
         for (RecordsManagementEvent event : events)
@@ -67,9 +67,8 @@ public class ManualEventParameterConstraint extends BaseParameterConstraint
             {
                 result.put(event.getName(), event.getDisplayLabel());
             }
-        }        
+        }
         return result;
-    }    
-    
-    
+    }
+
 }

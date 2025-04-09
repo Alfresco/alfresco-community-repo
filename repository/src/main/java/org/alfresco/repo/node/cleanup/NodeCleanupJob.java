@@ -27,13 +27,14 @@ package org.alfresco.repo.node.cleanup;
 
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * Scheduled job to call a {@link NodeCleanupWorker}.
@@ -46,7 +47,7 @@ import org.quartz.JobExecutionException;
 public class NodeCleanupJob implements Job
 {
     private static Log logger = LogFactory.getLog(NodeCleanupJob.class);
-    
+
     public void execute(JobExecutionContext context) throws JobExecutionException
     {
         JobDataMap jobData = context.getJobDetail().getJobDataMap();

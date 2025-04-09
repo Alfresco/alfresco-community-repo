@@ -37,8 +37,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 
 /**
- * Base class for integrity events.  It provides basic support for checking
- * model integrity.
+ * Base class for integrity events. It provides basic support for checking model integrity.
  * 
  * @author Derek Hulley
  */
@@ -55,7 +54,7 @@ public abstract class AbstractIntegrityEvent implements IntegrityEvent
     private final QName typeQName;
     /** support for derived classes */
     private final QName qname;
-    
+
     /** cached hashcode as the members are all final */
     private int hashCode = 0;
 
@@ -72,7 +71,7 @@ public abstract class AbstractIntegrityEvent implements IntegrityEvent
         this.nodeService = nodeService;
         this.dictionaryService = dictionaryService;
         this.traces = new ArrayList<StackTraceElement[]>(0);
-        
+
         this.nodeRef = nodeRef;
         this.typeQName = typeQName;
         this.qname = qname;
@@ -83,19 +82,16 @@ public abstract class AbstractIntegrityEvent implements IntegrityEvent
     {
         if (hashCode == 0)
         {
-            hashCode = 
-                0
-                + 1 * (nodeRef == null ? 0 : nodeRef.hashCode())
-                - 17* (typeQName == null ? 0 : typeQName.hashCode())
-                + 17* (qname == null ? 0 : qname.hashCode());
+            hashCode = 0
+                    + 1 * (nodeRef == null ? 0 : nodeRef.hashCode())
+                    - 17 * (typeQName == null ? 0 : typeQName.hashCode())
+                    + 17 * (qname == null ? 0 : qname.hashCode());
         }
         return hashCode;
     }
-    
+
     /**
-     * Compares based on the class of this instance and the incoming instance, before
-     * comparing based on all the internal data.  If derived classes store additional
-     * data for their functionality, then they should override this.
+     * Compares based on the class of this instance and the incoming instance, before comparing based on all the internal data. If derived classes store additional data for their functionality, then they should override this.
      */
     @Override
     public boolean equals(Object obj)
@@ -108,18 +104,17 @@ public abstract class AbstractIntegrityEvent implements IntegrityEvent
             return false;
         // we can safely cast
         AbstractIntegrityEvent that = (AbstractIntegrityEvent) obj;
-        return
-                EqualsHelper.nullSafeEquals(this.nodeRef, that.nodeRef) &&
+        return EqualsHelper.nullSafeEquals(this.nodeRef, that.nodeRef) &&
                 EqualsHelper.nullSafeEquals(this.typeQName, that.typeQName) &&
                 EqualsHelper.nullSafeEquals(this.qname, that.qname);
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(56);
         sb.append("IntegrityEvent")
-          .append("[ name=").append(getClass().getName());
+                .append("[ name=").append(getClass().getName());
         if (nodeRef != null)
             sb.append(", nodeRef=").append(nodeRef);
         if (typeQName != null)
@@ -130,11 +125,12 @@ public abstract class AbstractIntegrityEvent implements IntegrityEvent
         // done
         return sb.toString();
     }
-    
+
     /**
      * Gets the node type if the node exists
      * 
-     * @param nodeRef NodeRef
+     * @param nodeRef
+     *            NodeRef
      * @return Returns the node's type or null if the node no longer exists
      */
     protected QName getNodeType(NodeRef nodeRef)
@@ -149,7 +145,7 @@ public abstract class AbstractIntegrityEvent implements IntegrityEvent
             return null;
         }
     }
-    
+
     /**
      * @return Returns the traces (if present) that caused the creation of this event
      */
@@ -177,20 +173,21 @@ public abstract class AbstractIntegrityEvent implements IntegrityEvent
     {
         return qname;
     }
-    
+
     /**
-     * Gets the association definition from the dictionary.  If the source node type is
-     * provided then the association particular to the subtype is attempted.
+     * Gets the association definition from the dictionary. If the source node type is provided then the association particular to the subtype is attempted.
      * 
-     * @param eventResults results to add a violation message to
-     * @param assocTypeQName the type of the association
+     * @param eventResults
+     *            results to add a violation message to
+     * @param assocTypeQName
+     *            the type of the association
      * @return Returns the association definition, or null if not found
      */
     protected AssociationDefinition getAssocDef(List<IntegrityRecord> eventResults, QName assocTypeQName)
     {
         return dictionaryService.getAssociation(assocTypeQName);
     }
-    
+
     protected String getMultiplicityString(boolean mandatory, boolean allowMany)
     {
         StringBuilder sb = new StringBuilder(4);

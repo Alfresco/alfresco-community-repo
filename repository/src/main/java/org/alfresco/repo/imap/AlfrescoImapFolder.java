@@ -36,12 +36,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
-
 import jakarta.mail.Flags;
 import jakarta.mail.Flags.Flag;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.search.SearchTerm;
+
+import com.icegreen.greenmail.foedus.util.MsgRangeFilter;
+import com.icegreen.greenmail.store.FolderException;
+import com.icegreen.greenmail.store.FolderListener;
+import com.icegreen.greenmail.store.MailFolder;
+import com.icegreen.greenmail.store.MessageFlags;
+import com.icegreen.greenmail.store.SimpleStoredMessage;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
@@ -57,23 +63,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.FileFilterMode;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Utf7;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.icegreen.greenmail.foedus.util.MsgRangeFilter;
-import com.icegreen.greenmail.store.FolderException;
-import com.icegreen.greenmail.store.FolderListener;
-import com.icegreen.greenmail.store.MailFolder;
-import com.icegreen.greenmail.store.MessageFlags;
-import com.icegreen.greenmail.store.SimpleStoredMessage;
 
 /**
- * Implementation of greenmail MailFolder. It represents an Alfresco content folder and handles
- * appendMessage, copyMessage, expunge (delete), getMessages, getMessage and so requests.
+ * Implementation of greenmail MailFolder. It represents an Alfresco content folder and handles appendMessage, copyMessage, expunge (delete), getMessages, getMessage and so requests.
  * 
  * @author Mike Shavnev
  * @author David Ward
@@ -93,7 +88,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     private final String folderName;
 
     private final String folderPath;
-    
+
     private final String userName;
 
     private final int mountPointId;
@@ -107,19 +102,19 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
      * Reference to the {@link ImapService} object.
      */
     private final ImapService imapService;
-    
+
     /**
      * Defines whether the folder is selectable or not.
      */
     private final boolean selectable;
 
     private final boolean extractAttachmentsEnabled;
-    
+
     /**
      * Cached Folder status information, validated against a change token.
      */
     private FolderStatus folderStatus;
-    
+
     private static final Flags PERMANENT_FLAGS = new Flags();
 
     static
@@ -130,8 +125,8 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         PERMANENT_FLAGS.add(Flags.Flag.FLAGGED);
         PERMANENT_FLAGS.add(Flags.Flag.SEEN);
     }
-    
-    public boolean isExtractAttachmentsEnabled() 
+
+    public boolean isExtractAttachmentsEnabled()
     {
         return extractAttachmentsEnabled;
     }
@@ -143,20 +138,28 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     {
         this(null, userName, "", "", null, imapService, serviceRegistry, false, false, 0);
     }
-        
 
     /**
      * Constructs {@link AlfrescoImapFolder} object.
      * 
-     * @param folderInfo - reference to the {@link FileInfo} object representing the folder.
-     * @param userName - name of user (e.g. "admin" for admin user).
-     * @param folderName - name of the folder.
-     * @param folderPath - path of the folder.
-     * @param viewMode - defines view mode. Can be one of the following: {@link ImapViewMode#ARCHIVE} or {@link ImapViewMode#VIRTUAL}.
-     * @param extractAttachmentsEnabled boolean
-     * @param imapService ImapService
-     * @param serviceRegistry ServiceRegistry
-     * @param mountPointId - id of the mount point.
+     * @param folderInfo
+     *            - reference to the {@link FileInfo} object representing the folder.
+     * @param userName
+     *            - name of user (e.g. "admin" for admin user).
+     * @param folderName
+     *            - name of the folder.
+     * @param folderPath
+     *            - path of the folder.
+     * @param viewMode
+     *            - defines view mode. Can be one of the following: {@link ImapViewMode#ARCHIVE} or {@link ImapViewMode#VIRTUAL}.
+     * @param extractAttachmentsEnabled
+     *            boolean
+     * @param imapService
+     *            ImapService
+     * @param serviceRegistry
+     *            ServiceRegistry
+     * @param mountPointId
+     *            - id of the mount point.
      */
     public AlfrescoImapFolder(
             FileInfo folderInfo,
@@ -175,16 +178,26 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     /**
      * Constructs {@link AlfrescoImapFolder} object.
      * 
-     * @param folderInfo - reference to the {@link FileInfo} object representing the folder.
-     * @param userName - name of the user (e.g. "admin" for admin user).
-     * @param folderName - name of the folder.
-     * @param folderPath - path of the folder.
-     * @param viewMode - defines view mode. Can be one of the following: {@link ImapViewMode#ARCHIVE} or {@link ImapViewMode#VIRTUAL}.
-     * @param imapService - the IMAP service.
-     * @param serviceRegistry ServiceRegistry
-     * @param selectable - defines whether the folder is selectable or not.
-     * @param extractAttachmentsEnabled boolean
-     * @param mountPointId int
+     * @param folderInfo
+     *            - reference to the {@link FileInfo} object representing the folder.
+     * @param userName
+     *            - name of the user (e.g. "admin" for admin user).
+     * @param folderName
+     *            - name of the folder.
+     * @param folderPath
+     *            - path of the folder.
+     * @param viewMode
+     *            - defines view mode. Can be one of the following: {@link ImapViewMode#ARCHIVE} or {@link ImapViewMode#VIRTUAL}.
+     * @param imapService
+     *            - the IMAP service.
+     * @param serviceRegistry
+     *            ServiceRegistry
+     * @param selectable
+     *            - defines whether the folder is selectable or not.
+     * @param extractAttachmentsEnabled
+     *            boolean
+     * @param mountPointId
+     *            int
      */
     public AlfrescoImapFolder(
             FileInfo folderInfo,
@@ -206,7 +219,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         this.viewMode = viewMode != null ? viewMode : ImapViewMode.ARCHIVE;
         this.extractAttachmentsEnabled = extractAttachmentsEnabled;
         this.imapService = imapService;
-        
+
         // MailFolder object can be null if it is used to obtain hierarchy delimiter by LIST command:
         // Example:
         // C: 2 list "" ""
@@ -236,14 +249,13 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         {
             this.selectable = false;
         }
-        
+
         this.mountPointId = mountPointId;
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see com.icegreen.greenmail.store.MailFolder#getFullName()
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see com.icegreen.greenmail.store.MailFolder#getFullName() */
     @Override
     public String getFullName()
     {
@@ -252,8 +264,8 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     }
 
     /* (non-Javadoc)
-     * @see com.icegreen.greenmail.store.MailFolder#getName()
-     */
+     * 
+     * @see com.icegreen.greenmail.store.MailFolder#getName() */
     @Override
     public String getName()
     {
@@ -261,8 +273,8 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     }
 
     /* (non-Javadoc)
-     * @see com.icegreen.greenmail.store.MailFolder#isSelectable()
-     */
+     * 
+     * @see com.icegreen.greenmail.store.MailFolder#isSelectable() */
     @Override
     public boolean isSelectable()
     {
@@ -287,8 +299,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     public boolean reset()
     {
         this.folderStatus = null;
-        return new CommandCallback<Boolean>()
-        {
+        return new CommandCallback<Boolean>() {
             public Boolean command() throws Throwable
             {
                 return serviceRegistry.getNodeService().exists(folderInfo.getNodeRef());
@@ -298,8 +309,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
 
     protected FolderStatus getFolderStatus()
     {
-        CommandCallback<FolderStatus> command = new CommandCallback<FolderStatus>()
-        {
+        CommandCallback<FolderStatus> command = new CommandCallback<FolderStatus>() {
             public FolderStatus command() throws Throwable
             {
                 return imapService.getFolderStatus(userName, folderInfo.getNodeRef(), viewMode);
@@ -307,20 +317,23 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         };
         return this.folderStatus = command.run();
     }
-    
+
     /**
      * Appends message to the folder.
      * 
-     * @param message - message.
-     * @param flags - message flags.
-     * @param internalDate - not used. Current date used instead.
+     * @param message
+     *            - message.
+     * @param flags
+     *            - message flags.
+     * @param internalDate
+     *            - not used. Current date used instead.
      */
     @Override
     protected long appendMessageInternal(
             MimeMessage message,
             Flags flags,
             Date internalDate)
-            throws FileExistsException, FileNotFoundException, IOException, MessagingException 
+            throws FileExistsException, FileNotFoundException, IOException, MessagingException
     {
         long uid;
         NodeRef sourceNodeRef = extractNodeRef(message);
@@ -338,13 +351,16 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     }
 
     /**
-     * Moves the node <code>sourceNodeRef</code> extracted from the message id.
-     * A part of a complex move operation.
+     * Moves the node <code>sourceNodeRef</code> extracted from the message id. A part of a complex move operation.
      * 
-     * @param folderInfo FileInfo
-     * @param message MimeMessage
-     * @param flags Flags
-     * @param sourceNodeRef NodeRef
+     * @param folderInfo
+     *            FileInfo
+     * @param message
+     *            MimeMessage
+     * @param flags
+     *            Flags
+     * @param sourceNodeRef
+     *            NodeRef
      * @return UUID of the moved node
      * @throws FileExistsException
      * @throws FileNotFoundException
@@ -368,24 +384,25 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
             messageFile = fileFolderService.getFileInfo(newNodeRef);
         }
         final long newMessageUid = (Long) messageFile.getProperties().get(ContentModel.PROP_NODE_DBID);
-        
+
         imapService.persistMessageHeaders(messageFile.getNodeRef(), message);
-        
+
         Flags newFlags = new Flags(flags);
         newFlags.add(Flag.RECENT);
-        
+
         imapService.setFlags(messageFile, newFlags, true);
         imapService.setFlag(messageFile, Flag.DELETED, false);
-        
+
         return newMessageUid;
     }
 
     /**
-     * Extract a <code>NodeRef</code> from the message id.
-     * <br>Typical message id is "<74bad8aa-75a5-4063-8e46-9d1b5737f43b@alfresco.org>"
-     * <br>See {@link AbstractMimeMessage#updateMessageID()}
+     * Extract a <code>NodeRef</code> from the message id. <br>
+     * Typical message id is "<74bad8aa-75a5-4063-8e46-9d1b5737f43b@alfresco.org>" <br>
+     * See {@link AbstractMimeMessage#updateMessageID()}
      * 
-     * @param message MimeMessage
+     * @param message
+     *            MimeMessage
      * @return null if nothing is found
      */
     private NodeRef extractNodeRef(MimeMessage message)
@@ -402,7 +419,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         {
             // we cannot use message id to extract nodeRef
         }
-        
+
         if (messageId != null)
         {
             if (messageId.startsWith("<"))
@@ -423,10 +440,10 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
                 result = null;
             }
         }
-        
-        if(result == null)
+
+        if (result == null)
         {
-            //check X-Alfresco-NodeRef-ID header
+            // check X-Alfresco-NodeRef-ID header
             try
             {
                 if (message.getHeader(AlfrescoImapConst.X_ALF_NODEREF_ID) != null)
@@ -441,7 +458,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
             }
             catch (MessagingException e)
             {
-                //Do nothing
+                // Do nothing
             }
         }
         return result;
@@ -450,7 +467,8 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     /**
      * Determine if it is a complex move operation, which consists of a create superseded by a delete.
      * 
-     * @param sourceNodeRef NodeRef
+     * @param sourceNodeRef
+     *            NodeRef
      * @return boolean
      */
     @SuppressWarnings("deprecation")
@@ -478,17 +496,19 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     /**
      * Copies message with the given UID to the specified {@link MailFolder}.
      * 
-     * @param uid - UID of the message
-     * @param toFolder - reference to the destination folder.
-     * @throws MessagingException 
-     * @throws IOException 
-     * @throws FileNotFoundException 
-     * @throws FileExistsException 
+     * @param uid
+     *            - UID of the message
+     * @param toFolder
+     *            - reference to the destination folder.
+     * @throws MessagingException
+     * @throws IOException
+     * @throws FileNotFoundException
+     * @throws FileExistsException
      */
     @Override
     protected long copyMessageInternal(
             long uid, MailFolder toFolder)
-            throws MessagingException, FileExistsException, FileNotFoundException, IOException 
+            throws MessagingException, FileExistsException, FileNotFoundException, IOException
     {
         AlfrescoImapFolder toImapMailFolder = (AlfrescoImapFolder) toFolder;
 
@@ -498,7 +518,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
 
         if (serviceRegistry.getNodeService().hasAspect(sourceMessageFileInfo.getNodeRef(), ImapModel.ASPECT_IMAP_CONTENT))
         {
-                //Generate body of message
+            // Generate body of message
             MimeMessage newMessage = new ImapModelMessage(sourceMessageFileInfo, serviceRegistry, true);
             return toImapMailFolder.appendMessageInternal(newMessage, imapService.getFlags(sourceMessageFileInfo), new Date());
         }
@@ -507,7 +527,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
             String fileName = (String) serviceRegistry.getNodeService().getProperty(sourceMessageFileInfo.getNodeRef(), ContentModel.PROP_NAME);
             String newFileName = imapService.generateUniqueFilename(destFolderNodeRef, fileName);
             FileInfo messageFileInfo = serviceRegistry.getFileFolderService().copy(sourceMessageFileInfo.getNodeRef(), destFolderNodeRef, newFileName);
-            return (Long)messageFileInfo.getProperties().get(ContentModel.PROP_NODE_DBID);
+            return (Long) messageFileInfo.getProperties().get(ContentModel.PROP_NODE_DBID);
         }
     }
 
@@ -521,7 +541,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         {
             throw new FolderException("Can't delete all - Permission denied");
         }
-        
+
         for (Map.Entry<Long, FileInfo> entry : searchMails().entrySet())
         {
             imapService.setFlag(entry.getValue(), Flags.Flag.DELETED, true);
@@ -546,7 +566,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
             imapService.expungeMessage(entry.getValue());
         }
     }
-    
+
     /**
      * Deletes messages marked with {@link javax.mail.Flags.Flag#DELETED}. Note that this message deletes the message with current uid
      */
@@ -557,12 +577,12 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         {
             throw new FolderException("Can't expunge - Permission denied");
         }
-        
+
         FileInfo messageFileInfo = searchMails().get(uid);
 
         imapService.expungeMessage(messageFileInfo);
     }
-    
+
     /**
      * Returns the MSN number of the first unseen message.
      * 
@@ -577,9 +597,10 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     /**
      * Returns message by its UID.
      * 
-     * @param uid - UID of the message.
+     * @param uid
+     *            - UID of the message.
      * @return message.
-     * @throws MessagingException 
+     * @throws MessagingException
      */
     @Override
     protected SimpleStoredMessage getMessageInternal(long uid) throws MessagingException
@@ -588,7 +609,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         {
             logger.debug("[getMessageInternal] " + this);
         }
-        FileInfo mesInfo = searchMails().get(uid); 
+        FileInfo mesInfo = searchMails().get(uid);
         if (mesInfo == null)
         {
             return null;
@@ -619,7 +640,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         {
             logger.debug("[getMessageUidsInternal] " + this);
         }
-        
+
         Collection<Long> uidSet = searchMails().keySet();
         long[] uids = new long[uidSet.size()];
         int i = 0;
@@ -678,7 +699,8 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     /**
      * Returns list of messages by filter.
      * 
-     * @param msgRangeFilter - {@link MsgRangeFilter} object representing filter.
+     * @param msgRangeFilter
+     *            - {@link MsgRangeFilter} object representing filter.
      * @return list of filtered messages.
      */
     @Override
@@ -690,9 +712,11 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     /**
      * Returns message sequence number in the folder by its UID.
      * 
-     * @param uid - message UID.
+     * @param uid
+     *            - message UID.
      * @return message sequence number.
-     * @throws FolderException if no message with given UID.
+     * @throws FolderException
+     *             if no message with given UID.
      */
     @Override
     public int getMsn(long uid) throws FolderException
@@ -700,7 +724,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         NavigableMap<Long, FileInfo> messages = searchMails();
         if (!messages.containsKey(uid))
         {
-            throw new FolderException("No such message.");            
+            throw new FolderException("No such message.");
         }
         return messages.headMap(uid, true).size();
     }
@@ -747,11 +771,10 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     }
 
     /**
-     * Returns count of messages with {@link javax.mail.Flags.Flag#RECENT} flag.
-     * If {@code reset} parameter is {@code true} - removes {@link javax.mail.Flags.Flag#RECENT} flag from
-     * the message for current user.
+     * Returns count of messages with {@link javax.mail.Flags.Flag#RECENT} flag. If {@code reset} parameter is {@code true} - removes {@link javax.mail.Flags.Flag#RECENT} flag from the message for current user.
      * 
-     * @param reset - if true the {@link javax.mail.Flags.Flag#RECENT} will be deleted for current user if exists.
+     * @param reset
+     *            - if true the {@link javax.mail.Flags.Flag#RECENT} will be deleted for current user if exists.
      * @return returns count of recent messages.
      */
     @Override
@@ -760,8 +783,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         int recent = getFolderStatus().recentCount;
         if (reset && recent > 0)
         {
-            CommandCallback<Void> command = new CommandCallback<Void>()
-            {
+            CommandCallback<Void> command = new CommandCallback<Void>() {
                 public Void command() throws Throwable
                 {
                     for (FileInfo fileInfo : folderStatus.search.values())
@@ -787,7 +809,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
                 }
             }
         }
-        return recent;        
+        return recent;
     }
 
     /**
@@ -798,10 +820,10 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     @Override
     public long getUidNext()
     {
-        NavigableMap<Long, FileInfo> search = getFolderStatus().search; 
+        NavigableMap<Long, FileInfo> search = getFolderStatus().search;
         return search.isEmpty() ? 1 : search.lastKey() + 1;
     }
-    
+
     /**
      * Returns UIDVALIDITY value of the folder.
      * 
@@ -825,16 +847,18 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     }
 
     /**
-     * Replaces flags for the message with the given UID. If {@code addUid} is set to {@code true}
-     * {@link FolderListener} objects defined for this folder will be notified.
-     * {@code silentListener} can be provided - this listener wouldn't be notified.
+     * Replaces flags for the message with the given UID. If {@code addUid} is set to {@code true} {@link FolderListener} objects defined for this folder will be notified. {@code silentListener} can be provided - this listener wouldn't be notified.
      * 
-     * @param flags - new flags.
-     * @param uid - message UID.
-     * @param silentListener - listener that shouldn't be notified.
-     * @param addUid - defines whether or not listeners be notified.
-     * @throws FolderException 
-     * @throws MessagingException 
+     * @param flags
+     *            - new flags.
+     * @param uid
+     *            - message UID.
+     * @param silentListener
+     *            - listener that shouldn't be notified.
+     * @param addUid
+     *            - defines whether or not listeners be notified.
+     * @throws FolderException
+     * @throws MessagingException
      */
     @Override
     protected void replaceFlagsInternal(
@@ -842,13 +866,13 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
             long uid,
             FolderListener silentListener,
             boolean addUid)
-            throws FolderException, MessagingException 
+            throws FolderException, MessagingException
     {
         int msn = getMsn(uid);
         FileInfo fileInfo = searchMails().get(uid);
         imapService.setFlags(fileInfo, MessageFlags.ALL_FLAGS, false);
         imapService.setFlags(fileInfo, flags, true);
-        
+
         Long uidNotification = addUid ? uid : null;
         notifyFlagUpdate(msn, flags, uidNotification, silentListener);
     }
@@ -859,7 +883,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         List<SimpleStoredMessage> messages = getMessages();
         long[] result = new long[messages.size()];
         int i = 0;
-        
+
         for (SimpleStoredMessage message : messages)
         {
             if (searchTerm.match(message.getMimeMessage()))
@@ -872,17 +896,20 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     }
 
     /**
-     * Sets flags for the message with the given UID. If {@code addUid} is set to {@code true}
-     * {@link FolderListener} objects defined for this folder will be notified.
-     * {@code silentListener} can be provided - this listener wouldn't be notified.
+     * Sets flags for the message with the given UID. If {@code addUid} is set to {@code true} {@link FolderListener} objects defined for this folder will be notified. {@code silentListener} can be provided - this listener wouldn't be notified.
      * 
-     * @param flags - new flags.
-     * @param value - flags value.
-     * @param uid - message UID.
-     * @param silentListener - listener that shouldn't be notified.
-     * @param addUid - defines whether or not listeners be notified.
-     * @throws MessagingException 
-     * @throws FolderException 
+     * @param flags
+     *            - new flags.
+     * @param value
+     *            - flags value.
+     * @param uid
+     *            - message UID.
+     * @param silentListener
+     *            - listener that shouldn't be notified.
+     * @param addUid
+     *            - defines whether or not listeners be notified.
+     * @throws MessagingException
+     * @throws FolderException
      */
     @Override
     protected void setFlagsInternal(
@@ -891,12 +918,12 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
             long uid,
             FolderListener silentListener,
             boolean addUid)
-            throws MessagingException, FolderException 
+            throws MessagingException, FolderException
     {
         int msn = getMsn(uid);
         FileInfo fileInfo = searchMails().get(uid);
         imapService.setFlags(fileInfo, flags, value);
-        
+
         Long uidNotification = null;
         if (addUid)
         {
@@ -922,10 +949,10 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     {
         return folderInfo;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.imap.AbstractImapFolder#isMarkedInternal()
-     */
+     * 
+     * @see org.alfresco.repo.imap.AbstractImapFolder#isMarkedInternal() */
     @Override
     public boolean isMarked()
     {
@@ -942,48 +969,50 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     protected boolean isReadOnly()
     {
         AccessStatus status = serviceRegistry.getPublicServiceAccessService().hasAccess(ServiceRegistry.NODE_SERVICE.getLocalName(), "createNode", folderInfo.getNodeRef(), null, null, null);
-        //serviceRegistry.getPermissionService().hasPermission(folderInfo.getNodeRef(), PermissionService.WRITE);
-        return  status == AccessStatus.DENIED;
+        // serviceRegistry.getPermissionService().hasPermission(folderInfo.getNodeRef(), PermissionService.WRITE);
+        return status == AccessStatus.DENIED;
     }
 
     public ImapViewMode getViewMode()
     {
         return viewMode;
     }
-    
+
     /**
-     *  Creates the EML message in the specified folder.
-     *  
-     *  @param folderFileInfo The folder to create message in.
-     *  @param message The original MimeMessage.
-     *  @return ID of the new message created 
-     * @throws FileNotFoundException 
-     * @throws FileExistsException 
-     * @throws MessagingException 
-     * @throws IOException 
+     * Creates the EML message in the specified folder.
+     * 
+     * @param folderFileInfo
+     *            The folder to create message in.
+     * @param message
+     *            The original MimeMessage.
+     * @return ID of the new message created
+     * @throws FileNotFoundException
+     * @throws FileExistsException
+     * @throws MessagingException
+     * @throws IOException
      */
     private long createMimeMessageInFolder(
             FileInfo folderFileInfo,
             MimeMessage message,
             Flags flags)
-            throws FileExistsException, FileNotFoundException, IOException, MessagingException 
+            throws FileExistsException, FileNotFoundException, IOException, MessagingException
     {
         String name = AlfrescoImapConst.MESSAGE_PREFIX + GUID.generate();
         FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
         FileInfo messageFile = fileFolderService.create(folderFileInfo.getNodeRef(), name, ContentModel.TYPE_CONTENT);
         final long newMessageUid = (Long) messageFile.getProperties().get(ContentModel.PROP_NODE_DBID);
-        name = AlfrescoImapConst.MESSAGE_PREFIX  + newMessageUid + AlfrescoImapConst.EML_EXTENSION;
+        name = AlfrescoImapConst.MESSAGE_PREFIX + newMessageUid + AlfrescoImapConst.EML_EXTENSION;
         fileFolderService.rename(messageFile.getNodeRef(), name);
         Flags newFlags = new Flags(flags);
         newFlags.add(Flag.RECENT);
         imapService.setFlags(messageFile, newFlags, true);
-        
+
         if (extractAttachmentsEnabled)
         {
             imapService.extractAttachments(messageFile.getNodeRef(), message);
         }
         // Force persistence of the message to the repository
         new IncomingImapMessage(messageFile, serviceRegistry, message);
-        return newMessageUid;        
+        return newMessageUid;
     }
 }

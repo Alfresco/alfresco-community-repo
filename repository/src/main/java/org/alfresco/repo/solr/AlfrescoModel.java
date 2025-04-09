@@ -52,7 +52,7 @@ public class AlfrescoModel
     {
         return checksum;
     }
-    
+
     @Override
     public boolean equals(Object other)
     {
@@ -61,20 +61,20 @@ public class AlfrescoModel
             return true;
         }
 
-        if(!(other instanceof AlfrescoModel))
+        if (!(other instanceof AlfrescoModel))
         {
             return false;
         }
 
-        AlfrescoModel model = (AlfrescoModel)other;
+        AlfrescoModel model = (AlfrescoModel) other;
         return (modelDef.getName().equals(model.getModelDef().getName()) &&
-        		checksum == model.getChecksum());
+                checksum == model.getChecksum());
     }
 
     @Override
     public int hashCode()
     {
-    	int result = 17;
+        int result = 17;
         result = 31 * result + modelDef.hashCode();
         result = 31 * result + Long.valueOf(checksum).hashCode();
         return result;

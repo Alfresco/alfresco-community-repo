@@ -26,20 +26,19 @@
  */
 package org.alfresco.repo.content.filestore;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 
-import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import static org.junit.Assert.assertTrue;
+
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.util.testing.category.NeverRunsTests;
 
 /**
- * Tests for {@link FileContentStore FileContentStore} which uses
- * {@link TimeBasedFileContentUrlProvider TimeBasedFileContentUrlProvider}
- * configured for provisioning splitting data into buckets within the
- * <b>minute</b> range
+ * Tests for {@link FileContentStore FileContentStore} which uses {@link TimeBasedFileContentUrlProvider TimeBasedFileContentUrlProvider} configured for provisioning splitting data into buckets within the <b>minute</b> range
  * 
  * @author Andreea Dragoi
  *

@@ -40,19 +40,21 @@ import org.alfresco.service.cmr.search.SearchParameters;
  */
 public class SimpleResultSetMetaData implements ResultSetMetaData
 {
-    private LimitBy limitedBy; 
-    
+    private LimitBy limitedBy;
+
     private PermissionEvaluationMode permissoinEvaluationMode;
-    
+
     private SearchParameters searchParameters;
-    
-    
+
     /**
      * Default properties.
      * 
-     * @param limitedBy LimitBy
-     * @param permissoinEvaluationMode PermissionEvaluationMode
-     * @param searchParameters SearchParameters
+     * @param limitedBy
+     *            LimitBy
+     * @param permissoinEvaluationMode
+     *            PermissionEvaluationMode
+     * @param searchParameters
+     *            SearchParameters
      */
     public SimpleResultSetMetaData(LimitBy limitedBy, PermissionEvaluationMode permissoinEvaluationMode, SearchParameters searchParameters)
     {
@@ -79,7 +81,7 @@ public class SimpleResultSetMetaData implements ResultSetMetaData
 
     public ResultSetColumn getColumn(String name)
     {
-      throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     public String[] getColumnNames()

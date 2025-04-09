@@ -36,15 +36,15 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.alfresco.repo.bulkimport.impl.FileUtils;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.repo.bulkimport.impl.FileUtils;
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
- * This class is a DTO that represents an "importable item" - a series of files
- * that represent a single node (content OR space) in the repository.
+ * This class is a DTO that represents an "importable item" - a series of files that represent a single node (content OR space) in the repository.
  *
  * @since 4.0
  *
@@ -53,34 +53,32 @@ public final class ImportableItem
 {
     public enum FileType
     {
-        FILE,
-        DIRECTORY,
-        OTHER
+        FILE, DIRECTORY, OTHER
     };
 
     protected static final Log logger = LogFactory.getLog(ImportableItem.class);
-    
+
     private ContentAndMetadata headRevision = new ContentAndMetadata();
     private SortedSet<VersionedContentAndMetadata> versionEntries = null;
     private NodeRef nodeRef;
     private ImportableItem parent;
     private long numChildren = 0;
-    
+
     public boolean isValid()
     {
-        return(headRevision.contentFileExists() || headRevision.metadataFileExists() || hasVersionEntries());
+        return (headRevision.contentFileExists() || headRevision.metadataFileExists() || hasVersionEntries());
     }
-    
+
     public ContentAndMetadata getHeadRevision()
     {
-        return(headRevision);
+        return (headRevision);
     }
-    
+
     public void setNodeRef(NodeRef nodeRef)
     {
         this.nodeRef = nodeRef;
     }
-    
+
     public NodeRef getNodeRef()
     {
         return nodeRef;
@@ -104,7 +102,7 @@ public final class ImportableItem
         }
         this.parent = parent;
     }
-    
+
     public ImportableItem getParent()
     {
         return parent;
@@ -117,16 +115,16 @@ public final class ImportableItem
     {
         return (versionEntries != null && versionEntries.size() > 0);
     }
-    
+
     public Set<VersionedContentAndMetadata> getVersionEntries()
     {
         if (versionEntries == null)
         {
             return Collections.emptySet();
         }
-        return(Collections.unmodifiableSet(versionEntries));
+        return (Collections.unmodifiableSet(versionEntries));
     }
-    
+
     public void addVersionEntry(final VersionedContentAndMetadata versionEntry)
     {
         if (versionEntry != null)
@@ -135,47 +133,46 @@ public final class ImportableItem
             {
                 versionEntries = new TreeSet<VersionedContentAndMetadata>();
             }
-                
+
             versionEntries.add(versionEntry);
         }
     }
-    
+
     @Override
     public String toString()
     {
-        return(new ToStringBuilder(this)
-               .append("HeadRevision", headRevision)
-               .append("Versions", versionEntries)
-               .toString());
+        return (new ToStringBuilder(this)
+                .append("HeadRevision", headRevision)
+                .append("Versions", versionEntries)
+                .toString());
     }
-    
+
     public class ContentAndMetadata
     {
-        private Path     contentFile           = null;
-        private boolean  contentFileExists     = false;
-        private boolean  contentFileIsReadable = false;
-        private FileType contentFileType       = null;
-        private long     contentFileSize       = -1;
-        private Date     contentFileCreated    = null;
-        private Date     contentFileModified   = null;
-        private Path     metadataFile          = null;
-        private long     metadataFileSize      = -1;
+        private Path contentFile = null;
+        private boolean contentFileExists = false;
+        private boolean contentFileIsReadable = false;
+        private FileType contentFileType = null;
+        private long contentFileSize = -1;
+        private Date contentFileCreated = null;
+        private Date contentFileModified = null;
+        private Path metadataFile = null;
+        private long metadataFileSize = -1;
 
-        
         public final Path getContentFile()
         {
             return contentFile;
         }
-        
+
         public final void setContentFile(final Path contentFile)
         {
             this.contentFile = contentFile;
-            
+
             if (contentFile != null)
             {
                 // stat the file, to find out a few key details
                 contentFileExists = Files.exists(contentFile, LinkOption.NOFOLLOW_LINKS);
-                
+
                 if (contentFileExists)
                 {
                     try
@@ -183,9 +180,9 @@ public final class ImportableItem
                         BasicFileAttributes attrs = Files.readAttributes(contentFile, BasicFileAttributes.class);
 
                         contentFileIsReadable = Files.isReadable(contentFile);
-                        contentFileSize       = attrs.size();
-                        contentFileModified   = new Date(attrs.lastModifiedTime().toMillis());
-                        contentFileCreated    = new Date(attrs.creationTime().toMillis());
+                        contentFileSize = attrs.size();
+                        contentFileModified = new Date(attrs.lastModifiedTime().toMillis());
+                        contentFileCreated = new Date(attrs.creationTime().toMillis());
 
                         if (Files.isRegularFile(contentFile, LinkOption.NOFOLLOW_LINKS))
                         {
@@ -207,67 +204,67 @@ public final class ImportableItem
                 }
             }
         }
-        
+
         public final boolean contentFileExists()
         {
-            return(contentFileExists);
+            return (contentFileExists);
         }
-        
+
         public final boolean isContentFileReadable()
         {
-            return(contentFileIsReadable);
+            return (contentFileIsReadable);
         }
-        
+
         public final FileType getContentFileType()
         {
             if (!contentFileExists())
             {
                 throw new IllegalStateException("Cannot determine content file type if content file doesn't exist.");
             }
-            
-            return(contentFileType);
+
+            return (contentFileType);
         }
-        
+
         public final long getContentFileSize()
         {
             if (!contentFileExists())
             {
                 throw new IllegalStateException("Cannot determine content file size if content file doesn't exist.");
             }
-            
-            return(contentFileSize);
+
+            return (contentFileSize);
         }
-        
+
         public final Date getContentFileCreatedDate()
         {
             if (!contentFileExists())
             {
                 throw new IllegalStateException("Cannot determine content file creation date if content file doesn't exist.");
             }
-            
-            return(contentFileCreated);
+
+            return (contentFileCreated);
         }
-        
+
         public final Date getContentFileModifiedDate()
         {
             if (!contentFileExists())
             {
                 throw new IllegalStateException("Cannot determine content file modification date if content file doesn't exist.");
             }
-            
-            return(contentFileModified);
+
+            return (contentFileModified);
         }
-        
+
         public final boolean metadataFileExists()
         {
-            return(metadataFile != null);
+            return (metadataFile != null);
         }
-        
+
         public final Path getMetadataFile()
         {
             return metadataFile;
         }
-        
+
         public final void setMetadataFile(final Path metadataFile)
         {
             if (metadataFile != null && Files.exists(metadataFile))
@@ -279,40 +276,40 @@ public final class ImportableItem
                 }
                 catch (IOException e)
                 {
-                    if (logger.isWarnEnabled()) 
+                    if (logger.isWarnEnabled())
                     {
                         logger.warn("Size for the metadata file '" + FileUtils.getFileName(metadataFile) + "' could not be retrieved.", e);
                     }
                 }
             }
         }
-        
+
         public final long getMetadataFileSize()
         {
             if (!metadataFileExists())
             {
                 throw new IllegalStateException("Cannot determine metadata file size if metadata file doesn't exist.");
             }
-            
-            return(metadataFileSize);
+
+            return (metadataFileSize);
         }
-        
+
         public final int weight()
         {
-            return((contentFile   == null || !contentFileExists ? 0 : 1) +
-                   (metadataFile == null ? 0 : 1));
+            return ((contentFile == null || !contentFileExists ? 0 : 1) +
+                    (metadataFile == null ? 0 : 1));
         }
 
         @Override
         public String toString()
         {
-            return(new ToStringBuilder(this)
-                   .append("contentFile", (contentFileExists ? contentFile : null))
-                   .append("metadatafile", metadataFile)
-                   .toString());
+            return (new ToStringBuilder(this)
+                    .append("contentFile", (contentFileExists ? contentFile : null))
+                    .append("metadatafile", metadataFile)
+                    .toString());
         }
     }
-    
+
     /**
      * 
      * @since 4.0
@@ -326,25 +323,24 @@ public final class ImportableItem
         {
             this.version = version;
         }
-        
+
         public final int getVersion()
         {
-            return(version);
+            return (version);
         }
-        
+
         @Override
         public String toString()
         {
-            return(new ToStringBuilder(this)
-                   .append("version", version)
-                   .appendSuper("")
-                   .toString());
+            return (new ToStringBuilder(this)
+                    .append("version", version)
+                    .appendSuper("")
+                    .toString());
         }
 
         public int compareTo(final VersionedContentAndMetadata other)
         {
-            return(this.version < other.version ? -1 :
-                   this.version == other.version ? 0 : 1);
+            return (this.version < other.version ? -1 : this.version == other.version ? 0 : 1);
         }
 
         @Override
@@ -352,23 +348,23 @@ public final class ImportableItem
         {
             if (this == other)
             {
-                return(true);
+                return (true);
             }
 
             if (!(other instanceof VersionedContentAndMetadata))
             {
-                return(false);
+                return (false);
             }
 
-            VersionedContentAndMetadata otherVCAM = (VersionedContentAndMetadata)other;
+            VersionedContentAndMetadata otherVCAM = (VersionedContentAndMetadata) other;
 
-            return(this.version == otherVCAM.version);
+            return (this.version == otherVCAM.version);
         }
 
         @Override
         public int hashCode()
         {
-            return(version);
+            return (version);
         }
     }
 }

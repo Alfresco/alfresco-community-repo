@@ -53,21 +53,21 @@ public class PropertyConverter
         {
             // NodeRef object properties are converted to new TemplateNode objects
             // so they can be used as objects within a template
-            value = new TemplateNode(((NodeRef)value), services, resolver);
+            value = new TemplateNode(((NodeRef) value), services, resolver);
         }
         else if (value instanceof List)
         {
             // recursively convert each value in the collection
-            List<Serializable> list = (List<Serializable>)value;
+            List<Serializable> list = (List<Serializable>) value;
             List<Serializable> result = new ArrayList<Serializable>(list.size());
-            for (int i=0; i<list.size(); i++)
+            for (int i = 0; i < list.size(); i++)
             {
                 // add each item to a new list as the repo can return unmodifiable lists
                 result.add(convertProperty(list.get(i), name, services, resolver));
             }
-            value = (Serializable)result;
+            value = (Serializable) result;
         }
-        
+
         return value;
     }
 }

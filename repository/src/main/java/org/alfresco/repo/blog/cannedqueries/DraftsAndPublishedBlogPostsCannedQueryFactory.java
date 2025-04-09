@@ -58,37 +58,37 @@ public class DraftsAndPublishedBlogPostsCannedQueryFactory extends AbstractBlogP
                 parameters);
         return (CannedQuery<BlogEntity>) cq;
     }
-    
+
     public CannedQuery<BlogEntity> getCannedQuery(NodeRef blogContainerNode, Date fromDate, Date toDate, String byUser, PagingRequest pagingReq)
     {
         ParameterCheck.mandatory("blogContainerNode", blogContainerNode);
         ParameterCheck.mandatory("pagingReq", pagingReq);
-        
+
         int requestTotalCountMax = pagingReq.getRequestTotalCountMax();
-        
-        //FIXME Need tenant service like for GetChildren?
+
+        // FIXME Need tenant service like for GetChildren?
         DraftsAndPublishedBlogPostsCannedQueryParams paramBean = new DraftsAndPublishedBlogPostsCannedQueryParams(
-                                                                                    getNodeId(blogContainerNode),
-                                                                                    getQNameId(ContentModel.PROP_NAME),
-                                                                                    getQNameId(ContentModel.PROP_PUBLISHED),
-                                                                                    getQNameId(ContentModel.TYPE_CONTENT),
-                                                                                    byUser,
-                                                                                    fromDate, toDate);
-        
+                getNodeId(blogContainerNode),
+                getQNameId(ContentModel.PROP_NAME),
+                getQNameId(ContentModel.PROP_PUBLISHED),
+                getQNameId(ContentModel.TYPE_CONTENT),
+                byUser,
+                fromDate, toDate);
+
         CannedQueryPageDetails cqpd = createCQPageDetails(pagingReq);
-        
+
         List<Pair<QName, Boolean>> sortPairs = new ArrayList<Pair<QName, Boolean>>(2);
-        
+
         // Sort by created then published. We want a list of all published (most recently published first),
-        //                                 followed by all unpublished (most recently created first)
+        // followed by all unpublished (most recently created first)
         sortPairs.add(new Pair<QName, Boolean>(ContentModel.PROP_CREATED, Boolean.FALSE));
         sortPairs.add(new Pair<QName, Boolean>(ContentModel.PROP_PUBLISHED, Boolean.FALSE));
-        
+
         CannedQuerySortDetails cqsd = createCQSortDetails(sortPairs);
-        
+
         // create query params holder
         CannedQueryParameters params = new CannedQueryParameters(paramBean, cqpd, cqsd, requestTotalCountMax, pagingReq.getQueryExecutionId());
-        
+
         // return canned query instance
         return getCannedQuery(params);
     }

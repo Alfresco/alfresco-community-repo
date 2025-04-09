@@ -27,7 +27,6 @@ package org.alfresco.util;
 
 import java.util.StringTokenizer;
 
-import org.alfresco.httpclient.HttpClientFactory;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.ProxyHost;
@@ -37,42 +36,37 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.connector.RemoteClient;
 
+import org.alfresco.httpclient.HttpClientFactory;
+
 /**
- * Helper class to provide access to Thread Local instances of HttpClient.
- * These instances will have been set up in a way that optimises the
- *  performance for one thread doing a fetch and then using the result.
- * You must call releaseConnection() when you're done with the request,
- *  otherwise things will break for the next request in this thread!
+ * Helper class to provide access to Thread Local instances of HttpClient. These instances will have been set up in a way that optimises the performance for one thread doing a fetch and then using the result. You must call releaseConnection() when you're done with the request, otherwise things will break for the next request in this thread!
  * 
- * TODO Merge me back to Spring Surf, which is where this code has been
- *  pulled out from (was in {@link RemoteClient} but not available externally)
- *  
- * This class also provides support for creating proxy configurations, 
- * taking into account System properties like:
+ * TODO Merge me back to Spring Surf, which is where this code has been pulled out from (was in {@link RemoteClient} but not available externally)
+ * 
+ * This class also provides support for creating proxy configurations, taking into account System properties like:
  * </p>
  * <ul>
- *  <li>http.proxyHost</li>
- *  <li>http.proxyPort</li>
- *  <li>http.proxyUser</li>
- *  <li>http.proxyPassword</li>
- *  
- *  <li>http.nonProxyHosts</li>
- *  
- *  <li>https.proxyHost</li>
- *  <li>https.proxyPort</li>
- *  <li>https.proxyUser</li>
- *  <li>https.proxyPassword</li>
+ * <li>http.proxyHost</li>
+ * <li>http.proxyPort</li>
+ * <li>http.proxyUser</li>
+ * <li>http.proxyPassword</li>
+ * 
+ * <li>http.nonProxyHosts</li>
+ * 
+ * <li>https.proxyHost</li>
+ * <li>https.proxyPort</li>
+ * <li>https.proxyUser</li>
+ * <li>https.proxyPassword</li>
  * </ul>
  * <p>
- *  
+ * 
  */
 public class HttpClientHelper
-{   
+{
     private static Log logger = LogFactory.getLog(HttpClientHelper.class);
-            
+
     // HTTP Client instance - per thread
-    private static ThreadLocal<HttpClient> httpClient = new ThreadLocal<HttpClient>()
-    {
+    private static ThreadLocal<HttpClient> httpClient = new ThreadLocal<HttpClient>() {
         @Override
         protected HttpClient initialValue()
         {
@@ -80,23 +74,23 @@ public class HttpClientHelper
             return new HttpClient(new HttpClientFactory.NonBlockingHttpParams());
         }
     };
-    
+
     /**
-     * Returns an initialised HttpClient instance for the current thread, which
-     *  will have been configured for optimal settings
+     * Returns an initialised HttpClient instance for the current thread, which will have been configured for optimal settings
      */
     public static HttpClient getHttpClient()
     {
         return httpClient.get();
     }
-    
+
     /**
-     * Create proxy host for the given system host and port properties.
-     * If the properties are not set, no proxy will be created.
+     * Create proxy host for the given system host and port properties. If the properties are not set, no proxy will be created.
      * 
-     * @param hostProperty the name of the system property for the proxy server (<code>http.proxyHost</code> or <code>https.proxyHost</code>)
-     * @param portProperty the name of the system property for the proxy server port (<code>http.proxyPort</code> or <code>https.proxyPort</code>)
-     * @param defaultPort 
+     * @param hostProperty
+     *            the name of the system property for the proxy server (<code>http.proxyHost</code> or <code>https.proxyHost</code>)
+     * @param portProperty
+     *            the name of the system property for the proxy server port (<code>http.proxyPort</code> or <code>https.proxyPort</code>)
+     * @param defaultPort
      * 
      * @return ProxyHost if appropriate properties have been set, null otherwise
      */
@@ -122,15 +116,17 @@ public class HttpClientHelper
         }
         return proxy;
     }
-    
+
     /**
-     * Create the proxy credentials for the given proxy user and password properties.
-     * If the properties are not set, not credentials will be created.
-     * @param proxyUserProperty the name of the system property for the proxy user
-     * @param proxyPasswordProperty the name of the system property for the proxy password
+     * Create the proxy credentials for the given proxy user and password properties. If the properties are not set, not credentials will be created.
+     * 
+     * @param proxyUserProperty
+     *            the name of the system property for the proxy user
+     * @param proxyPasswordProperty
+     *            the name of the system property for the proxy password
      * @return Credentials if appropriate properties have been set, null otherwise
      */
-    public static Credentials createProxyCredentials(final String proxyUserProperty, final String proxyPasswordProperty) 
+    public static Credentials createProxyCredentials(final String proxyUserProperty, final String proxyPasswordProperty)
     {
         final String proxyUser = System.getProperty(proxyUserProperty);
         final String proxyPassword = System.getProperty(proxyPasswordProperty);
@@ -141,11 +137,12 @@ public class HttpClientHelper
         }
         return credentials;
     }
-    
+
     /**
-     * Return true unless the given target host is specified in the <code>http.nonProxyHosts</code> system property (used for both protocols, http and https).
-     * See <a href=http://docs.oracle.com/javase/8/docs/api/java/net/doc-files/net-properties.html>Networking Properties</a>.
-     * @param targetHost    Non-null host name to verify
+     * Return true unless the given target host is specified in the <code>http.nonProxyHosts</code> system property (used for both protocols, http and https). See <a href=http://docs.oracle.com/javase/8/docs/api/java/net/doc-files/net-properties.html>Networking Properties</a>.
+     * 
+     * @param targetHost
+     *            Non-null host name to verify
      * @return true if not specified in the list, false if it is specified and therefore should be excluded from proxy
      */
     public static boolean requiresProxy(final String targetHost)

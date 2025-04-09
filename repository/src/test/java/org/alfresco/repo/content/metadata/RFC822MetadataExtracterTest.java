@@ -25,12 +25,13 @@
  */
 package org.alfresco.repo.content.metadata;
 
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import static org.mockito.Mockito.when;
+
+import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.ASPECT_DOD_5015_RECORD;
+import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.ASPECT_RECORD;
+import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.DOD_URI;
+import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.RM_URI;
+import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -40,37 +41,35 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.ASPECT_DOD_5015_RECORD;
-import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.ASPECT_RECORD;
-import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.DOD_URI;
-import static org.alfresco.repo.content.metadata.RFC822MetadataExtracter.RM_URI;
-import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI;
-import static org.mockito.Mockito.when;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 
 /**
- * Test the ability of RFC822MetadataExtracter when overridden by RM, to control which properties are extracted
- * from T-Engines. RFC822MetadataExtracter no longer extracts.
+ * Test the ability of RFC822MetadataExtracter when overridden by RM, to control which properties are extracted from T-Engines. RFC822MetadataExtracter no longer extracts.
  *
  * @author adavis
  */
-//@RunWith(MockitoJUnitRunner.class)
+// @RunWith(MockitoJUnitRunner.class)
 public class RFC822MetadataExtracterTest extends AbstractMetadataExtracterTest
 {
     private RFC822MetadataExtracter extracter;
     private RFC822MetadataExtracter rmExtracter;
-    @Mock private NodeService mockNodeService;
+    @Mock
+    private NodeService mockNodeService;
 
     private NodeRef nodeRefWithDodRecord = new NodeRef("workspace://spacesStore/test-dod");
     private NodeRef nodeRefWithRecord = new NodeRef("workspace://spacesStore/test-rm");
     private NodeRef nodeRefWithBoth = new NodeRef("workspace://spacesStore/test-both");
     private NodeRef nodeRefWithNeither = new NodeRef("workspace://spacesStore/test-neither");
 
-    private static final QName MESSAGE_FROM_TEST_PROPERTY =
-            QName.createQName("MessageToTest");
-    private static final QName MESSAGE_TO_TEST_PROPERTY =
-            QName.createQName("MessageFromTest");
-    private static final QName MESSAGE_CC_TEST_PROPERTY =
-            QName.createQName("MessageCCTest");
+    private static final QName MESSAGE_FROM_TEST_PROPERTY = QName.createQName("MessageToTest");
+    private static final QName MESSAGE_TO_TEST_PROPERTY = QName.createQName("MessageFromTest");
+    private static final QName MESSAGE_CC_TEST_PROPERTY = QName.createQName("MessageCCTest");
 
     @Override
     public void setUp() throws Exception
@@ -85,8 +84,7 @@ public class RFC822MetadataExtracterTest extends AbstractMetadataExtracterTest
         when(mockNodeService.hasAspect(nodeRefWithBoth, ASPECT_DOD_5015_RECORD)).thenReturn(true);
         when(mockNodeService.hasAspect(nodeRefWithBoth, ASPECT_RECORD)).thenReturn(true);
 
-        rmExtracter = new RFC822MetadataExtracter()
-        {
+        rmExtracter = new RFC822MetadataExtracter() {
             @Override
             // Needed so the init method runs.
             protected Map<String, Set<QName>> getDefaultMapping()
@@ -145,7 +143,7 @@ public class RFC822MetadataExtracterTest extends AbstractMetadataExtracterTest
     {
         Map<String, Set<String>> extractMapping = rmExtracter.getExtractMapping(nodeRef);
         AtomicInteger count = new AtomicInteger();
-        extractMapping.forEach((k,v) -> count.addAndGet(v.size()));
+        extractMapping.forEach((k, v) -> count.addAndGet(v.size()));
         return count.get();
     }
 
@@ -153,7 +151,7 @@ public class RFC822MetadataExtracterTest extends AbstractMetadataExtracterTest
     {
         Map<String, Set<String>> extractMapping = rmExtracter.getExtractMapping(nodeRef);
         StringJoiner sj = new StringJoiner(", ");
-        extractMapping.forEach((k,v) -> v.forEach(p -> sj.add(p.toString())));
+        extractMapping.forEach((k, v) -> v.forEach(p -> sj.add(p.toString())));
         return sj.toString();
     }
 }

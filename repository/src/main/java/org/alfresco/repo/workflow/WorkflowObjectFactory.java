@@ -70,9 +70,9 @@ public class WorkflowObjectFactory
     private final DictionaryService dictionaryService;
     private final String engineId;
     private final QName defaultStartTaskType;
-    
+
     private boolean ignoreTenantCheck;
-    
+
     public WorkflowObjectFactory(WorkflowQNameConverter qNameConverter,
             TenantService tenantService,
             MessageService messageService,
@@ -91,12 +91,12 @@ public class WorkflowObjectFactory
     {
         return BPMEngineRegistry.createGlobalId(engineId, localId);
     }
-    
+
     public String getLocalEngineId(String globalId)
     {
         return BPMEngineRegistry.getLocalId(globalId);
     }
-    
+
     public boolean isGlobalId(String globalId)
     {
         return BPMEngineRegistry.isGlobalId(globalId, engineId);
@@ -104,8 +104,11 @@ public class WorkflowObjectFactory
 
     /**
      * Create a new {@link WorkflowDeployment}.
-     * @param wfDef WorkflowDefinition
-     * @param problems String
+     * 
+     * @param wfDef
+     *            WorkflowDefinition
+     * @param problems
+     *            String
      * @return WorkflowDeployment
      */
     public WorkflowDeployment createDeployment(WorkflowDefinition wfDef, String... problems)
@@ -116,94 +119,101 @@ public class WorkflowObjectFactory
 
     /**
      * Create a new {@link WorkflowDefinition}.
-     * @param defId String
-     * @param defName String
-     * @param version int
-     * @param defaultTitle String
-     * @param defaultDescription String
-     * @param startTaskDef WorkflowTaskDefinition
+     * 
+     * @param defId
+     *            String
+     * @param defName
+     *            String
+     * @param version
+     *            int
+     * @param defaultTitle
+     *            String
+     * @param defaultDescription
+     *            String
+     * @param startTaskDef
+     *            WorkflowTaskDefinition
      * @return WorkflowDefinition
      */
     public WorkflowDefinition createDefinition(String defId,
-                String defName, int version, 
-                String defaultTitle, String defaultDescription,
-                WorkflowTaskDefinition startTaskDef)
+            String defName, int version,
+            String defaultTitle, String defaultDescription,
+            WorkflowTaskDefinition startTaskDef)
     {
         checkDomain(defName);
         String actualDefName = buildGlobalId(tenantService.getBaseName(defName));
         String actualId = buildGlobalId(defId);
-        
+
         String actualVersion = Integer.toString(version);
-        
+
         String displayId = getProcessKey(defName) + ".workflow";
         String title = getLabel(displayId, TITLE_LABEL, defaultTitle);
         String description = getLabel(displayId, DESC_LABEL, defaultDescription, title);
         return new WorkflowDefinition(
-                    actualId, actualDefName, actualVersion, title, description, startTaskDef);
+                actualId, actualDefName, actualVersion, title, description, startTaskDef);
     }
-    
+
     public String getWorkflowDefinitionName(String defName)
     {
-        String baseName= tenantService.getBaseName(defName);
+        String baseName = tenantService.getBaseName(defName);
         String actualName = buildGlobalId(baseName);
         return actualName;
     }
-    
+
     public WorkflowInstance createInstance(String id,
-                WorkflowDefinition definition, Map<String, Object> variables,
-                boolean isActive, Date startDate, Date endDate)
+            WorkflowDefinition definition, Map<String, Object> variables,
+            boolean isActive, Date startDate, Date endDate)
     {
         String actualId = buildGlobalId(id);
-        
+
         String description = (String) getVariable(variables, WorkflowModel.PROP_WORKFLOW_DESCRIPTION);
-        
+
         NodeRef initiator = null;
-        ScriptNode initiatorSN= (ScriptNode) getVariable(variables, WorkflowConstants.PROP_INITIATOR);
-        if(initiatorSN != null)
+        ScriptNode initiatorSN = (ScriptNode) getVariable(variables, WorkflowConstants.PROP_INITIATOR);
+        if (initiatorSN != null)
         {
             initiator = initiatorSN.getNodeRef();
         }
-        
+
         NodeRef context = getNodeVariable(variables, WorkflowModel.PROP_CONTEXT);
-        NodeRef workflowPackage= getNodeVariable(variables, WorkflowModel.ASSOC_PACKAGE);
-        
+        NodeRef workflowPackage = getNodeVariable(variables, WorkflowModel.ASSOC_PACKAGE);
+
         WorkflowInstance workflowInstance = new WorkflowInstance(
-                    actualId, definition, 
-                    description, initiator, 
-                    workflowPackage, context, 
-                    isActive, startDate, endDate);
-        
+                actualId, definition,
+                description, initiator,
+                workflowPackage, context,
+                isActive, startDate, endDate);
+
         workflowInstance.priority = (Integer) getVariable(variables, WorkflowModel.PROP_WORKFLOW_PRIORITY);
         Date dueDate = (Date) getVariable(variables, WorkflowModel.PROP_WORKFLOW_DUE_DATE);
-        if(dueDate != null)
+        if (dueDate != null)
         {
             workflowInstance.dueDate = dueDate;
         }
-        
+
         return workflowInstance;
     }
 
-    public WorkflowPath createPath(String id, 
-                WorkflowInstance wfInstance, WorkflowNode node, 
-                boolean isActive)
+    public WorkflowPath createPath(String id,
+            WorkflowInstance wfInstance, WorkflowNode node,
+            boolean isActive)
     {
         String actualId = buildGlobalId(id);
         return new WorkflowPath(actualId, wfInstance, node, isActive);
     }
-    
-    public WorkflowNode createNode(String name, 
-                String definitionName, String defaultTitle,
-                String defaultDescription, String type,
-                boolean isTaskNode, WorkflowTransition... transitions)
+
+    public WorkflowNode createNode(String name,
+            String definitionName, String defaultTitle,
+            String defaultDescription, String type,
+            boolean isTaskNode, WorkflowTransition... transitions)
     {
-        String displayId = definitionName + ".node."+name;
+        String displayId = definitionName + ".node." + name;
         String title = getLabel(displayId, TITLE_LABEL, defaultTitle);
         String description = getLabel(displayId, DESC_LABEL, defaultDescription, title);
         return new WorkflowNode(name,
-                    title, description, type,
-                    isTaskNode, transitions);
+                title, description, type,
+                isTaskNode, transitions);
     }
-    
+
     public WorkflowTransition createTransition(String id,
             String defaultTitle, String defaultDescription,
             boolean isDefault, String... baseLabelKeys)
@@ -212,53 +222,51 @@ public class WorkflowObjectFactory
         String description = getLabel(baseLabelKeys, DESC_LABEL, defaultDescription);
         return new WorkflowTransition(id, title, description, isDefault);
     }
-    
+
     public WorkflowTaskDefinition createTaskDefinition(String id, WorkflowNode node, String typeName, boolean isStart)
     {
         TypeDefinition metaData = getTaskTypeDefinition(typeName, isStart);
-        if(id == null)
+        if (id == null)
         {
             id = qNameConverter.mapQNameToName(metaData.getName());
         }
         return new WorkflowTaskDefinition(id, node, metaData);
     }
-    
-    public WorkflowTask createTask (String id,
-                WorkflowTaskDefinition taskDef, String name,
-                String defaultTitle, String defaultDescription,
-                WorkflowTaskState state, WorkflowPath path,
-                Map<QName, Serializable> properties)
+
+    public WorkflowTask createTask(String id,
+            WorkflowTaskDefinition taskDef, String name,
+            String defaultTitle, String defaultDescription,
+            WorkflowTaskState state, WorkflowPath path,
+            Map<QName, Serializable> properties)
     {
         return createTask(id, taskDef, name, defaultTitle, defaultDescription, state, path, path.getInstance().getDefinition().getName(), properties);
     }
-    
-    public WorkflowTask createTask (String id,
+
+    public WorkflowTask createTask(String id,
             WorkflowTaskDefinition taskDef, String name,
             String defaultTitle, String defaultDescription,
             WorkflowTaskState state, WorkflowPath path, String workflowDefinitionName,
             Map<QName, Serializable> properties)
-{
-    String actualId = buildGlobalId(id);
-    
-    String processKey =  getProcessKey(workflowDefinitionName) + ".task." + name;
-    TypeDefinition metadata = taskDef.getMetadata();
-    String title = getLabel(processKey, TITLE_LABEL, metadata.getTitle(dictionaryService), defaultTitle, name);
-    defaultDescription = (defaultDescription !=null && defaultDescription.trim().length() == 0) ? null : defaultDescription;
-    String description = getLabel(processKey, DESC_LABEL, defaultDescription, metadata.getDescription(dictionaryService), title);
-    return new WorkflowTask(actualId,
+    {
+        String actualId = buildGlobalId(id);
+
+        String processKey = getProcessKey(workflowDefinitionName) + ".task." + name;
+        TypeDefinition metadata = taskDef.getMetadata();
+        String title = getLabel(processKey, TITLE_LABEL, metadata.getTitle(dictionaryService), defaultTitle, name);
+        defaultDescription = (defaultDescription != null && defaultDescription.trim().length() == 0) ? null : defaultDescription;
+        String description = getLabel(processKey, DESC_LABEL, defaultDescription, metadata.getDescription(dictionaryService), title);
+        return new WorkflowTask(actualId,
                 taskDef, name, title, description,
                 state, path, properties);
-}
-    
-    
-    
-    public WorkflowTimer createWorkflowTimer(String id, String name, String error, 
-    		Date dueDate, WorkflowPath workflowPath, WorkflowTask workflowTask)
+    }
+
+    public WorkflowTimer createWorkflowTimer(String id, String name, String error,
+            Date dueDate, WorkflowPath workflowPath, WorkflowTask workflowTask)
     {
         String actualId = buildGlobalId(id);
         return new WorkflowTimer(actualId, name, workflowPath, workflowTask, dueDate, error);
     }
-    
+
     public String getProcessKey(String defName)
     {
         String processKey = defName;
@@ -268,7 +276,7 @@ public class WorkflowObjectFactory
         }
         return tenantService.getBaseName(processKey);
     }
-    
+
     public String getDomainProcessKey(String defName)
     {
         String processKey = defName;
@@ -278,32 +286,34 @@ public class WorkflowObjectFactory
         }
         return tenantService.getName(processKey);
     }
-    
+
     public String getTaskTitle(TypeDefinition typeDefinition, String defName, String defaultTitle, String name)
     {
         String displayId = getProcessKey(defName) + ".task." + name;
         return getLabel(displayId, TITLE_LABEL, defaultTitle, typeDefinition.getTitle(dictionaryService), name);
     }
-    
+
     public String getTaskDescription(TypeDefinition typeDefinition, String defName, String defaultDescription, String title)
     {
         String displayId = getProcessKey(defName) + ".task." + title;
         return getLabel(displayId, DESC_LABEL, defaultDescription);
     }
-    
 
     /**
      * Get an I18N Label for a workflow item
      * 
-     * @param displayId  message resource id lookup
-     * @param labelKey  label to lookup (title or description)
-     * @param defaults  default values if not found in message resource bundle
-     * @return  the label
+     * @param displayId
+     *            message resource id lookup
+     * @param labelKey
+     *            label to lookup (title or description)
+     * @param defaults
+     *            default values if not found in message resource bundle
+     * @return the label
      */
     private String getLabel(String displayId, String labelKey, String... defaults)
     {
         String keyBase = displayId.replace(":", "_");
-        String key = keyBase+ "." + labelKey;
+        String key = keyBase + "." + labelKey;
         String label = messageService.getMessage(key);
         return getDefaultLabel(label, defaults);
     }
@@ -312,7 +322,7 @@ public class WorkflowObjectFactory
     {
         String label = null;
         int i = 0;
-        while(label == null && i<locations.length)
+        while (label == null && i < locations.length)
         {
             label = getLabel(locations[i], labelKey);
             i++;
@@ -321,14 +331,16 @@ public class WorkflowObjectFactory
     }
 
     /**
-     * @param label String
-     * @param defaults String
+     * @param label
+     *            String
+     * @param defaults
+     *            String
      * @return String
      */
     private String getDefaultLabel(String label, String... defaults)
     {
         int i = 0;
-        while(label==null && i<defaults.length)
+        while (label == null && i < defaults.length)
         {
             label = defaults[i];
             i++;
@@ -339,37 +351,39 @@ public class WorkflowObjectFactory
     private NodeRef getNodeVariable(Map<String, Object> variables, QName qName)
     {
         Object obj = getVariable(variables, qName);
-        if (obj==null)
+        if (obj == null)
         {
             return null;
         }
-        if(obj instanceof ScriptNode)
+        if (obj instanceof ScriptNode)
         {
-            ScriptNode scriptNode  = (ScriptNode) obj;
+            ScriptNode scriptNode = (ScriptNode) obj;
             return scriptNode.getNodeRef();
         }
-        String message = "Variable "+qName+" should be of type ScriptNode but was "+obj.getClass();
+        String message = "Variable " + qName + " should be of type ScriptNode but was " + obj.getClass();
         throw new WorkflowException(message);
     }
-    
+
     private Object getVariable(Map<String, Object> variables, QName qName)
     {
-        if(variables == null || qName == null)
+        if (variables == null || qName == null)
             return null;
         String varName = qNameConverter.mapQNameToName(qName);
         return variables.get(varName);
     }
-    
+
     private Object getVariable(Map<String, Object> variables, String key)
     {
-        if(variables == null || key == null)
+        if (variables == null || key == null)
             return null;
         return variables.get(key);
     }
-    
+
     /**
      * Throws exception if domain mismatch
-     * @param defName String
+     * 
+     * @param defName
+     *            String
      */
     public void checkDomain(String defName)
     {
@@ -380,7 +394,7 @@ public class WorkflowObjectFactory
             {
                 processKey = getLocalEngineId(defName);
             }
-            if(tenantService.isTenantName(processKey))
+            if (tenantService.isTenantName(processKey))
             {
                 tenantService.checkDomain(processKey);
             }
@@ -391,12 +405,11 @@ public class WorkflowObjectFactory
     {
         return TenantService.DEFAULT_DOMAIN.equals(tenantService.getCurrentUserDomain());
     }
-    
+
     public <T extends Object> List<T> filterByDomain(Collection<T> values, final Function<T, String> processKeyGetter)
     {
         final String currentDomain = tenantService.getCurrentUserDomain();
-        return CollectionUtils.filter(values, new Filter<T>()
-        {
+        return CollectionUtils.filter(values, new Filter<T>() {
             public Boolean apply(T value)
             {
                 String key = processKeyGetter.apply(value);
@@ -407,14 +420,12 @@ public class WorkflowObjectFactory
     }
 
     /**
-     * For "default" domain return ALL workflows
-     * For tenant-specific workflows exclude "default"
+     * For "default" domain return ALL workflows For tenant-specific workflows exclude "default"
      */
     public <T extends Object> List<T> doSpecialTenantFilter(Collection<T> values, final Function<T, String> processKeyGetter)
     {
         final String currentDomain = tenantService.getCurrentUserDomain();
-        return CollectionUtils.filter(values, new Filter<T>()
-        {
+        return CollectionUtils.filter(values, new Filter<T>() {
             public Boolean apply(T value)
             {
                 String key = processKeyGetter.apply(value);
@@ -425,8 +436,7 @@ public class WorkflowObjectFactory
     }
 
     /**
-     * Returns an anonymous {@link TypeDefinition} for the given name with all
-     * the mandatory aspects applied.
+     * Returns an anonymous {@link TypeDefinition} for the given name with all the mandatory aspects applied.
      * 
      * @param name
      *            the name of the task definition.
@@ -439,57 +449,61 @@ public class WorkflowObjectFactory
         TypeDefinition typeDef = getTaskTypeDefinition(name, isStart);
         return dictionaryService.getAnonymousType(typeDef.getName());
     }
-    
+
     /**
      * Gets the Task {@link TypeDefinition} for the given name.
      * 
-     * @param name the name of the task definition.
-     * @param isStart is theis a start task?
-     * @return  the task {@link TypeDefinition}.
+     * @param name
+     *            the name of the task definition.
+     * @param isStart
+     *            is theis a start task?
+     * @return the task {@link TypeDefinition}.
      */
     public TypeDefinition getTaskTypeDefinition(String name, boolean isStart)
     {
         TypeDefinition typeDef = null;
-        if(name!=null)
+        if (name != null)
         {
             QName typeName = qNameConverter.mapNameToQName(name);
             typeDef = dictionaryService.getType(typeName);
         }
         if (typeDef == null)
         {
-            QName defaultTypeName = isStart? defaultStartTaskType : WorkflowModel.TYPE_WORKFLOW_TASK;
+            QName defaultTypeName = isStart ? defaultStartTaskType : WorkflowModel.TYPE_WORKFLOW_TASK;
             typeDef = dictionaryService.getType(defaultTypeName);
             if (typeDef == null)
             {
                 String msg = messageService.getMessage("workflow.get.task.definition.metadata.error", name);
-                throw new WorkflowException( msg);
+                throw new WorkflowException(msg);
             }
         }
         return typeDef;
     }
-    
-        /**
+
+    /**
      * Map QName to workflow variable name
      * 
-     * @param name  QName
-     * @return  workflow variable name
+     * @param name
+     *            QName
+     * @return workflow variable name
      */
     public String mapQNameToName(QName name)
     {
         return qNameConverter.mapQNameToName(name);
     }
-    
+
     /**
      * Map QName to workflow variable name
      * 
-     * @param name  QName
-     * @return  workflow variable name
+     * @param name
+     *            QName
+     * @return workflow variable name
      */
     public QName mapNameToQName(String name)
     {
         return qNameConverter.mapNameToQName(name);
     }
-    
+
     public void clearQNameCache()
     {
         qNameConverter.clearCache();

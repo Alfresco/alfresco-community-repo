@@ -52,8 +52,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
- * Factory to build TransferManifestNodes given their repository NodeRef.
- * Extracts values from the nodeService and instantiates TransferManifestNode.
+ * Factory to build TransferManifestNodes given their repository NodeRef. Extracts values from the nodeService and instantiates TransferManifestNode.
  *
  * @author Mark Rogers
  */
@@ -66,19 +65,19 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
 
     public void init()
     {
-        //NOOP
+        // NOOP
     }
 
     public TransferManifestNode createTransferManifestNode(NodeRef nodeRef, TransferDefinition definition, TransferContext transferContext)
     {
         return createTransferManifestNode(nodeRef, definition, transferContext, false);
     }
-        
+
     public TransferManifestNode createTransferManifestNode(NodeRef nodeRef, TransferDefinition definition, TransferContext transferContext, boolean forceDelete)
     {
         NodeRef.Status status = nodeService.getNodeStatus(nodeRef);
 
-        if(status == null)
+        if (status == null)
         {
             throw new TransferException("Unable to get node status for node : " + nodeRef);
         }
@@ -88,10 +87,10 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
          */
         if (status.isDeleted())
         {
-            //This node used to exist but doesn't any more. We can't discover anything about its original parentage
-            //so we will create a dummy record that contains the correct noderef but dummy parent association and
-            //parent path. This will keep the target side happy, and will result in the node being deleted
-            //if a node with the same noderef exists on the target.
+            // This node used to exist but doesn't any more. We can't discover anything about its original parentage
+            // so we will create a dummy record that contains the correct noderef but dummy parent association and
+            // parent path. This will keep the target side happy, and will result in the node being deleted
+            // if a node with the same noderef exists on the target.
             TransferManifestDeletedNode deletedNode = new TransferManifestDeletedNode();
             deletedNode.setNodeRef(nodeRef);
             ChildAssociationRef dummyPrimaryParent = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
@@ -101,20 +100,20 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
             deletedNode.setParentPath(new Path());
             return deletedNode;
         }
-        else if(nodeRef.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE))
+        else if (nodeRef.getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE))
         {
-            if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_ARCHIVED))
+            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_ARCHIVED))
             {
                 // Yes we have an archived aspect
-                ChildAssociationRef car = (ChildAssociationRef)nodeService.getProperty(nodeRef,
-                      ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+                ChildAssociationRef car = (ChildAssociationRef) nodeService.getProperty(nodeRef,
+                        ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
 
                 TransferManifestDeletedNode node = new TransferManifestDeletedNode();
                 NodeRef parentNodeRef = car.getParentRef();
                 node.setNodeRef(car.getChildRef());
                 node.setPrimaryParentAssoc(car);
 
-                if(nodeService.exists(parentNodeRef))
+                if (nodeService.exists(parentNodeRef))
                 {
                     // The parent node still exists so it still has a path.
                     Path parentPath = nodeService.getPath(parentNodeRef);
@@ -128,7 +127,7 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
             TransferManifestDeletedNode node = new TransferManifestDeletedNode();
             node.setNodeRef(nodeRef);
             ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
-            if(parentAssocRef != null && parentAssocRef.getParentRef() != null)
+            if (parentAssocRef != null && parentAssocRef.getParentRef() != null)
             {
                 NodeRef parentNodeRef = parentAssocRef.getParentRef();
                 node.setPrimaryParentAssoc(parentAssocRef);
@@ -163,13 +162,13 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
             node.setAspects(getNodeAspects(nodeRef, definition == null ? null : definition.getExcludedAspects()));
             node.setType(nodeService.getType(nodeRef));
             // For File Transfer Receiver, because FTS does not has access to the DictionaryService
-            if(dictionaryService.isSubClass(node.getType(),ContentModel.TYPE_CONTENT))
+            if (dictionaryService.isSubClass(node.getType(), ContentModel.TYPE_CONTENT))
             {
                 node.setAncestorType(ContentModel.TYPE_CONTENT);
             }
             else
             {
-                if(dictionaryService.isSubClass(node.getType(),ContentModel.TYPE_FOLDER))
+                if (dictionaryService.isSubClass(node.getType(), ContentModel.TYPE_FOLDER))
                 {
                     node.setAncestorType(ContentModel.TYPE_FOLDER);
                 }
@@ -179,7 +178,7 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
                 }
             }
             ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
-            if(parentAssocRef != null && parentAssocRef.getParentRef() != null)
+            if (parentAssocRef != null && parentAssocRef.getParentRef() != null)
             {
                 NodeRef parentNodeRef = parentAssocRef.getParentRef();
                 node.setPrimaryParentAssoc(parentAssocRef);
@@ -188,7 +187,7 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
             }
             node.setChildAssocs(nodeService.getChildAssocs(nodeRef));
             node.setParentAssocs(nodeService.getParentAssocs(nodeRef));
-            node.setTargetAssocs(nodeService.getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL ));
+            node.setTargetAssocs(nodeService.getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL));
             node.setSourceAssocs(nodeService.getSourceAssocs(nodeRef, RegexQNamePattern.MATCH_ALL));
 
             boolean inherit = permissionService.getInheritParentPermissions(nodeRef);
@@ -200,65 +199,65 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
             Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeRef);
 
             List<ManifestPermission> mps = new ArrayList<ManifestPermission>(permissions.size());
-            for(AccessPermission permission : permissions)
+            for (AccessPermission permission : permissions)
             {
-               if(permission.isSetDirectly())
-               {
-                   ManifestPermission mp = new ManifestPermission();
-                   mp.setStatus(permission.getAccessStatus().toString());
-                   mp.setAuthority(permission.getAuthority());
-                   mp.setPermission(permission.getPermission());
-                   mps.add(mp);
-               }
+                if (permission.isSetDirectly())
+                {
+                    ManifestPermission mp = new ManifestPermission();
+                    mp.setStatus(permission.getAccessStatus().toString());
+                    mp.setAuthority(permission.getAuthority());
+                    mp.setPermission(permission.getPermission());
+                    mps.add(mp);
+                }
             }
             acl.setPermissions(mps);
-            
+
             /**
              * Expand d:category information so we can re-create on target
              */
             Map<NodeRef, ManifestCategory> categories = new HashMap<NodeRef, ManifestCategory>();
-            
+
             Map<QName, Serializable> properties = node.getProperties();
-            
-            for(Map.Entry<QName, Serializable> val : properties.entrySet())
+
+            for (Map.Entry<QName, Serializable> val : properties.entrySet())
             {
                 PropertyDefinition def = dictionaryService.getProperty(val.getKey());
-                if(def != null)
+                if (def != null)
                 {
-                	if(def.getDataType().getName().isMatch(DataTypeDefinition.CATEGORY))
-                	{
-                		if(def.isMultiValued())
-                		{
-                			Serializable thing = val.getValue();
-                			if(thing instanceof java.util.Collection)
-                			{
-                				java.util.Collection<NodeRef> c = (java.util.Collection<NodeRef>)thing;
-                				for(NodeRef categoryNodeRef : c)
-                				{
-                					if(categoryNodeRef != null)
-                					{
-                						categories.put(categoryNodeRef, getManifestCategory(transferContext, categoryNodeRef));
-                					}
-                				}
-                			}
-                			else
-                			{
-            						NodeRef categoryNodeRef = (NodeRef)val.getValue();
-                					if(categoryNodeRef != null)
-                					{
-                						categories.put(categoryNodeRef, getManifestCategory(transferContext, categoryNodeRef));
-                					}
-                			}
-                		}
-                		else
-                		{
-                			NodeRef categoryNodeRef = (NodeRef)val.getValue();
-        					if(categoryNodeRef != null)
-        					{
-        						categories.put(categoryNodeRef, getManifestCategory(transferContext, categoryNodeRef));
-        					}
-                		}
-                	}
+                    if (def.getDataType().getName().isMatch(DataTypeDefinition.CATEGORY))
+                    {
+                        if (def.isMultiValued())
+                        {
+                            Serializable thing = val.getValue();
+                            if (thing instanceof java.util.Collection)
+                            {
+                                java.util.Collection<NodeRef> c = (java.util.Collection<NodeRef>) thing;
+                                for (NodeRef categoryNodeRef : c)
+                                {
+                                    if (categoryNodeRef != null)
+                                    {
+                                        categories.put(categoryNodeRef, getManifestCategory(transferContext, categoryNodeRef));
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                NodeRef categoryNodeRef = (NodeRef) val.getValue();
+                                if (categoryNodeRef != null)
+                                {
+                                    categories.put(categoryNodeRef, getManifestCategory(transferContext, categoryNodeRef));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            NodeRef categoryNodeRef = (NodeRef) val.getValue();
+                            if (categoryNodeRef != null)
+                            {
+                                categories.put(categoryNodeRef, getManifestCategory(transferContext, categoryNodeRef));
+                            }
+                        }
+                    }
                 }
             }
 
@@ -271,9 +270,11 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
     /**
      * Gets the aspects of the specified node, minus those that have been explicitly excluded
      *
-     * @param nodeRef  node to get aspects for
-     * @param excludedAspects  aspects to exluce
-     * @return  set of aspects minus those excluded
+     * @param nodeRef
+     *            node to get aspects for
+     * @param excludedAspects
+     *            aspects to exluce
+     * @return set of aspects minus those excluded
      */
     private Set<QName> getNodeAspects(NodeRef nodeRef, Set<QName> excludedAspects)
     {
@@ -299,9 +300,11 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
     /**
      * Gets the properties of the specified node, minus those that have been explicitly excluded
      *
-     * @param nodeRef  node to get aspects for
-     * @param excludedAspects  aspects to exluce
-     * @return  map of properties minus those excluded
+     * @param nodeRef
+     *            node to get aspects for
+     * @param excludedAspects
+     *            aspects to exluce
+     * @return map of properties minus those excluded
      */
     private Map<QName, Serializable> getNodeProperties(NodeRef nodeRef, Set<QName> excludedAspects)
     {
@@ -324,21 +327,21 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
             return filteredProperties;
         }
     }
-    
+
     private ManifestCategory getManifestCategory(TransferContext transferContext, NodeRef categoryNodeRef)
     {
-     	ManifestCategory c = transferContext.getManifestCategoriesCache().get(categoryNodeRef);
-    	
-     	if(c != null)
-     	{
-    		return c;
-    	}
-      	c = new ManifestCategory();
-      	  	
-    	Path p = nodeService.getPath(categoryNodeRef);
-    	c.setPath(p.toString());
-    	transferContext.getManifestCategoriesCache().put(categoryNodeRef, c);
-    	return c;
+        ManifestCategory c = transferContext.getManifestCategoriesCache().get(categoryNodeRef);
+
+        if (c != null)
+        {
+            return c;
+        }
+        c = new ManifestCategory();
+
+        Path p = nodeService.getPath(categoryNodeRef);
+        c.setPath(p.toString());
+        transferContext.getManifestCategoriesCache().put(categoryNodeRef, c);
+        return c;
     }
 
     public void setNodeService(NodeService nodeService)

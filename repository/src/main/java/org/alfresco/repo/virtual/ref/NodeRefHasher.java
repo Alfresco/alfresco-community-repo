@@ -32,7 +32,7 @@ import org.alfresco.util.Pair;
 /**
  * Creates and looks up string-pair hash codes of {@link NodeRef}s.<br>
  */
-public interface NodeRefHasher
+interface NodeRefHasher
 {
 
     NodeRef lookup(Pair<String, String> hash);

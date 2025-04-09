@@ -30,17 +30,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.action.ActionConditionImpl;
-import org.alfresco.repo.action.ActionImpl;
-import org.alfresco.repo.action.CompositeActionImpl;
-import org.alfresco.repo.web.scripts.rule.ruleset.RuleRef;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionCondition;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.rule.Rule;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -51,6 +42,15 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.repo.action.ActionConditionImpl;
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.CompositeActionImpl;
+import org.alfresco.repo.web.scripts.rule.ruleset.RuleRef;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.rule.Rule;
 
 /**
  * @author unknown
@@ -77,7 +77,7 @@ public class RulePut extends RulePost
         // get all rules for given nodeRef
         List<Rule> rules = ruleService.getRules(nodeRef);
 
-        //filter by rule id
+        // filter by rule id
         for (Rule rule : rules)
         {
             if (rule.getNodeRef().getId().equalsIgnoreCase(ruleId))
@@ -167,7 +167,7 @@ public class RulePut extends RulePost
         {
             JSONObject jsonAction = jsonRule.getJSONObject("action");
 
-            // update rule action 
+            // update rule action
             Action action = updateActionFromJson(jsonAction, (ActionImpl) ruleToUpdate.getAction());
 
             ruleToUpdate.setAction(action);
@@ -246,7 +246,7 @@ public class RulePut extends RulePost
                     }
                     else
                     {
-                        //create new action as id was not sent
+                        // create new action as id was not sent
                         newActions.add(parseJsonAction(innerJsonAction));
                     }
                 }

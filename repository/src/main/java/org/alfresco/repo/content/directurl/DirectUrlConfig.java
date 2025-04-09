@@ -36,6 +36,8 @@ import org.alfresco.api.AlfrescoPublicApi;
 public interface DirectUrlConfig
 {
     Boolean isEnabled();
+
     Long getDefaultExpiryTimeInSec();
+
     void validate();
 }

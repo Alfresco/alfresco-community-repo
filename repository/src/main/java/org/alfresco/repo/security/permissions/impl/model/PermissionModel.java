@@ -42,6 +42,16 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.dom4j.Attribute;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentType;
+import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
+import org.dom4j.tree.DefaultDocumentType;
+
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.impl.ModelDAO;
@@ -60,19 +70,9 @@ import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.dom4j.Attribute;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentType;
-import org.dom4j.Element;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.SAXReader;
-import org.dom4j.io.XMLWriter;
-import org.dom4j.tree.DefaultDocumentType;
 
 /**
- * The implementation of the model DAO Reads and stores the top level model information Encapsulates access to this
- * information
+ * The implementation of the model DAO Reads and stores the top level model information Encapsulates access to this information
  * 
  * @author andyh
  */
@@ -110,24 +110,22 @@ public class PermissionModel implements ModelDAO
     private String dtdSchema;
     private boolean validate = true;
 
-    /*
-     * (non-Javadoc)
-     * @seeorg.alfresco.repo.security.permissions.impl.ModelDAO#hasFull(org.alfresco.repo.security.permissions.
-     * PermissionReference)
-     */
+    /* (non-Javadoc)
+     * 
+     * @seeorg.alfresco.repo.security.permissions.impl.ModelDAO#hasFull(org.alfresco.repo.security.permissions. PermissionReference) */
     private static PermissionReference ALL = SimplePermissionReference.getPermissionReference(QName.createQName(NamespaceService.SECURITY_MODEL_1_0_URI,
             PermissionService.ALL_PERMISSIONS), PermissionService.ALL_PERMISSIONS);
 
-    private static class MutableState    
+    private static class MutableState
     {
         private final DictionaryService dictionaryService;
 
         // Aprrox 6 - default size OK
         private Map<QName, PermissionSet> permissionSets = new HashMap<QName, PermissionSet>(128);
-    
+
         // Global permissions - default size OK
         private Set<GlobalPermissionEntry> globalPermissions = new HashSet<GlobalPermissionEntry>();
-    
+
         private AccessStatus defaultPermission;
 
         private Collection<QName> allAspects;
@@ -146,23 +144,23 @@ public class PermissionModel implements ModelDAO
         private Map<PermissionReference, Set<PermissionReference>> granteePermissions = new HashMap<PermissionReference, Set<PermissionReference>>(256);
 
         // Cache the mapping of extended groups to the base
-        private Map<PermissionGroup, PermissionGroup> groupsToBaseGroup = new HashMap<PermissionGroup, PermissionGroup>(256);    
-        
+        private Map<PermissionGroup, PermissionGroup> groupsToBaseGroup = new HashMap<PermissionGroup, PermissionGroup>(256);
+
         private Map<RequiredKey, Set<PermissionReference>> requiredPermissionsCache = new HashMap<RequiredKey, Set<PermissionReference>>(1024);
-        
+
         private Map<Pair<PermissionReference, RequiredPermission.On>, Set<PermissionReference>> unconditionalRequiredPermissionsCache = new HashMap<Pair<PermissionReference, RequiredPermission.On>, Set<PermissionReference>>(1024);
 
         private Map<QName, Set<PermissionReference>> cachedTypePermissionsExposed = new HashMap<QName, Set<PermissionReference>>(256);
 
         private Map<QName, Set<PermissionReference>> cachedTypePermissionsUnexposed = new HashMap<QName, Set<PermissionReference>>(256);
-                
+
         private ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-        
+
         public MutableState(DictionaryService dictionaryService)
         {
             this.dictionaryService = dictionaryService;
         }
-        
+
         public boolean checkPermission(PermissionReference required)
         {
             Permission permission = getPermissionOrNull(required);
@@ -223,7 +221,7 @@ public class PermissionModel implements ModelDAO
             {
                 boolean hadWriteLock = lock.isWriteLockedByCurrentThread();
                 if (!hadWriteLock)
-                {                
+                {
                     lock.readLock().unlock();
                     lock.writeLock().lock();
                 }
@@ -231,7 +229,7 @@ public class PermissionModel implements ModelDAO
                 {
                     permissions = cache.get(type);
                     if (permissions == null)
-                    {                
+                    {
                         permissions = new LinkedHashSet<PermissionReference>(256, 1.0f);
                         ClassDefinition cd = dictionaryService.getClass(type);
                         if (cd != null)
@@ -253,7 +251,7 @@ public class PermissionModel implements ModelDAO
                 finally
                 {
                     if (!hadWriteLock)
-                    {                
+                    {
                         lock.readLock().lock();
                         lock.writeLock().unlock();
                     }
@@ -265,9 +263,12 @@ public class PermissionModel implements ModelDAO
         /**
          * Support to add permissions for types
          * 
-         * @param type QName
-         * @param permissions Set<PermissionReference>
-         * @param exposedOnly boolean
+         * @param type
+         *            QName
+         * @param permissions
+         *            Set<PermissionReference>
+         * @param exposedOnly
+         *            boolean
          */
         private void addTypePermissions(QName type, Set<PermissionReference> permissions, boolean exposedOnly)
         {
@@ -295,9 +296,12 @@ public class PermissionModel implements ModelDAO
         /**
          * Support to add permissions for aspects.
          * 
-         * @param type QName
-         * @param permissions Set<PermissionReference>
-         * @param exposedOnly boolean
+         * @param type
+         *            QName
+         * @param permissions
+         *            Set<PermissionReference>
+         * @param exposedOnly
+         *            boolean
          */
         private void addAspectPermissions(QName type, Set<PermissionReference> permissions, boolean exposedOnly)
         {
@@ -321,10 +325,14 @@ public class PermissionModel implements ModelDAO
         /**
          * Support to merge permissions together. Respects extended permissions.
          *
-         * @param target Set<PermissionReference>
-         * @param type QName
-         * @param exposedOnly boolean
-         * @param typeRequired boolean
+         * @param target
+         *            Set<PermissionReference>
+         * @param type
+         *            QName
+         * @param exposedOnly
+         *            boolean
+         * @param typeRequired
+         *            boolean
          */
         private void mergePermissions(Set<PermissionReference> target, QName type, boolean exposedOnly, boolean typeRequired)
         {
@@ -372,11 +380,12 @@ public class PermissionModel implements ModelDAO
                 mergePermissions(target, aspect, exposedOnly, false);
             }
         }
-        
+
         /**
          * Support to find permission groups
          * 
-         * @param target PermissionReference
+         * @param target
+         *            PermissionReference
          * @return the permission group
          */
         private PermissionGroup getPermissionGroupOrNull(PermissionReference target)
@@ -388,7 +397,8 @@ public class PermissionModel implements ModelDAO
         /**
          * Support to get a permission group
          * 
-         * @param target PermissionReference
+         * @param target
+         *            PermissionReference
          * @return the permission group
          */
         private PermissionGroup getPermissionGroup(PermissionReference target)
@@ -404,7 +414,8 @@ public class PermissionModel implements ModelDAO
         /**
          * Get the base permission group for a given permission group.
          * 
-         * @param pg PermissionGroup
+         * @param pg
+         *            PermissionGroup
          * @return the permission group
          */
         private PermissionGroup getBasePermissionGroupOrNull(PermissionGroup pg)
@@ -424,7 +435,7 @@ public class PermissionModel implements ModelDAO
                 }
                 permissionGroup = groupsToBaseGroup.get(pg);
                 if (permissionGroup == null)
-                {                
+                {
                     permissionGroup = getBasePermissionGroupOrNullImpl(pg);
                     groupsToBaseGroup.put(pg, permissionGroup);
                 }
@@ -440,7 +451,8 @@ public class PermissionModel implements ModelDAO
         /**
          * Query the model for a base permission group Uses the Data Dictionary to reolve inheritance
          * 
-         * @param pg PermissionGroup
+         * @param pg
+         *            PermissionGroup
          * @return the permission group
          */
         private PermissionGroup getBasePermissionGroupOrNullImpl(PermissionGroup pg)
@@ -459,7 +471,8 @@ public class PermissionModel implements ModelDAO
                 {
                     ClassDefinition classDefinition = dictionaryService.getClass(pg.getQName());
                     QName parent;
-                    if (classDefinition != null) {
+                    if (classDefinition != null)
+                    {
                         while ((parent = classDefinition.getParentName()) != null)
                         {
                             classDefinition = dictionaryService.getClass(parent);
@@ -488,7 +501,7 @@ public class PermissionModel implements ModelDAO
             }
             return pg;
         }
-        
+
         private Set<PermissionReference> getGrantingPermissionsImpl(PermissionReference permissionReference)
         {
             // Query the model
@@ -613,7 +626,7 @@ public class PermissionModel implements ModelDAO
             }
             return permissions;
         }
-        
+
         private Set<PermissionReference> getImmediateGranteePermissionsImpl(PermissionReference permissionReference)
         {
             // Query the model
@@ -628,7 +641,7 @@ public class PermissionModel implements ModelDAO
                         {
                             permissions.add(included);
                         }
-    
+
                         if (pg.isExtends())
                         {
                             if (pg.getTypeQName() != null)
@@ -650,7 +663,7 @@ public class PermissionModel implements ModelDAO
                                 }
                             }
                         }
-    
+
                         if (pg.isAllowFullControl())
                         {
                             // add all available
@@ -693,14 +706,14 @@ public class PermissionModel implements ModelDAO
             }
             return permissions;
         }
-        
+
         private Set<PermissionReference> getGranteePermissions(PermissionReference permissionReference)
         {
-            if(permissionReference == null)
+            if (permissionReference == null)
             {
-                return Collections.<PermissionReference>emptySet();
+                return Collections.<PermissionReference> emptySet();
             }
-            
+
             // Cache the results
             Set<PermissionReference> grantees = granteePermissions.get(permissionReference);
             if (grantees == null)
@@ -752,15 +765,15 @@ public class PermissionModel implements ModelDAO
 
             return grantees;
         }
-        
+
         private Set<PermissionReference> getRequiredPermissions(PermissionReference required, QName qName, Set<QName> aspectQNames, RequiredPermission.On on)
         {
             // Cache lookup as this is static
-            if((required == null) || (qName == null))
+            if ((required == null) || (qName == null))
             {
-                return Collections.<PermissionReference>emptySet();
+                return Collections.<PermissionReference> emptySet();
             }
-            
+
             RequiredKey key = generateKey(required, qName, aspectQNames, on);
 
             Set<PermissionReference> answer = requiredPermissionsCache.get(key);
@@ -801,13 +814,13 @@ public class PermissionModel implements ModelDAO
             }
             return answer;
         }
-        
+
         private Set<PermissionReference> getUnconditionalRequiredPermissions(PermissionReference required, RequiredPermission.On on)
         {
             // Cache lookup as this is static
-            if(required == null)
+            if (required == null)
             {
-                return Collections.<PermissionReference>emptySet();
+                return Collections.<PermissionReference> emptySet();
             }
             Pair<PermissionReference, RequiredPermission.On> key = new Pair<PermissionReference, RequiredPermission.On>(required, on);
 
@@ -853,8 +866,10 @@ public class PermissionModel implements ModelDAO
         /**
          * Get the requirements for a permission
          * 
-         * @param required PermissionReference
-         * @param on RequiredPermission.On
+         * @param required
+         *            PermissionReference
+         * @param on
+         *            RequiredPermission.On
          * @return the set of permission references
          */
         private Set<PermissionReference> getRequirementsForPermission(PermissionReference required, RequiredPermission.On on)
@@ -877,10 +892,14 @@ public class PermissionModel implements ModelDAO
         /**
          * Get the requirements for a permission set
          * 
-         * @param target PermissionGroup
-         * @param on RequiredPermission.On
-         * @param qName QName
-         * @param aspectQNames Set<QName>
+         * @param target
+         *            PermissionGroup
+         * @param on
+         *            RequiredPermission.On
+         * @param qName
+         *            QName
+         * @param aspectQNames
+         *            Set<QName>
          * @return the set of permission references
          */
         private Set<PermissionReference> getRequirementsForPermissionGroup(PermissionGroup target, RequiredPermission.On on, QName qName, Set<QName> aspectQNames)
@@ -921,7 +940,7 @@ public class PermissionModel implements ModelDAO
             }
             return requiredPermissions;
         }
-        
+
         private Set<PermissionReference> getUnconditionalRequirementsForPermissionGroup(PermissionGroup target, RequiredPermission.On on)
         {
             HashSet<PermissionReference> requiredPermissions = new HashSet<PermissionReference>(16, 1.0f);
@@ -964,7 +983,8 @@ public class PermissionModel implements ModelDAO
         /**
          * Utility method to find a permission
          * 
-         * @param perm PermissionReference
+         * @param perm
+         *            PermissionReference
          * @return the permission
          */
         private Permission getPermissionOrNull(PermissionReference perm)
@@ -972,13 +992,16 @@ public class PermissionModel implements ModelDAO
             Permission p = permissionMap.get(perm);
             return p == null ? null : p;
         }
-        
+
         /**
          * Check type specifc extension of permission sets.
          * 
-         * @param pr PermissionReference
-         * @param typeQname QName
-         * @param aspects Set<QName>
+         * @param pr
+         *            PermissionReference
+         * @param typeQname
+         *            QName
+         * @param aspects
+         *            Set<QName>
          * @return true if dynamic
          */
         private boolean isPartOfDynamicPermissionGroup(PermissionReference pr, QName typeQname, Set<QName> aspects)
@@ -996,7 +1019,7 @@ public class PermissionModel implements ModelDAO
             }
             return false;
         }
-        
+
         public PermissionReference getPermissionReference(QName qname, String permissionName)
         {
             if (permissionName == null)
@@ -1087,14 +1110,14 @@ public class PermissionModel implements ModelDAO
                     PermissionService.ALL_PERMISSIONS), PermissionService.ALL_PERMISSIONS));
 
         }
-        
+
         private boolean hasFull(PermissionReference permissionReference)
         {
             if (permissionReference == null)
             {
                 return false;
             }
-            if(permissionReference.equals(ALL))
+            if (permissionReference.equals(ALL))
             {
                 return true;
             }
@@ -1111,7 +1134,7 @@ public class PermissionModel implements ModelDAO
                 }
                 else
                 {
-                    if(group.isExtends())
+                    if (group.isExtends())
                     {
                         if (group.getTypeQName() != null)
                         {
@@ -1139,7 +1162,7 @@ public class PermissionModel implements ModelDAO
                     }
                 }
             }
-        }            
+        }
     }
 
     private MutableState mutableState;
@@ -1157,7 +1180,8 @@ public class PermissionModel implements ModelDAO
     /**
      * Set the model
      * 
-     * @param model String
+     * @param model
+     *            String
      */
     public void setModel(String model)
     {
@@ -1167,17 +1191,19 @@ public class PermissionModel implements ModelDAO
     /**
      * Set the dtd schema that is used to validate permission model
      * 
-     * @param dtdSchema String
+     * @param dtdSchema
+     *            String
      */
     public void setDtdSchema(String dtdSchema)
     {
         this.dtdSchema = dtdSchema;
     }
-    
+
     /**
      * Indicates whether model should be validated on initialization against specified dtd
      * 
-     * @param validate boolean
+     * @param validate
+     *            boolean
      */
     public void setValidate(boolean validate)
     {
@@ -1187,7 +1213,8 @@ public class PermissionModel implements ModelDAO
     /**
      * Set the dictionary service
      * 
-     * @param dictionaryService DictionaryService
+     * @param dictionaryService
+     *            DictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -1197,7 +1224,8 @@ public class PermissionModel implements ModelDAO
     /**
      * Set the node service
      * 
-     * @param nodeService NodeService
+     * @param nodeService
+     *            NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -1220,12 +1248,12 @@ public class PermissionModel implements ModelDAO
      *            path to the permission model to add
      */
     public void addPermissionModel(String model)
-    {        
+    {
         Document document = createDocument(model);
         Element root = document.getRootElement();
 
         mutableState.lock.writeLock().lock();
-        
+
         try
         {
             Attribute defaultPermissionAttribute = root.attribute(DEFAULT_PERMISSION);
@@ -1248,11 +1276,11 @@ public class PermissionModel implements ModelDAO
             {
                 mutableState.defaultPermission = AccessStatus.DENIED;
             }
-    
+
             DynamicNamespacePrefixResolver nspr = new DynamicNamespacePrefixResolver();
-    
+
             // Namespaces
-    
+
             for (Iterator<Element> nsit = root.elementIterator(NAMESPACES); nsit.hasNext(); /**/)
             {
                 Element namespacesElement = (Element) nsit.next();
@@ -1262,50 +1290,48 @@ public class PermissionModel implements ModelDAO
                     nspr.registerNamespace(nameSpaceElement.attributeValue(NAMESPACE_PREFIX), nameSpaceElement.attributeValue(NAMESPACE_URI));
                 }
             }
-    
+
             // Permission Sets
-    
+
             for (Iterator<Element> psit = root.elementIterator(PERMISSION_SET); psit.hasNext(); /**/)
             {
                 Element permissionSetElement = (Element) psit.next();
                 PermissionSet permissionSet = new PermissionSet();
                 permissionSet.initialise(permissionSetElement, nspr, this);
-    
+
                 mutableState.permissionSets.put(permissionSet.getQName(), permissionSet);
             }
-    
+
             mutableState.buildUniquePermissionMap();
-    
+
             // NodePermissions
-    
+
             for (Iterator<Element> npit = root.elementIterator(GLOBAL_PERMISSION); npit.hasNext(); /**/)
             {
                 Element globalPermissionElement = (Element) npit.next();
                 GlobalPermissionEntry globalPermission = new GlobalPermissionEntry();
                 globalPermission.initialise(globalPermissionElement, nspr, this);
-    
+
                 mutableState.globalPermissions.add(globalPermission);
             }
-    
+
             // Cache all aspect list
-    
+
             mutableState.allAspects = dictionaryService.getAllAspects();
         }
         finally
-        {        
+        {
             mutableState.lock.writeLock().unlock();
         }
     }
 
-    /*
-     * Create the XML document from the file location
-     */
+    /* Create the XML document from the file location */
     private Document createDocument(String model)
     {
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(model);
         URL dtdSchemaUrl = (dtdSchema == null)
-            ? null
-            : this.getClass().getClassLoader().getResource(dtdSchema); 
+                ? null
+                : this.getClass().getClassLoader().getResource(dtdSchema);
         if (is == null)
         {
             throw new PermissionModelException("File not found: " + model);
@@ -1325,7 +1351,7 @@ public class PermissionModel implements ModelDAO
                     throw new PermissionModelException("Couldn't obtain DTD schema to validate permission model.");
                 }
             }
-            
+
             Document document = reader.read(is);
             is.close();
             return document;
@@ -1338,97 +1364,95 @@ public class PermissionModel implements ModelDAO
         {
             throw new PermissionModelException("Failed to close permission model document: " + model, e);
         }
-        
-// TODO Do something like the following so that we don't need to modify the source xml
-//      to validate it. The following does not work for DTDs.
-        
-//        InputStream is = this.getClass().getClassLoader().getResourceAsStream(model);
-//        if (is == null)
-//        {
-//            throw new PermissionModelException("File not found: " + model);
-//        }
-//        
-//        InputStream dtdSchemaIs = (dtdSchema == null)
-//            ? null
-//            : this.getClass().getClassLoader().getResourceAsStream(dtdSchema);
-//        
-//        try
-//        {
-//            Document document;
-//            SAXReader reader;
-//            if (validate)
-//            {
-//                if (dtdSchemaIs != null)
-//                {
-//                    SAXParserFactory factory = SAXParserFactory.newInstance();
-//
-//                    SchemaFactory schemaFactory = 
-//                        SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
-//
-//                    try
-//                    {
-//                        factory.setSchema(schemaFactory.newSchema(
-//                            new Source[] {new StreamSource(dtdSchemaIs)}));
-//                        SAXParser parser = factory.newSAXParser();
-//                        reader = new SAXReader(parser.getXMLReader());
-//                        reader.setValidation(false);
-//                        reader.setErrorHandler(new XMLErrorHandler());
-//                    }
-//                    catch (SAXException e)
-//                    {
-//                        throw new PermissionModelException("Failed to read DTD/schema: " + dtdSchema, e);
-//                    }
-//                    catch (ParserConfigurationException e)
-//                    {
-//                        throw new PermissionModelException("Failed to configure DTD/schema: " + dtdSchema, e);
-//                    }
-//                }
-//                else
-//                {
-//                    throw new PermissionModelException("Couldn't obtain DTD/schema to validate permission model.");
-//                }
-//            }
-//            else
-//            {
-//                reader = new SAXReader();
-//            }
-//            document = reader.read(is);
-//            return document;
-//        }
-//        catch (DocumentException e)
-//        {
-//            throw new PermissionModelException("Failed to create permission model document: " + model, e);
-//        }
-//        finally
-//        {
-//            if (is != null)
-//            {
-//                try
-//                {
-//                    is.close();
-//                }
-//                catch (IOException e)
-//                {
-//                    throw new PermissionModelException("Failed to close permission model document: " + model, e);
-//                }
-//            }
-//            if (dtdSchemaIs != null)
-//            {
-//                try
-//                {
-//                    dtdSchemaIs.close();
-//                }
-//                catch (IOException e)
-//                {
-//                    throw new PermissionModelException("Couldn't close DTD/schema to validate permission model.");
-//                }
-//            }
-//        }
+
+        // TODO Do something like the following so that we don't need to modify the source xml
+        // to validate it. The following does not work for DTDs.
+
+        // InputStream is = this.getClass().getClassLoader().getResourceAsStream(model);
+        // if (is == null)
+        // {
+        // throw new PermissionModelException("File not found: " + model);
+        // }
+        //
+        // InputStream dtdSchemaIs = (dtdSchema == null)
+        // ? null
+        // : this.getClass().getClassLoader().getResourceAsStream(dtdSchema);
+        //
+        // try
+        // {
+        // Document document;
+        // SAXReader reader;
+        // if (validate)
+        // {
+        // if (dtdSchemaIs != null)
+        // {
+        // SAXParserFactory factory = SAXParserFactory.newInstance();
+        //
+        // SchemaFactory schemaFactory =
+        // SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+        //
+        // try
+        // {
+        // factory.setSchema(schemaFactory.newSchema(
+        // new Source[] {new StreamSource(dtdSchemaIs)}));
+        // SAXParser parser = factory.newSAXParser();
+        // reader = new SAXReader(parser.getXMLReader());
+        // reader.setValidation(false);
+        // reader.setErrorHandler(new XMLErrorHandler());
+        // }
+        // catch (SAXException e)
+        // {
+        // throw new PermissionModelException("Failed to read DTD/schema: " + dtdSchema, e);
+        // }
+        // catch (ParserConfigurationException e)
+        // {
+        // throw new PermissionModelException("Failed to configure DTD/schema: " + dtdSchema, e);
+        // }
+        // }
+        // else
+        // {
+        // throw new PermissionModelException("Couldn't obtain DTD/schema to validate permission model.");
+        // }
+        // }
+        // else
+        // {
+        // reader = new SAXReader();
+        // }
+        // document = reader.read(is);
+        // return document;
+        // }
+        // catch (DocumentException e)
+        // {
+        // throw new PermissionModelException("Failed to create permission model document: " + model, e);
+        // }
+        // finally
+        // {
+        // if (is != null)
+        // {
+        // try
+        // {
+        // is.close();
+        // }
+        // catch (IOException e)
+        // {
+        // throw new PermissionModelException("Failed to close permission model document: " + model, e);
+        // }
+        // }
+        // if (dtdSchemaIs != null)
+        // {
+        // try
+        // {
+        // dtdSchemaIs.close();
+        // }
+        // catch (IOException e)
+        // {
+        // throw new PermissionModelException("Couldn't close DTD/schema to validate permission model.");
+        // }
+        // }
+        // }
     }
 
-    /*
-     * Replace or add correct DOCTYPE to the xml to allow validation against dtd
-     */
+    /* Replace or add correct DOCTYPE to the xml to allow validation against dtd */
     private InputStream processModelDocType(InputStream is, String dtdSchemaUrl) throws DocumentException, IOException
     {
         SAXReader reader = new SAXReader();
@@ -1459,10 +1483,10 @@ public class PermissionModel implements ModelDAO
         {
             fos.close();
         }
-        
+
         return new ByteArrayInputStream(fos.toByteArray());
     }
-    
+
     /**
      * Set the default access status
      * 
@@ -1480,7 +1504,8 @@ public class PermissionModel implements ModelDAO
     /**
      * Get the default acces status for the givne permission
      * 
-     * @param pr PermissionReference
+     * @param pr
+     *            PermissionReference
      * @return the access status
      */
     public AccessStatus getDefaultPermission(PermissionReference pr)
@@ -1569,7 +1594,7 @@ public class PermissionModel implements ModelDAO
         try
         {
             permissions.addAll(mutableState.getAllPermissionsImpl(typeName, exposedOnly));
-    
+
             if (cd != null && aspects != null)
             {
                 Set<QName> defaultAspects = cd.getDefaultAspectNames();
@@ -1591,11 +1616,11 @@ public class PermissionModel implements ModelDAO
 
     public Set<PermissionReference> getGrantingPermissions(PermissionReference permissionReference)
     {
-        if(permissionReference == null)
+        if (permissionReference == null)
         {
-            return Collections.<PermissionReference>emptySet();
+            return Collections.<PermissionReference> emptySet();
         }
-        
+
         mutableState.lock.readLock().lock();
         // Cache the results
         Set<PermissionReference> granters = mutableState.grantingPermissions.get(permissionReference);
@@ -1603,12 +1628,12 @@ public class PermissionModel implements ModelDAO
         {
             mutableState.lock.readLock().unlock();
             mutableState.lock.writeLock().lock();
-            
+
             try
             {
                 granters = mutableState.grantingPermissions.get(permissionReference);
                 if (granters == null)
-                {            
+                {
                     Set<PermissionReference> internal = mutableState.getGrantingPermissionsImpl(permissionReference);
                     granters = new HashSet<PermissionReference>();
                     for (PermissionReference grantee : internal)
@@ -1660,9 +1685,12 @@ public class PermissionModel implements ModelDAO
         /**
          * factory for the key
          * 
-         * @param required PermissionReference
-         * @param qName QName
-         * @param on RequiredPermission.On
+         * @param required
+         *            PermissionReference
+         * @param qName
+         *            QName
+         * @param on
+         *            RequiredPermission.On
          * @return the key
          */
         public static RequiredKey getRequiredKey(PermissionReference required, QName qName, Set<QName> aspectQNames, RequiredPermission.On on)
@@ -1814,32 +1842,32 @@ public class PermissionModel implements ModelDAO
             mutableState.lock.readLock().unlock();
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getGranteePermissions(org.alfresco.repo.security.permissions.PermissionReference)
-     */
+     * 
+     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getGranteePermissions(org.alfresco.repo.security.permissions.PermissionReference) */
     public Set<PermissionReference> getGranteePermissions(PermissionReference permissionReference)
     {
         mutableState.lock.readLock().lock();
         try
         {
-           return mutableState.getGranteePermissions(permissionReference); 
+            return mutableState.getGranteePermissions(permissionReference);
         }
         finally
         {
             mutableState.lock.readLock().unlock();
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getImmediateGranteePermissions(org.alfresco.repo.security.permissions.PermissionReference)
-     */
+     * 
+     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getImmediateGranteePermissions(org.alfresco.repo.security.permissions.PermissionReference) */
     public Set<PermissionReference> getImmediateGranteePermissions(PermissionReference permissionReference)
     {
         mutableState.lock.readLock().lock();
         try
         {
-           return mutableState.getImmediateGranteePermissions(permissionReference); 
+            return mutableState.getImmediateGranteePermissions(permissionReference);
         }
         finally
         {
@@ -1848,14 +1876,14 @@ public class PermissionModel implements ModelDAO
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getPermissionReference(org.alfresco.service.namespace.QName, java.lang.String)
-     */
+     * 
+     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getPermissionReference(org.alfresco.service.namespace.QName, java.lang.String) */
     public PermissionReference getPermissionReference(QName qname, String permissionName)
     {
         mutableState.lock.readLock().lock();
         try
         {
-           return mutableState.getPermissionReference(qname, permissionName); 
+            return mutableState.getPermissionReference(qname, permissionName);
         }
         finally
         {
@@ -1864,34 +1892,32 @@ public class PermissionModel implements ModelDAO
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getRequiredPermissions(org.alfresco.repo.security.permissions.PermissionReference, org.alfresco.service.namespace.QName, java.util.Set, org.alfresco.repo.security.permissions.impl.RequiredPermission.On)
-     */
+     * 
+     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getRequiredPermissions(org.alfresco.repo.security.permissions.PermissionReference, org.alfresco.service.namespace.QName, java.util.Set, org.alfresco.repo.security.permissions.impl.RequiredPermission.On) */
     public Set<PermissionReference> getRequiredPermissions(PermissionReference required, QName qName,
             Set<QName> aspectQNames, On on)
     {
         mutableState.lock.readLock().lock();
         try
         {
-           return mutableState.getRequiredPermissions(required, qName, aspectQNames, on); 
+            return mutableState.getRequiredPermissions(required, qName, aspectQNames, on);
         }
         finally
         {
             mutableState.lock.readLock().unlock();
         }
     }
-    
-    
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getUnconditionalRequiredPermissions(org.alfresco.repo.security.permissions.PermissionReference, org.alfresco.repo.security.permissions.impl.RequiredPermission.On)
-     */
+     * 
+     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getUnconditionalRequiredPermissions(org.alfresco.repo.security.permissions.PermissionReference, org.alfresco.repo.security.permissions.impl.RequiredPermission.On) */
     @Override
     public Set<PermissionReference> getUnconditionalRequiredPermissions(PermissionReference required, On on)
     {
         mutableState.lock.readLock().lock();
         try
         {
-           return mutableState.getUnconditionalRequiredPermissions(required, on); 
+            return mutableState.getUnconditionalRequiredPermissions(required, on);
         }
         finally
         {
@@ -1900,26 +1926,26 @@ public class PermissionModel implements ModelDAO
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#isUnique(org.alfresco.repo.security.permissions.PermissionReference)
-     */
+     * 
+     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#isUnique(org.alfresco.repo.security.permissions.PermissionReference) */
     public boolean isUnique(PermissionReference permissionReference)
     {
         mutableState.lock.readLock().lock();
         try
         {
-           return mutableState.isUnique(permissionReference); 
+            return mutableState.isUnique(permissionReference);
         }
         finally
         {
             mutableState.lock.readLock().unlock();
         }
     }
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getAllExposedPermissions()
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getAllExposedPermissions() */
     public Set<PermissionReference> getAllExposedPermissions()
-    {        
+    {
         Set<PermissionReference> permissions = new HashSet<PermissionReference>(256);
         mutableState.lock.readLock().lock();
         try
@@ -1946,15 +1972,15 @@ public class PermissionModel implements ModelDAO
         finally
         {
             mutableState.lock.readLock().unlock();
-        }        
+        }
     }
-    
+
     public boolean hasFull(PermissionReference permissionReference)
     {
         mutableState.lock.readLock().lock();
         try
         {
-           return mutableState.hasFull(permissionReference); 
+            return mutableState.hasFull(permissionReference);
         }
         finally
         {
@@ -1963,15 +1989,15 @@ public class PermissionModel implements ModelDAO
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getAllPermissions()
-     */
+     * 
+     * @see org.alfresco.repo.security.permissions.impl.ModelDAO#getAllPermissions() */
     @Override
     public Set<PermissionReference> getAllPermissions()
     {
         mutableState.lock.readLock().lock();
         try
         {
-           return mutableState.getAllPermissions(); 
+            return mutableState.getAllPermissions();
         }
         finally
         {

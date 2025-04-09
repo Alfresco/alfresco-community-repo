@@ -30,20 +30,20 @@ import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
-
-import org.alfresco.repo.audit.generator.DataGenerator;
-import org.alfresco.repo.audit.model.AuditApplication;
-import org.alfresco.repo.audit.model.AuditModelException;
-import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
-import org.alfresco.repo.audit.model.AuditApplication.DataExtractorDefinition;
-import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.PathMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ResourceUtils;
+
+import org.alfresco.repo.audit.generator.DataGenerator;
+import org.alfresco.repo.audit.model.AuditApplication;
+import org.alfresco.repo.audit.model.AuditApplication.DataExtractorDefinition;
+import org.alfresco.repo.audit.model.AuditModelException;
+import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.PathMapper;
 
 /**
  * Tests that auditing is loaded properly on repository startup.
@@ -58,24 +58,24 @@ public class AuditBootstrapTest extends TestCase
 {
     private static final String APPLICATION_TEST = "Alfresco Test";
     private static final String KEY_TEST = "test";
-    
+
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     private static final Log logger = LogFactory.getLog(AuditBootstrapTest.class);
-    
+
     private AuditModelRegistryImpl auditModelRegistry;
-    
+
     @Override
     public void setUp() throws Exception
     {
         auditModelRegistry = (AuditModelRegistryImpl) ctx.getBean("auditModel.modelRegistry");
         auditModelRegistry.setProperty(AuditModelRegistryImpl.PROPERTY_AUDIT_CONFIG_STRICT, Boolean.TRUE.toString());
-        
+
         // Register a new model
         URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test.xml");
         auditModelRegistry.registerModel(testModelUrl);
         auditModelRegistry.loadAuditModels();
     }
-            
+
     @Override
     protected void tearDown() throws Exception
     {
@@ -88,7 +88,7 @@ public class AuditBootstrapTest extends TestCase
     {
         // Just here to fail if the basic startup fails
     }
-    
+
     private void loadBadModel(String url) throws Exception
     {
         try
@@ -104,37 +104,37 @@ public class AuditBootstrapTest extends TestCase
             logger.error("Expected AuditModelException: " + e.getMessage());
         }
     }
-    
+
     public void testModelLoading_NoDataExtractor() throws Exception
     {
         loadBadModel("classpath:alfresco/testaudit/alfresco-audit-test-bad-01.xml");
     }
-    
+
     public void testModelLoading_NoDataGenerator() throws Exception
     {
         loadBadModel("classpath:alfresco/testaudit/alfresco-audit-test-bad-02.xml");
     }
-    
+
     public void testModelLoading_DuplicatePath() throws Exception
     {
         loadBadModel("classpath:alfresco/testaudit/alfresco-audit-test-bad-03.xml");
     }
-    
+
     public void testModelLoading_UppercasePath() throws Exception
     {
         loadBadModel("classpath:alfresco/testaudit/alfresco-audit-test-bad-04.xml");
     }
-    
+
     public void testModelLoading_InvalidDataGeneratorName() throws Exception
     {
         loadBadModel("classpath:alfresco/testaudit/alfresco-audit-test-bad-05.xml");
     }
-    
+
     public void testModelLoading_BadGeneratorRegisteredName() throws Exception
     {
         loadBadModel("classpath:alfresco/testaudit/alfresco-audit-test-bad-06.xml");
     }
-    
+
     public void testGetApplicationId()
     {
         AuditApplication app = auditModelRegistry.getAuditApplicationByName(APPLICATION_TEST);
@@ -142,19 +142,19 @@ public class AuditBootstrapTest extends TestCase
         Long appId = app.getApplicationId();
         assertNotNull("No audit application ID for " + APPLICATION_TEST, appId);
     }
-    
+
     public void testGetApplications()
     {
         Map<String, AuditApplication> apps = auditModelRegistry.getAuditApplications();
         assertTrue("Application map not complete", apps.containsKey(APPLICATION_TEST));
     }
-    
+
     public void testGetApplicationByKey()
     {
         AuditApplication app = auditModelRegistry.getAuditApplicationByKey(KEY_TEST);
         assertNotNull(app);
     }
-    
+
     public void testGetPathMappings()
     {
         PathMapper pathMapper = auditModelRegistry.getAuditPathMapper();
@@ -169,7 +169,7 @@ public class AuditBootstrapTest extends TestCase
             // Expected
         }
     }
-    
+
     private void testBadPath(AuditApplication app, String path)
     {
         try
@@ -182,12 +182,12 @@ public class AuditBootstrapTest extends TestCase
             // Expected
         }
     }
-    
+
     public void testAuditApplication_Path()
     {
         AuditApplication app = auditModelRegistry.getAuditApplicationByName(APPLICATION_TEST);
         assertNotNull(app);
-        
+
         // Check that path checks are working
         testBadPath(app, null);
         testBadPath(app, "");
@@ -195,22 +195,22 @@ public class AuditBootstrapTest extends TestCase
         testBadPath(app, "/Test");
         testBadPath(app, "/test/");
     }
-    
+
     public void testAuditApplication_GetDataExtractors()
     {
         AuditApplication app = auditModelRegistry.getAuditApplicationByName(APPLICATION_TEST);
         assertNotNull(app);
-        
+
         List<DataExtractorDefinition> extractors = app.getDataExtractors();
         assertNotNull("Should never get a null list", extractors);
         assertEquals("Expected 13 extractors", 13, extractors.size());
     }
-    
+
     public void testAuditApplication_GetDataGenerators()
     {
         AuditApplication app = auditModelRegistry.getAuditApplicationByName(APPLICATION_TEST);
         assertNotNull(app);
-        
+
         Map<String, DataGenerator> generators = app.getDataGenerators("/blah");
         assertNotNull("Should never get a null map", generators);
         assertTrue("Expected no generators", generators.isEmpty());

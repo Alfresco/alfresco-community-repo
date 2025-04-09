@@ -1,5 +1,9 @@
 package org.alfresco.rest.sites.containers;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestSiteContainerModelsCollection;
@@ -11,9 +15,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * @author iulia.cojocea
@@ -28,10 +29,10 @@ public class GetSiteContainersTests extends RestTest
     private RestSiteContainerModelsCollection restSiteContainers;
     private int totalItems;
 
-    @BeforeClass(alwaysRun=true)
+    @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();        
+        adminUserModel = dataUser.getAdminUser();
         publicSiteModel = dataSite.usingAdmin().createPublicRandomSite();
         publicSiteWithContainers = dataSite.usingAdmin().createPublicRandomSite();
         moderatedSiteModel = dataSite.usingAdmin().createModeratedRandomSite();
@@ -54,95 +55,95 @@ public class GetSiteContainersTests extends RestTest
         totalItems = restSiteContainers.getPagination().getTotalItems();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.SANITY,
             description = "Verify user with Manager role gets site containers and gets status code OK (200)")
     public void getSiteContainersWithManagerRole() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteManager));
         restClient.withCoreAPI().usingSite(publicSiteModel).getSiteContainers()
-        	.assertThat().entriesListIsNotEmpty()
-        	.assertThat().paginationExist()
-        	.and().paginationField("count").isNot("0");
+                .assertThat().entriesListIsNotEmpty()
+                .assertThat().paginationExist()
+                .and().paginationField("count").isNot("0");
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Collaborator role gets site containers and gets status code OK (200)")
     public void getSiteContainersWithCollaboratorRole() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator));
         restClient.withCoreAPI().usingSite(publicSiteModel).getSiteContainers()
-                	.assertThat().entriesListIsNotEmpty()
-                	.assertThat().paginationExist()
-                	.and().paginationField("count").isNot("0");
+                .assertThat().entriesListIsNotEmpty()
+                .assertThat().paginationExist()
+                .and().paginationField("count").isNot("0");
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Contributor role gets site containers and gets status code OK (200)")
     public void getSiteContainersWithContributorRole() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteContributor));
         restClient.withCoreAPI().usingSite(publicSiteModel).getSiteContainers()
-                	.assertThat().entriesListIsNotEmpty()
-                	.assertThat().paginationExist()
-                	.and().paginationField("count").isNot("0");
+                .assertThat().entriesListIsNotEmpty()
+                .assertThat().paginationExist()
+                .and().paginationField("count").isNot("0");
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Consumer role gets site containers and gets status code OK (200)")
     public void getSiteContainersWithConsumerRole() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteConsumer));
         restClient.withCoreAPI().usingSite(publicSiteModel).getSiteContainers()
-                	.assertThat().entriesListIsNotEmpty()
-                	.assertThat().paginationExist()
-                	.and().paginationField("count").isNot("0");
+                .assertThat().entriesListIsNotEmpty()
+                .assertThat().paginationExist()
+                .and().paginationField("count").isNot("0");
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Admin user gets site containers information and gets status code OK (200)")
     public void getSiteContainersWithAdminUser() throws Exception
     {
         restClient.authenticateUser(adminUserModel);
         restClient.withCoreAPI().usingSite(publicSiteModel).getSiteContainers()
-                	.assertThat().entriesListIsNotEmpty()
-                	.assertThat().paginationExist()
-                	.and().paginationField("count").isNot("0");
+                .assertThat().entriesListIsNotEmpty()
+                .assertThat().paginationExist()
+                .and().paginationField("count").isNot("0");
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
-    
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.SANITY, 
+
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.SANITY,
             description = "Failed authentication get site containers call returns status code 401 with Manager role")
-//    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
+    // @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
     public void unauthenticatedUserIsNotAuthorizedToRetrieveSiteContainers() throws Exception
     {
         UserModel userModel = dataUser.createRandomTestUser();
         userModel.setPassword("user wrong password");
         dataUser.addUserToSite(userModel, publicSiteModel, UserRole.SiteManager);
         restClient.authenticateUser(userModel)
-                  .withCoreAPI().usingSite(publicSiteModel).getSiteContainers();
+                .withCoreAPI().usingSite(publicSiteModel).getSiteContainers();
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site container request returns status code 200 with valid maxItems parameter")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site container request returns status code 200 with valid maxItems parameter")
     public void getContainersWithValidMaxItems() throws Exception
     {
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteManager))
                 .withParams("maxItems=5")
                 .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
                 .assertThat().entriesListCountIs(2)
-                .and().entriesListContains("folderId" , ContainerName.documentLibrary.toString())
+                .and().entriesListContains("folderId", ContainerName.documentLibrary.toString())
                 .and().entriesListContains("folderId", ContainerName.links.toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
@@ -157,10 +158,10 @@ public class GetSiteContainersTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site container request returns status code 400 when invalid maxItems parameter is used")
-    public void getContainersWithMaxItemsZero () throws Exception
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site container request returns status code 400 when invalid maxItems parameter is used")
+    public void getContainersWithMaxItemsZero() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteManager))
                 .withParams("maxItems=0")
@@ -169,10 +170,10 @@ public class GetSiteContainersTests extends RestTest
                 .assertLastError().containsSummary("Only positive values supported for maxItems");
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site container request returns status code 400 when invalid maxItems parameter is used")
-    public void getContainersWithMaxItemsCharacter () throws Exception
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site container request returns status code 400 when invalid maxItems parameter is used")
+    public void getContainersWithMaxItemsCharacter() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator))
                 .withParams("maxItems=test")
@@ -181,10 +182,10 @@ public class GetSiteContainersTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "test"));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site container request returns status code 200 when maxItems parameter starts with multiple zero")
-    public void getContainersWithMaxItemsMultipleZero () throws Exception
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site container request returns status code 200 when maxItems parameter starts with multiple zero")
+    public void getContainersWithMaxItemsMultipleZero() throws Exception
     {
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteCollaborator))
                 .withParams("maxItems=000007")
@@ -193,9 +194,9 @@ public class GetSiteContainersTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site containers request returns status code 200 when valid skipCount parameter is used")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site containers request returns status code 200 when valid skipCount parameter is used")
     public void getSiteContainersWithValidSkipCount() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteManager)).withParams("skipCount=1")
@@ -219,9 +220,9 @@ public class GetSiteContainersTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site containers request returns status code 400 when invalid skipCount parameter is used")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site containers request returns status code 400 when invalid skipCount parameter is used")
     public void getSiteContainersWithSkipCountCharacter() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator)).withParams("skipCount=abc")
@@ -230,9 +231,9 @@ public class GetSiteContainersTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_SKIPCOUNT, "abc"));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site containers request returns status code 200 when skipCount parameter starts with multiple zero")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site containers request returns status code 200 when skipCount parameter starts with multiple zero")
     public void getSiteContainersWithSkipCountMultipleZero() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator)).withParams("skipCount=00002")
@@ -241,9 +242,9 @@ public class GetSiteContainersTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site containers request returns status code 400 when site doesn't exist")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site containers request returns status code 400 when site doesn't exist")
     public void getSiteContainersWithNonExistentSite() throws Exception
     {
         restClient.authenticateUser(publicSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator))
@@ -252,9 +253,9 @@ public class GetSiteContainersTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "NonExistentSiteId"));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify get site containers request returns status 200 for private site")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify get site containers request returns status 200 for private site")
     public void getSiteContainersForPrivateSite() throws Exception
     {
         restClient.authenticateUser(adminUserModel)
@@ -263,9 +264,9 @@ public class GetSiteContainersTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify get site containers request returns status 200 for moderated site")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify get site containers request returns status 200 for moderated site")
     public void getSiteContainersForModeratedSite() throws Exception
     {
         restClient.authenticateUser(adminUserModel)
@@ -274,34 +275,34 @@ public class GetSiteContainersTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify get site containers request returns status 200 for several containers")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify get site containers request returns status 200 for several containers")
     public void getSiteContainersForSeveralItems() throws Exception
     {
         restClient.authenticateUser(adminUserModel)
                 .withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
                 .assertThat().entriesListCountIs(2)
-                .and().entriesListContains("folderId" ,ContainerName.documentLibrary.toString())
+                .and().entriesListContains("folderId", ContainerName.documentLibrary.toString())
                 .and().entriesListContains("folderId", ContainerName.links.toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify get site containers request returns status 200 for one container")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify get site containers request returns status 200 for one container")
     public void getSiteContainersWithOneItem() throws Exception
     {
         restClient.authenticateUser(adminUserModel)
                 .withCoreAPI().usingSite(publicSiteModel).getSiteContainers()
                 .assertThat().entriesListCountIs(1)
-                .and().entriesListContains("folderId" ,ContainerName.documentLibrary.toString());
+                .and().entriesListContains("folderId", ContainerName.documentLibrary.toString());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site container request with properties parameter applied returns status code 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site container request with properties parameter applied returns status code 200")
     public void getSiteContainersUsingPropertiesParameter() throws Exception
     {
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteManager))
@@ -313,9 +314,9 @@ public class GetSiteContainersTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site container request for a container that is not empty returns status code 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site container request for a container that is not empty returns status code 200")
     public void getSiteContainersThatIsNotEmpty() throws Exception
     {
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteManager))
@@ -325,9 +326,9 @@ public class GetSiteContainersTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site containers request returns status code 200 when first container is skipped")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site containers request returns status code 200 when first container is skipped")
     public void getSiteContainersAndSkipFirst() throws Exception
     {
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteCollaborator))
@@ -338,22 +339,22 @@ public class GetSiteContainersTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site containers request and get last container returns status code 200")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site containers request and get last container returns status code 200")
     public void getLastSiteContainer() throws Exception
     {
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteCollaborator))
-                .withParams("skipCount=" + String.valueOf(totalItems-1)).withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
+                .withParams("skipCount=" + String.valueOf(totalItems - 1)).withCoreAPI().usingSite(publicSiteWithContainers).getSiteContainers()
                 .assertThat().entriesListCountIs(1)
                 .and().entriesListDoesNotContain("folderId", restSiteContainers.getEntries().get(0).onModel().getFolderId())
                 .and().entriesListContains("folderId", restSiteContainers.getEntries().get(1).onModel().getFolderId());
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site containers request returns status code 200 when high skipCount parameter is used")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site containers request returns status code 200 when high skipCount parameter is used")
     public void getSiteContainersWithHighSkipCount() throws Exception
     {
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteCollaborator))
@@ -364,9 +365,9 @@ public class GetSiteContainersTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get site container request for an empty siteId returns status code 404")
+    @Test(groups = {TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get site container request for an empty siteId returns status code 404")
     public void getSiteContainersForEmptySiteId() throws Exception
     {
         restClient.authenticateUser(publicSiteWithContainersUsers.getOneUserWithRole(UserRole.SiteManager))

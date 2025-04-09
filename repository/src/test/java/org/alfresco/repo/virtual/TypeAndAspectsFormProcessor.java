@@ -39,6 +39,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
@@ -58,8 +61,6 @@ import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class TypeAndAspectsFormProcessor extends TypeFormProcessor
 {
@@ -92,9 +93,9 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
     {
         parseItems(item);
         return super.generate(typeItem,
-                              fields,
-                              forcedFields,
-                              context);
+                fields,
+                forcedFields,
+                context);
     }
 
     @Override
@@ -102,14 +103,10 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
     {
         parseItems(item);
         return super.persist(typeItem,
-                             data);
+                data);
     }
 
-    /*
-     * @see
-     * org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getLogger
-     * ()
-     */
+    /* @see org.alfresco.repo.forms.processor.node.ContentModelFormProcessor#getLogger () */
     @Override
     protected Log getLogger()
     {
@@ -153,7 +150,7 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
         List<String> parsedIds = parseIds(id);
         // typeItem
         typeItem = new Item("type",
-                            parsedIds.get(0));
+                parsedIds.get(0));
         Iterator<String> iterator = parsedIds.iterator();
         iterator.next();
         while (iterator.hasNext())
@@ -183,7 +180,7 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
             {
                 // try and create the QName using the item id as is
                 aspect = QName.createQName(aspectName,
-                                           this.namespaceService);
+                        this.namespaceService);
             }
 
             // retrieve the aspect from the dictionary
@@ -192,13 +189,13 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
             if (aspectDef == null)
             {
                 throw new FormException(aspectName,
-                                        new IllegalArgumentException("Aspect does not exist: " + aspectName));
+                        new IllegalArgumentException("Aspect does not exist: " + aspectName));
             }
         }
         catch (InvalidQNameException iqne)
         {
             throw new FormException(aspectName,
-                                    iqne);
+                    iqne);
         }
 
         // return the QName object for the requested aspect
@@ -210,12 +207,12 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
     protected void persistNode(NodeRef nodeRef, FormData data)
     {
         super.persistNode(nodeRef,
-                          data);
+                data);
 
         QName type = this.nodeService.getType(nodeRef);
         Set<QName> aspectNames = getAspectNames(getTypedItem(typeItem));
         TypeDefinition typeDef = this.dictionaryService.getAnonymousType(type,
-                                                                         aspectNames);
+                aspectNames);
         Map<QName, PropertyDefinition> propDefs = typeDef.getProperties();
         Map<QName, Serializable> propsToPersist = new HashMap<QName, Serializable>();
 
@@ -225,28 +222,28 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
             if (fieldName.startsWith(PROP_DATA_PREFIX))
             {
                 processPropertyPersist(nodeRef,
-                                       propDefs,
-                                       fieldData,
-                                       propsToPersist,
-                                       data);
+                        propDefs,
+                        fieldData,
+                        propsToPersist,
+                        data);
             }
         }
 
         this.nodeService.addProperties(nodeRef,
-                                       propsToPersist);
+                propsToPersist);
 
     }
 
     @Override
     protected void processContentPropertyPersist(NodeRef nodeRef, FieldData fieldData,
-                Map<QName, Serializable> propsToPersist, FormData data)
+            Map<QName, Serializable> propsToPersist, FormData data)
     {
 
         if (fieldData.isFile() == true)
         {
             ContentWriter writer = this.contentService.getWriter(nodeRef,
-                                                                 ContentModel.PROP_CONTENT,
-                                                                 true);
+                    ContentModel.PROP_CONTENT,
+                    true);
             ContentData contentData = null;
 
             if (writer != null)
@@ -254,7 +251,7 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
                 // determine whether there is any content for the node yet i.e.
                 // it's a create
                 boolean defaultMimetypeRequired = (this.nodeService.getProperty(nodeRef,
-                                                                                ContentModel.PROP_CONTENT) == null);
+                        ContentModel.PROP_CONTENT) == null);
 
                 // write the content
                 InputStream inputStream = fieldData.getInputStream();
@@ -273,7 +270,7 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
                         if (mimetype == null)
                         {
                             contentData = ContentData.setMimetype(contentData,
-                                                                  determineDefaultMimetype(data));
+                                    determineDefaultMimetype(data));
                         }
                     }
                     else
@@ -281,14 +278,14 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
                         // content data has not been persisted yet so get it
                         // from the node
                         contentData = (ContentData) this.nodeService.getProperty(nodeRef,
-                                                                                 ContentModel.PROP_CONTENT);
+                                ContentModel.PROP_CONTENT);
                         if (contentData != null)
                         {
                             String fileName = (String) fieldData.getValue();
                             contentData = ContentData
-                                        .setMimetype(contentData,
-                                                     mimetypeService.getMimetype(fileName.substring(fileName
-                                                                 .lastIndexOf(".") + 1)));
+                                    .setMimetype(contentData,
+                                            mimetypeService.getMimetype(fileName.substring(fileName
+                                                    .lastIndexOf(".") + 1)));
                         }
                     }
 
@@ -296,7 +293,7 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
                 else
                 {
                     contentData = (ContentData) this.nodeService.getProperty(nodeRef,
-                                                                             ContentModel.PROP_CONTENT);
+                            ContentModel.PROP_CONTENT);
 
                     if (contentData != null)
                     {
@@ -308,9 +305,9 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
                         {
                             ContentData mimetypeEncoding = (ContentData) propsToPersist.get(ContentModel.PROP_CONTENT);
                             contentData = ContentData.setMimetype(contentData,
-                                                                  mimetypeEncoding.getMimetype());
+                                    mimetypeEncoding.getMimetype());
                             contentData = ContentData.setEncoding(contentData,
-                                                                  mimetypeEncoding.getEncoding());
+                                    mimetypeEncoding.getEncoding());
                         }
                     }
                 }
@@ -320,16 +317,16 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
                 if (contentData != null)
                 {
                     propsToPersist.put(ContentModel.PROP_CONTENT,
-                                       contentData);
+                            contentData);
                 }
             }
         }
         else
         {
             super.processContentPropertyPersist(nodeRef,
-                                                fieldData,
-                                                propsToPersist,
-                                                data);
+                    fieldData,
+                    propsToPersist,
+                    data);
         }
     }
 
@@ -347,8 +344,8 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
             if (destination == null)
             {
                 throw new FormException("Failed to persist form for '"
-                            + typeDef.getName().toPrefixString(this.namespaceService) + "' as '" + DESTINATION
-                            + "' data was not provided.");
+                        + typeDef.getName().toPrefixString(this.namespaceService) + "' as '" + DESTINATION
+                        + "' data was not provided.");
             }
 
             // create the parent NodeRef
@@ -357,8 +354,8 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
             if (parentRef == null)
             {
                 throw new FormException("Failed to persist form for '"
-                            + typeDef.getName().toPrefixString(this.namespaceService) + "' as '" + destinationValue
-                            + "' does not exist as path or NodeRef in the system.");
+                        + typeDef.getName().toPrefixString(this.namespaceService) + "' as '" + destinationValue
+                        + "' does not exist as path or NodeRef in the system.");
             }
 
             data.removeFieldData(DESTINATION);
@@ -384,21 +381,21 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
             // create the node
             Map<QName, Serializable> nodeProps = new HashMap<QName, Serializable>(1);
             nodeProps.put(ContentModel.PROP_NAME,
-                          nodeName);
+                    nodeName);
             nodeRef = this.nodeService.createNode(parentRef,
-                                                  ContentModel.ASSOC_CONTAINS,
-                                                  QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                                                    QName.createValidLocalName(nodeName)),
-                                                  typeDef.getName(),
-                                                  nodeProps).getChildRef();
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                            QName.createValidLocalName(nodeName)),
+                    typeDef.getName(),
+                    nodeProps).getChildRef();
             // adding additional aspects for now with empty properties...this
             // will not be needed anymore when we'll use form processor for
             // generating the form
             for (QName qname : getRequestedAspects())
             {
                 this.nodeService.addAspect(nodeRef,
-                                           qname,
-                                           new HashMap<QName, Serializable>());
+                        qname,
+                        new HashMap<QName, Serializable>());
             }
             // if the physical structure is configured we'll create for now
             // simple folders
@@ -407,7 +404,7 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
             {
                 List<String> folderPhysicalStructure = (List<String>) physicalStructure.getValue();
                 createPhysicalStructure(nodeRef,
-                                        folderPhysicalStructure);
+                        folderPhysicalStructure);
                 data.removeFieldData(PHYSICAL_STRUCTURE);
             }
         }
@@ -421,13 +418,13 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
         {
             Map<QName, Serializable> nodeProps = new HashMap<QName, Serializable>(1);
             nodeProps.put(ContentModel.PROP_NAME,
-                          folderName);
+                    folderName);
             this.nodeService.createNode(nodeRef,
-                                        ContentModel.ASSOC_CONTAINS,
-                                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                                          QName.createValidLocalName(folderName)),
-                                        ContentModel.TYPE_FOLDER,
-                                        nodeProps);
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                            QName.createValidLocalName(folderName)),
+                    ContentModel.TYPE_FOLDER,
+                    nodeProps);
         }
     }
 
@@ -437,15 +434,15 @@ public class TypeAndAspectsFormProcessor extends TypeFormProcessor
         if (destination.contains("://"))
         {
             String node = destination.replace("://",
-                                              "/");
+                    "/");
             parentRef = repository.findNodeRef("node",
-                                               node.split("/"));
+                    node.split("/"));
         }
         else
         {
             String path = "workspace/SpacesStore/Company Home/" + destination;
             parentRef = repository.findNodeRef("path",
-                                               path.split("/"));
+                    path.split("/"));
         }
         return parentRef;
     }

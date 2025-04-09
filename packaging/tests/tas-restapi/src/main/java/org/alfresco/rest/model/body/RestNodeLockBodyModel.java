@@ -32,7 +32,7 @@ import org.alfresco.utility.model.TestModel;
 
 public class RestNodeLockBodyModel extends TestModel implements IRestModel<RestNodeLockBodyModel>
 {
-    
+
     @JsonProperty(value = "entry")
     RestNodeLockBodyModel model;
 
@@ -47,10 +47,10 @@ public class RestNodeLockBodyModel extends TestModel implements IRestModel<RestN
 
     @JsonProperty
     private String type;
-    
+
     @JsonProperty
     private String lifetime;
-    
+
     public String getLifetime()
     {
         return lifetime;
@@ -66,10 +66,7 @@ public class RestNodeLockBodyModel extends TestModel implements IRestModel<RestN
         return timeToExpire;
     }
 
-    /*
-     * Set in seconds lock time
-     * if lock time = 0 or not set, the lock never expires
-     */
+    /* Set in seconds lock time if lock time = 0 or not set, the lock never expires */
     public void setTimeToExpire(int timeToExpire)
     {
         this.timeToExpire = timeToExpire;
@@ -84,7 +81,5 @@ public class RestNodeLockBodyModel extends TestModel implements IRestModel<RestN
     {
         this.type = type;
     }
-
-
 
 }

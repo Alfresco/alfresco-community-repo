@@ -27,8 +27,9 @@ package org.alfresco.service.cmr.lock;
 
 import java.text.MessageFormat;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -37,12 +38,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Roy Wetherall
  */
 public class NodeLockedException extends AlfrescoRuntimeException
-{    
+{
     /**
      * Serial version UID
      */
     private static final long serialVersionUID = 3762254149525582646L;
-    
+
     /**
      * Error message
      */
@@ -56,15 +57,16 @@ public class NodeLockedException extends AlfrescoRuntimeException
     {
         super("TEST CONSTRUCTOR INVOKED FOR NodeLockedException");
     }
-    
+
     /**
-     * @param nodeRef NodeRef
+     * @param nodeRef
+     *            NodeRef
      */
     public NodeLockedException(NodeRef nodeRef)
     {
         super(MessageFormat.format(ERROR_MESSAGE, new Object[]{nodeRef.getId()}));
-    }   
-    
+    }
+
     public NodeLockedException(NodeRef nodeRef, String operation)
     {
         super(MessageFormat.format(ERROR_MESSAGE_2, new Object[]{operation, nodeRef.getId()}));

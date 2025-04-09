@@ -25,6 +25,15 @@
  */
 package org.alfresco.repo.rendition;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
@@ -53,22 +62,9 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 /**
- * Renditioned aspect behaviour bean.
- * When any node with the renditioned aspect has a property updated, then all
- * associated renditions are eligible for re-rendering.
- * Each rendition (as identified by the name in its rn:rendition association) will
- * be loaded and if the renditionDefinition exists, the rendition will be updated
- * asynchronously, subject to the defined update policy.
+ * Renditioned aspect behaviour bean. When any node with the renditioned aspect has a property updated, then all associated renditions are eligible for re-rendering. Each rendition (as identified by the name in its rn:rendition association) will be loaded and if the renditionDefinition exists, the rendition will be updated asynchronously, subject to the defined update policy.
  * 
  * @author Neil McErlean
  * @author Roy Wetherall
@@ -77,7 +73,7 @@ import java.util.Map;
  */
 @Deprecated
 public class RenditionedAspect implements NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                          CopyServicePolicies.OnCopyNodePolicy
+        CopyServicePolicies.OnCopyNodePolicy
 {
     /** logger */
     private static final Log logger = LogFactory.getLog(RenditionedAspect.class);
@@ -92,17 +88,18 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
     /**
      * Set the policy component
      * 
-     * @param policyComponent   policy component
+     * @param policyComponent
+     *            policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * @since 3.4.2
      */
-    public void setActionService(ActionService actionService) 
+    public void setActionService(ActionService actionService)
     {
         this.actionService = actionService;
     }
@@ -110,17 +107,19 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
     /**
      * Set the node service
      * 
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set the rendition service
      * 
-     * @param renditionService   rendition service
+     * @param renditionService
+     *            rendition service
      */
     public void setRenditionService(RenditionService renditionService)
     {
@@ -130,25 +129,26 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
     /**
      * Set the dictionary service
      * 
-     * @param dictionaryService     dictionary service
+     * @param dictionaryService
+     *            dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * Initialise method
      */
     public void init()
     {
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
-                RenditionModel.ASPECT_RENDITIONED, 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
+                RenditionModel.ASPECT_RENDITIONED,
                 new JavaBehaviour(this, "onUpdateProperties", Behaviour.NotificationFrequency.EVERY_EVENT));
         this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"), 
-                RenditionModel.ASPECT_RENDITIONED, 
+                QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+                RenditionModel.ASPECT_RENDITIONED,
                 new JavaBehaviour(this, "getCopyCallback"));
     }
 
@@ -164,24 +164,23 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
         {
             // Find the changed properties
             List<QName> changedProperties = getChangedProperties(before, after);
-            
+
             // There may be a different policy for different rendition kinds.
             List<ChildAssociationRef> renditions = getRenditionChildAssociations(nodeRef);
             for (ChildAssociationRef chAssRef : renditions)
             {
                 final QName renditionAssocName = chAssRef.getQName();
-                
+
                 // Rendition Definitions are persisted underneath the Data Dictionary for which Group ALL
                 // has Consumer access by default. However, we cannot assume that that access level applies for all deployments. See ALF-7334.
-                RenditionDefinition rendDefn = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<RenditionDefinition>()
+                RenditionDefinition rendDefn = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<RenditionDefinition>() {
+                    @Override
+                    public RenditionDefinition doWork() throws Exception
                     {
-                        @Override
-                        public RenditionDefinition doWork() throws Exception
-                        {
-                            return renditionService.loadRenditionDefinition(renditionAssocName);
-                        }
-                    }, AuthenticationUtil.getSystemUserName());
-                
+                        return renditionService.loadRenditionDefinition(renditionAssocName);
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+
                 if (rendDefn == null)
                 {
                     if (logger.isDebugEnabled())
@@ -189,18 +188,18 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
                         // We will see this debug if a new RenditionService2 definition exists.
                         StringBuilder msg = new StringBuilder();
                         msg.append("Cannot update rendition ")
-                            .append(renditionAssocName)
-                            .append(" on node ").append(nodeRef)
-                            .append(" as the renditionDefinition could not be loaded.");
+                                .append(renditionAssocName)
+                                .append(" on node ").append(nodeRef)
+                                .append(" as the renditionDefinition could not be loaded.");
                         logger.debug(msg.toString());
                     }
                     continue;
                 }
                 Serializable updateRenditionsPolicy = rendDefn.getParameterValue(AbstractRenderingEngine.PARAM_UPDATE_RENDITIONS_ON_ANY_PROPERTY_CHANGE);
-                boolean updateRenditionsAlways = updateRenditionsPolicy == null ? false : (Boolean)updateRenditionsPolicy;
-            
+                boolean updateRenditionsAlways = updateRenditionsPolicy == null ? false : (Boolean) updateRenditionsPolicy;
+
                 boolean renditionUpdateRequired = false;
-                
+
                 for (QName qname : changedProperties)
                 {
                     try
@@ -225,13 +224,14 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
                             // it is a content property. We always update renditions for changes to content.
                             renditionUpdateRequired = true;
                         }
-                    } catch (ClassCastException ccx)
+                    }
+                    catch (ClassCastException ccx)
                     {
                         // the property does not confirm to the model
                         continue;
                     }
                 }
-                
+
                 if (renditionUpdateRequired)
                 {
                     this.queueUpdate(nodeRef, rendDefn, chAssRef);
@@ -287,14 +287,15 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
                 results.add(propQName);
             }
         }
-        
+
         return results;
     }
 
     /**
      * Queue the update to happen asynchronously
      * 
-     * @param sourceNodeRef           node reference
+     * @param sourceNodeRef
+     *            node reference
      */
     private void queueUpdate(final NodeRef sourceNodeRef, final RenditionDefinition rendDefn,
             final ChildAssociationRef renditionAssoc)
@@ -311,9 +312,8 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
             Action deleteRendition = actionService.createAction(DeleteRenditionActionExecuter.NAME);
             deleteRendition.setParameterValue(DeleteRenditionActionExecuter.PARAM_RENDITION_DEFINITION_NAME, rendDefn.getRenditionName());
             rendDefn.setCompensatingAction(deleteRendition);
-            
-            renditionService.render(sourceNodeRef, rendDefn, new RenderCallback()
-            {
+
+            renditionService.render(sourceNodeRef, rendDefn, new RenderCallback() {
                 public void handleFailedRendition(Throwable t)
                 {
                     // In the event of a failed re-rendition, we will delete the rendition node
@@ -321,12 +321,12 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
                     {
                         StringBuilder msg = new StringBuilder();
                         msg.append("Re-rendering of node ")
-                            .append(sourceNodeRef)
-                            .append(" with renditionDefinition ")
-                            .append(rendDefn.getRenditionName())
-                            .append(" failed. Deleting defunct rendition. ")
-                            .append("The following exception is shown for informational purposes only ")
-                            .append("and does not affect operation of the system.");
+                                .append(sourceNodeRef)
+                                .append(" with renditionDefinition ")
+                                .append(rendDefn.getRenditionName())
+                                .append(" failed. Deleting defunct rendition. ")
+                                .append("The following exception is shown for informational purposes only ")
+                                .append("and does not affect operation of the system.");
                         logger.debug(msg.toString(), t);
                     }
                 }
@@ -340,7 +340,7 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
     }
 
     /**
-     * @return              Returns CopyBehaviourCallback
+     * @return Returns CopyBehaviourCallback
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
@@ -357,9 +357,7 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
     private static class RenditionedAspectCopyBehaviourCallback extends DefaultCopyBehaviourCallback
     {
         private static final CopyBehaviourCallback INSTANCE = new RenditionedAspectCopyBehaviourCallback();
-        
-        
-        
+
         /**
          * We do not copy the {@link RenditionModel#ASPECT_RENDITIONED rn:renditioned} aspect.
          */
@@ -368,7 +366,7 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
         {
             return false;
         }
-        
+
         @Override
         public Pair<AssocCopySourceAction, AssocCopyTargetAction> getAssociationCopyAction(
                 QName classQName,
@@ -379,14 +377,14 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
                     AssocCopySourceAction.IGNORE,
                     AssocCopyTargetAction.USE_COPIED_OTHERWISE_ORIGINAL_TARGET);
         }
-        
+
         @Override
         public ChildAssocCopyAction getChildAssociationCopyAction(
                 QName classQName,
                 CopyDetails copyDetails,
                 CopyChildAssociationDetails childAssocCopyDetails)
         {
-            return ChildAssocCopyAction.IGNORE;            
+            return ChildAssocCopyAction.IGNORE;
         }
     }
 }

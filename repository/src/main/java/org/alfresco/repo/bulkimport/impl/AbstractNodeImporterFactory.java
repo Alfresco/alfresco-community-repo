@@ -44,34 +44,34 @@ public class AbstractNodeImporterFactory
     protected BulkImportStatusImpl importStatus;
     protected VersionService versionService;
     protected BehaviourFilter behaviourFilter;
-    
-	public void setFileFolderService(FileFolderService fileFolderService)
-	{
-		this.fileFolderService = fileFolderService;
-	}
 
-	public void setNodeService(NodeService nodeService)
-	{
-		this.nodeService = nodeService;
-	}
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
 
-	public void setMetadataLoader(MetadataLoader metadataLoader)
-	{
-		this.metadataLoader = metadataLoader;
-	}
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
 
-	public void setImportStatus(BulkImportStatusImpl importStatus)
-	{
-		this.importStatus = importStatus;
-	}
+    public void setMetadataLoader(MetadataLoader metadataLoader)
+    {
+        this.metadataLoader = metadataLoader;
+    }
 
-	public void setVersionService(VersionService versionService)
-	{
-		this.versionService = versionService;
-	}
+    public void setImportStatus(BulkImportStatusImpl importStatus)
+    {
+        this.importStatus = importStatus;
+    }
 
-	public void setBehaviourFilter(BehaviourFilter behaviourFilter)
-	{
-		this.behaviourFilter = behaviourFilter;
-	}
+    public void setVersionService(VersionService versionService)
+    {
+        this.versionService = versionService;
+    }
+
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
 }

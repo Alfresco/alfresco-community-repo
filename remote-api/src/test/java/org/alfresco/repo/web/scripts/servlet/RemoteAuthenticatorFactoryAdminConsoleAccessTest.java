@@ -25,19 +25,22 @@
  */
 package org.alfresco.repo.web.scripts.servlet;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.management.subsystems.ActivateableBean;
-import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
-import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapper;
-import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.util.BaseSpringTest;
-import org.alfresco.util.PropertyMap;
-import org.alfresco.util.testing.category.IntermittentlyFailingTests;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.logging.Log;
@@ -58,25 +61,23 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRespons
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Supplier;
-
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.management.subsystems.ActivateableBean;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
+import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapper;
+import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.BaseSpringTest;
+import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.IntermittentlyFailingTests;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration({ "classpath:alfresco/application-context.xml", "classpath:alfresco/web-scripts-application-context.xml",
-    "classpath:alfresco/web-scripts-application-context-test.xml" })
+@ContextConfiguration({"classpath:alfresco/application-context.xml", "classpath:alfresco/web-scripts-application-context.xml",
+        "classpath:alfresco/web-scripts-application-context-test.xml"})
 public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpringTest
 {
     private String proxyHeader = "X-Alfresco-Remote-User";
@@ -97,11 +98,11 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         blockingRemoteUserMapper = new BlockingRemoteUserMapper();
 
         DefaultChildApplicationContextManager childApplicationContextManager = (DefaultChildApplicationContextManager) applicationContext
-            .getBean("Authentication");
+                .getBean("Authentication");
         remoteUserAuthenticatorFactory = (RemoteUserAuthenticatorFactory) applicationContext.getBean("webscripts.authenticator.remoteuser");
         remoteUserAuthenticatorFactory.setRemoteUserMapper(blockingRemoteUserMapper);
         remoteUserAuthenticatorFactory
-            .setGetRemoteUserTimeoutMilliseconds((long) (BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS / 2));//highly impatient
+                .setGetRemoteUserTimeoutMilliseconds((long) (BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS / 2));// highly impatient
         personService = (PersonService) applicationContext.getBean("PersonService");
 
         authenticationService = applicationContext.getBean("AuthenticationService", MutableAuthenticationService.class);
@@ -221,9 +222,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
     }
 
     /**
-     * Tested access to the AdminConsole for an non literal admin user
-     * but with admin permissions (user added to ALFRESCO_ADMINISTRATORS)
-     * and accessing via Basic Auth
+     * Tested access to the AdminConsole for an non literal admin user but with admin permissions (user added to ALFRESCO_ADMINISTRATORS) and accessing via Basic Auth
      */
     @Test
     public void testUserCanAccessAdminConsoleScript()
@@ -249,7 +248,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
 
     private void complexCheckOfScriptCases(final Set<String> families)
     {
-        final String headerToAdd = "Basic YWRtaW46YWRtaW4="; //admin:admin
+        final String headerToAdd = "Basic YWRtaW46YWRtaW4="; // admin:admin
 
         checkGenericResourceAccess();
 
@@ -270,7 +269,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         final boolean authenticated = authenticate(families, headerToAddWithWrongPassword);
 
         assertFalse("It is an AdminConsole webscript now and Admin basic auth header was present BUT with wrong password. Should fail.",
-            authenticated);
+                authenticated);
         assertEquals("Status should be 401", 401, setStatusCode);
         final String message = "The code from blockingRemoteUserMapper shouldn't have been called";
         assertFalse(message, blockingRemoteUserMapper.isWasInterrupted());
@@ -308,9 +307,12 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         // now try with valid basic auth as well
         boolean authenticated = false;
 
-        try {
+        try
+        {
             authenticated = authenticate(families, headerToAdd);
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             logger.error(String.format("The authentication should not require secure context to be set. %s", e.getMessage()), e);
         }
 
@@ -331,7 +333,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         assertFalse("It is an AdminConsole webscript now, but Admin basic auth header was not present. It should return 401", authenticated);
         assertEquals("Status should be 401", 401, setStatusCode);
         assertFalse("The interrupt should have not been called because the RemoteUserMapper is not enabled.",
-            blockingRemoteUserMapper.isWasInterrupted());
+                blockingRemoteUserMapper.isWasInterrupted());
         assertEquals("RemoteUserMapper not called", blockingRemoteUserMapper.getTimePassed(), 0);
     }
 
@@ -343,17 +345,17 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
 
         assertFalse("This should not be authenticated as it is not an Admin Console requested. And no credentials have been provided", authenticated);
         assertFalse("Because it is not an Admin Console, the timeout feature from BasicHttpAuthenticator should not be requested. "
-            + "Therefore the interrupt should not have been called. ", blockingRemoteUserMapper.isWasInterrupted());
+                + "Therefore the interrupt should not have been called. ", blockingRemoteUserMapper.isWasInterrupted());
         assertTrue("No interrupt should have been called.",
-            blockingRemoteUserMapper.getTimePassed() > BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS - 1);
+                blockingRemoteUserMapper.getTimePassed() > BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS - 1);
     }
 
     private void checkTimeOutFeaturesWasNotUsed()
     {
         assertFalse("The timeout feature from BasicHttpAuthenticator should not be requested. Therefore the interrupt should not have been called. ",
-            blockingRemoteUserMapper.isWasInterrupted());
+                blockingRemoteUserMapper.isWasInterrupted());
         assertTrue("No interrupt should have been called.",
-            blockingRemoteUserMapper.getTimePassed() > BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS - 1);
+                blockingRemoteUserMapper.getTimePassed() > BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS - 1);
     }
 
     private boolean authenticate(Set<String> families, String headerToAdd)
@@ -432,7 +434,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
 
         assertTrue("This should be authenticating with external auth", authenticated);
         assertFalse("We have been using the DefaultRemoteUserMapper, so our BlockingRemoteUserMapper shouldn't have been called",
-            blockingRemoteUserMapper.isWasInterrupted());
+                blockingRemoteUserMapper.isWasInterrupted());
         assertEquals("BlockingRemoteUserMapper shouldn't have been called", blockingRemoteUserMapper.getTimePassed(), 0);
     }
 
@@ -441,8 +443,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         HttpServletResponse mockHttpResponse = mock(HttpServletResponse.class);
         WebScriptServletResponse mockResponse = mock(WebScriptServletResponse.class);
         when(mockResponse.getHttpServletResponse()).thenReturn(mockHttpResponse);
-        doAnswer(new Answer()
-        {
+        doAnswer(new Answer() {
             public Object answer(InvocationOnMock invocation)
             {
                 Object[] args = invocation.getArguments();
@@ -466,6 +467,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
 
     /**
      * User creation consists of creating a user and an authentication to be compared when a login is asked
+     * 
      * @param userName
      * @param password
      */
@@ -489,6 +491,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
 
     /**
      * Formats the value for a basic auth to be put in headers
+     * 
      * @param userName
      * @param password
      * @return
@@ -516,10 +519,12 @@ class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
             try
             {
                 Thread.sleep(BLOCKING_FOR_MILLIS);
-            } catch (InterruptedException ie)
+            }
+            catch (InterruptedException ie)
             {
                 wasInterrupted = true;
-            } finally
+            }
+            finally
             {
                 timePassed = (int) (System.currentTimeMillis() - t1);
             }
@@ -529,8 +534,7 @@ class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
 
     private static void doWithLock(Lock lock, Runnable action)
     {
-        getWithLock(lock, () ->
-        {
+        getWithLock(lock, () -> {
             action.run();
             return null;
         });
@@ -549,7 +553,8 @@ class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
             throw new IllegalStateException("Unexpected InterruptedException while acquiring " + lock);
         }
 
-        if (!locked) throw new IllegalStateException("Unexpected failure while acquiring " + lock);
+        if (!locked)
+            throw new IllegalStateException("Unexpected failure while acquiring " + lock);
 
         try
         {
@@ -573,8 +578,7 @@ class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
 
     public void reset()
     {
-        doWithLock(lock.writeLock(), () ->
-        {
+        doWithLock(lock.writeLock(), () -> {
             wasInterrupted = false;
             timePassed = 0;
         });

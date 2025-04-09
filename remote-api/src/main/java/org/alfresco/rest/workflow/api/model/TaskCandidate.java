@@ -32,17 +32,19 @@ public class TaskCandidate
 {
     String candidateId;
     String candidateType;
-    
+
     public TaskCandidate()
-    {
-    }
+    {}
 
     public TaskCandidate(IdentityLink identityLink)
     {
-        if (StringUtils.isNotEmpty(identityLink.getUserId())) {
+        if (StringUtils.isNotEmpty(identityLink.getUserId()))
+        {
             candidateId = identityLink.getUserId();
             candidateType = "user";
-        } else {
+        }
+        else
+        {
             candidateId = identityLink.getGroupId();
             candidateType = "group";
         }

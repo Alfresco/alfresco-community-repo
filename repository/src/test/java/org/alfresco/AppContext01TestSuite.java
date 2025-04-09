@@ -25,60 +25,58 @@
  */
 package org.alfresco;
 
-import org.alfresco.util.testing.category.DBTests;
-import org.alfresco.util.testing.category.NonBuildTests;
 import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import org.alfresco.util.testing.category.DBTests;
+import org.alfresco.util.testing.category.NonBuildTests;
+
 /**
- * Repository project tests using the main context alfresco/application-context.xml.
- * To balance test jobs tests using this context have been split into multiple test suites.
- * Tests marked as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
+ * Repository project tests using the main context alfresco/application-context.xml. To balance test jobs tests using this context have been split into multiple test suites. Tests marked as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
  */
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
 @Suite.SuiteClasses({
-    org.alfresco.repo.action.evaluator.IsSubTypeEvaluatorTest.class,
-    org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluatorTest.class,
-    org.alfresco.repo.action.evaluator.CompareMimeTypeEvaluatorTest.class,
-    org.alfresco.repo.action.evaluator.HasAspectEvaluatorTest.class,
-    org.alfresco.repo.action.executer.SetPropertyValueActionExecuterTest.class,
-    org.alfresco.repo.action.executer.AddFeaturesActionExecuterTest.class,
+        org.alfresco.repo.action.evaluator.IsSubTypeEvaluatorTest.class,
+        org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluatorTest.class,
+        org.alfresco.repo.action.evaluator.CompareMimeTypeEvaluatorTest.class,
+        org.alfresco.repo.action.evaluator.HasAspectEvaluatorTest.class,
+        org.alfresco.repo.action.executer.SetPropertyValueActionExecuterTest.class,
+        org.alfresco.repo.action.executer.AddFeaturesActionExecuterTest.class,
 
-    org.alfresco.repo.action.executer.ContentMetadataExtracterTest.class,
-    org.alfresco.repo.action.executer.ContentMetadataExtracterTagMappingTest.class,
-    org.alfresco.repo.action.executer.ContentMetadataEmbedderTest.class,
-    org.alfresco.repo.action.executer.AsynchronousExtractorTest.class,
+        org.alfresco.repo.action.executer.ContentMetadataExtracterTest.class,
+        org.alfresco.repo.action.executer.ContentMetadataExtracterTagMappingTest.class,
+        org.alfresco.repo.action.executer.ContentMetadataEmbedderTest.class,
+        org.alfresco.repo.action.executer.AsynchronousExtractorTest.class,
 
-    org.alfresco.repo.action.access.ActionAccessRestrictionAbstractBaseTest.class,
-    org.alfresco.repo.action.access.ActionAccessRestrictionTest.class,
-    org.alfresco.repo.action.access.AdminActionAccessRestrictionTest.class,
+        org.alfresco.repo.action.access.ActionAccessRestrictionAbstractBaseTest.class,
+        org.alfresco.repo.action.access.ActionAccessRestrictionTest.class,
+        org.alfresco.repo.action.access.AdminActionAccessRestrictionTest.class,
 
-    org.alfresco.repo.rule.RuleLinkTest.class,
-    org.alfresco.repo.rule.RuleServiceCoverageTest.class,
-    org.alfresco.repo.rule.RuleServiceImplTest.class,
-    org.alfresco.repo.rule.RuleTypeImplTest.class,
-    org.alfresco.repo.rule.ruletrigger.RuleTriggerTest.class,
-    org.alfresco.repo.security.authentication.AuthenticationTest.class,
-    org.alfresco.repo.action.executer.SpecialiseTypeActionExecuterTest.class,
-    org.alfresco.repo.action.executer.RemoveFeaturesActionExecuterTest.class,
-    org.alfresco.repo.action.ActionTrackingServiceImplTest.class,
-    org.alfresco.email.server.EmailServiceImplTest.class,
-    org.alfresco.email.server.EmailServerTest.class,
+        org.alfresco.repo.rule.RuleLinkTest.class,
+        org.alfresco.repo.rule.RuleServiceCoverageTest.class,
+        org.alfresco.repo.rule.RuleServiceImplTest.class,
+        org.alfresco.repo.rule.RuleTypeImplTest.class,
+        org.alfresco.repo.rule.ruletrigger.RuleTriggerTest.class,
+        org.alfresco.repo.security.authentication.AuthenticationTest.class,
+        org.alfresco.repo.action.executer.SpecialiseTypeActionExecuterTest.class,
+        org.alfresco.repo.action.executer.RemoveFeaturesActionExecuterTest.class,
+        org.alfresco.repo.action.ActionTrackingServiceImplTest.class,
+        org.alfresco.email.server.EmailServiceImplTest.class,
+        org.alfresco.email.server.EmailServerTest.class,
 
-    // FTPServerTest fails when run from Eclipse
-    org.alfresco.filesys.FTPServerTest.class,
-    org.alfresco.filesys.repo.ContentDiskDriverTest.class,
-    org.alfresco.filesys.repo.LockKeeperImplTest.class,
-    org.alfresco.repo.activities.ActivityServiceImplTest.class,
-    org.alfresco.repo.activities.feed.cleanup.FeedCleanerTestCaseInsensitivity.class,
-    org.alfresco.repo.activities.SiteActivityTestCaseSensitivity.class,
-    org.alfresco.repo.activities.feed.cleanup.FeedCleanerTestCaseSensitivity.class,
-    org.alfresco.repo.activities.SiteActivityTestCaseInsensitivity.class,
-    org.alfresco.repo.admin.registry.RegistryServiceImplTest.class,
-    org.alfresco.repo.bootstrap.DataDictionaryFolderTest.class
+        // FTPServerTest fails when run from Eclipse
+        org.alfresco.filesys.FTPServerTest.class,
+        org.alfresco.filesys.repo.ContentDiskDriverTest.class,
+        org.alfresco.filesys.repo.LockKeeperImplTest.class,
+        org.alfresco.repo.activities.ActivityServiceImplTest.class,
+        org.alfresco.repo.activities.feed.cleanup.FeedCleanerTestCaseInsensitivity.class,
+        org.alfresco.repo.activities.SiteActivityTestCaseSensitivity.class,
+        org.alfresco.repo.activities.feed.cleanup.FeedCleanerTestCaseSensitivity.class,
+        org.alfresco.repo.activities.SiteActivityTestCaseInsensitivity.class,
+        org.alfresco.repo.admin.registry.RegistryServiceImplTest.class,
+        org.alfresco.repo.bootstrap.DataDictionaryFolderTest.class
 })
 public class AppContext01TestSuite
-{
-}
+{}

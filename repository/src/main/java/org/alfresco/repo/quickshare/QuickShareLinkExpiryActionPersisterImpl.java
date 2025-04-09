@@ -26,6 +26,10 @@
 
 package org.alfresco.repo.quickshare;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.importer.ImporterBootstrap;
@@ -40,20 +44,15 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 /**
- * Default implementation of the {@link QuickShareLinkExpiryActionPersister}.
- * It is responsible for persisting and retrieving the quick share link expiry actions.
+ * Default implementation of the {@link QuickShareLinkExpiryActionPersister}. It is responsible for persisting and retrieving the quick share link expiry actions.
  *
  * @author Jamal Kaabi-Mofrad
  */
 public class QuickShareLinkExpiryActionPersisterImpl implements QuickShareLinkExpiryActionPersister
 {
     protected static final NodeRef QUICK_SHARE_LINK_EXPIRY_ACTIONS_ROOT = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                "shared_link_expiry_actions_space");
+            "shared_link_expiry_actions_space");
 
     /* Injected services */
     private NodeService nodeService;
@@ -116,7 +115,7 @@ public class QuickShareLinkExpiryActionPersisterImpl implements QuickShareLinkEx
             if (childAssocs.size() > 1)
             {
                 throw new QuickShareLinkExpiryActionException(
-                            "Multiple quick share link expiry actions with the name: " + linkExpiryActionName + " exist!");
+                        "Multiple quick share link expiry actions with the name: " + linkExpiryActionName + " exist!");
             }
             return childAssocs.get(0).getChildRef();
         }
@@ -167,16 +166,16 @@ public class QuickShareLinkExpiryActionPersisterImpl implements QuickShareLinkEx
     }
 
     /**
-     * Gets the folder containing quick share link expiry action nodes.
-     * If it doesn't exist then it tries to create it.
+     * Gets the folder containing quick share link expiry action nodes. If it doesn't exist then it tries to create it.
      *
-     * @throws QuickShareLinkExpiryActionException if the folder node can't be created.
+     * @throws QuickShareLinkExpiryActionException
+     *             if the folder node can't be created.
      */
     private NodeRef getOrCreateActionsRootNodeRef()
     {
         if (!nodeService.exists(QUICK_SHARE_LINK_EXPIRY_ACTIONS_ROOT))
         {
-            //import
+            // import
             // This lazy create approach, avoids the need to create a patch for existing repo.
             List<Properties> singletonList = new ArrayList<>();
             singletonList.add(bootstrapView);

@@ -30,11 +30,12 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 
 /**
  * Implementation for Java backed webscript to delete a dispostion action definition.
@@ -43,9 +44,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class DispositionActionDefinitionDelete extends DispositionAbstractBase
 {
-    /*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
-     */
+    /* @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -65,8 +64,10 @@ public class DispositionActionDefinitionDelete extends DispositionAbstractBase
     /**
      * Helper method to remove a disposition action definition and the following definition(s)
      *
-     * @param schedule The disposition schedule
-     * @param actionDef The disposition action definition
+     * @param schedule
+     *            The disposition schedule
+     * @param actionDef
+     *            The disposition action definition
      */
     private void removeDispositionActionDefinitions(DispositionSchedule schedule, DispositionActionDefinition actionDef)
     {

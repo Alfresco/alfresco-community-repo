@@ -25,12 +25,10 @@
  */
 package org.alfresco.filesys.repo.rules;
 
-import java.util.List;
-
 import org.alfresco.filesys.repo.rules.ScenarioInstance.Ranking;
 
 /**
- * The Bog Standard Instance.   This always executes.
+ * The Bog Standard Instance. This always executes.
  * 
  * @author mrogers
  */
@@ -39,7 +37,7 @@ public class ScenarioSimpleNonBuffered implements Scenario
     private ScenarioSimpleNonBufferedInstance instance = new ScenarioSimpleNonBufferedInstance();
 
     private Ranking ranking = Ranking.LOW;
-    
+
     @Override
     public ScenarioInstance createInstance(final EvaluatorContext ctx, Operation operation)
     {
@@ -48,7 +46,7 @@ public class ScenarioSimpleNonBuffered implements Scenario
          */
         return instance;
     }
-    
+
     public void setRanking(Ranking ranking)
     {
         this.ranking = ranking;
@@ -59,7 +57,7 @@ public class ScenarioSimpleNonBuffered implements Scenario
     {
         return ranking;
     }
-    
+
     public String toString()
     {
         return "ScenarioSimpleNonBuffered - default instance";

@@ -34,8 +34,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
 
 /**
- * Records management evaluator base implementation that delegates to a configured capability condition
- * implementation.
+ * Records management evaluator base implementation that delegates to a configured capability condition implementation.
  * 
  * @author Roy Wetherall
  * @since 2.1
@@ -44,9 +43,10 @@ public class CapabilityConditionEvaluator extends RecordsManagementActionConditi
 {
     /** Capability Condition */
     private CapabilityCondition capabilityCondition;
-    
+
     /**
-     * @param capabilityCondition   capability condition
+     * @param capabilityCondition
+     *            capability condition
      */
     public void setCapabilityCondition(CapabilityCondition capabilityCondition)
     {
@@ -60,7 +60,7 @@ public class CapabilityConditionEvaluator extends RecordsManagementActionConditi
     protected boolean evaluateImpl(ActionCondition actionCondition, NodeRef actionedUponNodeRef)
     {
         // check a capability condition has been set and delegate
-        ParameterCheck.mandatory("capabilityCondition", capabilityCondition);        
+        ParameterCheck.mandatory("capabilityCondition", capabilityCondition);
         return capabilityCondition.evaluate(actionedUponNodeRef);
     }
 }

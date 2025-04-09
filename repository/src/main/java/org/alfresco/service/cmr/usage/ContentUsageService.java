@@ -26,7 +26,6 @@
 package org.alfresco.service.cmr.usage;
 
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 
 public interface ContentUsageService
 {
@@ -37,7 +36,7 @@ public interface ContentUsageService
      */
     @Auditable
     public long getUserUsage(String userName);
-    
+
     /**
      * Gets user quota
      * 
@@ -47,21 +46,22 @@ public interface ContentUsageService
      */
     @Auditable
     public long getUserQuota(String userName);
-    
+
     /**
-     * Set user quota. 
+     * Set user quota.
      * 
-     * Note: It is possible to set a quota that is below the current usage. At this point
-     * the user will be over quota until their usage is decreased.
+     * Note: It is possible to set a quota that is below the current usage. At this point the user will be over quota until their usage is decreased.
      * 
      * Note: -1 means no quota limit set
      * 
-     * @param userName User name
-     * @param newQuota User's new quota (in bytes)
+     * @param userName
+     *            User name
+     * @param newQuota
+     *            User's new quota (in bytes)
      */
     @Auditable
     public void setUserQuota(String userName, long newQuota);
-    
+
     /**
      * Are ContentUsages enabled (refer to 'system.usages.enabled' repository property) ?
      * 

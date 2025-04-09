@@ -30,8 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Base implementation of TransformationSourceOptions which holds applicable mimetypes
- * and handles merge of options.
+ * Base implementation of TransformationSourceOptions which holds applicable mimetypes and handles merge of options.
  * 
  * @author Ray Gauss II
  *
@@ -51,7 +50,7 @@ public abstract class AbstractTransformationSourceOptions implements Transformat
     {
         return this.getApplicableMimetypes();
     }
-    
+
     /**
      * Gets the list of applicable mimetypes
      * 
@@ -65,7 +64,8 @@ public abstract class AbstractTransformationSourceOptions implements Transformat
     /**
      * Sets the list of applicable mimetypes
      * 
-     * @param applicableMimetypes the applicable mimetypes
+     * @param applicableMimetypes
+     *            the applicable mimetypes
      */
     public void setApplicableMimetypes(List<String> applicableMimetypes)
     {
@@ -73,15 +73,18 @@ public abstract class AbstractTransformationSourceOptions implements Transformat
     }
 
     /**
-     * Gets whether or not these transformation source options apply for the
-     * given mimetype
+     * Gets whether or not these transformation source options apply for the given mimetype
      * 
-     * @param mimetype the mimetype of the source
+     * @param mimetype
+     *            the mimetype of the source
      * @return if these transformation source options apply
      */
     public boolean isApplicableForMimetype(String mimetype)
     {
-        if (mimetype != null && applicableMimetypes != null) { return applicableMimetypes.contains(mimetype); }
+        if (mimetype != null && applicableMimetypes != null)
+        {
+            return applicableMimetypes.contains(mimetype);
+        }
         return false;
     }
 
@@ -90,13 +93,12 @@ public abstract class AbstractTransformationSourceOptions implements Transformat
     {
         return (AbstractTransformationSourceOptions) super.clone();
     }
-    
+
     /**
-     * Creates a new <code>TransformationSourceOptions</code> object from this
-     * one, merging any non-null overriding fields in the given
-     * <code>overridingOptions</code>
+     * Creates a new <code>TransformationSourceOptions</code> object from this one, merging any non-null overriding fields in the given <code>overridingOptions</code>
      * 
-     * @param overridingOptions TransformationSourceOptions
+     * @param overridingOptions
+     *            TransformationSourceOptions
      * @return a merged <code>TransformationSourceOptions</code> object
      */
     public TransformationSourceOptions mergedOptions(TransformationSourceOptions overridingOptions)
@@ -114,12 +116,14 @@ public abstract class AbstractTransformationSourceOptions implements Transformat
         }
         return null;
     }
-    
+
     /**
      * Adds the given paramValue to the given params if it's not null.
      * 
-     * @param paramName String
-     * @param paramValue Serializable
+     * @param paramName
+     *            String
+     * @param paramValue
+     *            Serializable
      */
     protected void putParameterIfNotNull(String paramName, Serializable paramValue, Map<String, Serializable> params)
     {
@@ -128,5 +132,5 @@ public abstract class AbstractTransformationSourceOptions implements Transformat
             params.put(paramName, paramValue);
         }
     }
-    
+
 }

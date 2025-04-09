@@ -31,6 +31,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 
 /**
  * Standard implementation for access permission info
+ * 
  * @author andyh
  *
  */
@@ -43,7 +44,7 @@ public class AccessPermissionImpl implements AccessPermission
     private String authority;
 
     private AuthorityType authorityType;
-    
+
     private int position;
 
     public AccessPermissionImpl(String permission, AccessStatus accessStatus, String authority, int position)
@@ -81,11 +82,9 @@ public class AccessPermissionImpl implements AccessPermission
         return accessStatus + " " + this.permission + " - " + this.authority + " (" + this.authorityType + ")";
     }
 
-    
-
     /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
-     */
+     * 
+     * @see java.lang.Object#hashCode() */
     @Override
     public int hashCode()
     {
@@ -99,8 +98,8 @@ public class AccessPermissionImpl implements AccessPermission
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+     * 
+     * @see java.lang.Object#equals(java.lang.Object) */
     @Override
     public boolean equals(Object obj)
     {
@@ -144,7 +143,7 @@ public class AccessPermissionImpl implements AccessPermission
 
     public boolean isInherited()
     {
-       return (position > 0);
+        return (position > 0);
     }
 
     public boolean isSetDirectly()

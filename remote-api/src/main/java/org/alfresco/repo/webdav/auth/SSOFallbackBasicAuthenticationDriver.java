@@ -26,12 +26,15 @@
 package org.alfresco.repo.webdav.auth;
 
 import java.io.IOException;
-
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.SessionUser;
@@ -44,9 +47,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * <p>
@@ -58,12 +58,12 @@ import org.apache.commons.logging.LogFactory;
 public class SSOFallbackBasicAuthenticationDriver implements AuthenticationDriver
 {
     private Log logger = LogFactory.getLog(SSOFallbackBasicAuthenticationDriver.class);
-    
+
     private AuthenticationService authenticationService;
     private PersonService personService;
     private NodeService nodeService;
     private TransactionService transactionService;
-    
+
     private String userAttributeName = AuthenticationDriver.AUTHENTICATION_USER;
 
     public void setAuthenticationService(AuthenticationService authenticationService)
@@ -75,12 +75,12 @@ public class SSOFallbackBasicAuthenticationDriver implements AuthenticationDrive
     {
         this.personService = personService;
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
@@ -90,7 +90,7 @@ public class SSOFallbackBasicAuthenticationDriver implements AuthenticationDrive
     {
         this.userAttributeName = userAttributeName;
     }
-    
+
     @Override
     public boolean authenticateRequest(ServletContext context, HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException
@@ -105,7 +105,7 @@ public class SSOFallbackBasicAuthenticationDriver implements AuthenticationDrive
                 String basicAuth = new String(Base64.decodeBase64(authHdr.substring(5).getBytes()));
                 String username = null;
                 String password = null;
-    
+
                 int pos = basicAuth.indexOf(":");
                 if (pos != -1)
                 {
@@ -117,14 +117,14 @@ public class SSOFallbackBasicAuthenticationDriver implements AuthenticationDrive
                     username = basicAuth;
                     password = "";
                 }
-    
+
                 try
                 {
                     if (logger.isTraceEnabled())
                     {
                         logger.trace("Authenticating user '" + AuthenticationUtil.maskUsername(username) + "'");
                     }
-    
+
                     Authorization auth = new Authorization(username, password);
                     if (auth.isTicket())
                     {
@@ -135,32 +135,30 @@ public class SSOFallbackBasicAuthenticationDriver implements AuthenticationDrive
                         authenticationService.authenticate(username, password.toCharArray());
                     }
 
-                    final RetryingTransactionCallback<SessionUser> callback = new RetryingTransactionCallback<SessionUser>()
-                    {
+                    final RetryingTransactionCallback<SessionUser> callback = new RetryingTransactionCallback<SessionUser>() {
                         @Override
                         public SessionUser execute() throws Throwable
                         {
                             NodeRef personNodeRef = personService.getPerson(authenticationService.getCurrentUserName());
                             String username = (String) nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
                             NodeRef homeSpaceRef = (NodeRef) nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
-                            
+
                             return new WebDAVUser(username, authenticationService.getCurrentTicket(), homeSpaceRef);
                         }
                     };
-                    
-                    user = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<SessionUser>()
-                    {
+
+                    user = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<SessionUser>() {
                         public SessionUser doWork() throws Exception
                         {
                             return transactionService.getRetryingTransactionHelper().doInTransaction(callback, true);
                         }
                     }, AuthenticationUtil.SYSTEM_USER_NAME);
-                    
+
                     if (logger.isTraceEnabled())
                     {
                         logger.trace("Authenticated user '" + AuthenticationUtil.maskUsername(username) + "'");
                     }
-                    
+
                     request.getSession().setAttribute(userAttributeName, user);
                     return true;
                 }

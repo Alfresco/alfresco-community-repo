@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.alfresco.service.cmr.security.AccessStatus;
 
-
 /**
  * Representation of Node Permissions
  *
@@ -44,13 +43,12 @@ public class NodePermissions
     private Set<String> settable;
 
     public NodePermissions()
-    {
-    }
+    {}
 
-    public NodePermissions(Boolean inherit, 
-                           List<NodePermission> inherited,
-                           List<NodePermission> locallySet,
-                           Set<String> settable)
+    public NodePermissions(Boolean inherit,
+            List<NodePermission> inherited,
+            List<NodePermission> locallySet,
+            Set<String> settable)
     {
         this.inherit = inherit;
         this.inherited = inherited;
@@ -93,10 +91,10 @@ public class NodePermissions
     {
         final StringBuilder sb = new StringBuilder(120);
         sb.append("PathInfo [isInheritanceEnabled=").append(inherit)
-                    .append(", inherited=").append(getInherited())
-                    .append(", locallySet=").append(getLocallySet())
-                    .append(", settable=").append(getSettable())
-                    .append(']');
+                .append(", inherited=").append(getInherited())
+                .append(", locallySet=").append(getLocallySet())
+                .append(", settable=").append(getSettable())
+                .append(']');
         return sb.toString();
     }
 
@@ -108,8 +106,7 @@ public class NodePermissions
         private String accessStatus;
 
         public NodePermission()
-        {
-        }
+        {}
 
         public NodePermission(String authorityId, String name, String accessStatus)
         {
@@ -138,9 +135,9 @@ public class NodePermissions
         {
             final StringBuilder sb = new StringBuilder(250);
             sb.append("NodePermission [authorityId=").append(authorityId)
-                        .append(", name=").append(name)
-                        .append(", accessStatus=").append(accessStatus)
-                        .append(']');
+                    .append(", name=").append(name)
+                    .append(", accessStatus=").append(accessStatus)
+                    .append(']');
             return sb.toString();
         }
 

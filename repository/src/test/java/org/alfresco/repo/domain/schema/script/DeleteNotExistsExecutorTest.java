@@ -32,13 +32,8 @@ import java.io.File;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Properties;
-
 import javax.sql.DataSource;
 
-import org.alfresco.repo.domain.dialect.Dialect;
-import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.testing.category.DBTests;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -46,6 +41,11 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import org.alfresco.repo.domain.dialect.Dialect;
+import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
+import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.DBTests;
 
 /**
  * Integration tests for the {@link DeleteNotExistsExecutor} class.
@@ -64,7 +64,7 @@ public class DeleteNotExistsExecutorTest
     @BeforeClass
     public static void setUpBeforeClass()
     {
-        String[] config = new String[] { "classpath:alfresco/application-context.xml", "classpath:scriptexec/script-exec-test.xml" };
+        String[] config = new String[]{"classpath:alfresco/application-context.xml", "classpath:scriptexec/script-exec-test.xml"};
         ctx = ApplicationContextHelper.getApplicationContext(config);
     }
 

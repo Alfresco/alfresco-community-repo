@@ -53,30 +53,22 @@ import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
  * <p/>
  * Here are some examples of how to use the <code>main</code> method:
  * <ul>
- *    <li>
- *    <b>--help</b><br/>
- *    Produce the help output.
- *    </li>
- *    <li>
- *    <b>--dry-run --encoding=UTF-8 --line-ending=WINDOWS --match="(.java|.xml|.jsp|.properties)$" --ignore="(.svn|classes)" "w:\"</b><br/>
- *    Find all source (.java, .xml, .jsp and .properties) files in directory "w:\".<br/>
- *    List files and show which would change when converting to CR-LF (Windows) line endings.<br/>
- *    Where auto-detection of the file is ambiguous, assume UTF-8.
- *    </li>
- *    <li>
- *    <b>--encoding=UTF-8 --line-ending=WINDOWS --match="(.java|.xml|.jsp|.properties)$" --ignore="(.svn|classes)" "w:\"</b><br/>
- *    Find all source (.java, .xml, .jsp and .properties) files in directory "w:\".  Recurse into subdirectories.<br/>
- *    Convert files, where necessary, to have CR-LF (Windows) line endings.<br/>
- *    Where auto-detection of the file encoding is ambiguous, assume UTF-8.<br/>
- *    Backups (.bak) files will be created.
- *    </li>
- *    <li>
- *    <b>--svn-update --no-backup --encoding=UTF-8 --line-ending=WINDOWS --match="(.java|.xml|.jsp|.properties)$" "w:\"</b><br/>
- *    Issue a 'svn status' command on directory "w:\" and match the regular expressions given to find files.<br/>
- *    Convert files, where necessary, to have CR-LF (Windows) line endings.<br/>
- *    Where auto-detection of the file encoding is ambiguous, assume UTF-8.  Write out as UTF-8.<br/>
- *    No backups files will be created.
- *    </li>
+ * <li><b>--help</b><br/>
+ * Produce the help output.</li>
+ * <li><b>--dry-run --encoding=UTF-8 --line-ending=WINDOWS --match="(.java|.xml|.jsp|.properties)$" --ignore="(.svn|classes)" "w:\"</b><br/>
+ * Find all source (.java, .xml, .jsp and .properties) files in directory "w:\".<br/>
+ * List files and show which would change when converting to CR-LF (Windows) line endings.<br/>
+ * Where auto-detection of the file is ambiguous, assume UTF-8.</li>
+ * <li><b>--encoding=UTF-8 --line-ending=WINDOWS --match="(.java|.xml|.jsp|.properties)$" --ignore="(.svn|classes)" "w:\"</b><br/>
+ * Find all source (.java, .xml, .jsp and .properties) files in directory "w:\". Recurse into subdirectories.<br/>
+ * Convert files, where necessary, to have CR-LF (Windows) line endings.<br/>
+ * Where auto-detection of the file encoding is ambiguous, assume UTF-8.<br/>
+ * Backups (.bak) files will be created.</li>
+ * <li><b>--svn-update --no-backup --encoding=UTF-8 --line-ending=WINDOWS --match="(.java|.xml|.jsp|.properties)$" "w:\"</b><br/>
+ * Issue a 'svn status' command on directory "w:\" and match the regular expressions given to find files.<br/>
+ * Convert files, where necessary, to have CR-LF (Windows) line endings.<br/>
+ * Where auto-detection of the file encoding is ambiguous, assume UTF-8. Write out as UTF-8.<br/>
+ * No backups files will be created.</li>
  * </ul>
  * 
  * @author Derek Hulley
@@ -87,17 +79,17 @@ public class Convert
     private static final String OPTION_SVN_STATUS = "--svn-status";
     private static final String OPTION_MATCH = "--match=";
     private static final String OPTION_IGNORE = "--ignore=";
-    private static final String OPTION_ENCODING= "--encoding=";
+    private static final String OPTION_ENCODING = "--encoding=";
     private static final String OPTION_LINE_ENDING = "--line-ending=";
-    private static final String OPTION_REPLACE_TABS= "--replace-tabs=";
+    private static final String OPTION_REPLACE_TABS = "--replace-tabs=";
     private static final String OPTION_NO_RECURSE = "--no-recurse";
     private static final String OPTION_NO_BACKUP = "--no-backup";
     private static final String OPTION_DRY_RUN = "--dry-run";
     private static final String OPTION_VERBOSE = "--verbose";
     private static final String OPTION_QUIET = "--quiet";
-    
+
     private static final Set<String> OPTIONS = new HashSet<String>(13);
-    
+
     static
     {
         OPTIONS.add(OPTION_HELP);
@@ -113,14 +105,14 @@ public class Convert
         OPTIONS.add(OPTION_VERBOSE);
         OPTIONS.add(OPTION_QUIET);
     }
-    
+
     /**
      * @see GuessEncodingCharsetFinder
      */
     private static final CharactersetFinder CHARACTER_ENCODING_FINDER = new GuessEncodingCharsetFinder();
 
     private File startDir = null;
-    
+
     private boolean svnStatus = false;
     private boolean dryRun = false;
     private Pattern matchPattern = null;
@@ -132,7 +124,7 @@ public class Convert
     private boolean noBackup = false;
     private boolean verbose = false;
     private boolean quiet = false;
-    
+
     public static void main(String[] args)
     {
         if (args.length < 1)
@@ -145,21 +137,21 @@ public class Convert
         argList.addAll(argListFixed);
         // Extract all the options
         Map<String, String> optionValues = extractOptions(argList);
-        
+
         // Check for help request
         if (optionValues.containsKey(OPTION_HELP))
         {
             printUsage();
             System.exit(0);
         }
-        
+
         // Check
         if (argList.size() != 1)
         {
             printUsage();
             System.exit(1);
         }
-        
+
         // Get the directory to start in
         File startDir = new File(argList.get(0));
         if (!startDir.exists() || !startDir.isDirectory())
@@ -170,7 +162,7 @@ public class Convert
             printUsage();
             System.exit(1);
         }
-        
+
         Convert convert = new Convert(optionValues, startDir);
         convert.convert();
     }
@@ -181,7 +173,7 @@ public class Convert
     private Convert(Map<String, String> optionValues, File startDir)
     {
         this.startDir = startDir;
-        
+
         svnStatus = optionValues.containsKey(OPTION_SVN_STATUS);
         dryRun = optionValues.containsKey(OPTION_DRY_RUN);
         String match = optionValues.get(OPTION_MATCH);
@@ -192,7 +184,7 @@ public class Convert
         noBackup = optionValues.containsKey(OPTION_NO_BACKUP);
         verbose = optionValues.containsKey(OPTION_VERBOSE);
         quiet = optionValues.containsKey(OPTION_QUIET);
-        
+
         // Check that the tab replacement count is correct
         String replaceTabsStr = optionValues.get(OPTION_REPLACE_TABS);
         if (replaceTabsStr != null)
@@ -260,7 +252,7 @@ public class Convert
                 System.exit(1);
             }
         }
-        
+
         // Check line ending
         if (lineEnding != null && !lineEnding.equals("WINDOWS") && !lineEnding.equals("UNIX"))
         {
@@ -270,7 +262,7 @@ public class Convert
             printUsage();
             System.exit(1);
         }
-        
+
         // Check quiet/verbose match
         if (verbose && quiet)
         {
@@ -281,7 +273,7 @@ public class Convert
             System.exit(1);
         }
     }
-    
+
     private void convert()
     {
         try
@@ -315,11 +307,11 @@ public class Convert
             System.out.flush();
         }
     }
-    
+
     private void convertSvn(File currentDir) throws Throwable
     {
         RuntimeExec exec = new RuntimeExec();
-        exec.setCommand(new String[] {"svn", "status", currentDir.toString()});
+        exec.setCommand(new String[]{"svn", "status", currentDir.toString()});
         ExecutionResult result = exec.execute();
         if (!result.getSuccess())
         {
@@ -361,11 +353,16 @@ public class Convert
         {
             if (reader != null)
             {
-                try { reader.close(); } catch (Throwable e) {}
+                try
+                {
+                    reader.close();
+                }
+                catch (Throwable e)
+                {}
             }
         }
     }
-    
+
     /**
      * Recursive method to do the conversion work.
      */
@@ -391,7 +388,7 @@ public class Convert
             }
         }
     }
-    
+
     private void convertFile(File file) throws Throwable
     {
         // We have a file, but does the pattern match
@@ -410,14 +407,14 @@ public class Convert
             // It missed the primary positive match
             return;
         }
-        
+
         // Ignore folders
         if (file.isDirectory())
         {
             return;
         }
-        
-        if (file.length() > (1024 * 1024))              // 1MB.  TODO: Make an option
+
+        if (file.length() > (1024 * 1024)) // 1MB. TODO: Make an option
         {
             System.out.println(" (Too big)");
         }
@@ -432,7 +429,7 @@ public class Convert
             byte[] fileMd5 = md5.digest();
             // Guess the charset now
             Charset fileCharset = guessCharset(fileBytes, charset);
-            
+
             byte[] convertedBytes = fileBytes;
             byte[] sourceBytes = fileBytes;
             byte[] convertedMd5 = fileMd5;
@@ -523,7 +520,7 @@ public class Convert
             }
         }
     }
-    
+
     /**
      * Brute force guessing by doing charset conversions.<br/>
      */
@@ -539,7 +536,7 @@ public class Convert
             return guessedCharset;
         }
     }
-    
+
     private static byte[] convertTabs(byte[] bytes, Charset charset, int replaceTabs) throws Exception
     {
         // The tab character
@@ -548,7 +545,7 @@ public class Convert
 
         // The output
         StringBuilder sb = new StringBuilder(bytes.length);
-        
+
         String charsetName = charset.name();
         // Using the charset, convert to a string
         String str = new String(bytes, charsetName);
@@ -573,6 +570,7 @@ public class Convert
     }
 
     private static final String EOF_CHECK = "--EOF-CHECK--";
+
     private static byte[] convertLineEndings(byte[] bytes, Charset charset, String lineEnding) throws Exception
     {
         String charsetName = charset.name();
@@ -620,13 +618,18 @@ public class Convert
         {
             if (reader != null)
             {
-                try { reader.close(); } catch (Throwable e) {}
+                try
+                {
+                    reader.close();
+                }
+                catch (Throwable e)
+                {}
             }
         }
         // Done
         return sb.toString().getBytes(charsetName);
     }
-    
+
     private static byte[] readFileIntoMemory(File file) throws Exception
     {
         InputStream is = null;
@@ -654,15 +657,25 @@ public class Convert
         {
             if (is != null)
             {
-                try { is.close(); } catch (Throwable e) {}
+                try
+                {
+                    is.close();
+                }
+                catch (Throwable e)
+                {}
             }
             if (os != null)
             {
-                try { os.close(); } catch (Throwable e) {}
+                try
+                {
+                    os.close();
+                }
+                catch (Throwable e)
+                {}
             }
         }
     }
-    
+
     private static void writeMemoryIntoFile(byte[] bytes, File file) throws Exception
     {
         InputStream is = null;
@@ -687,20 +700,31 @@ public class Convert
         {
             if (is != null)
             {
-                try { is.close(); } catch (Throwable e) {}
+                try
+                {
+                    is.close();
+                }
+                catch (Throwable e)
+                {}
             }
             if (os != null)
             {
-                try { os.close(); } catch (Throwable e) {}
+                try
+                {
+                    os.close();
+                }
+                catch (Throwable e)
+                {}
             }
         }
     }
-    
+
     /**
      * Extract all the options from the list of arguments.
-     * @param args      the program arguments.  This list will be modified.
-     * @return          Returns a map of arguments and their values.  Where the arguments have
-     *                  no values, an empty string is returned.
+     * 
+     * @param args
+     *            the program arguments. This list will be modified.
+     * @return Returns a map of arguments and their values. Where the arguments have no values, an empty string is returned.
      */
     private static Map<String, String> extractOptions(List<String> args)
     {
@@ -752,57 +776,57 @@ public class Convert
         // Done
         return optionValues;
     }
-    
+
     public static void printUsage()
     {
         StringBuilder sb = new StringBuilder(1024);
         sb.append("Usage: \n")
-          .append("   Convert [options] directory \n")
-          .append("   \n")
-          .append("      options: \n")
-          .append("         --help \n")
-          .append("            Print this help. \n")
-          .append("         --svn-status \n")
-          .append("            Execute a 'svn status' command against the directory and use the output for the file list. \n")
-          .append("         --match=?: \n")
-          .append("            A regular expression that all filenames must match. \n")
-          .append("            This argument can be escaped with double quotes, ie.g \"[a-zA-z0-9 ]\". \n")
-          .append("            The regular expression will be applied to the full path of the file. \n")
-          .append("            Name seperators will be '/' on Unix and ''\\'' on Windows systems. \n")
-          .append("            The default is \"--match=.*\", or match all files. \n")
-          .append("         --ignore=?: \n")
-          .append("            A regular expression that all filenames must not match. \n")
-          .append("            This argument can be escaped with double quotes, ie.g \"[a-zA-z0-9 ]\". \n")
-          .append("            The regular expression will be applied to the full path of the file. \n")
-          .append("            Name seperators will be '/' on Unix and ''\\'' on Windows systems. \n")
-          .append("            This option is not present by default. \n")
-          .append("         --encoding=? \n")
-          .append("            If not specified, the encoding of the files is left unchanged. \n")
-          .append("            Typical values would be UTF-8, UTF-16 or any java-recognized encoding string. \n")
-          .append("         --line-ending=? \n")
-          .append("            This can either be WINDOWS or UNIX. \n")
-          .append("            If not set, the line ending style is left unchanged. \n")
-          .append("         --replace-tabs=? \n")
-          .append("            Specify the number of spaces to insert in place of a tab. \n")
-          .append("         --no-recurse \n")
-          .append("            Do not recurse into subdirectories. \n")
-          .append("         --no-backup \n")
-          .append("            The default is to make a backup of all files prior to modification. \n")
-          .append("            With this option, no backups are made. \n")
-          .append("         --dry-run \n")
-          .append("            Do not modify or backup any files. \n")
-          .append("            No filesystem modifications are made. \n")
-          .append("         --verbose \n")
-          .append("            Dump all files checked to std.out. \n")
-          .append("         --quiet \n")
-          .append("            Don't dump anything to std.out. \n")
-          .append("       directory: \n")
-          .append("          The directory to start searching in. \n")
-          .append("          If the directory has spaces in it, then escape it with double quotes, e.g. \"C:\\Program Files\" \n")
-          .append("   \n")
-          .append("Details of the modifications being made are written to std.out. \n")
-          .append("Errors are written to std.err. \n")
-          .append("When used without any options, this program will behave like a FIND. \n");
+                .append("   Convert [options] directory \n")
+                .append("   \n")
+                .append("      options: \n")
+                .append("         --help \n")
+                .append("            Print this help. \n")
+                .append("         --svn-status \n")
+                .append("            Execute a 'svn status' command against the directory and use the output for the file list. \n")
+                .append("         --match=?: \n")
+                .append("            A regular expression that all filenames must match. \n")
+                .append("            This argument can be escaped with double quotes, ie.g \"[a-zA-z0-9 ]\". \n")
+                .append("            The regular expression will be applied to the full path of the file. \n")
+                .append("            Name seperators will be '/' on Unix and ''\\'' on Windows systems. \n")
+                .append("            The default is \"--match=.*\", or match all files. \n")
+                .append("         --ignore=?: \n")
+                .append("            A regular expression that all filenames must not match. \n")
+                .append("            This argument can be escaped with double quotes, ie.g \"[a-zA-z0-9 ]\". \n")
+                .append("            The regular expression will be applied to the full path of the file. \n")
+                .append("            Name seperators will be '/' on Unix and ''\\'' on Windows systems. \n")
+                .append("            This option is not present by default. \n")
+                .append("         --encoding=? \n")
+                .append("            If not specified, the encoding of the files is left unchanged. \n")
+                .append("            Typical values would be UTF-8, UTF-16 or any java-recognized encoding string. \n")
+                .append("         --line-ending=? \n")
+                .append("            This can either be WINDOWS or UNIX. \n")
+                .append("            If not set, the line ending style is left unchanged. \n")
+                .append("         --replace-tabs=? \n")
+                .append("            Specify the number of spaces to insert in place of a tab. \n")
+                .append("         --no-recurse \n")
+                .append("            Do not recurse into subdirectories. \n")
+                .append("         --no-backup \n")
+                .append("            The default is to make a backup of all files prior to modification. \n")
+                .append("            With this option, no backups are made. \n")
+                .append("         --dry-run \n")
+                .append("            Do not modify or backup any files. \n")
+                .append("            No filesystem modifications are made. \n")
+                .append("         --verbose \n")
+                .append("            Dump all files checked to std.out. \n")
+                .append("         --quiet \n")
+                .append("            Don't dump anything to std.out. \n")
+                .append("       directory: \n")
+                .append("          The directory to start searching in. \n")
+                .append("          If the directory has spaces in it, then escape it with double quotes, e.g. \"C:\\Program Files\" \n")
+                .append("   \n")
+                .append("Details of the modifications being made are written to std.out. \n")
+                .append("Errors are written to std.err. \n")
+                .append("When used without any options, this program will behave like a FIND. \n");
         System.out.println(sb);
         System.out.flush();
     }

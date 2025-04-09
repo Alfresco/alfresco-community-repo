@@ -25,6 +25,13 @@
  */
 package org.alfresco.repo.content.transform;
 
+import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_NODE_REF;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.httpclient.HttpClientConfig;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
@@ -35,19 +42,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.transform.config.TransformOption;
 import org.alfresco.util.Pair;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_NODE_REF;
-
 /**
  * A local transformer using flat transform options.
  *
- * Instances are automatically created for transformers identified by alfresco/transform json files and returned from
- * T-Engines which are themselves identified by global properties or system properties the match the pattern
- * localTransform.&lt;name>.url. The transforms take place in a separate process (typically a Docker container).
+ * Instances are automatically created for transformers identified by alfresco/transform json files and returned from T-Engines which are themselves identified by global properties or system properties the match the pattern localTransform.&lt;name>.url. The transforms take place in a separate process (typically a Docker container).
  */
 public class LocalTransformImpl extends AbstractLocalTransform
 {
@@ -56,13 +54,13 @@ public class LocalTransformImpl extends AbstractLocalTransform
     private boolean available = false;
 
     public LocalTransformImpl(String name, TransformerDebug transformerDebug,
-                              MimetypeService mimetypeService, boolean strictMimeTypeCheck,
-                              Map<String, Set<String>> strictMimetypeExceptions,
-                              boolean retryTransformOnDifferentMimeType,
-                              Set<TransformOption> transformsTransformOptions,
-                              LocalTransformServiceRegistry localTransformServiceRegistry, String baseUrl,
-                              HttpClientConfig httpClientConfig,
-                              int startupRetryPeriodSeconds)
+            MimetypeService mimetypeService, boolean strictMimeTypeCheck,
+            Map<String, Set<String>> strictMimetypeExceptions,
+            boolean retryTransformOnDifferentMimeType,
+            Set<TransformOption> transformsTransformOptions,
+            LocalTransformServiceRegistry localTransformServiceRegistry, String baseUrl,
+            HttpClientConfig httpClientConfig,
+            int startupRetryPeriodSeconds)
     {
         super(name, transformerDebug, mimetypeService, strictMimeTypeCheck, strictMimetypeExceptions,
                 retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry);
@@ -138,15 +136,15 @@ public class LocalTransformImpl extends AbstractLocalTransform
     private String getAvailableMessage(boolean available, String suffix)
     {
         return "Local transformer " + name + " on " + remoteTransformerClient.getBaseUrl() +
-                " is " + (available ? "" : "not ") + "available" + (suffix == null ? "." : ": "+suffix);
+                " is " + (available ? "" : "not ") + "available" + (suffix == null ? "." : ": " + suffix);
     }
 
     @Override
     protected void transformImpl(ContentReader reader,
-                                 ContentWriter writer, Map<String, String> transformOptions,
-                                 String sourceMimetype, String targetMimetype,
-                                 String sourceExtension, String targetExtension,
-                                 String renditionName, NodeRef sourceNodeRef)
+            ContentWriter writer, Map<String, String> transformOptions,
+            String sourceMimetype, String targetMimetype,
+            String sourceExtension, String targetExtension,
+            String renditionName, NodeRef sourceNodeRef)
     {
         transformOptions = new HashMap<>(transformOptions);
         // Dynamic transform options

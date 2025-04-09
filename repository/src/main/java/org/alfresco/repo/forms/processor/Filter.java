@@ -33,8 +33,7 @@ import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 
 /**
- * Interface definition for a filter which is called before and after
- * a form is generated and persisted.
+ * Interface definition for a filter which is called before and after a form is generated and persisted.
  *
  * @author Gavin Cornwell
  */
@@ -47,73 +46,72 @@ public interface Filter<ItemType, PersistType>
      * @return true if the filter is active
      */
     public boolean isActive();
-    
+
     /**
-     * Callback used to indicate that a form is about to be generated for
-     * the given items and fields.
+     * Callback used to indicate that a form is about to be generated for the given items and fields.
      * 
      * <p>
-     * NOTE: Filters all relating to the same type of form can cast the Object
-     * to a more appropriate object, for example all the Node based handlers
-     * can expect a NodeRef object and therefore cast to that.
+     * NOTE: Filters all relating to the same type of form can cast the Object to a more appropriate object, for example all the Node based handlers can expect a NodeRef object and therefore cast to that.
      * 
-     * @param item The item to generate a Form for
-     * @param fields Restricted list of fields to include
-     * @param forcedFields List of fields to forcibly include
-     * @param form The Form object
-     * @param context Map representing optional context that
-     *                can be used during retrieval of the form
+     * @param item
+     *            The item to generate a Form for
+     * @param fields
+     *            Restricted list of fields to include
+     * @param forcedFields
+     *            List of fields to forcibly include
+     * @param form
+     *            The Form object
+     * @param context
+     *            Map representing optional context that can be used during retrieval of the form
      */
-    public void beforeGenerate(ItemType item, List<String> fields, List<String> forcedFields, 
-                Form form, Map<String, Object> context);
-    
+    public void beforeGenerate(ItemType item, List<String> fields, List<String> forcedFields,
+            Form form, Map<String, Object> context);
+
     /**
-     * Callback used to indicate that a form has just been generated for
-     * the given items and fields.
+     * Callback used to indicate that a form has just been generated for the given items and fields.
      * 
      * <p>
-     * NOTE: Filters all relating to the same type of form can cast the Object
-     * to a more appropriate object, for example all the Node based handlers
-     * can expect a NodeRef object and therefore cast to that.
+     * NOTE: Filters all relating to the same type of form can cast the Object to a more appropriate object, for example all the Node based handlers can expect a NodeRef object and therefore cast to that.
      * 
-     * @param item The item to generate a Form for
-     * @param fields Restricted list of fields to include
-     * @param forcedFields List of fields to forcibly include
-     * @param form The Form object
-     * @param context Map representing optional context that
-     *                can be used during retrieval of the form
+     * @param item
+     *            The item to generate a Form for
+     * @param fields
+     *            Restricted list of fields to include
+     * @param forcedFields
+     *            List of fields to forcibly include
+     * @param form
+     *            The Form object
+     * @param context
+     *            Map representing optional context that can be used during retrieval of the form
      */
-    public void afterGenerate(ItemType item, List<String> fields, List<String> forcedFields, 
-                Form form, Map<String, Object> context);
-    
+    public void afterGenerate(ItemType item, List<String> fields, List<String> forcedFields,
+            Form form, Map<String, Object> context);
+
     /**
-     * Callback used to indicate that the given form data is about to be 
-     * persisted for the given item.
+     * Callback used to indicate that the given form data is about to be persisted for the given item.
      * 
      * <p>
-     * NOTE: Filters all relating to the same type of form can cast the item Object
-     * to a more appropriate object, for example all the Node based handlers
-     * can expect a NodeRef object and therefore cast to that.
+     * NOTE: Filters all relating to the same type of form can cast the item Object to a more appropriate object, for example all the Node based handlers can expect a NodeRef object and therefore cast to that.
      * 
-     * @param item The item to persist the form data for
-     * @param data The form data
+     * @param item
+     *            The item to persist the form data for
+     * @param data
+     *            The form data
      */
     public void beforePersist(ItemType item, FormData data);
-    
+
     /**
-     * Callback used to indicate that the given form data was just persisted
-     * for the item and the given persistedObject was created or modified.
+     * Callback used to indicate that the given form data was just persisted for the item and the given persistedObject was created or modified.
      * 
      * <p>
-     * NOTE: Filters all relating to the same type of form can cast the item 
-     * and persistedObject Objects to a more appropriate object, for example 
-     * all the Node based handlers can expect a NodeRef object and therefore 
-     * cast to that.
+     * NOTE: Filters all relating to the same type of form can cast the item and persistedObject Objects to a more appropriate object, for example all the Node based handlers can expect a NodeRef object and therefore cast to that.
      * 
-     * @param item The item to persist the form data for
-     * @param data The form data
-     * @param persistedObject The object created or modified as a result of 
-     *        the form persistence
+     * @param item
+     *            The item to persist the form data for
+     * @param data
+     *            The form data
+     * @param persistedObject
+     *            The object created or modified as a result of the form persistence
      */
     public void afterPersist(ItemType item, FormData data, PersistType persistedObject);
 }

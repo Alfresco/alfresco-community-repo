@@ -35,20 +35,21 @@ public class ReturnValueCommand implements Command
 {
 
     Object returnValue;
+
     public ReturnValueCommand(Object returnValue)
     {
         this.returnValue = returnValue;
     }
-    
+
     public Object getReturnValue()
     {
         return returnValue;
     }
-    
+
     @Override
     public TxnReadState getTransactionRequired()
     {
-        
+
         return TxnReadState.TXN_NONE;
     }
 }

@@ -35,7 +35,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class AuditApp
 {
-	private String id;
+    private String id;
     private String name;
     private Boolean isEnabled;
     private Long maxEntryId;
@@ -62,24 +62,23 @@ public class AuditApp
     }
 
     public AuditApp()
-    {
-    }
+    {}
 
     public AuditApp(String id, String name, boolean isEnabled)
     {
-    	this.id = id;
+        this.id = id;
         this.name = name;
         this.isEnabled = isEnabled;
     }
 
     public String getId()
     {
-		return id;
-	}
+        return id;
+    }
 
     public void setId(String id)
     {
-    	this.id = id;
+        this.id = id;
     }
 
     public String getName()
@@ -92,21 +91,21 @@ public class AuditApp
         this.name = name;
     }
 
-    @JsonProperty(value="isEnabled")
+    @JsonProperty(value = "isEnabled")
     public Boolean getIsEnabled()
     {
         return isEnabled;
     }
 
-    @JsonProperty(value="isEnabled")
+    @JsonProperty(value = "isEnabled")
     public void setIsEnabled(Boolean isEnabled)
     {
         this.isEnabled = isEnabled;
     }
 
-	@Override
-	public String toString()
+    @Override
+    public String toString()
     {
-		return "AuditApp [id=" + id + ", name= " + name + ", isEnabled=" + isEnabled + "]";
-	}
+        return "AuditApp [id=" + id + ", name= " + name + ", isEnabled=" + isEnabled + "]";
+    }
 }

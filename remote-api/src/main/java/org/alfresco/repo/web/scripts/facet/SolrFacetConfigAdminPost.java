@@ -27,15 +27,10 @@
 package org.alfresco.repo.web.scripts.facet;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.search.impl.solr.facet.FacetQNameUtils;
-import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties;
-import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -46,6 +41,11 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.repo.search.impl.solr.facet.FacetQNameUtils;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
+import org.alfresco.service.namespace.QName;
 
 /**
  * This class is the controller for the "solr-facet-config-admin.post" web scripts.
@@ -89,8 +89,8 @@ public class SolrFacetConfigAdminPost extends AbstractSolrFacetConfigAdminWebScr
 
             final String facetQNameStr = json.getString(PARAM_FACET_QNAME);
             // Note: we're using this util class here because we need to be able to deal with
-            //       qnames without a URI e.g. "{}SITE" and *not* have them default to the cm: namespace
-            //       which happens with the 'normal' Alfresco QName code.
+            // qnames without a URI e.g. "{}SITE" and *not* have them default to the cm: namespace
+            // which happens with the 'normal' Alfresco QName code.
             final QName facetQName = FacetQNameUtils.createQName(facetQNameStr, namespaceService);
             final String displayName = json.getString(PARAM_DISPLAY_NAME);
             final String displayControl = json.getString(PARAM_DISPLAY_CONTROL);
@@ -107,18 +107,18 @@ public class SolrFacetConfigAdminPost extends AbstractSolrFacetConfigAdminWebScr
             final Set<CustomProperties> customProps = getCustomProperties(customPropJsonObj);
 
             SolrFacetProperties fp = new SolrFacetProperties.Builder()
-                        .filterID(filterID)
-                        .facetQName(facetQName)
-                        .displayName(displayName)
-                        .displayControl(displayControl)
-                        .maxFilters(maxFilters)
-                        .hitThreshold(hitThreshold)
-                        .minFilterValueLength(minFilterValueLength)
-                        .sortBy(sortBy)
-                        .scope(scope)
-                        .isEnabled(isEnabled)
-                        .scopedSites(scopedSites)
-                        .customProperties(customProps).build();
+                    .filterID(filterID)
+                    .facetQName(facetQName)
+                    .displayName(displayName)
+                    .displayControl(displayControl)
+                    .maxFilters(maxFilters)
+                    .hitThreshold(hitThreshold)
+                    .minFilterValueLength(minFilterValueLength)
+                    .sortBy(sortBy)
+                    .scope(scope)
+                    .isEnabled(isEnabled)
+                    .scopedSites(scopedSites)
+                    .customProperties(customProps).build();
             return fp;
         }
         catch (IOException e)

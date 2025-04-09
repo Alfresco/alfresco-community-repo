@@ -26,10 +26,11 @@
 
 package org.alfresco.filesys.config.acl;
 
+import org.springframework.beans.factory.BeanNameAware;
+
 import org.alfresco.jlan.server.auth.acl.ACLParseException;
 import org.alfresco.jlan.server.auth.acl.AccessControl;
 import org.alfresco.jlan.server.auth.acl.AccessControlParser;
-import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * Simple description of a JLAN Access control that can be configured via JMX or a Spring bean definition.
@@ -43,10 +44,9 @@ public abstract class AccessControlBean implements BeanNameAware
     /** The access type. */
     private int accessType = AccessControl.ReadWrite;
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String) */
     public void setBeanName(String name)
     {
         this.name = name;

@@ -31,8 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.search.SearchTrackingComponent;
-import org.alfresco.repo.solr.AclReaders;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -44,6 +42,9 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.repo.search.SearchTrackingComponent;
+import org.alfresco.repo.solr.AclReaders;
+
 /**
  * Support for SOLR: Track ACLs
  *
@@ -54,7 +55,7 @@ public class AclsReadersGet extends DeclarativeWebScript
     protected static final Log logger = LogFactory.getLog(AclsReadersGet.class);
 
     private SearchTrackingComponent searchTrackingComponent;
-    
+
     public void setSearchTrackingComponent(SearchTrackingComponent searchTrackingComponent)
     {
         this.searchTrackingComponent = searchTrackingComponent;
@@ -71,20 +72,20 @@ public class AclsReadersGet extends DeclarativeWebScript
             }
             return model;
         }
-        catch(IOException e)
+        catch (IOException e)
         {
             throw new WebScriptException("IO exception parsing request", e);
         }
-        catch(JSONException e)
+        catch (JSONException e)
         {
             throw new WebScriptException("Invalid JSON", e);
         }
     }
-    
+
     private Map<String, Object> buildModel(WebScriptRequest req) throws JSONException, IOException
     {
         List<Long> aclIds = null;
-        
+
         Content content = req.getContent();
         if (content == null)
         {
@@ -112,7 +113,7 @@ public class AclsReadersGet extends DeclarativeWebScript
 
         // Request according to the paging query style required
         List<AclReaders> aclsReaders = searchTrackingComponent.getAclsReaders(aclIds);
-        
+
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
         model.put("aclsReaders", aclsReaders);
 
@@ -120,7 +121,7 @@ public class AclsReadersGet extends DeclarativeWebScript
         {
             logger.debug("Result: \n\tRequest: " + req + "\n\tModel: " + model);
         }
-        
+
         return model;
     }
 }

@@ -27,12 +27,8 @@ package org.alfresco.repo.rendition2;
 
 import static org.mockito.Mockito.doThrow;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.rawevents.types.OnContentUpdatePolicyEvent;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.testing.category.NeverRunsTests;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -47,8 +43,12 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.springframework.context.ApplicationContext;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.rawevents.types.OnContentUpdatePolicyEvent;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.NeverRunsTests;
 
 /**
  * Provides a base set of tests for {@link RenditionEventProcessor}

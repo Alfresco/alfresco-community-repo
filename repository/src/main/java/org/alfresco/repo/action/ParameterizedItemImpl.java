@@ -45,7 +45,7 @@ public abstract class ParameterizedItemImpl implements ParameterizedItem, Serial
      * The id
      */
     private String id;
-    
+
     /**
      * The parameter values
      */
@@ -54,24 +54,27 @@ public abstract class ParameterizedItemImpl implements ParameterizedItem, Serial
     /**
      * Constructor
      * 
-     * @param id  the id
+     * @param id
+     *            the id
      */
     public ParameterizedItemImpl(String id)
     {
         this(id, null);
     }
-    
+
     /**
      * Constructor
      * 
-     * @param id          the rule item
-     * @param parameterValues   the parameter values
+     * @param id
+     *            the rule item
+     * @param parameterValues
+     *            the parameter values
      */
     public ParameterizedItemImpl(String id, Map<String, Serializable> parameterValues)
-    {     
+    {
         // Set the action id
         this.id = id;
-        
+
         if (parameterValues != null)
         {
             // TODO need to check that the parameter values being set correspond
@@ -79,7 +82,7 @@ public abstract class ParameterizedItemImpl implements ParameterizedItem, Serial
             this.parameterValues = parameterValues;
         }
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterizedItem#getId()
      */
@@ -100,7 +103,7 @@ public abstract class ParameterizedItemImpl implements ParameterizedItem, Serial
         }
         return result;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterizedItem#getParameterValue(String)
      */
@@ -108,7 +111,7 @@ public abstract class ParameterizedItemImpl implements ParameterizedItem, Serial
     {
         return this.parameterValues.get(name);
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterizedItem#setParameterValues(java.util.Map)
      */
@@ -117,11 +120,11 @@ public abstract class ParameterizedItemImpl implements ParameterizedItem, Serial
         if (parameterValues != null)
         {
             // TODO need to check that the parameter values being set correspond
-            //      correctly to the parameter definions on the rule item defintion
+            // correctly to the parameter definions on the rule item defintion
             this.parameterValues = parameterValues;
         }
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterizedItem#setParameterValue(String, Serializable)
      */
@@ -129,7 +132,7 @@ public abstract class ParameterizedItemImpl implements ParameterizedItem, Serial
     {
         this.parameterValues.put(name, value);
     }
-    
+
     /**
      * Hash code implementation
      */
@@ -138,7 +141,7 @@ public abstract class ParameterizedItemImpl implements ParameterizedItem, Serial
     {
         return Objects.hashCode(this.id);
     }
-    
+
     /**
      * Equals implementation
      */

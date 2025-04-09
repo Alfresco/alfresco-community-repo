@@ -46,8 +46,10 @@ public class Hold
     /**
      * Constructor
      *
-     * @param name The name of the hold
-     * @param nodeRef The {@link NodeRef} of the hold
+     * @param name
+     *            The name of the hold
+     * @param nodeRef
+     *            The {@link NodeRef} of the hold
      */
     public Hold(String name, NodeRef nodeRef)
     {

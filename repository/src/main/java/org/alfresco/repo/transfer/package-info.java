@@ -24,8 +24,7 @@
  * #L%
  */
 /**
- * Provides the implementation of the transfer service which can be used to 
- * transfer nodes from one repository to another.
+ * Provides the implementation of the transfer service which can be used to transfer nodes from one repository to another.
  * 
  * @see org.alfresco.service.cmr.transfer.TransferService
  * 
@@ -33,4 +32,5 @@
  */
 @PackageMarker
 package org.alfresco.repo.transfer;
+
 import org.alfresco.util.PackageMarker;

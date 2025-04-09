@@ -27,6 +27,9 @@ package org.alfresco.repo.node.integrity;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -36,12 +39,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Event raised to check the target multiplicity for an association type
- * from the given node.
+ * Event raised to check the target multiplicity for an association type from the given node.
  * <p>
  * Checks are ignored is the target node doesn't exist.
  * 
@@ -50,10 +50,10 @@ import org.apache.commons.logging.LogFactory;
 public class AssocTargetMultiplicityIntegrityEvent extends AbstractIntegrityEvent
 {
     private static Log logger = LogFactory.getLog(AssocTargetMultiplicityIntegrityEvent.class);
-    
+
     /** true if the assoc type may not be valid, e.g. during association deletions */
     private boolean isDelete;
-    
+
     public AssocTargetMultiplicityIntegrityEvent(
             NodeService nodeService,
             DictionaryService dictionaryService,
@@ -64,7 +64,7 @@ public class AssocTargetMultiplicityIntegrityEvent extends AbstractIntegrityEven
         super(nodeService, dictionaryService, sourceNodeRef, assocTypeQName, null);
         this.isDelete = isDelete;
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -76,7 +76,7 @@ public class AssocTargetMultiplicityIntegrityEvent extends AbstractIntegrityEven
         AssocTargetMultiplicityIntegrityEvent that = (AssocTargetMultiplicityIntegrityEvent) obj;
         return this.isDelete == that.isDelete;
     }
-    
+
     public void checkIntegrity(List<IntegrityRecord> eventResults)
     {
         QName assocTypeQName = getTypeQName();
@@ -93,35 +93,34 @@ public class AssocTargetMultiplicityIntegrityEvent extends AbstractIntegrityEven
             }
             return;
         }
-        
+
         // get the association def
         AssociationDefinition assocDef = getAssocDef(eventResults, assocTypeQName);
         // the association definition must exist
         if (assocDef == null)
         {
-            if (!isDelete)                         // strict about the type
+            if (!isDelete) // strict about the type
             {
                 IntegrityRecord result = new IntegrityRecord(
                         "Association type does not exist: \n" +
-                        "   Source Node: " + sourceNodeRef + "\n" +
-                        "   Source Node Type: " + sourceNodeTypeQName + "\n" +
-                        "   Association Type: " + assocTypeQName);
+                                "   Source Node: " + sourceNodeRef + "\n" +
+                                "   Source Node Type: " + sourceNodeTypeQName + "\n" +
+                                "   Association Type: " + assocTypeQName);
                 eventResults.add(result);
                 return;
             }
-            else                                    // not strict about the type
+            else // not strict about the type
             {
                 return;
             }
         }
-        
+
         // perform required checks
         checkTargetMultiplicity(eventResults, assocDef, assocTypeQName, sourceNodeRef);
     }
 
     /**
-     * Checks that the target multiplicity has not been violated for the
-     * source of the association.
+     * Checks that the target multiplicity has not been violated for the source of the association.
      */
     protected void checkTargetMultiplicity(
             List<IntegrityRecord> eventResults,
@@ -139,12 +138,12 @@ public class AssocTargetMultiplicityIntegrityEvent extends AbstractIntegrityEven
             // it is not mandatory and it allows many on both sides of the assoc
             return;
         }
-        
+
         // check the source of the association if this is a delete
         if (isDelete)
         {
             // get the class the association is defined for and see if it is an aspect
-            ClassDefinition classDef = assocDef.getSourceClass(); 
+            ClassDefinition classDef = assocDef.getSourceClass();
             if (classDef.isAspect())
             {
                 // see if the source node has the aspect applied, if it does not
@@ -155,7 +154,7 @@ public class AssocTargetMultiplicityIntegrityEvent extends AbstractIntegrityEven
                 }
             }
         }
-        
+
         int actualSize = 0;
         if (assocDef.isChild())
         {
@@ -172,27 +171,27 @@ public class AssocTargetMultiplicityIntegrityEvent extends AbstractIntegrityEven
             List<AssociationRef> targetAssocRefs = nodeService.getTargetAssocs(sourceNodeRef, assocTypeQName);
             actualSize = targetAssocRefs.size();
         }
-        
+
         if (((mandatory && enforced) && actualSize == 0) || (!allowMany && actualSize > 1))
         {
             if (actualSize == 0)
             {
                 // Double check that the association source is still present
-                ClassDefinition classDef = assocDef.getSourceClass(); 
+                ClassDefinition classDef = assocDef.getSourceClass();
                 if (classDef.isAspect() && !nodeService.hasAspect(sourceNodeRef, classDef.getName()))
                 {
                     // The source is an aspect but the aspect is not present
                     return;
                 }
             }
-            
+
             String childOrTargetStr = (assocDef.isChild() ? "child" : "target");
             IntegrityRecord result = new IntegrityRecord(
                     "The association " + childOrTargetStr + " multiplicity has been violated: \n" +
-                    "   Source Node: " + sourceNodeRef + "\n" +
-                    "   Association: " + assocDef + "\n" +
-                    "   Required " + childOrTargetStr + " Multiplicity: " + getMultiplicityString(mandatory, allowMany) + "\n" +
-                    "   Actual " + childOrTargetStr + " Multiplicity: " + actualSize);
+                            "   Source Node: " + sourceNodeRef + "\n" +
+                            "   Association: " + assocDef + "\n" +
+                            "   Required " + childOrTargetStr + " Multiplicity: " + getMultiplicityString(mandatory, allowMany) + "\n" +
+                            "   Actual " + childOrTargetStr + " Multiplicity: " + actualSize);
             eventResults.add(result);
         }
     }

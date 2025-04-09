@@ -31,6 +31,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
@@ -39,7 +41,6 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 public class TestActionPropertySubs extends RMActionExecuterAbstractBase
 {
@@ -96,9 +97,9 @@ public class TestActionPropertySubs extends RMActionExecuterAbstractBase
         assertEquals(yearShort, (String) action.getParameterValue("yearShort2"));
         assertEquals(yearLong, (String) action.getParameterValue("yearLong"));
         assertEquals(yearWeek, (String) action.getParameterValue("yearWeek"));
-        assertEquals(name, (String)action.getParameterValue("name"));
-        assertEquals(company, (String)action.getParameterValue("company"));
-        assertEquals(yearLong + "/" + monthShort + "/" + name + "-" + company +".txt", (String) action.getParameterValue("combo"));
+        assertEquals(name, (String) action.getParameterValue("name"));
+        assertEquals(company, (String) action.getParameterValue("company"));
+        assertEquals(yearLong + "/" + monthShort + "/" + name + "-" + company + ".txt", (String) action.getParameterValue("combo"));
     }
 
     private void assertEquals(String expected, String actual)

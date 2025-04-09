@@ -25,6 +25,20 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.*;
+
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.Test;
+
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
@@ -40,18 +54,6 @@ import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
-import org.junit.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
-import static org.junit.Assert.*;
 
 /**
  * V1 REST API tests for Node Versions (File Version History)
@@ -72,19 +74,21 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
     /**
      * Test version creation when uploading files (via multi-part/form-data with overwrite=true)
      *
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
      *
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/content}
+     * <p>
+     * GET:
+     * </p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/content}
      */
     @Test
     public void testUploadFileVersionCreateWithOverwrite() throws Exception
     {
         setRequestContext(user1);
-        
+
         String myFolderNodeId = getMyNodeId();
 
         // create folder
@@ -114,17 +118,17 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             // create some minor versions (note: majorVersion=null) (ie. 1.1, 1.2, 1.3)
             int cnt = 3;
             versionLabel = uploadTextFileVersions(user1, f1Id, contentName, cnt, textContentSuffix, verCnt, null, versionLabel).getFirst();
-            verCnt = verCnt+cnt;
+            verCnt = verCnt + cnt;
 
-            // create some major versions  (ie. 2.0, 3.0)
+            // create some major versions (ie. 2.0, 3.0)
             cnt = 2;
             versionLabel = uploadTextFileVersions(user1, f1Id, contentName, cnt, textContentSuffix, verCnt, true, versionLabel).getFirst();
-            verCnt = verCnt+cnt;
+            verCnt = verCnt + cnt;
 
             // create some more minor versions (ie. 3.1, 3.2, 3.3)
             cnt = 3;
             versionLabel = uploadTextFileVersions(user1, f1Id, contentName, cnt, textContentSuffix, verCnt, false, versionLabel).getFirst();
-            verCnt = verCnt+cnt;
+            verCnt = verCnt + cnt;
 
             assertEquals("3.3", versionLabel);
             assertEquals(9, verCnt);
@@ -200,7 +204,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
     public void testUploadFileVersionAsMinor() throws Exception
     {
         setRequestContext(user1);
-        
+
         String myFolderNodeId = getMyNodeId();
 
         // create folder
@@ -229,12 +233,12 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             // also show that we continue with minor versions
             cnt = 2;
             versionLabel = updateFileVersions(user1, docId, cnt, textContentSuffix, verCnt, null, versionLabel);
-            verCnt = verCnt+cnt;
+            verCnt = verCnt + cnt;
 
             // now create some major versions
             cnt = 3;
             versionLabel = updateFileVersions(user1, docId, cnt, textContentSuffix, verCnt, true, versionLabel);
-            verCnt = verCnt+cnt;
+            verCnt = verCnt + cnt;
 
             assertEquals("3.0", versionLabel);
             assertEquals(6, verCnt);
@@ -263,7 +267,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
     public void testDeleteVersion() throws Exception
     {
         setRequestContext(user1);
-        
+
         String sharedFolderNodeId = getSharedNodeId();
 
         // create folder
@@ -291,7 +295,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             // -ve tests:
             {
                 setRequestContext(null);
-                
+
                 // -ve test - unauthenticated - belts-and-braces ;-)
                 delete(getNodeVersionsUrl(docId), "1.0", null, 401);
 
@@ -313,7 +317,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             }
 
             setRequestContext(user1);
-            
+
             delete(getNodeVersionsUrl(docId), "1.0", null, 204);
 
             response = getAll(getNodeVersionsUrl(docId), null, null, 200);
@@ -324,10 +328,10 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             response = getSingle(URL_NODES, docId, 200);
             Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals("1.3", nodeResp.getProperties().get("cm:versionLabel"));
-            
+
             response = getSingle(getNodeContentUrl(docId), null, 200);
-            assertEquals(textContentSuffix+"4", response.getResponse());
-            
+            assertEquals(textContentSuffix + "4", response.getResponse());
+
             // delete current (most recent) version
             delete(getNodeVersionsUrl(docId), "1.3", null, 204);
 
@@ -341,7 +345,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals("1.2", nodeResp.getProperties().get("cm:versionLabel"));
 
             response = getSingle(getNodeContentUrl(docId), null, 200);
-            assertEquals(textContentSuffix+"3", response.getResponse());
+            assertEquals(textContentSuffix + "3", response.getResponse());
 
             // delete another version
             delete(getNodeVersionsUrl(docId), "1.1", null, 204);
@@ -356,23 +360,12 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals("1.2", nodeResp.getProperties().get("cm:versionLabel"));
 
             response = getSingle(getNodeContentUrl(docId), null, 200);
-            assertEquals(textContentSuffix+"3", response.getResponse());
+            assertEquals(textContentSuffix + "3", response.getResponse());
 
             // -ve test - cannot delete last version (via delete version api call) (see REPO-835 & REPO-834)
             delete(getNodeVersionsUrl(docId), "1.2", null, 422);
 
-            /* note: currently we cannot delete last version so this is not applicable
-            // check live node - removing last version does not (currently) remove versionable aspect
-            response = getSingle(URL_NODES, docId, 200);
-            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
-            assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
-            Map<String, Object> props = nodeResp.getProperties();
-            if (props != null)
-            {
-                assertNull(props.get("cm:versionLabel"));
-                assertNull(props.get("cm:versionType")); // note: see special fix in delete version API (at least for now)
-            }
-            */
+            /* note: currently we cannot delete last version so this is not applicable // check live node - removing last version does not (currently) remove versionable aspect response = getSingle(URL_NODES, docId, 200); nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class); assertTrue(nodeResp.getAspectNames().contains("cm:versionable")); Map<String, Object> props = nodeResp.getProperties(); if (props != null) { assertNull(props.get("cm:versionLabel")); assertNull(props.get("cm:versionType")); // note: see special fix in delete version API (at least for now) } */
 
             response = getAll(getNodeVersionsUrl(docId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
@@ -385,12 +378,12 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
             PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
 
-            response = putBinary(getNodeContentUrl(docId), payload, null,  null, 200);
+            response = putBinary(getNodeContentUrl(docId), payload, null, null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
             assertEquals("1.3", nodeResp.getProperties().get("cm:versionLabel"));
             assertEquals("MINOR", nodeResp.getProperties().get("cm:versionType"));
-            
+
             // remove versionable aspect (this will clear the history and disable versioning)
             response = getSingle(URL_NODES, docId, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
@@ -411,20 +404,20 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
                 assertNull(props.get("cm:versionLabel"));
                 assertNull(props.get("cm:versionType"));
             }
-            
+
             response = getAll(getNodeVersionsUrl(docId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
-            
+
             // Update again ..
             textContent = "more changes 1";
             inputStream = new ByteArrayInputStream(textContent.getBytes());
             txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
             payload = new PublicApiHttpClient.BinaryPayload(txtFile);
-            response = putBinary(getNodeContentUrl(docId), payload, null,  null, 200);
+            response = putBinary(getNodeContentUrl(docId), payload, null, null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertFalse(nodeResp.getAspectNames().contains("cm:versionable"));
-            
+
             // re-enable versioning (default model properties should cause initial version to be created as 1.0)
             response = getSingle(URL_NODES, docId, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
@@ -452,7 +445,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
             payload = new PublicApiHttpClient.BinaryPayload(txtFile);
 
-            response = putBinary(getNodeContentUrl(docId), payload, null,  null, 200);
+            response = putBinary(getNodeContentUrl(docId), payload, null, null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
             props = nodeResp.getProperties();
@@ -477,23 +470,29 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
     /**
      * This test helper method uses "overwrite=true" to create one or more new versions, including the initial create if needed.
      *
-     * If the file does not already exist (currentVersionLabel should be null) and majorVersionIn is also null
-     * then the first version is created as MAJOR (1.0) and subsequent versions are created as MINOR.
+     * If the file does not already exist (currentVersionLabel should be null) and majorVersionIn is also null then the first version is created as MAJOR (1.0) and subsequent versions are created as MINOR.
      *
      * @param userId
-     * @param parentFolderNodeId - parent folder
-     * @param fileName - file name
-     * @param cnt - number of new versions (>= 1)
-     * @param textContentPrefix - prefix for text content
-     * @param currentVersionCounter - overall version counter, used as a suffix in text content and version comment
-     * @param majorVersionIn - if null then false, if true then create MAJOR versions else if false create MINOR versions
-     * @param currentVersionLabel - the current version label (if file already exists)
+     * @param parentFolderNodeId
+     *            - parent folder
+     * @param fileName
+     *            - file name
+     * @param cnt
+     *            - number of new versions (>= 1)
+     * @param textContentPrefix
+     *            - prefix for text content
+     * @param currentVersionCounter
+     *            - overall version counter, used as a suffix in text content and version comment
+     * @param majorVersionIn
+     *            - if null then false, if true then create MAJOR versions else if false create MINOR versions
+     * @param currentVersionLabel
+     *            - the current version label (if file already exists)
      * @return
      * @throws Exception
      */
     private Pair<String, String> uploadTextFileVersions(String userId, String parentFolderNodeId, String fileName, int cnt,
-                                                        String textContentPrefix, int currentVersionCounter,
-                                                        final Boolean majorVersionIn, String currentVersionLabel) throws Exception
+            String textContentPrefix, int currentVersionCounter,
+            final Boolean majorVersionIn, String currentVersionLabel) throws Exception
     {
         Map<String, String> params = new HashMap<>();
         params.put(Nodes.PARAM_OVERWRITE, "true");
@@ -527,7 +526,8 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             {
                 majorVer++;
                 minorVer = 0;
-            } else
+            }
+            else
             {
                 minorVer++;
             }
@@ -554,29 +554,33 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals((expectedMajorVersion ? "MAJOR" : "MINOR"), nodeResp.getProperties().get("cm:versionType"));
         }
 
-        return new Pair<String,String>(currentVersionLabel, docId);
+        return new Pair<String, String>(currentVersionLabel, docId);
     }
 
     /**
      * Tests api when uploading a file and then updating with a new version
      *
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
      *
-     * <p>PUT:</p>
+     * <p>
+     * PUT:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
      *
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/content}
+     * <p>
+     * GET:
+     * </p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/content}
      */
     @Test
     public void testUploadFileVersionUpdate() throws Exception
     {
         // As user 1 ...
         setRequestContext(user1);
-        
+
         String myFolderNodeId = getMyNodeId();
 
         // create folder
@@ -593,12 +597,12 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
             String textContentSuffix = "The quick brown fox jumps over the lazy dog ";
             String contentName = "content " + System.currentTimeMillis();
-            String content = textContentSuffix+verCnt;
+            String content = textContentSuffix + verCnt;
 
             Document documentResp = createTextFile(myFolderNodeId, contentName, content, "UTF-8", null);
             String d1Id = documentResp.getId();
 
-            String versionId = majorVersion+"."+minorVersion;
+            String versionId = majorVersion + "." + minorVersion;
 
             HttpResponse response = getSingle(URL_NODES, d1Id, 200);
             Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
@@ -630,14 +634,14 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
                 minorVersion++;
 
                 // Update
-                content = textContentSuffix+verCnt;
+                content = textContentSuffix + verCnt;
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(content.getBytes());
                 File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
                 PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
 
                 putBinary(getNodeContentUrl(d1Id), payload, null, null, 200);
 
-                versionId = majorVersion+"."+minorVersion;
+                versionId = majorVersion + "." + minorVersion;
 
                 // get live node
                 response = getSingle(URL_NODES, d1Id, 200);
@@ -679,7 +683,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             }
 
             // ... and then restore again
-            post(URL_DELETED_NODES+"/"+d1Id+"/restore", null, null, 200);
+            post(URL_DELETED_NODES + "/" + d1Id + "/restore", null, null, 200);
 
             response = getAll(getNodeVersionsUrl(d1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
@@ -687,7 +691,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
             {
                 setRequestContext(null);
-                
+
                 // -ve test - unauthenticated - belts-and-braces ;-)
                 getAll(getNodeVersionsUrl(d1Id), paging, null, 401);
 
@@ -708,7 +712,9 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
     /**
      * Tests revert (ie. promote older version to become the latest/most recent version).
      *
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/revert}
      */
     @Test
@@ -716,7 +722,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
     {
         // As user 1 ...
         setRequestContext(user1);
-        
+
         String sharedFolderNodeId = getSharedNodeId();
 
         // create folder
@@ -724,7 +730,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
         try
         {
-            f1Id = createFolder(sharedFolderNodeId, "testRevert-f1-"+System.currentTimeMillis()).getId();
+            f1Id = createFolder(sharedFolderNodeId, "testRevert-f1-" + System.currentTimeMillis()).getId();
 
             int majorVersion = 1;
             int minorVersion = 0;
@@ -732,11 +738,11 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
             String textContentSuffix = "The quick brown fox jumps over the lazy dog ";
             String contentName = "content " + System.currentTimeMillis();
-            String content = textContentSuffix+verCnt;
+            String content = textContentSuffix + verCnt;
 
             String updateVerCommentSuffix = "Update comment ";
             Map<String, String> params = new HashMap<>();
-            params.put(Nodes.PARAM_VERSION_COMMENT, updateVerCommentSuffix+verCnt);
+            params.put(Nodes.PARAM_VERSION_COMMENT, updateVerCommentSuffix + verCnt);
 
             // Upload text file - versioning is currently auto enabled on upload (create file via multi-part/form-data)
             Document documentResp = createTextFile(f1Id, contentName, content, "UTF-8", params);
@@ -750,13 +756,13 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
                 minorVersion++;
 
                 // Update
-                content = textContentSuffix+verCnt;
+                content = textContentSuffix + verCnt;
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(content.getBytes());
                 File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
                 PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
 
                 params = new HashMap<>();
-                params.put(Nodes.PARAM_VERSION_COMMENT, updateVerCommentSuffix+verCnt);
+                params.put(Nodes.PARAM_VERSION_COMMENT, updateVerCommentSuffix + verCnt);
 
                 putBinary(getNodeContentUrl(d1Id), payload, null, params, 200);
             }
@@ -779,11 +785,11 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             int revertCnt = 3;
             for (int i = 1; i <= revertCnt; i++)
             {
-                String revertVersionId = revertMajorVersion+"."+revertMinorVersion;
+                String revertVersionId = revertMajorVersion + "." + revertMinorVersion;
 
                 VersionOptions versionOptions = new VersionOptions();
                 versionOptions.setMajorVersion(true);
-                versionOptions.setComment(revertVerCommentSuffix+i);
+                versionOptions.setComment(revertVerCommentSuffix + i);
 
                 post(getNodeVersionRevertUrl(d1Id, revertVersionId), toJsonAsStringNonNull(versionOptions), null, 200);
 
@@ -800,21 +806,21 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(verCnt, nodes.size());
 
-            //  check version labels and content - most recently reverted, eg. version labels 4.0, 3.0, 2.0
+            // check version labels and content - most recently reverted, eg. version labels 4.0, 3.0, 2.0
             List<Node> revertedNodes = nodes.subList(0, revertCnt);
             checkVersionHistoryAndContent(d1Id, revertedNodes, updateCnt, textContentSuffix, revertVerCommentSuffix, majorVersion, 0, true);
 
             // check version labels and content - the rest of the version history (prior to reverted), eg. version labels 1.3, 1.2, 1.1, 1.0
             minorVersion = 3;
             List<Node> originalUpdatedNodes = nodes.subList(revertCnt, nodes.size());
-            checkVersionHistoryAndContent(d1Id, originalUpdatedNodes, updateCnt+1, textContentSuffix, updateVerCommentSuffix, 1, minorVersion, false);
+            checkVersionHistoryAndContent(d1Id, originalUpdatedNodes, updateCnt + 1, textContentSuffix, updateVerCommentSuffix, 1, minorVersion, false);
 
             // Currently, we also allow the most recent version to be reverted (ie. not disallowed by underlying VersionService)
-            post(getNodeVersionRevertUrl(d1Id, majorVersion+".0"), "{}", null, 200);
+            post(getNodeVersionRevertUrl(d1Id, majorVersion + ".0"), "{}", null, 200);
 
             {
                 setRequestContext(null);
-                
+
                 // -ve test - unauthenticated - belts-and-braces ;-)
                 post(getNodeVersionRevertUrl(d1Id, "1.0"), "{}", null, 401);
 
@@ -850,7 +856,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
         // also download and check the versioned content
         for (Node versionNode : nodesWithProps)
         {
-            versionId = majorVersion+"."+minorVersion;
+            versionId = majorVersion + "." + minorVersion;
 
             assertEquals(versionId, versionNode.getId());
             assertEquals(versionId, versionNode.getProperties().get("cm:versionLabel"));
@@ -867,12 +873,12 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertNull(versionNode.getCreatedByUser());
             assertNull(versionNode.getCreatedAt());
 
-            assertEquals((verCommentSuffix != null ? verCommentSuffix+verCnt : null), versionNode.getVersionComment());
+            assertEquals((verCommentSuffix != null ? verCommentSuffix + verCnt : null), versionNode.getVersionComment());
 
             // Download version content - by default with Content-Disposition header
-            HttpResponse response = getSingle(getNodeVersionsUrl(docId), versionId+"/content", null, 200);
+            HttpResponse response = getSingle(getNodeVersionsUrl(docId), versionId + "/content", null, 200);
             String textContent = response.getResponse();
-            assertEquals(textContentSuffix+verCnt, textContent);
+            assertEquals(textContentSuffix + verCnt, textContent);
 
             if (majorVersions)
             {
@@ -891,23 +897,27 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
     /**
      * Tests api when uploading a file and then updating with a new version
      *
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
      *
-     * <p>PUT:</p>
+     * <p>
+     * PUT:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
      *
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/content}
+     * <p>
+     * GET:
+     * </p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/content}
      */
     @Test
     public void testCreateEmptyFileVersionUpdate() throws Exception
     {
         // As user 1 ...
         setRequestContext(user1);
-        
+
         String myFolderNodeId = getMyNodeId();
 
         // create folder
@@ -1002,7 +1012,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
                 verCnt++;
 
                 // get version info
-                versionId = "1."+i;
+                versionId = "1." + i;
                 response = getSingle(getNodeVersionsUrl(d1Id), versionId, null, 200);
                 node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
                 assertEquals(versionId, node.getProperties().get("cm:versionLabel"));
@@ -1010,12 +1020,12 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
                 response = getAll(getNodeVersionsUrl(d1Id), paging, null, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-                assertEquals(i+1, nodes.size());
+                assertEquals(i + 1, nodes.size());
             }
 
-            int totalVerCnt = cntAfter+1;
-            int minorVersion = totalVerCnt-1;
-            verCnt = cntBefore+cntAfter;
+            int totalVerCnt = cntAfter + 1;
+            int minorVersion = totalVerCnt - 1;
+            verCnt = cntBefore + cntAfter;
 
             params = new HashMap<>();
             params.put("include", "properties");
@@ -1035,11 +1045,11 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             }
 
             // ... and then restore again
-            post(URL_DELETED_NODES+"/"+d1Id+"/restore", null, null, 200);
+            post(URL_DELETED_NODES + "/" + d1Id + "/restore", null, null, 200);
 
             response = getAll(getNodeVersionsUrl(d1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            assertEquals(cntAfter+1, nodes.size());
+            assertEquals(cntAfter + 1, nodes.size());
 
             //
             // -ve tests
@@ -1047,7 +1057,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
             {
                 setRequestContext(null);
-                
+
                 // -ve test - unauthenticated - belts-and-braces ;-)
                 getAll(getNodeVersionsUrl(d1Id), paging, null, 401);
 
@@ -1059,13 +1069,13 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
                 //
                 // -ve tests for non-versionable node with no version history (could be content, folder or some other node type)
                 //
-                
+
                 // folder node - no version history
                 String f99Id = createFolder(f1Id, "f99").getId();
                 getSingle(getNodeVersionsUrl(f99Id), "1.0", null, 404);
                 getSingle(getNodeVersionsUrl(f99Id), "1.0/content", null, 404);
-                
-                //content node - no version history
+
+                // content node - no version history
                 n = new Node();
                 n.setName("z1");
                 n.setNodeType(TYPE_CM_CONTENT);
@@ -1115,7 +1125,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
         documentResp = updateTextFile(docId, content, params);
         assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
         assertNotNull(documentResp.getProperties());
-        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+        assertEquals(majorVersion + "." + minorVersion, documentResp.getProperties().get("cm:versionLabel"));
 
         final String contentNodeId = documentResp.getId();
 
@@ -1126,23 +1136,27 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(contentInfo);
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
 
-        HttpResponse dauResponse = post(getRequestVersionDirectAccessUrl(contentNodeId, majorVersion+"."+minorVersion), null, null, null, null, 501);
+        HttpResponse dauResponse = post(getRequestVersionDirectAccessUrl(contentNodeId, majorVersion + "." + minorVersion), null, null, null, null, 501);
     }
 
     /**
      * Test version creation when updating file binary content.
      *
-     * <p>PUT:</p>
+     * <p>
+     * PUT:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
      *
-     * <p>POST:</p>
+     * <p>
+     * POST:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
      */
     @Test
     public void testUpdateFileVersionCreate() throws Exception
     {
         setRequestContext(user1);
-        
+
         String myNodeId = getMyNodeId();
 
         Document d1 = new Document();
@@ -1177,29 +1191,29 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
         int majorVersion = 1;
         int minorVersion = 0;
 
-        String content = "The quick brown fox jumps over the lazy dog "+cnt;
+        String content = "The quick brown fox jumps over the lazy dog " + cnt;
 
         Map<String, String> params = new HashMap<>();
-        params.put("comment", "my version "+cnt);
+        params.put("comment", "my version " + cnt);
 
         documentResp = updateTextFile(docId, content, params);
         assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
         assertNotNull(documentResp.getProperties());
 
-        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+        assertEquals(majorVersion + "." + minorVersion, documentResp.getProperties().get("cm:versionLabel"));
 
         // Update again - with another version comment
         cnt++;
         minorVersion++;
 
-        content = "The quick brown fox jumps over the lazy dog "+cnt;
+        content = "The quick brown fox jumps over the lazy dog " + cnt;
         params = new HashMap<>();
-        params.put("comment", "my version "+cnt);
+        params.put("comment", "my version " + cnt);
 
         documentResp = updateTextFile(docId, content, params);
         assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
         assertNotNull(documentResp.getProperties());
-        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+        assertEquals(majorVersion + "." + minorVersion, documentResp.getProperties().get("cm:versionLabel"));
 
         minorVersion = 0;
 
@@ -1209,16 +1223,16 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             cnt++;
             majorVersion++;
 
-            content = "The quick brown fox jumps over the lazy dog "+cnt;
+            content = "The quick brown fox jumps over the lazy dog " + cnt;
 
             params = new HashMap<>();
-            params.put("comment", "my version "+cnt);
+            params.put("comment", "my version " + cnt);
             params.put("majorVersion", "true");
 
             documentResp = updateTextFile(docId, content, params);
             assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
             assertNotNull(documentResp.getProperties());
-            assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+            assertEquals(majorVersion + "." + minorVersion, documentResp.getProperties().get("cm:versionLabel"));
         }
 
         // Updates - minor versions
@@ -1227,16 +1241,16 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             cnt++;
             minorVersion++;
 
-            content = "The quick brown fox jumps over the lazy dog "+cnt;
+            content = "The quick brown fox jumps over the lazy dog " + cnt;
 
             params = new HashMap<>();
-            params.put("comment", "my version "+cnt);
+            params.put("comment", "my version " + cnt);
             params.put("majorVersion", "false");
 
             documentResp = updateTextFile(docId, content, params);
             assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
             assertNotNull(documentResp.getProperties());
-            assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+            assertEquals(majorVersion + "." + minorVersion, documentResp.getProperties().get("cm:versionLabel"));
         }
 
         // Update again - as another major version
@@ -1244,16 +1258,16 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
         majorVersion++;
         minorVersion = 0;
 
-        content = "The quick brown fox jumps over the lazy dog "+cnt;
+        content = "The quick brown fox jumps over the lazy dog " + cnt;
 
         params = new HashMap<>();
-        params.put("comment", "my version "+cnt);
+        params.put("comment", "my version " + cnt);
         params.put("majorVersion", "true");
 
         documentResp = updateTextFile(docId, content, params);
         assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
         assertNotNull(documentResp.getProperties());
-        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+        assertEquals(majorVersion + "." + minorVersion, documentResp.getProperties().get("cm:versionLabel"));
 
         // Update again - as another (minor) version
         // note: no version params (comment &/or majorVersion) needed since versioning is enabled on this content
@@ -1261,12 +1275,12 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
         cnt++;
         minorVersion++;
 
-        content = "The quick brown fox jumps over the lazy dog "+cnt;
+        content = "The quick brown fox jumps over the lazy dog " + cnt;
 
         documentResp = updateTextFile(docId, content, null);
         assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
         assertNotNull(documentResp.getProperties());
-        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+        assertEquals(majorVersion + "." + minorVersion, documentResp.getProperties().get("cm:versionLabel"));
 
         // Remove versionable aspect
         List<String> aspectNames = documentResp.getAspectNames();
@@ -1297,7 +1311,9 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
     /**
      * Test version history paging.
      *
-     * <p>GET:</p>
+     * <p>
+     * GET:
+     * </p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/versions}
      */
     @Test
@@ -1305,13 +1321,13 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
     {
         // create folder
         setRequestContext(user1);
-        
+
         String f1Id = null;
 
         try
         {
             f1Id = createFolder(Nodes.PATH_MY, "testVersionHistoryPaging-f1").getId();
-            
+
             String textContentSuffix = "Amazingly few discotheques provide jukeboxes ";
             String contentName = "content-1";
 
@@ -1328,7 +1344,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals(cnt, nodes.size());
 
             // Sanity Test paging
-            
+
             // SkipCount=0,MaxItems=2
             Paging paging = getPaging(0, 2);
             response = getAll(getNodeVersionsUrl(docId), paging, 200);

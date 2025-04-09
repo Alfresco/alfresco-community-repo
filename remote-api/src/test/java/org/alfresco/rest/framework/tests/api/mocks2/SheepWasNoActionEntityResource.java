@@ -35,9 +35,9 @@ import org.alfresco.rest.framework.tests.api.mocks.Sheep;
  * 
  * @author Gethin James
  */
-@EntityResource(name="sheepnoaction",title="Sheep No Action has been deprecated.")
+@EntityResource(name = "sheepnoaction", title = "Sheep No Action has been deprecated.")
 @Deprecated
-public class SheepWasNoActionEntityResource implements EntityResourceAction.ReadById<Sheep> 
+public class SheepWasNoActionEntityResource implements EntityResourceAction.ReadById<Sheep>
 {
 
     @Override

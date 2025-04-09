@@ -31,7 +31,8 @@
  * @author Silviu Dinuta
  * @since 2.6
  */
-@WebApi(name="gs", scope=Api.SCOPE.PUBLIC, version=1)
+@WebApi(name = "gs", scope = Api.SCOPE.PUBLIC, version = 1)
 package org.alfresco.rm.rest.api.transfercontainers;
+
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.WebApi;

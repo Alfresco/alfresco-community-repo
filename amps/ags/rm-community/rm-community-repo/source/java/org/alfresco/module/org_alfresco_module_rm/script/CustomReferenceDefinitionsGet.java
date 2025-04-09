@@ -27,8 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import static org.alfresco.util.WebScriptUtils.getRequestParameterValue;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+
+import static org.alfresco.util.WebScriptUtils.getRequestParameterValue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,13 +38,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipType;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipType;
 
 /**
  * Implementation for Java backed webscript to get RM custom reference definitions.
@@ -54,9 +56,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class CustomReferenceDefinitionsGet extends CustomReferenceDefinitionBase
 {
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -71,12 +71,11 @@ public class CustomReferenceDefinitionsGet extends CustomReferenceDefinitionBase
     }
 
     /**
-     * Gets the relationship definition for the unique name. If the unique
-     * name is blank all relationship definitions will be retrieved
+     * Gets the relationship definition for the unique name. If the unique name is blank all relationship definitions will be retrieved
      *
-     * @param uniqueName The unique name of the relationship definition
-     * @return Relationship definition for the given unique name or all
-     * relationship definitions if unique name is blank
+     * @param uniqueName
+     *            The unique name of the relationship definition
+     * @return Relationship definition for the given unique name or all relationship definitions if unique name is blank
      */
     private Set<RelationshipDefinition> getRelationshipDefinitons(String uniqueName)
     {
@@ -101,7 +100,8 @@ public class CustomReferenceDefinitionsGet extends CustomReferenceDefinitionBase
     /**
      * Creates relationship definition data for the ftl template
      *
-     * @param relationshipDefinitions The relationship definitions
+     * @param relationshipDefinitions
+     *            The relationship definitions
      * @return The relationship definition data
      */
     private List<Map<String, String>> createRelationshipDefinitionData(Set<RelationshipDefinition> relationshipDefinitions)
@@ -128,8 +128,8 @@ public class CustomReferenceDefinitionsGet extends CustomReferenceDefinitionBase
             {
                 StringBuilder sb = new StringBuilder();
                 sb.append("Unsupported relationship type '")
-                    .append(type)
-                    .append("'.");
+                        .append(type)
+                        .append("'.");
 
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST, sb.toString());
             }

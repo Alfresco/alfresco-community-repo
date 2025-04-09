@@ -25,12 +25,12 @@
  */
 package org.alfresco.repo.descriptor;
 
-import org.alfresco.service.descriptor.DescriptorService;
 import org.springframework.context.ApplicationEvent;
 
+import org.alfresco.service.descriptor.DescriptorService;
+
 /**
- * A class of event that notifies the listener of the availability of the {@link DescriptorService}. Useful for
- * Monitoring purposes.
+ * A class of event that notifies the listener of the availability of the {@link DescriptorService}. Useful for Monitoring purposes.
  * 
  * @author dward
  */

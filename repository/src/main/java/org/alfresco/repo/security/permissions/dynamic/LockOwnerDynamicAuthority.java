@@ -29,6 +29,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
@@ -40,9 +44,6 @@ import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * LockOwnerDynamicAuthority
@@ -50,18 +51,18 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class LockOwnerDynamicAuthority extends AbstractLifecycleBean implements DynamicAuthority
 {
     private LockService lockService;
-    
+
     private CheckOutCheckInService checkOutCheckInService;
-    
+
     private ModelDAO modelDAO;
-    
+
     private List<String> requiredFor;
-    
+
     private Set<PermissionReference> whenRequired;
-    
+
     public boolean hasAuthority(final NodeRef nodeRef, final String userName)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<Boolean>(){
+        return AuthenticationUtil.runAs(new RunAsWork<Boolean>() {
 
             public Boolean doWork() throws Exception
             {
@@ -78,10 +79,9 @@ public class LockOwnerDynamicAuthority extends AbstractLifecycleBean implements 
                 {
                     return false;
                 }
-            }}, AuthenticationUtil.getSystemUserName());
-        
-        
-        
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
     }
 
     public String getAuthority()
@@ -94,16 +94,16 @@ public class LockOwnerDynamicAuthority extends AbstractLifecycleBean implements 
     {
         ApplicationContext ctx = super.getApplicationContext();
         checkOutCheckInService = (CheckOutCheckInService) ctx.getBean("checkOutCheckInService");
-        
+
         PropertyCheck.mandatory(this, "lockService", lockService);
         PropertyCheck.mandatory(this, "checkOutCheckInService", checkOutCheckInService);
         PropertyCheck.mandatory(this, "modelDAO", modelDAO);
 
         // Build the permission set
-        if(requiredFor != null)
+        if (requiredFor != null)
         {
             whenRequired = new HashSet<PermissionReference>();
-            for(String permission : requiredFor)
+            for (String permission : requiredFor)
             {
                 PermissionReference permissionReference = modelDAO.getPermissionReference(null, permission);
                 whenRequired.addAll(modelDAO.getGranteePermissions(permissionReference));
@@ -117,8 +117,7 @@ public class LockOwnerDynamicAuthority extends AbstractLifecycleBean implements 
      */
     @Override
     protected void onShutdown(ApplicationEvent event)
-    {
-    }
+    {}
 
     /**
      * Set the lock service
@@ -127,11 +126,9 @@ public class LockOwnerDynamicAuthority extends AbstractLifecycleBean implements 
     {
         this.lockService = lockService;
     }
-    
+
     /**
-     * Service to get the check-in details.  This is not used for Spring configuration
-     * because it requires a permission-wrapped public service that in turn depends on
-     * this component.
+     * Service to get the check-in details. This is not used for Spring configuration because it requires a permission-wrapped public service that in turn depends on this component.
      */
     public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
     {
@@ -145,7 +142,7 @@ public class LockOwnerDynamicAuthority extends AbstractLifecycleBean implements 
     {
         this.modelDAO = modelDAO;
     }
-    
+
     /**
      * Set the permissions for which this dynamic authority is required
      */
@@ -153,7 +150,7 @@ public class LockOwnerDynamicAuthority extends AbstractLifecycleBean implements 
     {
         this.requiredFor = requiredFor;
     }
-    
+
     public Set<PermissionReference> requiredFor()
     {
         return whenRequired;

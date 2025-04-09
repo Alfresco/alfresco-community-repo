@@ -32,6 +32,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CharStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.Token;
+import org.antlr.runtime.tree.CommonTree;
+import org.antlr.runtime.tree.Tree;
+
 import org.alfresco.repo.search.adaptor.AnalysisMode;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.Column;
@@ -54,31 +62,24 @@ import org.alfresco.repo.search.impl.querymodel.impl.functions.FTSWildTerm;
 import org.alfresco.repo.search.impl.querymodel.impl.functions.PropertyAccessor;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.util.ISO9075;
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CharStream;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.Token;
-import org.antlr.runtime.tree.CommonTree;
-import org.antlr.runtime.tree.Tree;
 
 public class FTSQueryParser
 {
-	public static enum RerankPhase
-	{
-		SINGLE_PASS, SINGLE_PASS_WITH_AUTO_PHRASE, QUERY_PHASE, RERANK_PHASE;
-	}
-	
+    public static enum RerankPhase
+    {
+        SINGLE_PASS, SINGLE_PASS_WITH_AUTO_PHRASE, QUERY_PHASE, RERANK_PHASE;
+    }
+
     private static TestNodeBuilder testNodeBuilder = new TestNodeBuilder();
-    
+
     public static void setTestNodeBuilder(TestNodeBuilder tnb)
     {
         testNodeBuilder = tnb;
     }
-    
+
     static final String KEY_REPLACELONESTAR = "KEY_REPLACELONESTAR";
     static final String VALUE_REPLACELONESTAR = "ISNODE:T";
-    
+
     @SuppressWarnings("unused")
     static public Constraint buildFTS(String ftsExpression, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext, Selector selector,
             Map<String, Column> columnMap, FTSParser.Mode mode, Connective defaultFieldConnective, Map<String, String> templates, String defaultField, RerankPhase rerankPhase)
@@ -94,7 +95,7 @@ public class FTSQueryParser
             templates = new HashMap<String, String>();
         }
         templates.put(KEY_REPLACELONESTAR, VALUE_REPLACELONESTAR);
-        
+
         for (String name : templates.keySet())
         {
             FTSParser parser = null;
@@ -109,7 +110,7 @@ public class FTSQueryParser
                 parser.setMode(mode);
                 parser.setDefaultFieldConjunction(defaultFieldConnective == Connective.AND ? true : false);
                 CommonTree ftsNode = (CommonTree) parser.ftsQuery().getTree();
-                //Check for duplicate template of properties e.g. NAME, name and NaMe.
+                // Check for duplicate template of properties e.g. NAME, name and NaMe.
                 if (templateTrees.containsKey(name.toLowerCase()))
                 {
                     throw new FTSQueryException("Duplicate template of property: " + name);
@@ -125,8 +126,8 @@ public class FTSQueryParser
                     String hdr = parser.getErrorHeader(e);
                     String msg = parser.getErrorMessage(e, tokenNames);
                     throw new FTSQueryException(hdr + "\n" + msg, e);
-                 }
-                 return null;
+                }
+                return null;
             }
         }
 
@@ -141,7 +142,7 @@ public class FTSQueryParser
             parser.setDefaultFieldConjunction(defaultFieldConnective == Connective.AND ? true : false);
             CommonTree ftsNode = (CommonTree) parser.ftsQuery().getTree();
             // Rewrite for auto phrase
-            if(rerankPhase != RerankPhase.RERANK_PHASE.SINGLE_PASS)
+            if (rerankPhase != RerankPhase.RERANK_PHASE.SINGLE_PASS)
             {
                 ftsNode = autoPhraseReWrite(ftsNode, defaultFieldConnective == Connective.AND ? true : false, rerankPhase);
             }
@@ -161,118 +162,119 @@ public class FTSQueryParser
 
     }
 
-    private static CommonTree autoPhraseReWrite(CommonTree node, boolean defaultConjunction, RerankPhase rerankPhase) {
-    	if(node == null)
-    	{
-    		return node;
-    	}
-    	CommonTree newNode = new CommonTree(node);
-		if(isAutoPhrasable(node, defaultConjunction))
-		{
-			StringBuilder phrase = new StringBuilder();
-			LinkedList<CommonTree> autoPhrased = new LinkedList<CommonTree>();
-			for (Object current : node.getChildren())
-			{
-				CommonTree child = (CommonTree)current;
-				if((child.getType() ==  FTSParser.MANDATORY) || (child.getType() ==  FTSParser.DEFAULT))
-    			{
-    				if(child.getChildCount() > 0)
-    				{
-    					CommonTree term = (CommonTree)child.getChild(0);
-    					if((term.getType() == FTSParser.TERM) && (term.getChildCount() == 1))
-    					{
-    						String termText = getText((List<Tree>) term.getChildren());
-    						if(phrase.length() > 0)
-    						{
-    							phrase.append(" ");
-    						}
-    						phrase.append(termText);
-    						autoPhrased.add(child);
-    					}
-    					else
-    					{
-    						CommonTree newChild = autoPhraseReWrite(child, defaultConjunction, rerankPhase);
-    						newNode.addChild(newChild);
-    					}
-    					
-    				}
-    			}
-    			else
-    			{
-    				CommonTree newChild = autoPhraseReWrite(child, defaultConjunction, rerankPhase);
-					newNode.addChild(newChild);
-    			}
-			}
-			CommonTree disjunction = new CommonTree(new DisjunctionToken());
-			newNode.addChild(disjunction);
+    private static CommonTree autoPhraseReWrite(CommonTree node, boolean defaultConjunction, RerankPhase rerankPhase)
+    {
+        if (node == null)
+        {
+            return node;
+        }
+        CommonTree newNode = new CommonTree(node);
+        if (isAutoPhrasable(node, defaultConjunction))
+        {
+            StringBuilder phrase = new StringBuilder();
+            LinkedList<CommonTree> autoPhrased = new LinkedList<CommonTree>();
+            for (Object current : node.getChildren())
+            {
+                CommonTree child = (CommonTree) current;
+                if ((child.getType() == FTSParser.MANDATORY) || (child.getType() == FTSParser.DEFAULT))
+                {
+                    if (child.getChildCount() > 0)
+                    {
+                        CommonTree term = (CommonTree) child.getChild(0);
+                        if ((term.getType() == FTSParser.TERM) && (term.getChildCount() == 1))
+                        {
+                            String termText = getText((List<Tree>) term.getChildren());
+                            if (phrase.length() > 0)
+                            {
+                                phrase.append(" ");
+                            }
+                            phrase.append(termText);
+                            autoPhrased.add(child);
+                        }
+                        else
+                        {
+                            CommonTree newChild = autoPhraseReWrite(child, defaultConjunction, rerankPhase);
+                            newNode.addChild(newChild);
+                        }
 
-			if(rerankPhase == RerankPhase.SINGLE_PASS_WITH_AUTO_PHRASE)
-			{
-				CommonTree termConjuctionLink = new CommonTree(new DefaultToken());
-				disjunction.addChild(termConjuctionLink);
-				CommonTree termConjunction = new CommonTree(new ConjunctionToken());
-				termConjuctionLink.addChild(termConjunction);
-				for(CommonTree phrased : autoPhrased)
-				{
-					CommonTree newPhrased = autoPhraseReWrite(phrased, defaultConjunction, rerankPhase);
-					termConjunction.addChild(newPhrased);
-				}
-			}
+                    }
+                }
+                else
+                {
+                    CommonTree newChild = autoPhraseReWrite(child, defaultConjunction, rerankPhase);
+                    newNode.addChild(newChild);
+                }
+            }
+            CommonTree disjunction = new CommonTree(new DisjunctionToken());
+            newNode.addChild(disjunction);
 
+            if (rerankPhase == RerankPhase.SINGLE_PASS_WITH_AUTO_PHRASE)
+            {
+                CommonTree termConjuctionLink = new CommonTree(new DefaultToken());
+                disjunction.addChild(termConjuctionLink);
+                CommonTree termConjunction = new CommonTree(new ConjunctionToken());
+                termConjuctionLink.addChild(termConjunction);
+                for (CommonTree phrased : autoPhrased)
+                {
+                    CommonTree newPhrased = autoPhraseReWrite(phrased, defaultConjunction, rerankPhase);
+                    termConjunction.addChild(newPhrased);
+                }
+            }
 
-			CommonTree phraseLink = new CommonTree(new DefaultToken());
-			disjunction.addChild(phraseLink);
-			CommonTree phraseTree = new CommonTree(new PhraseToken());
-			phraseLink.addChild(phraseTree);
-			phraseTree.addChild(new CommonTree(new WordToken(phrase.toString())));
-			
-		}
-		else
-		{
-			if(node.getChildren() != null)
-			{
-				for (Object current : node.getChildren())
-				{
-					CommonTree child = (CommonTree) current;
-					CommonTree newChild = autoPhraseReWrite(child, defaultConjunction, rerankPhase);
-					newNode.addChild(newChild);
-				}
-			}
-		}
-		return newNode;
+            CommonTree phraseLink = new CommonTree(new DefaultToken());
+            disjunction.addChild(phraseLink);
+            CommonTree phraseTree = new CommonTree(new PhraseToken());
+            phraseLink.addChild(phraseTree);
+            phraseTree.addChild(new CommonTree(new WordToken(phrase.toString())));
+
+        }
+        else
+        {
+            if (node.getChildren() != null)
+            {
+                for (Object current : node.getChildren())
+                {
+                    CommonTree child = (CommonTree) current;
+                    CommonTree newChild = autoPhraseReWrite(child, defaultConjunction, rerankPhase);
+                    newNode.addChild(newChild);
+                }
+            }
+        }
+        return newNode;
     }
 
-    private static boolean isAutoPhrasable(CommonTree node, boolean defaultConjunction) {
-    	if((node.getType() == FTSParser.CONJUNCTION) && (node.getChildCount() > 1))
-    	{
-    		int simpleTermCount = 0;
-    		for (Object current : node.getChildren())
-    		{
-    			CommonTree child = (CommonTree) current;
-    			if((child.getType() ==  FTSParser.MANDATORY) || (child.getType() ==  FTSParser.DEFAULT))
-    			{
-    				if(child.getChildCount() > 0)
-    				{
-    					CommonTree item = (CommonTree)child.getChild(0);
-    					if((item.getType() == FTSParser.TERM) && (item.getChildCount() == 1))
-    					{
-    						simpleTermCount++;
-    					}
-    				}
-    			}
-    			else
-    			{
-    				return false;
-    			}
-    		}
-    		return simpleTermCount > 1;
-    	}
+    private static boolean isAutoPhrasable(CommonTree node, boolean defaultConjunction)
+    {
+        if ((node.getType() == FTSParser.CONJUNCTION) && (node.getChildCount() > 1))
+        {
+            int simpleTermCount = 0;
+            for (Object current : node.getChildren())
+            {
+                CommonTree child = (CommonTree) current;
+                if ((child.getType() == FTSParser.MANDATORY) || (child.getType() == FTSParser.DEFAULT))
+                {
+                    if (child.getChildCount() > 0)
+                    {
+                        CommonTree item = (CommonTree) child.getChild(0);
+                        if ((item.getType() == FTSParser.TERM) && (item.getChildCount() == 1))
+                        {
+                            simpleTermCount++;
+                        }
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return simpleTermCount > 1;
+        }
 
-    	return false;
+        return false;
 
     }
 
-	static private Constraint buildFTSConnective(CommonTree fieldReferenceNode, CommonTree node, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext,
+    static private Constraint buildFTSConnective(CommonTree fieldReferenceNode, CommonTree node, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext,
             Selector selector, Map<String, Column> columnMap, Map<String, CommonTree> templateTrees, String defaultField)
     {
         Connective connective;
@@ -381,7 +383,7 @@ public class FTSQueryParser
     protected static class TestNodeBuilder
     {
         protected CommonTree build(CommonTree fieldReferenceNode, CommonTree argNode, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext,
-            Selector selector, Map<String, Column> columnMap, Map<String, CommonTree> templateTrees, String defaultField)
+                Selector selector, Map<String, Column> columnMap, Map<String, CommonTree> templateTrees, String defaultField)
         {
             CommonTree testNode = argNode;
             // Check for template replacement
@@ -409,7 +411,7 @@ public class FTSQueryParser
             }
             else
             {
-                if(hasOptionalFieldReference(testNode))
+                if (hasOptionalFieldReference(testNode))
                 {
                     if (isStarWithNoField(testNode))
                     {
@@ -425,7 +427,7 @@ public class FTSQueryParser
                     }
                 }
             }
-            
+
             return testNode;
         }
     }
@@ -680,7 +682,7 @@ public class FTSQueryParser
         }
         return factory.createFunctionalConstraint(function, functionArguments);
     }
-    
+
     static private Constraint buildExactPhrase(Float fuzzy, CommonTree fieldReferenceNode, CommonTree testNode, QueryModelFactory factory,
             FunctionEvaluationContext functionEvaluationContext, Selector selector, Map<String, Column> columnMap)
     {
@@ -897,16 +899,16 @@ public class FTSQueryParser
         }
 
     }
-    
+
     static class WordToken implements Token
     {
-    	String text;
-    	
-    	WordToken(String text)
-    	{
-    		this.text = text;
-    	}
-    	
+        String text;
+
+        WordToken(String text)
+        {
+            this.text = text;
+        }
+
         public int getChannel()
         {
             // TODO Auto-generated method stub
@@ -990,7 +992,7 @@ public class FTSQueryParser
         }
 
     }
-    
+
     static class PhraseToken implements Token
     {
         public int getChannel()
@@ -1076,7 +1078,7 @@ public class FTSQueryParser
         }
 
     }
-    
+
     static class ConjunctionToken implements Token
     {
 
@@ -1291,10 +1293,10 @@ public class FTSQueryParser
             }
         }
         // if no ref found and it should have one we are creating one in place of the default
-        if(!foundRef && hasOptionalFieldReference(source))
+        if (!foundRef && hasOptionalFieldReference(source))
         {
             CommonTree newChild = copy(fieldReferenceNode);
-            newNode.addChild(newChild);      
+            newNode.addChild(newChild);
         }
         return newNode;
     }
@@ -1315,7 +1317,7 @@ public class FTSQueryParser
             return false;
         }
     }
-    
+
     private static boolean isStarWithNoField(CommonTree testNode)
     {
         if (testNode.getType() == FTSParser.TERM && testNode.getChildCount() == 1)
@@ -1328,7 +1330,7 @@ public class FTSQueryParser
         }
         return false;
     }
-    
+
     static private Constraint buildFuzzyTerm(Float fuzzy, CommonTree fieldReferenceNode, CommonTree testNode, QueryModelFactory factory,
             FunctionEvaluationContext functionEvaluationContext, Selector selector, Map<String, Column> columnMap)
     {
@@ -1383,7 +1385,7 @@ public class FTSQueryParser
         }
         return factory.createFunctionalConstraint(function, functionArguments);
     }
-    
+
     @SuppressWarnings("unchecked")
     static private Constraint buildExactWildTerm(CommonTree fieldReferenceNode, CommonTree testNode, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext,
             Selector selector, Map<String, Column> columnMap)
@@ -1439,7 +1441,7 @@ public class FTSQueryParser
         }
         return factory.createFunctionalConstraint(function, functionArguments);
     }
-    
+
     @SuppressWarnings("unchecked")
     static private Constraint buildExactPrefixTerm(CommonTree fieldReferenceNode, CommonTree testNode, QueryModelFactory factory, FunctionEvaluationContext functionEvaluationContext,
             Selector selector, Map<String, Column> columnMap)
@@ -1546,18 +1548,18 @@ public class FTSQueryParser
     static private String getText(List<? extends Object> nodes)
     {
         StringBuilder builder = new StringBuilder();
-        for(Object node : nodes)
-        {            
-            builder.append(getText((Tree)node, false));
+        for (Object node : nodes)
+        {
+            builder.append(getText((Tree) node, false));
         }
         return builder.toString();
     }
-    
+
     static private String getText(Tree node)
     {
         return getText(node, true);
     }
-    
+
     static private String getText(Tree node, boolean returnTextFromUnknownNodes)
     {
         String text = node.getText();
@@ -1624,7 +1626,7 @@ public class FTSQueryParser
         case FTSParser.DATETIME:
             return text;
         default:
-            if(returnTextFromUnknownNodes)
+            if (returnTextFromUnknownNodes)
             {
                 return text;
             }
@@ -1647,9 +1649,9 @@ public class FTSQueryParser
             {
                 if (c == 'u')
                 {
-                    if((i+4) < string.length())
+                    if ((i + 4) < string.length())
                     {
-                        char encoded = (char)Integer.parseInt(string.substring(i+1, i+5), 16);
+                        char encoded = (char) Integer.parseInt(string.substring(i + 1, i + 5), 16);
                         builder.append(encoded);
                         i += 4;
                     }

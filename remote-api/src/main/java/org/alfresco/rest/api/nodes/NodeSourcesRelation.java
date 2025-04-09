@@ -42,13 +42,14 @@ import org.alfresco.service.namespace.QNamePattern;
  * 
  * @author janv
  */
-@RelationshipResource(name = "sources",  entityResource = NodesEntityResource.class, title = "Node Sources")
+@RelationshipResource(name = "sources", entityResource = NodesEntityResource.class, title = "Node Sources")
 public class NodeSourcesRelation extends AbstractNodeRelation implements RelationshipResourceAction.Read<Node>
 {
     /**
      * List sources
      *
-     * @param targetNodeId String id of target node
+     * @param targetNodeId
+     *            String id of target node
      */
     @Override
     @WebApiDescription(title = "Return a paged list of sources nodes based on (peer) assocs")

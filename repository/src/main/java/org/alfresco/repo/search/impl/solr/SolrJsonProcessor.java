@@ -25,8 +25,9 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
-import org.alfresco.repo.search.SearchEngineResultMetadata;
 import org.json.JSONObject;
+
+import org.alfresco.repo.search.SearchEngineResultMetadata;
 
 /**
  * Processes Json returned from Solr

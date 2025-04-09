@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import javax.crypto.SealedObject;
 
 import org.alfresco.encryption.FallbackEncryptor;
@@ -46,12 +45,9 @@ import org.alfresco.service.namespace.QName;
 /**
  * Component to convert encrypt/decrypt properties.
  * <p/>
- * This is a helper; it is up to the client how and when encryption and decryption is done,
- * but metadata integrity enforcement will expect that encrypted properties are already
- * encrypted.
+ * This is a helper; it is up to the client how and when encryption and decryption is done, but metadata integrity enforcement will expect that encrypted properties are already encrypted.
  * <p/>
- * This class must <b>always</b> be used 
- * {@link AuthenticationUtil#runAs(org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork, String) running as 'system'}.
+ * This class must <b>always</b> be used {@link AuthenticationUtil#runAs(org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork, String) running as 'system'}.
  * 
  * @author Derek Hulley
  * @since 4.0
@@ -62,7 +58,8 @@ public class MetadataEncryptor
     private FallbackEncryptor encryptor;
 
     /**
-     * @param dictionaryService service to check if properties need encrypting
+     * @param dictionaryService
+     *            service to check if properties need encrypting
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -70,7 +67,8 @@ public class MetadataEncryptor
     }
 
     /**
-     * @param encryptor         the class that does the encryption/decryption
+     * @param encryptor
+     *            the class that does the encryption/decryption
      */
     public void setEncryptor(FallbackEncryptor encryptor)
     {
@@ -80,9 +78,11 @@ public class MetadataEncryptor
     /**
      * Encrypt a properties if the data definition (model-specific) requires it.
      * 
-     * @param propertyQName             the property qualified name
-     * @param inbound                   the property to encrypt
-     * @return                          the encrypted property or the original if encryption is not required
+     * @param propertyQName
+     *            the property qualified name
+     * @param inbound
+     *            the property to encrypt
+     * @return the encrypted property or the original if encryption is not required
      */
     public Serializable encrypt(QName propertyQName, Serializable inbound)
     {
@@ -99,13 +99,15 @@ public class MetadataEncryptor
         // Done
         return outbound;
     }
-    
+
     /**
      * Decrypt a property if the data definition (model-specific) requires it.
      * 
-     * @param propertyQName             the property qualified name
-     * @param inbound                   the property to decrypt
-     * @return                          the decrypted property or the original if it wasn't encrypted
+     * @param propertyQName
+     *            the property qualified name
+     * @param inbound
+     *            the property to decrypt
+     * @return the decrypted property or the original if it wasn't encrypted
      */
     public Serializable decrypt(QName propertyQName, Serializable inbound)
     {
@@ -120,23 +122,22 @@ public class MetadataEncryptor
         }
         try
         {
-	        Serializable outbound = encryptor.unsealObject(KeyProvider.ALIAS_METADATA, inbound);
-	        // Done
-	        return outbound;
+            Serializable outbound = encryptor.unsealObject(KeyProvider.ALIAS_METADATA, inbound);
+            // Done
+            return outbound;
         }
-        catch(KeyException e)
+        catch (KeyException e)
         {
-        	throw new AlfrescoRuntimeException("Invalid metadata decryption key", e);
+            throw new AlfrescoRuntimeException("Invalid metadata decryption key", e);
         }
     }
-    
+
     /**
-     * Encrypt properties if their data definition (model-specific) requires it.
-     * The values provided can be mixed; values will be encrypted only if required.
+     * Encrypt properties if their data definition (model-specific) requires it. The values provided can be mixed; values will be encrypted only if required.
      * 
-     * @param inbound                   the properties to encrypt
-     * @return                          a new map of values if some encryption occured
-     *                                  otherwise the original inbound map is returned
+     * @param inbound
+     *            the properties to encrypt
+     * @return a new map of values if some encryption occured otherwise the original inbound map is returned
      */
     public Map<QName, Serializable> encrypt(Map<QName, Serializable> inbound)
     {
@@ -173,14 +174,13 @@ public class MetadataEncryptor
         // Done
         return outbound;
     }
-    
+
     /**
-     * Decrypt properties if they are decryptable.  The values provided can be mixed;
-     * encrypted values will be sought out and decrypted.
+     * Decrypt properties if they are decryptable. The values provided can be mixed; encrypted values will be sought out and decrypted.
      * 
-     * @param inbound                   the properties to decrypt
-     * @return                          a new map of values if some decryption occured
-     *                                  otherwise the original inbound map is returned
+     * @param inbound
+     *            the properties to decrypt
+     * @return a new map of values if some decryption occured otherwise the original inbound map is returned
      */
     public Map<QName, Serializable> decrypt(Map<QName, Serializable> inbound)
     {
@@ -212,26 +212,26 @@ public class MetadataEncryptor
             // Have to decrypt the value
             try
             {
-	            Serializable unencryptedValue = encryptor.unsealObject(KeyProvider.ALIAS_METADATA, value);
-	            // Store it back
-	            outbound.put(propertyQName, unencryptedValue);
+                Serializable unencryptedValue = encryptor.unsealObject(KeyProvider.ALIAS_METADATA, value);
+                // Store it back
+                outbound.put(propertyQName, unencryptedValue);
             }
-            catch(KeyException e)
+            catch (KeyException e)
             {
-            	throw new AlfrescoRuntimeException("Invalid metadata decryption key", e);
+                throw new AlfrescoRuntimeException("Invalid metadata decryption key", e);
             }
         }
         // Done
         return outbound;
     }
-    
+
     public boolean keyAvailable(String keyAlias)
     {
-    	return encryptor.keyAvailable(keyAlias);
+        return encryptor.keyAvailable(keyAlias);
     }
-    
+
     public boolean backupKeyAvailable(String keyAlias)
     {
-    	return encryptor.backupKeyAvailable(keyAlias);
+        return encryptor.backupKeyAvailable(keyAlias);
     }
 }

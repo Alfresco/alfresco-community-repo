@@ -32,12 +32,13 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.alfresco.service.cmr.admin.RepoAdminService;
-import org.alfresco.service.namespace.QName;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.extensions.surf.util.I18NUtil;
+
+import org.alfresco.service.cmr.admin.RepoAdminService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * An interactive console for (first cut) Repository Admin Service / API.
@@ -47,8 +48,7 @@ public class RepoAdminInterpreter extends BaseInterpreter
 {
     // dependencies
     private RepoAdminService repoAdminService;
-      
-    
+
     public void setRepoAdminService(RepoAdminService repoAdminService)
     {
         this.repoAdminService = repoAdminService;
@@ -67,11 +67,12 @@ public class RepoAdminInterpreter extends BaseInterpreter
      *
      * TODO: Use decent parser!
      *
-     * @param line The unparsed command
+     * @param line
+     *            The unparsed command
      * @return The textual output of the command.
      */
     protected String executeCommand(String line)
-        throws IOException
+            throws IOException
     {
         String[] command = line.split(" ");
         if (command.length == 0)
@@ -131,10 +132,10 @@ public class RepoAdminInterpreter extends BaseInterpreter
                 {
                     return "Syntax Error.\n";
                 }
-                
+
                 ClassPathResource file = new ClassPathResource(command[2]);
                 InputStream fileStream = file.getInputStream();
-                
+
                 if (fileStream != null)
                 {
                     byte[] fileBytes = new byte[500];
@@ -156,31 +157,31 @@ public class RepoAdminInterpreter extends BaseInterpreter
                 {
                     out.println("No matching file found: " + command[2]);
                 }
-                    
+
                 out.println();
             }
-            
+
             else if (command[1].equals("file-list"))
             {
                 if (command.length != 3)
                 {
                     return "Syntax Error.\n";
                 }
-                
+
                 // note: classpath should be in form path1/path2/path3/name*
-                // wildcard * is allowed, e.g. abc/def/workflow-messages*.properties               
-                String pattern = "classpath*:" + command[2];                
+                // wildcard * is allowed, e.g. abc/def/workflow-messages*.properties
+                String pattern = "classpath*:" + command[2];
                 PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-               
+
                 Resource[] resources = resolver.getResources(pattern);
                 ArrayList<String> names = new ArrayList<String>();
-           
+
                 if (resources != null)
                 {
                     for (int i = 0; i < resources.length; i++)
                     {
                         String filename = resources[i].getFilename();
-                        if (! names.contains(filename))
+                        if (!names.contains(filename))
                         {
                             out.println("resource: " + filename + ", url: " + resources[i].getURL());
                             names.add(filename);
@@ -191,12 +192,12 @@ public class RepoAdminInterpreter extends BaseInterpreter
                 {
                     out.println("No matching files found: " + command[2]);
                 }
-            }            
-            
+            }
+
             else if (command[1].equals("models"))
             {
                 List<RepoModelDefinition> models = repoAdminService.getModels();
-                
+
                 if ((models != null) && (models.size() > 0))
                 {
                     for (RepoModelDefinition model : models)
@@ -209,11 +210,11 @@ public class RepoAdminInterpreter extends BaseInterpreter
                     out.println("No additional models have been deployed to the Alfresco Repository");
                 }
             }
-            
+
             else if (command[1].equals("messages"))
             {
                 List<String> messageResources = repoAdminService.getMessageBundles();
-                
+
                 if ((messageResources != null) && (messageResources.size() > 0))
                 {
                     for (String messageResourceName : messageResources)
@@ -227,126 +228,126 @@ public class RepoAdminInterpreter extends BaseInterpreter
                 }
             }
 
-            else 
+            else
             {
                 return "No such sub-command, try 'help'.\n";
             }
         }
-            
+
         else if (command[0].equals("deploy"))
         {
             if (command.length != 3)
             {
                 return "Syntax Error.\n";
             }
-            
+
             if (command[1].equals("model"))
             {
                 ClassPathResource file = new ClassPathResource(command[2]);
-                
+
                 InputStream fileStream = file.getInputStream();
-                
+
                 String modelFileName = file.getFilename();
                 repoAdminService.deployModel(fileStream, modelFileName);
                 out.println("Model deployed: " + modelFileName);
             }
-            
+
             else if (command[1].equals("messages"))
-            {                           
+            {
                 String bundleBasePath = command[2];
                 String bundleBaseName = repoAdminService.deployMessageBundle(bundleBasePath);
-                out.println("Message resource bundle deployed: " + bundleBaseName);              
+                out.println("Message resource bundle deployed: " + bundleBaseName);
             }
-     
-            else 
+
+            else
             {
                 return "No such sub-command, try 'help'.\n";
-            }                    
+            }
         }
-        
+
         else if (command[0].equals("activate"))
         {
             if (command.length != 3)
             {
                 return "Syntax Error.\n";
             }
-     
+
             else if (command[1].equals("model"))
-            {            
+            {
                 String modelFileName = command[2];
                 QName modelQName = repoAdminService.activateModel(modelFileName);
                 out.println("Model activated: " + modelFileName + " [" + modelQName + "]");
             }
         }
-        
+
         else if (command[0].equals("deactivate"))
         {
             if (command.length != 3)
             {
                 return "Syntax Error.\n";
             }
-     
+
             else if (command[1].equals("model"))
-            {            
+            {
                 String modelFileName = command[2];
                 QName modelQName = repoAdminService.deactivateModel(modelFileName);
                 out.println("Model deactivated: " + modelFileName + " [" + modelQName + "]");
             }
         }
-        
+
         else if (command[0].equals("reload"))
         {
             if (command.length != 3)
             {
                 return "Syntax Error.\n";
             }
-            
+
             else if (command[1].equals("messages"))
-            {            
+            {
                 String bundleBaseName = command[2];
                 repoAdminService.reloadMessageBundle(bundleBaseName);
                 out.println("Message resource bundle reloaded: " + bundleBaseName);
             }
 
-            else 
+            else
             {
                 return "No such sub-command, try 'help'.\n";
-            }            
+            }
         }
-        
+
         else if (command[0].equals("undeploy"))
         {
             if (command.length != 3)
             {
                 return "Syntax Error.\n";
             }
-            
+
             if (command[1].equals("model"))
-            {         
+            {
                 String modelFileName = command[2];
                 QName modelQName = repoAdminService.undeployModel(modelFileName);
                 out.println("Model undeployed: " + modelFileName + " [" + modelQName + "]");
-                
+
                 out.println("");
                 out.println("Remaining models:");
                 out.print(executeCommand("show models"));
             }
-            
+
             else if (command[1].equals("messages"))
-            {            
+            {
                 String bundleBaseName = command[2];
                 repoAdminService.undeployMessageBundle(bundleBaseName);
                 out.println("Message resource bundle undeployed: " + bundleBaseName);
-                
+
                 out.println("");
                 out.println("Remaining message resource bundles:");
                 out.print(executeCommand("show messages"));
             }
 
-            else 
+            else
             {
                 return "No such sub-command, try 'help'.\n";
-            }           
+            }
         }
 
         else

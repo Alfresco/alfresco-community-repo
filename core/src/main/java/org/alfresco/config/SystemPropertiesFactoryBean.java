@@ -21,7 +21,6 @@ package org.alfresco.config;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -30,17 +29,13 @@ import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.core.Constants;
 
 /**
- * Like the parent <code>PropertiesFactoryBean</code>, but overrides or augments the resulting property set with values
- * from VM system properties. As with the Spring {@link PropertyPlaceholderConfigurer} the following modes are
- * supported:
+ * Like the parent <code>PropertiesFactoryBean</code>, but overrides or augments the resulting property set with values from VM system properties. As with the Spring {@link PropertyPlaceholderConfigurer} the following modes are supported:
  * <ul>
  * <li><b>SYSTEM_PROPERTIES_MODE_NEVER: </b>Don't use system properties at all.</li>
  * <li><b>SYSTEM_PROPERTIES_MODE_FALLBACK: </b>Fallback to a system property only for undefined properties.</li>
  * <li><b>SYSTEM_PROPERTIES_MODE_OVERRIDE: (DEFAULT)</b>Use a system property if it is available.</li>
  * </ul>
- * Note that system properties will only be included in the property set if defaults for the property have already been
- * defined using {@link #setProperties(Properties)} or {@link #setLocations(org.springframework.core.io.Resource[])} or
- * their names have been included explicitly in the set passed to {@link #setSystemProperties(Set)}.
+ * Note that system properties will only be included in the property set if defaults for the property have already been defined using {@link #setProperties(Properties)} or {@link #setLocations(org.springframework.core.io.Resource[])} or their names have been included explicitly in the set passed to {@link #setSystemProperties(Set)}.
  * 
  * @author Derek Hulley
  */
@@ -129,13 +124,13 @@ public class SystemPropertiesFactoryBean extends PropertiesFactoryBean
     }
 
     /**
-     * Override hook. Allows subclasses to resolve a merged property from an alternative source, whilst still respecting
-     * the chosen system property fallback path.
+     * Override hook. Allows subclasses to resolve a merged property from an alternative source, whilst still respecting the chosen system property fallback path.
      * 
-     * @param systemProperty String
-     * @param props Properties
+     * @param systemProperty
+     *            String
+     * @param props
+     *            Properties
      */
     protected void resolveMergedProperty(String systemProperty, Properties props)
-    {
-    }
+    {}
 }

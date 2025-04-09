@@ -39,7 +39,7 @@ public class IntegrityException extends AlfrescoRuntimeException
     private static final long serialVersionUID = -5036557255854195669L;
 
     private List<IntegrityRecord> records;
-    
+
     public IntegrityException(List<IntegrityRecord> records)
     {
         super("Integrity failure");

@@ -30,7 +30,5 @@ package org.alfresco.repo.action.evaluator.compare;
  */
 public enum ContentPropertyName
 {
-    MIME_TYPE,
-    ENCODING,
-    SIZE
+    MIME_TYPE, ENCODING, SIZE
 }

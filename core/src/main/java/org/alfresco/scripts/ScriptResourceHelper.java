@@ -31,40 +31,34 @@ public class ScriptResourceHelper
     private static final String SCRIPT_ROOT = "_root";
     private static final String IMPORT_PREFIX = "<import";
     private static final String IMPORT_RESOURCE = "resource=\"";
-    
+
     /**
-     * Resolve the import directives in the specified script. The implementation of the supplied
-     * ScriptResourceLoader instance is responsible for handling the resource retrieval. 
+     * Resolve the import directives in the specified script. The implementation of the supplied ScriptResourceLoader instance is responsible for handling the resource retrieval.
      * <p>
-     * Multiple includes of the same resource are dealt with correctly and nested includes of scripts
-     * is fully supported.
+     * Multiple includes of the same resource are dealt with correctly and nested includes of scripts is fully supported.
      * <p>
-     * Note that for performance reasons the script import directive syntax and placement in the file
-     * is very strict. The import lines <i>must</i> always be first in the file - even before any comments.
-     * Immediately that the script service detects a non-import line it will assume the rest of the
-     * file is executable script and no longer attempt to search for any further import directives. Therefore
-     * all imports should be at the top of the script, one following the other, in the correct syntax and
-     * with no comments present - the only separators valid between import directives is white space.
+     * Note that for performance reasons the script import directive syntax and placement in the file is very strict. The import lines <i>must</i> always be first in the file - even before any comments. Immediately that the script service detects a non-import line it will assume the rest of the file is executable script and no longer attempt to search for any further import directives. Therefore all imports should be at the top of the script, one following the other, in the correct syntax and with no comments present - the only separators valid between import directives is white space.
      * 
-     * @param script        The script content to resolve imports in
+     * @param script
+     *            The script content to resolve imports in
      * 
-     * @return a valid script with all nested includes resolved into a single script instance 
+     * @return a valid script with all nested includes resolved into a single script instance
      */
     public static String resolveScriptImports(String script, ScriptResourceLoader loader, Log logger)
     {
         // use a linked hashmap to preserve order of includes - the key in the collection is used
         // to resolve multiple includes of the same scripts and therefore cyclic includes also
         Map<String, String> scriptlets = new LinkedHashMap<String, String>(8, 1.0f);
-        
+
         // perform a recursive resolve of all script imports
         recurseScriptImports(SCRIPT_ROOT, script, loader, scriptlets, logger);
-        
+
         if (scriptlets.size() == 1)
         {
             // quick exit for single script with no includes
             if (logger.isTraceEnabled())
                 logger.trace("Script content resolved to:\r\n" + script);
-            
+
             return script;
         }
         else
@@ -81,28 +75,30 @@ public class ScriptResourceHelper
             {
                 result.append(scriptlet);
             }
-            
+
             if (logger.isTraceEnabled())
                 logger.trace("Script content resolved to:\r\n" + result.toString());
-            
+
             return result.toString();
         }
     }
-    
+
     /**
-     * Recursively resolve imports in the specified scripts, adding the imports to the
-     * specific list of scriplets to combine later.
+     * Recursively resolve imports in the specified scripts, adding the imports to the specific list of scriplets to combine later.
      * 
-     * @param location      Script location - used to ensure duplicates are not added
-     * @param script        The script to recursively resolve imports for
-     * @param scripts       The collection of scriplets to execute with imports resolved and removed
+     * @param location
+     *            Script location - used to ensure duplicates are not added
+     * @param script
+     *            The script to recursively resolve imports for
+     * @param scripts
+     *            The collection of scriplets to execute with imports resolved and removed
      */
     private static void recurseScriptImports(
-          String location, String script, ScriptResourceLoader loader, Map<String, String> scripts, Log logger)
+            String location, String script, ScriptResourceLoader loader, Map<String, String> scripts, Log logger)
     {
         int index = 0;
         // skip any initial whitespace
-        for (; index<script.length(); index++)
+        for (; index < script.length(); index++)
         {
             if (Character.isWhitespace(script.charAt(index)) == false)
             {
@@ -115,7 +111,7 @@ public class ScriptResourceHelper
             // skip whitespace between "<import" and "resource"
             boolean afterWhitespace = false;
             index += IMPORT_PREFIX.length() + 1;
-            for (; index<script.length(); index++)
+            for (; index < script.length(); index++)
             {
                 if (Character.isWhitespace(script.charAt(index)) == false)
                 {
@@ -128,16 +124,16 @@ public class ScriptResourceHelper
                 // found an import line!
                 index += IMPORT_RESOURCE.length();
                 int resourceStart = index;
-                for (; index<script.length(); index++)
+                for (; index < script.length(); index++)
                 {
                     if (script.charAt(index) == '"' && script.charAt(index + 1) == '>')
                     {
                         // found end of import line - so we have a resource path
                         String resource = script.substring(resourceStart, index);
-                        
+
                         if (logger.isDebugEnabled())
                             logger.debug("Found script resource import: " + resource);
-                        
+
                         if (scripts.containsKey(resource) == false)
                         {
                             // load the script resource (and parse any recursive includes...)
@@ -154,10 +150,10 @@ public class ScriptResourceHelper
                             if (logger.isDebugEnabled())
                                 logger.debug("Note: already imported resource: " + resource);
                         }
-                        
+
                         // continue scanning this script for additional includes
                         // skip the last two characters of the import directive
-                        for (index += 2; index<script.length(); index++)
+                        for (index += 2; index < script.length(); index++)
                         {
                             if (Character.isWhitespace(script.charAt(index)) == false)
                             {
@@ -171,13 +167,13 @@ public class ScriptResourceHelper
                 // if we get here, we failed to find the end of an import line
                 throw new ScriptException(
                         "Malformed 'import' line - must be first in file, no comments and strictly of the form:" +
-                        "\r\n<import resource=\"...\">");
+                                "\r\n<import resource=\"...\">");
             }
             else
             {
                 throw new ScriptException(
                         "Malformed 'import' line - must be first in file, no comments and strictly of the form:" +
-                        "\r\n<import resource=\"...\">");
+                                "\r\n<import resource=\"...\">");
             }
         }
         else

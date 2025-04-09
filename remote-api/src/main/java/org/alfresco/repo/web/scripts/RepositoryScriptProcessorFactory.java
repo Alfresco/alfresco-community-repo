@@ -34,10 +34,10 @@ import org.springframework.extensions.webscripts.ScriptProcessorFactory;
 public class RepositoryScriptProcessorFactory implements ScriptProcessorFactory
 {
     private ScriptProcessor scriptProcessor;
-    
-    
+
     /**
-     * @param scriptProcessor       the ScriptProcessor to set
+     * @param scriptProcessor
+     *            the ScriptProcessor to set
      */
     public void setScriptProcessor(ScriptProcessor scriptProcessor)
     {
@@ -45,8 +45,8 @@ public class RepositoryScriptProcessorFactory implements ScriptProcessorFactory
     }
 
     /* (non-Javadoc)
-     * @see org.springframework.extensions.webscripts.ScriptProcessorFactory#newInstance()
-     */
+     * 
+     * @see org.springframework.extensions.webscripts.ScriptProcessorFactory#newInstance() */
     public ScriptProcessor newInstance()
     {
         return scriptProcessor;

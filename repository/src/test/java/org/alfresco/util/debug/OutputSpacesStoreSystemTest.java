@@ -25,12 +25,13 @@
  */
 package org.alfresco.util.debug;
 
+import org.junit.experimental.categories.Category;
+
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.experimental.categories.Category;
 
 /**
  * @author Roy Wetherall
@@ -43,8 +44,8 @@ public class OutputSpacesStoreSystemTest extends BaseSpringTest
      */
     public void testDumpSpacesStore()
     {
-        NodeService nodeService = (NodeService)this.applicationContext.getBean("nodeService");
+        NodeService nodeService = (NodeService) this.applicationContext.getBean("nodeService");
         StoreRef spacesStore = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, spacesStore));
-    }    
+    }
 }

@@ -25,17 +25,18 @@
  */
 package org.alfresco.repo.event2.shared;
 
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.namespace.NamespaceException;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.namespace.NamespaceException;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 
 public class TypeDefExpander
 {
@@ -51,7 +52,8 @@ public class TypeDefExpander
         this.namespaceService = namespaceService;
     }
 
-    public Set<QName> expand(Collection<String> types){
+    public Set<QName> expand(Collection<String> types)
+    {
         Set<QName> result = new HashSet<>();
         types.forEach(type -> result.addAll(expand(type)));
         return result;
@@ -104,4 +106,3 @@ public class TypeDefExpander
         return QName.createQName(type, namespaceService);
     }
 }
-

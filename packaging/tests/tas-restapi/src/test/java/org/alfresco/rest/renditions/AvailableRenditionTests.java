@@ -1,5 +1,17 @@
 package org.alfresco.rest.renditions;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.RestRenditionInfoModel;
 import org.alfresco.rest.model.RestRenditionInfoModelCollection;
@@ -7,17 +19,6 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  *
@@ -77,10 +78,10 @@ public class AvailableRenditionTests extends RenditionIntegrationTests
     }
 
     /**
-     *  Check that a particular rendition can be created for the file and that it has the expected Mime type
+     * Check that a particular rendition can be created for the file and that it has the expected Mime type
      */
     @Test(dataProvider = "RenditionTestDataProvider", groups = {TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY})
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RENDITIONS}, executionType = ExecutionType.SANITY,
             description = "Verify renditions created for a selection of test files via POST nodes/{nodeId}/renditions")
     public void supportedRenditionTest(String fileName, String nodeId, String renditionId, String expectedMimeType) throws Exception
     {
@@ -94,15 +95,15 @@ public class AvailableRenditionTests extends RenditionIntegrationTests
     }
 
     @Test(groups = {TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY})
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RENDITIONS}, executionType = ExecutionType.SANITY,
             description = "Verify that there are some available renditions.")
     public void renditionsAvailableTest()
     {
         Assert.assertFalse(renditionsToTest.isEmpty(), "No available renditions were reported for any of the test files.");
     }
 
-    @Test(dataProvider = "UnsupportedRenditionTestDataProvider",groups = {TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY})
-    @TestRail(section = { TestGroup.REST_API, TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY,
+    @Test(dataProvider = "UnsupportedRenditionTestDataProvider", groups = {TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.RENDITIONS}, executionType = ExecutionType.SANITY,
             description = "Verify that requests for unsupported renditions return 400 ")
     public void unsupportedRenditionTest(String sourceFile, String renditionId) throws Exception
     {
@@ -130,4 +131,3 @@ public class AvailableRenditionTests extends RenditionIntegrationTests
         return toTest.iterator();
     }
 }
-

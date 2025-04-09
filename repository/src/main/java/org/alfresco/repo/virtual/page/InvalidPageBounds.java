@@ -42,15 +42,15 @@ public class InvalidPageBounds extends PageCollationException
     public InvalidPageBounds(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace)
     {
         super(message,
-              cause,
-              enableSuppression,
-              writableStackTrace);
+                cause,
+                enableSuppression,
+                writableStackTrace);
     }
 
     public InvalidPageBounds(String message, Throwable cause)
     {
         super(message,
-              cause);
+                cause);
     }
 
     public InvalidPageBounds(String message)

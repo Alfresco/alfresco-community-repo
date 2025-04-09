@@ -38,12 +38,12 @@ import org.alfresco.util.Pair;
 class TestNode implements Node
 {
     NodeRef nodeRef;
-    
+
     TestNode(String id)
     {
         nodeRef = new NodeRef("test://store/" + id);
     }
-    
+
     @Override
     public Long getId()
     {
@@ -64,8 +64,7 @@ class TestNode implements Node
 
     @Override
     public void lock()
-    {
-    }
+    {}
 
     @Override
     public NodeRef getNodeRef()

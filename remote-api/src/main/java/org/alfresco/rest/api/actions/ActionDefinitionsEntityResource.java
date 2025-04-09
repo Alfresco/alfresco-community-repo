@@ -33,7 +33,7 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
-@EntityResource(name="action-definitions", title = "Actions")
+@EntityResource(name = "action-definitions", title = "Actions")
 public class ActionDefinitionsEntityResource implements EntityResourceAction.Read<ActionDefinition>, EntityResourceAction.ReadById<ActionDefinition>
 {
     private Actions actions;
@@ -50,7 +50,7 @@ public class ActionDefinitionsEntityResource implements EntityResourceAction.Rea
     }
 
     @Override
-    public ActionDefinition readById(String id, Parameters parameters) throws EntityNotFoundException 
+    public ActionDefinition readById(String id, Parameters parameters) throws EntityNotFoundException
     {
         return actions.getActionDefinitionById(id);
     }

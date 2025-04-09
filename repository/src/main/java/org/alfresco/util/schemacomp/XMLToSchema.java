@@ -28,9 +28,12 @@ package org.alfresco.util.schemacomp;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Stack;
-
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.DbObject;
@@ -41,9 +44,6 @@ import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Sequence;
 import org.alfresco.util.schemacomp.model.Table;
 import org.alfresco.util.schemacomp.validator.DbValidator;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Parse an XML document representing a database schema.
@@ -57,8 +57,7 @@ public class XMLToSchema extends DefaultHandler
     private Schema schema;
     private Stack<Object> stack = new Stack<Object>();
     private StringBuilder lastText = new StringBuilder();
-    
-    
+
     public XMLToSchema(InputStream in, SAXParserFactory saxParserFactory)
     {
         this.in = in;
@@ -71,12 +70,12 @@ public class XMLToSchema extends DefaultHandler
             throw new RuntimeException("Cannot create parser.", e);
         }
     }
-    
+
     public XMLToSchema(InputStream in)
     {
         this(in, SAXParserFactory.newInstance());
     }
-    
+
     public void parse()
     {
         try
@@ -92,12 +91,11 @@ public class XMLToSchema extends DefaultHandler
             throw new RuntimeException("Unable to parse input stream.", error);
         }
     }
-    
+
     public Schema getSchema()
     {
         return this.schema;
     }
-
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException
@@ -146,7 +144,7 @@ public class XMLToSchema extends DefaultHandler
             DbObject dbo = (DbObject) stack.peek();
             dbo.getValidators().add(validator);
         }
-        
+
         // Deal with elements that contain text.
         if (lastText.length() != 0)
         {
@@ -207,13 +205,12 @@ public class XMLToSchema extends DefaultHandler
         }
     }
 
-    
     @Override
     public void startElement(String uri, String localName, String qName, Attributes atts)
-                throws SAXException
+            throws SAXException
     {
         lastText.setLength(0);
-        
+
         if (qName.equals(XML.EL_SCHEMA))
         {
             String name = atts.getValue(XML.ATTR_NAME);
@@ -280,7 +277,7 @@ public class XMLToSchema extends DefaultHandler
             {
                 throw new RuntimeException("Couldn't create validator, class: " + className, e);
             }
-            
+
             stack.push(validator);
         }
         else if (qName.equals(XML.EL_PROPERTY))

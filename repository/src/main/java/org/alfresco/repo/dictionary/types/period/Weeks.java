@@ -26,8 +26,10 @@
 package org.alfresco.repo.dictionary.types.period;
 
 import java.util.Calendar;
+
 /**
  * Weeks
+ * 
  * @author andyh
  *
  */
@@ -36,7 +38,7 @@ public class Weeks extends AbstractCalendarPeriodProvider
     /**
      * 
      */
-    public static final String PERIOD_TYPE = "week"; 
+    public static final String PERIOD_TYPE = "week";
 
     public String getPeriodType()
     {

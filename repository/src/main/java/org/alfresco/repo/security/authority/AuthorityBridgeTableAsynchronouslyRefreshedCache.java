@@ -32,6 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.AbstractMTAsynchronouslyRefreshedCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -41,15 +45,12 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.util.BridgeTable;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * @author Andy
  * @since 4.1.3
  */
-public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends  AbstractMTAsynchronouslyRefreshedCache<BridgeTable<String>> implements InitializingBean
+public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends AbstractMTAsynchronouslyRefreshedCache<BridgeTable<String>> implements InitializingBean
 {
     private AuthorityBridgeDAO authorityBridgeDAO;
     private RetryingTransactionHelper retryingTransactionHelper;
@@ -93,12 +94,10 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends  AbstractM
     @Override
     protected BridgeTable<String> buildCache(final String tenantId)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<BridgeTable<String>>()
-        {
+        return AuthenticationUtil.runAs(new RunAsWork<BridgeTable<String>>() {
             public BridgeTable<String> doWork() throws Exception
             {
-                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<BridgeTable<String>>()
-                {
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<BridgeTable<String>>() {
                     @Override
                     public BridgeTable<String> execute() throws Throwable
                     {
@@ -138,7 +137,7 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends  AbstractM
         {
             addToMap(parentsToChildren, link.getParentName(), link.getChildName());
         }
-        
+
         Map<String, Set<String>> removed = new HashMap<String, Set<String>>();
         for (String parent : parentsToChildren.keySet())
         {
@@ -217,8 +216,7 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends  AbstractM
     {
         // delete cyclic links in new transaction because
         // current cache refresh will be interrupted with AlfrescoRuntimeException
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             @Override
             public Void execute() throws Throwable
             {
@@ -228,7 +226,7 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends  AbstractM
                     {
                         // do not refresh authorityBridgeTableCache
                         authorityDAO.removeAuthority(parentName, childName, false);
-                        logger.error("Link from '" + parentName + "' to '" + childName +"' was removed to break cycle.");
+                        logger.error("Link from '" + parentName + "' to '" + childName + "' was removed to break cycle.");
                     }
                 }
                 return null;

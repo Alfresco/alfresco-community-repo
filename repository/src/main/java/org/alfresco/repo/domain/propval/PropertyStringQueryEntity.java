@@ -41,19 +41,19 @@ public class PropertyStringQueryEntity
     private final String stringValue;
     private final String stringEndLower;
     private final Long stringCrc;
-    
+
     public PropertyStringQueryEntity(Short persistedType, Long actualTypeId, String value)
     {
         this.persistedType = persistedType;
         this.actualTypeId = actualTypeId;
-        
+
         stringValue = value;
         // Calculate the crc value from the original value
         Pair<String, Long> crcPair = CrcHelper.getStringCrcPair(value, 16, false, true);
         stringEndLower = crcPair.getFirst();
         stringCrc = crcPair.getSecond();
     }
-    
+
     public Short getPersistedType()
     {
         return persistedType;

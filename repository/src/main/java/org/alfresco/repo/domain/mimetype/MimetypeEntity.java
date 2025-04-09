@@ -30,8 +30,7 @@ import org.alfresco.util.EqualsHelper;
 /**
  * Entity bean for <b>alf_mimetype</b> table.
  * <p>
- * These are unique (see {@link #equals(Object) equals} and {@link #hashCode() hashCode}) based
- * on the {@link #getMimetype() mimetype} value.
+ * These are unique (see {@link #equals(Object) equals} and {@link #hashCode() hashCode}) based on the {@link #getMimetype() mimetype} value.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -39,17 +38,17 @@ import org.alfresco.util.EqualsHelper;
 public class MimetypeEntity
 {
     public static final Long CONST_LONG_ZERO = Long.valueOf(0L);
-    
+
     private Long id;
     private Long version;
     private String mimetype;
-    
+
     @Override
     public int hashCode()
     {
         return (mimetype == null ? 0 : mimetype.hashCode());
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -67,15 +66,15 @@ public class MimetypeEntity
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("MimetypeEntity")
-          .append("[ ID=").append(id)
-          .append(", mimetype=").append(mimetype)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", mimetype=").append(mimetype)
+                .append("]");
         return sb.toString();
     }
 
@@ -90,7 +89,7 @@ public class MimetypeEntity
             this.version++;
         }
     }
-    
+
     public Long getId()
     {
         return id;
@@ -110,7 +109,7 @@ public class MimetypeEntity
     {
         this.version = version;
     }
-    
+
     public String getMimetype()
     {
         return mimetype;

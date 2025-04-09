@@ -103,7 +103,7 @@ import org.alfresco.service.namespace.QName;
 public class DBQueryModelFactory implements QueryModelFactory
 {
     private HashMap<String, Function> functions = new HashMap<String, Function>();
-    
+
     public DBQueryModelFactory()
     {
         functions.put(Equals.NAME, new DBEquals());
@@ -133,11 +133,10 @@ public class DBQueryModelFactory implements QueryModelFactory
         functions.put(FTSWildTerm.NAME, new DBFTSWildTerm());
         functions.put(FTSFuzzyTerm.NAME, new DBFTSFuzzyTerm());
     }
-    
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createQuery(java.util.List, org.alfresco.repo.search.impl.querymodel.Source, org.alfresco.repo.search.impl.querymodel.Constraint, java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createQuery(java.util.List, org.alfresco.repo.search.impl.querymodel.Source, org.alfresco.repo.search.impl.querymodel.Constraint, java.util.List) */
     @Override
     public Query createQuery(List<Column> columns, Source source, Constraint constraint, List<Ordering> orderings)
     {
@@ -145,17 +144,17 @@ public class DBQueryModelFactory implements QueryModelFactory
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createSelector(org.alfresco.service.namespace.QName, java.lang.String)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createSelector(org.alfresco.service.namespace.QName, java.lang.String) */
     @Override
     public Selector createSelector(QName classQName, String alias)
     {
-       return new DBSelector(classQName, alias);
+        return new DBSelector(classQName, alias);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createJoin(org.alfresco.repo.search.impl.querymodel.Source, org.alfresco.repo.search.impl.querymodel.Source, org.alfresco.repo.search.impl.querymodel.JoinType, org.alfresco.repo.search.impl.querymodel.Constraint)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createJoin(org.alfresco.repo.search.impl.querymodel.Source, org.alfresco.repo.search.impl.querymodel.Source, org.alfresco.repo.search.impl.querymodel.JoinType, org.alfresco.repo.search.impl.querymodel.Constraint) */
     @Override
     public Join createJoin(Source left, Source right, JoinType joinType, Constraint joinCondition)
     {
@@ -163,8 +162,8 @@ public class DBQueryModelFactory implements QueryModelFactory
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createConjunction(java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createConjunction(java.util.List) */
     @Override
     public Constraint createConjunction(List<Constraint> constraints)
     {
@@ -172,8 +171,8 @@ public class DBQueryModelFactory implements QueryModelFactory
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createDisjunction(java.util.List)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createDisjunction(java.util.List) */
     @Override
     public Constraint createDisjunction(List<Constraint> constraints)
     {
@@ -181,8 +180,8 @@ public class DBQueryModelFactory implements QueryModelFactory
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createFunctionalConstraint(org.alfresco.repo.search.impl.querymodel.Function, java.util.Map)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createFunctionalConstraint(org.alfresco.repo.search.impl.querymodel.Function, java.util.Map) */
     @Override
     public Constraint createFunctionalConstraint(Function function, Map<String, Argument> functionArguments)
     {
@@ -190,17 +189,17 @@ public class DBQueryModelFactory implements QueryModelFactory
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createColumn(org.alfresco.repo.search.impl.querymodel.Function, java.util.Map, java.lang.String)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createColumn(org.alfresco.repo.search.impl.querymodel.Function, java.util.Map, java.lang.String) */
     @Override
     public Column createColumn(Function function, Map<String, Argument> functionArguments, String alias)
     {
-       return new DBColumn(function, functionArguments, alias);
+        return new DBColumn(function, functionArguments, alias);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createLiteralArgument(java.lang.String, org.alfresco.service.namespace.QName, java.io.Serializable)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createLiteralArgument(java.lang.String, org.alfresco.service.namespace.QName, java.io.Serializable) */
     @Override
     public LiteralArgument createLiteralArgument(String name, QName type, Serializable value)
     {
@@ -208,8 +207,8 @@ public class DBQueryModelFactory implements QueryModelFactory
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createOrdering(org.alfresco.repo.search.impl.querymodel.Column, org.alfresco.repo.search.impl.querymodel.Order)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createOrdering(org.alfresco.repo.search.impl.querymodel.Column, org.alfresco.repo.search.impl.querymodel.Order) */
     @Override
     public Ordering createOrdering(Column column, Order order)
     {
@@ -217,8 +216,8 @@ public class DBQueryModelFactory implements QueryModelFactory
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createParameterArgument(java.lang.String, java.lang.String)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createParameterArgument(java.lang.String, java.lang.String) */
     @Override
     public ParameterArgument createParameterArgument(String name, String parameterName)
     {
@@ -226,8 +225,8 @@ public class DBQueryModelFactory implements QueryModelFactory
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createPropertyArgument(java.lang.String, boolean, boolean, java.lang.String, java.lang.String)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createPropertyArgument(java.lang.String, boolean, boolean, java.lang.String, java.lang.String) */
     @Override
     public PropertyArgument createPropertyArgument(String name, boolean queryable, boolean orderable, String selectorAlias, String propertyName)
     {
@@ -235,19 +234,17 @@ public class DBQueryModelFactory implements QueryModelFactory
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createSelectorArgument(java.lang.String, java.lang.String)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createSelectorArgument(java.lang.String, java.lang.String) */
     @Override
     public SelectorArgument createSelectorArgument(String name, String selectorAlias)
     {
         return new DBSelectorArgument(name, selectorAlias);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#getFunction(java.lang.String)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#getFunction(java.lang.String) */
     public Function getFunction(String functionName)
     {
         Function function = functions.get(functionName);
@@ -287,13 +284,13 @@ public class DBQueryModelFactory implements QueryModelFactory
                     }
                 }
             }
-           return null;
+            return null;
         }
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createListArgument(java.lang.String, java.util.ArrayList)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createListArgument(java.lang.String, java.util.ArrayList) */
     @Override
     public ListArgument createListArgument(String name, ArrayList<Argument> arguments)
     {
@@ -301,8 +298,8 @@ public class DBQueryModelFactory implements QueryModelFactory
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createFunctionArgument(java.lang.String, org.alfresco.repo.search.impl.querymodel.Function, java.util.Map)
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.QueryModelFactory#createFunctionArgument(java.lang.String, org.alfresco.repo.search.impl.querymodel.Function, java.util.Map) */
     @Override
     public FunctionArgument createFunctionArgument(String name, Function function, Map<String, Argument> functionArguments)
     {

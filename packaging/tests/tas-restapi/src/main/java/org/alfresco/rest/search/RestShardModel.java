@@ -64,7 +64,8 @@ public class RestShardModel
     }
 
     /**
-     * @param instances the instances to set
+     * @param instances
+     *            the instances to set
      */
     public void setInstances(List<RestInstanceModel> instances)
     {

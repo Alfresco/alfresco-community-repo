@@ -27,15 +27,16 @@ package org.alfresco.repo.policy.annotation;
 
 import static org.junit.Assert.assertEquals;
 
-import org.alfresco.service.namespace.QName;
-import org.alfresco.test_category.OwnJVMTestsCategory;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
+
+import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 
 /**
  * Application context tests for the automatic QName converter.
@@ -91,8 +92,7 @@ public class QNameTypeEditorTest
     }
 
     /**
-     * Clear up after all the tests have finished and dereference the application context to allow it to be garbage
-     * collected.
+     * Clear up after all the tests have finished and dereference the application context to allow it to be garbage collected.
      */
     @AfterClass
     public static void tidyAfterTestClass()

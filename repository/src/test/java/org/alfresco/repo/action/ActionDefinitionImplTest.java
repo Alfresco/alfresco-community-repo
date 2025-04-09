@@ -31,11 +31,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.rule.RuleServiceException;
-import org.springframework.extensions.surf.util.I18NUtil;
-
 
 /**
  * @author Roy Wetherall
@@ -43,9 +43,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class ActionDefinitionImplTest extends BaseParameterizedItemDefinitionImplTest
 {
     private static final String RULE_ACTION_EXECUTOR = "ruleActionExector";
-    
+
     protected ParameterizedItemDefinitionImpl create()
-    {    
+    {
         // Test duplicate param name
         Map<Locale, List<ParameterDefinition>> localizedParams = new HashMap<Locale, List<ParameterDefinition>>();
         try
@@ -59,24 +59,24 @@ public class ActionDefinitionImplTest extends BaseParameterizedItemDefinitionImp
         {
             // Indicates that there are duplicate param names
         }
-        
+
         // Create a good one
         ActionDefinitionImpl temp = new ActionDefinitionImpl(NAME);
         assertNotNull(temp);
-        //temp.setTitle(TITLE);
-       // temp.setDescription(DESCRIPTION);
+        // temp.setTitle(TITLE);
+        // temp.setDescription(DESCRIPTION);
         localizedParams.put(Locale.ROOT, paramDefs);
         temp.setLocalizedParameterDefinitions(localizedParams);
         temp.setRuleActionExecutor(RULE_ACTION_EXECUTOR);
         return temp;
     }
-    
+
     /**
      * Test getRuleActionExecutor
      */
     public void testGetRuleActionExecutor()
     {
-        ActionDefinitionImpl temp = (ActionDefinitionImpl)create();
+        ActionDefinitionImpl temp = (ActionDefinitionImpl) create();
         assertEquals(RULE_ACTION_EXECUTOR, temp.getRuleActionExecutor());
     }
 
@@ -90,8 +90,7 @@ public class ActionDefinitionImplTest extends BaseParameterizedItemDefinitionImp
         {
             ActionDefinitionImpl actionDef = new ActionDefinitionImpl(NAME);
             Map<Locale, List<ParameterDefinition>> localizedParams = new HashMap<>();
-            
-            
+
             localizedParams.put(Locale.ROOT, exampleFieldList("English Label"));
             localizedParams.put(Locale.ENGLISH, exampleFieldList("English Label"));
             localizedParams.put(Locale.UK, exampleFieldList("UK-specific Label"));
@@ -110,7 +109,7 @@ public class ActionDefinitionImplTest extends BaseParameterizedItemDefinitionImp
 
             I18NUtil.setLocale(Locale.GERMAN);
             assertEquals("German Label", actionDef.getParameterDefintion("example-field").getDisplayLabel());
-            
+
             I18NUtil.setLocale(Locale.GERMANY);
             // de-DE falls back to de
             assertEquals("German Label", actionDef.getParameterDefintion("example-field").getDisplayLabel());
@@ -120,7 +119,7 @@ public class ActionDefinitionImplTest extends BaseParameterizedItemDefinitionImp
             I18NUtil.setLocale(originalLocale);
         }
     }
-    
+
     private List<ParameterDefinition> exampleFieldList(String label)
     {
         List<ParameterDefinition> paramDefs = new ArrayList<>();

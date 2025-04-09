@@ -34,21 +34,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
-import org.alfresco.service.cmr.security.AccessStatus;
+import net.sf.acegisecurity.AccessDeniedException;
+import net.sf.acegisecurity.intercept.InterceptorStatusToken;
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import net.sf.acegisecurity.AccessDeniedException;
-import net.sf.acegisecurity.intercept.InterceptorStatusToken;
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
+import org.alfresco.service.cmr.security.AccessStatus;
 
 /**
  * Records Management Method Security Interceptor.
  * <p>
- * Provides a way to record information about the capabilities being executed and report
- * when an access denied exception is thrown.
+ * Provides a way to record information about the capabilities being executed and report when an access denied exception is thrown.
  *
  * @author Roy Wetherall
  * @since 2.2
@@ -71,21 +70,22 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
     /**
      * Helper method to translate vote to access status.
      *
-     * @param vote  vote
+     * @param vote
+     *            vote
      * @return {@link AccessStatus} access status
      */
     private static AccessStatus translate(int vote)
     {
         switch (vote)
         {
-            case AccessDecisionVoter.ACCESS_ABSTAIN:
-                return AccessStatus.UNDETERMINED;
-            case AccessDecisionVoter.ACCESS_GRANTED:
-                return AccessStatus.ALLOWED;
-            case AccessDecisionVoter.ACCESS_DENIED:
-                return AccessStatus.DENIED;
-            default:
-                return AccessStatus.UNDETERMINED;
+        case AccessDecisionVoter.ACCESS_ABSTAIN:
+            return AccessStatus.UNDETERMINED;
+        case AccessDecisionVoter.ACCESS_GRANTED:
+            return AccessStatus.ALLOWED;
+        case AccessDecisionVoter.ACCESS_DENIED:
+            return AccessStatus.DENIED;
+        default:
+            return AccessStatus.UNDETERMINED;
         }
     }
 
@@ -94,8 +94,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
      * <p>
      * Used to generate the capability error report.
      */
-    private static final ThreadLocal<Map<String, CapabilityReport>> CAPABILITIES = new ThreadLocal<Map<String, CapabilityReport>>()
-    {
+    private static final ThreadLocal<Map<String, CapabilityReport>> CAPABILITIES = new ThreadLocal<Map<String, CapabilityReport>>() {
         @Override
         protected Map<String, CapabilityReport> initialValue()
         {
@@ -106,24 +105,28 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
     /**
      * Indicates whether this is an RM security check or not
      */
-    private static final ThreadLocal<Boolean> IS_RM_SECURITY_CHECK = new ThreadLocal<Boolean>()
-    {
-        protected Boolean initialValue() {return false;}
+    private static final ThreadLocal<Boolean> IS_RM_SECURITY_CHECK = new ThreadLocal<Boolean>() {
+        protected Boolean initialValue()
+        {
+            return false;
+        }
     };
-    
+
     /**
      * Messages to display in error report.
      */
-    private static final ThreadLocal<List<String>> MESSAGES = new ThreadLocal<List<String>>()
-    {
-        protected List<String> initialValue() {return new ArrayList<>();}
+    private static final ThreadLocal<List<String>> MESSAGES = new ThreadLocal<List<String>>() {
+        protected List<String> initialValue()
+        {
+            return new ArrayList<>();
+        }
     };
-    
+
     /**
-     * Get capability report object from the thread local, creating one for
-     * the given capability name if one does not already exist.
+     * Get capability report object from the thread local, creating one for the given capability name if one does not already exist.
      *
-     * @param name  capability name
+     * @param name
+     *            capability name
      * @return {@link CapabilityReport} object containing information about the capability
      */
     private static CapabilityReport getCapabilityReport(String name)
@@ -143,7 +146,8 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
     /**
      * Indicates whether this is a RM security check or not
      * 
-     * @param newValue  true if RM security check, false otherwise
+     * @param newValue
+     *            true if RM security check, false otherwise
      */
     public static void isRMSecurityChecked(boolean newValue)
     {
@@ -152,11 +156,12 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
             RMMethodSecurityInterceptor.IS_RM_SECURITY_CHECK.set(newValue);
         }
     }
-    
+
     /**
      * Add a message to be displayed in the error report.
      * 
-     * @param message   error message
+     * @param message
+     *            error message
      */
     public static void addMessage(String message)
     {
@@ -166,20 +171,22 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
             messages.add(message);
         }
     }
-    
-    public static void addMessage(String message, Object ... params)
+
+    public static void addMessage(String message, Object... params)
     {
         if (LOGGER.isDebugEnabled())
         {
             addMessage(MessageFormat.format(message, params));
         }
     }
-    
+
     /**
      * Report capability status.
      *
-     * @param name      capability name
-     * @param status    capability status
+     * @param name
+     *            capability name
+     * @param status
+     *            capability status
      */
     public static void reportCapabilityStatus(String name, int status)
     {
@@ -193,10 +200,14 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
     /**
      * Report capability condition.
      *
-     * @param name              capability name
-     * @param conditionName     capability condition name
-     * @param expected          expected value
-     * @param actual            actual value
+     * @param name
+     *            capability name
+     * @param conditionName
+     *            capability condition name
+     * @param expected
+     *            expected value
+     * @param actual
+     *            actual value
      */
     public static void reportCapabilityCondition(String name, String conditionName, boolean expected, boolean actual)
     {
@@ -214,7 +225,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
     /**
      * Gets the failure report for the currently recorded capabilities.
      *
-     * @return  {@link String}  capability error report
+     * @return {@link String} capability error report
      */
     public String getFailureReport()
     {
@@ -276,8 +287,8 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
         {
             if (LOGGER.isDebugEnabled())
             {
-                MethodInvocation mi = (MethodInvocation)object;
-                
+                MethodInvocation mi = (MethodInvocation) object;
+
                 StringBuilder methodDetails = new StringBuilder("\n");
                 if (RMMethodSecurityInterceptor.IS_RM_SECURITY_CHECK.get())
                 {
@@ -285,9 +296,9 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
                 }
                 else
                 {
-                    methodDetails.append("Standard DM method security check was performed.\n");                    
+                    methodDetails.append("Standard DM method security check was performed.\n");
                 }
-                
+
                 boolean first = true;
                 methodDetails.append("Failed on method:  ").append(mi.getMethod().getName()).append("(");
                 for (Object arg : mi.getArguments())
@@ -300,7 +311,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
                     {
                         methodDetails.append(", ");
                     }
-                    
+
                     if (arg != null)
                     {
                         methodDetails.append(arg.toString());
@@ -311,13 +322,13 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
                     }
                 }
                 methodDetails.append(")\n");
-                
+
                 List<String> messages = RMMethodSecurityInterceptor.MESSAGES.get();
                 for (String message : messages)
                 {
                     methodDetails.append(message).append("\n");
                 }
-                
+
                 String failureReport = getFailureReport();
                 if (failureReport == null)
                 {

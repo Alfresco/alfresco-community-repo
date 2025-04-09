@@ -26,7 +26,7 @@
 package org.alfresco.repo.tagging.script;
 
 /**
- * Stores  total tags count together with tags to be sent to UI
+ * Stores total tags count together with tags to be sent to UI
  * 
  * @author Viachaslau Tsikhanovich
  *
@@ -35,7 +35,7 @@ public class PagedTagsWrapper
 {
 
     private String[] tagNames;
-    
+
     private String total;
 
     public PagedTagsWrapper(String[] tagNames, int total)

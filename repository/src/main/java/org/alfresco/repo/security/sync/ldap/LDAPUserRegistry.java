@@ -46,7 +46,6 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-
 import javax.naming.CommunicationException;
 import javax.naming.CompositeName;
 import javax.naming.Context;
@@ -67,6 +66,10 @@ import javax.naming.ldap.LdapName;
 import javax.naming.ldap.PagedResultsControl;
 import javax.naming.ldap.PagedResultsResponseControl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
@@ -79,13 +82,9 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
- * A {@link UserRegistry} implementation with the ability to query Alfresco-like descriptions of users and groups from
- * an LDAP directory, optionally restricted to those modified since a certain time.
+ * A {@link UserRegistry} implementation with the ability to query Alfresco-like descriptions of users and groups from an LDAP directory, optionally restricted to those modified since a certain time.
  * 
  * @author dward
  */
@@ -161,15 +160,12 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     private Map<String, String> groupAttributeDefaults = Collections.emptyMap();
 
     /**
-     * The query batch size. If positive, indicates that RFC 2696 paged results should be used to split query results
-     * into batches of the specified size. Overcomes any size limits imposed by the LDAP server.
+     * The query batch size. If positive, indicates that RFC 2696 paged results should be used to split query results into batches of the specified size. Overcomes any size limits imposed by the LDAP server.
      */
     private int queryBatchSize;
 
     /**
-     * The attribute retrieval batch size. If positive, indicates that range retrieval should be used to fetch
-     * multi-valued attributes (such as member) in batches of the specified size. Overcomes any size limits imposed by
-     * the LDAP server.
+     * The attribute retrieval batch size. If positive, indicates that range retrieval should be used to fetch multi-valued attributes (such as member) in batches of the specified size. Overcomes any size limits imposed by the LDAP server.
      */
     private int attributeBatchSize;
 
@@ -218,8 +214,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     }
 
     /**
-     * Controls whether progress estimation is enabled. When enabled, the user query has to be run twice in order to
-     * count entries.
+     * Controls whether progress estimation is enabled. When enabled, the user query has to be run twice in order to count entries.
      * 
      * @param enableProgressEstimation
      *            <code>true</code> if progress estimation is enabled
@@ -491,8 +486,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
      * Sets the query batch size.
      * 
      * @param queryBatchSize
-     *            If positive, indicates that RFC 2696 paged results should be used to split query results into batches
-     *            of the specified size. Overcomes any size limits imposed by the LDAP server.
+     *            If positive, indicates that RFC 2696 paged results should be used to split query results into batches of the specified size. Overcomes any size limits imposed by the LDAP server.
      */
     public void setQueryBatchSize(int queryBatchSize)
     {
@@ -503,8 +497,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
      * Sets the attribute batch size.
      * 
      * @param attributeBatchSize
-     *            If positive, indicates that range retrieval should be used to fetch multi-valued attributes (such as
-     *            member) in batches of the specified size. Overcomes any size limits imposed by the LDAP server.
+     *            If positive, indicates that range retrieval should be used to fetch multi-valued attributes (such as member) in batches of the specified size. Overcomes any size limits imposed by the LDAP server.
      */
     public void setAttributeBatchSize(int attributeBatchSize)
     {
@@ -521,19 +514,17 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         return userAccountStatusInterpreter;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.ActivateableBean#isActive() */
     public boolean isActive()
     {
         return this.active;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet() */
     public void afterPropertiesSet() throws Exception
     {
         if (this.personAttributeMapping == null)
@@ -543,7 +534,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         this.personAttributeMapping.put(ContentModel.PROP_USERNAME.toPrefixString(this.namespaceService),
                 this.userIdAttributeName);
         this.userKeys = initKeys(this.personAttributeMapping);
-        
+
         // Include a range restriction for the multi-valued member attribute if this is enabled
         if (this.groupAttributeMapping == null)
         {
@@ -556,33 +547,29 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                         : this.memberAttributeName);
     }
 
-    
     /* (non-Javadoc)
-     * @see org.alfresco.repo.security.sync.UserRegistry#getPersonMappedProperties()
-     */
+     * 
+     * @see org.alfresco.repo.security.sync.UserRegistry#getPersonMappedProperties() */
     public Set<QName> getPersonMappedProperties()
     {
         return this.userKeys.getSecond();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.sync.UserRegistry#getPersons(java.util.Date)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.sync.UserRegistry#getPersons(java.util.Date) */
     public Collection<NodeDescription> getPersons(Date modifiedSince)
     {
         return new PersonCollection(modifiedSince);
     }
 
-    
     /* (non-Javadoc)
-     * @see org.alfresco.repo.security.sync.UserRegistry#getPersonNames()
-     */
+     * 
+     * @see org.alfresco.repo.security.sync.UserRegistry#getPersonNames() */
     public Collection<String> getPersonNames()
     {
         final List<String> personNames = new LinkedList<String>();
-        processQuery(new AbstractSearchCallback()
-        {
+        processQuery(new AbstractSearchCallback() {
             protected void doProcess(SearchResult result) throws NamingException, ParseException
             {
                 Attribute nameAttribute = result.getAttributes().get(LDAPUserRegistry.this.userIdAttributeName);
@@ -610,24 +597,21 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             }
 
             public void close() throws NamingException
-            {
-            }
+            {}
 
-        }, this.userSearchBase, this.personQuery, new String[]
-        {
-            this.userIdAttributeName
+        }, this.userSearchBase, this.personQuery, new String[]{
+                this.userIdAttributeName
         });
         return personNames;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.security.sync.UserRegistry#getGroupNames()
-     */
+     * 
+     * @see org.alfresco.repo.security.sync.UserRegistry#getGroupNames() */
     public Collection<String> getGroupNames()
     {
         final List<String> groupNames = new LinkedList<String>();
-        processQuery(new AbstractSearchCallback()
-        {
+        processQuery(new AbstractSearchCallback() {
 
             protected void doProcess(SearchResult result) throws NamingException, ParseException
             {
@@ -656,20 +640,17 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             }
 
             public void close() throws NamingException
-            {
-            }
+            {}
 
-        }, this.groupSearchBase, this.groupQuery, new String[]
-        {
-            this.groupIdAttributeName
+        }, this.groupSearchBase, this.groupQuery, new String[]{
+                this.groupIdAttributeName
         });
         return groupNames;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.sync.UserRegistry#getGroups(java.util.Date)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.sync.UserRegistry#getGroups(java.util.Date) */
     public Collection<NodeDescription> getGroups(Date modifiedSince)
     {
         // Work out whether the user and group trees are disjoint. This may allow us to optimize reverse DN
@@ -694,7 +675,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             Object[] params = {this.userSearchBase.toLowerCase(), e.getLocalizedMessage()};
             throw new AlfrescoRuntimeException("synchronization.err.ldap.search.base.invalid", params, e);
         }
- 
+
         final boolean disjoint = !groupDistinguishedNamePrefix.startsWith(userDistinguishedNamePrefix)
                 && !userDistinguishedNamePrefix.startsWith(groupDistinguishedNamePrefix);
 
@@ -711,8 +692,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
 
         // Run the query and process the results
         final Map<String, NodeDescription> lookup = new TreeMap<String, NodeDescription>();
-        processQuery(new AbstractSearchCallback()
-        {
+        processQuery(new AbstractSearchCallback() {
             // We get a whole new context to avoid interference with cookies from paged results
             private DirContext ctx = LDAPUserRegistry.this.ldapInitialContextFactory.getDefaultIntialDirContext();
 
@@ -824,10 +804,9 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                     try
                                     {
                                         Attributes childAttributes = this.ctx.getAttributes(jndiName(attribute),
-                                                new String[]
-                                                {
-                                                    "objectclass", LDAPUserRegistry.this.groupIdAttributeName,
-                                                    LDAPUserRegistry.this.userIdAttributeName
+                                                new String[]{
+                                                        "objectclass", LDAPUserRegistry.this.groupIdAttributeName,
+                                                        LDAPUserRegistry.this.userIdAttributeName
                                                 });
                                         Attribute objectClass = childAttributes.get("objectclass");
                                         if (hasAttributeValue(objectClass, LDAPUserRegistry.this.personType))
@@ -888,7 +867,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                         // MNT-21614: Check & fail if communication breaks due to ServiceUnavailableException or CommunicationException
                                         if (e.getMessage() != null)
                                         {
-                                            Object[] params = {e.getLocalizedMessage() };
+                                            Object[] params = {e.getLocalizedMessage()};
                                             throw new AlfrescoRuntimeException("synchronization.err.ldap.search", params, e);
                                         }
                                         continue;
@@ -899,13 +878,13 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                         // MNT-17966
                                         if (e.getMessage() != null && e.getMessage().startsWith(NAMING_TIMEOUT_EXCEPTION_MESSAGE))
                                         {
-                                            Object[] params = {e.getLocalizedMessage() };
+                                            Object[] params = {e.getLocalizedMessage()};
                                             throw new AlfrescoRuntimeException("synchronization.err.ldap.search", params, e);
                                         }
                                         // Unresolvable name
                                         if (LDAPUserRegistry.this.errorOnMissingMembers)
                                         {
-                                            Object[] params = {groupShortName, attribute, e.getLocalizedMessage() };
+                                            Object[] params = {groupShortName, attribute, e.getLocalizedMessage()};
                                             throw new AlfrescoRuntimeException("synchronization.err.ldap.group.member.missing.exception", params, e);
                                         }
                                         LDAPUserRegistry.logger.warn("Failed to resolve member of group '"
@@ -928,7 +907,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                 if (LDAPUserRegistry.logger.isDebugEnabled())
                                 {
                                     LDAPUserRegistry.logger.debug("Member DN recognized as posixGroup: " + attribute);
-                                }                                
+                                }
                                 childAssocs.add(attribute);
                             }
                         }
@@ -940,10 +919,9 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                             && !LDAPUserRegistry.PATTERN_RANGE_END.matcher(memAttribute.getID().toLowerCase()).find())
                     {
                         Attributes childAttributes = this.ctx.getAttributes(jndiName(result.getNameInNamespace()),
-                                new String[]
-                                {
-                                    LDAPUserRegistry.this.memberAttributeName + ";range=" + nextStart + '-'
-                                            + (nextStart + LDAPUserRegistry.this.attributeBatchSize - 1)
+                                new String[]{
+                                        LDAPUserRegistry.this.memberAttributeName + ";range=" + nextStart + '-'
+                                                + (nextStart + LDAPUserRegistry.this.attributeBatchSize - 1)
                                 });
                         memAttribute = getRangeRestrictedAttribute(childAttributes,
                                 LDAPUserRegistry.this.memberAttributeName);
@@ -970,13 +948,12 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         return lookup.values();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.sync.ldap.LDAPNameResolver#resolveDistinguishedName(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.sync.ldap.LDAPNameResolver#resolveDistinguishedName(java.lang.String) */
     public String resolveDistinguishedName(String userId, AuthenticationDiagnostic diagnostic) throws AuthenticationException
     {
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("resolveDistinguishedName userId:" + userId);
         }
@@ -984,14 +961,12 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         userSearchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 
         // Although we don't actually need any attributes, we ask for the UID for compatibility with Sun Directory Server. See ALF-3868
-        userSearchCtls.setReturningAttributes(new String[]
-        {
-            this.userIdAttributeName
+        userSearchCtls.setReturningAttributes(new String[]{
+                this.userIdAttributeName
         });
-        
-        String query = this.userSearchBase + "(&" + this.personQuery
-        + "(" + this.userIdAttributeName + "= userId))";
 
+        String query = this.userSearchBase + "(&" + this.personQuery
+                + "(" + this.userIdAttributeName + "= userId))";
 
         NamingEnumeration<SearchResult> searchResults = null;
         SearchResult result = null;
@@ -1002,13 +977,13 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             ctx = this.ldapInitialContextFactory.getDefaultIntialDirContext(diagnostic);
 
             // Execute the user query with an additional condition that ensures only the user with the required ID is
-            // returned. Force RFC 2254 escaping of the user ID in the filter to avoid any manipulation            
-            
-             searchResults = ctx.search(this.userSearchBase, "(&" + this.personQuery
-                    + "(" + this.userIdAttributeName + "={0}))", new Object[]
-            {
-                userId
-            }, userSearchCtls);
+            // returned. Force RFC 2254 escaping of the user ID in the filter to avoid any manipulation
+
+            searchResults = ctx.search(this.userSearchBase, "(&" + this.personQuery
+                    + "(" + this.userIdAttributeName + "={0}))",
+                    new Object[]{
+                            userId
+                    }, userSearchCtls);
 
             if (searchResults.hasMore())
             {
@@ -1054,19 +1029,19 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 }
                 result = null;
             }
-            
+
             Object[] args = {userId, query};
             diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_LOOKUP_USER, false, args);
-            
+
             throw new AuthenticationException("authentication.err.connection.ldap.user.notfound", args, diagnostic);
         }
         catch (NamingException e)
         {
             // Connection is good here - AuthenticationException would be thrown by ldapInitialContextFactory
-            
+
             Object[] args1 = {userId, query};
             diagnostic.addStep(AuthenticationDiagnostic.STEP_KEY_LDAP_SEARCH, false, args1);
-            
+
             // failed to search
             Object[] args = {e.getLocalizedMessage()};
             throw new AuthenticationException("authentication.err.connection.ldap.search", diagnostic, args, e);
@@ -1172,7 +1147,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             {
                 Attribute attribute = ldapAttributes.get(attributeName);
                 String defaultAttribute = attributeDefaults.get(key);
-                
+
                 if (attribute != null)
                 {
                     String value = (String) attribute.get(0);
@@ -1204,8 +1179,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     }
 
     /**
-     * Converts a given DN into one suitable for use through JNDI. In particular, escapes special characters such as '/'
-     * which have special meaning to JNDI.
+     * Converts a given DN into one suitable for use through JNDI. In particular, escapes special characters such as '/' which have special meaning to JNDI.
      * 
      * @param dn
      *            the dn
@@ -1219,11 +1193,9 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
         n.add(dn);
         return n;
     }
-    
+
     /**
-     * Works around a bug in the JDK DN parsing. If an RDN has trailing escaped whitespace in the format "\\20" then
-     * LdapName would normally strip this. This method works around this by replacing "\\20" with "\\ " and "\\0D" with
-     * "\\\r".
+     * Works around a bug in the JDK DN parsing. If an RDN has trailing escaped whitespace in the format "\\20" then LdapName would normally strip this. This method works around this by replacing "\\20" with "\\ " and "\\0D" with "\\\r".
      * 
      * @param dn
      *            the DN
@@ -1293,7 +1265,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
      *            the query
      * @param returningAttributes
      *            the attributes to include in search results
-     * @throws AlfrescoRuntimeException           
+     * @throws AlfrescoRuntimeException
      */
     private void processQuery(SearchCallback callback, String searchBase, String query, String[] returningAttributes)
     {
@@ -1330,15 +1302,14 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                     callback.process(result);
 
                     // Close the contexts, see ALF-20682
-                    Context resultCtx = (Context)result.getObject();
-                    if(resultCtx != null)
+                    Context resultCtx = (Context) result.getObject();
+                    if (resultCtx != null)
                     {
-                    	resultCtx.close();
+                        resultCtx.close();
                     }
                     result = null;
                 }
-            }
-            while (this.ldapInitialContextFactory.hasNextPage(ctx, this.queryBatchSize));
+            } while (this.ldapInitialContextFactory.hasNextPage(ctx, this.queryBatchSize));
         }
         catch (NamingException e)
         {
@@ -1356,10 +1327,10 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             {
                 try
                 {
-                	Context resultCtx = (Context)result.getObject();
-                    if(resultCtx != null)
+                    Context resultCtx = (Context) result.getObject();
+                    if (resultCtx != null)
                     {
-                    	resultCtx.close();
+                        resultCtx.close();
                     }
                 }
                 catch (Exception e)
@@ -1386,16 +1357,14 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                     ctx.close();
                 }
                 catch (NamingException e)
-                {
-                }
+                {}
             }
             try
             {
                 callback.close();
             }
             catch (NamingException e)
-            {
-            }
+            {}
         }
     }
 
@@ -1434,9 +1403,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     }
 
     /**
-     * Gets the values of a repeating attribute that may have range restriction options. If an attribute is range
-     * restricted, it will appear in the attribute set with a ";range=i-j" option, where i and j indicate the start and
-     * end index, and j is '*' if it is at the end.
+     * Gets the values of a repeating attribute that may have range restriction options. If an attribute is range restricted, it will appear in the attribute set with a ";range=i-j" option, where i and j indicate the start and end index, and j is '*' if it is at the end.
      * 
      * @param attributes
      *            the attributes
@@ -1482,8 +1449,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
          * Instantiates a new person collection.
          * 
          * @param modifiedSince
-         *            if non-null, then only descriptions of users modified since this date should be returned; if
-         *            <code>null</code> then descriptions of all users should be returned.
+         *            if non-null, then only descriptions of users modified since this date should be returned; if <code>null</code> then descriptions of all users should be returned.
          */
         public PersonCollection(Date modifiedSince)
         {
@@ -1506,12 +1472,9 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 {
                     int count;
 
-                    /*
-                     * (non-Javadoc)
-                     * @see
-                     * org.alfresco.repo.security.sync.ldap.LDAPUserRegistry.SearchCallback#process(javax.naming.directory
-                     * .SearchResult)
-                     */
+                    /* (non-Javadoc)
+                     * 
+                     * @see org.alfresco.repo.security.sync.ldap.LDAPUserRegistry.SearchCallback#process(javax.naming.directory .SearchResult) */
                     protected void doProcess(SearchResult result) throws NamingException, ParseException
                     {
                         this.count++;
@@ -1522,17 +1485,15 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                         }
                     }
 
-                    /*
-                     * (non-Javadoc)
-                     * @see org.alfresco.repo.security.sync.ldap.LDAPUserRegistry.SearchCallback#close()
-                     */
+                    /* (non-Javadoc)
+                     * 
+                     * @see org.alfresco.repo.security.sync.ldap.LDAPUserRegistry.SearchCallback#close() */
                     public void close() throws NamingException
-                    {
-                    }
+                    {}
 
                 }
                 CountingCallback countingCallback = new CountingCallback();
-                processQuery(countingCallback, LDAPUserRegistry.this.userSearchBase, this.query, new String[] {});
+                processQuery(countingCallback, LDAPUserRegistry.this.userSearchBase, this.query, new String[]{});
                 this.totalEstimatedSize = countingCallback.count;
             }
             else
@@ -1541,20 +1502,18 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             }
         }
 
-        /*
-         * (non-Javadoc)
-         * @see java.util.AbstractCollection#iterator()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see java.util.AbstractCollection#iterator() */
         @Override
         public Iterator<NodeDescription> iterator()
         {
             return new PersonIterator();
         }
 
-        /*
-         * (non-Javadoc)
-         * @see java.util.AbstractCollection#size()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see java.util.AbstractCollection#size() */
         @Override
         public int size()
         {
@@ -1621,26 +1580,23 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                             this.ctx.close();
                         }
                         catch (Exception e)
-                        {
-                        }
+                        {}
                         this.ctx = null;
                     }
                 }
             }
 
-            /*
-             * (non-Javadoc)
-             * @see java.util.Iterator#hasNext()
-             */
+            /* (non-Javadoc)
+             * 
+             * @see java.util.Iterator#hasNext() */
             public boolean hasNext()
             {
                 return this.next != null;
             }
 
-            /*
-             * (non-Javadoc)
-             * @see java.util.Iterator#next()
-             */
+            /* (non-Javadoc)
+             * 
+             * @see java.util.Iterator#next() */
             public NodeDescription next()
             {
                 if (this.next == null)
@@ -1652,7 +1608,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 {
                     this.next = fetchNext();
                 }
-                catch(CommunicationException e)
+                catch (CommunicationException e)
                 {
                     try
                     {
@@ -1662,19 +1618,18 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                     + "Performing another attempt to sync with ldap. Last processed person was: '"
                                     + (this.lastProcessedPerson == null ? "null" : this.lastProcessedPerson) + "'");
                         }
-    
+
                         this.ctx = LDAPUserRegistry.this.ldapInitialContextFactory
                                 .getDefaultIntialDirContext(LDAPUserRegistry.this.queryBatchSize);
 
                         if (LDAPUserRegistry.this.queryBatchSize > 0)
                         {
-                            ((LdapContext)this.ctx).setRequestControls(new Control[]
-                            {
-                                new PagedResultsControl(LDAPUserRegistry.this.queryBatchSize, pagedResultsResponseControl == null ? null : pagedResultsResponseControl.getCookie(), Control.CRITICAL)
+                            ((LdapContext) this.ctx).setRequestControls(new Control[]{
+                                    new PagedResultsControl(LDAPUserRegistry.this.queryBatchSize, pagedResultsResponseControl == null ? null : pagedResultsResponseControl.getCookie(), Control.CRITICAL)
                             });
                         }
 
-                        // make sure we will skip already processed persons 
+                        // make sure we will skip already processed persons
                         this.skipToLastProcessedPerson = true;
                         // release previous search results
                         this.searchResults.close();
@@ -1682,7 +1637,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                         // move position to next element
                         this.next = fetchNext();
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         throw new AlfrescoRuntimeException("Failed to import people. Also failed to restart sync process.", ex);
                     }
@@ -1743,10 +1698,10 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                 LDAPUserRegistry.logger
                                         .info("Skipping already synchronized person during sync retry - "
                                                 + uid);
-                                
+
                                 if (uid.equals(this.lastProcessedPerson))
                                 {
-                                    // MNT-14001 fix, it looks like we already reached last processed person 
+                                    // MNT-14001 fix, it looks like we already reached last processed person
                                     this.skipToLastProcessedPerson = false;
                                 }
                                 continue;
@@ -1773,7 +1728,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                         Object obj = result.getObject();
                         if (obj != null && obj instanceof Context)
                         {
-                            ((Context)obj).close();
+                            ((Context) obj).close();
                             obj = null;
                         }
                         result = null;
@@ -1790,7 +1745,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                         if (readyForNextPage)
                         {
                             // MNT-14001 fix, next page available - remember last paged results control
-                            // using cookie from this control we can restart search from current position if needed 
+                            // using cookie from this control we can restart search from current position if needed
                             LdapContext ldapContext = (LdapContext) this.ctx;
                             Control[] controls = ldapContext.getResponseControls();
 
@@ -1800,7 +1755,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                 {
                                     if (control instanceof PagedResultsResponseControl)
                                     {
-                                        this.pagedResultsResponseControl = (PagedResultsResponseControl)control;
+                                        this.pagedResultsResponseControl = (PagedResultsResponseControl) control;
                                     }
                                 }
                             }
@@ -1813,8 +1768,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                         this.searchResults = this.ctx.search(LDAPUserRegistry.this.userSearchBase,
                                 PersonCollection.this.query, this.userSearchCtls);
                     }
-                }
-                while (readyForNextPage);
+                } while (readyForNextPage);
                 this.searchResults.close();
                 this.searchResults = null;
                 this.ctx.close();
@@ -1822,10 +1776,9 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                 return null;
             }
 
-            /*
-             * (non-Javadoc)
-             * @see java.util.Iterator#remove()
-             */
+            /* (non-Javadoc)
+             * 
+             * @see java.util.Iterator#remove() */
             public void remove()
             {
                 throw new UnsupportedOperationException();
@@ -1834,8 +1787,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     }
 
     /**
-     * An interface for callbacks passed to the
-     * {@link LDAPUserRegistry#processQuery(SearchCallback, String, String, String[])} method.
+     * An interface for callbacks passed to the {@link LDAPUserRegistry#processQuery(SearchCallback, String, String, String[])} method.
      */
     protected static interface SearchCallback
     {
@@ -1862,8 +1814,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     }
 
     /**
-     * An abstract implementation of SearchCallback interface.
-     * Responsible for correct release of SearchResult resource.
+     * An abstract implementation of SearchCallback interface. Responsible for correct release of SearchResult resource.
      */
     protected abstract static class AbstractSearchCallback implements SearchCallback
     {
@@ -1877,12 +1828,12 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             finally
             {
                 Object obj = result.getObject();
-                
+
                 if (obj != null && obj instanceof Context)
                 {
                     try
                     {
-                        ((Context)obj).close();
+                        ((Context) obj).close();
                     }
                     catch (NamingException e)
                     {

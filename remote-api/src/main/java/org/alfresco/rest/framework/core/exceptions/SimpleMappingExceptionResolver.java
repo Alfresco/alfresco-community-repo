@@ -34,14 +34,15 @@ import java.util.Map;
  */
 public class SimpleMappingExceptionResolver implements ExceptionResolver<Exception>
 {
-    private Map<String,Integer> exceptionMappings;
-    
+    private Map<String, Integer> exceptionMappings;
+
     @Override
     public ErrorResponse resolveException(Exception ex)
     {
         ErrorResponse response = null;
-        
-        if (this.exceptionMappings != null) {
+
+        if (this.exceptionMappings != null)
+        {
             response = findMatchingException(this.exceptionMappings, ex);
         }
         return response;
@@ -52,18 +53,19 @@ public class SimpleMappingExceptionResolver implements ExceptionResolver<Excepti
         Integer statusCode = matchException(ex.getClass());
         if (statusCode != null)
         {
-            return makeErrorResponse(ex,statusCode);
+            return makeErrorResponse(ex, statusCode);
         }
-        else 
+        else
         {
-            return null;            
+            return null;
         }
     }
 
     /**
      * Loop up the class hierarchy trying to match a class
      * 
-     * @param ex Exceptions
+     * @param ex
+     *            Exceptions
      * @return Integer Http status code
      */
     @SuppressWarnings("unchecked")
@@ -83,10 +85,10 @@ public class SimpleMappingExceptionResolver implements ExceptionResolver<Excepti
         {
             ApiException apEx = (ApiException) ex;
             return new ErrorResponse(apEx.getMsgId(), statusCode, ex.getLocalizedMessage(), ex.getStackTrace(), apEx.getAdditionalState());
-        } 
+        }
         else
         {
-            return new ErrorResponse(DefaultExceptionResolver.DEFAULT_MESSAGE_ID, statusCode, ex.getLocalizedMessage(), ex.getStackTrace(), null); 
+            return new ErrorResponse(DefaultExceptionResolver.DEFAULT_MESSAGE_ID, statusCode, ex.getLocalizedMessage(), ex.getStackTrace(), null);
         }
     }
 

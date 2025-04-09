@@ -30,6 +30,13 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -39,16 +46,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.view.ExporterCrawlerParameters;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
- * Streams the nodes of a transfer object to the client in the form of an
- * ACP file.
+ * Streams the nodes of a transfer object to the client in the form of an ACP file.
  *
  * @author Gavin Cornwell
  */
@@ -71,8 +71,8 @@ public class TransferGet extends BaseTransferWebScript
 
     @Override
     protected File executeTransfer(NodeRef transferNode,
-                WebScriptRequest req, WebScriptResponse res,
-                Status status, Cache cache) throws IOException
+            WebScriptRequest req, WebScriptResponse res,
+            Status status, Cache cache) throws IOException
     {
         // get all 'transferred' nodes
         NodeRef[] itemsToTransfer = getTransferNodes(transferNode);
@@ -82,11 +82,11 @@ public class TransferGet extends BaseTransferWebScript
         params.setCrawlSelf(true);
         params.setCrawlChildNodes(true);
         params.setExportFrom(new Location(itemsToTransfer));
-        QName[] excludedAspects = new QName[] {
-                    RenditionModel.ASPECT_RENDITIONED,
-                    ContentModel.ASPECT_THUMBNAILED,
-                    RecordsManagementModel.ASPECT_DISPOSITION_LIFECYCLE,
-                    RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH};
+        QName[] excludedAspects = new QName[]{
+                RenditionModel.ASPECT_RENDITIONED,
+                ContentModel.ASPECT_THUMBNAILED,
+                RecordsManagementModel.ASPECT_DISPOSITION_LIFECYCLE,
+                RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH};
         params.setExcludeAspects(excludedAspects);
 
         // create an archive of all the nodes to transfer
@@ -95,7 +95,7 @@ public class TransferGet extends BaseTransferWebScript
         if (logger.isDebugEnabled())
         {
             logger.debug("Creating transfer archive for " + itemsToTransfer.length +
-                        " items into file: " + tempFile.getAbsolutePath());
+                    " items into file: " + tempFile.getAbsolutePath());
         }
 
         // stream the archive back to the client as an attachment (forcing save as)

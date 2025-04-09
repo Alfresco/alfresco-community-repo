@@ -102,19 +102,21 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
 
     /**
      * Sets archived information on the Node
+     * 
      * @param aNode
      * @param mapUserInfo
      */
     private void mapArchiveInfo(Node aNode, Map<String, UserInfo> mapUserInfo)
     {
-        if (mapUserInfo == null) {
+        if (mapUserInfo == null)
+        {
             mapUserInfo = new HashMap<>();
         }
         Map<QName, Serializable> nodeProps = nodeService.getProperties(aNode.getNodeRef());
-        aNode.setArchivedAt((Date)nodeProps.get(ContentModel.PROP_ARCHIVED_DATE));
-        aNode.setArchivedByUser(aNode.lookupUserInfo((String)nodeProps.get(ContentModel.PROP_ARCHIVED_BY), mapUserInfo, personService));
+        aNode.setArchivedAt((Date) nodeProps.get(ContentModel.PROP_ARCHIVED_DATE));
+        aNode.setArchivedByUser(aNode.lookupUserInfo((String) nodeProps.get(ContentModel.PROP_ARCHIVED_BY), mapUserInfo, personService));
 
-        //Don't show parent id
+        // Don't show parent id
         aNode.setParentId(null);
     }
 
@@ -135,10 +137,10 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
 
         List<Node> nodesFound = new ArrayList<Node>(result.getPage().size());
         Map mapUserInfo = new HashMap<>();
-        for (NodeRef nRef:result.getPage())
+        for (NodeRef nRef : result.getPage())
         {
             Node foundNode = nodes.getFolderOrDocument(nRef, null, null, parameters.getInclude(), mapUserInfo);
-            mapArchiveInfo(foundNode,mapUserInfo);
+            mapArchiveInfo(foundNode, mapUserInfo);
             nodesFound.add(foundNode);
         }
 
@@ -148,10 +150,10 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
     @Override
     public Node getDeletedNode(String originalId, Parameters parameters, boolean fullnode, Map<String, UserInfo> mapUserInfo)
     {
-        //First check the node is valid and has been archived.
+        // First check the node is valid and has been archived.
         NodeRef validatedNodeRef = nodes.validateNode(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, originalId);
 
-        //Now get the Node
+        // Now get the Node
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, validatedNodeRef.getId());
         NodeRef archivedNodeRef = nodeArchiveService.getArchivedNode(nodeRef);
 
@@ -165,14 +167,15 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
             foundNode = nodes.getFolderOrDocument(archivedNodeRef, null, null, parameters.getInclude(), mapUserInfo);
         }
 
-        if (foundNode != null) mapArchiveInfo(foundNode,null);
+        if (foundNode != null)
+            mapArchiveInfo(foundNode, null);
         return foundNode;
     }
 
     @Override
     public Node restoreArchivedNode(String archivedId, NodeTargetAssoc nodeTargetAssoc)
     {
-        //First check the node is valid and has been archived.
+        // First check the node is valid and has been archived.
         NodeRef validatedNodeRef = nodes.validateNode(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, archivedId);
 
         RestoreNodeReport restored = null;
@@ -201,16 +204,16 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
         case FAILURE_INVALID_ARCHIVE_NODE:
             throw new EntityNotFoundException(archivedId);
         case FAILURE_INVALID_PARENT:
-            throw new NotFoundException("Invalid parent id "+restored.getTargetParentNodeRef());
+            throw new NotFoundException("Invalid parent id " + restored.getTargetParentNodeRef());
         default:
-            throw new ApiException("Unable to restore node "+archivedId);
+            throw new ApiException("Unable to restore node " + archivedId);
         }
     }
 
     @Override
     public void purgeArchivedNode(String archivedId)
     {
-        //First check the node is valid and has been archived.
+        // First check the node is valid and has been archived.
         NodeRef validatedNodeRef = nodes.validateNode(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, archivedId);
         nodeArchiveService.purgeArchivedNode(validatedNodeRef);
     }
@@ -252,7 +255,7 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
     @Override
     public DirectAccessUrl requestContentDirectUrl(String originalNodeId, String renditionId, boolean attachment, Long validFor, String fileName)
     {
-        //First check the node is valid and has been archived.
+        // First check the node is valid and has been archived.
         NodeRef validatedNodeRef = nodes.validateNode(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, originalNodeId);
 
         if (renditionId != null)

@@ -26,9 +26,9 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.util.EqualsHelper.MapValueComparison;
-
 import junit.framework.TestCase;
+
+import org.alfresco.util.EqualsHelper.MapValueComparison;
 
 /**
  * @see EqualsHelper
@@ -40,22 +40,22 @@ public class EqualsHelperTest extends TestCase
 {
     private File fileOne;
     private File fileTwo;
-    
+
     @Override
     public void setUp() throws Exception
     {
         fileOne = TempFileProvider.createTempFile(getName(), "-one.txt");
         fileTwo = TempFileProvider.createTempFile(getName(), "-two.txt");
-        
+
         OutputStream osOne = new FileOutputStream(fileOne);
         osOne.write("1234567890 - ONE".getBytes("UTF-8"));
         osOne.close();
-        
+
         OutputStream osTwo = new FileOutputStream(fileTwo);
         osTwo.write("1234567890 - TWO".getBytes("UTF-8"));
         osTwo.close();
     }
-    
+
     public void testStreamsNotEqual() throws Exception
     {
         InputStream isLeft = new FileInputStream(fileOne);
@@ -63,7 +63,7 @@ public class EqualsHelperTest extends TestCase
         boolean equal = EqualsHelper.binaryStreamEquals(isLeft, isRight);
         assertFalse("Should not be the same", equal);
     }
-    
+
     public void testStreamsEqual() throws Exception
     {
         InputStream isLeft = new FileInputStream(fileOne);
@@ -71,7 +71,7 @@ public class EqualsHelperTest extends TestCase
         boolean equal = EqualsHelper.binaryStreamEquals(isLeft, isRight);
         assertTrue("Should be the same", equal);
     }
-    
+
     public void testMapComparison() throws Exception
     {
         Map<Integer, String> left = new HashMap<Integer, String>();

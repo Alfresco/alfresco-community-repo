@@ -43,7 +43,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 public class WebDAVHelperTest
 {
     private WebDAVHelper davHelper;
-    
+
     @Before
     public void setUp() throws Exception
     {
@@ -71,15 +71,15 @@ public class WebDAVHelperTest
         String prefix = davHelper.getUrlPathPrefix(request);
         assertEquals("/before/the-servlet/", prefix);
     }
-    
+
     @Test
     public void canGetDestinationPathWhenNoServletName()
     {
         assertPathForURL("/the-tenant.com/the-site/path/to/file",
-                    "http://webdav.alfresco.com/the-tenant.com/the-site/path/to/file");
-     
+                "http://webdav.alfresco.com/the-tenant.com/the-site/path/to/file");
+
     }
-    
+
     /**
      * THOR-1459: WebDAV: site names cannot start with 'webdav'.
      * <p>
@@ -89,31 +89,33 @@ public class WebDAVHelperTest
     public void canGetDestinationPathWhenPathElementStartsWithServletPath()
     {
         assertPathForURL("/t/webdav-test/path/to/file",
-                    "http://webdav.alfresco.com/t/webdav-test/path/to/file");
+                "http://webdav.alfresco.com/t/webdav-test/path/to/file");
 
         // Looks like /contextPath/servletName in URL's path prefix, but isn't
         assertPathForURL("/alfresco/webdav-test/path/to/file",
-                    "http://webdav.alfresco.com/alfresco/webdav-test/path/to/file");
+                "http://webdav.alfresco.com/alfresco/webdav-test/path/to/file");
     }
-    
+
     @Test
     public void canGetDestinationPathWhenPrefixedWithContextPathAndServletName()
     {
         assertPathForURL("/path/to/file",
-                    "http://webdav.alfresco.com/alfresco/webdav/path/to/file");
-        
+                "http://webdav.alfresco.com/alfresco/webdav/path/to/file");
+
         assertPathForURL("/alfresco/webdav/path/to/file",
-                    "http://webdav.alfresco.com/alfresco/webdav/alfresco/webdav/path/to/file");
+                "http://webdav.alfresco.com/alfresco/webdav/alfresco/webdav/path/to/file");
 
         assertPathForURL("/my/folder/alfresco/webdav/path/to/file",
-                    "http://webdav.alfresco.com/alfresco/webdav/my/folder/alfresco/webdav/path/to/file");
+                "http://webdav.alfresco.com/alfresco/webdav/my/folder/alfresco/webdav/path/to/file");
     }
 
     /**
      * Check that the expected path was extracted from a given URL.
      * 
-     * @param path The expected path.
-     * @param url URL to extract the path from.
+     * @param path
+     *            The expected path.
+     * @param url
+     *            URL to extract the path from.
      */
     private void assertPathForURL(String path, String url)
     {

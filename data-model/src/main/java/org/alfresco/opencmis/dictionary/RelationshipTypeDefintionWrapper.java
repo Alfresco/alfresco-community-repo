@@ -31,6 +31,10 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.chemistry.opencmis.commons.definitions.PropertyDefinition;
+import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.RelationshipTypeDefinitionImpl;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.CMISUtils;
 import org.alfresco.opencmis.mapping.CMISMapping;
@@ -38,9 +42,6 @@ import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.util.ISO9075;
-import org.apache.chemistry.opencmis.commons.definitions.PropertyDefinition;
-import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.RelationshipTypeDefinitionImpl;
 
 public class RelationshipTypeDefintionWrapper extends AbstractTypeDefinitionWrapper
 {
@@ -69,13 +70,14 @@ public class RelationshipTypeDefintionWrapper extends AbstractTypeDefinitionWrap
             typeDef.setQueryName(ISO9075.encodeSQL(typeId));
             typeDef.setParentTypeId(null);
             typeDef.setIsCreatable(false);
-        } else
+        }
+        else
         {
             typeDef.setQueryName(ISO9075.encodeSQL(cmisMapping.buildPrefixEncodedString(alfrescoName)));
             typeDef.setParentTypeId(BaseTypeId.CMIS_RELATIONSHIP.value());
             typeDef.setIsCreatable(true);
         }
-        
+
         typeDef.setDisplayName(null);
         typeDef.setDescription(null);
 
@@ -124,7 +126,7 @@ public class RelationshipTypeDefintionWrapper extends AbstractTypeDefinitionWrap
         ArrayList<String> both = new ArrayList<String>(2);
         both.add(BaseTypeId.CMIS_DOCUMENT.value());
         both.add(BaseTypeId.CMIS_FOLDER.value());
-        
+
         String sourceTypeId = cmisMapping.getCmisTypeId(cmisMapping
                 .getCmisType(cmisAssocDef.getSourceClass().getName()));
         if (sourceTypeId != null)
@@ -156,16 +158,16 @@ public class RelationshipTypeDefintionWrapper extends AbstractTypeDefinitionWrap
     public List<TypeDefinitionWrapper> connectParentAndSubTypes(CMISMapping cmisMapping, CMISDictionaryRegistry registry,
             DictionaryService dictionaryService)
     {
-    	String parentTypeId = typeDef.getParentTypeId();
+        String parentTypeId = typeDef.getParentTypeId();
 
         // find parent
         if (parentTypeId != null)
         {
             parent = registry.getTypeDefByTypeId(parentTypeId);
-            if(registry.getTenant() != null && parent != null && registry.getTypeDefByTypeId(parentTypeId, false) == null)
+            if (registry.getTenant() != null && parent != null && registry.getTypeDefByTypeId(parentTypeId, false) == null)
             {
-            	// this is a tenant registry and the parent is not defined locally so add this type as a child of it
-            	registry.addChild(parent.getTypeId(), this);
+                // this is a tenant registry and the parent is not defined locally so add this type as a child of it
+                registry.addChild(parent.getTypeId(), this);
             }
         }
         else
@@ -189,7 +191,7 @@ public class RelationshipTypeDefintionWrapper extends AbstractTypeDefinitionWrap
         }
 
         return children;
-//        registry.setChildren(typeDef.getId(), children);
+        // registry.setChildren(typeDef.getId(), children);
     }
 
     public void resolveInheritance(CMISMapping cmisMapping, CMISDictionaryRegistry registry,
@@ -224,7 +226,7 @@ public class RelationshipTypeDefintionWrapper extends AbstractTypeDefinitionWrap
             }
         }
     }
-    
+
     @Override
     public void updateDefinition(DictionaryService dictionaryService)
     {
@@ -239,10 +241,10 @@ public class RelationshipTypeDefintionWrapper extends AbstractTypeDefinitionWrap
         {
             super.updateDefinition(dictionaryService);
         }
-        
+
         updateTypeDefInclProperties();
     }
-    
+
     @Override
     public PropertyDefinitionWrapper getPropertyById(String propertyId)
     {
@@ -256,7 +258,7 @@ public class RelationshipTypeDefintionWrapper extends AbstractTypeDefinitionWrap
         updateProperties(dictionaryService);
         return propertiesById.values();
     }
-    
+
     @Override
     public Collection<PropertyDefinitionWrapper> getProperties(boolean update)
     {

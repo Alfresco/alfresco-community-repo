@@ -47,9 +47,9 @@ public class FTSPhrase extends BaseFunction
     public final static String ARG_PHRASE = "Phrase";
 
     public final static String ARG_PROPERTY = "Property";
-    
+
     public final static String ARG_SLOP = "Slop";
-    
+
     public final static String ARG_TOKENISATION_MODE = "TokenisationMode";
 
     public static LinkedHashMap<String, ArgumentDefinition> args;
@@ -68,11 +68,9 @@ public class FTSPhrase extends BaseFunction
         super(NAME, DataTypeDefinition.BOOLEAN, args);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Function#getValue(java.util.Set) */
     public Serializable getValue(Map<String, Argument> args, FunctionEvaluationContext context)
     {
         throw new UnsupportedOperationException();

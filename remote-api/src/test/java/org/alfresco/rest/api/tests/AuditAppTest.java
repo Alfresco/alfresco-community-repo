@@ -25,13 +25,14 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 
 import java.net.URL;
 import java.time.ZonedDateTime;
@@ -42,8 +43,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.util.ResourceUtils;
 
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -64,15 +69,11 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.ISO8601DateFormat;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.util.ResourceUtils;
 
 /**
  * @author anechifor, aforascu, eknizat, janv
  */
-public class AuditAppTest extends AbstractSingleNetworkSiteTest 
+public class AuditAppTest extends AbstractSingleNetworkSiteTest
 {
     protected PermissionService permissionService;
     protected AuthorityService authorityService;
@@ -80,7 +81,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
     protected static String AUDIT_APP_ID = "alfresco-access";
 
     @Before
-    public void setup() throws Exception 
+    public void setup() throws Exception
     {
         super.setup();
 
@@ -97,20 +98,20 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
     }
 
     @After
-    public void tearDown() throws Exception 
+    public void tearDown() throws Exception
     {
         super.tearDown();
     }
 
     @Test
-    public void testGetAuditApps() throws Exception 
+    public void testGetAuditApps() throws Exception
     {
         setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
         testGetAuditAppsSkipPaging();
     }
 
     @Test
-    public void testGetAuditApp() throws Exception 
+    public void testGetAuditApp() throws Exception
     {
         final AuditApps auditAppsProxy = publicApiClient.auditApps();
 
@@ -164,7 +165,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
             setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
 
             AuditApp auditApp = auditAppsProxy.getAuditApp("alfresco-access");
-            HashMap <String, String> params = new HashMap<>();
+            HashMap<String, String> params = new HashMap<>();
 
             // Get only minimum record id
             params.put("include", "min");
@@ -188,7 +189,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         }
     }
 
-    private void testGetAuditAppsSkipPaging() throws Exception 
+    private void testGetAuditAppsSkipPaging() throws Exception
     {
         // +ve: check skip count.
         {
@@ -220,27 +221,27 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
     }
 
     private ListResponse<AuditApp> getAuditApps(final PublicApiClient.Paging paging, String errorMessage,
-            int expectedStatus) throws Exception 
+            int expectedStatus) throws Exception
     {
         final AuditApps auditAppsProxy = publicApiClient.auditApps();
         return auditAppsProxy.getAuditApps(createParams(paging), errorMessage, expectedStatus);
     }
 
-    private ListResponse<AuditApp> getAuditApps(final PublicApiClient.Paging paging) throws Exception 
+    private ListResponse<AuditApp> getAuditApps(final PublicApiClient.Paging paging) throws Exception
     {
         return getAuditApps(paging, "Failed to get audit applications", HttpServletResponse.SC_OK);
     }
 
-    protected Map<String, String> createParams(Paging paging) 
+    protected Map<String, String> createParams(Paging paging)
     {
         Map<String, String> params = new HashMap<String, String>(2);
-        if (paging != null) 
+        if (paging != null)
         {
-            if (paging.getSkipCount() != null) 
+            if (paging.getSkipCount() != null)
             {
                 params.put("skipCount", String.valueOf(paging.getSkipCount()));
             }
-            if (paging.getMaxItems() != null) 
+            if (paging.getMaxItems() != null)
             {
                 params.put("maxItems", String.valueOf(paging.getMaxItems()));
             }
@@ -249,7 +250,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         return params;
     }
 
-    private void validateAuditApplicationFields(AuditApp auditApp) 
+    private void validateAuditApplicationFields(AuditApp auditApp)
     {
         assertNotNull(auditApp);
         assertNotNull(auditApp.getId());
@@ -275,7 +276,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         }
     }
 
-    private void validateAuditEntryFields(AuditEntry auditEntry, AuditApp auditApp) 
+    private void validateAuditEntryFields(AuditEntry auditEntry, AuditApp auditApp)
     {
         String auditAppid = auditApp.getId();
 
@@ -287,19 +288,19 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         assertFalse(auditEntry.getId().toString().isEmpty());
         assertFalse(auditEntry.getAuditApplicationId().isEmpty());
 
-        if (auditApp.getId().equals(AUDIT_APP_ID)) 
+        if (auditApp.getId().equals(AUDIT_APP_ID))
         {
             assertTrue(auditEntry.getAuditApplicationId().toString().equals(auditAppid));
         }
     }
 
-    private String getFirstAuditAppId() throws PublicApiException 
+    private String getFirstAuditAppId() throws PublicApiException
     {
         // Get one of the audit app ids ( fail test if there are no audit apps
         // in the system )
         ListResponse<AuditApp> apps = publicApiClient.auditApps().getAuditApps(null, "Getting audit apps error ",
                 HttpServletResponse.SC_OK);
-        if (apps.getList().size() == 0) 
+        if (apps.getList().size() == 0)
         {
             fail("There are no audit applications to run this test against.");
         }
@@ -307,7 +308,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
     }
 
     @Test
-    public void testEnableDisableAuditApplication() throws Exception 
+    public void testEnableDisableAuditApplication() throws Exception
     {
         AuditApp requestAuditApp = new AuditApp();
         AuditApp responseAuditApp = null;
@@ -351,28 +352,28 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         enableSystemAudit();
     }
 
-    protected void enableSystemAudit() 
+    protected void enableSystemAudit()
     {
         boolean isEnabled = auditService.isAuditEnabled();
-        if (!isEnabled) 
+        if (!isEnabled)
         {
             auditService.setAuditEnabled(true);
             isEnabled = auditService.isAuditEnabled();
-            if (!isEnabled) 
+            if (!isEnabled)
             {
                 fail("Failed to enable system audit for testing");
             }
         }
     }
 
-    protected void disableSystemAudit() 
+    protected void disableSystemAudit()
     {
         boolean isEnabled = auditService.isAuditEnabled();
-        if (isEnabled) 
+        if (isEnabled)
         {
             auditService.setAuditEnabled(false);
             isEnabled = auditService.isAuditEnabled();
-            if (isEnabled) 
+            if (isEnabled)
             {
                 fail("Failed to disable system audit for testing");
             }
@@ -380,7 +381,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
     }
 
     @Test
-    public void testAuditEntries() throws Exception 
+    public void testAuditEntries() throws Exception
     {
         final AuditApps auditAppsProxy = publicApiClient.auditApps();
 
@@ -407,15 +408,15 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
 
         final ZonedDateTime beginDate = ZonedDateTime.now().minusHours(1).truncatedTo(ChronoUnit.MINUTES);
         final ZonedDateTime endDate = ZonedDateTime.now().truncatedTo(ChronoUnit.MINUTES);
-        params.put("where","(createdAt BETWEEN ('"+beginDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)+"' , '"+endDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)+"'))");
+        params.put("where", "(createdAt BETWEEN ('" + beginDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) + "' , '" + endDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) + "'))");
 
         ListResponse<AuditEntry> auditEntries = auditAppsProxy.getAuditAppEntries(auditApp.getId(), params,
                 HttpServletResponse.SC_OK);
         int totalItemsWithDefaultMaxSize = auditEntries.getPaging().getTotalItems();
-        assertTrue( totalItemsWithDefaultMaxSize > 1 );
+        assertTrue(totalItemsWithDefaultMaxSize > 1);
 
         // get "totalItems" for a specific time internal (with maxSize=1)
-        params.put("maxSize","1");
+        params.put("maxSize", "1");
         auditEntries = auditAppsProxy.getAuditAppEntries(auditApp.getId(), params,
                 HttpServletResponse.SC_OK);
         int totalItemsWithMaxSize1 = auditEntries.getPaging().getTotalItems();
@@ -424,12 +425,12 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         assertEquals(totalItemsWithMaxSize1, totalItemsWithDefaultMaxSize);
     }
 
-    private void testGetAuditEntries(AuditApps auditAppsProxy, AuditApp auditApp) throws Exception 
+    private void testGetAuditEntries(AuditApps auditAppsProxy, AuditApp auditApp) throws Exception
     {
         // Positive tests
         ListResponse<AuditEntry> auditEntries = auditAppsProxy.getAuditAppEntries(auditApp.getId(), null,
                 HttpServletResponse.SC_OK);
-        for (AuditEntry ae : auditEntries.getList()) 
+        for (AuditEntry ae : auditEntries.getList())
         {
             validateAuditEntryFields(ae, auditApp);
         }
@@ -439,10 +440,10 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
 
         // set maxItems to 1
         Map<String, String> params = new HashMap<>();
-        params.put("maxItems","1");
+        params.put("maxItems", "1");
 
         auditEntries = auditAppsProxy.getAuditAppEntries(auditApp.getId(), params,
-            HttpServletResponse.SC_OK);
+                HttpServletResponse.SC_OK);
 
         int AuditEntriesTotalItemsAfterLimit = auditEntries.getPaging().getTotalItems();
         int retrievedAuditEntriesCount = auditEntries.getPaging().getCount();
@@ -454,7 +455,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         // set omitTotalItems to true.
         params.put("omitTotalItems", "true");
         auditEntries = auditAppsProxy.getAuditAppEntries(auditApp.getId(), params,
-            HttpServletResponse.SC_OK);
+                HttpServletResponse.SC_OK);
 
         // verify that totalItems is null.
         assertNull(auditEntries.getPaging().getTotalItems());
@@ -477,7 +478,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         enableSystemAudit();
     }
 
-    private void testAuditEntriesSorting(AuditApps auditAppsProxy, AuditApp auditApp) throws Exception 
+    private void testAuditEntriesSorting(AuditApps auditAppsProxy, AuditApp auditApp) throws Exception
     {
         // paging
         Paging paging = getPaging(0, 10);
@@ -494,7 +495,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
 
     }
 
-    private void testAuditEntriesWhereDate(AuditApps auditAppsProxy, AuditApp auditApp) throws Exception 
+    private void testAuditEntriesWhereDate(AuditApps auditAppsProxy, AuditApp auditApp) throws Exception
     {
         // paging
         Paging paging = getPaging(0, 10);
@@ -548,7 +549,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         auditAppsProxy.getAuditAppEntries(auditApp.getId(), createParams(paging, otherParams), HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    private void testAuditEntriesWhereId(AuditApps auditAppsProxy, AuditApp auditApp) throws Exception 
+    private void testAuditEntriesWhereId(AuditApps auditAppsProxy, AuditApp auditApp) throws Exception
     {
         // paging
         Paging paging = getPaging(0, 10);
@@ -567,7 +568,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         auditAppsProxy.getAuditAppEntries(auditApp.getId(), createParams(paging, otherParams), HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    private void testAuditEntriesWithInclude(AuditApps auditAppsProxy, AuditApp auditApp) throws Exception 
+    private void testAuditEntriesWithInclude(AuditApps auditAppsProxy, AuditApp auditApp) throws Exception
     {
         Paging paging = getPaging(0, 10);
         Map<String, String> otherParams = new HashMap<>();
@@ -596,7 +597,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
 
     }
 
-    private void testAuditEntriesSkipCount(AuditApps auditAppsProxy, AuditApp auditApp) throws Exception 
+    private void testAuditEntriesSkipCount(AuditApps auditAppsProxy, AuditApp auditApp) throws Exception
     {
         int skipCount = 0;
         int maxItems = 4;
@@ -628,15 +629,15 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
                 createParams(paging, otherParams), HttpServletResponse.SC_OK);
         String id = resp.getList().get(0).getId().toString();
 
-        //Positive tests
-        //200
+        // Positive tests
+        // 200
         AuditEntry entryResp = auditAppsProxy.getAuditEntry(auditApp.getId(), id, null, HttpServletResponse.SC_OK);
         validateAuditEntryFields(entryResp, auditApp);
         assertNotNull(entryResp.getValues());
 
         // Negative tests
         // 400
-        auditAppsProxy.getAuditEntry(auditApp.getId(), id+"invalidIdText", null, HttpServletResponse.SC_BAD_REQUEST);
+        auditAppsProxy.getAuditEntry(auditApp.getId(), id + "invalidIdText", null, HttpServletResponse.SC_BAD_REQUEST);
         // 401
         setRequestContext(networkOne.getId(), networkAdmin, "wrongPassword");
         auditAppsProxy.getAuditEntry(auditApp.getId(), id, null, HttpServletResponse.SC_UNAUTHORIZED);
@@ -667,7 +668,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
 
         // Negative tests
         // 400
-        auditAppsProxy.getAuditEntry(auditApp.getId(), id+"invalidIdText", null, HttpServletResponse.SC_BAD_REQUEST);
+        auditAppsProxy.getAuditEntry(auditApp.getId(), id + "invalidIdText", null, HttpServletResponse.SC_BAD_REQUEST);
         // 401
         setRequestContext(networkOne.getId(), networkAdmin, "wrongPassword");
         auditAppsProxy.deleteAuditEntry(auditApp.getId(), id, null, HttpServletResponse.SC_UNAUTHORIZED);
@@ -684,8 +685,8 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         auditAppsProxy.deleteAuditEntry(auditApp.getId(), id, null, HttpServletResponse.SC_NOT_IMPLEMENTED);
         enableSystemAudit();
 
-        //Positive tests
-        //204
+        // Positive tests
+        // 204
         auditAppsProxy.deleteAuditEntry(auditApp.getId(), id, null, HttpServletResponse.SC_NO_CONTENT);
     }
 
@@ -728,7 +729,8 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
         AuthenticationUtil.setFullyAuthenticatedUser(networkAdmin);
         disableSystemAudit();
-        auditAppsProxy.deleteAuditEntries(auditApp.getId(), otherParams, HttpServletResponse.SC_NOT_IMPLEMENTED);;
+        auditAppsProxy.deleteAuditEntries(auditApp.getId(), otherParams, HttpServletResponse.SC_NOT_IMPLEMENTED);
+        ;
         enableSystemAudit();
 
         // Positive tests
@@ -745,20 +747,19 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
     /**
      * Perform a login attempt (to be used to create audit entries)
      */
-    private void login(final String username, final String password) throws Exception 
+    private void login(final String username, final String password) throws Exception
     {
         // Force a failed login
-        RunAsWork<Void> failureWork = new RunAsWork<Void>() 
-        {
+        RunAsWork<Void> failureWork = new RunAsWork<Void>() {
             @Override
-            public Void doWork() throws Exception 
+            public Void doWork() throws Exception
             {
-                try 
+                try
                 {
                     authenticationService.authenticate(username, password.toCharArray());
                     fail("Failed to force authentication failure");
-                } 
-                catch (AuthenticationException e) 
+                }
+                catch (AuthenticationException e)
                 {
                     // Expected
                 }
@@ -768,28 +769,28 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         AuthenticationUtil.runAs(failureWork, AuthenticationUtil.getSystemUserName());
     }
 
-    protected Map<String, String> createParams(Paging paging, Map<String, String> otherParams) 
+    protected Map<String, String> createParams(Paging paging, Map<String, String> otherParams)
     {
         Map<String, String> params = new HashMap<String, String>(2);
-        if (paging != null) 
+        if (paging != null)
         {
-            if (paging.getSkipCount() != null) 
+            if (paging.getSkipCount() != null)
             {
                 params.put("skipCount", String.valueOf(paging.getSkipCount()));
             }
-            if (paging.getMaxItems() != null) 
+            if (paging.getMaxItems() != null)
             {
                 params.put("maxItems", String.valueOf(paging.getMaxItems()));
             }
         }
-        if (otherParams != null) 
+        if (otherParams != null)
         {
             params.putAll(otherParams);
         }
         return params;
     }
 
-    private void addOrderBy(Map<String, String> otherParams, String sortColumn, Boolean asc) 
+    private void addOrderBy(Map<String, String> otherParams, String sortColumn, Boolean asc)
     {
         otherParams.put("orderBy",
                 sortColumn + (asc != null ? " " + (asc ? SortColumn.ASCENDING : SortColumn.DESCENDING) : ""));
@@ -801,7 +802,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         String siteDocLibNodeId = getSiteContainerNodeId(siteId, "documentLibrary");
         return createFolder(siteDocLibNodeId, folderName).getId();
     }
-    
+
     private void renameNode(String nodeId, String newName) throws Exception
     {
         Node nUpdate = new Node();
@@ -867,7 +868,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
 
         ListResponse<AuditEntry> auditEntriesWithoutValues = auditAppsProxy.getAuditAppEntriesByNodeRefId(nodeId, params, HttpServletResponse.SC_OK);
         assertNotNull(auditEntriesWithoutValues);
-        
+
         for (AuditEntry ae : auditEntriesWithoutValues.getList())
         {
             validateAuditEntryFields(ae, alfAccessAuditApp);
@@ -957,7 +958,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         setRequestContext(user1);
 
         ListResponse<AuditEntry> auditEntries = auditAppsProxy.getAuditAppEntriesByNodeRefId(nodeId, null, HttpServletResponse.SC_OK);
-        
+
         for (AuditEntry ae : auditEntries.getList())
         {
             validateAuditEntryFields(ae, alfAccessAuditApp);

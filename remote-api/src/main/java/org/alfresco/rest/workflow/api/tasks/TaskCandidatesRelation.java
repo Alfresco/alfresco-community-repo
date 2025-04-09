@@ -25,6 +25,9 @@
  */
 package org.alfresco.rest.workflow.api.tasks;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
@@ -32,8 +35,6 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.workflow.api.Tasks;
 import org.alfresco.rest.workflow.api.model.TaskCandidate;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * 
@@ -47,10 +48,10 @@ public class TaskCandidatesRelation implements RelationshipResourceAction.Read<T
 
     private Tasks tasks;
 
-	public void setTasks(Tasks tasks)
-	{
-		this.tasks = tasks;
-	}
+    public void setTasks(Tasks tasks)
+    {
+        this.tasks = tasks;
+    }
 
     /**
      * List the tasks candidate users and groups.

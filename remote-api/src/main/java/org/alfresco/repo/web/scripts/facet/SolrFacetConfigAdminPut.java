@@ -32,13 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.search.impl.solr.facet.Exceptions.UnrecognisedFacetId;
-import org.alfresco.repo.search.impl.solr.facet.FacetQNameUtils;
-import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
-import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.collections.CollectionUtils;
-import org.alfresco.util.collections.Function;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -49,6 +42,14 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.repo.search.impl.solr.facet.Exceptions.UnrecognisedFacetId;
+import org.alfresco.repo.search.impl.solr.facet.FacetQNameUtils;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.collections.CollectionUtils;
+import org.alfresco.util.collections.Function;
 
 /**
  * This class is the controller for the "solr-facet-config-admin.put" web scripts.
@@ -61,7 +62,7 @@ public class SolrFacetConfigAdminPut extends AbstractSolrFacetConfigAdminWebScri
 {
     private static final Log logger = LogFactory.getLog(SolrFacetConfigAdminPost.class);
 
-    protected static final String PARAM_RELATIVE_POS  = "relativePos";
+    protected static final String PARAM_RELATIVE_POS = "relativePos";
     protected static final String URL_PARAM_FILTER_ID = "filterID";
 
     @Override
@@ -73,41 +74,50 @@ public class SolrFacetConfigAdminPut extends AbstractSolrFacetConfigAdminWebScri
             if (relativePosString != null)
             {
                 // This is a request to 'move' (reposition) the specified facet.
-                
+
                 // We need the relative position that the facet will move.
                 final int relativePos;
-                
-                try { relativePos = Integer.parseInt(relativePosString); }
+
+                try
+                {
+                    relativePos = Integer.parseInt(relativePosString);
+                }
                 catch (NumberFormatException nfe)
                 {
                     throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                                                 "Cannot move facet as could not parse relative position: '" + relativePosString + "'");
+                            "Cannot move facet as could not parse relative position: '" + relativePosString + "'");
                 }
-                
+
                 // And we need the filterID for the facet we're moving.
                 final Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
                 String filterId = templateVars.get(URL_PARAM_FILTER_ID);
-                
-                if (filterId == null) { throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Illegal null filterId"); }
-                
+
+                if (filterId == null)
+                {
+                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Illegal null filterId");
+                }
+
                 // So let's move the filter...
                 try
                 {
                     // Get the current sequence of filter IDs.
                     List<SolrFacetProperties> facets = facetService.getFacets();
-                    List<String> facetIDs = CollectionUtils.transform(facets, new Function<SolrFacetProperties, String>()
-                            {
-                                @Override public String apply(SolrFacetProperties value)
-                                {
-                                    return value.getFilterID();
-                                }
-                            });
-                    
+                    List<String> facetIDs = CollectionUtils.transform(facets, new Function<SolrFacetProperties, String>() {
+                        @Override
+                        public String apply(SolrFacetProperties value)
+                        {
+                            return value.getFilterID();
+                        }
+                    });
+
                     List<String> reorderedIDs = CollectionUtils.moveRight(relativePos, filterId, facetIDs);
-                    
+
                     this.facetService.reorderFacets(reorderedIDs);
-                    
-                    if (logger.isDebugEnabled()) { logger.debug("Moved facet " + filterId + " to relative position: " + relativePos); }
+
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Moved facet " + filterId + " to relative position: " + relativePos);
+                    }
                 }
                 catch (UnrecognisedFacetId ufi)
                 {
@@ -119,7 +129,7 @@ public class SolrFacetConfigAdminPut extends AbstractSolrFacetConfigAdminWebScri
             {
                 SolrFacetProperties fp = parseRequestForFacetProperties(req);
                 facetService.updateFacet(fp);
-                
+
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Updated facet node: " + fp);
@@ -145,7 +155,7 @@ public class SolrFacetConfigAdminPut extends AbstractSolrFacetConfigAdminWebScri
             final String filterID = json.getString(PARAM_FILTER_ID); // Must exist
 
             final String facetQNameStr = getValue(String.class, json.opt(PARAM_FACET_QNAME), null);
-            
+
             // Note that in resolving the QName string here, we expect there to be some facet QNames which are not
             // really QNames. These are SOLR/SearchService 'specials', examples being "SITE" or "TAG".
             // These will be resolved here to a QName with no namespace.
@@ -164,18 +174,18 @@ public class SolrFacetConfigAdminPut extends AbstractSolrFacetConfigAdminWebScri
             final Set<CustomProperties> customProps = getCustomProperties(customPropJsonObj);
 
             SolrFacetProperties fp = new SolrFacetProperties.Builder()
-                        .filterID(filterID)
-                        .facetQName(facetQName)
-                        .displayName(displayName)
-                        .displayControl(displayControl)
-                        .maxFilters(maxFilters)
-                        .hitThreshold(hitThreshold)
-                        .minFilterValueLength(minFilterValueLength)
-                        .sortBy(sortBy)
-                        .scope(scope)
-                        .isEnabled(isEnabled)
-                        .scopedSites(scopedSites)
-                        .customProperties(customProps).build();
+                    .filterID(filterID)
+                    .facetQName(facetQName)
+                    .displayName(displayName)
+                    .displayControl(displayControl)
+                    .maxFilters(maxFilters)
+                    .hitThreshold(hitThreshold)
+                    .minFilterValueLength(minFilterValueLength)
+                    .sortBy(sortBy)
+                    .scope(scope)
+                    .isEnabled(isEnabled)
+                    .scopedSites(scopedSites)
+                    .customProperties(customProps).build();
             return fp;
         }
         catch (IOException e)

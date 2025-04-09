@@ -25,25 +25,25 @@
  */
 package org.alfresco;
 
-import org.alfresco.util.testing.category.DBTests;
-import org.alfresco.util.testing.category.NonBuildTests;
 import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+
+import org.alfresco.util.testing.category.DBTests;
+import org.alfresco.util.testing.category.NonBuildTests;
 
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
 @Suite.SuiteClasses({
 
-    // [classpath*:/publicapi/lucene/, classpath:alfresco/application-context.xml,
-    // classpath:alfresco/web-scripts-application-context-test.xml,
-    // classpath:alfresco/web-scripts-application-context.xml, rest-api-test-context.xml, testcmis-model-context.xml]
-    org.alfresco.rest.api.tests.TestEnterpriseAtomPubTCK.class,
-    org.alfresco.rest.api.tests.TestPublicApiAtomPub10TCK.class,
-    org.alfresco.rest.api.tests.TestPublicApiAtomPub11TCK.class,
-    org.alfresco.rest.api.tests.TestPublicApiBrowser11TCK.class,
-    org.alfresco.repo.web.scripts.bulkimport.BulkImportParametersExtractorTest.class
+        // [classpath*:/publicapi/lucene/, classpath:alfresco/application-context.xml,
+        // classpath:alfresco/web-scripts-application-context-test.xml,
+        // classpath:alfresco/web-scripts-application-context.xml, rest-api-test-context.xml, testcmis-model-context.xml]
+        org.alfresco.rest.api.tests.TestEnterpriseAtomPubTCK.class,
+        org.alfresco.rest.api.tests.TestPublicApiAtomPub10TCK.class,
+        org.alfresco.rest.api.tests.TestPublicApiAtomPub11TCK.class,
+        org.alfresco.rest.api.tests.TestPublicApiBrowser11TCK.class,
+        org.alfresco.repo.web.scripts.bulkimport.BulkImportParametersExtractorTest.class
 })
 public class AppContext01TestSuite
-{
-}
+{}

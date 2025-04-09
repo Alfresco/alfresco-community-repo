@@ -48,7 +48,7 @@ public class HasPermissionMethod extends AbstractProtocolMethod<AccessStatus>
     private VirtualFolderDefinitionResolver resolver;
 
     public HasPermissionMethod(VirtualFolderDefinitionResolver resolver, VirtualUserPermissions userPermissions,
-                String permissionToCheck)
+            String permissionToCheck)
     {
         super();
         this.userPermissions = userPermissions;
@@ -63,7 +63,7 @@ public class HasPermissionMethod extends AbstractProtocolMethod<AccessStatus>
         FilingRule filingRule = definition.getFilingRule();
 
         boolean readonly = filingRule.isNullFilingRule()
-                    || filingRule.filingNodeRefFor(new FilingParameters(reference)) == null;
+                || filingRule.filingNodeRefFor(new FilingParameters(reference)) == null;
         if (readonly)
         {
             Set<String> deniedPermissions = userPermissions.getDenyReadonlySmartNodes();
@@ -71,7 +71,7 @@ public class HasPermissionMethod extends AbstractProtocolMethod<AccessStatus>
             {
                 return AccessStatus.DENIED;
             }
-            
+
             if (PermissionService.READ.equals(permissionToCheck))
             {
                 return AccessStatus.ALLOWED;
@@ -79,7 +79,7 @@ public class HasPermissionMethod extends AbstractProtocolMethod<AccessStatus>
         }
 
         return userPermissions.hasVirtualNodePermission(permissionToCheck,
-                                                        readonly);
+                readonly);
     }
 
     @Override

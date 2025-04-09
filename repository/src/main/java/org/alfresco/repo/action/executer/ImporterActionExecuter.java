@@ -456,7 +456,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                 }
                 else
                 {
-                    File newdir = new File(extractDir + entry.getName());
+                    File newdir = new File(extractDir + StringUtils.stripAccents(entry.getName()).replaceAll("\\?", "_"));
                     newdir.mkdirs();
                 }
             }

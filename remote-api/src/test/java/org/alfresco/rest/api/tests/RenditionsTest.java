@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -50,10 +50,16 @@ import com.google.common.collect.Ordering;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mozilla.javascript.Scriptable;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.service.ServiceDescriptorRegistry;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
@@ -71,6 +77,8 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.util.TempFileProvider;
@@ -102,11 +110,16 @@ public class RenditionsTest extends AbstractBaseApiTest
     protected static ContentService contentService;
     private static SynchronousTransformClient synchronousTransformClient;
 
+    protected TenantService tenantService;
+    private ServiceDescriptorRegistry serviceRegistry;
+
     @Before
     public void setup() throws Exception
     {
         contentService = applicationContext.getBean("contentService", ContentService.class);
         synchronousTransformClient = applicationContext.getBean("synchronousTransformClient", SynchronousTransformClient.class);
+        tenantService = (TenantService) applicationContext.getBean("tenantService");
+        serviceRegistry = (ServiceDescriptorRegistry) applicationContext.getBean("ServiceRegistry");
         networkN1 = repoService.createNetworkWithAlias("ping", true);
         networkN1.create();
         userOneN1 = networkN1.createUser();
@@ -978,6 +991,68 @@ public class RenditionsTest extends AbstractBaseApiTest
         // Create a node without any content
         String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", TYPE_CM_CONTENT, userOneN1.getId());
         getSingle(getNodeRenditionsUrl(emptyContentNodeId), "doclib/content", params, 200);
+    }
+
+    /**
+     * Test recreation of rendition2 aspect.
+     * <p>
+     * POST:
+     * </p>
+     * <p>
+     * DELETE:
+     * </p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/renditions} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/renditions/{renditionID}
+     */
+    @Test
+    public void testRecreationOfRendition2() throws Exception
+    {
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
+
+        // Create a folder within the site document's library
+        String folderName = "folder" + System.currentTimeMillis();
+        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userOneN1.getId());
+
+        // Create multipart request.
+        String renditionName = "pdf";
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+        MultiPartRequest reqBody = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file))
+                .setRenditions(Collections.singletonList(renditionName))
+                .build();
+
+        // Upload quick.pdf file into 'folder'
+        HttpResponse response = post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        // wait and check that rendition is created ...
+        Rendition rendition = waitAndGetRendition(contentNodeId, null, renditionName);
+        assertNotNull(rendition);
+        assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
+
+        Thread.sleep(DELAY_IN_MS);
+
+        delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 204);
+        // retry to double-check deletion
+        delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 404);
+
+        Scriptable scope = new BaseScopableProcessorExtension().getScope();
+        ScriptNode node = new ScriptNode(getNodeRef(contentNodeId), serviceRegistry, scope);
+        ScriptNode thumbnailNode = node.createThumbnail("pdf", false);
+
+        Rendition rendition2 = waitAndGetRendition(contentNodeId, null, renditionName);
+        assertNotNull(rendition2);
+        assertNotEquals("", rendition.getId(), rendition2.getId());
+
+    }
+
+    private NodeRef getNodeRef(String id)
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id);
+        nodeRef = tenantService.getName(nodeRef);
+        return nodeRef;
     }
 
     private String addToDocumentLibrary(Site testSite, String name, String nodeType, String userId) throws Exception

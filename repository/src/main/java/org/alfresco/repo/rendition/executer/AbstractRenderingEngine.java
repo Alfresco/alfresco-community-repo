@@ -1012,7 +1012,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
                     if (logger.isDebugEnabled())
                     {
                         logger.debug("Removing the existing rendition node that doesn't have contentData and "
-                                + "assigning the newly created rendition node: " + renditionNode);
+                                + "assigning the newly created rendition node: " + renditionAssoc);
 
                     }
                 }

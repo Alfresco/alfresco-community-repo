@@ -57,7 +57,6 @@ import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.service.ServiceDescriptorRegistry;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.rest.api.model.Site;
@@ -78,7 +77,6 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.util.TempFileProvider;
@@ -1039,7 +1037,7 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         Scriptable scope = new BaseScopableProcessorExtension().getScope();
         ScriptNode node = new ScriptNode(getNodeRef(contentNodeId), serviceRegistry, scope);
-        ScriptNode thumbnailNode = node.createThumbnail("pdf", false);
+        node.createThumbnail("pdf", false);
 
         Rendition rendition2 = waitAndGetRendition(contentNodeId, null, renditionName);
         assertNotNull(rendition2);
@@ -1049,9 +1047,7 @@ public class RenditionsTest extends AbstractBaseApiTest
 
     private NodeRef getNodeRef(String id)
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
-        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id);
-        nodeRef = tenantService.getName(nodeRef);
+        NodeRef nodeRef = new NodeRef("workspace://SpacesStore/" + id);
         return nodeRef;
     }
 

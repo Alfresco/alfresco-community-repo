@@ -224,6 +224,7 @@
          <list>
             <value>AdminConsole</value>
             <value>AdminConsoleHelper</value>
+            <value>Index</value>
          </list>
       </property>
    </bean>

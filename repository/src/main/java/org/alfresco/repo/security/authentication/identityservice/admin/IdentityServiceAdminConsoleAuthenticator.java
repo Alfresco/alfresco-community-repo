@@ -239,7 +239,12 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         try
         {
             URI originalUri = new URI(requestURL);
-            URI redirectUri = new URI(originalUri.getScheme(), originalUri.getAuthority(), identityServiceConfig.getAdminConsoleRedirectPath(), originalUri.getQuery(), originalUri.getFragment());
+            String redirectPath = identityServiceConfig.getAdminConsoleRedirectPath();
+            if (requestURL.contains("index"))
+            {
+                redirectPath = originalUri.getPath();
+            }
+            URI redirectUri = new URI(originalUri.getScheme(), originalUri.getAuthority(), redirectPath, originalUri.getQuery(), originalUri.getFragment());
             return redirectUri.toASCIIString();
         }
         catch (URISyntaxException e)

@@ -70,6 +70,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
     private static final String ALFRESCO_ACCESS_TOKEN = "ALFRESCO_ACCESS_TOKEN";
     private static final String ALFRESCO_REFRESH_TOKEN = "ALFRESCO_REFRESH_TOKEN";
     private static final String ALFRESCO_TOKEN_EXPIRATION = "ALFRESCO_TOKEN_EXPIRATION";
+    private static final String ALFRESCO_WEB_SCRIPT_PATH = "/alfresco/s/index";
 
     private IdentityServiceConfig identityServiceConfig;
     private IdentityServiceFacade identityServiceFacade;
@@ -240,7 +241,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         {
             URI originalUri = new URI(requestURL);
             String redirectPath = identityServiceConfig.getAdminConsoleRedirectPath();
-            if (requestURL.contains("index"))
+            if (originalUri.getPath().equals(ALFRESCO_WEB_SCRIPT_PATH))
             {
                 redirectPath = originalUri.getPath();
             }

@@ -62,6 +62,7 @@ import org.junit.Test;
  * 
  * @author abalmus
  */
+@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 public class ImporterActionExecuterTest
 {
     // Rule to initialise the default Alfresco spring configuration
@@ -345,7 +346,7 @@ public class ImporterActionExecuterTest
             }
         });
     }
-    
+
     private void putContent(NodeRef zipFileNodeRef, String resource)
     {
         URL url = AbstractContentTransformerTest.class.getClassLoader().getResource(resource);

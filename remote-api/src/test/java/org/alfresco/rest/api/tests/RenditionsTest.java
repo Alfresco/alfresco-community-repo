@@ -57,6 +57,7 @@ import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.service.ServiceDescriptorRegistry;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.rest.api.model.Site;
@@ -1035,9 +1036,12 @@ public class RenditionsTest extends AbstractBaseApiTest
         // retry to double-check deletion
         delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 404);
 
-        Scriptable scope = new BaseScopableProcessorExtension().getScope();
-        ScriptNode node = new ScriptNode(getNodeRef(contentNodeId), serviceRegistry, scope);
-        node.createThumbnail("pdf", false);
+        AuthenticationUtil.runAs(() -> {
+            Scriptable scope = new BaseScopableProcessorExtension().getScope();
+            ScriptNode node = new ScriptNode(getNodeRef(contentNodeId), serviceRegistry, scope);
+            node.createThumbnail("pdf", false);
+            return null;
+        }, AuthenticationUtil.getAdminUserName());
 
         Rendition rendition2 = waitAndGetRendition(contentNodeId, null, renditionName);
         assertNotNull(rendition2);

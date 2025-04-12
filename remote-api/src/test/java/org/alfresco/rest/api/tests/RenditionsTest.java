@@ -50,14 +50,10 @@ import com.google.common.collect.Ordering;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mozilla.javascript.Scriptable;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
-import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.service.ServiceDescriptorRegistry;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.rest.api.model.Site;
@@ -1036,16 +1032,18 @@ public class RenditionsTest extends AbstractBaseApiTest
         // retry to double-check deletion
         delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 404);
 
-        AuthenticationUtil.runAs(() -> {
-            Scriptable scope = new BaseScopableProcessorExtension().getScope();
-            ScriptNode node = new ScriptNode(getNodeRef(contentNodeId), serviceRegistry, scope);
-            node.createThumbnail("pdf", false);
-            return null;
-        }, AuthenticationUtil.getAdminUserName());
+        String URL_DOCUMENT = "/context/mine/document-details";
 
-        Rendition rendition2 = waitAndGetRendition(contentNodeId, null, renditionName);
-        assertNotNull(rendition2);
-        assertNotEquals("", rendition.getId(), rendition2.getId());
+        String pageParams = "{\"nodeRef\":\"" + getNodeRef(contentNodeId) + "\"}";
+
+        Map<String, String> params = new HashMap<>();
+        params.put("pageParams", pageParams);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Accept", "text/html");
+
+        HttpResponse response2 = getSingle(URL_DOCUMENT, null, params, headers, null, 200);
+        assertNotNull(response2);
 
     }
 

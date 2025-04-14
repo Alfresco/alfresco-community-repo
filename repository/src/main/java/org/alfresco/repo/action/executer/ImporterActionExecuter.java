@@ -518,7 +518,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
             @Override
             public void reportProgress(long compressedBytesCount, long uncompressedBytesCount)
             {
-                // intentionally do nothing
+                // intentionally do nothin\
             }
         };
     }

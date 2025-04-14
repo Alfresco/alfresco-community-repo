@@ -719,7 +719,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     }
 
     @Test
-    public void recreationOfRendition2()
+    public void testRecreationOfRendition2()
     {
         // Create a node
         NodeRef sourceNodeRef = createSource(ADMIN, "quick.docx");
@@ -744,7 +744,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
             return null;
         }), ADMIN);
 
-        assertNull("Rendition has content", nodeService.getProperty(pdfRenditionNodeRef, ContentModel.PROP_CONTENT));
+        assertNull("Rendition has content", nodeService.getProperty(pdfRenditionNodeRef, PROP_CONTENT));
 
         pdfRenditionContentHashCode = getRenditionContentHashCode(pdfRenditionNodeRef);
         assertFalse("Rendition has content hash code", isValidRenditionContentHashCode(pdfRenditionContentHashCode));

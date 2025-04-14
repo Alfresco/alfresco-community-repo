@@ -54,7 +54,6 @@ import org.junit.Test;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
-import org.alfresco.repo.service.ServiceDescriptorRegistry;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
@@ -73,7 +72,6 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.util.TempFileProvider;
@@ -106,7 +104,6 @@ public class RenditionsTest extends AbstractBaseApiTest
     private static SynchronousTransformClient synchronousTransformClient;
 
     protected TenantService tenantService;
-    private ServiceDescriptorRegistry serviceRegistry;
 
     @Before
     public void setup() throws Exception
@@ -114,7 +111,6 @@ public class RenditionsTest extends AbstractBaseApiTest
         contentService = applicationContext.getBean("contentService", ContentService.class);
         synchronousTransformClient = applicationContext.getBean("synchronousTransformClient", SynchronousTransformClient.class);
         tenantService = (TenantService) applicationContext.getBean("tenantService");
-        serviceRegistry = (ServiceDescriptorRegistry) applicationContext.getBean("ServiceRegistry");
         networkN1 = repoService.createNetworkWithAlias("ping", true);
         networkN1.create();
         userOneN1 = networkN1.createUser();
@@ -986,12 +982,6 @@ public class RenditionsTest extends AbstractBaseApiTest
         // Create a node without any content
         String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", TYPE_CM_CONTENT, userOneN1.getId());
         getSingle(getNodeRenditionsUrl(emptyContentNodeId), "doclib/content", params, 200);
-    }
-
-    private NodeRef getNodeRef(String id)
-    {
-        NodeRef nodeRef = new NodeRef("workspace://SpacesStore/" + id);
-        return nodeRef;
     }
 
     private String addToDocumentLibrary(Site testSite, String name, String nodeType, String userId) throws Exception

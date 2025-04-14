@@ -73,7 +73,8 @@ import org.alfresco.util.TempFileProvider;
  *
  * @author gavinc
  */
-public class ImporterActionExecuter extends ActionExecuterAbstractBase {
+public class ImporterActionExecuter extends ActionExecuterAbstractBase
+{
     public static final String NAME = "import";
     public static final String PARAM_ENCODING = "encoding";
     public static final String PARAM_DESTINATION_FOLDER = "destination";
@@ -112,7 +113,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
      *
      * @param importerService The ImporterService
      */
-    public void setImporterService(ImporterService importerService) {
+    public void setImporterService(ImporterService importerService)
+    {
         this.importerService = importerService;
     }
 
@@ -121,7 +123,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
      *
      * @param nodeService The NodeService
      */
-    public void setNodeService(NodeService nodeService) {
+    public void setNodeService(NodeService nodeService)
+    {
         this.nodeService = nodeService;
     }
 
@@ -130,7 +133,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
      *
      * @param contentService The ContentService
      */
-    public void setContentService(ContentService contentService) {
+    public void setContentService(ContentService contentService)
+    {
         this.contentService = contentService;
     }
 
@@ -139,28 +143,32 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
      *
      * @param fileFolderService The FileFolderService
      */
-    public void setFileFolderService(FileFolderService fileFolderService) {
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
         this.fileFolderService = fileFolderService;
     }
 
     /**
      * @return the highByteZip encoding switch
      */
-    public boolean isHighByteZip() {
+    public boolean isHighByteZip()
+    {
         return this.highByteZip;
     }
 
     /**
      * @param highByteZip the encoding switch for high-byte ZIP filenames to set
      */
-    public void setHighByteZip(boolean highByteZip) {
+    public void setHighByteZip(boolean highByteZip)
+    {
         this.highByteZip = highByteZip;
     }
 
     /**
      * @param ratioThreshold the compression ratio threshold for Zip bomb detection
      */
-    public void setRatioThreshold(long ratioThreshold) {
+    public void setRatioThreshold(long ratioThreshold)
+    {
         this.ratioThreshold = ratioThreshold;
     }
 
@@ -169,13 +177,16 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
      *
      * @param limit a String representing a valid Java long.
      */
-    public void setUncompressedBytesLimit(String limit) {
+    public void setUncompressedBytesLimit(String limit)
+    {
         // A string parameter is used here in order to not to require end users to provide a value for the limit in a property
         // file. This results in the empty string being injected to this method.
         long longLimit = -1L;
-        try {
+        try
+        {
             longLimit = Long.parseLong(limit);
-        } catch (NumberFormatException ignored) {
+        } catch (NumberFormatException ignored)
+        {
             // Intentionally empty
         }
         this.uncompressedBytesLimit = longLimit;
@@ -184,16 +195,21 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(Action, NodeRef)
      */
-    public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef) {
-        if (this.nodeService.exists(actionedUponNodeRef) == true) {
+    public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
+    {
+        if (this.nodeService.exists(actionedUponNodeRef) == true)
+        {
             // The node being passed in should be an Alfresco content package
             ContentReader reader = this.contentService.getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
-            if (reader != null) {
+            if (reader != null)
+            {
                 NodeRef importDest = (NodeRef) ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
-                if (MimetypeMap.MIMETYPE_ACP.equals(reader.getMimetype())) {
+                if (MimetypeMap.MIMETYPE_ACP.equals(reader.getMimetype()))
+                {
                     // perform an import of an Alfresco ACP file (special format ZIP structure)
                     File zipFile = null;
-                    try {
+                    try
+                    {
                         // unfortunately a ZIP file can not be read directly from an input stream so we have to create
                         // a temporary file first
                         zipFile = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, TEMP_FILE_SUFFIX_ACP);
@@ -203,27 +219,33 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
                                 (String) ruleAction.getParameterValue(PARAM_ENCODING));
 
                         this.importerService.importView(importHandler, new Location(importDest), null, null);
-                    } finally {
+                    } finally
+                    {
                         // now the import is done, delete the temporary file
-                        if (zipFile != null) {
+                        if (zipFile != null)
+                        {
                             zipFile.delete();
                         }
                     }
-                } else if (MimetypeMap.MIMETYPE_ZIP.equals(reader.getMimetype())) {
+                } else if (MimetypeMap.MIMETYPE_ZIP.equals(reader.getMimetype()))
+                {
                     // perform an import of a standard ZIP file
                     ZipFile zipFile = null;
                     File tempFile = null;
-                    try {
+                    try
+                    {
                         tempFile = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, TEMP_FILE_SUFFIX_ACP);
                         reader.getContent(tempFile);
                         // NOTE: This encoding allows us to workaround bug:
                         // http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
                         // We also try to use the extra encoding information if present
                         String encoding = (String) ruleAction.getParameterValue(PARAM_ENCODING);
-                        if (encoding == null) {
+                        if (encoding == null)
+                        {
                             encoding = "UTF-8";
                         } else {
-                            if (encoding.equalsIgnoreCase("default")) {
+                            if (encoding.equalsIgnoreCase("default"))
+                            {
                                 encoding = null;
                             }
                         }
@@ -232,25 +254,33 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
                         // also use the long life temp folder as large ZIP files can take a while
                         File alfTempDir = TempFileProvider.getLongLifeTempDir("import");
                         File tempDir = new File(alfTempDir.getPath() + File.separatorChar + actionedUponNodeRef.getId());
-                        try {
+                        try
+                        {
                             // TODO: improve this code to directly pipe the zip stream output into the repo objects -
                             // to remove the need to expand to the filesystem first?
                             extractFile(zipFile, tempDir.getPath(), new ZipBombProtection(ratioThreshold, uncompressedBytesLimit));
                             importDirectory(tempDir.getPath(), importDest);
-                        } finally {
+                        } finally
+                        {
                             deleteDir(tempDir);
                         }
-                    } catch (IOException ioErr) {
+                    } catch (IOException ioErr)
+                    {
                         throw new AlfrescoRuntimeException("Failed to import ZIP file.", ioErr);
-                    } finally {
+                    } finally
+                    {
                         // now the import is done, delete the temporary file
-                        if (tempFile != null) {
+                        if (tempFile != null)
+                        {
                             tempFile.delete();
                         }
-                        if (zipFile != null) {
-                            try {
+                        if (zipFile != null)
+                        {
+                            try
+                            {
                                 zipFile.close();
-                            } catch (IOException e) {
+                            } catch (IOException e)
+                            {
                                 throw new AlfrescoRuntimeException("Failed to close zip package.", e);
                             }
                         }
@@ -266,11 +296,15 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
      * @param dir  The directory of files and folders to import
      * @param root The root node to import into
      */
-    private void importDirectory(String dir, NodeRef root) {
+    private void importDirectory(String dir, NodeRef root)
+    {
         File topdir = new File(dir);
-        for (File file : topdir.listFiles()) {
-            try {
-                if (file.isFile()) {
+        for (File file : topdir.listFiles())
+        {
+            try
+            {
+                if (file.isFile())
+                {
                     String fileName = file.getName();
 
                     // create content node based on the file name
@@ -287,7 +321,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
                     ContentWriter writer = this.contentService.getWriter(fileRef, ContentModel.PROP_CONTENT, true);
                     writer.guessMimetype(fileName);
                     writer.putContent(contentStream);
-                } else {
+                } else
+                {
                     String folderName = file.getName();
 
                     // create a folder based on the folder name
@@ -303,10 +338,12 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
 
                     importDirectory(file.getPath(), folderRef);
                 }
-            } catch (FileNotFoundException e) {
+            } catch (FileNotFoundException e)
+            {
                 // TODO: add failed file info to status message?
                 throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
-            } catch (FileExistsException e) {
+            } catch (FileExistsException e)
+            {
                 // TODO: add failed file info to status message?
                 throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
             }
@@ -316,7 +353,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) {
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
+    {
         paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF,
                 true, getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
         paramList.add(new ParameterDefinitionImpl(PARAM_ENCODING, DataTypeDefinition.TEXT,
@@ -329,7 +367,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
      * @param archive    The ZIP archive to extract
      * @param extractDir The directory to extract into
      */
-    public static void extractFile(ZipFile archive, String extractDir) {
+    public static void extractFile(ZipFile archive, String extractDir)
+    {
         extractFile(archive, extractDir, ExtractionProgressTracker.NONE);
     }
 
@@ -340,29 +379,35 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
      * @param extractDir The directory to extract into
      * @param tracker    The extraction progress tracker to check against during the extraction process
      */
-    public static void extractFile(ZipFile archive, String extractDir, ExtractionProgressTracker tracker) {
+    public static void extractFile(ZipFile archive, String extractDir, ExtractionProgressTracker tracker)
+    {
         String fileName;
         String destFileName;
         byte[] buffer = new byte[BUFFER_SIZE];
         extractDir = extractDir + File.separator;
-        try {
+        try
+        {
             long totalCompressedBytesCount = 0;
             long totalUncompressedBytesCount = 0;
             tracker.reportProgress(0, 0);
-            for (Enumeration<ZipArchiveEntry> e = archive.getEntries(); e.hasMoreElements(); ) {
+            for (Enumeration<ZipArchiveEntry> e = archive.getEntries(); e.hasMoreElements(); )
+            {
                 ZipArchiveEntry entry = e.nextElement();
-                if (!entry.isDirectory()) {
+                if (!entry.isDirectory())
+                {
                     fileName = StringUtils.stripAccents(entry.getName()).replaceAll("\\?", "_");
                     fileName = fileName.replace('/', File.separatorChar);
 
-                    if (fileName.startsWith("/") || fileName.indexOf(":" + File.separator) == 1 || fileName.contains(".." + File.separator)) {
+                    if (fileName.startsWith("/") || fileName.indexOf(":" + File.separator) == 1 || fileName.contains(".." + File.separator))
+                    {
                         throw new AlfrescoRuntimeException(ARCHIVE_CONTAINS_SUSPICIOUS_PATHS_ERROR);
                     }
 
                     destFileName = extractDir + fileName;
                     File destFile = new File(destFileName);
                     String parent = destFile.getParent();
-                    if (parent != null) {
+                    if (parent != null)
+                    {
                         File parentFile = new File(parent);
                         if (!parentFile.exists())
                             parentFile.mkdirs();
@@ -370,26 +415,32 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
 
                     try (InputStream zis = archive.getInputStream(entry);
                          InputStream in = new BufferedInputStream(zis, BUFFER_SIZE);
-                         OutputStream out = new BufferedOutputStream(new FileOutputStream(destFileName), BUFFER_SIZE)) {
+                         OutputStream out = new BufferedOutputStream(new FileOutputStream(destFileName), BUFFER_SIZE))
+                    {
                         final InputStreamStatistics entryStats = (InputStreamStatistics) zis;
                         int count;
-                        while ((count = in.read(buffer)) != -1) {
+                        while ((count = in.read(buffer)) != -1)
+                        {
                             tracker.reportProgress(totalCompressedBytesCount + entryStats.getCompressedCount(), totalUncompressedBytesCount + entryStats.getUncompressedCount());
                             out.write(buffer, 0, count);
                         }
                         totalCompressedBytesCount += entryStats.getCompressedCount();
                         totalUncompressedBytesCount += entryStats.getUncompressedCount();
                     }
-                } else {
+                } else
+                {
                     File newdir = new File(extractDir + StringUtils.stripAccents(entry.getName()).replaceAll("\\?", "_"));
                     newdir.mkdirs();
                 }
             }
-        } catch (ZipException e) {
+        } catch (ZipException e)
+        {
             throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e)
+        {
             throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
-        } catch (IOException e) {
+        } catch (IOException e)
+        {
             throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
         }
     }
@@ -399,15 +450,19 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
      *
      * @param dir directory to delete
      */
-    public static void deleteDir(File dir) {
-        if (dir != null) {
+    public static void deleteDir(File dir)
+    {
+        if (dir != null)
+        {
             File elenco = new File(dir.getPath());
 
             // listFiles can return null if the path is invalid i.e. already been deleted,
             // therefore check for null before using in loop
             File[] files = elenco.listFiles();
-            if (files != null) {
-                for (File file : files) {
+            if (files != null)
+            {
+                for (File file : files)
+                {
                     if (file.isFile())
                         file.delete();
                     else
@@ -420,39 +475,47 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase {
         }
     }
 
-    private static class ZipBombProtection implements ExtractionProgressTracker {
+    private static class ZipBombProtection implements ExtractionProgressTracker
+    {
         private final long ratioThreshold;
         private final long uncompressedBytesLimit;
 
-        private ZipBombProtection(long ratioThreshold, long uncompressedBytesLimit) {
+        private ZipBombProtection(long ratioThreshold, long uncompressedBytesLimit)
+        {
             this.ratioThreshold = ratioThreshold;
             this.uncompressedBytesLimit = uncompressedBytesLimit;
         }
 
         @Override
-        public void reportProgress(long compressedBytesCount, long uncompressedBytesCount) {
-            if (compressedBytesCount <= 0 || uncompressedBytesCount <= 0) {
+        public void reportProgress(long compressedBytesCount, long uncompressedBytesCount)
+        {
+            if (compressedBytesCount <= 0 || uncompressedBytesCount <= 0)
+            {
                 return;
             }
 
             long ratio = uncompressedBytesCount / compressedBytesCount;
 
-            if (ratio > ratioThreshold) {
+            if (ratio > ratioThreshold)
+            {
                 throw new AlfrescoRuntimeException("Unexpected compression ratio detected (" + ratio + "%). Possible zip bomb attack. Breaking the extraction process.");
             }
 
-            if (uncompressedBytesLimit > 0 && uncompressedBytesCount > uncompressedBytesLimit) {
+            if (uncompressedBytesLimit > 0 && uncompressedBytesCount > uncompressedBytesLimit)
+            {
                 throw new AlfrescoRuntimeException("Uncompressed bytes limit exceeded (" + uncompressedBytesCount + "). Possible zip bomb attack. Breaking the extraction process.");
             }
         }
     }
 
-    private interface ExtractionProgressTracker {
+    private interface ExtractionProgressTracker
+    {
         void reportProgress(long compressedBytesCount, long uncompressedBytesCount);
 
         ExtractionProgressTracker NONE = new ExtractionProgressTracker() {
             @Override
-            public void reportProgress(long compressedBytesCount, long uncompressedBytesCount) {
+            public void reportProgress(long compressedBytesCount, long uncompressedBytesCount)
+            {
                 // intentionally do nothing
             }
         };

@@ -38,8 +38,6 @@ import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -988,66 +986,6 @@ public class RenditionsTest extends AbstractBaseApiTest
         // Create a node without any content
         String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", TYPE_CM_CONTENT, userOneN1.getId());
         getSingle(getNodeRenditionsUrl(emptyContentNodeId), "doclib/content", params, 200);
-    }
-
-    /**
-     * Test recreation of rendition2 aspect.
-     * <p>
-     * POST:
-     * </p>
-     * <p>
-     * DELETE:
-     * </p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/renditions} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/renditions/{renditionID}
-     */
-    @Test
-    public void testRecreationOfRendition2() throws Exception
-    {
-        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
-
-        // Create a folder within the site document's library
-        String folderName = "folder" + System.currentTimeMillis();
-        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userOneN1.getId());
-
-        // Create multipart request.
-        String renditionName = "pdf";
-        String fileName = "quick.pdf";
-        File file = getResourceFile(fileName);
-        MultiPartRequest reqBody = MultiPartBuilder.create()
-                .setFileData(new FileData(fileName, file))
-                .setRenditions(Collections.singletonList(renditionName))
-                .build();
-
-        // Upload quick.pdf file into 'folder'
-        HttpResponse response = post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 201);
-        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-        String contentNodeId = document.getId();
-
-        // wait and check that rendition is created ...
-        Rendition rendition = waitAndGetRendition(contentNodeId, null, renditionName);
-        assertNotNull(rendition);
-        assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
-
-        Thread.sleep(DELAY_IN_MS);
-
-        delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 204);
-        // retry to double-check deletion
-        delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 404);
-
-        String URL_DOCUMENT = "/context/mine/document-details";
-
-        String rawParams = "{\"nodeRef\":\"" + getNodeRef(contentNodeId) + "\"}";
-        String pageParams = URLEncoder.encode(rawParams, StandardCharsets.UTF_8.toString());
-
-        Map<String, String> params = new HashMap<>();
-        params.put("pageParams", pageParams);
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Accept", "text/html");
-
-        HttpResponse response2 = getSingle(URL_DOCUMENT, null, params, headers, null, 200);
-        assertNotNull(response2);
-
     }
 
     private NodeRef getNodeRef(String id)

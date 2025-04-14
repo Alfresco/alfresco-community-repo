@@ -111,7 +111,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     /**
      * Sets the ImporterService to use
      *
-     * @param importerService The ImporterService
+     * @param importerService
+     *            The ImporterService
      */
     public void setImporterService(ImporterService importerService)
     {
@@ -121,7 +122,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     /**
      * Sets the NodeService to use
      *
-     * @param nodeService The NodeService
+     * @param nodeService
+     *            The NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -131,7 +133,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     /**
      * Sets the ContentService to use
      *
-     * @param contentService The ContentService
+     * @param contentService
+     *            The ContentService
      */
     public void setContentService(ContentService contentService)
     {
@@ -141,7 +144,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     /**
      * Sets the FileFolderService to use
      *
-     * @param fileFolderService The FileFolderService
+     * @param fileFolderService
+     *            The FileFolderService
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
@@ -157,7 +161,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     }
 
     /**
-     * @param highByteZip the encoding switch for high-byte ZIP filenames to set
+     * @param highByteZip
+     *            the encoding switch for high-byte ZIP filenames to set
      */
     public void setHighByteZip(boolean highByteZip)
     {
@@ -165,7 +170,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     }
 
     /**
-     * @param ratioThreshold the compression ratio threshold for Zip bomb detection
+     * @param ratioThreshold
+     *            the compression ratio threshold for Zip bomb detection
      */
     public void setRatioThreshold(long ratioThreshold)
     {
@@ -175,7 +181,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     /**
      * This method sets a value for the uncompressed bytes limit. If the string does not {@link Long#parseLong(String) parse} to a java long.
      *
-     * @param limit a String representing a valid Java long.
+     * @param limit
+     *            a String representing a valid Java long.
      */
     public void setUncompressedBytesLimit(String limit)
     {
@@ -185,7 +192,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
         try
         {
             longLimit = Long.parseLong(limit);
-        } catch (NumberFormatException ignored)
+        }
+        catch (NumberFormatException ignored)
         {
             // Intentionally empty
         }
@@ -219,7 +227,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                                 (String) ruleAction.getParameterValue(PARAM_ENCODING));
 
                         this.importerService.importView(importHandler, new Location(importDest), null, null);
-                    } finally
+                    }
+                    finally
                     {
                         // now the import is done, delete the temporary file
                         if (zipFile != null)
@@ -227,7 +236,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                             zipFile.delete();
                         }
                     }
-                } else if (MimetypeMap.MIMETYPE_ZIP.equals(reader.getMimetype()))
+                }
+                else if (MimetypeMap.MIMETYPE_ZIP.equals(reader.getMimetype()))
                 {
                     // perform an import of a standard ZIP file
                     ZipFile zipFile = null;
@@ -243,7 +253,9 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                         if (encoding == null)
                         {
                             encoding = "UTF-8";
-                        } else {
+                        }
+                        else
+                        {
                             if (encoding.equalsIgnoreCase("default"))
                             {
                                 encoding = null;
@@ -260,14 +272,17 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                             // to remove the need to expand to the filesystem first?
                             extractFile(zipFile, tempDir.getPath(), new ZipBombProtection(ratioThreshold, uncompressedBytesLimit));
                             importDirectory(tempDir.getPath(), importDest);
-                        } finally
+                        }
+                        finally
                         {
                             deleteDir(tempDir);
                         }
-                    } catch (IOException ioErr)
+                    }
+                    catch (IOException ioErr)
                     {
                         throw new AlfrescoRuntimeException("Failed to import ZIP file.", ioErr);
-                    } finally
+                    }
+                    finally
                     {
                         // now the import is done, delete the temporary file
                         if (tempFile != null)
@@ -279,7 +294,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                             try
                             {
                                 zipFile.close();
-                            } catch (IOException e)
+                            }
+                            catch (IOException e)
                             {
                                 throw new AlfrescoRuntimeException("Failed to close zip package.", e);
                             }
@@ -293,8 +309,10 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     /**
      * Recursively import a directory structure into the specified root node
      *
-     * @param dir  The directory of files and folders to import
-     * @param root The root node to import into
+     * @param dir
+     *            The directory of files and folders to import
+     * @param root
+     *            The root node to import into
      */
     private void importDirectory(String dir, NodeRef root)
     {
@@ -321,7 +339,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                     ContentWriter writer = this.contentService.getWriter(fileRef, ContentModel.PROP_CONTENT, true);
                     writer.guessMimetype(fileName);
                     writer.putContent(contentStream);
-                } else
+                }
+                else
                 {
                     String folderName = file.getName();
 
@@ -338,11 +357,13 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
 
                     importDirectory(file.getPath(), folderRef);
                 }
-            } catch (FileNotFoundException e)
+            }
+            catch (FileNotFoundException e)
             {
                 // TODO: add failed file info to status message?
                 throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
-            } catch (FileExistsException e)
+            }
+            catch (FileExistsException e)
             {
                 // TODO: add failed file info to status message?
                 throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
@@ -364,8 +385,10 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     /**
      * Extract the file and folder structure of a ZIP file into the specified directory
      *
-     * @param archive    The ZIP archive to extract
-     * @param extractDir The directory to extract into
+     * @param archive
+     *            The ZIP archive to extract
+     * @param extractDir
+     *            The directory to extract into
      */
     public static void extractFile(ZipFile archive, String extractDir)
     {
@@ -375,9 +398,12 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     /**
      * Extract the file and folder structure of a ZIP file into the specified directory using a progress tracker
      *
-     * @param archive    The ZIP archive to extract
-     * @param extractDir The directory to extract into
-     * @param tracker    The extraction progress tracker to check against during the extraction process
+     * @param archive
+     *            The ZIP archive to extract
+     * @param extractDir
+     *            The directory to extract into
+     * @param tracker
+     *            The extraction progress tracker to check against during the extraction process
      */
     public static void extractFile(ZipFile archive, String extractDir, ExtractionProgressTracker tracker)
     {
@@ -390,7 +416,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
             long totalCompressedBytesCount = 0;
             long totalUncompressedBytesCount = 0;
             tracker.reportProgress(0, 0);
-            for (Enumeration<ZipArchiveEntry> e = archive.getEntries(); e.hasMoreElements(); )
+            for (Enumeration<ZipArchiveEntry> e = archive.getEntries(); e.hasMoreElements();)
             {
                 ZipArchiveEntry entry = e.nextElement();
                 if (!entry.isDirectory())
@@ -414,8 +440,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                     }
 
                     try (InputStream zis = archive.getInputStream(entry);
-                         InputStream in = new BufferedInputStream(zis, BUFFER_SIZE);
-                         OutputStream out = new BufferedOutputStream(new FileOutputStream(destFileName), BUFFER_SIZE))
+                            InputStream in = new BufferedInputStream(zis, BUFFER_SIZE);
+                            OutputStream out = new BufferedOutputStream(new FileOutputStream(destFileName), BUFFER_SIZE))
                     {
                         final InputStreamStatistics entryStats = (InputStreamStatistics) zis;
                         int count;
@@ -427,19 +453,23 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                         totalCompressedBytesCount += entryStats.getCompressedCount();
                         totalUncompressedBytesCount += entryStats.getUncompressedCount();
                     }
-                } else
+                }
+                else
                 {
                     File newdir = new File(extractDir + StringUtils.stripAccents(entry.getName()).replaceAll("\\?", "_"));
                     newdir.mkdirs();
                 }
             }
-        } catch (ZipException e)
+        }
+        catch (ZipException e)
         {
             throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
-        } catch (FileNotFoundException e)
+        }
+        catch (FileNotFoundException e)
         {
             throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
         }
@@ -448,7 +478,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     /**
      * Recursively delete a dir of files and directories
      *
-     * @param dir directory to delete
+     * @param dir
+     *            directory to delete
      */
     public static void deleteDir(File dir)
     {

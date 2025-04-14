@@ -38,6 +38,8 @@ import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1034,7 +1036,8 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         String URL_DOCUMENT = "/context/mine/document-details";
 
-        String pageParams = "{\"nodeRef\":\"" + getNodeRef(contentNodeId) + "\"}";
+        String rawParams = "{\"nodeRef\":\"" + getNodeRef(contentNodeId) + "\"}";
+        String pageParams = URLEncoder.encode(rawParams, StandardCharsets.UTF_8.toString());
 
         Map<String, String> params = new HashMap<>();
         params.put("pageParams", pageParams);

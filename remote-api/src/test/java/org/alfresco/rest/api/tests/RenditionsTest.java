@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -54,7 +54,6 @@ import org.junit.Test;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
@@ -103,14 +102,11 @@ public class RenditionsTest extends AbstractBaseApiTest
     protected static ContentService contentService;
     private static SynchronousTransformClient synchronousTransformClient;
 
-    protected TenantService tenantService;
-
     @Before
     public void setup() throws Exception
     {
         contentService = applicationContext.getBean("contentService", ContentService.class);
         synchronousTransformClient = applicationContext.getBean("synchronousTransformClient", SynchronousTransformClient.class);
-        tenantService = (TenantService) applicationContext.getBean("tenantService");
         networkN1 = repoService.createNetworkWithAlias("ping", true);
         networkN1.create();
         userOneN1 = networkN1.createUser();

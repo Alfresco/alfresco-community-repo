@@ -82,7 +82,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     @Mock
     AccessTokenAuthorization accessTokenAuthorization;
     @Mock
-    AccessToken accessToken
+    AccessToken accessToken;
     @Captor
     ArgumentCaptor<AdminConsoleHttpServletRequestWrapper> requestCaptor;
 

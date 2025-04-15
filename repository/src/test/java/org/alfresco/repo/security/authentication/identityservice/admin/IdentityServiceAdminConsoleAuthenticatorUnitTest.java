@@ -95,7 +95,6 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     @Before
     public void setup()
     {
-
         initMocks(this);
         ClientRegistration clientRegistration = mock(ClientRegistration.class);
         ProviderDetails providerDetails = mock(ProviderDetails.class);

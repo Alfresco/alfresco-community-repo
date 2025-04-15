@@ -1017,7 +1017,6 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
                     }
                 }
             }
-            throw new RenditionServiceException(msg);
         }
         // Return the link between the source and the new, final rendition
         return renditionAssoc;

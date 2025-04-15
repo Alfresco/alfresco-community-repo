@@ -82,7 +82,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     @Mock
     AccessTokenAuthorization accessTokenAuthorization;
     @Mock
-    AccessToken accessToken;
+    AccessToken accessToken
     @Captor
     ArgumentCaptor<AdminConsoleHttpServletRequestWrapper> requestCaptor;
 
@@ -176,13 +176,14 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     @Test
     public void shouldCallAuthChallengeWebScriptHome() throws IOException
     {
+
         String redirectPath = "/alfresco/s/index";
 
         when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
         when(identityServiceConfig.getWebScriptHomeRedirectPath()).thenReturn(redirectPath);
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
-                    .formatted("http://localhost:8080", redirectPath);
+                .formatted("http://localhost:8080", redirectPath);
 
         authenticator.requestAuthentication(request, response);
 
@@ -229,7 +230,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
-                    .formatted("http://localhost:8080", redirectPath);
+                .formatted("http://localhost:8080", redirectPath);
 
         authenticator.requestAuthentication(request, response);
 

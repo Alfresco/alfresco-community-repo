@@ -721,44 +721,59 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     @Test
     public void testRecreationOfRendition2()
     {
-        // Create a node
-        NodeRef sourceNodeRef = createSource(ADMIN, "quick.docx");
-        assertNotNull("Node not generated", sourceNodeRef);
-
-        // Get content hash code for the source node
-        int sourceNodeContentHashCode = getSourceContentHashCode(sourceNodeRef);
-
-        // Trigger the pdf rendition
-        render(ADMIN, sourceNodeRef, PDF);
-        NodeRef pdfRenditionNodeRef = waitForRendition(ADMIN, sourceNodeRef, PDF, true);
-        assertNotNull("pdf rendition was not generated", pdfRenditionNodeRef);
-        assertNotNull("pdf rendition was not generated", nodeService.getProperty(pdfRenditionNodeRef, PROP_CONTENT));
-
-        // Check the pdf rendition content hash code is valid
-        int pdfRenditionContentHashCode = getRenditionContentHashCode(pdfRenditionNodeRef);
-        assertEquals("pdf rendition content hash code is different from source node content hash code", sourceNodeContentHashCode, pdfRenditionContentHashCode);
-
-        // Calling 'clearRenditionContentData' method directly so that rendition content will be cleaned.
-        AuthenticationUtil.runAs((AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
-            renditionService2.clearRenditionContentData(sourceNodeRef, PDF);
-            return null;
-        }), ADMIN);
-
-        assertNull("Rendition has content", nodeService.getProperty(pdfRenditionNodeRef, PROP_CONTENT));
-
-        pdfRenditionContentHashCode = getRenditionContentHashCode(pdfRenditionNodeRef);
-        assertFalse("Rendition has content hash code", isValidRenditionContentHashCode(pdfRenditionContentHashCode));
-
-        renditionService2.setEnabled(false);
-
-        final QName pdfRendDefQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "pdf");
-        transactionService.getRetryingTransactionHelper()
-                .doInTransaction(() -> AuthenticationUtil.runAs(() -> renditionService.render(sourceNodeRef, pdfRendDefQName), ADMIN));
-
         renditionService2.setEnabled(true);
+        try
+        {
+            NodeRef sourceNodeRef = createSource(ADMIN, "quick.docx");
+            assertNotNull("Node not generated", sourceNodeRef);
 
-        NodeRef pdfRecreatedRenditionNodeRef = waitForRendition(ADMIN, sourceNodeRef, PDF, true);
-        assertNotEquals(" Rendition before deletion and after previewing are identical", pdfRenditionNodeRef.getId(), pdfRecreatedRenditionNodeRef.getId());
+            // Get content hash code for the source node.
+            int sourceNodeContentHashCode = getSourceContentHashCode(sourceNodeRef);
+
+            // Trigger the pdf rendition.
+            render(ADMIN, sourceNodeRef, PDF);
+            NodeRef pdfRenditionNodeRef = waitForRendition(ADMIN, sourceNodeRef, PDF, true);
+            assertNotNull("pdf rendition was not generated", pdfRenditionNodeRef);
+            assertNotNull("pdf rendition was not generated",
+                    nodeService.getProperty(pdfRenditionNodeRef, PROP_CONTENT));
+
+            // Check the pdf rendition content hash code is valid
+            int pdfRenditionContentHashCode = getRenditionContentHashCode(pdfRenditionNodeRef);
+            assertEquals("pdf rendition content hash code is different from source node content hash code",
+                    sourceNodeContentHashCode, pdfRenditionContentHashCode);
+
+            // Calling 'clearRenditionContentData' method directly so that rendition content will be cleaned.
+            AuthenticationUtil.runAs(
+                    (AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper()
+                            .doInTransaction(() -> {
+                                renditionService2.clearRenditionContentData(sourceNodeRef, PDF);
+                                return null;
+                            }),
+                    ADMIN);
+
+            assertNull("Rendition has content", nodeService.getProperty(pdfRenditionNodeRef, PROP_CONTENT));
+
+            pdfRenditionContentHashCode = getRenditionContentHashCode(pdfRenditionNodeRef);
+            assertFalse("Rendition has content hash code",
+                    isValidRenditionContentHashCode(pdfRenditionContentHashCode));
+
+            renditionService2.setEnabled(false);
+
+            final QName pdfRendDefQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "pdf");
+            transactionService.getRetryingTransactionHelper()
+                    .doInTransaction(() -> AuthenticationUtil.runAs(
+                            () -> renditionService.render(sourceNodeRef, pdfRendDefQName), ADMIN));
+
+            renditionService2.setEnabled(true);
+
+            NodeRef pdfRecreatedRenditionNodeRef = waitForRendition(ADMIN, sourceNodeRef, PDF, true);
+            assertNotEquals(" Rendition before deletion and after previewing are identical",
+                    pdfRenditionNodeRef.getId(), pdfRecreatedRenditionNodeRef.getId());
+        }
+        finally
+        {
+            renditionService2.setEnabled(true);
+        }
 
     }
 }

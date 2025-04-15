@@ -169,6 +169,12 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
         listeners.add(listener);
     }
 
+    /** Unregister a {@link FixedAclUpdaterListener} to be notified when a node is updated by an instance of this class. */
+    public static void unregisterListener(FixedAclUpdaterListener listener)
+    {
+        listeners.remove(listener);
+    }
+
     public void init()
     {
         onInheritPermissionsDisabledDelegate = policyComponent

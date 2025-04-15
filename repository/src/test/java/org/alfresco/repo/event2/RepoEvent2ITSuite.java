@@ -35,7 +35,8 @@ import org.junit.runners.Suite.SuiteClasses;
                 DeleteRepoEventIT.class,
                 ChildAssociationRepoEventIT.class,
                 PeerAssociationRepoEventIT.class,
-                EventGeneratorTest.class
+                EventGeneratorTest.class,
+                EventGeneratorDisabledTest.class
 })
 public class RepoEvent2ITSuite
 {

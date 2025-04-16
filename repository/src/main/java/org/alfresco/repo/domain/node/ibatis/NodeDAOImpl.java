@@ -386,6 +386,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     {
         NodeEntity node = new NodeEntity();
         node.setId(nodeId);
+        this.deleteSubscriptions(nodeId);
         return template.delete(DELETE_NODE_BY_ID, node);
     }
 
@@ -1594,8 +1595,10 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
      * The default implementation relies on <b>ON DELETE CASCADE</b> and the subscriptions avoiding deleted nodes - NoOp.
      */
     @Override
-    protected void deleteSubscriptions(Long nodeId)
-    {}
+    protected void deleteSubscriptions(Long idOne)
+    {
+        template.delete(DELETE_SUBSCRIPTIONS, idOne);
+    }
 
     @Override
     protected Transaction selectLastTxnBeforeCommitTime(Long maxCommitTime)

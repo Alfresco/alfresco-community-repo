@@ -90,6 +90,8 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
 
     StringBuffer adminConsoleURL = new StringBuffer("http://localhost:8080/admin-console");
 
+    StringBuffer webScriptHomeURL = new StringBuffer("http://localhost:8080/alfresco/s/index");
+
     @Before
     public void setup()
     {
@@ -156,8 +158,32 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     {
         String redirectPath = "/alfresco/s/admin/admin-communitysummary";
 
+        when(request.getRequestURL()).thenReturn(adminConsoleURL);
         when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
         when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn("/alfresco/s/admin/admin-communitysummary");
+        ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
+        String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
+                .formatted("http://localhost:8080", redirectPath);
+
+        authenticator.requestAuthentication(request, response);
+
+        verify(response).sendRedirect(authenticationRequest.capture());
+        assertTrue(authenticationRequest.getValue().contains(expectedUri));
+        assertTrue(authenticationRequest.getValue().contains("openid"));
+        assertTrue(authenticationRequest.getValue().contains("profile"));
+        assertTrue(authenticationRequest.getValue().contains("email"));
+        assertTrue(authenticationRequest.getValue().contains("offline_access"));
+        assertTrue(authenticationRequest.getValue().contains("state"));
+    }
+
+    @Test
+    public void shouldCallAuthChallengeWebScriptHome() throws IOException
+    {
+
+        String redirectPath = "/alfresco/s/index";
+        when(request.getRequestURL()).thenReturn(webScriptHomeURL);
+        when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
+        when(identityServiceConfig.getWebScriptHomeRedirectPath()).thenReturn(redirectPath);
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
                 .formatted("http://localhost:8080", redirectPath);
@@ -178,8 +204,34 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     {
         String audience = "http://localhost:8082";
         String redirectPath = "/alfresco/s/admin/admin-communitysummary";
+        when(request.getRequestURL()).thenReturn(adminConsoleURL);
         when(identityServiceConfig.getAudience()).thenReturn(audience);
         when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(redirectPath);
+        when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
+        ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
+        String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
+                .formatted("http://localhost:8080", redirectPath);
+
+        authenticator.requestAuthentication(request, response);
+
+        verify(response).sendRedirect(authenticationRequest.capture());
+        assertTrue(authenticationRequest.getValue().contains(expectedUri));
+        assertTrue(authenticationRequest.getValue().contains("openid"));
+        assertTrue(authenticationRequest.getValue().contains("profile"));
+        assertTrue(authenticationRequest.getValue().contains("email"));
+        assertTrue(authenticationRequest.getValue().contains("offline_access"));
+        assertTrue(authenticationRequest.getValue().contains("audience=%s".formatted(audience)));
+        assertTrue(authenticationRequest.getValue().contains("state"));
+    }
+
+    @Test
+    public void shouldCallAuthChallengeWebScriptHomeWithAudience() throws IOException
+    {
+        String audience = "http://localhost:8082";
+        String redirectPath = "/alfresco/s/index";
+        when(request.getRequestURL()).thenReturn(webScriptHomeURL);
+        when(identityServiceConfig.getAudience()).thenReturn(audience);
+        when(identityServiceConfig.getWebScriptHomeRedirectPath()).thenReturn(redirectPath);
         when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="

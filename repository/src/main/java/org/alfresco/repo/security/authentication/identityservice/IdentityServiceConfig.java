@@ -76,6 +76,17 @@ public class IdentityServiceConfig
     private String lastNameAttribute;
     private String emailAttribute;
     private long jwtClockSkewMs;
+    private String webScriptHomeRedirectPath;
+
+    public String getWebScriptHomeRedirectPath()
+    {
+        return webScriptHomeRedirectPath;
+    }
+
+    public void setWebScriptHomeRedirectPath(String webScriptHomeRedirectPath)
+    {
+        this.webScriptHomeRedirectPath = webScriptHomeRedirectPath;
+    }
 
     /**
      *

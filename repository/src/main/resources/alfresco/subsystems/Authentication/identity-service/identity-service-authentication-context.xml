@@ -179,6 +179,9 @@
        <property name="jwtClockSkewMs">
            <value>${identity-service.jwt-clock-skew-ms:0}</value>
        </property>
+       <property name="webScriptHomeRedirectPath">
+           <value>${identity-service.webscript-home.redirect-path}</value>
+       </property>
    </bean>
 
    <!-- Enable control over mapping between request and user ID -->

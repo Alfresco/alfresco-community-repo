@@ -25,10 +25,11 @@
  */
 package org.alfresco.opencmis.mapping;
 
+import org.apache.chemistry.opencmis.commons.enums.Action;
+
 import org.alfresco.opencmis.dictionary.CMISActionEvaluator;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
-import org.apache.chemistry.opencmis.commons.enums.Action;
 
 public class CurrentVersionEvaluator extends AbstractActionEvaluator
 {
@@ -39,10 +40,14 @@ public class CurrentVersionEvaluator extends AbstractActionEvaluator
     /**
      * Construct
      *
-     * @param serviceRegistry ServiceRegistry
-     * @param action Action
-     * @param currentVersionValue boolean
-     * @param nonCurrentVersionValue boolean
+     * @param serviceRegistry
+     *            ServiceRegistry
+     * @param action
+     *            Action
+     * @param currentVersionValue
+     *            boolean
+     * @param nonCurrentVersionValue
+     *            boolean
      */
     protected CurrentVersionEvaluator(ServiceRegistry serviceRegistry, Action action, boolean currentVersionValue,
             boolean nonCurrentVersionValue)
@@ -67,9 +72,9 @@ public class CurrentVersionEvaluator extends AbstractActionEvaluator
 
     public boolean isAllowed(CMISNodeInfo nodeInfo)
     {
-        if(nodeInfo.hasPWC())
+        if (nodeInfo.hasPWC())
         {
-            if(!nodeInfo.isPWC())
+            if (!nodeInfo.isPWC())
             {
                 return nonCurrentVersionValue;
             }
@@ -81,7 +86,6 @@ public class CurrentVersionEvaluator extends AbstractActionEvaluator
                 return nonCurrentVersionValue;
             }
         }
-        
 
         return currentVersionEvaluator == null ? currentVersionValue : currentVersionEvaluator.isAllowed(nodeInfo);
     }

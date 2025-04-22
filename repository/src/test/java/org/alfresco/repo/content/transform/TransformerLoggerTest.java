@@ -26,7 +26,6 @@
 package org.alfresco.repo.content.transform;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
@@ -49,9 +48,9 @@ public class TransformerLoggerTest
 {
     @Mock
     private TransformerDebug transformerDebug;
-    
+
     private Properties properties = new Properties();
-    
+
     private TransformerLogger<String> log;
 
     @Before
@@ -65,8 +64,7 @@ public class TransformerLoggerTest
     private TransformerLogger<String> newLogger(final AtomicInteger numberOfMessagesToAdd,
             TransformerDebug transformerDebug, Properties properties)
     {
-        TransformerLogger<String> log = new TransformerLogger<String>()
-        {
+        TransformerLogger<String> log = new TransformerLogger<String>() {
             @Override
             protected void addOrModify(Deque<String> entries, Object message)
             {
@@ -75,7 +73,7 @@ public class TransformerLoggerTest
                 {
                     for (; i > 0; i--)
                     {
-                        entries.add((String)message);
+                        entries.add((String) message);
                     }
                 }
                 else if (i < 0)
@@ -88,7 +86,7 @@ public class TransformerLoggerTest
                 else
                 {
                     entries.removeLast();
-                    entries.add((String)message);
+                    entries.add((String) message);
                 }
             }
 
@@ -115,14 +113,14 @@ public class TransformerLoggerTest
         // when(transformerConfig.getProperty("property.name")).thenReturn("0"); - default to this
         assertFalse(log.isDebugEnabled());
     }
-    
+
     @Test
     public void isDebugEnabled5EntriesTest()
     {
         properties.setProperty("property.name", "5");
         assertTrue(log.isDebugEnabled());
     }
-    
+
     @Test
     public void isDebugEnabledHasStringBuilderTest()
     {
@@ -130,29 +128,29 @@ public class TransformerLoggerTest
         properties.setProperty("property.name", "5");
         assertFalse(log.isDebugEnabled());
     }
-    
+
     @Test
     public void noEntriesTest()
     {
         properties.setProperty("property.name", "3");
-        assertArrayEquals(new String[] {}, log.getEntries(10));
+        assertArrayEquals(new String[]{}, log.getEntries(10));
     }
-    
+
     @Test
     public void noEntriesDisabledTest()
     {
-        assertArrayEquals(new String[] {"No entries are available. property.name must be set to a number between 1 and 176"}, log.getEntries(10));
+        assertArrayEquals(new String[]{"No entries are available. property.name must be set to a number between 1 and 176"}, log.getEntries(10));
     }
-    
+
     @Test
     public void oneEntryTest()
     {
         properties.setProperty("property.name", "3");
         log.debug("one");
-        
-        assertArrayEquals(new String[] {"one"}, log.getEntries(10));
+
+        assertArrayEquals(new String[]{"one"}, log.getEntries(10));
     }
-    
+
     @Test
     // newest entry first
     public void fiveEntryTest()
@@ -164,10 +162,10 @@ public class TransformerLoggerTest
         log.debug("three");
         log.debug("four");
         log.debug("five");
-        
-        assertArrayEquals(new String[] {"five", "four", "three"}, log.getEntries(10));
+
+        assertArrayEquals(new String[]{"five", "four", "three"}, log.getEntries(10));
     }
-    
+
     @Test
     // <= 0 indicates return all
     public void limit0Test()
@@ -177,11 +175,10 @@ public class TransformerLoggerTest
         log.debug("one");
         log.debug("two");
         log.debug("three");
-        
-        assertArrayEquals(new String[] {"three", "two", "one"}, log.getEntries(0));
+
+        assertArrayEquals(new String[]{"three", "two", "one"}, log.getEntries(0));
     }
-    
-    
+
     @Test
     // < 0 indicates return all - most current first
     public void limitAllTest()
@@ -191,10 +188,10 @@ public class TransformerLoggerTest
         log.debug("one");
         log.debug("two");
         log.debug("three");
-        
-        assertArrayEquals(new String[] {"three", "two", "one"}, log.getEntries(-1));
+
+        assertArrayEquals(new String[]{"three", "two", "one"}, log.getEntries(-1));
     }
-    
+
     @Test
     // Returns latest
     public void limit1Test()
@@ -204,10 +201,10 @@ public class TransformerLoggerTest
         log.debug("one");
         log.debug("two");
         log.debug("three");
-        
-        assertArrayEquals(new String[] {"three"}, log.getEntries(1));
+
+        assertArrayEquals(new String[]{"three"}, log.getEntries(1));
     }
-    
+
     @Test
     public void limitMoreThanEntriesTest()
     {
@@ -216,10 +213,10 @@ public class TransformerLoggerTest
         log.debug("one");
         log.debug("two");
         log.debug("three");
-        
-        assertArrayEquals(new String[] {"three", "two", "one"}, log.getEntries(5));
+
+        assertArrayEquals(new String[]{"three", "two", "one"}, log.getEntries(5));
     }
-    
+
     @Test
     // Adds two entries on each debug call, but logger must still limit size!
     public void addTwoEntriesTest()
@@ -229,13 +226,13 @@ public class TransformerLoggerTest
         properties.setProperty("property.name", "5");
 
         log.debug("one");
-        assertArrayEquals(new String[] {"one", "one"}, log.getEntries(10));
-        
+        assertArrayEquals(new String[]{"one", "one"}, log.getEntries(10));
+
         log.debug("two");
-        assertArrayEquals(new String[] {"two", "two", "one", "one"}, log.getEntries(10));
-        
+        assertArrayEquals(new String[]{"two", "two", "one", "one"}, log.getEntries(10));
+
         log.debug("three");
-        assertArrayEquals(new String[] {"three", "three", "two", "two", "one"}, log.getEntries(10));
+        assertArrayEquals(new String[]{"three", "three", "two", "two", "one"}, log.getEntries(10));
     }
 
     @Test
@@ -248,21 +245,21 @@ public class TransformerLoggerTest
         log.debug("one");
         log.debug("two");
         log.debug("three");
-        assertArrayEquals(new String[] {"three", "three", "two", "two", "one", "one"}, log.getEntries(10));
+        assertArrayEquals(new String[]{"three", "three", "two", "two", "one", "one"}, log.getEntries(10));
 
         // Remove both threes and a two
         numberOfMessagesToAdd.set(-3);
         log.debug("four");
-        assertArrayEquals(new String[] {"two", "one", "one"}, log.getEntries(10));
+        assertArrayEquals(new String[]{"two", "one", "one"}, log.getEntries(10));
 
         // Add a five
         numberOfMessagesToAdd.set(1);
         log.debug("five");
-        assertArrayEquals(new String[] {"five", "two", "one", "one"}, log.getEntries(10));
+        assertArrayEquals(new String[]{"five", "two", "one", "one"}, log.getEntries(10));
 
         // Replace the five
         numberOfMessagesToAdd.set(0);
         log.debug("six");
-        assertArrayEquals(new String[] {"six", "two", "one", "one"}, log.getEntries(10));
+        assertArrayEquals(new String[]{"six", "two", "one", "one"}, log.getEntries(10));
     }
 }

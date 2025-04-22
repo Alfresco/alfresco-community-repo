@@ -45,12 +45,12 @@ import org.alfresco.service.namespace.QName;
  * @author Nick Smith
  *
  */
-public class ScriptInvitationFactory 
+public class ScriptInvitationFactory
 {
     private final NodeService nodeService;
     private final PersonService personService;
     private final InvitationService invitationService;
-    
+
     public ScriptInvitationFactory(InvitationService invitationService, NodeService nodeService, PersonService personService)
     {
         this.nodeService = nodeService;
@@ -60,12 +60,12 @@ public class ScriptInvitationFactory
 
     public ScriptInvitation<?> toScriptInvitation(Invitation invitation)
     {
-        if(invitation instanceof NominatedInvitation)
+        if (invitation instanceof NominatedInvitation)
         {
             return new ScriptNominatedInvitation((NominatedInvitation) invitation, invitationService);
         }
 
-        if(invitation instanceof ModeratedInvitation)
+        if (invitation instanceof ModeratedInvitation)
         {
             String userName = invitation.getInviteeUserName();
             NodeRef person = personService.getPerson(userName);
@@ -74,11 +74,11 @@ public class ScriptInvitationFactory
             String lastName = (String) properties.get(ContentModel.PROP_LASTNAME);
             String email = (String) properties.get(ContentModel.PROP_EMAIL);
             return new ScriptModeratedInvitation(
-                        (ModeratedInvitation) invitation,
-                        invitationService,
-                        email,
-                        firstName,
-                        lastName);
+                    (ModeratedInvitation) invitation,
+                    invitationService,
+                    email,
+                    firstName,
+                    lastName);
         }
         throw new AlfrescoRuntimeException("Unknown invitation type.");
     }

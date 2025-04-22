@@ -27,24 +27,12 @@ package org.alfresco.rest.model;
 
 import java.util.List;
 
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.alfresco.utility.model.TestModel;
+
 /**
- * Created by Meenal Bhave
- * "path": {
- *      "name": "/Folder-oawzdncUXFLgnFe",
- *      "isComplete": false,
- *      "elements": [
- *      {
- *              "aspectNames": ["cm:titled", "cm:auditable", "app:uifacets"],
- *              "id": "7f0c47ae-d334-4b66-a86b-1a60d2518ad1",
- *              "name": "Folder-oawzdncUXFLgnFe",
- *              "nodeType": "cm:folder"
- *      }
- *      ]
- * }
+ * Created by Meenal Bhave "path": { "name": "/Folder-oawzdncUXFLgnFe", "isComplete": false, "elements": [ { "aspectNames": ["cm:titled", "cm:auditable", "app:uifacets"], "id": "7f0c47ae-d334-4b66-a86b-1a60d2518ad1", "name": "Folder-oawzdncUXFLgnFe", "nodeType": "cm:folder" } ] }
  */
 public class RestPathModel extends TestModel
 {

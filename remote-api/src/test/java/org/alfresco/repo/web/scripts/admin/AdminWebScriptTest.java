@@ -25,11 +25,27 @@
  */
 package org.alfresco.repo.web.scripts.admin;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -58,21 +74,6 @@ import org.alfresco.service.license.LicenseDescriptor;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.PropertyMap;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.TestWebScriptServer;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Test the admin web scripts
@@ -83,9 +84,9 @@ import static org.mockito.Mockito.when;
 @Category(OwnJVMTestsCategory.class)
 public class AdminWebScriptTest extends BaseWebScriptTest
 {
-    private RepoAdminService             repoAdminService;
-    private DescriptorService            descriptorService;
-    private PersonService                personService;
+    private RepoAdminService repoAdminService;
+    private DescriptorService descriptorService;
+    private PersonService personService;
     private MutableAuthenticationService authenticationService;
 
     private String admin;
@@ -124,14 +125,14 @@ public class AdminWebScriptTest extends BaseWebScriptTest
         super.tearDown();
         AuthenticationUtil.clearCurrentSecurityContext();
     }
-    
+
     public void testGetRestrictions() throws Exception
     {
         RepoUsage restrictions = repoAdminService.getRestrictions();
-        
+
         String url = "/api/admin/restrictions";
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
-        
+
         Response response = sendRequest(req, Status.STATUS_OK, guest);
         JSONObject json = new JSONObject(response.getContentAsString());
         Long maxUsers = json.isNull(AbstractAdminWebScript.JSON_KEY_USERS) ? null : json.getLong(AbstractAdminWebScript.JSON_KEY_USERS);
@@ -139,7 +140,7 @@ public class AdminWebScriptTest extends BaseWebScriptTest
         Long maxDocuments = json.isNull(AbstractAdminWebScript.JSON_KEY_DOCUMENTS) ? null : json.getLong(AbstractAdminWebScript.JSON_KEY_DOCUMENTS);
         assertEquals("Mismatched max documents", restrictions.getDocuments(), maxDocuments);
     }
-    
+
     public void testGetUsage() throws Exception
     {
         RepoUsageStatus usageStatus = repoAdminService.getUsageStatus();
@@ -147,10 +148,10 @@ public class AdminWebScriptTest extends BaseWebScriptTest
         LicenseDescriptor licenseDescriptor = descriptorService.getLicenseDescriptor();
         Date validUntil = (licenseDescriptor == null) ? null : licenseDescriptor.getValidUntil(); // might be null
         Integer checkLevel = Integer.valueOf(usageStatus.getLevel().ordinal());
-        
+
         String url = "/api/admin/usage";
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
-        
+
         Response response = sendRequest(req, Status.STATUS_OK, guest);
         System.out.println(response.getContentAsString());
         JSONObject json = new JSONObject(response.getContentAsString());
@@ -173,22 +174,22 @@ public class AdminWebScriptTest extends BaseWebScriptTest
         json.getJSONArray(AbstractAdminWebScript.JSON_KEY_WARNINGS);
         json.getJSONArray(AbstractAdminWebScript.JSON_KEY_ERRORS);
     }
-    
+
     public void testUpdateUsageWithoutPermissions() throws Exception
     {
         String url = "/api/admin/usage";
         TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
         sendRequest(req, 401, AuthenticationUtil.getGuestRoleName());
     }
-    
+
     public void testUpdateUsage() throws Exception
     {
         repoAdminService.updateUsage(UsageType.USAGE_ALL);
         RepoUsage usage = repoAdminService.getUsage();
-        
+
         String url = "/api/admin/usage";
         TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
-        
+
         Response response = sendRequest(req, Status.STATUS_OK, admin);
         System.out.println(response.getContentAsString());
         JSONObject json = new JSONObject(response.getContentAsString());
@@ -285,7 +286,7 @@ public class AdminWebScriptTest extends BaseWebScriptTest
 
         // test the post webscript of the node browser too
         TestWebScriptServer.PostRequest postReq = new TestWebScriptServer.PostRequest(nodeBrowserUrl, "",
-                                                                                      "multipart/form-data; boundary=----WebKitFormBoundaryjacWCXfJ3KjtRenA");
+                "multipart/form-data; boundary=----WebKitFormBoundaryjacWCXfJ3KjtRenA");
         // The node browser is only accessible to admins, not sysAdmins
         sendRequest(postReq, Status.STATUS_UNAUTHORIZED, user1_sysAdmin);
 
@@ -309,7 +310,7 @@ public class AdminWebScriptTest extends BaseWebScriptTest
 
         // test the post webscript of the repo console too
         TestWebScriptServer.PostRequest postReq = new TestWebScriptServer.PostRequest(repoConsoleUrl, "",
-                                                                                      "multipart/form-data; boundary=----WebKitFormBoundaryjacWCXfJ3KjtRenA");
+                "multipart/form-data; boundary=----WebKitFormBoundaryjacWCXfJ3KjtRenA");
         sendRequest(postReq, Status.STATUS_UNAUTHORIZED, user1_sysAdmin);
 
         // Normal user shouldn't have access either
@@ -331,7 +332,7 @@ public class AdminWebScriptTest extends BaseWebScriptTest
 
         // test the post webscript of the tenant console too
         TestWebScriptServer.PostRequest postReq = new TestWebScriptServer.PostRequest(tenantConsoleUrl, "",
-                                                                                      "multipart/form-data; boundary=----WebKitFormBoundaryjacWCXfJ3KjtRenA");
+                "multipart/form-data; boundary=----WebKitFormBoundaryjacWCXfJ3KjtRenA");
         sendRequest(postReq, Status.STATUS_UNAUTHORIZED, user1_sysAdmin);
 
         // Normal user shouldn't have access either
@@ -353,7 +354,7 @@ public class AdminWebScriptTest extends BaseWebScriptTest
 
         // test the post webscript of the workflow console too
         TestWebScriptServer.PostRequest postReq = new TestWebScriptServer.PostRequest(workflowConsoleUrl, "",
-                                                                                      "multipart/form-data; boundary=----WebKitFormBoundaryjacWCXfJ3KjtRenA");
+                "multipart/form-data; boundary=----WebKitFormBoundaryjacWCXfJ3KjtRenA");
         sendRequest(postReq, Status.STATUS_UNAUTHORIZED, user1_sysAdmin);
 
         // Normal user shouldn't have access either
@@ -379,6 +380,7 @@ public class AdminWebScriptTest extends BaseWebScriptTest
     private class SimplePropertyDefinition implements PropertyDefinition
     {
         private boolean isAspect;
+
         public SimplePropertyDefinition(boolean isAspect)
         {
             super();

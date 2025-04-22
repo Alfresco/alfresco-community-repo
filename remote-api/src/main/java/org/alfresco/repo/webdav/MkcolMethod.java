@@ -43,13 +43,12 @@ import org.alfresco.service.cmr.webdav.WebDavService;
 public class MkcolMethod extends WebDAVMethod implements ActivityPostProducer
 {
     private WebDAVActivityPoster activityPoster;
-    
+
     /**
      * Default constructor
      */
     public MkcolMethod()
-    {
-    }
+    {}
 
     /**
      * Parse the request headers
@@ -96,14 +95,14 @@ public class MkcolMethod extends WebDAVMethod implements ActivityPostProducer
         {
             // it doesn't exist
         }
-        
+
         // Trim the last path component and check if the parent path exists
         String parentPath = getPath();
         int lastPos = parentPath.lastIndexOf(WebDAVHelper.PathSeperator);
-        
+
         NodeRef parentNodeRef = null;
 
-        if ( lastPos == 0)
+        if (lastPos == 0)
         {
             // Create new folder at root
 
@@ -136,21 +135,21 @@ public class MkcolMethod extends WebDAVMethod implements ActivityPostProducer
 
         // Create the new folder node
         FileInfo fileInfo = fileFolderService.create(parentNodeRef, folderName, ContentModel.TYPE_FOLDER);
-        
+
         // Don't post activity data for hidden folder
         if (!fileInfo.isHidden())
         {
-             postActivity(fileInfo);
+            postActivity(fileInfo);
         }
-        
+
         // Return a success status
         m_response.setStatus(HttpServletResponse.SC_CREATED);
     }
-    
+
     /**
      * Create a folder added activity post.
      * 
-     * @throws WebDAVServerException 
+     * @throws WebDAVServerException
      */
     private void postActivity(FileInfo fileInfo) throws WebDAVServerException
     {
@@ -160,10 +159,10 @@ public class MkcolMethod extends WebDAVMethod implements ActivityPostProducer
             // Don't post activities if this behaviour is disabled.
             return;
         }
-        
+
         String siteId = getSiteId();
         String tenantDomain = getTenantDomain();
-        
+
         // Check there is enough information to publish site activity.
         if (!siteId.equals(WebDAVHelper.EMPTY_SITE_ID))
         {
@@ -181,11 +180,11 @@ public class MkcolMethod extends WebDAVMethod implements ActivityPostProducer
                     logger.debug("No " + SiteService.DOCUMENT_LIBRARY + " container found.");
                 }
             }
-            
+
             activityPoster.postFileFolderAdded(siteId, tenantDomain, path, fileInfo);
         }
     }
-    
+
     @Override
     public void setActivityPoster(WebDAVActivityPoster activityPoster)
     {

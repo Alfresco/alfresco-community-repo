@@ -27,10 +27,11 @@ package org.alfresco.repo.node;
 
 import java.io.InputStream;
 import java.util.Map;
-
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
@@ -50,13 +51,11 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.DBTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 @Category({OwnJVMTestsCategory.class, DBTests.class})
 public class ConcurrentNodeServiceSearchTest extends TestCase
 {
-    
+
     public static final String NAMESPACE = "http://www.alfresco.org/test/BaseNodeServiceTest";
 
     public static final String TEST_PREFIX = "test";
@@ -228,8 +227,7 @@ public class ConcurrentNodeServiceSearchTest extends TestCase
                     waiter.join();
                 }
                 catch (InterruptedException e)
-                {
-                }
+                {}
             }
         }
 

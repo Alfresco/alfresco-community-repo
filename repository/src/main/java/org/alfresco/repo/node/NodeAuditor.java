@@ -29,22 +29,23 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.audit.AuditMethodInterceptor;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.alfresco.util.PropertyCheck;
 
 /**
- * A listener that ensures that an event is audited for every deleted node in a tree of nodes, not just the top one
- * captured by {@link AuditMethodInterceptor}!
+ * A listener that ensures that an event is audited for every deleted node in a tree of nodes, not just the top one captured by {@link AuditMethodInterceptor}!
  * 
  * The values passed to the audit component are:
+ * 
  * <pre>
  * /alfresco-node
  *    /beforeDeleteNode
@@ -67,8 +68,7 @@ public class NodeAuditor implements InitializingBean, NodeServicePolicies.Before
     private AuditComponent auditComponent;
 
     public NodeAuditor()
-    {
-    }
+    {}
 
     /**
      * Set the component used to bind to behaviour callbacks

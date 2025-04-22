@@ -36,9 +36,8 @@ public class KeyStoreChecker
     private AlfrescoKeyStore mainKeyStore;
 
     public KeyStoreChecker()
-    {
-    }
-        
+    {}
+
     public void setMainKeyStore(AlfrescoKeyStore mainKeyStore)
     {
         this.mainKeyStore = mainKeyStore;
@@ -47,7 +46,7 @@ public class KeyStoreChecker
     public void validateKeyStores() throws InvalidKeystoreException, MissingKeyException
     {
         mainKeyStore.validateKeys();
-        if(!mainKeyStore.exists())
+        if (!mainKeyStore.exists())
         {
             mainKeyStore.create();
         }

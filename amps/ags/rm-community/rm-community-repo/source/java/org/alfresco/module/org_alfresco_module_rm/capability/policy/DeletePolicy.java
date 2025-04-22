@@ -27,16 +27,16 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
-import org.alfresco.service.cmr.repository.NodeRef;
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import org.aopalliance.intercept.MethodInvocation;
 
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 public class DeletePolicy extends AbstractBasePolicy
 {
 
     @SuppressWarnings("rawtypes")
-	public int evaluate(
+    public int evaluate(
             MethodInvocation invocation,
             Class[] params,
             ConfigAttributeDefinition cad)

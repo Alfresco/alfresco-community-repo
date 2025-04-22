@@ -50,16 +50,16 @@ public class CompareMimeTypeEvaluator extends ComparePropertyValueEvaluator
      * Evaluator constants
      */
     public static final String NAME = "compare-mime-type";
-    
+
     private static final String ERRID_NOT_A_CONTENT_TYPE = "compare_mime_type_evaluator.not_a_content_type";
-    private static final String ERRID_NO_PROPERTY_DEFINTION_FOUND = "compare_mime_type_evaluator.no_property_definition_found"; 
-    
+    private static final String ERRID_NO_PROPERTY_DEFINTION_FOUND = "compare_mime_type_evaluator.no_property_definition_found";
+
     /**
      * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#evaluateImpl(org.alfresco.service.cmr.action.ActionCondition, org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean evaluateImpl(ActionCondition actionCondition, NodeRef actionedUponNodeRef)
     {
-        QName propertyQName = (QName)actionCondition.getParameterValue(ComparePropertyValueEvaluator.PARAM_PROPERTY);
+        QName propertyQName = (QName) actionCondition.getParameterValue(ComparePropertyValueEvaluator.PARAM_PROPERTY);
         if (propertyQName == null)
         {
             // Default to the standard content property
@@ -83,10 +83,10 @@ public class CompareMimeTypeEvaluator extends ComparePropertyValueEvaluator
                 throw new ActionServiceException(ERRID_NO_PROPERTY_DEFINTION_FOUND);
             }
         }
-        
+
         // Set the operation to equals
         actionCondition.setParameterValue(ComparePropertyValueEvaluator.PARAM_OPERATION, ComparePropertyValueOperation.EQUALS.toString());
-        
+
         // Set the content property to be MIMETYPE
         actionCondition.setParameterValue(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY, ContentPropertyName.MIME_TYPE.toString());
 
@@ -97,9 +97,9 @@ public class CompareMimeTypeEvaluator extends ComparePropertyValueEvaluator
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_PROPERTY, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_PROPERTY)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_VALUE, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_VALUE), false, "ac-mimetypes"));                
+        paramList.add(new ParameterDefinitionImpl(PARAM_VALUE, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_VALUE), false, "ac-mimetypes"));
     }
 }

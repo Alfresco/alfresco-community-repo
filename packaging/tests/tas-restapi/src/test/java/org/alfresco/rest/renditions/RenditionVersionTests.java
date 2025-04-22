@@ -14,9 +14,19 @@
  */
 
 package org.alfresco.rest.renditions;
+
 /**
  * Handles tests related to api-explorer/#!/versions/createVersionRendition
  */
+
+import static org.alfresco.utility.report.log.Step.STEP;
+
+import java.io.File;
+
+import org.springframework.http.HttpStatus;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
@@ -30,22 +40,16 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
-import java.io.File;
-
-import static org.alfresco.utility.report.log.Step.STEP;
-
-@Test(groups = { TestGroup.RENDITIONS }) public class RenditionVersionTests extends RestTest
+@Test(groups = {TestGroup.RENDITIONS})
+public class RenditionVersionTests extends RestTest
 {
     private UserModel user;
     private SiteModel site;
     private FileModel file;
 
-    @BeforeClass(alwaysRun = true) public void dataPreparation() throws Exception
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception
     {
         user = dataUser.createRandomTestUser();
         site = dataSite.usingUser(user).createPublicRandomSite();
@@ -53,17 +57,16 @@ import static org.alfresco.utility.report.log.Step.STEP;
     }
 
     /**
-     * Sanity test for the following endpoints:
-     * POST /nodes/{nodeId}/versions/{versionId}/rendition
-     * GET /nodes/{nodeId}/versions/{versionId}/renditions
-     * GET /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}
-     * GET /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content
+     * Sanity test for the following endpoints: POST /nodes/{nodeId}/versions/{versionId}/rendition GET /nodes/{nodeId}/versions/{versionId}/renditions GET /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId} GET /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content
+     * 
      * @throws Exception
      */
-    @Test(groups = { TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY }) @TestRail(section = {
-                TestGroup.REST_API,
-                TestGroup.RENDITIONS }, executionType = ExecutionType.SANITY, description = "Verify that the rendition  can be created using POST /nodes/{nodeId}/versions/{versionId}/rendition") public void testRenditionForNodeVersions()
-                throws Exception
+    @Test(groups = {TestGroup.REST_API, TestGroup.RENDITIONS, TestGroup.SANITY})
+    @TestRail(section = {
+            TestGroup.REST_API,
+            TestGroup.RENDITIONS}, executionType = ExecutionType.SANITY, description = "Verify that the rendition  can be created using POST /nodes/{nodeId}/versions/{versionId}/rendition")
+    public void testRenditionForNodeVersions()
+            throws Exception
     {
         File sampleFile = Utility.getResourceTestDataFile("sampleContent.txt");
 
@@ -78,11 +81,11 @@ import static org.alfresco.utility.report.log.Step.STEP;
 
         STEP("3. Verify pdf rendition of txt file is created");
         restClient.withCoreAPI().usingNode(file).getNodeVersionRenditionUntilIsCreated("pdf", "1.1").assertThat()
-                    .field("status").is("CREATED");
+                .field("status").is("CREATED");
 
         STEP("4. Verify pdf rendition of txt file is listed");
         RestRenditionInfoModelCollection renditionInfoModelCollection = restClient.withCoreAPI().usingNode(file)
-                    .getNodeVersionRenditionsInfo("1.1");
+                .getNodeVersionRenditionsInfo("1.1");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         for (RestRenditionInfoModel restRenditionInfoModel : renditionInfoModelCollection.getEntries())
         {
@@ -96,7 +99,7 @@ import static org.alfresco.utility.report.log.Step.STEP;
 
         STEP("5. Verify pdf rendition of txt file has content");
         RestResponse restResponse = restClient.withCoreAPI().usingNode(file)
-                    .getNodeVersionRenditionContentUntilIsCreated("pdf", "1.1");
+                .getNodeVersionRenditionContentUntilIsCreated("pdf", "1.1");
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.assertHeaderValueContains("Content-Type", "application/pdf;charset=UTF-8");
         Assert.assertTrue(restResponse.getResponse().body().asInputStream().available() > 0);

@@ -29,12 +29,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Webscript to get the Classdefinitions for a classname eg. =>cm_author
@@ -72,8 +73,9 @@ public abstract class AbstractClassGet extends DictionaryWebServiceBase
     }
 
     /**
-     * @param req - webscript request
-     * @return  qualified name for class
+     * @param req
+     *            - webscript request
+     * @return qualified name for class
      */
     protected abstract QName getClassQname(WebScriptRequest req);
 

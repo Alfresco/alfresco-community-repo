@@ -27,12 +27,12 @@
 package org.alfresco.repo.transfer;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
@@ -43,14 +43,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author mrogers
  * 
- * The requisite manifest processor performs a parse of the manifest file to determine which 
- * resources are required.    In particular it returns a list of nodes which require content to be transferred.
+ *         The requisite manifest processor performs a parse of the manifest file to determine which resources are required. In particular it returns a list of nodes which require content to be transferred.
  * 
  */
 public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcessorBase
@@ -58,14 +55,16 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
     private NodeService nodeService;
     private CorrespondingNodeResolver nodeResolver;
     private TransferRequsiteWriter out;
-    
-    
+
     private static final Log log = LogFactory.getLog(RepoRequisiteManifestProcessorImpl.class);
 
     /**
-     * @param receiver TransferReceiver
-     * @param transferId String
-     * @param out TransferRequsiteWriter
+     * @param receiver
+     *            TransferReceiver
+     * @param transferId
+     *            String
+     * @param out
+     *            TransferRequsiteWriter
      */
     public RepoRequisiteManifestProcessorImpl(TransferReceiver receiver, String transferId, TransferRequsiteWriter out)
     {
@@ -73,15 +72,15 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
         this.out = out;
     }
 
-    protected void endManifest() 
-    {   
+    protected void endManifest()
+    {
         log.debug("End Requsite");
         out.endTransferRequsite();
     }
-    
+
     protected void processNode(TransferManifestDeletedNode node)
     {
-        //NOOP
+        // NOOP
     }
 
     protected void processNode(TransferManifestNormalNode node)
@@ -102,12 +101,11 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
         if (resolvedNodes.resolvedChild != null)
         {
             /**
-             * there is a corresponding node so we need to check whether we already 
-             * have the part for each content item
+             * there is a corresponding node so we need to check whether we already have the part for each content item
              */
             NodeRef destinationNode = resolvedNodes.resolvedChild;
-            
-            Map<QName, Serializable> destinationProps = nodeService.getProperties(destinationNode);            
+
+            Map<QName, Serializable> destinationProps = nodeService.getProperties(destinationNode);
             /**
              * For each property on the source node
              */
@@ -115,7 +113,7 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
             {
                 Serializable value = propEntry.getValue();
                 QName propName = propEntry.getKey();
-                
+
                 if (log.isDebugEnabled())
                 {
                     if (value == null)
@@ -128,41 +126,41 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
                     /**
                      * Got a content property from source node.
                      */
-                    ContentData srcContent = (ContentData)value;
-                    
-                    if(srcContent.getContentUrl() != null && !srcContent.getContentUrl().isEmpty() )
+                    ContentData srcContent = (ContentData) value;
+
+                    if (srcContent.getContentUrl() != null && !srcContent.getContentUrl().isEmpty())
                     {
                         /**
                          * Source Content is not empty
                          */
                         String partName = TransferCommons.URLToPartName(srcContent.getContentUrl());
-                    
+
                         Serializable destSer = destinationProps.get(propName);
-                        if(destSer != null && ContentData.class.isAssignableFrom(destSer.getClass()))                  
+                        if (destSer != null && ContentData.class.isAssignableFrom(destSer.getClass()))
                         {
                             /**
                              * Content property not empty and content property already exists on destination
                              */
-                            ContentData destContent = (ContentData)destSer;
-                            
+                            ContentData destContent = (ContentData) destSer;
+
                             Serializable destFromContents = destinationProps.get(TransferModel.PROP_FROM_CONTENT);
-                            
-                            if(destFromContents != null && Collection.class.isAssignableFrom(destFromContents.getClass()))
+
+                            if (destFromContents != null && Collection.class.isAssignableFrom(destFromContents.getClass()))
                             {
-                                Collection<String> contents = (Collection<String>)destFromContents;
+                                Collection<String> contents = (Collection<String>) destFromContents;
                                 /**
                                  * Content property not empty and content property already exists on destination
                                  */
-                                if(contents.contains(partName))
+                                if (contents.contains(partName))
                                 {
-                                    if(log.isDebugEnabled())
+                                    if (log.isDebugEnabled())
                                     {
                                         log.debug("part already transferred, no need to send it again, partName:" + partName + ", nodeRef:" + node.getNodeRef());
-                                    }   
+                                    }
                                 }
                                 else
                                 {
-                                    if(log.isDebugEnabled())
+                                    if (log.isDebugEnabled())
                                     {
                                         log.debug("part name not transferred, requesting new content item partName:" + partName + ", nodeRef:" + node.getNodeRef());
                                     }
@@ -172,7 +170,7 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
                             else
                             {
                                 // dest from contents is null
-                                if(log.isDebugEnabled())
+                                if (log.isDebugEnabled())
                                 {
                                     log.debug("from contents is null, requesting new content item partName:" + partName + ", nodeRef:" + node.getNodeRef());
                                 }
@@ -184,11 +182,11 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
                             /**
                              * Content property not empty and does not exist on destination
                              */
-                            if(log.isDebugEnabled())
+                            if (log.isDebugEnabled())
                             {
                                 log.debug("no content on destination, all content is required" + propEntry.getKey() + srcContent.getContentUrl());
                             }
-                            //  We don't have the property on the destination node 
+                            // We don't have the property on the destination node
                             out.missingContent(node.getNodeRef(), propEntry.getKey(), TransferCommons.URLToPartName(srcContent.getContentUrl()));
                         }
                     }
@@ -198,7 +196,7 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
         else
         {
             log.debug("Node does not exist on destination nodeRef:" + node.getNodeRef());
-    
+
             /**
              * there is no corresponding node so all content properties are "missing."
              */
@@ -214,10 +212,10 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
                 }
                 if ((value != null) && ContentData.class.isAssignableFrom(value.getClass()))
                 {
-                    ContentData srcContent = (ContentData)value;
-                    if(srcContent.getContentUrl() != null && !srcContent.getContentUrl().isEmpty())
+                    ContentData srcContent = (ContentData) value;
+                    if (srcContent.getContentUrl() != null && !srcContent.getContentUrl().isEmpty())
                     {
-                        if(log.isDebugEnabled())
+                        if (log.isDebugEnabled())
                         {
                             log.debug("no node on destination, content is required" + propEntry.getKey() + srcContent.getContentUrl());
                         }
@@ -225,19 +223,17 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
                     }
                 }
             }
-        }        
+        }
     }
-    
+
     protected void processHeader(TransferManifestHeader header)
     {
         // T.B.D
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.transfer.manifest.TransferManifestProcessor#startTransferManifest()
-     */
+     * @see org.alfresco.repo.transfer.manifest.TransferManifestProcessor#startTransferManifest() */
     protected void startManifest()
     {
         log.debug("Start Requsite");

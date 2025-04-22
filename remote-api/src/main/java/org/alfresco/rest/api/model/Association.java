@@ -39,8 +39,7 @@ public class Association
     private AssociationSource target = null;
 
     public Association()
-    {
-    }
+    {}
 
     public Association(String id, String title, String description, Boolean isChild, Boolean isProtected, AssociationSource source, AssociationSource target)
     {
@@ -143,7 +142,8 @@ public class Association
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         StringBuilder builder = new StringBuilder(512);
         builder.append("Association [id=").append(this.id)
                 .append(", title=").append(this.title)

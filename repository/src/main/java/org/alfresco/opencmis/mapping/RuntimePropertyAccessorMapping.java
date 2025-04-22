@@ -30,6 +30,14 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.chemistry.opencmis.commons.PropertyIds;
+import org.apache.chemistry.opencmis.commons.enums.Action;
+import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
+import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.CMISConnector;
@@ -40,17 +48,9 @@ import org.alfresco.opencmis.dictionary.PropertyAccessorMapping;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
-import org.apache.chemistry.opencmis.commons.enums.Action;
-import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
-import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
- * Registry of property accessors which map the retrieval and setting of
- * properties within Alfresco.
+ * Registry of property accessors which map the retrieval and setting of properties within Alfresco.
  * 
  * @author davidc
  */
@@ -69,7 +69,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     private Map<BaseTypeId, Map<Action, CMISActionEvaluator>> actionEvaluators = new HashMap<BaseTypeId, Map<Action, CMISActionEvaluator>>();
 
     /**
-     * @param serviceRegistry ServiceRegistry
+     * @param serviceRegistry
+     *            ServiceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
@@ -77,7 +78,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     }
 
     /**
-     * @param cmisConnector CMISConnector
+     * @param cmisConnector
+     *            CMISConnector
      */
     public void setCmisConnector(CMISConnector cmisConnector)
     {
@@ -85,7 +87,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     }
 
     /**
-     * @param cmisMapping CMISMapping
+     * @param cmisMapping
+     *            CMISMapping
      */
     public void setCmisMapping(CMISMapping cmisMapping)
     {
@@ -93,19 +96,17 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     }
 
     /**
-     * @param cmisDictionaryService CMISDictionaryService
+     * @param cmisDictionaryService
+     *            CMISDictionaryService
      */
     public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
         this.cmisDictionaryService = cmisDictionaryService;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see
-     * org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet() */
     public void afterPropertiesSet() throws Exception
     {
         //
@@ -144,7 +145,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
         registerPropertyAccessor(new SourceIdProperty(serviceRegistry, cmisConnector));
         registerPropertyAccessor(new TargetIdProperty(serviceRegistry, cmisConnector));
         registerPropertyAccessor(new DescriptionProperty(serviceRegistry, cmisConnector));
-        if(cmisMapping.getCmisVersion().equals(CmisVersion.CMIS_1_1))
+        if (cmisMapping.getCmisVersion().equals(CmisVersion.CMIS_1_1))
         {
             registerPropertyAccessor(new SecondaryTypesProperty(serviceRegistry, cmisConnector, cmisMapping));
 
@@ -163,7 +164,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CanDeleteDocumentEvaluator(serviceRegistry));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CurrentVersionEvaluator(serviceRegistry,
                 new PermissionActionEvaluator(serviceRegistry, Action.CAN_UPDATE_PROPERTIES,
-                        PermissionService.WRITE_PROPERTIES), false));
+                        PermissionService.WRITE_PROPERTIES),
+                false));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new PermissionActionEvaluator(serviceRegistry,
                 Action.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new FixedValueActionEvaluator(serviceRegistry,
@@ -176,14 +178,16 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
                 false));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CurrentVersionEvaluator(serviceRegistry,
                 new PermissionActionEvaluator(serviceRegistry, Action.CAN_DELETE_CONTENT_STREAM,
-                        PermissionService.WRITE_PROPERTIES, PermissionService.WRITE_CONTENT), false));
+                        PermissionService.WRITE_PROPERTIES, PermissionService.WRITE_CONTENT),
+                false));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CurrentVersionEvaluator(serviceRegistry,
                 new CanCheckOutActionEvaluator(serviceRegistry), false));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CanCancelCheckOutActionEvaluator(serviceRegistry));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CanCheckInActionEvaluator(serviceRegistry));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CurrentVersionEvaluator(serviceRegistry,
                 new PermissionActionEvaluator(serviceRegistry, Action.CAN_SET_CONTENT_STREAM,
-                        PermissionService.WRITE_CONTENT), false));
+                        PermissionService.WRITE_CONTENT),
+                false));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new FixedValueActionEvaluator(serviceRegistry,
                 Action.CAN_GET_ALL_VERSIONS, true));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CurrentVersionEvaluator(serviceRegistry,
@@ -191,7 +195,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
         // Is CAN_REMOVE_FROM_FOLDER correct mapping?
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CurrentVersionEvaluator(serviceRegistry,
                 new PermissionActionEvaluator(serviceRegistry, Action.CAN_REMOVE_OBJECT_FROM_FOLDER,
-                        PermissionService.DELETE_NODE), false));
+                        PermissionService.DELETE_NODE),
+                false));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new PermissionActionEvaluator(serviceRegistry,
                 Action.CAN_GET_CONTENT_STREAM, PermissionService.READ_CONTENT));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new FixedValueActionEvaluator(serviceRegistry,
@@ -208,7 +213,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
                 PermissionService.READ_PERMISSIONS));
         registerEvaluator(BaseTypeId.CMIS_DOCUMENT, new CurrentVersionEvaluator(serviceRegistry,
                 new PermissionActionEvaluator(serviceRegistry, Action.CAN_APPLY_ACL,
-                        PermissionService.CHANGE_PERMISSIONS), false));
+                        PermissionService.CHANGE_PERMISSIONS),
+                false));
 
         registerEvaluator(BaseTypeId.CMIS_FOLDER,
                 new RootFolderEvaluator(serviceRegistry, new PermissionActionEvaluator(serviceRegistry,
@@ -225,7 +231,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
                 serviceRegistry, Action.CAN_GET_OBJECT_PARENTS, PermissionService.READ_PERMISSIONS)));
         registerEvaluator(BaseTypeId.CMIS_FOLDER, new RootFolderEvaluator(serviceRegistry, new ParentActionEvaluator(
                 new PermissionActionEvaluator(serviceRegistry, Action.CAN_GET_FOLDER_PARENT,
-                        PermissionService.READ_PERMISSIONS)), false));
+                        PermissionService.READ_PERMISSIONS)),
+                false));
         registerEvaluator(BaseTypeId.CMIS_FOLDER, new PermissionActionEvaluator(serviceRegistry,
                 Action.CAN_GET_DESCENDANTS, PermissionService.READ_CHILDREN));
         // Is CAN_MOVE_OBJECT correct mapping?
@@ -285,28 +292,27 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
                 false));
         registerEvaluator(BaseTypeId.CMIS_POLICY, new FixedValueActionEvaluator(serviceRegistry, Action.CAN_APPLY_ACL,
                 false));
-        
+
         // permissions for ITEMS in order of CMIS-Core.xsd
         registerEvaluator(BaseTypeId.CMIS_ITEM, new PermissionActionEvaluator(serviceRegistry,
                 Action.CAN_DELETE_OBJECT, PermissionService.DELETE_NODE));
         registerEvaluator(BaseTypeId.CMIS_ITEM, new PermissionActionEvaluator(serviceRegistry,
                 Action.CAN_UPDATE_PROPERTIES, PermissionService.WRITE_PROPERTIES));
         registerEvaluator(BaseTypeId.CMIS_ITEM, new PermissionActionEvaluator(serviceRegistry,
-                Action.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));       
+                Action.CAN_GET_PROPERTIES, PermissionService.READ_PROPERTIES));
         registerEvaluator(BaseTypeId.CMIS_ITEM, new FixedValueActionEvaluator(serviceRegistry,
-                Action.CAN_GET_OBJECT_RELATIONSHIPS, true));    
+                Action.CAN_GET_OBJECT_RELATIONSHIPS, true));
         registerEvaluator(BaseTypeId.CMIS_ITEM, new ParentActionEvaluator(new PermissionActionEvaluator(
                 serviceRegistry, Action.CAN_GET_OBJECT_PARENTS, PermissionService.READ_PERMISSIONS)));
         registerEvaluator(BaseTypeId.CMIS_ITEM, new PermissionActionEvaluator(serviceRegistry, Action.CAN_GET_ACL,
                 PermissionService.READ_PERMISSIONS));
         registerEvaluator(BaseTypeId.CMIS_ITEM, new PermissionActionEvaluator(serviceRegistry, Action.CAN_APPLY_ACL,
                 PermissionService.CHANGE_PERMISSIONS));
-      
+
     }
-    
+
     public void init()
-    {
-    }
+    {}
 
     /**
      * Gets a property accessor
@@ -337,7 +343,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     /**
      * Register pre-defined Property Accessor
      * 
-     * @param propertyAccessor AbstractProperty
+     * @param propertyAccessor
+     *            AbstractProperty
      */
     private void registerPropertyAccessor(AbstractProperty propertyAccessor)
     {
@@ -347,7 +354,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     /**
      * Gets the Action Evaluators applicable for the given CMIS Scope
      * 
-     * @param scope BaseTypeId
+     * @param scope
+     *            BaseTypeId
      */
     public Map<Action, CMISActionEvaluator> getActionEvaluators(BaseTypeId scope)
     {
@@ -362,8 +370,10 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     /**
      * Register an Action Evaluator
      * 
-     * @param scope BaseTypeId
-     * @param evaluator CMISActionEvaluator
+     * @param scope
+     *            BaseTypeId
+     * @param evaluator
+     *            CMISActionEvaluator
      */
     private void registerEvaluator(BaseTypeId scope, CMISActionEvaluator evaluator)
     {

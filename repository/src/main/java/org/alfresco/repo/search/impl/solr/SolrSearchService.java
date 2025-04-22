@@ -38,8 +38,8 @@ import org.alfresco.repo.search.CannedQueryDef;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.repo.search.impl.QueryParameterisationException;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -64,15 +64,15 @@ import org.alfresco.util.SearchLanguageConversion;
 public class SolrSearchService implements SearchService
 {
     private NodeService nodeService;
-    
+
     private NamespacePrefixResolver namespacePrefixResolver;
-    
+
     private DictionaryService dictionaryService;
-    
+
     private Map<String, LuceneQueryLanguageSPI> queryLanguages;
-    
+
     private QueryRegisterComponent queryRegister;
-        
+
     public NodeService getNodeService()
     {
         return nodeService;
@@ -123,22 +123,18 @@ public class SolrSearchService implements SearchService
         this.queryRegister = queryRegister;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.repository.StoreRef,
-     * java.lang.String, java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.repository.StoreRef, java.lang.String, java.lang.String) */
     @Override
     public ResultSet query(StoreRef store, String language, String query)
     {
         return query(store, language, query, null);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.repository.StoreRef,
-     * java.lang.String, java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[])
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.repository.StoreRef, java.lang.String, java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[]) */
     @Override
     public ResultSet query(StoreRef store, String language, String query, QueryParameterDefinition[] queryParameterDefinitions)
     {
@@ -154,15 +150,13 @@ public class SolrSearchService implements SearchService
             }
         }
         sp.excludeDataInTheCurrentTransaction(true);
-        
+
         return query(sp);
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.repository.StoreRef,
-     * org.alfresco.service.namespace.QName, org.alfresco.service.cmr.search.QueryParameter[])
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.repository.StoreRef, org.alfresco.service.namespace.QName, org.alfresco.service.cmr.search.QueryParameter[]) */
     @Override
     public ResultSet query(StoreRef store, QName queryId, QueryParameter[] queryParameters)
     {
@@ -188,8 +182,10 @@ public class SolrSearchService implements SearchService
     /**
      * The definitions must provide a default value, or of not there must be a parameter to provide the value
      * 
-     * @param definition CannedQueryDef
-     * @param queryParameters QueryParameter[]
+     * @param definition
+     *            CannedQueryDef
+     * @param queryParameters
+     *            QueryParameter[]
      * @throws QueryParameterisationException
      */
     private void checkParameters(CannedQueryDef definition, QueryParameter[] queryParameters) throws QueryParameterisationException
@@ -231,12 +227,7 @@ public class SolrSearchService implements SearchService
         }
     }
 
-    /*
-     * Parameterise the query string - not sure if it is required to escape lucence spacials chars The parameters could
-     * be used to build the query - the contents of parameters should alread have been escaped if required. ... mush
-     * better to provide the parameters and work out what to do TODO: conditional query escapement - may be we should
-     * have a parameter type that is not escaped
-     */
+    /* Parameterise the query string - not sure if it is required to escape lucence spacials chars The parameters could be used to build the query - the contents of parameters should alread have been escaped if required. ... mush better to provide the parameters and work out what to do TODO: conditional query escapement - may be we should have a parameter type that is not escaped */
     private String parameterise(String unparameterised, Map<QName, QueryParameterDefinition> map, QueryParameter[] queryParameters, NamespacePrefixResolver nspr)
             throws QueryParameterisationException
     {
@@ -316,18 +307,17 @@ public class SolrSearchService implements SearchService
         return buffer.toString();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.search.SearchParameters)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.search.SearchParameters) */
     @Override
     public ResultSet query(SearchParameters searchParameters)
     {
-        if(searchParameters.getStores().size() == 0)
+        if (searchParameters.getStores().size() == 0)
         {
             throw new IllegalStateException("At least one store must be defined to search");
         }
-        
+
         String parameterisedQueryString;
         if (searchParameters.getQueryParameterDefinitions().size() > 0)
         {

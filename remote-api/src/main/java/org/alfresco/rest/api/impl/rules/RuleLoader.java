@@ -28,11 +28,8 @@ package org.alfresco.rest.api.impl.rules;
 import java.util.List;
 
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
-import org.alfresco.rest.api.model.rules.CompositeCondition;
 import org.alfresco.rest.api.model.rules.Rule;
-import org.alfresco.rest.api.model.rules.SimpleCondition;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
 

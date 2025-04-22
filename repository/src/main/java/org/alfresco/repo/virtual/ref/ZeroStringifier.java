@@ -50,7 +50,7 @@ public class ZeroStringifier implements Stringifier, ZeroEncoding
         {
             return NODE_PROTOCOL_CODE;
         }
-        else 
+        else
         {
             throw new ReferenceEncodingException("Invalid protocol: " + protocolStr);
         }
@@ -62,7 +62,7 @@ public class ZeroStringifier implements Stringifier, ZeroEncoding
         String resource = stringify(reference.getResource());
         int protocolResourceEncoding = this.getProtocolEncoding(reference.getProtocol());
         protocolResourceEncoding += Integer.parseInt(resource.substring(0,
-                                                                        1));
+                1));
         return protocolResourceEncoding + DELIMITER + resource.substring(2) + stringify(reference.getParameters());
     }
 
@@ -83,7 +83,7 @@ public class ZeroStringifier implements Stringifier, ZeroEncoding
     {
         String resourceLocation = stringify(resource.getLocation());
         int locationCode = Integer.parseInt(resourceLocation.substring(0,
-                                                                       1));
+                1));
         locationCode += REPOSITORY_RESOURCE_CODE;
         return locationCode + DELIMITER + resourceLocation.substring(2);
     }

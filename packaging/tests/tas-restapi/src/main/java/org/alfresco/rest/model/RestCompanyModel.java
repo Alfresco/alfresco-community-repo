@@ -31,20 +31,11 @@ import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
 
 /**
-  "company": {
-      "organization": "myCompany",
-      "address1": "Iasi",
-      "address2": "City",
-      "address3": "trei",
-      "postcode": "1234556",
-      "telephone": "564510213453",
-      "fax": "541",
-      "email": "qLZ41D2QnXQcqySNK09J@yahoo.com"
-    }
+ * "company": { "organization": "myCompany", "address1": "Iasi", "address2": "City", "address3": "trei", "postcode": "1234556", "telephone": "564510213453", "fax": "541", "email": "qLZ41D2QnXQcqySNK09J@yahoo.com" }
  */
 public class RestCompanyModel extends TestModel implements IRestModel<RestCompanyModel>
 {
-    @JsonProperty (value = "entry")
+    @JsonProperty(value = "entry")
     RestCompanyModel model;
     private String organization;
     private String address1;

@@ -26,6 +26,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
@@ -36,7 +38,6 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:transferContainer behaviour bean
@@ -46,9 +47,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 @BehaviourBean(defaultType = "rma:transferContainer")
 public class TransferContainerType extends BaseBehaviourBean
-            implements NodeServicePolicies.OnCreateChildAssociationPolicy,
-                       NodeServicePolicies.OnCreateNodePolicy,
-                       NodeServicePolicies.OnDeleteNodePolicy
+        implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+        NodeServicePolicies.OnCreateNodePolicy,
+        NodeServicePolicies.OnDeleteNodePolicy
 
 {
     private final static String MSG_ERROR_ADD_CONTENT_CONTAINER = "rm.service.error-add-content-container";
@@ -79,15 +80,12 @@ public class TransferContainerType extends BaseBehaviourBean
     /**
      * Prevent creating a node inside transfer container, this will be possible only through internal services in a controlled manner.
      *
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef,
-     *      boolean)
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
     @Override
-    @Behaviour
-    (
-                kind = BehaviourKind.ASSOCIATION,
-                name = BEHAVIOUR_NAME
-    )
+    @Behaviour(
+            kind = BehaviourKind.ASSOCIATION,
+            name = BEHAVIOUR_NAME)
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
         throw new IntegrityException(I18NUtil.getMessage(MSG_ERROR_ADD_CHILD_TO_TRANSFER_CONTAINER), null);
@@ -97,16 +95,17 @@ public class TransferContainerType extends BaseBehaviourBean
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true) { throw new AlfrescoRuntimeException(
-                    I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER)); }
+        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true)
+        {
+            throw new AlfrescoRuntimeException(
+                    I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER));
+        }
     }
 
     @Override
-    @Behaviour
-    (
-                kind = BehaviourKind.CLASS,
-                name = DELETE_BEHAVIOUR_NAME
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            name = DELETE_BEHAVIOUR_NAME)
     public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
     {
         throw new IntegrityException("Operation failed. Deletion of Transfer Container is not allowed.", null);

@@ -31,9 +31,10 @@ import static java.util.stream.Collectors.joining;
 
 import java.util.List;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Halts the bootstrap process if a deprecated module is present.
@@ -56,17 +57,17 @@ public class DeprecatedModulesValidator
     public void onInit()
     {
         ofNullable(moduleService.getAllModules())
-            .map(this::getDeprecatedModules)
-            .filter(not(String::isBlank))
-            .ifPresent(DeprecatedModulesValidator::throwException);
+                .map(this::getDeprecatedModules)
+                .filter(not(String::isBlank))
+                .ifPresent(DeprecatedModulesValidator::throwException);
     }
 
     private String getDeprecatedModules(List<ModuleDetails> modules)
     {
         return modules.stream()
-            .filter(module -> deprecatedModules.contains(module.getId()))
-            .map(module -> module.getTitle() + " " + module.getModuleVersionNumber())
-            .collect(joining(", "));
+                .filter(module -> deprecatedModules.contains(module.getId()))
+                .map(module -> module.getTitle() + " " + module.getModuleVersionNumber())
+                .collect(joining(", "));
     }
 
     private static void throwException(String foundDeprecatedModules)

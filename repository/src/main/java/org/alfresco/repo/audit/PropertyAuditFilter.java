@@ -38,15 +38,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Filter using property file values to accept or reject audit map values.<p>
+ * Filter using property file values to accept or reject audit map values.
+ * <p>
  * 
- * The last component in the {@code rootPath} is considered to be the event
- * action. The keys in an audit map identify each audit value. Properties may be
- * defined to accept or reject each value. If any value in an audit map is
- * rejected, the whole map is rejected. So that one does not have to define
- * too many properties, a 'default' event action property may be defined. This
- * will be inherited by all actions unless a property is defined for a particular
- * event action. For example:
+ * The last component in the {@code rootPath} is considered to be the event action. The keys in an audit map identify each audit value. Properties may be defined to accept or reject each value. If any value in an audit map is rejected, the whole map is rejected. So that one does not have to define too many properties, a 'default' event action property may be defined. This will be inherited by all actions unless a property is defined for a particular event action. For example:
+ * 
  * <pre>
  *   audit.filter.alfresco-access.default.enabled=true
  *   audit.filter.alfresco-access.default.user=~System;.*
@@ -57,20 +53,13 @@ import org.apache.commons.logging.LogFactory;
  *   ...
  * </pre>
  * 
- * Each property value defines a list of regular expressions that will be used
- * to match the actual audit map values. In the above example, events created
- * by any user except for the internal user 'System' will be recorded by default
- * for all event actions. However the property for the 'transaction' event action
- * overrides this to record even 'System' events.<p>
+ * Each property value defines a list of regular expressions that will be used to match the actual audit map values. In the above example, events created by any user except for the internal user 'System' will be recorded by default for all event actions. However the property for the 'transaction' event action overrides this to record even 'System' events.
+ * <p>
  * 
- * For any filters to be applied to an event action, that action's filters must be
- * enabled with an 'enabled' property set to {@code "true"}. However this may
- * also be done by using the 'default' event action, as shown above.<p> 
+ * For any filters to be applied to an event action, that action's filters must be enabled with an 'enabled' property set to {@code "true"}. However this may also be done by using the 'default' event action, as shown above.
+ * <p>
  * 
- * Note: Property names have a {@code "audit.filter."} prefix and use {@code '.'}
- * as a separator where as components of rootPath and keys in the audit map use
- * {@code '/'}. The following is an example rootPath and audit map which could be
- * used with the corresponding property names shown above:
+ * Note: Property names have a {@code "audit.filter."} prefix and use {@code '.'} as a separator where as components of rootPath and keys in the audit map use {@code '/'}. The following is an example rootPath and audit map which could be used with the corresponding property names shown above:
  * 
  * <pre>
  *     rootPath                       auditMap
@@ -78,28 +67,20 @@ import org.apache.commons.logging.LogFactory;
  *                                    "path" => "/app:company_home/st:sites/cm:mysite/cm:documentLibrary/cm:folder1"
  *                                    "type" => "cm:folder"
  *                                    "node" => ...
- * </pre> 
+ * </pre>
  * 
- * Lists are evaluated from left to right allowing one flexibility to accept or
- * reject different combinations of values. If no match is made by the end of the
- * list the value is rejected. If there is not a property for a given value or
- * an empty list is defined (as above for the user value on a transaction action)
- * any value is accepted.<p>
+ * Lists are evaluated from left to right allowing one flexibility to accept or reject different combinations of values. If no match is made by the end of the list the value is rejected. If there is not a property for a given value or an empty list is defined (as above for the user value on a transaction action) any value is accepted.
+ * <p>
  * 
- * Each regular expression in the list is separated by a {@code ';'}. Expressions
- * that include a {@code ';'} may be escaped using a {@code '\'}. An expression
- * that starts with a {@code '~'} indicates that any matching value should be
- * rejected. If the first character of an expression needs to be a {@code '~'} it
- * too may be escaped with a {@code '\'}.<p>
+ * Each regular expression in the list is separated by a {@code ';'}. Expressions that include a {@code ';'} may be escaped using a {@code '\'}. An expression that starts with a {@code '~'} indicates that any matching value should be rejected. If the first character of an expression needs to be a {@code '~'} it too may be escaped with a {@code '\'}.
+ * <p>
  * 
- * A property value may be a reference to another property, which saves having
- * multiple copies. This is indicated by a {@code '$'} as the first character of the
- * property value. If the first character of an expression needs to be a
- * {@code '$'} it too may be escaped with a {@code '\'}. For example:
+ * A property value may be a reference to another property, which saves having multiple copies. This is indicated by a {@code '$'} as the first character of the property value. If the first character of an expression needs to be a {@code '$'} it too may be escaped with a {@code '\'}. For example:
+ * 
  * <pre>
  *   audit.filter.alfresco-access.default.type=cm:folder;cm:content
  *   audit.filter.alfresco-access.moveNode.from.type=$audit.filter.alfresco-access.default.type
- * </pre> 
+ * </pre>
  * 
  * @author Alan Davis
  */
@@ -113,27 +94,27 @@ public class PropertyAuditFilter implements AuditFilter
     private static final char PROPERTY_SEPARATOR = '.';
     private static final String PROPERY_NAME_PREFIX = "audit.filter";
     private static final char ESCAPE = '\\';
-    
-    private static final String ESCAPED_REDIRECT = ""+ESCAPE+REDIRECT;
-    private static final String ESCAPED_REG_EXP_SEPARATOR = ""+ESCAPE+REG_EXP_SEPARATOR;
-    private static final String ESCAPED_NOT = ""+ESCAPE+NOT;
-    
+
+    private static final String ESCAPED_REDIRECT = "" + ESCAPE + REDIRECT;
+    private static final String ESCAPED_REG_EXP_SEPARATOR = "" + ESCAPE + REG_EXP_SEPARATOR;
+    private static final String ESCAPED_NOT = "" + ESCAPE + NOT;
+
     private static final String ENABLED = "enabled";
     private static final String DEFAULT = "default";
 
     /**
      * Cache of {@code Patterns} for performance.
      */
-    static Map<String, Pattern> patternCache =
-        Collections.synchronizedMap(new WeakHashMap<String, Pattern>());
-    
+    static Map<String, Pattern> patternCache = Collections.synchronizedMap(new WeakHashMap<String, Pattern>());
+
     /**
      * Properties to drive the filter.
      */
     Properties properties;
-    
+
     /**
      * Set the properties object holding filter configuration
+     * 
      * @since 3.2
      */
     public void setProperties(Properties properties)
@@ -142,7 +123,8 @@ public class PropertyAuditFilter implements AuditFilter
     }
 
     /**
-     * @param rootPath String
+     * @param rootPath
+     *            String
      * @return boolean
      */
     @Override
@@ -151,7 +133,7 @@ public class PropertyAuditFilter implements AuditFilter
         String[] root = splitPath(rootPath);
         String rootProperty = getPropertyName(PROPERY_NAME_PREFIX, getPropertyName(root));
         String defaultRootProperty = getDefaultRootProperty(root);
-      
+
         if ("true".equalsIgnoreCase(getProperty(rootProperty, defaultRootProperty, ENABLED)))
         {
             for (Map.Entry<String, Serializable> entry : auditMap.entrySet())
@@ -161,24 +143,24 @@ public class PropertyAuditFilter implements AuditFilter
                 {
                     value = "null";
                 }
-                String stringValue = (value instanceof String) ? (String)value : value.toString();
+                String stringValue = (value instanceof String) ? (String) value : value.toString();
                 String[] key = splitPath(entry.getKey());
                 String propertyValue = getProperty(rootProperty, defaultRootProperty, key);
                 if (!acceptValue(stringValue, propertyValue, rootProperty, key))
                 {
                     if (logger.isDebugEnabled())
                     {
-                        logger.debug("Rejected \n\t            "+rootPath+'/'+entry.getKey()+"="+stringValue+
-                                "\n\t"+getPropertyName(rootProperty, getPropertyName(key))+"="+propertyValue);                
+                        logger.debug("Rejected \n\t            " + rootPath + '/' + entry.getKey() + "=" + stringValue +
+                                "\n\t" + getPropertyName(rootProperty, getPropertyName(key)) + "=" + propertyValue);
                     }
                     return false;
                 }
             }
         }
-        
+
         return true;
     }
-    
+
     /**
      * Checks a single value against a list of regular expressions.
      */
@@ -189,8 +171,8 @@ public class PropertyAuditFilter implements AuditFilter
         {
             return true;
         }
-        
-        for (String regExp: getRegExpList(regExpValue, rootProperty, key))
+
+        for (String regExp : getRegExpList(regExpValue, rootProperty, key))
         {
             boolean includeExp = regExp.charAt(0) != NOT;
             if (!includeExp || regExp.startsWith(ESCAPED_NOT))
@@ -201,11 +183,11 @@ public class PropertyAuditFilter implements AuditFilter
             {
                 return includeExp;
             }
-        }        
-        
+        }
+
         return false;
     }
-    
+
     private Pattern getPattern(String regExp)
     {
         Pattern pattern = patternCache.get(regExp);
@@ -222,16 +204,15 @@ public class PropertyAuditFilter implements AuditFilter
      */
     private String getDefaultRootProperty(String[] root)
     {
-        String action = root[root.length-1];
-        root[root.length-1] = DEFAULT;
+        String action = root[root.length - 1];
+        root[root.length - 1] = DEFAULT;
         String defaultRootProperty = getPropertyName(PROPERY_NAME_PREFIX, getPropertyName(root));
-        root[root.length-1] = action;
+        root[root.length - 1] = action;
         return defaultRootProperty;
     }
 
     /**
-     * @return the value of the property {@code rootProperty+'.'+getPropertyName(keyComponents)}
-     * defaulting to {@code defaultRootProperty+'.'+getPropertyName(keyComponents)}.
+     * @return the value of the property {@code rootProperty+'.'+getPropertyName(keyComponents)} defaulting to {@code defaultRootProperty+'.'+getPropertyName(keyComponents)}.
      */
     private String getProperty(String rootProperty, String defaultRootProperty, String... keyComponents)
     {
@@ -244,12 +225,11 @@ public class PropertyAuditFilter implements AuditFilter
         }
         return value;
     }
-    
+
     /**
-     * @return a property value, including redirected values (where the value
-     * of a property starts with a {@code '$'} indicating it is another property
-     * name).
-     * @throws IllegalArgumentException if redirecting properties reference themselves.
+     * @return a property value, including redirected values (where the value of a property starts with a {@code '$'} indicating it is another property name).
+     * @throws IllegalArgumentException
+     *             if redirecting properties reference themselves.
      */
     private String getProperty(List<String> loopCheck, String propertyName)
     {
@@ -265,8 +245,8 @@ public class PropertyAuditFilter implements AuditFilter
             }
             if (loopCheck.contains(newPropertyName))
             {
-                RuntimeException e = new IllegalArgumentException("Redirected property "+
-                        newPropertyName+" referes back to itself.");
+                RuntimeException e = new IllegalArgumentException("Redirected property " +
+                        newPropertyName + " referes back to itself.");
                 logger.error("Error found in properties for audit filter.", e);
                 throw e;
             }
@@ -275,25 +255,22 @@ public class PropertyAuditFilter implements AuditFilter
         }
         else if (value == null && loopCheck != null && !loopCheck.isEmpty())
         {
-            RuntimeException e = new IllegalArgumentException("Redirected property "+
-                    loopCheck.get(loopCheck.size()-1)+
-                    " points to "+propertyName+" but it does not exist.");
+            RuntimeException e = new IllegalArgumentException("Redirected property " +
+                    loopCheck.get(loopCheck.size() - 1) +
+                    " points to " + propertyName + " but it does not exist.");
             logger.error("Error found in properties for audit filter.", e);
             throw e;
         }
-        
+
         return value;
     }
 
     /**
-     * Returns a List of regular expressions from a property's String value.
-     * A leading {@code '~'} indicating the regular expression should be used
-     * to reject values. This may be escaped with a leading back slash
-     * ({@code "\\~"}) if the first character must be a semicolon. Other
-     * escape characters are removed. A check is made that no expression is
-     * zero length. 
+     * Returns a List of regular expressions from a property's String value. A leading {@code '~'} indicating the regular expression should be used to reject values. This may be escaped with a leading back slash ({@code "\\~"}) if the first character must be a semicolon. Other escape characters are removed. A check is made that no expression is zero length.
+     * 
      * @return a List of regular expressions.
-     * @throws IllegalArgumentException if there are any zero length expressions.
+     * @throws IllegalArgumentException
+     *             if there are any zero length expressions.
      */
     private List<String> getRegExpList(String value, String rootProperty, String... key)
     {
@@ -304,27 +281,26 @@ public class PropertyAuditFilter implements AuditFilter
             int i = j - 1;
             do
             {
-                i = value.indexOf(';', i+1);
+                i = value.indexOf(';', i + 1);
                 if (i != -1)
                 {
-                    if (i == 0 || value.charAt(i-1) != '\\')
+                    if (i == 0 || value.charAt(i - 1) != '\\')
                     {
                         regExpList.add(value.substring(j, i));
                         j = i + 1;
-                    }               
+                    }
                 }
-            }
-            while (i != -1);
-            if (j < value.length()-1)
+            } while (i != -1);
+            if (j < value.length() - 1)
             {
                 regExpList.add(value.substring(j));
             }
         }
-        
+
         // Remove escape characters other than the NOT (\~)
         // \$ at the start becomes "$"
         // \; anywhere becomes ";"
-        for (int i=regExpList.size()-1; i >= 0; i--)
+        for (int i = regExpList.size() - 1; i >= 0; i--)
         {
             String regExp = regExpList.get(i);
             if (regExp.startsWith(ESCAPED_REDIRECT))
@@ -332,25 +308,24 @@ public class PropertyAuditFilter implements AuditFilter
                 regExp = regExp.substring(1);
             }
             regExp = regExp.replaceAll(ESCAPED_REG_EXP_SEPARATOR, REG_EXP_SEPARATOR);
-            
+
             if (regExp.length() == 0 || (regExp.charAt(0) == NOT && regExp.length() == 1))
             {
-                throw new IllegalArgumentException(getPropertyName(rootProperty, getPropertyName(key))+"="+value+
+                throw new IllegalArgumentException(getPropertyName(rootProperty, getPropertyName(key)) + "=" + value +
                         "includes an empty regular expression.");
-            }       
+            }
             regExpList.set(i, regExp);
         }
         return regExpList;
     }
 
     /**
-     * @return a property name from the supplied components. Each component is
-     * separated by a {@code '.'}.
+     * @return a property name from the supplied components. Each component is separated by a {@code '.'}.
      */
     private String getPropertyName(String... components)
     {
         StringBuilder sb = new StringBuilder();
-        for (String component: components)
+        for (String component : components)
         {
             if (sb.length() > 0)
             {

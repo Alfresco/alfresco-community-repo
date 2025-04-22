@@ -25,17 +25,19 @@
  */
 package org.alfresco.repo.action.access;
 
-import org.alfresco.repo.action.ActionImpl;
-import org.alfresco.service.cmr.action.Action;
+import static org.junit.Assert.assertThrows;
+
+import java.util.Properties;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.lang.NonNull;
 
-import java.util.Properties;
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.service.cmr.action.Action;
 
-import static org.junit.Assert.assertThrows;
-
-public class ActionAccessRestrictionAbstractBaseTest {
+public class ActionAccessRestrictionAbstractBaseTest
+{
 
     private static final String GLOBAL_PROPERTIES_ACTION_EXPOSE_PREFIX = "org.alfresco.repo.action";
     private static final String GLOBAL_PROPERTIES_ACTION_EXPOSE_SUFFIX = ".exposed";
@@ -44,17 +46,18 @@ public class ActionAccessRestrictionAbstractBaseTest {
 
     private static final String MAIL_ACTION = "mail";
 
-
     private ActionAccessRestrictionAbstractBase accessRestriction;
     private Properties globalProperties;
 
     @Before
-    public void setup() {
+    public void setup()
+    {
         globalProperties = new Properties();
 
         accessRestriction = new ActionAccessRestrictionAbstractBase() {
             @Override
-            protected void innerVerifyAccessRestriction(Action action) {
+            protected void innerVerifyAccessRestriction(Action action)
+            {
                 throw new ActionAccessException("Executing verification");
             }
         };
@@ -62,62 +65,72 @@ public class ActionAccessRestrictionAbstractBaseTest {
     }
 
     @Test
-    public void skipVerificationForNullContext() {
+    public void skipVerificationForNullContext()
+    {
         Action action = getActionWithContext(MAIL_ACTION, null);
         accessRestriction.verifyAccessRestriction(action);
     }
 
     @Test
-    public void skipVerificationForNonControlledContext() {
+    public void skipVerificationForNonControlledContext()
+    {
         Action action = getActionWithContext(MAIL_ACTION, NONCONTROLLED_CONTEXT);
         accessRestriction.verifyAccessRestriction(action);
     }
 
     @Test
-    public void callVerificationForControlledContext() {
+    public void callVerificationForControlledContext()
+    {
         Action action = getActionWithContext(MAIL_ACTION, CONTROLLED_CONTEXT);
         assertThrows(ActionAccessException.class, () -> accessRestriction.verifyAccessRestriction(action));
     }
 
     @Test
-    public void skipVerificationForExposedActionConfig() {
+    public void skipVerificationForExposedActionConfig()
+    {
         setGlobalPropertiesActionExposed(MAIL_ACTION, null, true);
         Action action = getActionWithContext(MAIL_ACTION, CONTROLLED_CONTEXT);
         accessRestriction.verifyAccessRestriction(action);
     }
 
     @Test
-    public void skipVerificationForExposedActionContextConfig() {
+    public void skipVerificationForExposedActionContextConfig()
+    {
         setGlobalPropertiesActionExposed(MAIL_ACTION, CONTROLLED_CONTEXT, true);
         Action action = getActionWithContext(MAIL_ACTION, CONTROLLED_CONTEXT);
         accessRestriction.verifyAccessRestriction(action);
     }
 
     @Test
-    public void callVerificationForNonExposedActionConfig() {
+    public void callVerificationForNonExposedActionConfig()
+    {
         setGlobalPropertiesActionExposed(MAIL_ACTION, null, false);
         Action action = getActionWithContext(MAIL_ACTION, CONTROLLED_CONTEXT);
         assertThrows(ActionAccessException.class, () -> accessRestriction.verifyAccessRestriction(action));
     }
 
     @Test
-    public void callVerificationForNonExposedActionContextConfig() {
+    public void callVerificationForNonExposedActionContextConfig()
+    {
         setGlobalPropertiesActionExposed(MAIL_ACTION, CONTROLLED_CONTEXT, false);
         Action action = getActionWithContext(MAIL_ACTION, CONTROLLED_CONTEXT);
         assertThrows(ActionAccessException.class, () -> accessRestriction.verifyAccessRestriction(action));
     }
 
-    private Action getActionWithContext(String actionName, String context) {
+    private Action getActionWithContext(String actionName, String context)
+    {
         Action action = new ActionImpl(null, "12345", actionName);
         ActionAccessRestriction.setActionContext(action, context);
 
         return action;
     }
 
-    private void setGlobalPropertiesActionExposed(@NonNull String action, String context, boolean isExposed) {
+    private void setGlobalPropertiesActionExposed(@NonNull String action, String context, boolean isExposed)
+    {
         StringBuilder property = new StringBuilder(GLOBAL_PROPERTIES_ACTION_EXPOSE_PREFIX);
         property.append("." + action);
-        if (context != null) {
+        if (context != null)
+        {
             property.append("." + context);
         }
         property.append(GLOBAL_PROPERTIES_ACTION_EXPOSE_SUFFIX);

@@ -31,14 +31,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourDefinition;
 import org.alfresco.repo.policy.ClassBehaviourBinding;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * 
@@ -77,7 +78,7 @@ public abstract class AbstractEventGenerationBehaviours
 
     public void cleanUp()
     {
-        for(BehaviourDefinition<ClassBehaviourBinding> binding : behaviours)
+        for (BehaviourDefinition<ClassBehaviourBinding> binding : behaviours)
         {
             removeBehaviourImpl(binding);
         }
@@ -87,7 +88,7 @@ public abstract class AbstractEventGenerationBehaviours
     {
         StringTokenizer st = new StringTokenizer(includeEventTypesStr, ",");
         this.includeEventTypes = new HashSet<String>();
-        while(st.hasMoreTokens())
+        while (st.hasMoreTokens())
         {
             String eventType = st.nextToken().trim();
             this.includeEventTypes.add(eventType);
@@ -104,24 +105,28 @@ public abstract class AbstractEventGenerationBehaviours
         return includeEventTypes.contains(eventType);
     }
 
-
     /**
      * Bind a class policy to a JavaBehaviour if a specific event type is enabled
      * 
-     * @param policyName the policy to implement or in other words the one we bind to the JavaBehaviour
-     * @param eventTypeToCheck implement the policy only if the event is supported
+     * @param policyName
+     *            the policy to implement or in other words the one we bind to the JavaBehaviour
+     * @param eventTypeToCheck
+     *            implement the policy only if the event is supported
      */
     protected void bindClassPolicy(QName policyName, String eventTypeToCheck)
     {
         bindClassPolicy(policyName, ContentModel.TYPE_BASE, eventTypeToCheck);
     }
-    
+
     /**
      * Bind a class policy to a JavaBehaviour if a specific event type is enabled
      * 
-     * @param policyName the policy to implement or in other words the one we bind to the JavaBehaviour
-     * @param className the class to bind to
-     * @param eventTypeToCheck implement the policy only if the event is supported
+     * @param policyName
+     *            the policy to implement or in other words the one we bind to the JavaBehaviour
+     * @param className
+     *            the class to bind to
+     * @param eventTypeToCheck
+     *            implement the policy only if the event is supported
      */
     protected void bindClassPolicy(QName policyName, QName className, String eventTypeToCheck)
     {
@@ -129,39 +134,40 @@ public abstract class AbstractEventGenerationBehaviours
         {
             return;
         }
-        
-        BehaviourDefinition<ClassBehaviourBinding> binding =
-                this.policyComponent.bindClassBehaviour(
-                        policyName,
-                        className,
-                        new JavaBehaviour(this, policyName.getLocalName()));
+
+        BehaviourDefinition<ClassBehaviourBinding> binding = this.policyComponent.bindClassBehaviour(
+                policyName,
+                className,
+                new JavaBehaviour(this, policyName.getLocalName()));
         addBehaviour(binding);
     }
-    
+
     /**
      * Bind an association policy to a JavaBehaviour if a specific event type is enabled
      * 
-     * @param policyName the policy to implement or in other words the one we bind to the JavaBehaviour
-     * @param eventTypeToCheck implement the policy only if this event type is enabled
+     * @param policyName
+     *            the policy to implement or in other words the one we bind to the JavaBehaviour
+     * @param eventTypeToCheck
+     *            implement the policy only if this event type is enabled
      */
     protected void bindAssociationPolicy(QName policyName, String eventTypeToCheck)
     {
-        if(!includeEventType(eventTypeToCheck))
+        if (!includeEventType(eventTypeToCheck))
         {
             return;
         }
-        
+
         this.policyComponent.bindAssociationBehaviour(
                 policyName,
                 ContentModel.TYPE_BASE,
                 new JavaBehaviour(this, policyName.getLocalName()));
-    }    
-    
-    
+    }
+
     /**
      * Bind a class policy to a JavaBehaviour.
      * 
-     * @param policyName the policy to implement or in other words the one we bind to the JavaBehaviour
+     * @param policyName
+     *            the policy to implement or in other words the one we bind to the JavaBehaviour
      */
     protected void bindClassPolicy(QName policyName)
     {

@@ -35,13 +35,13 @@ import org.mozilla.javascript.Scriptable;
 /**
  * @author Kevin Roast
  */
-public class ScriptableHashMap<K,V> extends LinkedHashMap<K, V> implements Scriptable
+public class ScriptableHashMap<K, V> extends LinkedHashMap<K, V> implements Scriptable
 {
     private static final long serialVersionUID = 3664761893203964569L;
-    
+
     private Scriptable parentScope;
     private Scriptable prototype;
-    
+
     /**
      * @see org.mozilla.javascript.Scriptable#getClassName()
      */
@@ -62,8 +62,7 @@ public class ScriptableHashMap<K,V> extends LinkedHashMap<K, V> implements Scrip
         }
         else if ("hasOwnProperty".equals(name))
         {
-            return new Callable()
-            {
+            return new Callable() {
                 @Override
                 public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args)
                 {
@@ -82,8 +81,8 @@ public class ScriptableHashMap<K,V> extends LinkedHashMap<K, V> implements Scrip
      */
     public Object get(int index, Scriptable start)
     {
-        Object value =  null;
-        int i=0;
+        Object value = null;
+        int i = 0;
         Iterator itrValues = this.values().iterator();
         while (i++ <= index && itrValues.hasNext())
         {
@@ -91,11 +90,12 @@ public class ScriptableHashMap<K,V> extends LinkedHashMap<K, V> implements Scrip
         }
         return value;
     }
-    
+
     /**
      * ECMAScript 5 hasOwnProperty method support.
      * 
-     * @param key   Object key to test for
+     * @param key
+     *            Object key to test for
      * @return true if found, false otherwise
      */
     public boolean hasOwnProperty(Object key)
@@ -127,7 +127,7 @@ public class ScriptableHashMap<K,V> extends LinkedHashMap<K, V> implements Scrip
     public void put(String name, Scriptable start, Object value)
     {
         // add the property to the underlying QName map
-        put((K)name, (V)value);
+        put((K) name, (V) value);
     }
 
     /**
@@ -152,7 +152,7 @@ public class ScriptableHashMap<K,V> extends LinkedHashMap<K, V> implements Scrip
      */
     public void delete(int index)
     {
-        int i=0;
+        int i = 0;
         Iterator itrKeys = this.keySet().iterator();
         while (i <= index && itrKeys.hasNext())
         {

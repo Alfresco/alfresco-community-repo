@@ -27,8 +27,9 @@ package org.alfresco.opencmis;
 
 import jakarta.servlet.http.HttpServlet;
 
-import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet;
+
+import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 
 /**
  * Dispatches OpenCMIS requests to the OpenCMIS AtomPub servlet.
@@ -41,12 +42,12 @@ public class AtomPubCMISDispatcher extends CMISServletDispatcher
     @Override
     protected Binding getBinding()
     {
-    	return Binding.atom;
+        return Binding.atom;
     }
 
-	protected HttpServlet getServlet()
-	{
-		HttpServlet servlet = new CmisAtomPubServlet();
-		return servlet;
-	}
+    protected HttpServlet getServlet()
+    {
+        HttpServlet servlet = new CmisAtomPubServlet();
+        return servlet;
+    }
 }

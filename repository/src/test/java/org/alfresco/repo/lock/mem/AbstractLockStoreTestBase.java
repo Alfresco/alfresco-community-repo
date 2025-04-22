@@ -32,55 +32,54 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.alfresco.service.cmr.lock.LockType;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.LockHelper.LockTryException;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.alfresco.service.cmr.lock.LockType;
+import org.alfresco.service.cmr.repository.NodeRef;
+
 /**
- * Abstract base class for testing {@link LockStore} implementations. Subclasses must
- * implement the createLockStore method and will inherit a set of suitable tests.
+ * Abstract base class for testing {@link LockStore} implementations. Subclasses must implement the createLockStore method and will inherit a set of suitable tests.
  * 
  * @author Matt Ward
  */
 public abstract class AbstractLockStoreTestBase<T extends LockStore>
-{    
+{
     /**
      * Instance of the Class Under Test.
      */
     protected T lockStore;
-    
+
     /**
      * Concrete subclasses must implement this method to provide the tests with a LockStore instance.
      * 
      * @return LockStore to test
      */
     protected abstract T createLockStore();
-    
+
     @Before
     public void setUpLockStore()
     {
         lockStore = createLockStore();
     }
-    
+
     @Test
     public void testSetAndGet()
     {
         NodeRef ephemeralNodeRef = new NodeRef("workspace://SpacesStore/12345");
         LockState ephemeralLock = LockState.createLock(
-                    ephemeralNodeRef, LockType.NODE_LOCK, "owner", null, Lifetime.EPHEMERAL, null);
-        
+                ephemeralNodeRef, LockType.NODE_LOCK, "owner", null, Lifetime.EPHEMERAL, null);
+
         NodeRef persistentNodeRef = new NodeRef("workspace://SpacesStore/5838743");
         LockState persistentLock = LockState.createLock(
-                    persistentNodeRef, LockType.NODE_LOCK, "owner", null, Lifetime.PERSISTENT, null);
-        
+                persistentNodeRef, LockType.NODE_LOCK, "owner", null, Lifetime.PERSISTENT, null);
+
         lockStore.set(ephemeralNodeRef, ephemeralLock);
         lockStore.set(persistentNodeRef, persistentLock);
-        
+
         LockState newLockState = lockStore.get(ephemeralNodeRef);
         assertEquals(ephemeralLock, newLockState);
-        
+
         newLockState = lockStore.get(persistentNodeRef);
         assertEquals(persistentLock, newLockState);
     }
@@ -90,15 +89,15 @@ public abstract class AbstractLockStoreTestBase<T extends LockStore>
     {
         NodeRef nodeRef1 = new NodeRef("workspace://SpacesStore/12345");
         LockState lock1 = LockState.createLock(nodeRef1, LockType.NODE_LOCK, "owner", null, Lifetime.EPHEMERAL, null);
-        
+
         NodeRef nodeRef2 = new NodeRef("workspace://SpacesStore/5838743");
         LockState lock2 = LockState.createLock(nodeRef2, LockType.NODE_LOCK, "owner", null, Lifetime.PERSISTENT, null);
-        
+
         NodeRef nodeRef3 = new NodeRef("workspace://SpacesStore/65752323");
-        
+
         lockStore.set(nodeRef1, lock1);
         lockStore.set(nodeRef2, lock2);
-        
+
         assertNotNull(lockStore.get(nodeRef1));
         assertNotNull(lockStore.get(nodeRef2));
         assertNull(lockStore.get(nodeRef3));
@@ -109,18 +108,18 @@ public abstract class AbstractLockStoreTestBase<T extends LockStore>
     {
         NodeRef nodeRef1 = new NodeRef("workspace://SpacesStore/12345");
         LockState lock1 = LockState.createLock(nodeRef1, LockType.NODE_LOCK, "owner", null, Lifetime.EPHEMERAL, null);
-        
+
         NodeRef nodeRef2 = new NodeRef("workspace://SpacesStore/5838743");
         LockState lock2 = LockState.createLock(nodeRef2, LockType.NODE_LOCK, "owner", null, Lifetime.PERSISTENT, null);
-        
+
         lockStore.set(nodeRef1, lock1);
         lockStore.set(nodeRef2, lock2);
-        
+
         assertNotNull(lockStore.get(nodeRef1));
         assertNotNull(lockStore.get(nodeRef2));
-        
+
         lockStore.clear();
-        
+
         assertNull(lockStore.get(nodeRef1));
         assertNull(lockStore.get(nodeRef2));
     }
@@ -130,24 +129,23 @@ public abstract class AbstractLockStoreTestBase<T extends LockStore>
     {
         NodeRef nodeRef1 = new NodeRef("workspace://SpacesStore/1");
         LockState lock1 = LockState.createLock(nodeRef1, LockType.NODE_LOCK, "owner", null, Lifetime.EPHEMERAL, null);
-        
+
         NodeRef nodeRef2 = new NodeRef("workspace://SpacesStore/2");
         LockState lock2 = LockState.createLock(nodeRef2, LockType.NODE_LOCK, "owner", null, Lifetime.PERSISTENT, null);
-        
+
         NodeRef nodeRef3 = new NodeRef("workspace://SpacesStore/3");
         LockState lock3 = LockState.createLock(nodeRef3, LockType.NODE_LOCK, "owner", null, Lifetime.EPHEMERAL, null);
-        
+
         NodeRef nodeRef4 = new NodeRef("workspace://SpacesStore/4");
         LockState lock4 = LockState.createLock(nodeRef4, LockType.NODE_LOCK, "owner", null, Lifetime.PERSISTENT, null);
-        
+
         lockStore.set(nodeRef1, lock1);
         lockStore.set(nodeRef2, lock2);
         lockStore.set(nodeRef3, lock3);
         lockStore.set(nodeRef4, lock4);
 
         Set<NodeRef> unorderedNodes = lockStore.getNodes();
-        Set<NodeRef> nodes = new TreeSet<NodeRef>(new Comparator<NodeRef>()
-        {
+        Set<NodeRef> nodes = new TreeSet<NodeRef>(new Comparator<NodeRef>() {
             @Override
             public int compare(NodeRef o1, NodeRef o2)
             {

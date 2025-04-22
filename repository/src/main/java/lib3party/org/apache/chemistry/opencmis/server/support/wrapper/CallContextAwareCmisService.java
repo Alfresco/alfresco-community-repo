@@ -31,7 +31,8 @@ import org.apache.chemistry.opencmis.commons.server.CmisService;
 /**
  * Identifies a CMIS service object that can handle call contexts.
  */
-public interface CallContextAwareCmisService extends CmisService {
+public interface CallContextAwareCmisService extends CmisService
+{
 
     /**
      * Returns the current call context.

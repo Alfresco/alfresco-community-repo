@@ -31,7 +31,6 @@ import java.util.Date;
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 
-
 /**
  * Workflow Instance Data Object
  * 
@@ -59,17 +58,17 @@ public class WorkflowInstance implements Serializable
     /** Initiator (cm:person) - null if System initiated */
     @Deprecated
     public NodeRef initiator;
-    
+
     /** Workflow priority */
     public Integer priority;
-    
+
     /** Workflow Start Date */
     @Deprecated
     public Date startDate;
-    
+
     /** Workflow Due Date */
     public Date dueDate;
-    
+
     /** Workflow End Date */
     @Deprecated
     public Date endDate;
@@ -77,25 +76,25 @@ public class WorkflowInstance implements Serializable
     /** Workflow Package */
     @Deprecated
     public NodeRef workflowPackage;
-    
+
     /** Workflow Context */
     @Deprecated
     public NodeRef context;
-    
+
     /** Workflow Definition */
     @Deprecated
     public WorkflowDefinition definition;
 
     public WorkflowInstance(
-                String id,
-                WorkflowDefinition definition,
-                String description,
-                NodeRef initiator,
-                NodeRef workflowPackage,
-                NodeRef context,
-                boolean active,
-                Date startDate,
-                Date endDate)
+            String id,
+            WorkflowDefinition definition,
+            String description,
+            NodeRef initiator,
+            NodeRef workflowPackage,
+            NodeRef context,
+            boolean active,
+            Date startDate,
+            Date endDate)
     {
         this.id = id;
         this.definition = definition;
@@ -163,7 +162,7 @@ public class WorkflowInstance implements Serializable
     {
         return startDate;
     }
-    
+
     /**
      * @return the dueDate
      */
@@ -205,8 +204,8 @@ public class WorkflowInstance implements Serializable
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+     * 
+     * @see java.lang.Object#toString() */
     @Override
     public String toString()
     {

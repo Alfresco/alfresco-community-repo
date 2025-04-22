@@ -28,8 +28,7 @@ package org.alfresco.service.cmr.repository;
 import java.util.HashMap;
 
 /**
- * This class is used by DocumentLinkService to encapsulate the status of
- * deleting the links of a document.
+ * This class is used by DocumentLinkService to encapsulate the status of deleting the links of a document.
  * 
  * @author Ana Bozianu
  * @since 5.1
@@ -62,7 +61,7 @@ public class DeleteLinksStatusReport
     {
         this.totalLinksFoundCount = totalLinksFoundCount;
     }
-    
+
     public void addTotalLinksFoundCount(int totalLinksFoundCount)
     {
         this.totalLinksFoundCount += totalLinksFoundCount;

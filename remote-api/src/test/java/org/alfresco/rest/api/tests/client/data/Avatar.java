@@ -25,9 +25,9 @@
  */
 package org.alfresco.rest.api.tests.client.data;
 
-import org.json.simple.JSONObject;
-
 import java.io.Serializable;
+
+import org.json.simple.JSONObject;
 
 public class Avatar implements Serializable, ExpectedComparison
 {

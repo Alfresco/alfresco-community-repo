@@ -30,19 +30,18 @@ import java.io.InputStream;
 import java.io.Serial;
 import java.io.StringWriter;
 
-import org.apache.commons.io.IOUtils;
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.apache.commons.io.IOUtils;
 
 public class ObjectMapperFactory
 {
     private ObjectMapperFactory()
     {
-        //no instantiation
+        // no instantiation
     }
 
     public static ObjectMapper createInstance()

@@ -43,7 +43,7 @@ public class Download
     private long totalBytes;
     private long filesAdded;
     private long totalFiles;
-    
+
     public String getId()
     {
         return id;
@@ -114,19 +114,18 @@ public class Download
         this.totalFiles = totalFiles;
     }
 
-
     @Override
     public String toString()
-    {        
+    {
         StringBuilder builder = new StringBuilder(150);
         builder.append("Download [id=").append(id)
-               .append(", nodeIds=").append(nodeIds)
-               .append(", status=").append(status)
-               .append(", bytesAdded=").append(bytesAdded)
-               .append(", totalBytes=").append(totalBytes)
-               .append(", filesAdded=").append(filesAdded)
-               .append(", totalFiles=").append(totalFiles)
-               .append("]");
+                .append(", nodeIds=").append(nodeIds)
+                .append(", status=").append(status)
+                .append(", bytesAdded=").append(bytesAdded)
+                .append(", totalBytes=").append(totalBytes)
+                .append(", filesAdded=").append(filesAdded)
+                .append(", totalFiles=").append(totalFiles)
+                .append("]");
         return builder.toString();
     }
 }

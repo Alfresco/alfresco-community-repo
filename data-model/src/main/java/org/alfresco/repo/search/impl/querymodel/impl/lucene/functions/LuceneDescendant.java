@@ -29,8 +29,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.search.adaptor.QueryParserAdaptor;
 import org.alfresco.repo.search.adaptor.QueryConstants;
+import org.alfresco.repo.search.adaptor.QueryParserAdaptor;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
@@ -58,22 +58,18 @@ public class LuceneDescendant<Q, S, E extends Throwable> extends Descendant impl
 
     private StoreRef getStore(QueryBuilderContext<Q, S, E> luceneContext)
     {
-    	ArrayList<StoreRef> stores = luceneContext.getLuceneQueryParserAdaptor().getSearchParameters().getStores();
-    	if(stores.size() < 1)
-    	{
-    		// default
-    		return StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
-    	}
-    	return stores.get(0);
+        ArrayList<StoreRef> stores = luceneContext.getLuceneQueryParserAdaptor().getSearchParameters().getStores();
+        if (stores.size() < 1)
+        {
+            // default
+            return StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+        }
+        return stores.get(0);
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery,
-     *      org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService,
-     *      java.lang.String)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryBuilderComponent#addComponent(org.apache.lucene.search.BooleanQuery, org.apache.lucene.search.BooleanQuery, org.alfresco.service.cmr.dictionary.DictionaryService, java.lang.String) */
     public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
             throws E
     {
@@ -81,40 +77,40 @@ public class LuceneDescendant<Q, S, E extends Throwable> extends Descendant impl
         Argument argument = functionArgs.get(ARG_ANCESTOR);
         String id = (String) argument.getValue(functionContext);
         argument = functionArgs.get(ARG_SELECTOR);
-        if(argument != null)
+        if (argument != null)
         {
             String selector = (String) argument.getValue(functionContext);
-            if(!selectors.contains(selector))
+            if (!selectors.contains(selector))
             {
-                throw new QueryModelException("Unkown selector "+selector); 
+                throw new QueryModelException("Unkown selector " + selector);
             }
         }
         else
         {
-            if(selectors.size() > 1)
+            if (selectors.size() > 1)
             {
-                throw new QueryModelException("Selector must be specified for child constraint (IN_TREE) and join"); 
+                throw new QueryModelException("Selector must be specified for child constraint (IN_TREE) and join");
             }
         }
 
         NodeRef nodeRef;
-        if(NodeRef.isNodeRef(id))
+        if (NodeRef.isNodeRef(id))
         {
             nodeRef = new NodeRef(id);
         }
         else
         {
-        	// assume id is the node uuid e.g. for OpenCMIS
-        	StoreRef storeRef = getStore(luceneContext);
-        	nodeRef = new NodeRef(storeRef, id);
+            // assume id is the node uuid e.g. for OpenCMIS
+            StoreRef storeRef = getStore(luceneContext);
+            nodeRef = new NodeRef(storeRef, id);
         }
 
-        // Lucene world 
-        if(functionContext.getNodeService() != null)
+        // Lucene world
+        if (functionContext.getNodeService() != null)
         {
-            if(!functionContext.getNodeService().exists(nodeRef))
+            if (!functionContext.getNodeService().exists(nodeRef))
             {
-                throw new QueryModelException("Object does not exist: "+id); 
+                throw new QueryModelException("Object does not exist: " + id);
             }
             Path path = functionContext.getNodeService().getPath(nodeRef);
             StringBuilder builder = new StringBuilder(path.toPrefixString(luceneContext.getNamespacePrefixResolver()));
@@ -128,7 +124,7 @@ public class LuceneDescendant<Q, S, E extends Throwable> extends Descendant impl
             Q query = lqpa.getFieldQuery(QueryConstants.FIELD_ANCESTOR, nodeRef.toString());
             return query;
         }
-        
+
     }
-    
+
 }

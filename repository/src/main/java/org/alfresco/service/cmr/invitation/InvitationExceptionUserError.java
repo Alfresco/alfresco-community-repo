@@ -31,14 +31,14 @@ package org.alfresco.service.cmr.invitation;
 public class InvitationExceptionUserError extends InvitationException
 {
 
-	public InvitationExceptionUserError(String msgId, Object[] args) 
-	{
-		super(msgId, args);
-	}
+    public InvitationExceptionUserError(String msgId, Object[] args)
+    {
+        super(msgId, args);
+    }
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6112400396903083597L;
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -6112400396903083597L;
 
 }

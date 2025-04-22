@@ -29,6 +29,9 @@ package org.alfresco.repo.forms.processor.workflow;
 import java.io.Serializable;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.ContentModelItemData;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -36,9 +39,6 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 
 /**
  * Utility class that assists in persisting content model related form data.
@@ -53,25 +53,25 @@ public abstract class ContentModelFormPersister<T> implements FormPersister<T>
     /**
      * Default Logger.
      */
-    private static final Log LOGGER= LogFactory.getLog(ContentModelFormPersister.class);
- 
+    private static final Log LOGGER = LogFactory.getLog(ContentModelFormPersister.class);
+
     protected final static TypedPropertyValueGetter valueGetter = new TypedPropertyValueGetter();
     protected final DataKeyMatcher keyMatcher;
     protected final DictionaryService dictionaryService;
     protected final Log logger;
-    protected final ContentModelItemData<?> itemData; 
-    
+    protected final ContentModelItemData<?> itemData;
+
     public ContentModelFormPersister(ContentModelItemData<?> itemData, NamespaceService namespaceService, DictionaryService dictionaryService, Log logger)
     {
-        this.dictionaryService= dictionaryService;
-        this.logger = logger==null ? LOGGER : logger;
+        this.dictionaryService = dictionaryService;
+        this.logger = logger == null ? LOGGER : logger;
         this.keyMatcher = new DataKeyMatcher(namespaceService);
-        this.itemData = itemData; 
+        this.itemData = itemData;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.workflow.FormPersister#addField(java.lang.String, java.lang.Object)
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.workflow.FormPersister#addField(java.lang.String, java.lang.Object) */
     public void addField(FieldData fieldData)
     {
         String dataKeyName = fieldData.getName();
@@ -94,12 +94,12 @@ public abstract class ContentModelFormPersister<T> implements FormPersister<T>
     {
         switch (keyInfo.getFieldType())
         {
-            case PROPERTY:
-                return addProperty(keyInfo.getQName(), fieldData);
-            case TRANSIENT_PROPERTY:
-                return updateTransientProperty(keyInfo.getFieldName(), fieldData);
-            default: // Handle properties
-                return changeAssociation(keyInfo, fieldData);
+        case PROPERTY:
+            return addProperty(keyInfo.getQName(), fieldData);
+        case TRANSIENT_PROPERTY:
+            return updateTransientProperty(keyInfo.getFieldName(), fieldData);
+        default: // Handle properties
+            return changeAssociation(keyInfo, fieldData);
         }
     }
 
@@ -114,7 +114,7 @@ public abstract class ContentModelFormPersister<T> implements FormPersister<T>
         {
             return addTransientAssociation(fieldName, values);
         }
-        else 
+        else
         {
             return removeTransientAssociation(fieldName, values);
         }
@@ -136,7 +136,7 @@ public abstract class ContentModelFormPersister<T> implements FormPersister<T>
         Serializable value = getPropertyValueToPersist(qName, rawValue);
         return updateProperty(qName, value);
     }
-    
+
     protected Serializable getPropertyValueToPersist(QName qName, Object value)
     {
         PropertyDefinition propDef = itemData.getPropertyDefinition(qName);
@@ -156,8 +156,8 @@ public abstract class ContentModelFormPersister<T> implements FormPersister<T>
         Object rawValue = fieldData.getValue();
         if (rawValue instanceof String)
         {
-            List<NodeRef> values = NodeRef.getNodeRefs((String)rawValue, LOGGER);
-            if (values.isEmpty()==false)
+            List<NodeRef> values = NodeRef.getNodeRefs((String) rawValue, LOGGER);
+            if (values.isEmpty() == false)
             {
                 boolean add = info.isAdd();
                 if (info.getFieldType() == FieldType.ASSOCIATION)
@@ -179,7 +179,7 @@ public abstract class ContentModelFormPersister<T> implements FormPersister<T>
         {
             return addAssociation(qName, values);
         }
-        else 
+        else
         {
             return removeAssociation(qName, values);
         }
@@ -192,10 +192,10 @@ public abstract class ContentModelFormPersister<T> implements FormPersister<T>
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.forms.processor.workflow.FormPersister#persist()
-     */
+     * 
+     * @see org.alfresco.repo.forms.processor.workflow.FormPersister#persist() */
     public abstract T persist();
-    
+
     protected abstract boolean removeAssociation(QName qName, List<NodeRef> values);
 
     protected abstract boolean addAssociation(QName qName, List<NodeRef> values);

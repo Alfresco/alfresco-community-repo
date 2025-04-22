@@ -47,30 +47,36 @@ public interface ActionList<A extends Action> extends Serializable
     /**
      * Add an action to the end of the list
      * 
-     * @param action the action
+     * @param action
+     *            the action
      */
     void addAction(A action);
 
     /**
      * Add an action to the list at the index specified
      * 
-     * @param index the index
-     * @param action the action
+     * @param index
+     *            the index
+     * @param action
+     *            the action
      */
     void addAction(int index, A action);
 
     /**
      * Replace the action at the specfied index with the passed action.
      * 
-     * @param index the index
-     * @param action the action
+     * @param index
+     *            the index
+     * @param action
+     *            the action
      */
     void setAction(int index, A action);
 
     /**
      * Gets the index of an action
      * 
-     * @param action the action
+     * @param action
+     *            the action
      * @return the index
      */
     int indexOfAction(A action);
@@ -85,7 +91,8 @@ public interface ActionList<A extends Action> extends Serializable
     /**
      * Get an action at a given index
      * 
-     * @param index the index
+     * @param index
+     *            the index
      * @return the action
      */
     A getAction(int index);
@@ -93,7 +100,8 @@ public interface ActionList<A extends Action> extends Serializable
     /**
      * Remove an action from the list
      * 
-     * @param action the action
+     * @param action
+     *            the action
      */
     void removeAction(A action);
 

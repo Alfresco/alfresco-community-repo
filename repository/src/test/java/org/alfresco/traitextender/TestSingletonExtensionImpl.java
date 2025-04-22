@@ -28,8 +28,6 @@ package org.alfresco.traitextender;
 
 import java.util.List;
 
-import org.alfresco.traitextender.SingletonExtension;
-
 public class TestSingletonExtensionImpl extends SingletonExtension<TestExtension, TestTrait> implements TestExtension
 {
 
@@ -45,21 +43,21 @@ public class TestSingletonExtensionImpl extends SingletonExtension<TestExtension
     public String privateServiceMethod1(String s)
     {
         return getTrait().traitImplOf_privateServiceMethod1(s) + " TestSingletonExtensionImpl.privateServiceMethod1("
-                    + s + ")@" + singletonId;
+                + s + ")@" + singletonId;
     }
 
     @Override
     public String publicServiceMethod2(String s)
     {
         return getTrait().traitImplOf_publicServiceMethod2(s) + " TestSingletonExtensionImpl.publicServiceMethod2(" + s
-                    + ")@" + singletonId;
+                + ")@" + singletonId;
     }
 
     @Override
     public String publicServiceMethod3(String s)
     {
         return getTrait().publicServiceMethod3(s) + " TestSingletonExtensionImpl.publicServiceMethod3(" + s
-                    + ")@" + singletonId;
+                + ")@" + singletonId;
     }
 
     @Override
@@ -69,11 +67,11 @@ public class TestSingletonExtensionImpl extends SingletonExtension<TestExtension
         if (s != null)
         {
             s.publicServiceMethod3(null,
-                                   traitIdentities);
+                    traitIdentities);
         }
         traitIdentities.add(System.identityHashCode(getTrait()));
         getTrait().traitImplOf_publicServiceMethod3(s,
-                                                    traitIdentities);
+                traitIdentities);
     }
 
 }

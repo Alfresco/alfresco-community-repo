@@ -28,12 +28,7 @@ package org.alfresco.repo.management.subsystems;
 import java.util.Set;
 
 /**
- * A <code>PropertyBackedBeanState</code> represents the state of a configurable sub-component or subsystem in the
- * Alfresco server. It exposes configurable properties, along with {@link #stop()} and {@link #start()} methods. To
- * modify the state, first ensure its associated component is stopped by calling {@link #stop()}. Then set one or more
- * properties. Then test out the changes with {@link #start()}. In the Alfresco enterprise edition
- * <code>PropertyBackedBeanState</code>s are exposed as persistent MBeans and can be reconfigured at runtime across a
- * cluster via JMX.
+ * A <code>PropertyBackedBeanState</code> represents the state of a configurable sub-component or subsystem in the Alfresco server. It exposes configurable properties, along with {@link #stop()} and {@link #start()} methods. To modify the state, first ensure its associated component is stopped by calling {@link #stop()}. Then set one or more properties. Then test out the changes with {@link #start()}. In the Alfresco enterprise edition <code>PropertyBackedBeanState</code>s are exposed as persistent MBeans and can be reconfigured at runtime across a cluster via JMX.
  * 
  * @author dward
  */

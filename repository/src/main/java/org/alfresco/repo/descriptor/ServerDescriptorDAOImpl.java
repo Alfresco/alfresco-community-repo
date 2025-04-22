@@ -29,10 +29,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.springframework.core.io.Resource;
+
 import org.alfresco.repo.descriptor.DescriptorServiceImpl.BaseDescriptor;
 import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.service.descriptor.Descriptor;
-import org.springframework.core.io.Resource;
 
 /**
  * Manages retrieval of the server Descriptor from a read-only resource file.
@@ -70,7 +71,7 @@ public class ServerDescriptorDAOImpl implements DescriptorDAO
     public void setResource(final Resource[] locations) throws IOException
     {
         this.serverProperties = new Properties();
-        for (int i=0; i< locations.length; i++)
+        for (int i = 0; i < locations.length; i++)
         {
             InputStream is = locations[i].getInputStream();
             try
@@ -79,7 +80,13 @@ public class ServerDescriptorDAOImpl implements DescriptorDAO
             }
             finally
             {
-                if (is != null) try { is.close(); } catch (IOException e) {}
+                if (is != null)
+                    try
+                    {
+                        is.close();
+                    }
+                    catch (IOException e)
+                    {}
             }
         }
     }

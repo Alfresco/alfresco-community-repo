@@ -27,18 +27,18 @@ package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.web.auth.WebCredentials;
 import org.alfresco.repo.webdav.auth.AuthenticationDriver;
 import org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Kerberos Authentication Filter Class
@@ -48,13 +48,12 @@ import org.apache.commons.logging.LogFactory;
 public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilter
 {
     // Debug logging
-    
+
     private static Log logger = LogFactory.getLog(KerberosAuthenticationFilter.class);
-  
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter#init()
-     */
+     * 
+     * @see org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter#init() */
     @Override
     protected void init() throws ServletException
     {
@@ -64,30 +63,30 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
         // Use the web client user attribute name
         setUserAttributeName(AuthenticationDriver.AUTHENTICATION_USER);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#onValidateFailed(jakarta.servlet.ServletContext, jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse, jakarta.servlet.http.HttpSession)
-     */
+     * 
+     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#onValidateFailed(jakarta.servlet.ServletContext, jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse, jakarta.servlet.http.HttpSession) */
     @Override
     protected void onValidateFailed(ServletContext sc, HttpServletRequest req, HttpServletResponse res, HttpSession session, WebCredentials credentials)
-        throws IOException
+            throws IOException
     {
         super.onValidateFailed(sc, req, res, session, credentials);
-        
+
         // Redirect to the login page if user validation fails
-    	redirectToLoginPage(req, res);
+        redirectToLoginPage(req, res);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#writeLoginPageLink(jakarta.servlet.ServletContext, jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse)
-     */
+     * 
+     * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#writeLoginPageLink(jakarta.servlet.ServletContext, jakarta.servlet.http.HttpServletRequest, jakarta.servlet.http.HttpServletResponse) */
     @Override
     protected void writeLoginPageLink(ServletContext context, HttpServletRequest req, HttpServletResponse resp)
             throws IOException
     {
         resp.setContentType("text/html; charset=UTF-8");
         resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        
+
         try (PrintWriter out = resp.getWriter())
         {
             out.println("<html><head>");
@@ -99,8 +98,8 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#getLogger()
-     */
+     * 
+     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#getLogger() */
     @Override
     final protected Log getLogger()
     {

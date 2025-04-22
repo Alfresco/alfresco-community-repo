@@ -40,8 +40,7 @@ public class SymmetricKeyCount implements Serializable
     private int count;
 
     public SymmetricKeyCount()
-    {
-    }
+    {}
 
     public String getMasterKeyAlias()
     {

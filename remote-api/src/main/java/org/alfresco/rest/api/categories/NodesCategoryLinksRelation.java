@@ -26,8 +26,8 @@
 
 package org.alfresco.rest.api.categories;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.rest.api.Categories;
 import org.alfresco.rest.api.model.Category;
@@ -41,8 +41,8 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 @RelationshipResource(name = "category-links", entityResource = NodesEntityResource.class, title = "Category links")
 public class NodesCategoryLinksRelation implements RelationshipResourceAction.Create<Category>,
-                                                    RelationshipResourceAction.Read<Category>,
-                                                    RelationshipResourceAction.Delete
+        RelationshipResourceAction.Read<Category>,
+        RelationshipResourceAction.Delete
 {
 
     private final Categories categories;
@@ -56,10 +56,9 @@ public class NodesCategoryLinksRelation implements RelationshipResourceAction.Cr
      * GET /nodes/{nodeId}/category-links
      */
     @WebApiDescription(
-        title = "Get categories linked to by node",
-        description = "Get categories linked to by node",
-        successStatus = HttpServletResponse.SC_OK
-    )
+            title = "Get categories linked to by node",
+            description = "Get categories linked to by node",
+            successStatus = HttpServletResponse.SC_OK)
     @Override
     public CollectionWithPagingInfo<Category> readAll(String nodeId, Parameters parameters)
     {
@@ -70,10 +69,9 @@ public class NodesCategoryLinksRelation implements RelationshipResourceAction.Cr
      * POST /nodes/{nodeId}/category-links
      */
     @WebApiDescription(
-        title = "Link node to categories",
-        description = "Creates a link between a node and categories",
-        successStatus = HttpServletResponse.SC_CREATED
-    )
+            title = "Link node to categories",
+            description = "Creates a link between a node and categories",
+            successStatus = HttpServletResponse.SC_CREATED)
     @Override
     public List<Category> create(String nodeId, List<Category> categoryLinks, Parameters parameters)
     {
@@ -86,8 +84,7 @@ public class NodesCategoryLinksRelation implements RelationshipResourceAction.Cr
     @WebApiDescription(
             title = "Unlink content node from category",
             description = "Removes the link between a content node and a category",
-            successStatus = HttpServletResponse.SC_NO_CONTENT
-    )
+            successStatus = HttpServletResponse.SC_NO_CONTENT)
     @Override
     public void delete(String nodeId, String categoryId, Parameters parameters)
     {

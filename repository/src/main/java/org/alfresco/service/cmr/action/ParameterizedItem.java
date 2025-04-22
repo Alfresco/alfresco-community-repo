@@ -38,41 +38,45 @@ import org.alfresco.api.AlfrescoPublicApi;
 @AlfrescoPublicApi
 public interface ParameterizedItem
 {
-	/**
-	 * Unique identifier for the parameterized item
-	 * 
-	 * @return	the id string
-	 */
-	public String getId();
-	
-	/**
-	 * Get the parameter values
-	 * 
-	 * @return	get the parameter values
-	 */
-	public Map<String, Serializable> getParameterValues();
-	
-	/**
-	 * Get value of a named parameter.
-	 * 
-	 * @param name	the parameter name
-	 * @return		the value of the parameter
-	 */
-	public Serializable getParameterValue(String name);
-	
-	/**
-	 * Sets the parameter values
-	 * 
-	 * @param parameterValues	the parameter values
-	 */
-	public void setParameterValues(
+    /**
+     * Unique identifier for the parameterized item
+     * 
+     * @return the id string
+     */
+    public String getId();
+
+    /**
+     * Get the parameter values
+     * 
+     * @return get the parameter values
+     */
+    public Map<String, Serializable> getParameterValues();
+
+    /**
+     * Get value of a named parameter.
+     * 
+     * @param name
+     *            the parameter name
+     * @return the value of the parameter
+     */
+    public Serializable getParameterValue(String name);
+
+    /**
+     * Sets the parameter values
+     * 
+     * @param parameterValues
+     *            the parameter values
+     */
+    public void setParameterValues(
             Map<String, Serializable> parameterValues);
-	
-	/**
-	 * Sets the value of a parameter.
-	 * 
-	 * @param name		the parameter name
-	 * @param value		the parameter value
-	 */
-	public void setParameterValue(String name, Serializable value);
+
+    /**
+     * Sets the value of a parameter.
+     * 
+     * @param name
+     *            the parameter name
+     * @param value
+     *            the parameter value
+     */
+    public void setParameterValue(String name, Serializable value);
 }

@@ -42,35 +42,40 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Roy Wetherall
  */
-public abstract class TestWithUserUtils 
+public abstract class TestWithUserUtils
 {
     /**
      * Create a new user, including the corresponding person node.
      * 
-     * @param userName                  the user name
-     * @param password                  the password
-     * @param rootNodeRef               the root node reference
-     * @param nodeService               the node service
-     * @param authenticationService     the authentication service
+     * @param userName
+     *            the user name
+     * @param password
+     *            the password
+     * @param rootNodeRef
+     *            the root node reference
+     * @param nodeService
+     *            the node service
+     * @param authenticationService
+     *            the authentication service
      */
     public static void createUser(
-            String userName, 
-            String password, 
+            String userName,
+            String password,
             NodeRef rootNodeRef,
             NodeService nodeService,
             MutableAuthenticationService authenticationService)
     {
         createUser(userName, password, null, rootNodeRef, nodeService, authenticationService);
     }
-    
+
     public static void createUser(
-            String userName, 
-            String password, 
+            String userName,
+            String password,
             String email,
             NodeRef rootNodeRef,
             NodeService nodeService,
             MutableAuthenticationService authenticationService)
-    {    
+    {
         // ignore if the user's authentication already exists
         if (authenticationService.authenticationExists(userName))
         {
@@ -81,42 +86,45 @@ public abstract class TestWithUserUtils
         QName system = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "system");
         QName container = ContentModel.TYPE_CONTAINER;
         QName types = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "people");
-        
+
         NodeRef systemNodeRef = nodeService.createNode(rootNodeRef, children, system, container).getChildRef();
         NodeRef typesNodeRef = nodeService.createNode(systemNodeRef, children, types, container).getChildRef();
-        
+
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USERNAME, userName);
         if (email != null && email.length() != 0)
         {
             properties.put(ContentModel.PROP_EMAIL, email);
         }
-        nodeService.createNode(typesNodeRef, children, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, userName) , container, properties);
-        
+        nodeService.createNode(typesNodeRef, children, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, userName), container, properties);
+
         // Create the users
-        authenticationService.createAuthentication(userName, password.toCharArray()); 
+        authenticationService.createAuthentication(userName, password.toCharArray());
     }
 
     /**
      * Authenticate the user with the specified password
      * 
-     * @param userName                  the user name
-     * @param password                  the password
-     * @param rootNodeRef               the root node reference
-     * @param authenticationService     the authentication service
+     * @param userName
+     *            the user name
+     * @param password
+     *            the password
+     * @param rootNodeRef
+     *            the root node reference
+     * @param authenticationService
+     *            the authentication service
      */
     public static void authenticateUser(
-            String userName, 
+            String userName,
             String password,
             NodeRef rootNodeRef,
             AuthenticationService authenticationService)
     {
         authenticationService.authenticate(userName, password.toCharArray());
     }
-    
+
     /**
-     * Authenticate as the given user.  If the user does not exist, then authenticate as the system user
-     * and create the authentication first.
+     * Authenticate as the given user. If the user does not exist, then authenticate as the system user and create the authentication first.
      */
     public static void authenticateUser(
             String userName,
@@ -139,12 +147,13 @@ public abstract class TestWithUserUtils
         }
         authenticationService.authenticate(userName, password.toCharArray());
     }
-    
+
     /**
      * Get the current user node reference
      * 
-     * @param authenticationService     the authentication service
-     * @return                          the currenlty authenticated user's node reference
+     * @param authenticationService
+     *            the authentication service
+     * @return the currenlty authenticated user's node reference
      */
     public static String getCurrentUser(AuthenticationService authenticationService)
     {
@@ -157,7 +166,7 @@ public abstract class TestWithUserUtils
         {
             throw new RuntimeException("The current user could not be retrieved.");
         }
-        
+
     }
 
     public static void deleteUser(String user_name, String pwd, NodeRef ref, NodeService service, MutableAuthenticationService service2)

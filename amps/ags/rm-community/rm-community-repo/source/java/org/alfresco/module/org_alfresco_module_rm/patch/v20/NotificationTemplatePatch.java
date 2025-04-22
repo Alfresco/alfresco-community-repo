@@ -32,6 +32,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.BeanNameAware;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.module.org_alfresco_module_rm.patch.compatibility.ModulePatchComponent;
@@ -46,7 +48,6 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * Notification template patch implementation
@@ -56,7 +57,7 @@ import org.springframework.beans.factory.BeanNameAware;
  */
 @SuppressWarnings("deprecation")
 public class NotificationTemplatePatch extends ModulePatchComponent
-                                       implements BeanNameAware
+        implements BeanNameAware
 {
     /** Last patch update property */
     private static final QName PROP_LAST_PATCH_UPDATE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "lastPatchUpdate");
@@ -83,7 +84,8 @@ public class NotificationTemplatePatch extends ModulePatchComponent
     private String name;
 
     /**
-     * @param notificationHelper    notification helper
+     * @param notificationHelper
+     *            notification helper
      */
     public void setNotificationHelper(RecordsManagementNotificationHelper notificationHelper)
     {
@@ -91,7 +93,8 @@ public class NotificationTemplatePatch extends ModulePatchComponent
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -99,7 +102,8 @@ public class NotificationTemplatePatch extends ModulePatchComponent
     }
 
     /**
-     * @param contentService content service
+     * @param contentService
+     *            content service
      */
     public void setContentService(ContentService contentService)
     {
@@ -107,7 +111,8 @@ public class NotificationTemplatePatch extends ModulePatchComponent
     }
 
     /**
-     * @param versionService    version service
+     * @param versionService
+     *            version service
      */
     public void setVersionService(VersionService versionService)
     {
@@ -115,7 +120,8 @@ public class NotificationTemplatePatch extends ModulePatchComponent
     }
 
     /**
-     * @param auditService  audit service
+     * @param auditService
+     *            audit service
      */
     public void setAuditService(AuditService auditService)
     {
@@ -162,7 +168,7 @@ public class NotificationTemplatePatch extends ModulePatchComponent
         else
         {
             // Check to see if this template has already been updated
-            String lastPatchUpdate = (String)nodeService.getProperty(template, PROP_LAST_PATCH_UPDATE);
+            String lastPatchUpdate = (String) nodeService.getProperty(template, PROP_LAST_PATCH_UPDATE);
             if (lastPatchUpdate == null || !name.equals(lastPatchUpdate))
             {
                 if (LOGGER.isDebugEnabled())

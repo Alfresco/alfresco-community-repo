@@ -46,7 +46,8 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @param key Object
+     * @param key
+     *            Object
      * @return boolean
      * @see java.util.Map#containsKey(java.lang.Object)
      */
@@ -56,7 +57,8 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @param value Object
+     * @param value
+     *            Object
      * @return boolean
      * @see java.util.Map#containsValue(java.lang.Object)
      */
@@ -75,7 +77,8 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @param o Object
+     * @param o
+     *            Object
      * @return boolean
      * @see java.util.Map#equals(java.lang.Object)
      */
@@ -85,7 +88,8 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @param key Object
+     * @param key
+     *            Object
      * @return Object
      * @see java.util.Map#get(java.lang.Object)
      */
@@ -121,8 +125,10 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @param key Object
-     * @param value Object
+     * @param key
+     *            Object
+     * @param value
+     *            Object
      * @return Object
      * @see java.util.Map#put(java.lang.Object, java.lang.Object)
      */
@@ -140,7 +146,8 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @param key Object
+     * @param key
+     *            Object
      * @return Object
      * @see java.util.Map#remove(java.lang.Object)
      */
@@ -165,6 +172,5 @@ public class XSLTemplateModel implements Map<QName, Object>
     {
         return wrappedMap.values();
     }
-    
-    
+
 }

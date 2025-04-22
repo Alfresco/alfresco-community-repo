@@ -49,9 +49,12 @@ public class TestHelper
     /**
      * Checks the thrown exception is the expected exception.
      *
-     * @param action            the functional interface
-     * @param expectedException the expected exception class
-     * @param failMessage       the fail message
+     * @param action
+     *            the functional interface
+     * @param expectedException
+     *            the expected exception class
+     * @param failMessage
+     *            the fail message
      */
     public static void assertThrows(final Runnable action, final Class<?> expectedException, final String failMessage)
     {
@@ -62,7 +65,7 @@ public class TestHelper
         catch (Throwable ex)
         {
             assertTrue("The caught exception [" + ex.getClass().getSimpleName() + "] is not the expected exception:" + expectedException
-                        .getSimpleName(), expectedException.isInstance(ex));
+                    .getSimpleName(), expectedException.isInstance(ex));
             return;
         }
 
@@ -72,19 +75,21 @@ public class TestHelper
     /**
      * Waits for <b>{@code waitTimeInMillis}</b> before executing the given functional interface <b>({@code supplier})</b>.
      * <p>
-     * If the returned result is not equal to the required result <b>{@code requiredResult}</b>,
-     * it waits and re-executes the given functional interface again.
-     * This will continue until the results are equal or the <b>{@code maxRetry}</b> has been reached.
+     * If the returned result is not equal to the required result <b>{@code requiredResult}</b>, it waits and re-executes the given functional interface again. This will continue until the results are equal or the <b>{@code maxRetry}</b> has been reached.
      *
-     * @param supplier         the functional interface
-     * @param requiredResult   the required result so it can be checked against the returned result of the ({@code supplier})
-     * @param maxRetry         the number of retries
-     * @param waitTimeInMillis the pause time
+     * @param supplier
+     *            the functional interface
+     * @param requiredResult
+     *            the required result so it can be checked against the returned result of the ({@code supplier})
+     * @param maxRetry
+     *            the number of retries
+     * @param waitTimeInMillis
+     *            the pause time
      * @return result of the ({@code supplier})
      * @throws InterruptedException
      */
     public static <T> T waitBeforeRetry(final Supplier<T> supplier, final T requiredResult, int maxRetry, long waitTimeInMillis)
-                throws InterruptedException
+            throws InterruptedException
     {
         T t;
         int retryCount = 0;
@@ -105,20 +110,22 @@ public class TestHelper
     /**
      * Waits for <b>{@code method}</b> to succeed until <b>({@code timeout})</b>.
      * <p>
-     * If the method failed to succeed because of previous step of test is not finished yet,
-     * it waits and re-executes the given method again.
-     * This will continue until the method do not fail or the <b>{@code timeout}</b> has been reached.
+     * If the method failed to succeed because of previous step of test is not finished yet, it waits and re-executes the given method again. This will continue until the method do not fail or the <b>{@code timeout}</b> has been reached.
      *
-     * @param timeout               max time of wait.
-     * @param method                the method that is called for retry.
-     * @param expectedExceptions    array of excepted exception.
-     * @throws Exception            after failing to finish given method with success.
+     * @param timeout
+     *            max time of wait.
+     * @param method
+     *            the method that is called for retry.
+     * @param expectedExceptions
+     *            array of excepted exception.
+     * @throws Exception
+     *             after failing to finish given method with success.
      */
     @SafeVarargs
     public static void waitForMethodToFinish(
             Duration timeout,
             Runnable method,
-            Class<? extends Throwable> ... expectedExceptions)
+            Class<? extends Throwable>... expectedExceptions)
     {
         logger.debug("Waiting for method to succeed.");
         final long lastStep = 10;
@@ -131,9 +138,10 @@ public class TestHelper
                 method.run();
                 logger.debug("Method succeeded.");
                 return;
-            } catch (Throwable e)
+            }
+            catch (Throwable e)
             {
-                if(Arrays.stream(expectedExceptions).noneMatch(expEx -> expEx.isInstance(e)))
+                if (Arrays.stream(expectedExceptions).noneMatch(expEx -> expEx.isInstance(e)))
                 {
                     throw e;
                 }
@@ -147,7 +155,8 @@ public class TestHelper
             try
             {
                 Thread.sleep(delayMillis);
-            } catch (InterruptedException e)
+            }
+            catch (InterruptedException e)
             {
                 Thread.currentThread().interrupt();
                 fail("Thread has been interrupted.");

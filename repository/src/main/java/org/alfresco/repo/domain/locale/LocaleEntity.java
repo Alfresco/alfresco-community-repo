@@ -27,7 +27,6 @@ package org.alfresco.repo.domain.locale;
 
 import org.alfresco.util.EqualsHelper;
 
-
 /**
  * Entity for <b>alf_locale</b> persistence.
  * 
@@ -37,55 +36,57 @@ import org.alfresco.util.EqualsHelper;
 public class LocaleEntity
 {
     public static final String DEFAULT_LOCALE_SUBSTITUTE = ".default";
-    
+
     public static final Long CONST_LONG_ZERO = Long.valueOf(0L);
-    
+
     private Long id;
     private Long version;
     private String localeStr;
-    
+
     public LocaleEntity()
-    {
-    }
-    
+    {}
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("LocaleEntity")
-          .append("[ id=").append(id)
-          .append(", localeStr=").append(localeStr)
-          .append("]");
+                .append("[ id=").append(id)
+                .append(", localeStr=").append(localeStr)
+                .append("]");
         return sb.toString();
     }
-    
+
     public Long getId()
     {
         return id;
     }
+
     public void setId(Long id)
     {
         this.id = id;
     }
-    
+
     public Long getVersion()
     {
         return version;
     }
+
     public void setVersion(Long version)
     {
         this.version = version;
     }
-    
+
     public String getLocaleStr()
     {
         return localeStr;
     }
+
     public void setLocaleStr(String localeStr)
     {
         this.localeStr = localeStr;
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -104,7 +105,7 @@ public class LocaleEntity
         LocaleEntity that = (LocaleEntity) obj;
         return EqualsHelper.nullSafeEquals(this.localeStr, that.localeStr);
     }
-    
+
     @Override
     public int hashCode()
     {

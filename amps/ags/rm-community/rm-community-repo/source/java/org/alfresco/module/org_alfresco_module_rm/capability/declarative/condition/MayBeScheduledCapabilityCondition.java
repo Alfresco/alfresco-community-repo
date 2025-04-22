@@ -43,7 +43,8 @@ public class MayBeScheduledCapabilityCondition extends AbstractCapabilityConditi
     private String dispositionAction;
 
     /**
-     * @param dispositionAction     disposition action
+     * @param dispositionAction
+     *            disposition action
      */
     public void setDispositionAction(String dispositionAction)
     {
@@ -84,6 +85,6 @@ public class MayBeScheduledCapabilityCondition extends AbstractCapabilityConditi
     {
         boolean isRecordLevelDisposition = dispositionSchedule.isRecordLevelDisposition();
         return (recordService.isRecord(nodeRef) && isRecordLevelDisposition)
-                    || (recordFolderService.isRecordFolder(nodeRef) && !isRecordLevelDisposition);
+                || (recordFolderService.isRecordFolder(nodeRef) && !isRecordLevelDisposition);
     }
 }

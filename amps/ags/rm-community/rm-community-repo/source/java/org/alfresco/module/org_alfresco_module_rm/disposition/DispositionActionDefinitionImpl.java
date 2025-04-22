@@ -78,11 +78,16 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     /**
      * Constructor
      *
-     * @param recordsManagementEventService  records management event service
-     * @param recordsManagementActionService records management action service
-     * @param nodeService  node service
-     * @param nodeRef   disposition action node reference
-     * @param index     index of disposition action
+     * @param recordsManagementEventService
+     *            records management event service
+     * @param recordsManagementActionService
+     *            records management action service
+     * @param nodeService
+     *            node service
+     * @param nodeRef
+     *            disposition action node reference
+     * @param index
+     *            index of disposition action
      */
     public DispositionActionDefinitionImpl(RecordsManagementEventService recordsManagementEventService, RecordsManagementActionService recordsManagementActionService, NodeService nodeService, NodeRef nodeRef, int index)
     {
@@ -112,7 +117,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     }
 
     /**
-     *  @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getId()
+     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getId()
      */
     @Override
     public String getId()
@@ -128,7 +133,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     {
         if (description == null)
         {
-            description = (String)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_DESCRIPTION);
+            description = (String) nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_DESCRIPTION);
         }
         return description;
     }
@@ -141,7 +146,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     {
         if (name == null)
         {
-            name = (String)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_ACTION_NAME);
+            name = (String) nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_ACTION_NAME);
         }
         return name;
     }
@@ -174,7 +179,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     @Override
     public Period getPeriod()
     {
-        return (Period)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_PERIOD);
+        return (Period) nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_PERIOD);
     }
 
     /**
@@ -184,7 +189,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     public QName getPeriodProperty()
     {
         QName result = null;
-        String value = (String)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_PERIOD_PROPERTY);
+        String value = (String) nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_PERIOD_PROPERTY);
         if (value != null)
         {
             result = QName.createQName(value);
@@ -200,7 +205,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     public List<RecordsManagementEvent> getEvents()
     {
         List<RecordsManagementEvent> events = null;
-        Collection<String> eventNames = (Collection<String>)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_EVENT);
+        Collection<String> eventNames = (Collection<String>) nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_EVENT);
         if (eventNames != null)
         {
             events = new ArrayList<>(eventNames.size());
@@ -224,7 +229,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     public boolean eligibleOnFirstCompleteEvent()
     {
         boolean result = true;
-        String value = (String)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_EVENT_COMBINATION);
+        String value = (String) nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_EVENT_COMBINATION);
         if (value != null && value.equals("and"))
         {
             result = false;
@@ -238,7 +243,7 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     @Override
     public String getLocation()
     {
-        return (String)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_LOCATION);
+        return (String) nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_LOCATION);
     }
 
     /**

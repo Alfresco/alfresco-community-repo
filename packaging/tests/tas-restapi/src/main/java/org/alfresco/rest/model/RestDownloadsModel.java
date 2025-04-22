@@ -144,4 +144,3 @@ public class RestDownloadsModel extends TestModel implements IRestModel<RestDown
         this.status = status;
     }
 }
-

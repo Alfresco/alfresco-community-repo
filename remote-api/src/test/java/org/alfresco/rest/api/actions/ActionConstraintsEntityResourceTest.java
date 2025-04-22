@@ -30,14 +30,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
-import org.alfresco.rest.api.Actions;
-import org.alfresco.rest.api.model.ActionParameterConstraint;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.rest.api.Actions;
+import org.alfresco.rest.api.model.ActionParameterConstraint;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ActionConstraintsEntityResourceTest
@@ -51,12 +52,13 @@ public class ActionConstraintsEntityResourceTest
     private ActionConstraintsEntityResource objectUnderTest;
 
     @Test
-    public void testReadById() {
+    public void testReadById()
+    {
         final String name = "name";
         final ActionParameterConstraint dummyConstraint = new ActionParameterConstraint();
         given(actionsMock.getActionConstraint(name)).willReturn(dummyConstraint);
 
-        //when
+        // when
         ActionParameterConstraint result = objectUnderTest.readById(name, parametersMock);
 
         then(actionsMock).should().getActionConstraint(name);

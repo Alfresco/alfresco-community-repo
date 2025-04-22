@@ -41,8 +41,7 @@ public class FacetInterval extends TestModel implements IRestModel<FacetInterval
     private List<RestRequestFacetSetModel> sets;
 
     public FacetInterval()
-    {
-    }
+    {}
 
     public FacetInterval(String field, String label, List<RestRequestFacetSetModel> sets)
     {

@@ -29,12 +29,16 @@ package org.alfresco.repo.workflow.activiti;
 import java.io.InputStream;
 
 import junit.framework.TestCase;
-
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.apache.commons.lang3.ArrayUtils;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -49,10 +53,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.NeverRunsTests;
-import org.apache.commons.lang3.ArrayUtils;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * @author Nick Smith
@@ -80,7 +80,7 @@ public class ActivitiSpringTest extends TestCase
 
         ProcessInstance instance = runtime.startProcessInstanceByKey(PROC_DEF_KEY);
         assertNotNull(instance);
-        
+
         String instanceId = instance.getId();
         ProcessInstance instanceInDb = findProcessInstance(instanceId);
         assertNotNull(instanceInDb);
@@ -89,13 +89,11 @@ public class ActivitiSpringTest extends TestCase
     }
 
     /**
-     * Start a process and then trigger a rollback by throwing an exception in Alfresco NodeService.
-     * Check that the process instance was rolled back.
+     * Start a process and then trigger a rollback by throwing an exception in Alfresco NodeService. Check that the process instance was rolled back.
      */
     public void testRollbackFromAlfresco()
     {
-        RetryingTransactionCallback<String> callback = new RetryingTransactionCallback<String>()
-        {
+        RetryingTransactionCallback<String> callback = new RetryingTransactionCallback<String>() {
             public String execute() throws Throwable
             {
                 ProcessInstance instance = runtime.startProcessInstanceByKey(PROC_DEF_KEY);
@@ -119,15 +117,13 @@ public class ActivitiSpringTest extends TestCase
             fail("The process instance creation should have been rolled back!");
         }
     }
-    
+
     /**
-     * Start a process and then trigger a rollback by throwing an exception in Alfresco NodeService.
-     * Check that the process instance was rolled back.
+     * Start a process and then trigger a rollback by throwing an exception in Alfresco NodeService. Check that the process instance was rolled back.
      */
     public void testRollbackFromActiviti()
     {
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 nodeService.addAspect(workingNodeRef, ASPECT, null);
@@ -147,23 +143,21 @@ public class ActivitiSpringTest extends TestCase
         txnHelper.doInTransaction(callback);
         assertFalse("The node should not have the aspect!", nodeService.hasAspect(workingNodeRef, ASPECT));
     }
-    
+
     /**
      * Checks nesting of two transactions with <code>requiresNew == true</code>
      */
     public void testNestedWithoutPropogation()
     {
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 ProcessInstance instance = runtime.startProcessInstanceByKey(PROC_DEF_KEY);
                 final String id = instance.getId();
-                
+
                 ProcessInstance instanceInDb = findProcessInstance(id);
                 assertNotNull("Can't read process instance in same transaction!", instanceInDb);
-                RetryingTransactionCallback<Void> callbackInner = new RetryingTransactionCallback<Void>()
-                {
+                RetryingTransactionCallback<Void> callbackInner = new RetryingTransactionCallback<Void>() {
                     public Void execute() throws Throwable
                     {
                         ProcessInstance instanceInDb = findProcessInstance(id);
@@ -184,7 +178,7 @@ public class ActivitiSpringTest extends TestCase
         };
         txnHelper.doInTransaction(callback);
     }
-    
+
     private Long blowUp()
     {
         NodeRef invalidNodeRef = new NodeRef(workingNodeRef.getStoreRef(), "BOGUS");
@@ -192,12 +186,12 @@ public class ActivitiSpringTest extends TestCase
         fail("Expected to generate an InvalidNodeRefException");
         return null;
     }
-    
+
     private ProcessInstance findProcessInstance(String instanceId)
     {
         return runtime.createProcessInstanceQuery()
-            .processInstanceId(instanceId)
-            .singleResult();
+                .processInstanceId(instanceId)
+                .singleResult();
     }
 
     /**
@@ -209,7 +203,7 @@ public class ActivitiSpringTest extends TestCase
         ConfigurableApplicationContext appContext = loadContext();
         this.repo = (RepositoryService) appContext.getBean("activitiRepositoryService");
         this.runtime = (RuntimeService) appContext.getBean("activitiRuntimeService");
-        
+
         ServiceRegistry serviceRegistry = (ServiceRegistry) appContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         authenticationComponent = (AuthenticationComponent) appContext.getBean("authenticationComponent");
         TransactionService transactionService = serviceRegistry.getTransactionService();
@@ -218,7 +212,7 @@ public class ActivitiSpringTest extends TestCase
 
         // authenticate
         authenticationComponent.setSystemUserAsCurrentUser();
-        
+
         StoreRef storeRef = nodeService.createStore(
                 StoreRef.PROTOCOL_WORKSPACE,
                 "test-" + getName() + "-" + System.currentTimeMillis());
@@ -229,13 +223,13 @@ public class ActivitiSpringTest extends TestCase
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, getName()),
                 ContentModel.TYPE_CMOBJECT).getChildRef();
-    
+
         String resource = "org/alfresco/repo/workflow/activiti/testTransaction.bpmn20.xml";
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        InputStream input= classLoader.getResourceAsStream(resource);
+        InputStream input = classLoader.getResourceAsStream(resource);
         this.deployment = repo.createDeployment()
-        .addInputStream(resource, input)
-        .deploy();
+                .addInputStream(resource, input)
+                .deploy();
     }
 
     private String[] getConfigLocations()
@@ -262,7 +256,7 @@ public class ActivitiSpringTest extends TestCase
             repo.deleteDeployment(deployment.getId());
             authenticationComponent.clearCurrentSecurityContext();
         }
-        catch (Exception e) 
+        catch (Exception e)
         {
             // Do Nothing }
         }

@@ -22,19 +22,15 @@
  */
 package org.alfresco.repo.web.scripts.solr;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 public class SOLRAuthenticationFilterTest
 {

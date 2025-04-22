@@ -43,16 +43,7 @@ import org.alfresco.rest.model.RestSiteModelsCollection;
  * 
  * Example:
  * 
- *  "entries": [
-      {
-        "entry": {
-          "visibility": "PUBLIC",
-          "guid": "79e140e1-5039-4efa-acaf-c22b5ba7c947",
-          "description": "Description1470255221170",
-          "id": "0-C2291-1470255221170",
-          "title": "0-C2291-1470255221170"
-        }
-      },
+ * "entries": [ { "entry": { "visibility": "PUBLIC", "guid": "79e140e1-5039-4efa-acaf-c22b5ba7c947", "description": "Description1470255221170", "id": "0-C2291-1470255221170", "title": "0-C2291-1470255221170" } },
  * 
  * Having this JSON Entry, we can auto-map this to {@link RestSiteModelsCollection} class having a List of <SiteModel> based on this example
  * 
@@ -64,13 +55,13 @@ public abstract class RestModels<Model, ModelCollection> implements IRestModelsC
     private List<Model> modelEntries;
 
     private RestPaginationModel pagination;
-    
+
     @Override
     public List<Model> getEntries()
     {
         return modelEntries;
     }
-    
+
     /**
      * @return a random entry from entries list
      * @throws EmptyRestModelCollectionException
@@ -81,59 +72,61 @@ public abstract class RestModels<Model, ModelCollection> implements IRestModelsC
         STEP("REST API: Get random one entry from response");
         Random random = new Random();
         List<Model> models = getEntries();
-        if(models.isEmpty())
-          throw new EmptyRestModelCollectionException(models);
-        
+        if (models.isEmpty())
+            throw new EmptyRestModelCollectionException(models);
+
         int index = random.nextInt(models.size());
         return models.get(index);
     }
-    
+
     /**
-     * Example
-     * <code>
+     * Example <code>
      *         siteMembershipRequests.getEntryByIndex(0)
                 .assertThat().field("site.visibility").is(moderatedSite.getVisibility())
                 .assertThat().field("site.description").is(moderatedSite.getDescription())
                 .assertThat().field("site.id").is(moderatedSite.getId())
                 .assertThat().field("site.title").is(moderatedSite.getTitle());
      * </code>
+     * 
      * @param index
      * @return
      * @throws EmptyRestModelCollectionException
      */
     @SuppressWarnings("unchecked")
-    public Model getEntryByIndex(int index) throws EmptyRestModelCollectionException{
+    public Model getEntryByIndex(int index) throws EmptyRestModelCollectionException
+    {
         STEP("REST API: Get index entry from response");
-        
+
         List<Model> models = getEntries();
-        if(models.isEmpty())
-          throw new EmptyRestModelCollectionException(models);
-        
-        if(models.size() > index){
-            return (Model) ((IRestModel<?>)models.get(index)).onModel();
+        if (models.isEmpty())
+            throw new EmptyRestModelCollectionException(models);
+
+        if (models.size() > index)
+        {
+            return (Model) ((IRestModel<?>) models.get(index)).onModel();
         }
-        
-       return null;
+
+        return null;
     }
-    
-    @Override    
+
+    @Override
     public ModelsCollectionAssertion<RestModels<Model, ModelCollection>> assertThat()
-    {      
+    {
         return new ModelsCollectionAssertion<>(this);
     }
-    
-    @Override    
+
+    @Override
     public ModelsCollectionAssertion<RestModels<Model, ModelCollection>> and()
     {
         return assertThat();
     }
-    
+
     @SuppressWarnings("unchecked")
-    @Override    
+    @Override
     public ModelCollection when()
     {
-      return (ModelCollection)this;
-    }    
+        return (ModelCollection) this;
+    }
 
     /**
      * @return boolean value if entry is empty
@@ -146,7 +139,7 @@ public abstract class RestModels<Model, ModelCollection> implements IRestModelsC
         else
             return true;
     }
-    
+
     @Override
     public RestPaginationModel getPagination()
     {
@@ -156,7 +149,6 @@ public abstract class RestModels<Model, ModelCollection> implements IRestModelsC
     public void setPagination(RestPaginationModel pagination)
     {
         this.pagination = pagination;
-    } 
-    
-    
+    }
+
 }

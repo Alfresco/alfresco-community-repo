@@ -33,13 +33,14 @@ package org.alfresco.repo.action;
 public class ActionStatistics
 {
     private String actionName;
-    
+
     long invocationCount = 0;
     long errorCount = 0;
     long totalTime = 0;
-    
+
     /**
-     * @param actionName The name of the action this object will provide statistics for.
+     * @param actionName
+     *            The name of the action this object will provide statistics for.
      */
     public ActionStatistics(String actionName)
     {
@@ -54,27 +55,27 @@ public class ActionStatistics
         invocationCount = invocationCount + 1;
         if (action.hasError() == true)
         {
-            errorCount = errorCount +1;
+            errorCount = errorCount + 1;
         }
         totalTime = totalTime + action.getElapsedTime();
     }
-    
+
     /**
      * @return The name of the actions this object has statistics for
      */
-    public String getActionName() 
+    public String getActionName()
     {
         return actionName;
     }
-    
+
     /**
-     * @return The number of times the action has been invoked 
+     * @return The number of times the action has been invoked
      */
     public long getInvocationCount()
     {
         return invocationCount;
     }
-    
+
     /**
      * @return The number of time the invocation of this action has resulted in an exception
      */
@@ -82,7 +83,7 @@ public class ActionStatistics
     {
         return errorCount;
     }
-    
+
     /**
      * @return The average time for the invocation of this action
      */

@@ -34,8 +34,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * An {@link AspectVirtualizationMethod} that uses an aspect defined repository
- * association to a node that holds the template contents.
+ * An {@link AspectVirtualizationMethod} that uses an aspect defined repository association to a node that holds the template contents.
  * 
  * @author Bogdan Horje
  */
@@ -45,8 +44,7 @@ public class CustomVirtualizationMethod extends AspectVirtualizationMethod
     private QName associationQName;
 
     /**
-     * String representation of the template association. Will be converted into
-     * a {@link QName} during {@link #init()}
+     * String representation of the template association. Will be converted into a {@link QName} during {@link #init()}
      */
     private String associationName;
 
@@ -65,7 +63,7 @@ public class CustomVirtualizationMethod extends AspectVirtualizationMethod
         if (associationName != null)
         {
             associationQName = QName.createQName(associationName,
-                                                 namespacePrefixResolver);
+                    namespacePrefixResolver);
         }
     }
 
@@ -78,13 +76,13 @@ public class CustomVirtualizationMethod extends AspectVirtualizationMethod
     public Reference virtualize(ActualEnvironment env, NodeRef nodeRef) throws VirtualizationException
     {
         NodeRef templateNode = env.getTargetAssocs(nodeRef,
-                                                   associationQName);
+                associationQName);
 
         if (templateNode != null)
         {
             return newVirtualReference(env,
-                                       nodeRef,
-                                       templateNode);
+                    nodeRef,
+                    templateNode);
         }
         else
         {
@@ -97,13 +95,13 @@ public class CustomVirtualizationMethod extends AspectVirtualizationMethod
     public boolean canVirtualize(ActualEnvironment env, NodeRef nodeRef) throws ActualEnvironmentException
     {
         boolean canVirtualize = super.canVirtualize(env,
-                                                    nodeRef);
+                nodeRef);
         if (canVirtualize)
         {
             // TODO: optimize - should not need another repository meta data access !!!
 
             NodeRef templateNode = env.getTargetAssocs(nodeRef,
-                                                       associationQName);
+                    associationQName);
             canVirtualize = templateNode != null;
         }
 

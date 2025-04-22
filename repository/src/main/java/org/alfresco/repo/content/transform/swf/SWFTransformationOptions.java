@@ -25,14 +25,15 @@
  */
 package org.alfresco.repo.content.transform.swf;
 
+import static org.alfresco.repo.rendition2.RenditionDefinition2.FLASH_VERSION;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
-import static org.alfresco.repo.rendition2.RenditionDefinition2.FLASH_VERSION;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
  * SFW transformation options
@@ -45,16 +46,16 @@ import static org.alfresco.repo.rendition2.RenditionDefinition2.FLASH_VERSION;
 public class SWFTransformationOptions extends TransformationOptions
 {
     private static final String OPT_FLASH_VERSION = FLASH_VERSION;
-    
+
     /** The version of the flash to convert to */
     private String flashVersion = "9";
-    
+
     public void setFlashVersion(String flashVersion)
     {
         ParameterCheck.mandatory("flashVersion", flashVersion);
         this.flashVersion = flashVersion;
     }
-    
+
     public String getFlashVersion()
     {
         return flashVersion;

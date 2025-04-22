@@ -26,6 +26,8 @@
 package org.alfresco.repo.domain.qname;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -37,8 +39,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.DBTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @see QNameDAO
@@ -55,21 +55,20 @@ public class QNameDAOTest extends TestCase
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
     private QNameDAO qnameDAO;
-    
+
     @Override
     public void setUp() throws Exception
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();
-        
+
         qnameDAO = (QNameDAO) ctx.getBean("qnameDAO");
     }
-    
+
     private Pair<Long, String> getNamespace(final String uri, final boolean autoCreate, boolean expectSuccess)
     {
-        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>()
-        {
+        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>() {
             public Pair<Long, String> execute() throws Throwable
             {
                 Pair<Long, String> namespacePair = null;
@@ -101,11 +100,10 @@ public class QNameDAOTest extends TestCase
             }
         }
     }
-    
+
     private Pair<Long, QName> getQName(final QName qname, final boolean autoCreate, boolean expectSuccess)
     {
-        RetryingTransactionCallback<Pair<Long, QName>> callback = new RetryingTransactionCallback<Pair<Long, QName>>()
-        {
+        RetryingTransactionCallback<Pair<Long, QName>> callback = new RetryingTransactionCallback<Pair<Long, QName>>() {
             public Pair<Long, QName> execute() throws Throwable
             {
                 Pair<Long, QName> qnamePair = null;
@@ -137,7 +135,7 @@ public class QNameDAOTest extends TestCase
             }
         }
     }
-    
+
     public void testCreateNamespace() throws Exception
     {
         // Create a namespace
@@ -149,7 +147,7 @@ public class QNameDAOTest extends TestCase
         // Check the duplicate checking
         getNamespace(uri, true, false);
     }
-    
+
     public void testCreateNamespaceEmpty() throws Exception
     {
         // Create a namespace
@@ -159,7 +157,7 @@ public class QNameDAOTest extends TestCase
         Pair<Long, String> namespacePairCheck = getNamespace(namespacePair.getSecond(), false, true);
         assertEquals("Namespace ID changed", namespacePair.getFirst(), namespacePairCheck.getFirst());
     }
-    
+
     public void testUpdateNamespace() throws Exception
     {
         // Create a namespace
@@ -170,8 +168,7 @@ public class QNameDAOTest extends TestCase
         Pair<Long, QName> qnameOldPair = getQName(qnameOld, true, true);
         // Now update it
         final String uri2 = GUID.generate();
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 qnameDAO.updateNamespace(uri, uri2);
@@ -179,14 +176,14 @@ public class QNameDAOTest extends TestCase
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback);
-        
+
         // Make sure that the old QName is gone (checks caching)
         getQName(qnameOld, false, false);
-        
+
         // The new QName should be there
         QName qnameNew = QName.createQName(uri2, qnameOld.getLocalName());
         getQName(qnameNew, false, true);
-        
+
         // Should be able to create the original namespace again
         Pair<Long, String> namespacePairAgain = getNamespace(uri, true, true);
         assertNotSame("Should have a new namespace ID", namespacePair.getFirst(), namespacePairAgain.getFirst());
@@ -203,7 +200,7 @@ public class QNameDAOTest extends TestCase
         // Check the duplicate checking
         getQName(qname, true, false);
     }
-    
+
     public void testUpdateQName() throws Exception
     {
         // Create a qname
@@ -211,8 +208,7 @@ public class QNameDAOTest extends TestCase
         Pair<Long, QName> qnamePairOld = getQName(qnameOld, true, true);
         // Now update it
         final QName qnameNew = QName.createQName(GUID.generate(), GUID.generate());
-        RetryingTransactionCallback<Pair<Long, QName>> callback = new RetryingTransactionCallback<Pair<Long, QName>>()
-        {
+        RetryingTransactionCallback<Pair<Long, QName>> callback = new RetryingTransactionCallback<Pair<Long, QName>>() {
             public Pair<Long, QName> execute() throws Throwable
             {
                 return qnameDAO.updateQName(qnameOld, qnameNew);
@@ -235,8 +231,7 @@ public class QNameDAOTest extends TestCase
         getQName(qname, true, true);
 
         // Now delete the qname
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 qnameDAO.deleteQName(qname);

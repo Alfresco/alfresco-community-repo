@@ -35,6 +35,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.permissions.AclCrudDAO;
@@ -42,76 +45,74 @@ import org.alfresco.repo.domain.permissions.Authority;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.junit.Before;
-import org.junit.Test;
 
 public class NodePermissionAssessorLimitsTest
 {
     private NodePermissionAssessor assessor;
     private Node node;
-    
+
     @Before
     public void setup()
     {
         node = mock(Node.class);
         assessor = createAssessor();
     }
-    
+
     @Test
     public void shouldNotQuitAssessingPermissionsWhenMaxPermissionChecksLimitIsNotReached()
     {
         assessor.setMaxPermissionChecks(5);
-        
+
         performChecks(3);
-        
+
         assertFalse(assessor.shouldQuitChecks());
         verify(assessor, times(3)).isReallyIncluded(node);
     }
-    
+
     @Test
     public void shouldQuitAssessingPermissionsWhenMaxPermissionChecksLimitIsReached()
     {
         assessor.setMaxPermissionChecks(5);
-        
+
         performChecks(20);
-        
+
         assertTrue(assessor.shouldQuitChecks());
     }
-    
+
     @Test
-    public void shouldNotAssessPermissionsWhenMaxPermissionCheckTimeIsUp() throws Exception 
+    public void shouldNotAssessPermissionsWhenMaxPermissionCheckTimeIsUp() throws Exception
     {
         assessor.setMaxPermissionCheckTimeMillis(100);
-        
+
         assessor.isIncluded(node);
         Thread.sleep(200);
-        
+
         assertTrue(assessor.shouldQuitChecks());
         verify(assessor).isReallyIncluded(node);
-        
+
     }
-    
+
     @Test
-    public void shouldAssessPermissionsWhenMaxPermissionCheckTimeIsNotUp() throws Exception 
+    public void shouldAssessPermissionsWhenMaxPermissionCheckTimeIsNotUp() throws Exception
     {
         assessor.setMaxPermissionCheckTimeMillis(500);
         Thread.sleep(200);
-        
+
         assessor.isIncluded(node);
-        
+
         assertFalse(assessor.shouldQuitChecks());
         verify(assessor, atLeastOnce()).isReallyIncluded(node);
-        
+
     }
 
     private void performChecks(int checks)
     {
-        for (int i=0; i < checks; i++)
+        for (int i = 0; i < checks; i++)
         {
             assessor.isIncluded(node);
         }
     }
-    
+
     private NodePermissionAssessor createAssessor()
     {
         AclCrudDAO aclCrudDAO = mock(AclCrudDAO.class);
@@ -120,7 +121,7 @@ public class NodePermissionAssessorLimitsTest
         DBQueryEngine engine = new DBQueryEngine();
         engine.setPermissionService(permissionService);
         engine.setAclCrudDAO(aclCrudDAO);
-        
+
         NodeService nodeService = mock(NodeService.class);
         Authority authority = mock(Authority.class);
         EntityLookupCache<Long, Node, NodeRef> nodeCache = mock(EntityLookupCache.class);

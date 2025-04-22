@@ -48,6 +48,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.admin.SysAdminParams;
@@ -112,9 +116,6 @@ import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.UrlUtil;
 import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Function;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Implementation of invitation service.
@@ -128,19 +129,19 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     private static final Log logger = LogFactory.getLog(InvitationServiceImpl.class);
     private static final String REJECT_TEMPLATE = "/alfresco/bootstrap/invite/moderated-reject-email.ftl";
     private static final String MSG_NOT_SITE_MANAGER = "invitation.cancel.not_site_manager";
-    private static final List<String> SEND_INVITE_NOMINATED_PROP_NAMES = Arrays.asList(wfVarInviteeUserName,//
-            wfVarResourceName,//
-            wfVarInviterUserName,//
-            wfVarInviteeUserName,//
-            wfVarRole,//
-            wfVarInviteeGenPassword,//
-            wfVarResourceName,//
-            wfVarInviteTicket,//
-            wfVarServerPath,//
-            wfVarAcceptUrl,//
+    private static final List<String> SEND_INVITE_NOMINATED_PROP_NAMES = Arrays.asList(wfVarInviteeUserName, //
+            wfVarResourceName, //
+            wfVarInviterUserName, //
+            wfVarInviteeUserName, //
+            wfVarRole, //
+            wfVarInviteeGenPassword, //
+            wfVarResourceName, //
+            wfVarInviteTicket, //
+            wfVarServerPath, //
+            wfVarAcceptUrl, //
             wfVarRejectUrl,
             InviteNominatedSender.WF_INSTANCE_ID);
-    
+
     private static final List<String> SEND_INVITE_MODERATED_PROP_NAMES = Arrays.asList(
             WorkflowModelModeratedInvitation.wfVarInviteeUserName,
             WorkflowModelModeratedInvitation.wfVarInviteeRole,
@@ -149,8 +150,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             WorkflowModelModeratedInvitation.wfVarResourceType,
             WorkflowModelModeratedInvitation.wfVarTemplateAssetsUrl,
             WorkflowModelModeratedInvitation.wfVarWorkspaceUrl);
-    
-    
+
     /**
      * Services
      */
@@ -185,28 +185,29 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
     // Property determining whether emails should be sent.
     private boolean sendEmails = true;
-    
-    private enum InvitationWorkflowType { NOMINATED, NOMINATED_EXTERNAL, MODERATED };
-    
+
+    private enum InvitationWorkflowType
+    {
+        NOMINATED, NOMINATED_EXTERNAL, MODERATED
+    };
+
     // The nominated invite workflow definition to use for internal users
-    private String nominatedInvitationWorkflowId = 
-            WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_ADD_DIRECT;
+    private String nominatedInvitationWorkflowId = WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_ADD_DIRECT;
     // The nominated invite workflow definition to use for external users
-    private String nominatedInvitationExternalWorkflowId = 
-            WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_INVITE;
+    private String nominatedInvitationExternalWorkflowId = WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_INVITE;
     // The nominated invite workflow definition to use for internal users
-    private String moderatedInvitationWorkflowId = 
-            WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI;
-    
+    private String moderatedInvitationWorkflowId = WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI;
+
     public void setClientAppConfig(ClientAppConfig clientAppConfig)
     {
         this.clientAppConfig = clientAppConfig;
     }
-         
+
     /**
      * Set the policy component
      * 
-     * @param policyComponent policy component
+     * @param policyComponent
+     *            policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -265,16 +266,15 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
         this.inviteNominatedSender = new InviteNominatedSender(serviceRegistry, repositoryHelper, messageService);
         this.inviteModeratedSender = new InviteModeratedSender(serviceRegistry, repositoryHelper, messageService);
-        
+
         //
         this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
-                    SiteModel.TYPE_SITE, new JavaBehaviour(this, "beforeDeleteNode"));
+                SiteModel.TYPE_SITE, new JavaBehaviour(this, "beforeDeleteNode"));
         this.policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME, ContentModel.TYPE_PERSON, new JavaBehaviour(this, "beforeDeleteNode"));
     }
 
     /**
-     * Get the names of the workflows which are managed by the invitation
-     * service
+     * Get the names of the workflows which are managed by the invitation service
      * 
      * @return the workflows which are managed by the invitation service
      */
@@ -290,22 +290,27 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Start the invitation process for a NominatedInvitation
      * 
-     * @param inviteeUserName Alfresco user name of the invitee
-     * @param resourceType resourceType
-     * @param resourceName String
-     * @param inviteeRole String
-     * @param serverPath String
-     * @param acceptUrl String
-     * @param rejectUrl String
-     * @return the nominated invitation which will contain the invitationId and
-     *         ticket which will uniqely identify this invitation for the rest
-     *         of the workflow.
+     * @param inviteeUserName
+     *            Alfresco user name of the invitee
+     * @param resourceType
+     *            resourceType
+     * @param resourceName
+     *            String
+     * @param inviteeRole
+     *            String
+     * @param serverPath
+     *            String
+     * @param acceptUrl
+     *            String
+     * @param rejectUrl
+     *            String
+     * @return the nominated invitation which will contain the invitationId and ticket which will uniqely identify this invitation for the rest of the workflow.
      * @throws InvitationException
      * @throws InvitationExceptionUserError
      * @throws InvitationExceptionForbidden
      */
     public NominatedInvitation inviteNominated(String inviteeUserName, Invitation.ResourceType resourceType,
-                String resourceName, String inviteeRole, String serverPath, String acceptUrl, String rejectUrl)
+            String resourceName, String inviteeRole, String serverPath, String acceptUrl, String rejectUrl)
     {
         // inviteeUserName was specified
         NodeRef person = this.personService.getPerson(inviteeUserName);
@@ -318,26 +323,31 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         String email = DefaultTypeConverter.INSTANCE.convert(String.class, emailVal);
 
         return inviteNominated(firstName, lastName, email, inviteeUserName, resourceType, resourceName, inviteeRole,
-                    serverPath, acceptUrl, rejectUrl);
+                serverPath, acceptUrl, rejectUrl);
     }
+
     /**
      * Start the invitation process for a NominatedInvitation
      * 
-     * @param inviteeUserName Alfresco user name of the invitee
-     * @param resourceType resourceType
-     * @param resourceName String
-     * @param inviteeRole String
-     * @param acceptUrl String
-     * @param rejectUrl String
-     * @return the nominated invitation which will contain the invitationId and
-     *         ticket which will uniqely identify this invitation for the rest
-     *         of the workflow.
+     * @param inviteeUserName
+     *            Alfresco user name of the invitee
+     * @param resourceType
+     *            resourceType
+     * @param resourceName
+     *            String
+     * @param inviteeRole
+     *            String
+     * @param acceptUrl
+     *            String
+     * @param rejectUrl
+     *            String
+     * @return the nominated invitation which will contain the invitationId and ticket which will uniqely identify this invitation for the rest of the workflow.
      * @throws InvitationException
      * @throws InvitationExceptionUserError
      * @throws InvitationExceptionForbidden
      */
     public NominatedInvitation inviteNominated(String inviteeUserName, Invitation.ResourceType resourceType,
-                String resourceName, String inviteeRole, String acceptUrl, String rejectUrl)
+            String resourceName, String inviteeRole, String acceptUrl, String rejectUrl)
     {
         // inviteeUserName was specified
         NodeRef person = this.personService.getPerson(inviteeUserName);
@@ -351,65 +361,79 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         String serverPath = UrlUtil.getShareUrl(sysAdminParams);
 
         return inviteNominated(firstName, lastName, email, inviteeUserName, resourceType, resourceName, inviteeRole,
-                    serverPath, acceptUrl, rejectUrl);
-    }
-    /**
-     * Start the invitation process for a NominatedInvitation
-     * 
-     * @param inviteeFirstName String
-     * @param inviteeLastName String
-     * @param inviteeEmail String
-     * @param resourceType Invitation.ResourceType
-     * @param resourceName String
-     * @param inviteeRole String
-     * @param acceptUrl String
-     * @param rejectUrl String
-     * @return the nominated invitation which will contain the invitationId and
-     *         ticket which will uniqely identify this invitation for the rest
-     *         of the workflow.
-     * @throws InvitationException
-     * @throws InvitationExceptionUserError
-     * @throws InvitationExceptionForbidden
-     */
-    public NominatedInvitation inviteNominated(String inviteeFirstName, String inviteeLastName, String inviteeEmail,
-                Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String acceptUrl, String rejectUrl)
-    {
-        String serverPath = UrlUtil.getShareUrl(sysAdminParams);
-        return inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, null, resourceType, resourceName,
-                    inviteeRole, serverPath, acceptUrl, rejectUrl);
+                serverPath, acceptUrl, rejectUrl);
     }
 
     /**
      * Start the invitation process for a NominatedInvitation
      * 
-     * @param inviteeFirstName String
-     * @param inviteeLastName String
-     * @param inviteeEmail String
-     * @param resourceType Invitation.ResourceTyp
-     * @param resourceName String
-     * @param inviteeRole String
-     * @param serverPath String
-     * @param acceptUrl String
-     * @param rejectUrl String
-     * @return the nominated invitation which will contain the invitationId and
-     *         ticket which will uniqely identify this invitation for the rest
-     *         of the workflow.
+     * @param inviteeFirstName
+     *            String
+     * @param inviteeLastName
+     *            String
+     * @param inviteeEmail
+     *            String
+     * @param resourceType
+     *            Invitation.ResourceType
+     * @param resourceName
+     *            String
+     * @param inviteeRole
+     *            String
+     * @param acceptUrl
+     *            String
+     * @param rejectUrl
+     *            String
+     * @return the nominated invitation which will contain the invitationId and ticket which will uniqely identify this invitation for the rest of the workflow.
      * @throws InvitationException
      * @throws InvitationExceptionUserError
      * @throws InvitationExceptionForbidden
      */
     public NominatedInvitation inviteNominated(String inviteeFirstName, String inviteeLastName, String inviteeEmail,
-                Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String serverPath,
-                String acceptUrl, String rejectUrl)
+            Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String acceptUrl, String rejectUrl)
+    {
+        String serverPath = UrlUtil.getShareUrl(sysAdminParams);
+        return inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, null, resourceType, resourceName,
+                inviteeRole, serverPath, acceptUrl, rejectUrl);
+    }
+
+    /**
+     * Start the invitation process for a NominatedInvitation
+     * 
+     * @param inviteeFirstName
+     *            String
+     * @param inviteeLastName
+     *            String
+     * @param inviteeEmail
+     *            String
+     * @param resourceType
+     *            Invitation.ResourceTyp
+     * @param resourceName
+     *            String
+     * @param inviteeRole
+     *            String
+     * @param serverPath
+     *            String
+     * @param acceptUrl
+     *            String
+     * @param rejectUrl
+     *            String
+     * @return the nominated invitation which will contain the invitationId and ticket which will uniqely identify this invitation for the rest of the workflow.
+     * @throws InvitationException
+     * @throws InvitationExceptionUserError
+     * @throws InvitationExceptionForbidden
+     */
+    public NominatedInvitation inviteNominated(String inviteeFirstName, String inviteeLastName, String inviteeEmail,
+            Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String serverPath,
+            String acceptUrl, String rejectUrl)
     {
         return inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail, null, resourceType, resourceName,
-                    inviteeRole, serverPath, acceptUrl, rejectUrl);
+                inviteeRole, serverPath, acceptUrl, rejectUrl);
     }
 
     // Temporary method
     private NominatedInvitation inviteNominated(String inviteeFirstName, String inviteeLastName, String inviteeEmail,
-                String inviteeUserName, Invitation.ResourceType resourceType, String resourceName, String inviteeRole,
-                String serverPath, String acceptUrl, String rejectUrl)
+            String inviteeUserName, Invitation.ResourceType resourceType, String resourceName, String inviteeRole,
+            String serverPath, String acceptUrl, String rejectUrl)
     {
         // Validate the request
 
@@ -418,7 +442,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         if (resourceType == Invitation.ResourceType.WEB_SITE)
         {
             return startNominatedInvite(inviteeFirstName, inviteeLastName, inviteeEmail, inviteeUserName, resourceType,
-                        resourceName, inviteeRole, serverPath, acceptUrl, rejectUrl);
+                    resourceName, inviteeRole, serverPath, acceptUrl, rejectUrl);
         }
 
         throw new InvitationException("unknown resource type");
@@ -427,14 +451,19 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Start the invitation process for a ModeratedInvitation
      * 
-     * @param inviteeComments why does the invitee want access to the resource ?
-     * @param inviteeUserName who is to be invited
-     * @param resourceType Invitation .ResourceType what resource type ?
-     * @param resourceName which resource
-     * @param inviteeRole which role ?
+     * @param inviteeComments
+     *            why does the invitee want access to the resource ?
+     * @param inviteeUserName
+     *            who is to be invited
+     * @param resourceType
+     *            Invitation .ResourceType what resource type ?
+     * @param resourceName
+     *            which resource
+     * @param inviteeRole
+     *            which role ?
      */
     public ModeratedInvitation inviteModerated(String inviteeComments, String inviteeUserName,
-                Invitation.ResourceType resourceType, String resourceName, String inviteeRole)
+            Invitation.ResourceType resourceType, String resourceName, String inviteeRole)
     {
         if (resourceType == Invitation.ResourceType.WEB_SITE)
         {
@@ -446,50 +475,52 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Invitee accepts this invitation Nominated Invitaton process only
      * 
-     * @param invitationId the invitation id
-     * @param ticket the ticket produced when creating the invitation.
+     * @param invitationId
+     *            the invitation id
+     * @param ticket
+     *            the ticket produced when creating the invitation.
      */
     public Invitation accept(String invitationId, String ticket)
     {
         WorkflowTask startTask = getStartTask(invitationId);
         NominatedInvitation invitation = getNominatedInvitation(startTask);
-        if(invitation == null)
+        if (invitation == null)
         {
             throw new InvitationException("State error, accept may only be called on a nominated invitation.");
         }
         // Check invitationId and ticket match
-        if(invitation.getTicket().equals(ticket)==false)
+        if (invitation.getTicket().equals(ticket) == false)
         {
-            //TODO localise msg
+            // TODO localise msg
             String msg = "Response to invite has supplied an invalid ticket. The response to the invitation could thus not be processed";
             throw new InvitationException(msg);
         }
         endInvitation(startTask,
                 WorkflowModelNominatedInvitation.WF_TRANSITION_ACCEPT, null,
                 WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING);
-        
-        //MNT-9101 Share: Cancelling an invitation for a disabled user, the user gets deleted in the process.
+
+        // MNT-9101 Share: Cancelling an invitation for a disabled user, the user gets deleted in the process.
         NodeRef person = personService.getPersonOrNull(invitation.getInviteeUserName());
         if (person != null && nodeService.hasAspect(person, ContentModel.ASPECT_ANULLABLE))
         {
             nodeService.removeAspect(person, ContentModel.ASPECT_ANULLABLE);
         }
-        
+
         return invitation;
     }
 
-    private void endInvitation(WorkflowTask startTask, String transition, Map<QName, Serializable> properties, QName... taskTypes )
+    private void endInvitation(WorkflowTask startTask, String transition, Map<QName, Serializable> properties, QName... taskTypes)
     {
         // Deleting a person can cancel their invitations. Cancelling invitations can delete inactive persons! So prevent infinite looping here
         if (TransactionalResourceHelper.getSet(getClass().getName()).add(startTask.getPath().getInstance().getId()))
-        {        
+        {
             List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(startTask.getPath().getId());
-            if(tasks.size()==1)
+            if (tasks.size() == 1)
             {
                 WorkflowTask task = tasks.get(0);
-                if(taskTypeMatches(task, taskTypes))
+                if (taskTypeMatches(task, taskTypes))
                 {
-                    if(properties != null)
+                    if (properties != null)
                     {
                         workflowService.updateTask(task.getId(), properties, null, null);
                     }
@@ -498,22 +529,24 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 }
             }
             // Throw exception if the task not found.
-            Object objs[] = { startTask.getPath().getInstance().getId() };
+            Object objs[] = {startTask.getPath().getInstance().getId()};
             throw new InvitationExceptionUserError("invitation.invite.already_finished", objs);
         }
     }
-    
+
     /**
      * Moderator approves this invitation
      * 
-     * @param invitationId the request id
-     * @param reason comments about the acceptance
+     * @param invitationId
+     *            the request id
+     * @param reason
+     *            comments about the acceptance
      */
     public Invitation approve(String invitationId, String reason)
     {
         WorkflowTask startTask = getStartTask(invitationId);
         ModeratedInvitation invitation = getModeratedInvitation(invitationId);
-        if(invitation == null)
+        if (invitation == null)
         {
             String msg = "State error, can only call approve on a Moderated invitation.";
             throw new InvitationException(msg);
@@ -535,13 +568,15 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * User or moderator rejects this request
      * 
-     * @param invitationId String
-     * @param reason , optional reason for rejection
+     * @param invitationId
+     *            String
+     * @param reason
+     *            , optional reason for rejection
      */
     public Invitation reject(String invitationId, String reason)
     {
         WorkflowTask startTask = getStartTask(invitationId);
-        if(taskTypeMatches(startTask, WorkflowModelModeratedInvitation.WF_START_TASK))
+        if (taskTypeMatches(startTask, WorkflowModelModeratedInvitation.WF_START_TASK))
         {
             return rejectModeratedInvitation(startTask, reason);
         }
@@ -579,7 +614,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     }
 
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     public Invitation cancel(String invitationId)
     {
@@ -647,7 +682,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * Get an invitation from its invitation id <BR />
      * Invitations are returned which may be in progress or completed.
      * 
-     * @throws InvitationExceptionNotFound the invitation does not exist.
+     * @throws InvitationExceptionNotFound
+     *             the invitation does not exist.
      * @throws InvitationExceptionUserError
      * @return the invitation.
      */
@@ -660,16 +696,16 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     private Invitation getInvitation(WorkflowTask startTask)
     {
         Invitation invitation = getNominatedInvitation(startTask);
-        if(invitation == null)
+        if (invitation == null)
         {
             invitation = getModeratedInvitation(startTask.getPath().getId());
         }
         return invitation;
     }
-    
+
     private Map<String, WorkflowTask> getInvitationTasks(List<String> invitationIds)
     {
-        for (String invitationId: invitationIds)
+        for (String invitationId : invitationIds)
         {
             validateInvitationId(invitationId);
         }
@@ -679,11 +715,11 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         List<WorkflowTask> inviteStartTasks = workflowService.getStartTasks(invitationIds, true);
         if (logger.isDebugEnabled())
         {
-            logger.debug("  getInvitationTask("+invitationIds.size()+") in "+ (System.currentTimeMillis()-start) + " ms");
+            logger.debug("  getInvitationTask(" + invitationIds.size() + ") in " + (System.currentTimeMillis() - start) + " ms");
         }
-        
+
         Map<String, WorkflowTask> result = new HashMap<String, WorkflowTask>(inviteStartTasks.size() * 2);
-        for(WorkflowTask inviteStartTask: inviteStartTasks)
+        for (WorkflowTask inviteStartTask : inviteStartTasks)
         {
             String invitationId = inviteStartTask.getPath().getInstance().getId();
             // The following does not work for moderated tasks
@@ -691,52 +727,52 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             // inviteStartTask.getProperties().get(WorkflowModel.PROP_WORKFLOW_INSTANCE_ID);
             result.put(invitationId, inviteStartTask);
         }
-        
+
         return result;
     }
-    
-	private WorkflowTask getModeratedInvitationReviewTask(String inviteeId, String siteShortName)
+
+    private WorkflowTask getModeratedInvitationReviewTask(String inviteeId, String siteShortName)
     {
-		WorkflowTask reviewTask = null;
+        WorkflowTask reviewTask = null;
 
-		// Is there an outstanding site invite request for the invitee?
-		InvitationSearchCriteriaImpl criteria = new InvitationSearchCriteriaImpl();
-		criteria.setInvitationType(InvitationType.MODERATED);
-		criteria.setInvitee(inviteeId);
-		criteria.setResourceName(siteShortName);
-		criteria.setResourceType(ResourceType.WEB_SITE);
-		
-		// should be at most 1 invite
-		List<String> invitationIds = searchInvitationsForIds(criteria, 1);
-		if(invitationIds.size() == 1)
-		{
-			reviewTask = getModeratedInvitationReviewTask(invitationIds.get(0));
-		}
+        // Is there an outstanding site invite request for the invitee?
+        InvitationSearchCriteriaImpl criteria = new InvitationSearchCriteriaImpl();
+        criteria.setInvitationType(InvitationType.MODERATED);
+        criteria.setInvitee(inviteeId);
+        criteria.setResourceName(siteShortName);
+        criteria.setResourceType(ResourceType.WEB_SITE);
 
-		return reviewTask;
-//		List<Invitation> invitations = searchInvitation(criteria);
-//		if(invitations.size() > 1)
-//		{
-//			throw new AlfrescoRuntimeException("There should be only one outstanding site invitation");
-//		}
-//		return (invitations.size() == 0 ? null : (ModeratedInvitation)invitations.get(0));
+        // should be at most 1 invite
+        List<String> invitationIds = searchInvitationsForIds(criteria, 1);
+        if (invitationIds.size() == 1)
+        {
+            reviewTask = getModeratedInvitationReviewTask(invitationIds.get(0));
+        }
+
+        return reviewTask;
+        // List<Invitation> invitations = searchInvitation(criteria);
+        // if(invitations.size() > 1)
+        // {
+        // throw new AlfrescoRuntimeException("There should be only one outstanding site invitation");
+        // }
+        // return (invitations.size() == 0 ? null : (ModeratedInvitation)invitations.get(0));
     }
-    
+
     private WorkflowTask getModeratedInvitationReviewTask(String invitationId)
     {
-    	WorkflowTask reviewTask = null;
+        WorkflowTask reviewTask = null;
 
-    	// since the invitation may have been updated e.g. invitee comments (and therefore modified date)
-    	// we need to get the properties from the review task (which should be the only active
-    	// task)
+        // since the invitation may have been updated e.g. invitee comments (and therefore modified date)
+        // we need to get the properties from the review task (which should be the only active
+        // task)
         List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(invitationId);
-        for(WorkflowTask task : tasks)
+        for (WorkflowTask task : tasks)
         {
-            if(taskTypeMatches(task, WorkflowModelModeratedInvitation.WF_ACTIVITI_REVIEW_TASK))
-        	{
-        		reviewTask = task;
-        		break;
-        	}
+            if (taskTypeMatches(task, WorkflowModelModeratedInvitation.WF_ACTIVITI_REVIEW_TASK))
+            {
+                reviewTask = task;
+                break;
+            }
         }
 
         return reviewTask;
@@ -748,15 +784,15 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         ModeratedInvitation invitation = getModeratedInvitation(invitationId, reviewTask);
         return invitation;
     }
-    
+
     private ModeratedInvitation getModeratedInvitation(String invitationId, WorkflowTask reviewTask)
     {
         ModeratedInvitation invitation = null;
 
-        if(reviewTask != null)
+        if (reviewTask != null)
         {
-        	Map<QName, Serializable> properties = reviewTask.getProperties();
-        	invitation = new ModeratedInvitationImpl(invitationId, properties);
+            Map<QName, Serializable> properties = reviewTask.getProperties();
+            invitation = new ModeratedInvitationImpl(invitationId, properties);
         }
 
         return invitation;
@@ -779,7 +815,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         QName taskDefName = task.getDefinition().getMetadata().getName();
         return Arrays.asList(types).contains(taskDefName);
     }
-    
+
     private WorkflowTask getStartTask(String invitationId)
     {
         validateInvitationId(invitationId);
@@ -794,7 +830,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         }
         if (startTask == null)
         {
-            Object objs[] = { invitationId };
+            Object objs[] = {invitationId};
             throw new InvitationExceptionNotFound("invitation.error.not_found", objs);
         }
         return startTask;
@@ -803,7 +839,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * list Invitations for a specific person/invitee
      * 
-     * @param invitee alfresco user id of person being invited
+     * @param invitee
+     *            alfresco user id of person being invited
      */
     public List<Invitation> listPendingInvitationsForInvitee(String invitee)
     {
@@ -812,7 +849,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         crit.setInvitee(invitee);
         return searchInvitation(crit);
     }
-    
+
     public List<Invitation> listPendingInvitationsForInvitee(String invitee, Invitation.ResourceType resourceType)
     {
         InvitationSearchCriteriaImpl crit = new InvitationSearchCriteriaImpl();
@@ -825,8 +862,10 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * list Invitations for a specific resource
      * 
-     * @param resourceType Invitation.ResourceType
-     * @param resourceName String
+     * @param resourceType
+     *            Invitation.ResourceType
+     * @param resourceName
+     *            String
      */
     public List<Invitation> listPendingInvitationsForResource(Invitation.ResourceType resourceType, String resourceName)
     {
@@ -836,8 +875,11 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
     /**
      * Returns search criteria to find pending invitations
-     * @param resourceType Invitation.ResourceType
-     * @param resourceName String
+     * 
+     * @param resourceType
+     *            Invitation.ResourceType
+     * @param resourceName
+     *            String
      * @return search criteria
      */
     private InvitationSearchCriteriaImpl getPendingInvitationCriteriaForResource(
@@ -872,8 +914,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     private List<Invitation> searchInvitation(final InvitationSearchCriteria criteria, List<String> invitationIds)
     {
         final Map<String, WorkflowTask> taskCache = getInvitationTasks(invitationIds);
-        return CollectionUtils.transform(invitationIds, new Function<String, Invitation>()
-        {
+        return CollectionUtils.transform(invitationIds, new Function<String, Invitation>() {
             public Invitation apply(String invitationId)
             {
                 WorkflowTask startTask = taskCache.get(invitationId);
@@ -890,8 +931,10 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * This is a general search invitation method returning IDs
      * 
-     * @param criteria InvitationSearchCriteria
-     * @param limit maximum number of IDs to return. If less than 1, there is no limit. 
+     * @param criteria
+     *            InvitationSearchCriteria
+     * @param limit
+     *            maximum number of IDs to return. If less than 1, there is no limit.
      * @return the list of invitation IDs (the IDs of the invitations not the IDs of the invitation start tasks)
      */
     private List<String> searchInvitationsForIds(final InvitationSearchCriteria criteria, int limit)
@@ -899,7 +942,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         List<String> invitationIds = new ArrayList<String>();
         InvitationSearchCriteria.InvitationType toSearch = criteria.getInvitationType();
         if (toSearch == InvitationSearchCriteria.InvitationType.ALL
-                    || toSearch == InvitationSearchCriteria.InvitationType.NOMINATED)
+                || toSearch == InvitationSearchCriteria.InvitationType.NOMINATED)
         {
             for (WorkflowTask task : searchNominatedInvitations(criteria, limit))
             {
@@ -912,10 +955,10 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             }
         }
         if ((limit <= 0 || invitationIds.size() < limit) &&
-            (toSearch == InvitationSearchCriteria.InvitationType.ALL
-                     || toSearch == InvitationSearchCriteria.InvitationType.MODERATED))
+                (toSearch == InvitationSearchCriteria.InvitationType.ALL
+                        || toSearch == InvitationSearchCriteria.InvitationType.MODERATED))
         {
-            for (WorkflowTask task: searchModeratedInvitations(criteria, limit))
+            for (WorkflowTask task : searchModeratedInvitations(criteria, limit))
             {
                 String invitationId = task.getPath().getInstance().getId();
                 invitationIds.add(invitationId);
@@ -923,33 +966,36 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 {
                     break;
                 }
-            } 
+            }
         }
-        
+
         return invitationIds;
 
     }
 
     /**
      * Fix for ALF-2598
-     * @param invitation Invitation
-     * @param criteria InvitationSearchCriteria
+     * 
+     * @param invitation
+     *            Invitation
+     * @param criteria
+     *            InvitationSearchCriteria
      * @return boolean
      */
     private boolean invitationMatches(Invitation invitation, InvitationSearchCriteria criteria)
     {
         String invitee = criteria.getInvitee();
-        if (invitation == null || (invitee!= null && false == invitee.equals(invitation.getInviteeUserName())))
+        if (invitation == null || (invitee != null && false == invitee.equals(invitation.getInviteeUserName())))
         {
             return false;
         }
         String inviter = criteria.getInviter();
-        if(inviter!= null)
+        if (inviter != null)
         {
             if (invitation instanceof NominatedInvitation)
             {
                 NominatedInvitation modInvite = (NominatedInvitation) invitation;
-                if(false == inviter.equals(modInvite.getInviterUserName()))
+                if (false == inviter.equals(modInvite.getInviterUserName()))
                 {
                     return false;
                 }
@@ -959,8 +1005,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 return false;
             }
         }
-        String resourceName= criteria.getResourceName();
-        if (resourceName!= null && false == resourceName.equals(invitation.getResourceName()))
+        String resourceName = criteria.getResourceName();
+        if (resourceName != null && false == resourceName.equals(invitation.getResourceName()))
         {
             return false;
         }
@@ -969,8 +1015,10 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
     /**
      * 
-     * @param criteria criteria to search by
-     * @param limit maximum number of IDs to return. If less than 1, there is no limit.
+     * @param criteria
+     *            criteria to search by
+     * @param limit
+     *            maximum number of IDs to return. If less than 1, there is no limit.
      * @return list of WorkflowTask representing moderated invitations
      */
     private List<WorkflowTask> searchModeratedInvitations(InvitationSearchCriteria criteria, int limit)
@@ -989,12 +1037,12 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         {
             properties.put(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_USER_NAME, invitee);
         }
-        //TODO Uncomment if more than one ResourceType added.
-//        ResourceType resourceType = criteria.getResourceType();
-//        if (resourceType != null)
-//        {
-//            properties.put(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE, resourceType.toString());
-//        }
+        // TODO Uncomment if more than one ResourceType added.
+        // ResourceType resourceType = criteria.getResourceType();
+        // if (resourceType != null)
+        // {
+        // properties.put(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE, resourceType.toString());
+        // }
         String resourceName = criteria.getResourceName();
         if (resourceName != null)
         {
@@ -1006,20 +1054,23 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
         // query for invite workflow tasks
         List<WorkflowTask> results = new ArrayList<WorkflowTask>();
-        if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
+        if (workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
         {
             query.setTaskName(WorkflowModelModeratedInvitation.WF_ACTIVITI_REVIEW_TASK);
             List<WorkflowTask> activitiTasks = this.workflowService.queryTasks(query, true);
-            if(activitiTasks !=null)
+            if (activitiTasks != null)
             {
                 results.addAll(activitiTasks);
-                
-                if (logger.isTraceEnabled()) { logger.trace("Found " + activitiTasks.size() + " Activiti moderated invitation tasks."); }
+
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Found " + activitiTasks.size() + " Activiti moderated invitation tasks.");
+                }
             }
         }
         if (logger.isDebugEnabled())
         {
-            logger.debug("  searchModeratedInvitations in "+ (System.currentTimeMillis()-start) + " ms");
+            logger.debug("  searchModeratedInvitations in " + (System.currentTimeMillis() - start) + " ms");
         }
         return results;
     }
@@ -1027,7 +1078,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * 
      * @param criteria
-     * @param limit maximum number of IDs to return. If less than 1, there is no limit.
+     * @param limit
+     *            maximum number of IDs to return. If less than 1, there is no limit.
      * @return list of WorkflowTask representing nominated invitations
      */
     private List<WorkflowTask> searchNominatedInvitations(InvitationSearchCriteria criteria, int limit)
@@ -1041,11 +1093,11 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             query.setLimit(limit);
         }
         String invitee = criteria.getInvitee();
-        if(invitee != null)
+        if (invitee != null)
         {
             query.setActorId(invitee);
         }
-        
+
         Map<QName, Object> queryProps = new HashMap<QName, Object>();
         String inviter = criteria.getInviter();
         if (inviter != null)
@@ -1057,32 +1109,35 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         {
             queryProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_NAME, resourceName);
         }
-        
-        //TODO uncomment if more ResourceTypes are created.
-//      ResourceType resourceType = criteria.getResourceType();
-//      if (resourceType != null)
-//      {
-//          wfNominatedQueryProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE,
-//                  resourceType.name());
-//      }
+
+        // TODO uncomment if more ResourceTypes are created.
+        // ResourceType resourceType = criteria.getResourceType();
+        // if (resourceType != null)
+        // {
+        // wfNominatedQueryProps.put(WorkflowModelNominatedInvitation.WF_PROP_RESOURCE_TYPE,
+        // resourceType.name());
+        // }
         // set workflow task query parameters
         query.setProcessCustomProps(queryProps);
 
         List<WorkflowTask> results = new ArrayList<WorkflowTask>();
-        if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
+        if (workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
         {
             query.setTaskName(WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING);
             List<WorkflowTask> activitiTasks = this.workflowService.queryTasks(query, true);
-            if(activitiTasks !=null)
+            if (activitiTasks != null)
             {
                 results.addAll(activitiTasks);
-                
-                if (logger.isTraceEnabled()) { logger.trace("Found " + activitiTasks.size() + " Activiti nominated invitation tasks."); }
+
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Found " + activitiTasks.size() + " Activiti nominated invitation tasks.");
+                }
             }
         }
         if (logger.isDebugEnabled())
         {
-            logger.debug("  searchNominatedInvitations in "+ (System.currentTimeMillis()-start) + " ms");
+            logger.debug("  searchNominatedInvitations in " + (System.currentTimeMillis() - start) + " ms");
         }
         return results;
     }
@@ -1092,7 +1147,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Set the workflow service
      * 
-     * @param workflowService WorkflowService
+     * @param workflowService
+     *            WorkflowService
      */
     public void setWorkflowService(WorkflowService workflowService)
     {
@@ -1100,13 +1156,14 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     }
 
     /**
-     * @param workflowAdminService the workflowAdminService to set
+     * @param workflowAdminService
+     *            the workflowAdminService to set
      */
     public void setWorkflowAdminService(WorkflowAdminService workflowAdminService)
     {
         this.workflowAdminService = workflowAdminService;
     }
-    
+
     /**
      * @return the workflow service
      */
@@ -1114,9 +1171,10 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     {
         return workflowService;
     }
-    
+
     /**
-     * @param actionService the actionService to set
+     * @param actionService
+     *            the actionService to set
      */
     public void setActionService(ActionService actionService)
     {
@@ -1211,9 +1269,12 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Creates a person for the invitee with a generated user name.
      * 
-     * @param inviteeFirstName first name of invitee
-     * @param inviteeLastName last name of invitee
-     * @param inviteeEmail email address of invitee
+     * @param inviteeFirstName
+     *            first name of invitee
+     * @param inviteeLastName
+     *            last name of invitee
+     * @param inviteeEmail
+     *            email address of invitee
      * @return invitee user name
      */
     private String createInviteePerson(String inviteeFirstName, String inviteeLastName, String inviteeEmail)
@@ -1237,7 +1298,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
             logger.debug("Failed - unable to generate username for invitee.");
 
-            Object[] objs = { inviteeFirstName, inviteeLastName, inviteeEmail };
+            Object[] objs = {inviteeFirstName, inviteeLastName, inviteeEmail};
             throw new InvitationException("invitation.invite.unable_generate_id", objs);
         }
 
@@ -1250,13 +1311,12 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         properties.put(ContentModel.PROP_EMAIL, inviteeEmail);
 
         final String finalUserName = inviteeUserName;
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             @SuppressWarnings("synthetic-access")
             public Object doWork() throws Exception
             {
                 NodeRef person = personService.createPerson(properties);
-                //MNT-9101 Share: Cancelling an invitation for a disabled user, the user gets deleted in the process.
+                // MNT-9101 Share: Cancelling an invitation for a disabled user, the user gets deleted in the process.
                 nodeService.addAspect(person, ContentModel.ASPECT_ANULLABLE, null);
                 permissionService.setPermission(person, finalUserName, PermissionService.ALL_PERMISSIONS, true);
 
@@ -1269,10 +1329,10 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     }
 
     /**
-     * Creates a disabled user account for the given invitee user name with a
-     * generated password
+     * Creates a disabled user account for the given invitee user name with a generated password
      * 
-     * @param inviteeUserName String
+     * @param inviteeUserName
+     *            String
      * @return password generated for invitee user account
      */
     private String createInviteeDisabledAccount(String inviteeUserName)
@@ -1294,7 +1354,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * @return the new moderated invitation
      */
     private ModeratedInvitation startModeratedInvite(String inviteeComments, String inviteeUserName,
-                Invitation.ResourceType resourceType, String resourceName, String inviteeRole)
+            Invitation.ResourceType resourceType, String resourceName, String inviteeRole)
     {
         SiteInfo siteInfo = siteService.getSite(resourceName);
 
@@ -1303,7 +1363,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             if (logger.isDebugEnabled())
                 logger.debug("Failed - invitee user is already a member of the site.");
 
-            Object objs[] = { inviteeUserName, "", resourceName };
+            Object objs[] = {inviteeUserName, "", resourceName};
             throw new InvitationExceptionUserError("invitation.invite.already_member", objs);
         }
 
@@ -1311,7 +1371,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
         // get the workflow description
         String workflowDescription = generateWorkflowDescription(siteInfo, "invitation.moderated.workflow.description");
-        
+
         Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(16);
         workflowProps.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, workflowDescription);
         workflowProps.put(WorkflowModelModeratedInvitation.ASSOC_GROUP_ASSIGNEE, roleGroup);
@@ -1330,21 +1390,26 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Starts the Invite workflow
      * 
-     * @param inviteeFirstName first name of invitee
-     * @param inviteeLastName last name of invitee
-     * @param inviteeEmail email address of invitee
-     * @param siteShortName short name of site that the invitee is being invited
-     *            to by the inviter
-     * @param inviteeSiteRole role under which invitee is being invited to the
-     *            site by the inviter
-     * @param serverPath externally accessible server address of server hosting
-     *            invite web scripts
-     * @param acceptUrl accept Url
-     * @param rejectUrl reject Url
+     * @param inviteeFirstName
+     *            first name of invitee
+     * @param inviteeLastName
+     *            last name of invitee
+     * @param inviteeEmail
+     *            email address of invitee
+     * @param siteShortName
+     *            short name of site that the invitee is being invited to by the inviter
+     * @param inviteeSiteRole
+     *            role under which invitee is being invited to the site by the inviter
+     * @param serverPath
+     *            externally accessible server address of server hosting invite web scripts
+     * @param acceptUrl
+     *            accept Url
+     * @param rejectUrl
+     *            reject Url
      */
     private NominatedInvitation startNominatedInvite(String inviteeFirstName, String inviteeLastName,
-                String inviteeEmail, String inviteeUserName, Invitation.ResourceType resourceType,
-                String siteShortName, String inviteeSiteRole, String serverPath, String acceptUrl, String rejectUrl)
+            String inviteeEmail, String inviteeUserName, Invitation.ResourceType resourceType,
+            String siteShortName, String inviteeSiteRole, String serverPath, String acceptUrl, String rejectUrl)
     {
 
         // get the inviter user name (the name of user web script is executed
@@ -1357,9 +1422,9 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         if (logger.isDebugEnabled())
         {
             logger.debug("startInvite() inviterUserName=" + inviterUserName + " inviteeUserName=" + inviteeUserName
-                        + " inviteeFirstName=" + inviteeFirstName + " inviteeLastName=" + inviteeLastName
-                        + " inviteeEmail=" + inviteeEmail + " siteShortName=" + siteShortName + " inviteeSiteRole="
-                        + inviteeSiteRole);
+                    + " inviteeFirstName=" + inviteeFirstName + " inviteeLastName=" + inviteeLastName
+                    + " inviteeEmail=" + inviteeEmail + " siteShortName=" + siteShortName + " inviteeSiteRole="
+                    + inviteeSiteRole);
         }
         //
         // if we have not explicitly been passed an existing user's user name
@@ -1372,7 +1437,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         // 2) handle error conditions -
         // (invitee already has an invitation in progress for the given site,
         // or he/she is already a member of the given site
-        //        
+        //
         if (inviteeUserName == null || inviteeUserName.trim().length() == 0)
         {
 
@@ -1387,7 +1452,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 for (NodeRef personRef : peopleWithInviteeEmail)
                 {
                     Serializable firstNameVal = this.getNodeService().getProperty(personRef,
-                                ContentModel.PROP_FIRSTNAME);
+                            ContentModel.PROP_FIRSTNAME);
                     Serializable lastNameVal = this.getNodeService().getProperty(personRef, ContentModel.PROP_LASTNAME);
 
                     String personFirstName = DefaultTypeConverter.INSTANCE.convert(String.class, firstNameVal);
@@ -1400,14 +1465,14 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                             // got a match on email, lastname, firstname
                             // get invitee user name of that person
                             Serializable userNamePropertyVal = this.getNodeService().getProperty(personRef,
-                                        ContentModel.PROP_USERNAME);
+                                    ContentModel.PROP_USERNAME);
                             inviteeUserName = DefaultTypeConverter.INSTANCE.convert(String.class, userNamePropertyVal);
 
                             if (logger.isDebugEnabled())
                             {
                                 logger
-                                            .debug("not explictly passed username - found matching email, resolved inviteeUserName="
-                                                        + inviteeUserName);
+                                        .debug("not explictly passed username - found matching email, resolved inviteeUserName="
+                                                + inviteeUserName);
                             }
                         }
                     }
@@ -1430,7 +1495,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("not explictly passed username - created new person, inviteeUserName="
-                                + inviteeUserName);
+                            + inviteeUserName);
                 }
             }
         }
@@ -1443,9 +1508,9 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             if (logger.isDebugEnabled())
                 logger.debug("Failed - invitee user is already a member of the site.");
 
-            Object objs[] = { inviteeUserName, inviteeEmail, siteShortName };
+            Object objs[] = {inviteeUserName, inviteeEmail, siteShortName};
             throw new InvitationExceptionUserError("invitation.invite.already_member", objs);
-        }   
+        }
 
         /**
          * throw exception if person is disabled
@@ -1454,8 +1519,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         {
             if (logger.isDebugEnabled())
                 logger.debug("Failed - invitee user is disabled.");
-            
-            Object objs[] = { inviteeUserName, inviteeEmail, siteShortName };
+
+            Object objs[] = {inviteeUserName, inviteeEmail, siteShortName};
             throw new InvitationExceptionUserError("invitation.invite.user_disabled", objs);
         }
 
@@ -1468,9 +1533,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         // user name, then local reference to invitee password will be "null"
         //
         final String initeeUserNameFinal = inviteeUserName;
-        
-        String inviteePassword = created ? AuthenticationUtil.runAs(new RunAsWork<String>()
-        {
+
+        String inviteePassword = created ? AuthenticationUtil.runAs(new RunAsWork<String>() {
             @SuppressWarnings("synthetic-access")
             public String doWork()
             {
@@ -1484,16 +1548,15 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         //
         // Start the invite workflow with inviter, invitee and site properties
         //
-        
-        InvitationWorkflowType type = 
-                created ? InvitationWorkflowType.NOMINATED_EXTERNAL : InvitationWorkflowType.NOMINATED;
+
+        InvitationWorkflowType type = created ? InvitationWorkflowType.NOMINATED_EXTERNAL : InvitationWorkflowType.NOMINATED;
         WorkflowDefinition wfDefinition = getWorkflowDefinition(type);
 
         if (logger.isDebugEnabled())
         {
-           logger.debug("Using workflow definition " + wfDefinition.getId());
+            logger.debug("Using workflow definition " + wfDefinition.getId());
         }
-        
+
         // Get invitee person NodeRef to add as assignee
         NodeRef inviteeNodeRef = personService.getPerson(inviteeUserName);
         SiteInfo siteInfo = this.siteService.getSite(siteShortName);
@@ -1506,10 +1569,10 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         {
             siteDescription = siteDescription.substring(0, 255);
         }
-        
+
         // get the workflow description
         String workflowDescription = generateWorkflowDescription(siteInfo, "invitation.nominated.workflow.description");
-        
+
         // create workflow properties
         Map<QName, Serializable> workflowProps = new HashMap<QName, Serializable>(32);
         workflowProps.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, workflowDescription);
@@ -1536,30 +1599,30 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     @Override
     public ModeratedInvitation updateModeratedInvitation(String inviteeId, String siteShortName, String inviteeComments)
     {
-    	ModeratedInvitation ret = null;
+        ModeratedInvitation ret = null;
 
-    	// find and update the review task with the new property values
-    	WorkflowTask reviewTask = getModeratedInvitationReviewTask(inviteeId, siteShortName);
-    	if(reviewTask == null)
-    	{
-            Object objs[] = { siteShortName, inviteeId };
+        // find and update the review task with the new property values
+        WorkflowTask reviewTask = getModeratedInvitationReviewTask(inviteeId, siteShortName);
+        if (reviewTask == null)
+        {
+            Object objs[] = {siteShortName, inviteeId};
             throw new InvitationExceptionNotFound("invitation.error.not_found_by_invitee", objs);
-    	}
-    	else
-    	{
-        	String invitationId = reviewTask.getPath().getInstance().getId();
+        }
+        else
+        {
+            String invitationId = reviewTask.getPath().getInstance().getId();
 
-        	if(inviteeComments != null)
-        	{
-	        	// update the properties on the review task
-		        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-		        properties.put(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_COMMENTS, inviteeComments);
-		        Date time = new Date();
-		        properties.put(WorkflowModelModeratedInvitation.WF_PROP_MODIFIED_AT, time);
-		        reviewTask = workflowService.updateTask(reviewTask.getId(), properties, null, null);
-        	}
+            if (inviteeComments != null)
+            {
+                // update the properties on the review task
+                Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+                properties.put(WorkflowModelModeratedInvitation.WF_PROP_INVITEE_COMMENTS, inviteeComments);
+                Date time = new Date();
+                properties.put(WorkflowModelModeratedInvitation.WF_PROP_MODIFIED_AT, time);
+                reviewTask = workflowService.updateTask(reviewTask.getId(), properties, null, null);
+            }
 
-	    	ret = getModeratedInvitation(invitationId, reviewTask);
+            ret = getModeratedInvitation(invitationId, reviewTask);
         }
 
         return ret;
@@ -1580,7 +1643,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         // get the workflow tasks
         String workflowId = wfPath.getInstance().getId();
         WorkflowTask startTask = workflowService.getStartTask(workflowId);
-        
+
         // attach empty package to start task, end it and follow with transition
         // that sends out the invite
         if (logger.isDebugEnabled())
@@ -1608,7 +1671,9 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
     /**
      * Return Activiti workflow definition unless Activiti engine is disabled.
-     * @param type the workflow type
+     * 
+     * @param type
+     *            the workflow type
      * @return WorkflowDefinition
      */
     private WorkflowDefinition getWorkflowDefinition(InvitationWorkflowType type)
@@ -1638,25 +1703,25 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
     private String getNominatedDefinitionName()
     {
-        if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
+        if (workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
         {
             return nominatedInvitationWorkflowId;
         }
         throw new IllegalStateException("None of the Workflow engines supported by the InvitationService are currently enabled!");
     }
-    
+
     private String getNominatedExternalDefinitionName()
     {
-        if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
+        if (workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
         {
             return nominatedInvitationExternalWorkflowId;
         }
         throw new IllegalStateException("None of the Workflow engines supported by the InvitationService are currently enabled!");
     }
-    
+
     private String getModeratedDefinitionName()
     {
-        if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
+        if (workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
         {
             return moderatedInvitationWorkflowId;
         }
@@ -1666,7 +1731,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Check that the specified user has manager role over the resource.
      * 
-     * @param userId user id
+     * @param userId
+     *            user id
      * @throws InvitationException
      */
     private void checkManagerRole(String userId, Invitation.ResourceType resourceType, String siteShortName)
@@ -1676,7 +1742,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         if ((inviterRole == null) || (inviterRole.equals(SiteModel.SITE_MANAGER) == false))
         {
 
-            Object objs[] = { userId, siteShortName };
+            Object objs[] = {userId, siteShortName};
             throw new InvitationExceptionForbidden("invitation.invite.not_site_manager", objs);
         }
     }
@@ -1684,7 +1750,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Validator for invitationId
      * 
-     * @param invitationId String
+     * @param invitationId
+     *            String
      */
     private void validateInvitationId(String invitationId)
     {
@@ -1692,7 +1759,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         String[] parts = invitationId.split(ID_SEPERATOR_REGEX);
         if (parts.length != 2)
         {
-            Object objs[] = { invitationId };
+            Object objs[] = {invitationId};
             throw new InvitationExceptionUserError("invitation.error.invalid_inviteId_format", objs);
         }
     }
@@ -1703,18 +1770,19 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     }
 
     /**
-     * NodeServicePolicies.BeforeDeleteNodePolicy Called immediatly prior to
-     * deletion of a web site.
+     * NodeServicePolicies.BeforeDeleteNodePolicy Called immediatly prior to deletion of a web site.
      */
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        if (logger.isDebugEnabled()) { logger.debug("beforeDeleteNode"); }
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("beforeDeleteNode");
+        }
 
         final NodeRef siteRef = nodeRef;
 
         // Run as system user
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
             @SuppressWarnings("synthetic-access")
             public Object doWork() throws Exception
             {
@@ -1725,40 +1793,39 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                     String siteName = (String) nodeService.getProperty(siteRef, ContentModel.PROP_NAME);
                     if (siteName != null)
                     {
-                        long start =0;
+                        long start = 0;
                         if (logger.isDebugEnabled())
                         {
                             logger.debug("Invitation service beforeDeleteNode fired " + type + ", " + siteName);
                             start = System.currentTimeMillis();
                         }
-                        InvitationSearchCriteriaImpl criteria =
-                            getPendingInvitationCriteriaForResource(Invitation.ResourceType.WEB_SITE, siteName);
+                        InvitationSearchCriteriaImpl criteria = getPendingInvitationCriteriaForResource(Invitation.ResourceType.WEB_SITE, siteName);
                         List<String> invitationIds = searchInvitationsForIds(criteria, -1);
-                        
+
                         if (logger.isDebugEnabled())
                         {
                             long end = System.currentTimeMillis();
-                            logger.debug("Invitations found: " + invitationIds.size() + " in "+ ((end-start)/1000) + " seconds");
+                            logger.debug("Invitations found: " + invitationIds.size() + " in " + ((end - start) / 1000) + " seconds");
                             start = System.currentTimeMillis();
                         }
-                        
+
                         // Create the action
                         Action action = actionService.createAction(CancelWorkflowActionExecuter.NAME);
-                        action.setParameterValue(CancelWorkflowActionExecuter.PARAM_WORKFLOW_ID_LIST, (Serializable)invitationIds);
-                                                
+                        action.setParameterValue(CancelWorkflowActionExecuter.PARAM_WORKFLOW_ID_LIST, (Serializable) invitationIds);
+
                         // Cancel the workflows asynchronously - see ALF-11872 (svn rev 32936 for details on why this is asynchronous).
                         actionService.executeAction(action, null, false, true);
-                        
+
                         if (logger.isDebugEnabled())
                         {
                             long end = System.currentTimeMillis();
-                            logger.debug("Invitation cancellations requested: " + invitationIds.size() + " in "+ (end-start) + " ms");
+                            logger.debug("Invitation cancellations requested: " + invitationIds.size() + " in " + (end - start) + " ms");
                         }
                     }
                 }
                 else if (dictionaryService.isSubClass(type, ContentModel.TYPE_PERSON))
                 {
-                 // this is a user being deleted.
+                    // this is a user being deleted.
                     String userName = (String) nodeService.getProperty(siteRef, ContentModel.PROP_USERNAME);
                     invalidateTasksByUser(userName);
                 }
@@ -1766,7 +1833,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             }
         }, AuthenticationUtil.SYSTEM_USER_NAME);
     }
-    
+
     private void invalidateTasksByUser(String userName) throws AuthenticationException
     {
         List<Invitation> listForInvitee = listPendingInvitationsForInvitee(userName);
@@ -1775,12 +1842,14 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             cancel(inv.getInviteId());
         }
     }
-    
+
     /**
      * Generates a description for the workflow
      * 
-     * @param siteInfo The site to generate a description for
-     * @param messageId The resource bundle key to use for the description 
+     * @param siteInfo
+     *            The site to generate a description for
+     * @param messageId
+     *            The resource bundle key to use for the description
      * @return The workflow description
      */
     protected String generateWorkflowDescription(SiteInfo siteInfo, String messageId)
@@ -1790,20 +1859,21 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         {
             siteTitle = siteInfo.getShortName();
         }
-        
+
         Locale locale = (Locale) this.nodeService.getProperty(siteInfo.getNodeRef(), ContentModel.PROP_LOCALE);
-        
+
         return I18NUtil.getMessage(messageId, locale == null ? I18NUtil.getLocale() : locale, siteTitle);
     }
-    
+
     /**
-     * @param sendEmails the sendEmails to set
+     * @param sendEmails
+     *            the sendEmails to set
      */
     public void setSendEmails(boolean sendEmails)
     {
         this.sendEmails = sendEmails;
     }
-    
+
     /**
      * @return true if emails are sent on invite.
      */
@@ -1816,41 +1886,43 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     {
         this.sysAdminParams = sysAdminParams;
     }
-    
+
     public void setTemplateService(TemplateService templateService)
     {
-       this.templateService = templateService;
+        this.templateService = templateService;
     }
 
     /**
-     * @param messageService the messageService to set
+     * @param messageService
+     *            the messageService to set
      */
     public void setMessageService(MessageService messageService)
     {
         this.messageService = messageService;
     }
-    
+
     /**
-     * @param repositoryHelper the repositoryHelper to set
+     * @param repositoryHelper
+     *            the repositoryHelper to set
      */
     public void setRepositoryHelper(Repository repositoryHelper)
     {
         this.repositoryHelper = repositoryHelper;
     }
-    
+
     /**
-     * @param serviceRegistry the serviceRegistry to set
+     * @param serviceRegistry
+     *            the serviceRegistry to set
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
     }
-    
+
     @Override
     public void acceptNominatedInvitation(String siteName, final String invitee, String role, String inviter)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             public Void doWork() throws Exception
             {
                 if (authenticationService.isAuthenticationMutable(invitee))
@@ -1862,15 +1934,16 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         });
         addSiteMembership(invitee, siteName, role, inviter, false);
     }
-    
+
     @Override
     public void approveModeratedInvitation(String siteName, String invitee, String role, String reviewer)
     {
         addSiteMembership(invitee, siteName, role, reviewer, false);
     }
-	
+
     /**
      * Add Invitee to Site with the site role that the inviter "started" the invite process with
+     * 
      * @param invitee
      * @param siteName
      * @param role
@@ -1880,8 +1953,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      */
     public void addSiteMembership(final String invitee, final String siteName, final String role, final String runAsUser, final boolean overrideExisting)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             public Void doWork() throws Exception
             {
                 if (overrideExisting || !siteService.isMember(siteName, invitee))
@@ -1890,7 +1962,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 }
                 return null;
             }
-            
+
         }, runAsUser);
     }
 
@@ -1940,14 +2012,13 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     @Override
     public void deleteAuthenticationIfUnused(final String invitee, final String currentInviteId)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork() throws Exception
             {
                 // see if there are any pending invites (invite workflow instances with invitePending task in-progress)
                 // outstanding for given invitee user name
                 List<Invitation> pendingInvites = listPendingInvitationsForInvitee(invitee);
-                boolean invitesPending = CollectionUtils.isEmpty(pendingInvites)==false;
+                boolean invitesPending = CollectionUtils.isEmpty(pendingInvites) == false;
                 if (invitesPending && pendingInvites.size() == 1)
                 {
                     Invitation pendingInvite = pendingInvites.get(0);
@@ -1956,9 +2027,9 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                         invitesPending = false;
                     }
                 }
-                
+
                 NodeRef person = personService.getPersonOrNull(invitee);
-                
+
                 // if invitee's user account is still disabled and there are no pending invites outstanding
                 // for the invitee, then remove the account and delete the invitee's person node
                 if (person != null
@@ -1969,7 +2040,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 {
                     // delete the invitee's user account
                     authenticationService.deleteAuthentication(invitee);
-                    
+
                     // delete the invitee's person node if one exists
                     if (personService.personExists(invitee))
                     {
@@ -1980,16 +2051,16 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     @Override
     public void sendNominatedInvitation(String inviteId, Map<String, Object> executionVariables)
     {
         sendNominatedInvitation(
                 inviteId, SendNominatedInviteDelegate.EMAIL_TEMPLATE_XPATH, SendNominatedInviteDelegate.EMAIL_SUBJECT_KEY, executionVariables);
     }
-    
+
     @Override
-    public void sendNominatedInvitation(String inviteId, String emailTemplateXpath, 
+    public void sendNominatedInvitation(String inviteId, String emailTemplateXpath,
             String emailSubjectKey, Map<String, Object> executionVariables)
     {
         sendInviteEmail(inviteNominatedSender, SEND_INVITE_NOMINATED_PROP_NAMES, inviteId, emailTemplateXpath, emailSubjectKey, executionVariables);
@@ -2013,13 +2084,12 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
         inviteSender.sendMail(emailTemplateXpath, emailSubjectKey, properties);
     }
-    
 
     @Override
     public void sendModeratedInvitation(String inviteId, String emailTemplateXpath, String emailSubjectKey, Map<String, Object> executionVariables)
     {
         sendInviteEmail(inviteModeratedSender, SEND_INVITE_MODERATED_PROP_NAMES, inviteId, emailTemplateXpath, emailSubjectKey, executionVariables);
-        
+
     }
 
     private String getPackageRef(Map<String, Object> executionVariables)
@@ -2029,7 +2099,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         String packageRef = packageNode.getNodeRef().toString();
         return packageRef;
     }
-    
+
     @Override
     public void cancelInvitation(String siteName, String invitee, String inviteId, String currentInviteId)
     {
@@ -2037,38 +2107,44 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         {
             String currentUserName = authenticationService.getCurrentUserName();
             String currentUserSiteRole = siteService.getMembersRole(siteName, currentUserName);
-            if (SiteModel.SITE_MANAGER.equals(currentUserSiteRole)== false)
+            if (SiteModel.SITE_MANAGER.equals(currentUserSiteRole) == false)
             {
                 // The current user is not the site manager
                 Object[] args = {currentUserName, inviteId, siteName};
                 throw new InvitationExceptionForbidden(MSG_NOT_SITE_MANAGER, args);
             }
         }
-        
+
         // Clean up invitee's user account and person node if they are not in use i.e.
         // account is still disabled and there are no pending invites outstanding for the
         // invitee
         deleteAuthenticationIfUnused(invitee, currentInviteId);
     }
-    
+
     @SuppressWarnings("unchecked")
     private Map<String, String> makePropertiesFromContextVariables(Map<?, ?> executionVariables, Collection<String> propertyNames)
     {
         return CollectionUtils.filterKeys((Map<String, String>) executionVariables, CollectionUtils.containsFilter(propertyNames));
     }
 
-     /**
+    /**
      * Start the invitation process for a ModeratedInvitation
      *
-     * @param inviteeComments why does the invitee want access to the resource ?
-     * @param inviteeUserName who is to be invited
-     * @param resourceType Invitation .ResourceType what resource type ?
-     * @param resourceName which resource
-     * @param inviteeRole which role ?
-     * @param clientName which client
+     * @param inviteeComments
+     *            why does the invitee want access to the resource ?
+     * @param inviteeUserName
+     *            who is to be invited
+     * @param resourceType
+     *            Invitation .ResourceType what resource type ?
+     * @param resourceName
+     *            which resource
+     * @param inviteeRole
+     *            which role ?
+     * @param clientName
+     *            which client
      */
     public ModeratedInvitation inviteModerated(String inviteeComments, String inviteeUserName,
-                                               Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String clientName)
+            Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String clientName)
     {
         if (resourceType == Invitation.ResourceType.WEB_SITE)
         {
@@ -2083,7 +2159,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * @return the new moderated invitation
      */
     private ModeratedInvitation startModeratedInvite(String inviteeComments, String inviteeUserName,
-                                                     Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String clientName)
+            Invitation.ResourceType resourceType, String resourceName, String inviteeRole, String clientName)
     {
         SiteInfo siteInfo = siteService.getSite(resourceName);
 
@@ -2092,7 +2168,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             if (logger.isDebugEnabled())
                 logger.debug("Failed - invitee user is already a member of the site.");
 
-            Object objs[] = { inviteeUserName, "", resourceName };
+            Object objs[] = {inviteeUserName, "", resourceName};
             throw new InvitationExceptionUserError("invitation.invite.already_member", objs);
         }
 
@@ -2111,11 +2187,11 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         workflowProps.put(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE, resourceType.toString());
 
         workflowProps.put(WorkflowModelModeratedInvitation.WF_PROP_CLIENT_NAME, clientName);
-        if(clientName != null && clientAppConfig.getClient(clientName) != null)
+        if (clientName != null && clientAppConfig.getClient(clientName) != null)
         {
             ClientAppConfig.ClientApp client = clientAppConfig.getClient(clientName);
             workflowProps.put(WorkflowModelModeratedInvitation.WF_TEMPLATE_ASSETS_URL, client.getTemplateAssetsUrl());
-            workflowProps.put(WorkflowModelModeratedInvitation.WF_WORKSPACE_URL,  client.getProperty("workspaceUrl"));
+            workflowProps.put(WorkflowModelModeratedInvitation.WF_WORKSPACE_URL, client.getProperty("workspaceUrl"));
         }
 
         // get the moderated workflow

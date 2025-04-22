@@ -27,16 +27,12 @@ package org.alfresco.repo.audit.extractor;
 
 import java.io.Serializable;
 
-import org.alfresco.api.AlfrescoPublicApi;   
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
- * Interface for Audit data value extractors.  These are used to extract auditable values
- * from those arguments, return values, exceptions and any other value passed into the audit
- * components for recording.
+ * Interface for Audit data value extractors. These are used to extract auditable values from those arguments, return values, exceptions and any other value passed into the audit components for recording.
  * <p/>
- * The framework will first determine if data passed into the instance is {@link #isSupported(Serializable) supported}
- * and will then pass it in for {@link #extractData(Serializable) conversion} to the type that will be
- * recorded.
+ * The framework will first determine if data passed into the instance is {@link #isSupported(Serializable) supported} and will then pass it in for {@link #extractData(Serializable) conversion} to the type that will be recorded.
  * 
  * @author Derek Hulley
  * @since 3.2
@@ -47,17 +43,20 @@ public interface DataExtractor
     /**
      * Determines if the extractor will be able to pull any data from the given value.
      * 
-     * @param data          the data that might be useful to this extractor (could be <tt>null</tt>)
-     * @return              Returns <tt>true</tt> if the data is meaningful to this extractor
+     * @param data
+     *            the data that might be useful to this extractor (could be <tt>null</tt>)
+     * @return Returns <tt>true</tt> if the data is meaningful to this extractor
      */
     public boolean isSupported(Serializable data);
-    
+
     /**
      * Convert an value passed into the audit components into a value to be recorded.
      * 
-     * @param value                 the source data
-     * @return                      the extracted data including <tt>null</tt>
-     * @throws Throwable            All errors will be handled by the calling framework
+     * @param value
+     *            the source data
+     * @return the extracted data including <tt>null</tt>
+     * @throws Throwable
+     *             All errors will be handled by the calling framework
      */
     public Serializable extractData(Serializable value) throws Throwable;
 }

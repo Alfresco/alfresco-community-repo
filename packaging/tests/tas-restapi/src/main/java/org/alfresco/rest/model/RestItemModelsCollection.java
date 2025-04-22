@@ -25,30 +25,16 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.RestModels;
+import static org.alfresco.utility.report.log.Step.STEP;
 
 import java.util.List;
 
-import static org.alfresco.utility.report.log.Step.STEP;
+import org.alfresco.rest.core.RestModels;
 
 /**
  * Handles collection of Processes
  *
- * Example:
- *  "entries": [
-      {
-        "entry": {
-          "createdAt": "2016-10-13T11:21:34.621+0000",
-          "size": 19,
-          "createdBy": "admin",
-          "modifiedAt": "2016-10-13T11:21:38.338+0000",
-          "name": "file-yCQFYpLniWAzkcR.txt",
-          "modifiedBy": "User-cchKFZoNIAfZXXn",
-          "id": "ffb7178f-fc11-41c9-8c40-df6523ad917f",
-          "mimeType": "text/plain"
-        }
-      }
-    ]
+ * Example: "entries": [ { "entry": { "createdAt": "2016-10-13T11:21:34.621+0000", "size": 19, "createdBy": "admin", "modifiedAt": "2016-10-13T11:21:38.338+0000", "name": "file-yCQFYpLniWAzkcR.txt", "modifiedBy": "User-cchKFZoNIAfZXXn", "id": "ffb7178f-fc11-41c9-8c40-df6523ad917f", "mimeType": "text/plain" } } ]
  */
 public class RestItemModelsCollection extends RestModels<RestItemModel, RestItemModelsCollection>
 {
@@ -57,7 +43,7 @@ public class RestItemModelsCollection extends RestModels<RestItemModel, RestItem
         STEP(String.format("REST API: Get process item entry with name '%s'", name));
         List<RestItemModel> processItemsList = getEntries();
 
-        for (RestItemModel item: processItemsList)
+        for (RestItemModel item : processItemsList)
         {
             if (item.onModel().getName().equals(name))
             {
@@ -66,4 +52,4 @@ public class RestItemModelsCollection extends RestModels<RestItemModel, RestItem
         }
         return null;
     }
-}    
+}

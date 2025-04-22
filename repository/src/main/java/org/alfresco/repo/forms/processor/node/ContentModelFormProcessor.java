@@ -44,6 +44,12 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.forms.Field;
@@ -74,21 +80,15 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * Abstract FormProcessor implementation that provides common functionality for
- * form processors that deal with Alfresco content models i.e. types and nodes.
+ * Abstract FormProcessor implementation that provides common functionality for form processors that deal with Alfresco content models i.e. types and nodes.
  * 
  * @author Gavin Cornwell
  * @author Nick Smith
  */
 public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
-            FilteredFormProcessor<ItemType, PersistType>
+        FilteredFormProcessor<ItemType, PersistType>
 {
     /** Services */
     protected NodeService nodeService;
@@ -98,37 +98,31 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     protected DictionaryService dictionaryService;
 
     protected NamespaceService namespaceService;
-    
+
     protected ContentService contentService;
-    
+
     protected PermissionService permissionService;
 
     /**
-     * A regular expression which can be used to match property names. These
-     * names will look like <code>"prop_cm_name"</code>. The pattern can also be
-     * used to extract the "cm" and the "name" parts.
+     * A regular expression which can be used to match property names. These names will look like <code>"prop_cm_name"</code>. The pattern can also be used to extract the "cm" and the "name" parts.
      */
     protected Pattern propertyNamePattern = Pattern.compile(PROP_DATA_PREFIX + "([a-zA-Z0-9-]+)_(.*)");
 
     /**
-     * A regular expression which can be used to match tranisent property names.
-     * These names will look like <code>"prop_name"</code>. The pattern can also
-     * be used to extract the "name" part.
+     * A regular expression which can be used to match tranisent property names. These names will look like <code>"prop_name"</code>. The pattern can also be used to extract the "name" part.
      */
     protected Pattern transientPropertyPattern = Pattern.compile(PROP_DATA_PREFIX + "(.*){1}?");
 
     /**
-     * A regular expression which can be used to match association names. These
-     * names will look like <code>"assoc_cm_references_added"</code>. The
-     * pattern can also be used to extract the "cm", the "name" and the suffix
-     * parts.
+     * A regular expression which can be used to match association names. These names will look like <code>"assoc_cm_references_added"</code>. The pattern can also be used to extract the "cm", the "name" and the suffix parts.
      */
     protected Pattern associationNamePattern = Pattern.compile(ASSOC_DATA_PREFIX + "([a-zA-Z0-9-]+)_(.*)(_[a-zA-Z]+)");
 
     /**
      * Sets the node service
      * 
-     * @param nodeService The NodeService instance
+     * @param nodeService
+     *            The NodeService instance
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -138,7 +132,8 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     /**
      * Sets the file folder service
      * 
-     * @param fileFolderService The FileFolderService instance
+     * @param fileFolderService
+     *            The FileFolderService instance
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
@@ -148,7 +143,8 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     /**
      * Sets the data dictionary service
      * 
-     * @param dictionaryService The DictionaryService instance
+     * @param dictionaryService
+     *            The DictionaryService instance
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -158,27 +154,30 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     /**
      * Sets the namespace service
      * 
-     * @param namespaceService The NamespaceService instance
+     * @param namespaceService
+     *            The NamespaceService instance
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * Sets the content service
      * 
-     * @param contentService The ContentService instance
+     * @param contentService
+     *            The ContentService instance
      */
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
     }
-    
+
     /**
      * Sets the content service
      * 
-     * @param permissionService The PermissionService instance
+     * @param permissionService
+     *            The PermissionService instance
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -206,8 +205,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     @Override
     protected List<Field> generateDefaultFields(FormCreationData data, List<String> fieldsToIgnore)
     {
-        DefaultFieldBuilder defaultFieldBuilder = 
-            new DefaultFieldBuilder(data, fieldProcessorRegistry, namespaceService, fieldsToIgnore);
+        DefaultFieldBuilder defaultFieldBuilder = new DefaultFieldBuilder(data, fieldProcessorRegistry, namespaceService, fieldsToIgnore);
         return defaultFieldBuilder.buildDefaultFields();
     }
 
@@ -224,20 +222,20 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         Map<String, Object> transientValues = getTransientValues(item);
         return new ContentModelItemData<ItemType>(item, propDefs, assocDefs, propValues, assocValues, transientValues);
     }
-    
+
     protected List<String> getDefaultIgnoredFields()
     {
         ArrayList<String> fields = new ArrayList<String>(8);
-        
+
         // ignore system properties by default
         fields.add(ContentModel.PROP_NODE_DBID.toPrefixString(this.namespaceService));
         fields.add(ContentModel.PROP_NODE_UUID.toPrefixString(this.namespaceService));
         fields.add(ContentModel.PROP_STORE_IDENTIFIER.toPrefixString(this.namespaceService));
         fields.add(ContentModel.PROP_STORE_PROTOCOL.toPrefixString(this.namespaceService));
-        
+
         // ignore associations that are system maintained
         fields.add(RenditionModel.ASSOC_RENDITION.toPrefixString(this.namespaceService));
-        
+
         return fields;
     }
 
@@ -257,8 +255,10 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     /**
      * Persists the given FormData on the given NodeRef
      * 
-     * @param nodeRef The NodeRef to persist the form data on
-     * @param data The FormData to persist
+     * @param nodeRef
+     *            The NodeRef to persist the form data on
+     * @param data
+     *            The FormData to persist
      */
     protected void persistNode(NodeRef nodeRef, FormData data)
     {
@@ -314,14 +314,19 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     /**
      * Processes the given field data for persistence as a property.
      * 
-     * @param nodeRef The NodeRef to persist the properties on
-     * @param propDefs Map of PropertyDefinition's for the node being persisted
-     * @param fieldData Data to persist for the property
-     * @param propsToPersist Map of properties to be persisted
-     * @param data The FormData to persist
+     * @param nodeRef
+     *            The NodeRef to persist the properties on
+     * @param propDefs
+     *            Map of PropertyDefinition's for the node being persisted
+     * @param fieldData
+     *            Data to persist for the property
+     * @param propsToPersist
+     *            Map of properties to be persisted
+     * @param data
+     *            The FormData to persist
      */
     protected void processPropertyPersist(NodeRef nodeRef, Map<QName, PropertyDefinition> propDefs,
-                FieldData fieldData, Map<QName, Serializable> propsToPersist, FormData data)
+            FieldData fieldData, Map<QName, Serializable> propsToPersist, FormData data)
     {
         if (getLogger().isDebugEnabled())
             getLogger().debug("Processing field " + fieldData + " for property persistence");
@@ -379,7 +384,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                             {
                                 // if value is a String convert to List of
                                 // String
-                                List<String> list = Arrays.asList(((String)value).split(",", -1));
+                                List<String> list = Arrays.asList(((String) value).split(",", -1));
 
                                 // persist the List
                                 value = list;
@@ -423,8 +428,8 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                     {
                         // make sure empty strings stay as empty strings,
                         // everything else should be represented as null
-                        if (!propDef.getDataType().getName().equals(DataTypeDefinition.TEXT) && 
-                            !propDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
+                        if (!propDef.getDataType().getName().equals(DataTypeDefinition.TEXT) &&
+                                !propDef.getDataType().getName().equals(DataTypeDefinition.MLTEXT))
                         {
                             value = null;
                         }
@@ -493,13 +498,16 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     /**
      * Processes the given field data for persistence as an association.
      * 
-     * @param nodeRef The NodeRef to persist the associations on
-     * @param fieldData Data to persist for the associations
-     * @param assocCommands List of associations to be persisted
+     * @param nodeRef
+     *            The NodeRef to persist the associations on
+     * @param fieldData
+     *            Data to persist for the associations
+     * @param assocCommands
+     *            List of associations to be persisted
      */
     protected void processAssociationPersist(NodeRef nodeRef, Map<QName, AssociationDefinition> assocDefs,
-                Map<QName, ChildAssociationDefinition> childAssocDefs, FieldData fieldData,
-                List<AbstractAssocCommand> assocCommands)
+            Map<QName, ChildAssociationDefinition> childAssocDefs, FieldData fieldData,
+            List<AbstractAssocCommand> assocCommands)
     {
         if (getLogger().isDebugEnabled())
             getLogger().debug("Processing field " + fieldData + " for association persistence");
@@ -528,7 +536,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             {
                 // Is it defined on any other type?
                 AssociationDefinition assocDefFromDictionary = this.dictionaryService.getAssociation(fullQName);
-                
+
                 // If the association is defined on any *aspect* type...
                 if (assocDefFromDictionary != null && assocDefFromDictionary.getSourceClass().isAspect())
                 {
@@ -544,7 +552,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                     {
                         getLogger().warn("Ignoring field '" + fieldName + "' as a valid association definition can not be found");
                     }
-                    
+
                     return;
                 }
             }
@@ -565,12 +573,12 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                             if (assocDef.isChild())
                             {
                                 assocCommands.add(new AddChildAssocCommand(nodeRef, new NodeRef(nextTargetNode),
-                                            fullQName));
+                                        fullQName));
                             }
                             else
                             {
-                                assocCommands.add(new AddAssocCommand(nodeRef, new NodeRef(nextTargetNode), 
-                                            fullQName));
+                                assocCommands.add(new AddAssocCommand(nodeRef, new NodeRef(nextTargetNode),
+                                        fullQName));
                             }
                         }
                         else if (assocSuffix.equals(ASSOC_DATA_REMOVED_SUFFIX))
@@ -578,12 +586,12 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                             if (assocDef.isChild())
                             {
                                 assocCommands.add(new RemoveChildAssocCommand(nodeRef, new NodeRef(nextTargetNode),
-                                            fullQName));
+                                        fullQName));
                             }
                             else
                             {
                                 assocCommands.add(new RemoveAssocCommand(nodeRef, new NodeRef(nextTargetNode),
-                                            fullQName));
+                                        fullQName));
                             }
                         }
                         else
@@ -592,9 +600,10 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                             {
                                 StringBuilder msg = new StringBuilder();
                                 msg.append("Ignoring 'fieldName ").append(fieldName).append(
-                                            "' as it does not have one of the expected suffixes (").append(
-                                            ASSOC_DATA_ADDED_SUFFIX).append(" or ").append(ASSOC_DATA_REMOVED_SUFFIX)
-                                            .append(")");
+                                        "' as it does not have one of the expected suffixes (").append(
+                                                ASSOC_DATA_ADDED_SUFFIX)
+                                        .append(" or ").append(ASSOC_DATA_REMOVED_SUFFIX)
+                                        .append(")");
                                 getLogger().warn(msg.toString());
                             }
                         }
@@ -605,7 +614,7 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                         {
                             StringBuilder msg = new StringBuilder();
                             msg.append("targetNode ").append(nextTargetNode).append(
-                                        " is not a valid NodeRef and has been ignored.");
+                                    " is not a valid NodeRef and has been ignored.");
                             getLogger().warn(msg.toString());
                         }
                     }
@@ -621,12 +630,15 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     /**
      * Persists the given field data as the name property
      * 
-     * @param nodeRef The NodeRef to update the name for
-     * @param fieldData The data representing the new name value
-     * @param propsToPersist Map of properties to be persisted
+     * @param nodeRef
+     *            The NodeRef to update the name for
+     * @param fieldData
+     *            The data representing the new name value
+     * @param propsToPersist
+     *            Map of properties to be persisted
      */
-    protected void processNamePropertyPersist(NodeRef nodeRef, FieldData fieldData, 
-                Map<QName, Serializable> propsToPersist)
+    protected void processNamePropertyPersist(NodeRef nodeRef, FieldData fieldData,
+            Map<QName, Serializable> propsToPersist)
     {
         // determine whether the file folder service can handle the current node
         FileInfo fileInfo = this.fileFolderService.getFileInfo(nodeRef);
@@ -644,10 +656,10 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             catch (FileExistsException fee)
             {
                 // ALF-6739: Notification should be more user friendly on editing with duplicated name.
-                // throwing FormException is not informative, therefore, for now we 
+                // throwing FormException is not informative, therefore, for now we
                 // throw the captured runtime exception back, as it gives us better information.
-                
-                //throw new FormException("Failed to persist field '" + fieldData.getName() + "'", fee);
+
+                // throw new FormException("Failed to persist field '" + fieldData.getName() + "'", fee);
                 throw fee;
             }
             catch (FileNotFoundException fnne)
@@ -659,19 +671,22 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
         {
             // as the file folder service can not be used just set the name property,
             // the node service will deal with the details of renaming.
-            propsToPersist.put(ContentModel.PROP_NAME, (Serializable)fieldData.getValue());
+            propsToPersist.put(ContentModel.PROP_NAME, (Serializable) fieldData.getValue());
         }
     }
 
     /**
      * Persists the given field data as the mimetype property
      * 
-     * @param nodeRef The NodeRef to update the mimetype for
-     * @param fieldData The data representing the new mimetype value
-     * @param propsToPersist Map of properties to be persisted
+     * @param nodeRef
+     *            The NodeRef to update the mimetype for
+     * @param fieldData
+     *            The data representing the new mimetype value
+     * @param propsToPersist
+     *            Map of properties to be persisted
      */
     protected void processMimetypePropertyPersist(NodeRef nodeRef, FieldData fieldData,
-                Map<QName, Serializable> propsToPersist)
+            Map<QName, Serializable> propsToPersist)
     {
         ContentData contentData = (ContentData) propsToPersist.get(ContentModel.PROP_CONTENT);
         if (contentData == null)
@@ -691,12 +706,15 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     /**
      * Persists the given field data as the encoding property
      * 
-     * @param nodeRef The NodeRef to update the encoding for
-     * @param fieldData The data representing the new encoding value
-     * @param propsToPersist Map of properties to be persisted
+     * @param nodeRef
+     *            The NodeRef to update the encoding for
+     * @param fieldData
+     *            The data representing the new encoding value
+     * @param propsToPersist
+     *            Map of properties to be persisted
      */
     protected void processEncodingPropertyPersist(NodeRef nodeRef, FieldData fieldData,
-                Map<QName, Serializable> propsToPersist)
+            Map<QName, Serializable> propsToPersist)
     {
         ContentData contentData = (ContentData) propsToPersist.get(ContentModel.PROP_CONTENT);
         if (contentData == null)
@@ -712,29 +730,33 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             propsToPersist.put(ContentModel.PROP_CONTENT, contentData);
         }
     }
-    
+
     /**
      * Persists the given field data as the content
      * 
-     * @param nodeRef The NodeRef to update the content for
-     * @param fieldData The data representing the new content
-     * @param propsToPersist Map of properties to be persisted
-     * @param data The form data being persisted
+     * @param nodeRef
+     *            The NodeRef to update the content for
+     * @param fieldData
+     *            The data representing the new content
+     * @param propsToPersist
+     *            Map of properties to be persisted
+     * @param data
+     *            The form data being persisted
      */
     protected void processContentPropertyPersist(NodeRef nodeRef, FieldData fieldData,
-                Map<QName, Serializable> propsToPersist, FormData data)
+            Map<QName, Serializable> propsToPersist, FormData data)
     {
         ContentWriter writer = this.contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         ContentData contentData = null;
-        
+
         if (writer != null)
         {
             // determine whether there is any content for the node yet i.e. it's a create
             boolean defaultMimetypeRequired = (this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT) == null);
-            
+
             // write the content
-            writer.putContent((String)fieldData.getValue());
-            
+            writer.putContent((String) fieldData.getValue());
+
             // if there was no content set a sensible default mimetype if necessary
             if (defaultMimetypeRequired)
             {
@@ -757,19 +779,19 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
                         contentData = ContentData.setMimetype(contentData, determineDefaultMimetype(data));
                     }
                 }
-                
+
             }
             else
             {
                 contentData = (ContentData) this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-                
+
                 if (contentData != null)
                 {
                     // if the ContentData object already exists in propsToPersist extract the mimetype
                     // and encoding and set on the ContentData object just retrieved
                     if (propsToPersist.containsKey(ContentModel.PROP_CONTENT))
                     {
-                        ContentData mimetypeEncoding = (ContentData)propsToPersist.get(ContentModel.PROP_CONTENT);
+                        ContentData mimetypeEncoding = (ContentData) propsToPersist.get(ContentModel.PROP_CONTENT);
                         contentData = ContentData.setMimetype(contentData, mimetypeEncoding.getMimetype());
                         contentData = ContentData.setEncoding(contentData, mimetypeEncoding.getEncoding());
                     }
@@ -783,35 +805,34 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
             }
         }
     }
-    
+
     /**
-     * Looks through the form data for the 'mimetype' transient field
-     * and returns it's value if found, otherwise the default 'text/plain'
-     * is returned
+     * Looks through the form data for the 'mimetype' transient field and returns it's value if found, otherwise the default 'text/plain' is returned
      * 
-     * @param data Form data being persisted
+     * @param data
+     *            Form data being persisted
      * @return The default mimetype
      */
     protected String determineDefaultMimetype(FormData data)
     {
         String mimetype = DEFAULT_CONTENT_MIMETYPE;
-        
+
         if (data != null)
         {
             FieldData mimetypeField = data.getFieldData(PROP_DATA_PREFIX + MimetypeFieldProcessor.KEY);
             if (mimetypeField != null)
             {
-                String mimetypeFieldValue = (String)mimetypeField.getValue();
+                String mimetypeFieldValue = (String) mimetypeField.getValue();
                 if (mimetypeFieldValue != null && mimetypeFieldValue.length() > 0)
                 {
                     mimetype = mimetypeFieldValue;
                 }
             }
         }
-        
+
         return mimetype;
     }
-    
+
 }
 
 /**
@@ -835,10 +856,10 @@ abstract class AbstractAssocCommand
     }
 
     /**
-     * This method should use the specified nodeService reference to effect the
-     * update to the supplied associations.
+     * This method should use the specified nodeService reference to effect the update to the supplied associations.
      * 
-     * @param nodeService NodeService
+     * @param nodeService
+     *            NodeService
      */
     protected abstract void updateAssociations(NodeService nodeService);
 }
@@ -909,7 +930,7 @@ class RemoveAssocCommand extends AbstractAssocCommand
             {
                 StringBuilder msg = new StringBuilder();
                 msg.append("Attempt to remove non-existent association prevented. ").append(sourceNodeRef).append("|")
-                            .append(targetNodeRef).append(assocQName);
+                        .append(targetNodeRef).append(assocQName);
                 logger.warn(msg.toString());
             }
             return;
@@ -949,7 +970,7 @@ class AddChildAssocCommand extends AbstractAssocCommand
                 return;
             }
         }
-        
+
         // We are following the behaviour of the JSF client here in using the same
         // QName value for the 3rd and 4th parameters in the below call.
         nodeService.addChild(sourceNodeRef, targetNodeRef, assocQName, assocQName);
@@ -989,7 +1010,7 @@ class RemoveChildAssocCommand extends AbstractAssocCommand
             {
                 StringBuilder msg = new StringBuilder();
                 msg.append("Attempt to remove non-existent child association prevented. ").append(sourceNodeRef)
-                            .append("|").append(targetNodeRef).append(assocQName);
+                        .append("|").append(targetNodeRef).append(assocQName);
                 logger.warn(msg.toString());
             }
             return;

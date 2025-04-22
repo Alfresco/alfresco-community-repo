@@ -33,5 +33,8 @@
 
    <!-- content cleanser -->
    <bean id="contentCleanser.522022M" class="org.alfresco.module.org_alfresco_module_rm.content.cleanser.ContentCleanser522022M"/>
+   
+    <!-- content cleanser -->
+   <bean id="contentCleanser.SevenPass" class="org.alfresco.module.org_alfresco_module_rm.content.cleanser.ContentCleanserSevenPass"/>
 
 </beans>

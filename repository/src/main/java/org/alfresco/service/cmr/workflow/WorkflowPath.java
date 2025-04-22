@@ -32,8 +32,7 @@ import org.alfresco.api.AlfrescoPublicApi;
  * 
  * Represents a path within an "in-flight" workflow instance.
  * 
- * Simple workflows consists of a single "root" path.  Multiple paths occur when a workflow
- * instance branches, therefore more than one concurrent path is taken.
+ * Simple workflows consists of a single "root" path. Multiple paths occur when a workflow instance branches, therefore more than one concurrent path is taken.
  * 
  * @author davidc
  */
@@ -43,19 +42,19 @@ public class WorkflowPath
     /** Unique id of Workflow Path */
     @Deprecated
     public String id;
-    
+
     /** Workflow Instance this path is part of */
     @Deprecated
     public WorkflowInstance instance;
-    
+
     /** The Workflow Node the path is at */
     @Deprecated
     public WorkflowNode node;
-    
+
     /** Is the path still active? */
     @Deprecated
     public boolean active;
-    
+
     public WorkflowPath(String id, WorkflowInstance instance, WorkflowNode node, boolean active)
     {
         this.id = id;
@@ -97,7 +96,7 @@ public class WorkflowPath
     }
 
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     public String toString()

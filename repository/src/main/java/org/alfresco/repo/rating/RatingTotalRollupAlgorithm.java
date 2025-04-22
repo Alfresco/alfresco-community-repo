@@ -34,8 +34,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * An implementation of {@link AbstractRatingRollupAlgorithm} which calculates the total (sum) of all
- * ratings in a given scheme.
+ * An implementation of {@link AbstractRatingRollupAlgorithm} which calculates the total (sum) of all ratings in a given scheme.
  * 
  * @author Neil McErlean
  * @since 3.5
@@ -48,11 +47,11 @@ public class RatingTotalRollupAlgorithm extends AbstractRatingRollupAlgorithm
     {
         super(ROLLUP_NAME);
     }
-    
+
     public Float recalculate(NodeRef ratedNode)
     {
         float result = 0;
-        
+
         // If the node is not rateable, then it has no ratings in any scheme.
         if (nodeService.hasAspect(ratedNode, ContentModel.ASPECT_RATEABLE))
         {
@@ -68,7 +67,7 @@ public class RatingTotalRollupAlgorithm extends AbstractRatingRollupAlgorithm
                 }
             }
         }
-        
+
         return result;
     }
 }

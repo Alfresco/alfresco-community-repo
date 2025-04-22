@@ -25,6 +25,18 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Assoc;
@@ -49,17 +61,6 @@ import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author janv
@@ -69,8 +70,7 @@ public class AbstractNodeRelation implements InitializingBean
     // excluded namespaces (assoc types)
     protected static final List<String> EXCLUDED_NS = Arrays.asList(NamespaceService.SYSTEM_MODEL_1_0_URI);
 
-    private final static Set<String> WHERE_PARAMS_ASSOC_TYPE =
-            new HashSet<>(Arrays.asList(new String[] {Nodes.PARAM_ASSOC_TYPE}));
+    private final static Set<String> WHERE_PARAMS_ASSOC_TYPE = new HashSet<>(Arrays.asList(new String[]{Nodes.PARAM_ASSOC_TYPE}));
 
     protected ServiceRegistry sr;
     protected NodeService nodeService;
@@ -137,7 +137,7 @@ public class AbstractNodeRelation implements InitializingBean
 
             QName assocTypeQName = assocRef.getTypeQName();
 
-            if (! EXCLUDED_NS.contains(assocTypeQName.getNamespaceURI()))
+            if (!EXCLUDED_NS.contains(assocTypeQName.getNamespaceURI()))
             {
                 String assocType = qnameMap.get(assocTypeQName);
                 if (assocType == null)
@@ -151,7 +151,7 @@ public class AbstractNodeRelation implements InitializingBean
                 collection.add(node);
             }
         }
-        
+
         return listPage(collection, parameters.getPaging());
     }
 
@@ -185,15 +185,15 @@ public class AbstractNodeRelation implements InitializingBean
                     }
 
                     node.setAssociation(new AssocChild(assocType, childAssocRef.isPrimary()));
-                    
+
                     collection.add(node);
                 }
             }
         }
-        
+
         return listPage(collection, parameters.getPaging());
     }
-    
+
     protected CollectionWithPagingInfo listPage(List result, Paging paging)
     {
         // return 'page' of results (note: depends on in-built/natural sort order of results)
@@ -202,11 +202,11 @@ public class AbstractNodeRelation implements InitializingBean
         int pageEnd = skipCount + pageSize;
 
         final List page = new ArrayList<>(pageSize);
-        if (result == null) 
+        if (result == null)
         {
             result = Collections.emptyList();
         }
-        
+
         Iterator it = result.iterator();
         for (int counter = 0; counter < pageEnd && it.hasNext(); counter++)
         {

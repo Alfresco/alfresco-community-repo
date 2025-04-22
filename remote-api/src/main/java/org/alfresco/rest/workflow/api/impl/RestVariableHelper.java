@@ -55,38 +55,37 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Helper class for handling conversion between variable representations in rest and raw values
- * used in the Activiti-engine.
+ * Helper class for handling conversion between variable representations in rest and raw values used in the Activiti-engine.
  *
  * @author Frederik Heremans
  */
 public class RestVariableHelper
 {
     private NodeService nodeService;
-    
+
     private NamespaceService namespaceService;
-    
+
     private WorkflowQNameConverter qNameConverter;
-    
+
     private DictionaryService dictionaryService;
-    
+
     public static final Set<String> INTERNAL_PROPERTIES = new HashSet<String>(Arrays.asList(ActivitiConstants.VAR_TENANT_DOMAIN));
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     protected WorkflowQNameConverter getQNameConverter()
     {
         if (qNameConverter == null)
@@ -95,51 +94,57 @@ public class RestVariableHelper
         }
         return qNameConverter;
     }
-    
+
     /**
-     * @param localVariables raw local task variables, can be null.
-     * @param globalVariables raw global taks variables, can be null.
-     * @param startFormTypeDefinition TypeDefinition
-     * @param taskTypeDefinition the typê definition for this task, used to extract types.
+     * @param localVariables
+     *            raw local task variables, can be null.
+     * @param globalVariables
+     *            raw global taks variables, can be null.
+     * @param startFormTypeDefinition
+     *            TypeDefinition
+     * @param taskTypeDefinition
+     *            the typê definition for this task, used to extract types.
      * @return list of {@link TaskVariable}, representing the given raw variables
      */
-    public List<TaskVariable> getTaskVariables(Map<String, Object> localVariables, Map<String, Object> globalVariables, 
+    public List<TaskVariable> getTaskVariables(Map<String, Object> localVariables, Map<String, Object> globalVariables,
             TypeDefinition startFormTypeDefinition, TypeDefinition taskTypeDefinition)
     {
         List<TaskVariable> result = new ArrayList<TaskVariable>();
-        if (localVariables != null && localVariables.size() > 0) 
+        if (localVariables != null && localVariables.size() > 0)
         {
             TypeDefinitionContext context = new TypeDefinitionContext(taskTypeDefinition, getQNameConverter());
             addTaskVariables(result, localVariables, context, VariableScope.LOCAL);
         }
-        
-        if (globalVariables != null && globalVariables.size() > 0) 
+
+        if (globalVariables != null && globalVariables.size() > 0)
         {
             TypeDefinitionContext context = new TypeDefinitionContext(startFormTypeDefinition, getQNameConverter());
             addTaskVariables(result, globalVariables, context, VariableScope.GLOBAL);
         }
-        
+
         return result;
     }
-    
+
     /**
-     * @param variables raw variables
-     * @param typeDefinition the typê definition for the start-task of the process, used to extract types.
+     * @param variables
+     *            raw variables
+     * @param typeDefinition
+     *            the typê definition for the start-task of the process, used to extract types.
      * @return list of {@link Variable}, representing the given raw variables
      */
     public List<Variable> getVariables(Map<String, Object> variables, TypeDefinition typeDefinition)
     {
         List<Variable> result = new ArrayList<Variable>();
         TypeDefinitionContext context = new TypeDefinitionContext(typeDefinition, getQNameConverter());
-        
+
         Variable variable = null;
-        for(Entry<String, Object> entry : variables.entrySet()) 
+        for (Entry<String, Object> entry : variables.entrySet())
         {
-            if(!INTERNAL_PROPERTIES.contains(entry.getKey()))
+            if (!INTERNAL_PROPERTIES.contains(entry.getKey()))
             {
                 variable = new Variable();
                 variable.setName(entry.getKey());
-                
+
                 // Set value and type
                 setVariableValueAndType(variable, entry.getValue(), context);
                 result.add(variable);
@@ -147,24 +152,22 @@ public class RestVariableHelper
         }
         return result;
     }
-    
-    
 
     /**
      * Converts the raw variables to {@link TaskVariable}s and adds them to the given result-list.
      */
     public void addTaskVariables(List<TaskVariable> result, Map<String, Object> variables,
-                TypeDefinitionContext context, VariableScope scope)
+            TypeDefinitionContext context, VariableScope scope)
     {
         TaskVariable variable = null;
-        for(Entry<String, Object> entry : variables.entrySet()) 
+        for (Entry<String, Object> entry : variables.entrySet())
         {
-            if(!INTERNAL_PROPERTIES.contains(entry.getKey()))
+            if (!INTERNAL_PROPERTIES.contains(entry.getKey()))
             {
                 variable = new TaskVariable();
                 variable.setName(entry.getKey());
                 variable.setVariableScope(scope);
-                
+
                 // Set value and type
                 setVariableValueAndType(variable, entry.getValue(), context);
                 result.add(variable);
@@ -173,9 +176,7 @@ public class RestVariableHelper
     }
 
     /**
-     * Sets the variable value with possible conversion to the correct format to be used in the response and sets
-     * the type accordingly. If the variables is defined on the {@link TypeDefinition}, the data-type is used. If it's not
-     * defined, the type is deducted from the raw variable value.
+     * Sets the variable value with possible conversion to the correct format to be used in the response and sets the type accordingly. If the variables is defined on the {@link TypeDefinition}, the data-type is used. If it's not defined, the type is deducted from the raw variable value.
      */
     protected void setVariableValueAndType(Variable variable, Object value, TypeDefinitionContext context)
     {
@@ -199,7 +200,7 @@ public class RestVariableHelper
                     assocDef = dictionaryService.getAssociation(qName);
                 }
             }
-            
+
             if (assocDef != null)
             {
                 // Type of variable is the target class-name
@@ -214,22 +215,22 @@ public class RestVariableHelper
             }
         }
     }
-    
+
     /**
-     * @return object that represents the association value. 
+     * @return object that represents the association value.
      */
     protected Object getAssociationRepresentation(Object value, AssociationDefinition assocDef)
     {
         Object result = null;
-        if(value != null)
+        if (value != null)
         {
-            if(assocDef.isTargetMany()) 
+            if (assocDef.isTargetMany())
             {
                 // Construct list of representations of the nodeRefs
                 List<Object> list = new ArrayList<Object>();
-                if(value instanceof Collection<?>)
+                if (value instanceof Collection<?>)
                 {
-                    for(Object entry : (Collection<?>) value)
+                    for (Object entry : (Collection<?>) value)
                     {
                         list.add(getRepresentationForNodeRef(entry, assocDef.getTargetClass()));
                     }
@@ -249,7 +250,7 @@ public class RestVariableHelper
         }
         return result;
     }
-    
+
     protected Object getSafePropertyValue(Object value)
     {
         if (value instanceof NodeRef)
@@ -283,7 +284,7 @@ public class RestVariableHelper
                 return ((ScriptNode) value).getNodeRef().toString();
             }
         }
-        else if (value instanceof QName) 
+        else if (value instanceof QName)
         {
             return ((QName) value).toPrefixString(namespaceService);
         }
@@ -299,19 +300,19 @@ public class RestVariableHelper
                 value = resultValues;
             }
         }
-        
+
         return value;
     }
-    
-    protected String getRepresentationForNodeRef(Object value, ClassDefinition classDefinition) 
+
+    protected String getRepresentationForNodeRef(Object value, ClassDefinition classDefinition)
     {
         // First, extract the referenced node
         NodeRef ref = null;
-        if(value instanceof NodeRef) 
+        if (value instanceof NodeRef)
         {
             ref = (NodeRef) value;
         }
-        else if(value instanceof ScriptNode)
+        else if (value instanceof ScriptNode)
         {
             ref = ((ScriptNode) value).getNodeRef();
         }
@@ -319,10 +320,10 @@ public class RestVariableHelper
         {
             return (String) value;
         }
-        
-        if(ref != null)
+
+        if (ref != null)
         {
-            if(ContentModel.TYPE_PERSON.equals(classDefinition.getName()))
+            if (ContentModel.TYPE_PERSON.equals(classDefinition.getName()))
             {
                 // Extract username from person and return
                 return (String) nodeService.getProperty(ref, ContentModel.PROP_USERNAME);
@@ -337,68 +338,69 @@ public class RestVariableHelper
             throw new ApiException("Association value did not contian valid nodeRef: " + value);
         }
     }
-    
-    public QName extractTypeFromValue(Object value) {
+
+    public QName extractTypeFromValue(Object value)
+    {
         QName type = null;
-        if(value instanceof Collection<?>)
+        if (value instanceof Collection<?>)
         {
             Collection<?> collection = (Collection<?>) value;
-            if(collection.size() > 0)
+            if (collection.size() > 0)
             {
                 type = extractTypeFromValue(collection.iterator().next());
             }
         }
         else
         {
-            if(value instanceof String) 
+            if (value instanceof String)
             {
                 type = DataTypeDefinition.TEXT;
             }
-            else if(value instanceof Integer)
+            else if (value instanceof Integer)
             {
                 type = DataTypeDefinition.INT;
             }
-            else if(value instanceof Long)
+            else if (value instanceof Long)
             {
                 type = DataTypeDefinition.LONG;
             }
-            else if(value instanceof Double)
+            else if (value instanceof Double)
             {
                 type = DataTypeDefinition.DOUBLE;
             }
-            else if(value instanceof Float)
+            else if (value instanceof Float)
             {
                 type = DataTypeDefinition.FLOAT;
             }
-            else if(value instanceof Date)
+            else if (value instanceof Date)
             {
                 type = DataTypeDefinition.DATETIME;
             }
-            else if(value instanceof Boolean)
+            else if (value instanceof Boolean)
             {
                 type = DataTypeDefinition.BOOLEAN;
             }
-            else if(value instanceof QName)
+            else if (value instanceof QName)
             {
                 type = DataTypeDefinition.QNAME;
             }
-            else if(value instanceof NodeRef || value instanceof ScriptNode)
+            else if (value instanceof NodeRef || value instanceof ScriptNode)
             {
                 type = DataTypeDefinition.NODE_REF;
             }
         }
-       
-        if(type == null)
+
+        if (type == null)
         {
             // Type cannot be determined, revert to default for unknown types
             type = DataTypeDefinition.ANY;
         }
         return type;
     }
-    
+
     public String extractTypeStringFromValue(Object value)
     {
-       QName type = extractTypeFromValue(value);
-       return type.toPrefixString(namespaceService);
+        QName type = extractTypeFromValue(value);
+        return type.toPrefixString(namespaceService);
     }
 }

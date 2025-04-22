@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.lock;
 
-import org.alfresco.api.AlfrescoPublicApi;  
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.namespace.QName;
 
@@ -42,67 +42,74 @@ public class LockAcquisitionException extends AlfrescoRuntimeException
 
     /**
      * <ul>
-     *   <li>1: the qname</li>
-     *   <li>2: the lock token</li>
+     * <li>1: the qname</li>
+     * <li>2: the lock token</li>
      * </ul>
      */
     public static final String ERR_FAILED_TO_ACQUIRE_LOCK = "system.locks.err.failed_to_acquire_lock";
     /**
      * <ul>
-     *   <li>1: the qname</li>
-     *   <li>2: the lock token</li>
+     * <li>1: the qname</li>
+     * <li>2: the lock token</li>
      * </ul>
      */
     public static final String ERR_LOCK_RESOURCE_MISSING = "system.locks.err.lock_resource_missing";
     /**
      * <ul>
-     *   <li>1: the qname</li>
-     *   <li>2: the lock token</li>
-     *   <li>3: the actual update count</li>
-     *   <li>4: the expected update count</li>
+     * <li>1: the qname</li>
+     * <li>2: the lock token</li>
+     * <li>3: the actual update count</li>
+     * <li>4: the expected update count</li>
      * </ul>
      */
     public static final String ERR_LOCK_UPDATE_COUNT = "system.locks.err.lock_update_count";
     /**
      * <ul>
-     *   <li>1: the qname</li>
-     *   <li>2: the lock token</li>
+     * <li>1: the qname</li>
+     * <li>2: the lock token</li>
      * </ul>
      */
     public static final String ERR_FAILED_TO_RELEASE_LOCK = "system.locks.err.failed_to_release_lock";
     /**
      * <ul>
-     *   <li>1: the qname</li>
-     *   <li>2: the lock token</li>
-     *   <li>3: the existing other lock</li>
+     * <li>1: the qname</li>
+     * <li>2: the lock token</li>
+     * <li>3: the existing other lock</li>
      * </ul>
      */
     public static final String ERR_EXCLUSIVE_LOCK_EXISTS = "system.locks.err.excl_lock_exists";
-    
+
     /**
-     * @param lockQName             the lock that was sought
-     * @param lockToken             the lock token being used
+     * @param lockQName
+     *            the lock that was sought
+     * @param lockToken
+     *            the lock token being used
      */
     public LockAcquisitionException(QName lockQName, String lockToken)
     {
-        super(ERR_FAILED_TO_ACQUIRE_LOCK, new Object[] {lockQName, lockToken});
+        super(ERR_FAILED_TO_ACQUIRE_LOCK, new Object[]{lockQName, lockToken});
     }
 
     /**
-     * @param msgId                 one of the message IDs defined
-     * @param args                  the arguments that apply
+     * @param msgId
+     *            one of the message IDs defined
+     * @param args
+     *            the arguments that apply
      */
-    public LockAcquisitionException(String msgId, Object ... args)
+    public LockAcquisitionException(String msgId, Object... args)
     {
         super(msgId, args);
     }
 
     /**
-     * @param cause                 an exception leading up to this
-     * @param msgId                 one of the message IDs defined
-     * @param args                  the arguments that apply
+     * @param cause
+     *            an exception leading up to this
+     * @param msgId
+     *            one of the message IDs defined
+     * @param args
+     *            the arguments that apply
      */
-    public LockAcquisitionException(Throwable cause, String msgId, Object ... args)
+    public LockAcquisitionException(Throwable cause, String msgId, Object... args)
     {
         super(msgId, args, cause);
     }

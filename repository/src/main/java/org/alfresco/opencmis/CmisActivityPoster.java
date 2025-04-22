@@ -35,11 +35,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface CmisActivityPoster
 {
-	void postFileFolderAdded(NodeRef nodeRef);
-    
+    void postFileFolderAdded(NodeRef nodeRef);
+
     void postFileFolderUpdated(boolean isFolder, NodeRef nodeRef);
-    
+
     void postFileFolderDeleted(ActivityInfo activityInfo);
-    
+
     ActivityInfo getActivityInfo(NodeRef nodeRef);
 }

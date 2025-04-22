@@ -39,19 +39,11 @@ import java.util.TreeSet;
 import org.springframework.context.ApplicationContext;
 
 /**
- * A default {@link ChildApplicationContextManager} implementation that manages a 'chain' of
- * {@link ChildApplicationContextFactory} objects, perhaps corresponding to the components of a chained subsystem such
- * as authentication. As with other {@link PropertyBackedBean}s, can be stopped, reconfigured, started and tested. Its
- * one special <code>chain</code> property allows an ordered list of {@link ChildApplicationContextFactory} objects to
- * be managed. This property is a comma separated list with the format:
+ * A default {@link ChildApplicationContextManager} implementation that manages a 'chain' of {@link ChildApplicationContextFactory} objects, perhaps corresponding to the components of a chained subsystem such as authentication. As with other {@link PropertyBackedBean}s, can be stopped, reconfigured, started and tested. Its one special <code>chain</code> property allows an ordered list of {@link ChildApplicationContextFactory} objects to be managed. This property is a comma separated list with the format:
  * <ul>
  * <li>&lt;id1>:&lt;typeName1>,&lt;id2>:&lt;typeName2>,...,&lt;id<i>n</i>>:&lt;typeName<i>n</i>>
  * </ul>
- * See {@link ChildApplicationContextManager} for the meanings of &lt;id> and &lt;typeName>. In the enterprise edition,
- * this property is editable at runtime via JMX. If a new &lt;id> is included in the list then a new
- * {@link ChildApplicationContextFactory} will be brought into existence. Similarly, if one is removed from the list,
- * then the corresponding instance will be destroyed. For Alfresco community edition, the chain is best configured
- * through the method via Spring configuration.
+ * See {@link ChildApplicationContextManager} for the meanings of &lt;id> and &lt;typeName>. In the enterprise edition, this property is editable at runtime via JMX. If a new &lt;id> is included in the list then a new {@link ChildApplicationContextFactory} will be brought into existence. Similarly, if one is removed from the list, then the corresponding instance will be destroyed. For Alfresco community edition, the chain is best configured through the method via Spring configuration.
  * 
  * @author dward
  */
@@ -88,8 +80,7 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
     }
 
     /**
-     * Configures the default chain of {@link ChildApplicationContextFactory} instances. May be set on initialization by
-     * the Spring container.
+     * Configures the default chain of {@link ChildApplicationContextFactory} instances. May be set on initialization by the Spring container.
      * 
      * @param defaultChain
      *            a comma separated list in the following format:
@@ -102,20 +93,18 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
         this.defaultChain = defaultChain;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#getDescription(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#getDescription(java.lang.String) */
     @Override
     public String getDescription(String name)
     {
         return "Comma separated list of name:type pairs";
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#destroy(boolean)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#destroy(boolean) */
     @Override
     public void destroy(boolean permanent)
     {
@@ -167,18 +156,17 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#createInitialState()
-     */
+     * 
+     * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#createInitialState() */
     @Override
     protected PropertyBackedBeanState createInitialState() throws IOException
     {
         return new ApplicationContextManagerState(this.defaultChain, this.defaultTypeName);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.ChildApplicationContextManager#getInstanceIds()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.ChildApplicationContextManager#getInstanceIds() */
     public Collection<String> getInstanceIds()
     {
         this.lock.readLock().lock();
@@ -192,10 +180,9 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.management.ChildApplicationContextManager#getApplicationContext(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.management.ChildApplicationContextManager#getApplicationContext(java.lang.String) */
     public ApplicationContext getApplicationContext(String id)
     {
         this.lock.readLock().lock();
@@ -214,8 +201,7 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
         lock.readLock().lock();
         try
         {
-            DefaultChildApplicationContextManager.ApplicationContextManagerState state =
-                    (DefaultChildApplicationContextManager.ApplicationContextManagerState)getState(true);
+            DefaultChildApplicationContextManager.ApplicationContextManagerState state = (DefaultChildApplicationContextManager.ApplicationContextManagerState) getState(true);
             return state.getApplicationContextFactory(id);
         }
         finally
@@ -229,7 +215,7 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
      */
     protected class ApplicationContextManagerState implements PropertyBackedBeanState
     {
-        
+
         /** The instance ids. */
         private List<String> instanceIds = new ArrayList<String>(10);
 
@@ -271,10 +257,9 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
             }
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getProperty(java.lang.String)
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getProperty(java.lang.String) */
         public String getProperty(String name)
         {
             if (!name.equals(DefaultChildApplicationContextManager.ORDER_PROPERTY))
@@ -284,20 +269,17 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
             return getOrderString();
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getPropertyNames()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#getPropertyNames() */
         public Set<String> getPropertyNames()
         {
             return Collections.singleton(DefaultChildApplicationContextManager.ORDER_PROPERTY);
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#setProperty(java.lang.String,
-         * java.lang.String)
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#setProperty(java.lang.String, java.lang.String) */
         public void setProperty(String name, String value)
         {
             if (!name.equals(DefaultChildApplicationContextManager.ORDER_PROPERTY))
@@ -313,10 +295,9 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
             throw new UnsupportedOperationException();
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#start()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#start() */
         public void start()
         {
             boolean oneSuccess = false;
@@ -342,19 +323,17 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
             }
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#stop()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.subsystems.PropertyBackedBean#stop() */
         public void stop()
         {
             // Nothing to do
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.ChildApplicationContextManager#getInstanceIds()
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.ChildApplicationContextManager#getInstanceIds() */
         /**
          * Gets the instance ids.
          * 
@@ -365,10 +344,9 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
             return Collections.unmodifiableList(this.instanceIds);
         }
 
-        /*
-         * (non-Javadoc)
-         * @see org.alfresco.repo.management.ChildApplicationContextManager#getApplicationContext(java.lang.String)
-         */
+        /* (non-Javadoc)
+         * 
+         * @see org.alfresco.repo.management.ChildApplicationContextManager#getApplicationContext(java.lang.String) */
         /**
          * Gets the application context.
          * 
@@ -432,8 +410,9 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
                     String instance = tkn.nextToken();
                     int sepIndex = instance.indexOf(':');
                     String id = sepIndex == -1 ? instance : instance.substring(0, sepIndex);
-                    String typeName = sepIndex == -1 || sepIndex + 1 >= instance.length() ? defaultTypeName : instance
-                            .substring(sepIndex + 1);
+                    String typeName = sepIndex == -1 || sepIndex + 1 >= instance.length() ? defaultTypeName
+                            : instance
+                                    .substring(sepIndex + 1);
                     newInstanceIds.add(id);
 
                     // Look out for new or updated children

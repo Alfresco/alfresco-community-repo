@@ -40,10 +40,14 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
@@ -52,10 +56,10 @@ import org.alfresco.repo.transfer.reportd.XMLTransferDestinationReportWriter;
 import org.alfresco.repo.transfer.requisite.XMLTransferRequsiteWriter;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.transfer.TransferCallback;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferEvent;
+import org.alfresco.service.cmr.transfer.TransferEvent.TransferState;
 import org.alfresco.service.cmr.transfer.TransferEventBegin;
 import org.alfresco.service.cmr.transfer.TransferEventCommittingStatus;
 import org.alfresco.service.cmr.transfer.TransferEventEndState;
@@ -68,29 +72,23 @@ import org.alfresco.service.cmr.transfer.TransferEventSuccess;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferFailureException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
+import org.alfresco.service.cmr.transfer.TransferProgress.Status;
 import org.alfresco.service.cmr.transfer.TransferService2;
 import org.alfresco.service.cmr.transfer.TransferTarget;
-import org.alfresco.service.cmr.transfer.TransferEvent.TransferState;
-import org.alfresco.service.cmr.transfer.TransferProgress.Status;
 import org.alfresco.service.cmr.transfer.TransferVersion;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.context.ApplicationContext;
 
 @Category(OwnJVMTestsCategory.class)
 public class TransferServiceCallbackTest extends TestCase
 {
-//    private static Log log = LogFactory.getLog(TransferServiceImplUnitTest.class);
-    
+    // private static Log log = LogFactory.getLog(TransferServiceImplUnitTest.class);
+
     private static final String TRANSFER_TARGET_NAME = "TransferServiceImplUnitTest";
-    
+
     private ApplicationContext applicationContext;
     private TransferServiceImpl2 transferServiceImpl;
     private AuthenticationComponent authenticationComponent;
@@ -110,8 +108,8 @@ public class TransferServiceCallbackTest extends TestCase
     private String file2ContentUrl;
     private String file3ContentUrl;
     private TransferVersion version;
-    
-    private String localRepositoryId; 
+
+    private String localRepositoryId;
 
     private TransferTarget target;
 
@@ -132,31 +130,31 @@ public class TransferServiceCallbackTest extends TestCase
         transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
         repository = (Repository) applicationContext.getBean("repositoryHelper");
         fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
-               
+
         localRepositoryId = descriptorService.getCurrentRepositoryDescriptor().getId();
-        version =  new TransferVersionImpl(descriptorService.getServerDescriptor());
-        
+        version = new TransferVersionImpl(descriptorService.getServerDescriptor());
+
         mockedTransferTransmitter = mock(TransferTransmitter.class);
         mockedCallback = mock(TransferCallback.class);
         transferServiceImpl.setTransmitter(mockedTransferTransmitter);
 
         authenticationComponent.setCurrentUser("admin");
-        
+
         tx = transactionService.getUserTransaction();
         tx.begin();
         target = createTransferTarget(TRANSFER_TARGET_NAME);
         tx.commit();
-            
+
         tx = transactionService.getUserTransaction();
         tx.begin();
-        
+
         transfer = new Transfer();
         transfer.setTransferTarget(target);
         transfer.setTransferId(GUID.generate());
         transfer.setToVersion(version);
-        
+
         companyHome = repository.getCompanyHome();
-        
+
         folder1 = fileFolderService.create(companyHome, "folder1", ContentModel.TYPE_FOLDER).getNodeRef();
 
         file1 = fileFolderService.create(folder1, "file1", ContentModel.TYPE_CONTENT).getNodeRef();
@@ -166,7 +164,7 @@ public class TransferServiceCallbackTest extends TestCase
         file2 = fileFolderService.create(folder1, "file2", ContentModel.TYPE_CONTENT).getNodeRef();
         fileFolderService.getWriter(file2).putContent("This is purely test content.");
         file2ContentUrl = fileFolderService.getFileInfo(file2).getContentData().getContentUrl();
-        
+
         file3 = fileFolderService.create(folder1, "file3", ContentModel.TYPE_CONTENT).getNodeRef();
         fileFolderService.getWriter(file3).putContent("This is purely test content.");
         file3ContentUrl = fileFolderService.getFileInfo(file3).getContentData().getContentUrl();
@@ -189,28 +187,28 @@ public class TransferServiceCallbackTest extends TestCase
         status0.setStatus(Status.COMMIT_REQUESTED);
         status0.setCurrentPosition(0);
         status0.setEndPosition(0);
-        
+
         TransferProgress status1 = new TransferProgress();
         status1.setStatus(Status.COMMITTING);
         status1.setCurrentPosition(0);
         status1.setEndPosition(4);
-        
+
         TransferProgress status2 = new TransferProgress();
         status2.setStatus(Status.COMMITTING);
         status2.setCurrentPosition(3);
         status2.setEndPosition(4);
-        
+
         TransferProgress status3 = new TransferProgress();
         status3.setStatus(Status.COMMITTING);
         status3.setCurrentPosition(5);
         status3.setEndPosition(8);
-        
+
         TransferProgress status4 = new TransferProgress();
         status4.setStatus(Status.COMPLETE);
         status4.setCurrentPosition(8);
         status4.setEndPosition(8);
-        
-        TransferProgress[] statuses = new TransferProgress[] {status0, status1, status2, status3, status4};
+
+        TransferProgress[] statuses = new TransferProgress[]{status0, status1, status2, status3, status4};
         configureBasicMockTransmitter(statuses);
         when(mockedTransferTransmitter.begin(target, localRepositoryId, version)).thenReturn(transfer);
 
@@ -224,71 +222,71 @@ public class TransferServiceCallbackTest extends TestCase
         event = new TransferEventEnterState();
         event.setTransferState(TransferState.START);
         expectedEvents.add(event);
-        
+
         event = new TransferEventBegin();
         event.setTransferState(TransferState.START);
         expectedEvents.add(event);
-        
+
         event = new TransferEventEndState();
         event.setTransferState(TransferState.START);
         expectedEvents.add(event);
-        
+
         event = new TransferEventEnterState();
         event.setTransferState(TransferState.SENDING_SNAPSHOT);
         expectedEvents.add(event);
-        
+
         event = new TransferEventSendingSnapshot();
         event.setTransferState(TransferState.SENDING_SNAPSHOT);
         expectedEvents.add(event);
-        
+
         event = new TransferEventEndState();
         event.setTransferState(TransferState.SENDING_SNAPSHOT);
         expectedEvents.add(event);
-        
+
         event = new TransferEventEnterState();
         event.setTransferState(TransferState.SENDING_CONTENT);
         expectedEvents.add(event);
-        
+
         event = new TransferEventSendingContent();
         event.setTransferState(TransferState.SENDING_CONTENT);
         expectedEvents.add(event);
-        
+
         event = new TransferEventSendingContent();
         event.setTransferState(TransferState.SENDING_CONTENT);
         expectedEvents.add(event);
-        
+
         event = new TransferEventSendingContent();
         event.setTransferState(TransferState.SENDING_CONTENT);
         expectedEvents.add(event);
-        
+
         event = new TransferEventEndState();
         event.setTransferState(TransferState.SENDING_CONTENT);
         expectedEvents.add(event);
-        
+
         event = new TransferEventEnterState();
         event.setTransferState(TransferState.PREPARING);
         expectedEvents.add(event);
-        
+
         event = new TransferEventEndState();
         event.setTransferState(TransferState.PREPARING);
         expectedEvents.add(event);
-        
+
         event = new TransferEventEnterState();
         event.setTransferState(TransferState.COMMITTING);
         expectedEvents.add(event);
-        
+
         event = new TransferEventCommittingStatus();
         event.setTransferState(TransferState.COMMITTING);
         expectedEvents.add(event);
-        
+
         event = new TransferEventCommittingStatus();
         event.setTransferState(TransferState.COMMITTING);
         expectedEvents.add(event);
-        
+
         event = new TransferEventCommittingStatus();
         event.setTransferState(TransferState.COMMITTING);
         expectedEvents.add(event);
-        
+
         event = new TransferEventCommittingStatus();
         event.setTransferState(TransferState.COMMITTING);
         expectedEvents.add(event);
@@ -296,15 +294,15 @@ public class TransferServiceCallbackTest extends TestCase
         event = new TransferEventEndState();
         event.setTransferState(TransferState.COMMITTING);
         expectedEvents.add(event);
-        
+
         event = new TransferEventEnterState();
         event.setTransferState(TransferState.SUCCESS);
         expectedEvents.add(event);
-        
+
         event = new TransferEventReport();
         event.setTransferState(TransferState.SUCCESS);
         expectedEvents.add(event);
-        
+
         event = new TransferEventReport();
         event.setTransferState(TransferState.SUCCESS);
         expectedEvents.add(event);
@@ -312,41 +310,41 @@ public class TransferServiceCallbackTest extends TestCase
         event = new TransferEventSuccess();
         event.setTransferState(TransferState.SUCCESS);
         expectedEvents.add(event);
-        
+
         verifyCallback(expectedEvents);
     }
-    
+
     public void testErrorDuringCommit()
     {
         Exception error = new TransferException("Commit failed");
-        
+
         TransferProgress status0 = new TransferProgress();
         status0.setStatus(Status.COMMIT_REQUESTED);
         status0.setCurrentPosition(0);
         status0.setEndPosition(0);
-        
+
         TransferProgress status1 = new TransferProgress();
         status1.setStatus(Status.COMMITTING);
         status1.setCurrentPosition(0);
         status1.setEndPosition(4);
-        
+
         TransferProgress status2 = new TransferProgress();
         status2.setStatus(Status.COMMITTING);
         status2.setCurrentPosition(3);
         status2.setEndPosition(4);
-        
+
         TransferProgress status3 = new TransferProgress();
         status3.setStatus(Status.COMMITTING);
         status3.setCurrentPosition(5);
         status3.setEndPosition(8);
-        
+
         TransferProgress status4 = new TransferProgress();
         status4.setStatus(Status.ERROR);
         status4.setCurrentPosition(8);
         status4.setEndPosition(8);
         status4.setError(error);
-        
-        TransferProgress[] statuses = new TransferProgress[] {status0, status1, status2, status3, status4};
+
+        TransferProgress[] statuses = new TransferProgress[]{status0, status1, status2, status3, status4};
         configureBasicMockTransmitter(statuses);
         when(mockedTransferTransmitter.begin(target, localRepositoryId, version)).thenReturn(transfer);
 
@@ -361,71 +359,71 @@ public class TransferServiceCallbackTest extends TestCase
         {
             List<TransferEvent> expectedEvents = new ArrayList<TransferEvent>();
             TransferEventImpl event;
-    
+
             event = new TransferEventEnterState();
             event.setTransferState(TransferState.START);
             expectedEvents.add(event);
-            
+
             event = new TransferEventBegin();
             event.setTransferState(TransferState.START);
             expectedEvents.add(event);
-            
+
             event = new TransferEventEndState();
             event.setTransferState(TransferState.START);
             expectedEvents.add(event);
-            
+
             event = new TransferEventEnterState();
             event.setTransferState(TransferState.SENDING_SNAPSHOT);
             expectedEvents.add(event);
-            
+
             event = new TransferEventSendingSnapshot();
             event.setTransferState(TransferState.SENDING_SNAPSHOT);
             expectedEvents.add(event);
-            
+
             event = new TransferEventEndState();
             event.setTransferState(TransferState.SENDING_SNAPSHOT);
             expectedEvents.add(event);
-            
+
             event = new TransferEventEnterState();
             event.setTransferState(TransferState.SENDING_CONTENT);
             expectedEvents.add(event);
-            
+
             event = new TransferEventSendingContent();
             event.setTransferState(TransferState.SENDING_CONTENT);
             expectedEvents.add(event);
-            
+
             event = new TransferEventSendingContent();
             event.setTransferState(TransferState.SENDING_CONTENT);
             expectedEvents.add(event);
-            
+
             event = new TransferEventSendingContent();
             event.setTransferState(TransferState.SENDING_CONTENT);
             expectedEvents.add(event);
-            
+
             event = new TransferEventEndState();
             event.setTransferState(TransferState.SENDING_CONTENT);
             expectedEvents.add(event);
-            
+
             event = new TransferEventEnterState();
             event.setTransferState(TransferState.PREPARING);
             expectedEvents.add(event);
-            
+
             event = new TransferEventEndState();
             event.setTransferState(TransferState.PREPARING);
             expectedEvents.add(event);
-            
+
             event = new TransferEventEnterState();
             event.setTransferState(TransferState.COMMITTING);
             expectedEvents.add(event);
-            
+
             event = new TransferEventCommittingStatus();
             event.setTransferState(TransferState.COMMITTING);
             expectedEvents.add(event);
-            
+
             event = new TransferEventCommittingStatus();
             event.setTransferState(TransferState.COMMITTING);
             expectedEvents.add(event);
-            
+
             event = new TransferEventCommittingStatus();
             event.setTransferState(TransferState.COMMITTING);
             expectedEvents.add(event);
@@ -441,25 +439,25 @@ public class TransferServiceCallbackTest extends TestCase
             event = new TransferEventReport();
             event.setTransferState(TransferState.ERROR);
             expectedEvents.add(event);
-            
+
             event = new TransferEventReport();
             event.setTransferState(TransferState.ERROR);
             expectedEvents.add(event);
-    
+
             event = new TransferEventError();
             event.setTransferState(TransferState.ERROR);
-            ((TransferEventError)event).setException(error);
+            ((TransferEventError) event).setException(error);
             expectedEvents.add(event);
-    
+
             verifyCallback(expectedEvents);
         }
     }
-    
+
     public void testTargetAlreadyLocked()
     {
         configureBasicMockTransmitter(null);
         when(mockedTransferTransmitter.begin(target, "localRepositoryId", version)).thenThrow(new TransferException("Simulate lock unavailable"));
-        
+
         TransferDefinition transferDef = new TransferDefinition();
         transferDef.setNodes(folder1, file1, file2, file3);
         try
@@ -467,7 +465,7 @@ public class TransferServiceCallbackTest extends TestCase
             transferService.transfer(TRANSFER_TARGET_NAME, transferDef, mockedCallback);
             fail("Transfer expected to throw an exception, but it didn't.");
         }
-        catch(TransferFailureException ex)
+        catch (TransferFailureException ex)
         {
             List<TransferEvent> expectedEvents = new ArrayList<TransferEvent>();
             TransferEventImpl event;
@@ -483,16 +481,16 @@ public class TransferServiceCallbackTest extends TestCase
             event = new TransferEventEnterState();
             event.setTransferState(TransferState.ERROR);
             expectedEvents.add(event);
-            
+
             event = new TransferEventReport();
             event.setTransferState(TransferState.ERROR);
             expectedEvents.add(event);
 
             event = new TransferEventError();
             event.setTransferState(TransferState.ERROR);
-            ((TransferEventError)event).setException((Exception)ex.getCause());
+            ((TransferEventError) event).setException((Exception) ex.getCause());
             expectedEvents.add(event);
-            
+
             verifyCallback(expectedEvents);
         }
     }
@@ -503,12 +501,12 @@ public class TransferServiceCallbackTest extends TestCase
         status0.setStatus(Status.CANCELLED);
         status0.setCurrentPosition(0);
         status0.setEndPosition(0);
-        TransferProgress[] statuses = new TransferProgress[] {status0};
+        TransferProgress[] statuses = new TransferProgress[]{status0};
         configureBasicMockTransmitter(statuses);
         when(mockedTransferTransmitter.begin(target, localRepositoryId, version)).thenReturn(transfer);
         doThrow(new TransferException("Simulate failure to write content")).when(mockedTransferTransmitter).sendManifest(any(Transfer.class), any(File.class), any(OutputStream.class));
         when(mockedTransferTransmitter.getStatus(transfer)).thenReturn(statuses[0]);
-        
+
         TransferDefinition transferDef = new TransferDefinition();
         transferDef.setNodes(folder1, file1, file2, file3);
         try
@@ -516,7 +514,7 @@ public class TransferServiceCallbackTest extends TestCase
             transferService.transfer(TRANSFER_TARGET_NAME, transferDef, mockedCallback);
             fail("Transfer expected to throw an exception, but it didn't.");
         }
-        catch(TransferFailureException ex)
+        catch (TransferFailureException ex)
         {
             List<TransferEvent> expectedEvents = new ArrayList<TransferEvent>();
             TransferEventImpl event;
@@ -524,31 +522,31 @@ public class TransferServiceCallbackTest extends TestCase
             event = new TransferEventEnterState();
             event.setTransferState(TransferState.START);
             expectedEvents.add(event);
-            
+
             event = new TransferEventBegin();
             event.setTransferState(TransferState.START);
             expectedEvents.add(event);
-            
+
             event = new TransferEventEndState();
             event.setTransferState(TransferState.START);
             expectedEvents.add(event);
-            
+
             event = new TransferEventEnterState();
             event.setTransferState(TransferState.SENDING_SNAPSHOT);
             expectedEvents.add(event);
-            
+
             event = new TransferEventSendingSnapshot();
             event.setTransferState(TransferState.SENDING_SNAPSHOT);
             expectedEvents.add(event);
-            
+
             event = new TransferEventEndState();
             event.setTransferState(TransferState.SENDING_SNAPSHOT);
             expectedEvents.add(event);
-            
+
             event = new TransferEventEnterState();
             event.setTransferState(TransferState.ERROR);
             expectedEvents.add(event);
-            
+
             event = new TransferEventReport();
             event.setTransferState(TransferState.ERROR);
             expectedEvents.add(event);
@@ -559,9 +557,9 @@ public class TransferServiceCallbackTest extends TestCase
 
             event = new TransferEventError();
             event.setTransferState(TransferState.ERROR);
-            ((TransferEventError)event).setException((Exception)ex.getCause());
+            ((TransferEventError) event).setException((Exception) ex.getCause());
             expectedEvents.add(event);
-            
+
             verifyCallback(expectedEvents);
         }
     }
@@ -581,66 +579,62 @@ public class TransferServiceCallbackTest extends TestCase
             assertEquals("Event " + index, expectedEvent.getTransferState(), capturedEvent.getTransferState());
             if (TransferEventError.class.isAssignableFrom(expectedEvent.getClass()))
             {
-                assertEquals(((TransferEventError)expectedEvent).getException(), 
-                        ((TransferEventError)capturedEvent).getException());
+                assertEquals(((TransferEventError) expectedEvent).getException(),
+                        ((TransferEventError) capturedEvent).getException());
             }
         }
     }
 
     private void configureBasicMockTransmitter(TransferProgress[] statuses)
     {
-        doAnswer(new Answer<Object>()
-                {
-                    @Override
-                    public Object answer(InvocationOnMock invocation) throws Throwable
-                    {
-                        OutputStream os = (OutputStream)invocation.getArguments()[2];
-                        Writer writer = new OutputStreamWriter(os); 
-                        XMLTransferRequsiteWriter requisiteWriter = new XMLTransferRequsiteWriter(writer);
-                        requisiteWriter.startTransferRequsite();
-                        requisiteWriter.missingContent(file1, ContentModel.PROP_CONTENT, 
-                                TransferCommons.URLToPartName(file1ContentUrl));
-                        requisiteWriter.missingContent(file2, ContentModel.PROP_CONTENT, 
-                                TransferCommons.URLToPartName(file2ContentUrl));
-                        requisiteWriter.missingContent(file3, ContentModel.PROP_CONTENT, 
-                                TransferCommons.URLToPartName(file3ContentUrl));
-                        requisiteWriter.endTransferRequsite();
-                        writer.flush();
-                        writer.close();
-                        return null;
-                    }
-                }).when(mockedTransferTransmitter).sendManifest(any(Transfer.class), any(File.class), any(OutputStream.class));
-                
-        doAnswer(new Answer<Object>()
-                {
-                    @Override
-                    public Object answer(InvocationOnMock invocation) throws Throwable
-                    {
-                        OutputStream os = (OutputStream)invocation.getArguments()[1];
-                        Writer writer = new OutputStreamWriter(os); 
-                        XMLTransferDestinationReportWriter reportWriter = new XMLTransferDestinationReportWriter();
-                        reportWriter.startTransferReport("UTF-8", writer);
-                        reportWriter.writeComment("This is a comment");
-                        reportWriter.writeChangeState("COMMITTING");
-                        reportWriter.writeCreated(file1, file1, folder1, "");
-                        reportWriter.writeDeleted(file3, file3, "");
-                        reportWriter.writeMoved(file2, file2, "", folder1, "");
-                        reportWriter.endTransferReport();
-                        return null;
-                    }
-                }).when(mockedTransferTransmitter).getTransferReport(any(Transfer.class), any(OutputStream.class));
-            
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                OutputStream os = (OutputStream) invocation.getArguments()[2];
+                Writer writer = new OutputStreamWriter(os);
+                XMLTransferRequsiteWriter requisiteWriter = new XMLTransferRequsiteWriter(writer);
+                requisiteWriter.startTransferRequsite();
+                requisiteWriter.missingContent(file1, ContentModel.PROP_CONTENT,
+                        TransferCommons.URLToPartName(file1ContentUrl));
+                requisiteWriter.missingContent(file2, ContentModel.PROP_CONTENT,
+                        TransferCommons.URLToPartName(file2ContentUrl));
+                requisiteWriter.missingContent(file3, ContentModel.PROP_CONTENT,
+                        TransferCommons.URLToPartName(file3ContentUrl));
+                requisiteWriter.endTransferRequsite();
+                writer.flush();
+                writer.close();
+                return null;
+            }
+        }).when(mockedTransferTransmitter).sendManifest(any(Transfer.class), any(File.class), any(OutputStream.class));
+
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                OutputStream os = (OutputStream) invocation.getArguments()[1];
+                Writer writer = new OutputStreamWriter(os);
+                XMLTransferDestinationReportWriter reportWriter = new XMLTransferDestinationReportWriter();
+                reportWriter.startTransferReport("UTF-8", writer);
+                reportWriter.writeComment("This is a comment");
+                reportWriter.writeChangeState("COMMITTING");
+                reportWriter.writeCreated(file1, file1, folder1, "");
+                reportWriter.writeDeleted(file3, file3, "");
+                reportWriter.writeMoved(file2, file2, "", folder1, "");
+                reportWriter.endTransferReport();
+                return null;
+            }
+        }).when(mockedTransferTransmitter).getTransferReport(any(Transfer.class), any(OutputStream.class));
+
         if (statuses != null)
         {
             if (statuses.length > 1)
             {
-                when(mockedTransferTransmitter.getStatus(transfer)).
-                        thenReturn(statuses[0], Arrays.copyOfRange(statuses, 1, statuses.length));
+                when(mockedTransferTransmitter.getStatus(transfer)).thenReturn(statuses[0], Arrays.copyOfRange(statuses, 1, statuses.length));
             }
             else if (statuses.length == 1)
             {
-                when(mockedTransferTransmitter.getStatus(transfer)).
-                        thenReturn(statuses[0]);
+                when(mockedTransferTransmitter.getStatus(transfer)).thenReturn(statuses[0]);
             }
         }
     }
@@ -652,7 +646,7 @@ public class TransferServiceCallbackTest extends TestCase
         {
             target = transferService.getTransferTarget(name);
         }
-        catch(TransferException ex)
+        catch (TransferException ex)
         {
             String title = "title";
             String description = "description";

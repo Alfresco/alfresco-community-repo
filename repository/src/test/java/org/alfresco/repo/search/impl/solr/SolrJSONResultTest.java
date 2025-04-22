@@ -29,12 +29,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import org.alfresco.repo.domain.node.NodeDAO;
-import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.search.LimitBy;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.util.testing.category.LuceneTests;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -42,6 +36,13 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.util.testing.category.LuceneTests;
 
 /**
  * The results of executing a Solr JSON query

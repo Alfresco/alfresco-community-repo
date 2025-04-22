@@ -42,10 +42,10 @@ public class ActivitiWorkflowManager
     private final WorkflowPropertyHandlerRegistry handlerRegistry;
     private final ActivitiWorkflowEngine workflowEngine;
     private final WorkflowAuthorityManager workflowAuthorityManager;
-    
+
     public ActivitiWorkflowManager(ActivitiWorkflowEngine workflowEngine,
             ActivitiPropertyConverter propertyConverter,
-            WorkflowPropertyHandlerRegistry handlerRegistry, 
+            WorkflowPropertyHandlerRegistry handlerRegistry,
             WorkflowNodeConverter nodeConverter,
             WorkflowAuthorityManager workflowAuthorityManager)
     {

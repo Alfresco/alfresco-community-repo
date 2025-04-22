@@ -37,5 +37,5 @@ import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
  */
 public interface PathGenerator
 {
-	public void generatePath(HttpServletRequest req, StringBuilder url, String repositoryId, Binding binding);
+    public void generatePath(HttpServletRequest req, StringBuilder url, String repositoryId, Binding binding);
 }

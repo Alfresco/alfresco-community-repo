@@ -31,6 +31,9 @@ import static org.junit.Assert.fail;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.dialect.Oracle9Dialect;
 import org.alfresco.util.schemacomp.DiffContext;
@@ -38,8 +41,6 @@ import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.ValidationResult;
 import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.Table;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Tests for the IndexColumnsValidator class.
@@ -65,7 +66,7 @@ public class IndexColumnsValidatorTest
     {
         validator.setPattern(Pattern.compile("SYS_NC.+"));
         assertEquals("SYS_NC.+", validator.getPattern().toString());
-        
+
         try
         {
             validator.validate(null, new Table("SYS_NC234234"), ctx);
@@ -82,7 +83,7 @@ public class IndexColumnsValidatorTest
     {
         validator.setPattern(Pattern.compile("SYS_NC.+"));
         assertEquals("SYS_NC.+", validator.getPattern().toString());
-        
+
         validator.validate(indexForColumns("SYS_NC234234", "SYS_NC654123"), indexForColumns("SYS_NC123123", "SYS_NC225588"), ctx);
         assertEquals(0, validationResults.size());
     }
@@ -92,18 +93,18 @@ public class IndexColumnsValidatorTest
     {
         validator.setPattern(Pattern.compile("SYS_NC.+"));
         assertEquals("SYS_NC.+", validator.getPattern().toString());
-        
+
         Index target = indexForColumns("TEST_INDEX1", "SYS_NC892345", "MY_INDEX");
 
         validator.validate(indexForColumns("SYS_NC234234", "SYS_NC654123"), target, ctx);
         assertEquals(3, validationResults.size());
-        
+
         assertEquals("TEST_INDEX1", ((ValidationResult) validationResults.get(0)).getValue());
         assertEquals("MY_INDEX", ((ValidationResult) validationResults.get(1)).getValue());
         assertEquals(target.getColumnNames(), ((ValidationResult) validationResults.get(2)).getValue());
     }
 
-    private Index indexForColumns(String ... names)
+    private Index indexForColumns(String... names)
     {
         return new Index(null, null, Arrays.asList(names));
     }

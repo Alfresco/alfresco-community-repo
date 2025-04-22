@@ -70,7 +70,9 @@ public class RMv32HoldChildAssocPatch extends AbstractModulePatch
 
     /**
      * Setter for qnamedao
-     * @param qnameDAO Data abstraction layer for QName and Namespace entities.
+     * 
+     * @param qnameDAO
+     *            Data abstraction layer for QName and Namespace entities.
      */
     public void setQnameDAO(QNameDAO qnameDAO)
     {
@@ -79,7 +81,9 @@ public class RMv32HoldChildAssocPatch extends AbstractModulePatch
 
     /**
      * Setter for fileplanservice
-     * @param filePlanService File plan service interface
+     * 
+     * @param filePlanService
+     *            File plan service interface
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -88,7 +92,9 @@ public class RMv32HoldChildAssocPatch extends AbstractModulePatch
 
     /**
      * Setter for hold service
-     * @param holdService Hold service interface.
+     * 
+     * @param holdService
+     *            Hold service interface.
      */
     public void setHoldService(HoldService holdService)
     {
@@ -97,18 +103,20 @@ public class RMv32HoldChildAssocPatch extends AbstractModulePatch
 
     /**
      * Setter for node service
-     * @param nodeService Interface for public and internal node and store operations.
+     * 
+     * @param nodeService
+     *            Interface for public and internal node and store operations.
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
-    @SuppressWarnings ("deprecation")
+    @SuppressWarnings("deprecation")
     @Override
     public void applyInternal()
     {
-        if(qnameDAO.getQName(ASSOC_FROZEN_RECORDS) != null)
+        if (qnameDAO.getQName(ASSOC_FROZEN_RECORDS) != null)
         {
             qnameDAO.updateQName(ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_CONTENT);
             for (NodeRef filePlan : filePlanService.getFilePlans())

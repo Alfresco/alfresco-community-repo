@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.framework.resource.UniqueId;
 
 /**
@@ -36,34 +37,33 @@ import org.alfresco.rest.framework.resource.UniqueId;
  */
 public class UserRating
 {
-	private Float userRating;
-	private String personId;
+    private Float userRating;
+    private String personId;
 
-	public UserRating(String personId, Float userRating)
-	{
-		super();
-		this.userRating = userRating;
-		this.personId = personId;
-	}
+    public UserRating(String personId, Float userRating)
+    {
+        super();
+        this.userRating = userRating;
+        this.personId = personId;
+    }
 
-	public Float getUserRating()
-	{
-		return userRating;
-	}
+    public Float getUserRating()
+    {
+        return userRating;
+    }
 
-	@JsonProperty("id")
-	@UniqueId
-	public String getPersonId()
-	{
-		return personId;
-	}
+    @JsonProperty("id")
+    @UniqueId
+    public String getPersonId()
+    {
+        return personId;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "UserRating [userRating=" + userRating + ", personId="
-				+ personId + "]";
-	}
-	
-	
+    @Override
+    public String toString()
+    {
+        return "UserRating [userRating=" + userRating + ", personId="
+                + personId + "]";
+    }
+
 }

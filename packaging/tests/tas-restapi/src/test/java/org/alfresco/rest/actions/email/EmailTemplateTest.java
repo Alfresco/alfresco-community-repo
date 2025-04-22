@@ -11,6 +11,10 @@ import java.util.HashMap;
 import java.util.Map;
 import jakarta.json.JsonObject;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.utility.model.FileModel;
@@ -18,11 +22,8 @@ import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.UserModel;
 
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-public class EmailTemplateTest extends RestTest {
+public class EmailTemplateTest extends RestTest
+{
 
     public static final String MAIL_ACTION = "mail";
 
@@ -31,15 +32,16 @@ public class EmailTemplateTest extends RestTest {
     private FolderModel testFolder;
 
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception {
+    public void dataPreparation() throws Exception
+    {
         adminUser = dataUser.getAdminUser();
 
         testUser = dataUser.createRandomTestUser();
         testSite = dataSite.usingUser(testUser)
-                           .createPublicRandomSite();
+                .createPublicRandomSite();
         testFolder = dataContent.usingUser(testUser)
-                                .usingSite(testSite)
-                                .createFolder();
+                .usingSite(testSite)
+                .createFolder();
     }
 
     @Test
@@ -49,21 +51,21 @@ public class EmailTemplateTest extends RestTest {
 
         // Create the model for use with email template
         JsonObject args = JsonBodyGenerator.defineJSON()
-                                           .add("args", JsonBodyGenerator.defineJSON()
-                                                                         .add("name", "testname")
-                                                                         .build())
-                                           .build();
+                .add("args", JsonBodyGenerator.defineJSON()
+                        .add("name", "testname")
+                        .build())
+                .build();
         String emailModel = args.toString();
 
         // Send an email using the template
         restClient.authenticateUser(adminUser)
-                  .withCoreAPI()
-                  .usingActions()
-                  .executeAction(MAIL_ACTION, testFolder, createMailWithTemplateParameters(adminUser, testUser, templateId, emailModel));
+                .withCoreAPI()
+                .usingActions()
+                .executeAction(MAIL_ACTION, testFolder, createMailWithTemplateParameters(adminUser, testUser, templateId, emailModel));
 
         restClient.onResponse()
-                  .assertThat().statusCode(HttpStatus.ACCEPTED.value())
-                  .assertThat().body("entry.id", notNullValue());
+                .assertThat().statusCode(HttpStatus.ACCEPTED.value())
+                .assertThat().body("entry.id", notNullValue());
     }
 
     private String uploadEmailTemplate(String templateName) throws IOException
@@ -72,8 +74,8 @@ public class EmailTemplateTest extends RestTest {
         final FileModel templateToCreate = new FileModel(templateName, FileType.TEXT_PLAIN, templateContent);
 
         final FileModel createdTemplate = dataContent.usingAdmin()
-                                                     .usingResource(testFolder)
-                                                     .createContent(templateToCreate);
+                .usingResource(testFolder)
+                .createContent(templateToCreate);
 
         return createdTemplate.getNodeRef();
     }

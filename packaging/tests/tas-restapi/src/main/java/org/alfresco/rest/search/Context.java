@@ -46,14 +46,11 @@ package org.alfresco.rest.search;
 import org.alfresco.utility.model.TestModel;
 
 /**
- * Search response sample.
- * {
- *    "context": {"consistency": {"lastTxId": 1123}}
- * }
+ * Search response sample. { "context": {"consistency": {"lastTxId": 1123}} }
  **/
 public class Context extends TestModel
 {
-    
+
     private Integer lastTxId;
 
     public Integer getLastTxId()
@@ -65,6 +62,5 @@ public class Context extends TestModel
     {
         this.lastTxId = lastTxId;
     }
-    
-    
+
 }

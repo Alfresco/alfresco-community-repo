@@ -42,7 +42,7 @@ import org.alfresco.util.EqualsHelper;
 public class SolrFacetProperties implements Serializable
 {
     private static final long serialVersionUID = 2991173095752087202L;
-    
+
     private final String filterID;
     private final QName facetQName;
     private final String displayName;
@@ -60,7 +60,8 @@ public class SolrFacetProperties implements Serializable
     /**
      * Initialises a newly created <code>SolrFacetProperty</code> object
      *
-     * @param builder the builder object
+     * @param builder
+     *            the builder object
      */
     private SolrFacetProperties(Builder builder)
     {
@@ -189,9 +190,7 @@ public class SolrFacetProperties implements Serializable
         return (this.customProperties == null) ? null : Collections.unmodifiableSet(new HashSet<CustomProperties>(this.customProperties));
     }
 
-    /*
-     * @see java.lang.Object#hashCode()
-     */
+    /* @see java.lang.Object#hashCode() */
     @Override
     public int hashCode()
     {
@@ -201,9 +200,7 @@ public class SolrFacetProperties implements Serializable
         return result;
     }
 
-    /*
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+    /* @see java.lang.Object#equals(java.lang.Object) */
     @Override
     public boolean equals(Object obj)
     {
@@ -234,22 +231,20 @@ public class SolrFacetProperties implements Serializable
         return true;
     }
 
-    /*
-     * @see java.lang.Object#toString()
-     */
+    /* @see java.lang.Object#toString() */
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(400);
         sb.append("FacetProperty [filterID=").append(this.filterID).append(", facetQName=")
-                    .append(this.facetQName).append(", displayName=").append(this.displayName)
-                    .append(", displayControl=").append(this.displayControl).append(", maxFilters=")
-                    .append(this.maxFilters).append(", hitThreshold=").append(this.hitThreshold)
-                    .append(", minFilterValueLength=").append(this.minFilterValueLength).append(", sortBy=")
-                    .append(this.sortBy).append(", scope=").append(this.scope).append(", scopedSites=")
-                    .append(this.scopedSites).append(", isEnabled=").append(this.isEnabled)
-                    .append(", isDefault=").append(this.isDefault).append(", customProperties=").append(this.customProperties)
-                    .append("]");
+                .append(this.facetQName).append(", displayName=").append(this.displayName)
+                .append(", displayControl=").append(this.displayControl).append(", maxFilters=")
+                .append(this.maxFilters).append(", hitThreshold=").append(this.hitThreshold)
+                .append(", minFilterValueLength=").append(this.minFilterValueLength).append(", sortBy=")
+                .append(this.sortBy).append(", scope=").append(this.scope).append(", scopedSites=")
+                .append(this.scopedSites).append(", isEnabled=").append(this.isEnabled)
+                .append(", isDefault=").append(this.isDefault).append(", customProperties=").append(this.customProperties)
+                .append("]");
         return sb.toString();
     }
 
@@ -270,13 +265,13 @@ public class SolrFacetProperties implements Serializable
         private Set<CustomProperties> customProperties;
 
         public Builder()
-        {
-        }
+        {}
 
         /**
          * Copy builder
          * 
-         * @param that existing {@code SolrFacetProperties} object
+         * @param that
+         *            existing {@code SolrFacetProperties} object
          */
         public Builder(SolrFacetProperties that)
         {
@@ -385,7 +380,7 @@ public class SolrFacetProperties implements Serializable
     public static class CustomProperties implements Serializable
     {
         private static final long serialVersionUID = 2250062300454166258L;
-        
+
         private final QName name;
         private final Serializable value;
 
@@ -405,9 +400,7 @@ public class SolrFacetProperties implements Serializable
             return this.value;
         }
 
-        /*
-         * @see java.lang.Object#hashCode()
-         */
+        /* @see java.lang.Object#hashCode() */
         @Override
         public int hashCode()
         {
@@ -417,9 +410,7 @@ public class SolrFacetProperties implements Serializable
             return result;
         }
 
-        /*
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
+        /* @see java.lang.Object#equals(java.lang.Object) */
         @Override
         public boolean equals(Object obj)
         {
@@ -435,15 +426,13 @@ public class SolrFacetProperties implements Serializable
             return EqualsHelper.nullSafeEquals(this.name, other.name);
         }
 
-        /*
-         * @see java.lang.Object#toString()
-         */
+        /* @see java.lang.Object#toString() */
         @Override
         public String toString()
         {
             StringBuilder builder = new StringBuilder(100);
             builder.append("CustomProperties [name=").append(this.name).append(", value=")
-                        .append(this.value).append("]");
+                    .append(this.value).append("]");
             return builder.toString();
         }
 

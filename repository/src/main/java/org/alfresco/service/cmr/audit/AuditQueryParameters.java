@@ -48,7 +48,7 @@ public class AuditQueryParameters
     private Long fromTime;
     private Long toTime;
     private List<Pair<String, Serializable>> searchKeyValues;
-    
+
     /**
      * Defaults:<br/>
      * &nbsp;<code>forward = true;</code><br/>
@@ -58,12 +58,11 @@ public class AuditQueryParameters
     public AuditQueryParameters()
     {
         forward = true;
-        searchKeyValues = new ArrayList<Pair<String,Serializable>>();
+        searchKeyValues = new ArrayList<Pair<String, Serializable>>();
     }
-    
+
     /**
-     * @return                  Returns <tt>true</tt> if any query using these parameters will
-     *                          necessarily yield no results.
+     * @return Returns <tt>true</tt> if any query using these parameters will necessarily yield no results.
      */
     public boolean isZeroResultQuery()
     {
@@ -81,7 +80,7 @@ public class AuditQueryParameters
     }
 
     /**
-     * @return                  Returns <tt>true</tt> if the results are ordered by increasing ID
+     * @return Returns <tt>true</tt> if the results are ordered by increasing ID
      */
     public boolean isForward()
     {
@@ -89,8 +88,8 @@ public class AuditQueryParameters
     }
 
     /**
-     * @param forward           <tt>true</tt> for results to ordered from first to last,
-     *                          or <tt>false</tt> to order from last to first
+     * @param forward
+     *            <tt>true</tt> for results to ordered from first to last, or <tt>false</tt> to order from last to first
      */
     public void setForward(boolean forward)
     {
@@ -98,7 +97,7 @@ public class AuditQueryParameters
     }
 
     /**
-     * @return                  Returns if not <tt>null</tt>, find entries logged against this application
+     * @return Returns if not <tt>null</tt>, find entries logged against this application
      */
     public String getApplicationName()
     {
@@ -106,7 +105,8 @@ public class AuditQueryParameters
     }
 
     /**
-     * @param applicationName   if not <tt>null</tt>, find entries logged against this application
+     * @param applicationName
+     *            if not <tt>null</tt>, find entries logged against this application
      */
     public void setApplicationName(String applicationName)
     {
@@ -114,7 +114,7 @@ public class AuditQueryParameters
     }
 
     /**
-     * @return                  Returns if not <tt>null</tt>, find entries logged against this user
+     * @return Returns if not <tt>null</tt>, find entries logged against this user
      */
     public String getUser()
     {
@@ -122,7 +122,8 @@ public class AuditQueryParameters
     }
 
     /**
-     * @param user              if not <tt>null</tt>, find entries logged against this user
+     * @param user
+     *            if not <tt>null</tt>, find entries logged against this user
      */
     public void setUser(String user)
     {
@@ -130,7 +131,7 @@ public class AuditQueryParameters
     }
 
     /**
-     * @return                  Returns the ID to search from (<tt>null</tt> to start at the beginning)
+     * @return Returns the ID to search from (<tt>null</tt> to start at the beginning)
      */
     public Long getFromId()
     {
@@ -138,7 +139,8 @@ public class AuditQueryParameters
     }
 
     /**
-     * @param fromId            the ID to search from (<tt>null</tt> to start at the beginning)
+     * @param fromId
+     *            the ID to search from (<tt>null</tt> to start at the beginning)
      */
     public void setFromId(Long fromId)
     {
@@ -146,7 +148,7 @@ public class AuditQueryParameters
     }
 
     /**
-     * @return                  Returns the ID to search to (<tt>null</tt> for no limit)
+     * @return Returns the ID to search to (<tt>null</tt> for no limit)
      */
     public Long getToId()
     {
@@ -154,7 +156,8 @@ public class AuditQueryParameters
     }
 
     /**
-     * @param toId              the start ID to search to (<tt>null</tt> for no limit)
+     * @param toId
+     *            the start ID to search to (<tt>null</tt> for no limit)
      */
     public void setToId(Long toId)
     {
@@ -162,7 +165,7 @@ public class AuditQueryParameters
     }
 
     /**
-     * @return                  Returns the start search time (<tt>null</tt> to start at the beginning)
+     * @return Returns the start search time (<tt>null</tt> to start at the beginning)
      */
     public Long getFromTime()
     {
@@ -170,7 +173,8 @@ public class AuditQueryParameters
     }
 
     /**
-     * @param fromTime          the start search time (<tt>null</tt> to start at the beginning)
+     * @param fromTime
+     *            the start search time (<tt>null</tt> to start at the beginning)
      */
     public void setFromTime(Long fromTime)
     {
@@ -178,7 +182,7 @@ public class AuditQueryParameters
     }
 
     /**
-     * @return                  Returns the end search time (<tt>null</tt> for no limit)
+     * @return Returns the end search time (<tt>null</tt> for no limit)
      */
     public Long getToTime()
     {
@@ -186,7 +190,8 @@ public class AuditQueryParameters
     }
 
     /**
-     * @param toTime            the end search time (<tt>null</tt> for no limit) 
+     * @param toTime
+     *            the end search time (<tt>null</tt> for no limit)
      */
     public void setToTime(Long toTime)
     {
@@ -195,7 +200,7 @@ public class AuditQueryParameters
 
     /**
      * 
-     * @return                  Returns the search keys for the query
+     * @return Returns the search keys for the query
      */
     public List<Pair<String, Serializable>> getSearchKeyValues()
     {
@@ -205,9 +210,8 @@ public class AuditQueryParameters
     /**
      * Add a search key pair.
      * 
-     * @param searchKey         the path-value pair.  Either the path ({@link Pair#getFirst() first} value)
-     *                          or the search value ({@link Pair#getSecond() second} value) may be <tt>null</tt>,
-     *                          but not both.
+     * @param searchKey
+     *            the path-value pair. Either the path ({@link Pair#getFirst() first} value) or the search value ({@link Pair#getSecond() second} value) may be <tt>null</tt>, but not both.
      */
     public void addSearchKey(String searchKey, Serializable searchValue)
     {
@@ -219,7 +223,7 @@ public class AuditQueryParameters
         {
             throw new UnsupportedOperationException("Only one search key-value pair is currently supported.");
         }
-            
+
         this.searchKeyValues.add(new Pair<String, Serializable>(searchKey, searchValue));
     }
 }

@@ -34,18 +34,19 @@ import org.springframework.context.ApplicationEvent;
  */
 public class AuthenticatorDeletedEvent extends ApplicationEvent
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3641164223727881175L;
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 3641164223727881175L;
 
-	/**
-	 * 
-	 * @param source a String with the zoneid
-	 */
-	public AuthenticatorDeletedEvent(Object source) 
-	{
-		super(source);
-	}
+    /**
+     * 
+     * @param source
+     *            a String with the zoneid
+     */
+    public AuthenticatorDeletedEvent(Object source)
+    {
+        super(source);
+    }
 
 }

@@ -79,7 +79,8 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     }
 
     /**
-     * @param model the model to set
+     * @param model
+     *            the model to set
      */
     public void setModel(RestShardInfoModel model)
     {
@@ -137,7 +138,8 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     }
 
     /**
-     * @param template the template to set
+     * @param template
+     *            the template to set
      */
     public void setTemplate(String template)
     {
@@ -153,7 +155,8 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     }
 
     /**
-     * @param lowInstanceShards the lowInstanceShards to set
+     * @param lowInstanceShards
+     *            the lowInstanceShards to set
      */
     public void setLowInstanceShards(String lowInstanceShards)
     {
@@ -169,7 +172,8 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     }
 
     /**
-     * @param missingShards the missingShards to set
+     * @param missingShards
+     *            the missingShards to set
      */
     public void setMissingShards(String missingShards)
     {
@@ -185,7 +189,8 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     }
 
     /**
-     * @param maxRepositoryTransactionId the maxRepositoryTransactionId to set
+     * @param maxRepositoryTransactionId
+     *            the maxRepositoryTransactionId to set
      */
     public void setMaxRepositoryTransactionId(Long maxRepositoryTransactionId)
     {
@@ -201,7 +206,8 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     }
 
     /**
-     * @param maxLiveInstances the maxLiveInstances to set
+     * @param maxLiveInstances
+     *            the maxLiveInstances to set
      */
     public void setMaxLiveInstances(Integer maxLiveInstances)
     {
@@ -217,7 +223,8 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     }
 
     /**
-     * @param remainingTransactions the remainingTransactions to set
+     * @param remainingTransactions
+     *            the remainingTransactions to set
      */
     public void setRemainingTransactions(Long remainingTransactions)
     {
@@ -233,7 +240,8 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     }
 
     /**
-     * @param numberOfShards the numberOfShards to set
+     * @param numberOfShards
+     *            the numberOfShards to set
      */
     public void setNumberOfShards(Integer numberOfShards)
     {
@@ -249,7 +257,8 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     }
 
     /**
-     * @param minActiveInstances the minActiveInstances to set
+     * @param minActiveInstances
+     *            the minActiveInstances to set
      */
     public void setMinActiveInstances(Integer minActiveInstances)
     {
@@ -265,7 +274,8 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     }
 
     /**
-     * @param maxChangesetId the maxChangesetId to set
+     * @param maxChangesetId
+     *            the maxChangesetId to set
      */
     public void setMaxChangesetId(Long maxChangesetId)
     {
@@ -281,7 +291,8 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     }
 
     /**
-     * @param mode the mode to set
+     * @param mode
+     *            the mode to set
      */
     public void setMode(String mode)
     {
@@ -297,7 +308,8 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     }
 
     /**
-     * @param stores the stores to set
+     * @param stores
+     *            the stores to set
      */
     public void setStores(String stores)
     {
@@ -313,7 +325,8 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     }
 
     /**
-     * @param hasContent the hasContent to set
+     * @param hasContent
+     *            the hasContent to set
      */
     public void setHasContent(Boolean hasContent)
     {
@@ -329,7 +342,8 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     }
 
     /**
-     * @param shardMethod the shardMethod to set
+     * @param shardMethod
+     *            the shardMethod to set
      */
     public void setShardMethod(String shardMethod)
     {
@@ -345,7 +359,8 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     }
 
     /**
-     * @param shards the shards to set
+     * @param shards
+     *            the shards to set
      */
     public void setShards(List<RestShardModel> shards)
     {

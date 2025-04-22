@@ -30,8 +30,7 @@ public class NodeTargetAssoc extends Assoc
     private String targetParentId;
 
     public NodeTargetAssoc()
-    {
-    }
+    {}
 
     public NodeTargetAssoc(String targetParentId, String prefixAssocTypeQName)
     {

@@ -42,8 +42,6 @@ import org.alfresco.service.namespace.QName;
 public class FilteringResultSetTest extends TestCase
 {
 
-    
-    
     public FilteringResultSetTest()
     {
         super();
@@ -63,7 +61,7 @@ public class FilteringResultSetTest extends TestCase
         NodeRef n3 = new NodeRef(storeRef, "n3");
         NodeRef n4 = new NodeRef(storeRef, "n4");
         NodeRef n5 = new NodeRef(storeRef, "n5");
-        
+
         ArrayList<ChildAssociationRef> cars = new ArrayList<ChildAssociationRef>();
         ChildAssociationRef car0 = new ChildAssociationRef(null, null, null, root);
         ChildAssociationRef car1 = new ChildAssociationRef(ContentModel.ASSOC_CHILDREN, root, QName.createQName("{test}n2"), n1);
@@ -77,58 +75,58 @@ public class FilteringResultSetTest extends TestCase
         cars.add(car3);
         cars.add(car4);
         cars.add(car5);
-        
+
         ResultSet in = new ChildAssocRefResultSet(null, cars);
-        
+
         FilteringResultSet filtering = new FilteringResultSet(in);
-        
+
         assertEquals(0, filtering.length());
-        for(int i = 0; i < 6; i++)
-        {
-           filtering.setIncluded(i, true);
-           assertEquals(1, filtering.length());
-           assertEquals("n"+i, filtering.getNodeRef(0).getId());
-           assertEquals(1, filtering.getNodeRefs().size());
-           assertEquals(1, filtering.getChildAssocRefs().size());
-           assertEquals("n"+i, filtering.getNodeRefs().get(0).getId());
-           filtering.setIncluded(i, false);
-           assertEquals(0, filtering.length());
-        }       
-        
-        for(int i = 0; i < 6; i++)
+        for (int i = 0; i < 6; i++)
         {
             filtering.setIncluded(i, true);
-            assertEquals(i+1, filtering.length());
-            assertEquals("n"+i, filtering.getNodeRef(i).getId());
+            assertEquals(1, filtering.length());
+            assertEquals("n" + i, filtering.getNodeRef(0).getId());
+            assertEquals(1, filtering.getNodeRefs().size());
+            assertEquals(1, filtering.getChildAssocRefs().size());
+            assertEquals("n" + i, filtering.getNodeRefs().get(0).getId());
+            filtering.setIncluded(i, false);
+            assertEquals(0, filtering.length());
         }
-        
+
+        for (int i = 0; i < 6; i++)
+        {
+            filtering.setIncluded(i, true);
+            assertEquals(i + 1, filtering.length());
+            assertEquals("n" + i, filtering.getNodeRef(i).getId());
+        }
+
         int count = 0;
-        for(ResultSetRow row : filtering)
+        for (ResultSetRow row : filtering)
         {
             assertNotNull(row);
             assertTrue(count < 6);
             count++;
         }
-        
+
         ResultSetRow last = null;
-        for(ListIterator<ResultSetRow> it = filtering.iterator(); it.hasNext(); /**/)
+        for (ListIterator<ResultSetRow> it = filtering.iterator(); it.hasNext(); /**/)
         {
             ResultSetRow row = it.next();
-            if(last != null)
+            if (last != null)
             {
-                assertTrue(it.hasPrevious()); 
+                assertTrue(it.hasPrevious());
                 ResultSetRow previous = it.previous();
                 assertEquals(last.getIndex(), previous.getIndex());
                 row = it.next();
-                
+
             }
             else
             {
                 assertFalse(it.hasPrevious());
             }
             last = row;
-         
+
         }
     }
-    
+
 }

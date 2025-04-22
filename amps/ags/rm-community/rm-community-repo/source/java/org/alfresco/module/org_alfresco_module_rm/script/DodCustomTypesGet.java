@@ -33,14 +33,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * This class provides the implementation for the dodcustomtypes.get webscript.
@@ -71,7 +72,7 @@ public class DodCustomTypesGet extends DeclarativeWebScript
             AspectDefinition nextAspectDef = dictionaryService.getAspect(aspectQName);
             customTypeAspectDefinitions.add(nextAspectDef);
         }
-    	model.put("dodCustomTypes", customTypeAspectDefinitions);
+        model.put("dodCustomTypes", customTypeAspectDefinitions);
 
         return model;
     }

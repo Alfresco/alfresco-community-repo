@@ -63,41 +63,33 @@ public class BaseJoin implements Join
         this.joinConstraint = joinConstraint;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Join#getJoinCondition()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Join#getJoinCondition() */
     public Constraint getJoinCondition()
     {
         return joinConstraint;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Join#getJoinType()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Join#getJoinType() */
     public JoinType getJoinType()
     {
         return joinType;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Join#getLeft()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Join#getLeft() */
     public Source getLeft()
     {
         return left;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Join#getRight()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Join#getRight() */
     public Source getRight()
     {
         return right;
@@ -115,11 +107,9 @@ public class BaseJoin implements Join
         return builder.toString();
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Source#getSelectorNames()
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Source#getSelectorNames() */
     public Map<String, Selector> getSelectors()
     {
         HashMap<String, Selector> answer = new HashMap<String, Selector>();
@@ -144,11 +134,9 @@ public class BaseJoin implements Join
         return answer;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * 
-     * @see org.alfresco.repo.search.impl.querymodel.Source#getSelector(java.lang.String)
-     */
+     * @see org.alfresco.repo.search.impl.querymodel.Source#getSelector(java.lang.String) */
     public Selector getSelector(String name)
     {
         Map<String, Selector> answer = getSelectors();
@@ -194,7 +182,7 @@ public class BaseJoin implements Join
             }
         }
 
-        if ( ((getJoinType() == JoinType.INNER) ||  (getJoinType() == JoinType.LEFT)) && (lhsSelector != null) && (rhsSelector != null))
+        if (((getJoinType() == JoinType.INNER) || (getJoinType() == JoinType.LEFT)) && (lhsSelector != null) && (rhsSelector != null))
         {
 
             TOADD: for (Set<String> toAddTo : left)
@@ -248,9 +236,9 @@ public class BaseJoin implements Join
         return answer;
     }
 
-	@Override
-	public void setJoinType(JoinType joinType) 
-	{
-		this.joinType = joinType;
-	}
+    @Override
+    public void setJoinType(JoinType joinType)
+    {
+        this.joinType = joinType;
+    }
 }

@@ -27,8 +27,8 @@ package org.alfresco.repo.search;
 
 import java.util.Iterator;
 
-import org.jaxen.UnsupportedAxisException;
 import junit.framework.TestCase;
+import org.jaxen.UnsupportedAxisException;
 
 public class DocumentNavigatorTest extends TestCase
 {

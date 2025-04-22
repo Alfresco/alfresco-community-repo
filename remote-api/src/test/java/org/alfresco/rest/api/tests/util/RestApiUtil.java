@@ -28,15 +28,16 @@ package org.alfresco.rest.api.tests.util;
 
 import static org.junit.Assert.assertNotNull;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.alfresco.rest.api.tests.client.PublicApiClient;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
+import org.alfresco.rest.api.tests.client.PublicApiClient;
 
 /**
  * A utility class for Rest API tests
@@ -48,17 +49,15 @@ public class RestApiUtil
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private RestApiUtil()
-    {
-    }
+    {}
 
     /**
-     * Parses the alfresco REST API response for a collection of entries.
-     * Basically, it looks for the {@code list} JSON object, then it uses
-     * {@literal Jackson} to convert the list's entries to their corresponding
-     * POJOs based on the given {@code clazz}.
+     * Parses the alfresco REST API response for a collection of entries. Basically, it looks for the {@code list} JSON object, then it uses {@literal Jackson} to convert the list's entries to their corresponding POJOs based on the given {@code clazz}.
      * 
-     * @param jsonObject the {@code JSONObject} derived from the response
-     * @param clazz the class which represents the JSON payload
+     * @param jsonObject
+     *            the {@code JSONObject} derived from the response
+     * @param clazz
+     *            the class which represents the JSON payload
      * @return list of POJOs of the given {@code clazz} type
      * @throws Exception
      */
@@ -86,23 +85,25 @@ public class RestApiUtil
     }
 
     /**
-     * Parses the alfresco REST API response for a single entry. Basically, it
-     * looks for the {@code entry} JSON object, then it uses {@literal Jackson}
-     * to convert it to its corresponding POJO based on the given {@code clazz}.
+     * Parses the alfresco REST API response for a single entry. Basically, it looks for the {@code entry} JSON object, then it uses {@literal Jackson} to convert it to its corresponding POJO based on the given {@code clazz}.
      * 
-     * @param jsonObject the {@code JSONObject} derived from the response
-     * @param clazz the class which represents the JSON payload
+     * @param jsonObject
+     *            the {@code JSONObject} derived from the response
+     * @param clazz
+     *            the class which represents the JSON payload
      * @return the POJO of the given {@code clazz} type
      * @throws Exception
      */
     public static <T> T parseRestApiEntry(JSONObject jsonObject, Class<T> clazz) throws Exception
     {
-        return parsePojo("entry",jsonObject, clazz);
+        return parsePojo("entry", jsonObject, clazz);
     }
 
     /**
      * Parses the alfresco REST API response object and extracts the paging information.
-     * @param jsonObject the {@code JSONObject} derived from the response
+     * 
+     * @param jsonObject
+     *            the {@code JSONObject} derived from the response
      * @return ExpectedPaging the paging
      * @throws Exception
      */
@@ -115,11 +116,12 @@ public class RestApiUtil
     }
 
     /**
-     * Parses the alfresco REST API response, uses {@literal Jackson}
-     * to convert it to its corresponding POJO based on the given {@code clazz}.
+     * Parses the alfresco REST API response, uses {@literal Jackson} to convert it to its corresponding POJO based on the given {@code clazz}.
      *
-     * @param jsonObject the {@code JSONObject} derived from the response
-     * @param clazz the class which represents the JSON payload
+     * @param jsonObject
+     *            the {@code JSONObject} derived from the response
+     * @param clazz
+     *            the class which represents the JSON payload
      * @return the POJO of the given {@code clazz} type
      * @throws Exception
      */
@@ -138,7 +140,8 @@ public class RestApiUtil
     /**
      * Parses the alfresco REST API error response.
      *
-     * @param jsonObject the {@code JSONObject} derived from the response
+     * @param jsonObject
+     *            the {@code JSONObject} derived from the response
      * @return ExpectedErrorResponse the error object
      * @throws Exception
      */
@@ -157,8 +160,7 @@ public class RestApiUtil
     }
 
     /**
-     * Converts the POJO which represents the JSON payload into a JSON string.
-     * null values will be ignored.
+     * Converts the POJO which represents the JSON payload into a JSON string. null values will be ignored.
      */
     public static String toJsonAsStringNonNull(Object object) throws IOException
     {

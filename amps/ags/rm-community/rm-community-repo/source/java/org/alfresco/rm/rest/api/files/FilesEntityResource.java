@@ -27,6 +27,8 @@
 
 package org.alfresco.rm.rest.api.files;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -48,7 +50,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * An implementation of an Entity Resource for a file
@@ -56,7 +57,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Ana Bozianu
  * @since 2.6
  */
-@EntityResource(name="files", title = "Files")
+@EntityResource(name = "files", title = "Files")
 public class FilesEntityResource implements InitializingBean
 {
     private ApiNodesModelFactory nodesModelFactory;
@@ -103,12 +104,11 @@ public class FilesEntityResource implements InitializingBean
     }
 
     @Operation("declare")
-    @WebApiDescription(title = "Declare as record", description="Declare a file as record.")
+    @WebApiDescription(title = "Declare as record", description = "Declare a file as record.")
     public Record declareAsRecord(String fileId, Void body, Parameters parameters, WithResponse withResponse)
     {
         // Get fileplan
-        NodeRef filePlan = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
-        {
+        NodeRef filePlan = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>() {
             @Override
             public NodeRef doWork()
             {
@@ -124,8 +124,7 @@ public class FilesEntityResource implements InitializingBean
 
         // Create the record
         NodeRef file = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, fileId);
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
             public Void execute()
             {
                 recordService.createRecord(filePlan, file, targetRecordFolder, !hideRecord);

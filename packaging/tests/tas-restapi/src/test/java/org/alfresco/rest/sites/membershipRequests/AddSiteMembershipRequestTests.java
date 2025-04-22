@@ -1,5 +1,9 @@
 package org.alfresco.rest.sites.membershipRequests;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.SiteService;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
@@ -15,9 +19,6 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class AddSiteMembershipRequestTests extends RestTest
 {
@@ -44,63 +45,63 @@ public class AddSiteMembershipRequestTests extends RestTest
         newMember = dataUser.createRandomTestUser();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.SANITY,
             description = "Verify site manager is able to create new site membership request for himself and status code is 201")
     public void managerCreatesNewSiteMembershipRequestForSelf() throws Exception
     {
         siteMembershipRequest = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingAuthUser().addSiteMembershipRequest(anotherPublicSite);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         siteMembershipRequest.assertThat().field("id").is(anotherPublicSite.getId())
-                    .assertThat().field("site").isNotEmpty();
+                .assertThat().field("site").isNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify site contributor is able to create new site membership request for himself and status code is 201")
     public void contributorCreatesNewSiteMembershipRequestForSelf() throws Exception
     {
         siteMembershipRequest = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI().usingAuthUser().addSiteMembershipRequest(anotherPublicSite);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         siteMembershipRequest.assertThat().field("id").is(anotherPublicSite.getId())
-                    .assertThat().field("site").isNotEmpty();
+                .assertThat().field("site").isNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify site collaborator is able to create new site membership request for himself and status code is 201")
     public void collaboratorCreatesNewSiteMembershipRequestForSelf() throws Exception
     {
         siteMembershipRequest = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingAuthUser().addSiteMembershipRequest(anotherPublicSite);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         siteMembershipRequest.assertThat().field("id").is(anotherPublicSite.getId())
-                    .assertThat().field("site").isNotEmpty();
+                .assertThat().field("site").isNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify site consumer is able to create new site membership request for himself and status code is 201")
     public void consumerCreatesNewSiteMembershipRequestForSelf() throws Exception
     {
         siteMembershipRequest = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI().usingAuthUser().addSiteMembershipRequest(anotherPublicSite);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         siteMembershipRequest.assertThat().field("id").is(anotherPublicSite.getId())
-                    .assertThat().field("site").isNotEmpty();
+                .assertThat().field("site").isNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin is able to create new site membership request for himself and status code is 201")
     public void adminCreatesNewSiteMembershipRequestForSelf() throws Exception
     {
         siteMembershipRequest = restClient.authenticateUser(adminUser).withCoreAPI().usingAuthUser().addSiteMembershipRequest(anotherPublicSite);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         siteMembershipRequest.assertThat().field("id").is(anotherPublicSite.getId())
-                    .assertThat().field("site").isNotEmpty();
+                .assertThat().field("site").isNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.SANITY,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.SANITY,
             description = "Verify unauthenticated user is not able to create new site membership request")
     public void unauthenticatedUserIsNotAbleToCreateSiteMembershipRequest() throws Exception
     {
@@ -108,8 +109,8 @@ public class AddSiteMembershipRequestTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify addSiteMembershipRequest Rest API status code is 400 for a user that has already been invited")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify addSiteMembershipRequest Rest API status code is 400 for a user that has already been invited")
     public void addSiteMembershipRequestStatusCodeIs400ReceivedForAUserThatIsAlreadyInvited() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -119,8 +120,8 @@ public class AddSiteMembershipRequestTests extends RestTest
         restClient.assertLastError().containsSummary(String.format(RestErrorModel.ALREADY_Site_MEMBER, newMember.getUsername(), moderatedSite.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify addSiteMembershipRequest Rest API status code is 404 for a user that does not exist")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify addSiteMembershipRequest Rest API status code is 404 for a user that does not exist")
     public void addSiteMembershipRequestStatusCodeIs404ReceivedForAUserThatDoesNotExist() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -129,8 +130,8 @@ public class AddSiteMembershipRequestTests extends RestTest
         restClient.assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidUser"));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify addSiteMembershipRequest Rest API status code is 404 for a site that does not exist")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify addSiteMembershipRequest Rest API status code is 404 for a site that does not exist")
     public void addSiteMembershipRequestStatusCodeIs404ReceivedForASiteThatDoesNotExist() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -139,8 +140,8 @@ public class AddSiteMembershipRequestTests extends RestTest
         restClient.assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, newMember.getUsername(), "invalidSiteID"));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify addSiteMembershipRequest Rest API status code is 400 for empty request body")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify addSiteMembershipRequest Rest API status code is 400 for empty request body")
     public void addSiteMembershipRequestStatusCodeIs400ForEmptyRequestBody() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -149,8 +150,8 @@ public class AddSiteMembershipRequestTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.NO_CONTENT, "No content to map due to end-of-input"));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify addSiteMembershipRequest Rest API status code is 201 for request with empty message")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify addSiteMembershipRequest Rest API status code is 201 for request with empty message")
     public void addSiteMembershipRequestStatusCodeIs201ForRequestWithEmptyMessage() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -159,8 +160,8 @@ public class AddSiteMembershipRequestTests extends RestTest
         siteMembershipRequest.assertThat().field("id").is(moderatedSite.getId()).assertThat().field("site").isNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify addSiteMembershipRequest Rest API status code is 201 for request with empty title")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify addSiteMembershipRequest Rest API status code is 201 for request with empty title")
     public void addSiteMembershipRequestStatusCodeIs201ForRequestWithEmptyTitle() throws Exception
     {
         UserModel newMember = dataUser.createRandomTestUser();
@@ -169,8 +170,8 @@ public class AddSiteMembershipRequestTests extends RestTest
         siteMembershipRequest.assertThat().field("id").is(moderatedSite.getId()).assertThat().field("site").isNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site manager is not able to create new site membership request for other user")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify site manager is not able to create new site membership request for other user")
     public void managerIsNotAbleToCreateSiteMembershipRequestForOtherUser() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).withCoreAPI().usingUser(newMember)
@@ -183,8 +184,8 @@ public class AddSiteMembershipRequestTests extends RestTest
                 .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site collaborator is not able to create new site membership request for other user")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify site collaborator is not able to create new site membership request for other user")
     public void collaboratorIsNotAbleToCreateSiteMembershipRequestForOtherUser() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator)).withCoreAPI().usingUser(newMember)
@@ -193,8 +194,8 @@ public class AddSiteMembershipRequestTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site contributor is not able to create new site membership request for other user")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify site contributor is not able to create new site membership request for other user")
     public void contributorIsNotAbleToCreateSiteMembershipRequestForOtherUser() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor)).withCoreAPI().usingUser(newMember)
@@ -203,8 +204,8 @@ public class AddSiteMembershipRequestTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify site consumer is not able to create new site membership request for other user")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify site consumer is not able to create new site membership request for other user")
     public void consumerIsNotAbleToCreateSiteMembershipRequestForOtherUser() throws Exception
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI().usingUser(newMember)
@@ -213,8 +214,8 @@ public class AddSiteMembershipRequestTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify admin user is not able to create new site membership request for other user")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify admin user is not able to create new site membership request for other user")
     public void adminIsNotAbleToCreateSiteMembershipRequestForOtherUser() throws Exception
     {
         restClient.authenticateUser(adminUser).withCoreAPI().usingUser(newMember).addSiteMembershipRequest(publicSite);
@@ -230,9 +231,9 @@ public class AddSiteMembershipRequestTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Bug(id="ACE-2413")
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify addSiteMembershipRequest Rest API status code is 400 for an invalid user id")
+    @Bug(id = "ACE-2413")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify addSiteMembershipRequest Rest API status code is 400 for an invalid user id")
     public void addSiteMembershipRequestReturns400ForEmptyUserId() throws Exception
     {
         restClient.authenticateUser(adminUser).withCoreAPI()
@@ -240,8 +241,8 @@ public class AddSiteMembershipRequestTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify regular user is able to create new public site membership request for himself. Check that user joins immediately as consumer.")
     public void userIsAbleToRequestMembershipOfPublicSite() throws Exception
     {
@@ -259,8 +260,8 @@ public class AddSiteMembershipRequestTests extends RestTest
         siteMembershipRequests.assertThat().entriesListIsEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify regular user is able to create new moderated site membership request for himself. Check that the request is added to the site membership request list.")
     public void userIsAbleToRequestMembershipOfModeratedSite() throws Exception
     {
@@ -284,8 +285,8 @@ public class AddSiteMembershipRequestTests extends RestTest
 
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify regular user is not able to request membership of a private site.")
     public void userIsNotAbleToRequestMembershipOfPrivateSite() throws Exception
     {
@@ -298,8 +299,8 @@ public class AddSiteMembershipRequestTests extends RestTest
         siteMembershipRequests.assertThat().entriesListIsEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION, description = "Verify regular user is not able to create new site membership request for other user")
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION, description = "Verify regular user is not able to create new site membership request for other user")
     public void regularUserIsNotAbleToCreateSiteMembershipRequestForOtherUser() throws Exception
     {
         regularUser = dataUser.createRandomTestUser();
@@ -317,8 +318,8 @@ public class AddSiteMembershipRequestTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, newMember.getUsername()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify create public site membership request returns status code 400 when the request is made twice")
     public void userRequestsTwiceMembershipOfPublicSite() throws Exception
     {
@@ -332,8 +333,8 @@ public class AddSiteMembershipRequestTests extends RestTest
         restClient.assertLastError().containsSummary(String.format(RestErrorModel.ALREADY_Site_MEMBER, regularUser.getUsername(), publicSite.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify create moderated site membership request returns status code 400 when the request is made twice")
     public void userRequestsTwiceMembershipOfModeratedSite() throws Exception
     {
@@ -352,8 +353,8 @@ public class AddSiteMembershipRequestTests extends RestTest
                 .assertThat().entriesListCountIs(1);
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify create private site membership request returns status code 404 when request is made with the user who created the site")
     public void siteCreatorRequestsMembershipOfHisPrivateSite() throws Exception
     {
@@ -362,8 +363,8 @@ public class AddSiteMembershipRequestTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, adminUser.getUsername(), privateSite.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify create moderated site membership request returns status code 400 when request is made with the user who created the site")
     public void siteCreatorRequestsMembershipOfHisModeratedSite() throws Exception
     {
@@ -372,8 +373,8 @@ public class AddSiteMembershipRequestTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.ALREADY_Site_MEMBER, adminUser.getUsername(), moderatedSite.getId()));
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin is able to create new moderated site membership request for himself. Check that the request is added to the site membership request list.")
     public void adminIsAbleToRequestMembershipOfModeratedSite() throws Exception
     {
@@ -388,8 +389,8 @@ public class AddSiteMembershipRequestTests extends RestTest
         siteMembershipRequests.assertThat().entriesListContains("id", anotherModeratedSite.getId());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.REGRESSION,
             description = "Verify site membership request is automatically rejected when a site is switched from moderated to private")
     public void siteMembershipRequestIsRejectedWhenSiteIsSwitchedFromModeratedToPrivate() throws Exception
     {

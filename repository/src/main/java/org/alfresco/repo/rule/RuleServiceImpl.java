@@ -44,6 +44,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
@@ -80,51 +83,46 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Rule service implementation.
  * <p>
- * This service automatically binds to the transaction flush hooks.  It will
- * therefore participate in any flushes that occur during the transaction as
- * well.
+ * This service automatically binds to the transaction flush hooks. It will therefore participate in any flushes that occur during the transaction as well.
  * 
- * @author Roy Wetherall   
+ * @author Roy Wetherall
  */
 public class RuleServiceImpl
         implements RuleService, RuntimeRuleService,
-                NodeServicePolicies.OnCreateChildAssociationPolicy,
-                NodeServicePolicies.OnCreateNodePolicy,
-                NodeServicePolicies.OnUpdateNodePolicy,
-                NodeServicePolicies.OnAddAspectPolicy
+        NodeServicePolicies.OnCreateChildAssociationPolicy,
+        NodeServicePolicies.OnCreateNodePolicy,
+        NodeServicePolicies.OnUpdateNodePolicy,
+        NodeServicePolicies.OnAddAspectPolicy
 {
     /** key against which to store disabled rule types in the current txn */
     private static final String KEY_DISABLED_RULE_TYPES = "RuleServiceImpl.disabledRuleTypes";
-    
+
     /** key against which to store disabled rule nodes in the current txn */
     private static final String KEY_DISABLED_RULE_NODES = "RuleServiceImpl.disabledRuleNodes";
-    
+
     /** key against which to store rules pending on the current transaction */
     private static final String KEY_RULES_PENDING = "RuleServiceImpl.PendingRules";
-    
+
     /** key against which to store executed rules on the current transaction */
     private static final String KEY_RULES_EXECUTED = "RuleServiceImpl.ExecutedRules";
-    
+
     /** qname of assoc to rules */
     private String ASSOC_NAME_RULES_PREFIX = "rules";
     private RegexQNamePattern ASSOC_NAME_RULES_REGEX = new RegexQNamePattern(RuleModel.RULE_MODEL_URI, "^" + ASSOC_NAME_RULES_PREFIX + ".*");
-    
+
     private static final Set<QName> IGNORE_PARENT_ASSOC_TYPES = new HashSet<QName>(7);
     static
     {
         IGNORE_PARENT_ASSOC_TYPES.add(ContentModel.ASSOC_MEMBER);
         IGNORE_PARENT_ASSOC_TYPES.add(ContentModel.ASSOC_IN_ZONE);
     }
-    
-    private static Log logger = LogFactory.getLog(RuleServiceImpl.class); 
-    
+
+    private static Log logger = LogFactory.getLog(RuleServiceImpl.class);
+
     private NodeService nodeService;
     private NodeService runtimeNodeService;
     private CopyService copyService;
@@ -132,23 +130,22 @@ public class RuleServiceImpl
     private DictionaryService dictionaryService;
     private PolicyComponent policyComponent;
     private PermissionService permissionService;
-    
+
     /**
      * The action service implementation which we need for some things.
      */
     private RuntimeActionService runtimeActionService;
-    
+
     /**
      * Cache of raw rules (not inherited or interpreted) for a given node
      */
     private SimpleCache<NodeRef, List<Rule>> nodeRulesCache;
-       
+
     /**
-     * List of disabled rules.  Any rules that appear in this list will not be added to the pending list and therefore
-     * not fired.
+     * List of disabled rules. Any rules that appear in this list will not be added to the pending list and therefore not fired.
      */
     private Set<Rule> disabledRules = new HashSet<Rule>(5);
-    
+
     /**
      * All the rule type currently registered
      */
@@ -157,28 +154,28 @@ public class RuleServiceImpl
     /**
      * The rule transaction listener
      */
-    private TransactionListener ruleTransactionListener = new RuleTransactionListener(this);   
-    
+    private TransactionListener ruleTransactionListener = new RuleTransactionListener(this);
+
     /**
      * Indicates whether the rules are disabled for the current thread
      */
     private ThreadLocal<Boolean> rulesDisabled = new ThreadLocal<Boolean>();
-    
+
     /**
-     * Global flag that indicates whether the 
+     * Global flag that indicates whether the
      */
     private boolean globalRulesDisabled = false;
-    
+
     /**
-     * Set the permission-safe node service 
+     * Set the permission-safe node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
-     * Set the direct node service 
+     * Set the direct node service
      */
     public void setRuntimeNodeService(NodeService runtimeNodeService)
     {
@@ -200,7 +197,7 @@ public class RuleServiceImpl
     {
         this.actionService = actionService;
     }
-    
+
     /**
      * Set the runtime action service
      */
@@ -208,7 +205,7 @@ public class RuleServiceImpl
     {
         this.runtimeActionService = runtimeActionService;
     }
-    
+
     /**
      * Set the dictionary service
      */
@@ -216,7 +213,7 @@ public class RuleServiceImpl
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * Set the policy component to listen for various events
      */
@@ -232,12 +229,12 @@ public class RuleServiceImpl
     {
         this.permissionService = permissionService;
     }
-    
+
     /**
-     * Set the cache to hold node's individual rules.  This cache <b>must not be shared</b>
-     * across transactions.
+     * Set the cache to hold node's individual rules. This cache <b>must not be shared</b> across transactions.
      * 
-     * @param nodeRulesCache        a cache of raw rules contained on a node
+     * @param nodeRulesCache
+     *            a cache of raw rules contained on a node
      * 
      * @see NullCache
      */
@@ -249,16 +246,16 @@ public class RuleServiceImpl
     /**
      * Set the global rules disabled flag
      * 
-     * @param rulesDisabled     true to disable allr ules, false otherwise
+     * @param rulesDisabled
+     *            true to disable allr ules, false otherwise
      */
     public void setRulesDisabled(boolean rulesDisabled)
     {
         this.globalRulesDisabled = rulesDisabled;
     }
-    
+
     /**
-     * Registers to listen for events of interest.  For instance, the creation or deletion of a rule folder
-     * will affect the caching of rules.
+     * Registers to listen for events of interest. For instance, the creation or deletion of a rule folder will affect the caching of rules.
      */
     public void init()
     {
@@ -333,7 +330,7 @@ public class RuleServiceImpl
     {
         nodeRulesCache.clear();
     }
-    
+
     protected NodeRef getSavedRuleFolderRef(NodeRef nodeRef)
     {
         NodeRef result = null;
@@ -348,13 +345,14 @@ public class RuleServiceImpl
     /**
      * Gets the saved rule folder reference
      * 
-     * @param nodeRef    the node reference
-     * @return            the node reference
+     * @param nodeRef
+     *            the node reference
+     * @return the node reference
      */
     public ChildAssociationRef getSavedRuleFolderAssoc(NodeRef nodeRef)
     {
         ChildAssociationRef result = null;
-        
+
         List<ChildAssociationRef> assocs = this.runtimeNodeService.getChildAssocs(
                 nodeRef,
                 ASSOC_RULE_FOLDER,
@@ -367,26 +365,26 @@ public class RuleServiceImpl
         {
             result = assocs.get(0);
         }
-        
+
         return result;
     }
-    
+
     @Override
     public List<RuleType> getRuleTypes()
     {
         return new ArrayList<RuleType>(this.ruleTypes.values());
     }
-    
+
     @Override
     public RuleType getRuleType(String name)
     {
         return this.ruleTypes.get(name);
-    }    
-    
+    }
+
     @Override
     public void enableRules()
     {
-        this.rulesDisabled.remove();        
+        this.rulesDisabled.remove();
     }
 
     @Override
@@ -394,13 +392,13 @@ public class RuleServiceImpl
     {
         this.rulesDisabled.set(Boolean.TRUE);
     }
-    
+
     @Override
     public boolean isEnabled()
     {
         return (this.globalRulesDisabled == false && this.rulesDisabled.get() == null);
     }
-    
+
     @Override
     public boolean rulesEnabled(NodeRef nodeRef)
     {
@@ -421,24 +419,24 @@ public class RuleServiceImpl
         Set<NodeRef> disabledRuleNodes = TransactionalResourceHelper.getSet(KEY_DISABLED_RULE_NODES);
         disabledRuleNodes.remove(nodeRef);
     }
-    
+
     @Override
     public void disableRule(Rule rule)
     {
         this.disabledRules.add(rule);
     }
-    
+
     @Override
     public void enableRule(Rule rule)
     {
         this.disabledRules.remove(rule);
     }
-    
+
     @Override
     public void disableRuleType(String ruleType)
     {
         Set<String> disabledRuleTypes = TransactionalResourceHelper.getSet(KEY_DISABLED_RULE_TYPES);
-    	disabledRuleTypes.add(ruleType);
+        disabledRuleTypes.add(ruleType);
     }
 
     @Override
@@ -447,14 +445,14 @@ public class RuleServiceImpl
         Set<String> disabledRuleTypes = TransactionalResourceHelper.getSet(KEY_DISABLED_RULE_TYPES);
         disabledRuleTypes.remove(ruleType);
     }
-    
+
     @Override
     public boolean isRuleTypeEnabled(String ruleType)
     {
         Set<String> disabledRuleTypes = TransactionalResourceHelper.getSet(KEY_DISABLED_RULE_TYPES);
         return !disabledRuleTypes.contains(ruleType);
     }
-    
+
     @Override
     public boolean hasRules(NodeRef nodeRef)
     {
@@ -478,13 +476,12 @@ public class RuleServiceImpl
     {
         return getRules(nodeRef, includeInherited, null);
     }
-    
+
     @Override
     public List<Rule> getRules(final NodeRef nodeRef, final boolean includeInherited, final String ruleTypeName)
     {
-        //Run from system user: https://issues.alfresco.com/jira/browse/ALF-607
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<List<Rule>>()
-        {
+        // Run from system user: https://issues.alfresco.com/jira/browse/ALF-607
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<List<Rule>>() {
 
             public List<Rule> doWork() throws Exception
             {
@@ -507,30 +504,30 @@ public class RuleServiceImpl
                         }
                     }
                 }
-            
+
                 // Get the node's own rules and add them to the list
                 List<Rule> nodeRules = getRulesForNode(nodeRef);
                 for (Rule rule : nodeRules)
-                {                   
+                {
                     if ((rules.contains(rule) == false) && (ruleTypeName == null || rule.getRuleTypes().contains(ruleTypeName) == true))
                     {
-                        rules.add(rule);                        
+                        rules.add(rule);
                     }
                 }
-        
+
                 return rules;
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     private List<Rule> getRulesForNode(NodeRef nodeRef)
     {
-            // Extra check of CONSUMER permission was added to rule selection,
-            // to prevent Access Denied Exception due to the bug:
-            // https://issues.alfresco.com/browse/ETWOTWO-438
-            
+        // Extra check of CONSUMER permission was added to rule selection,
+        // to prevent Access Denied Exception due to the bug:
+        // https://issues.alfresco.com/browse/ETWOTWO-438
+
         if (!runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) ||
-            permissionService.hasPermission(nodeRef, PermissionService.READ) != ALLOWED)
+                permissionService.hasPermission(nodeRef, PermissionService.READ) != ALLOWED)
         {
             // Doesn't have the aspect or the user doesn't have access
             return Collections.emptyList();
@@ -547,8 +544,7 @@ public class RuleServiceImpl
         if (ruleFolder != null)
         {
             // Get the rules for this node
-            List<ChildAssociationRef> ruleChildAssocRefs = 
-                this.runtimeNodeService.getChildAssocs(ruleFolder, MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+            List<ChildAssociationRef> ruleChildAssocRefs = this.runtimeNodeService.getChildAssocs(ruleFolder, MATCH_ALL, ASSOC_NAME_RULES_REGEX);
             for (ChildAssociationRef ruleChildAssocRef : ruleChildAssocRefs)
             {
                 // Create the rule and add to the list
@@ -562,12 +558,12 @@ public class RuleServiceImpl
         // Done
         return nodeRules;
     }
-        
+
     @Override
     public int countRules(NodeRef nodeRef)
     {
         int ruleCount = 0;
-        
+
         if (this.runtimeNodeService.exists(nodeRef) == true && checkNodeType(nodeRef) == true)
         {
             if (this.runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
@@ -576,41 +572,41 @@ public class RuleServiceImpl
                 if (ruleFolder != null)
                 {
                     // Get the rules for this node
-                    List<ChildAssociationRef> ruleChildAssocRefs = 
-                        this.runtimeNodeService.getChildAssocs(ruleFolder, MATCH_ALL, ASSOC_NAME_RULES_REGEX);
-                    
+                    List<ChildAssociationRef> ruleChildAssocRefs = this.runtimeNodeService.getChildAssocs(ruleFolder, MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+
                     ruleCount = ruleChildAssocRefs.size();
                 }
             }
         }
-        
+
         return ruleCount;
     }
 
     /**
      * Looks at the type of the node and indicates whether the node can have rules associated with it
      * 
-     * @param nodeRef   the node reference
-     * @return          true if the node can have rule associated with it (inherited or otherwise)
+     * @param nodeRef
+     *            the node reference
+     * @return true if the node can have rule associated with it (inherited or otherwise)
      */
     private boolean checkNodeType(NodeRef nodeRef)
     {
         boolean result = true;
-        
+
         QName nodeType = this.runtimeNodeService.getType(nodeRef);
         if (this.dictionaryService.isSubClass(nodeType, ContentModel.TYPE_SYSTEM_FOLDER) == true ||
-            this.dictionaryService.isSubClass(nodeType, ActionModel.TYPE_ACTION) == true ||
-            this.dictionaryService.isSubClass(nodeType, ActionModel.TYPE_ACTION_CONDITION) == true ||
-            this.dictionaryService.isSubClass(nodeType, ActionModel.TYPE_ACTION_PARAMETER) == true)
+                this.dictionaryService.isSubClass(nodeType, ActionModel.TYPE_ACTION) == true ||
+                this.dictionaryService.isSubClass(nodeType, ActionModel.TYPE_ACTION_CONDITION) == true ||
+                this.dictionaryService.isSubClass(nodeType, ActionModel.TYPE_ACTION_PARAMETER) == true)
         {
             result = false;
-            
+
             if (logger.isDebugEnabled() == true)
             {
                 logger.debug("A node of type " + nodeType.toString() + " was checked and can not have rules.");
             }
         }
-        
+
         return result;
     }
 
@@ -627,10 +623,11 @@ public class RuleServiceImpl
      * <p>
      * The order of nodes returned by this methods has to match the order used by {@link #getInheritedRules}.
      *
-     * @param nodeRef The starting node ref.
-     * @param visitedNodeRefs All the visited node refs (will be modified).
-     * @return A list of node refs, starting with the first parent of the first parent of ... and ending with the object generated by the
-     * given node ref.
+     * @param nodeRef
+     *            The starting node ref.
+     * @param visitedNodeRefs
+     *            All the visited node refs (will be modified).
+     * @return A list of node refs, starting with the first parent of the first parent of ... and ending with the object generated by the given node ref.
      */
     private List<NodeRef> getNodesSupplyingRuleSets(NodeRef nodeRef, List<NodeRef> visitedNodeRefs)
     {
@@ -702,20 +699,22 @@ public class RuleServiceImpl
     {
         NodeRef parentRef = nodeService.getPrimaryParent(ruleSet).getParentRef();
         return nodeService.getParentAssocs(ruleSet)
-                          .stream()
-                          .limit(maxFoldersToReturn)
-                          .map(ChildAssociationRef::getParentRef)
-                          .filter(folder -> !folder.equals(parentRef))
-                          .filter(folder -> permissionService.hasReadPermission(folder) == ALLOWED)
-                          .collect(Collectors.toList());
+                .stream()
+                .limit(maxFoldersToReturn)
+                .map(ChildAssociationRef::getParentRef)
+                .filter(folder -> !folder.equals(parentRef))
+                .filter(folder -> permissionService.hasReadPermission(folder) == ALLOWED)
+                .collect(Collectors.toList());
     }
 
     /**
      * Gets the inherited rules for a given node reference
      *
-     * @param nodeRef            the nodeRef
-     * @param ruleTypeName        the rule type (null if all applicable)
-     * @return                    a list of inherited rules (empty if none)
+     * @param nodeRef
+     *            the nodeRef
+     * @param ruleTypeName
+     *            the rule type (null if all applicable)
+     * @return a list of inherited rules (empty if none)
      */
     private List<Rule> getInheritedRules(NodeRef nodeRef, String ruleTypeName, Set<NodeRef> visitedNodeRefs)
     {
@@ -789,54 +788,55 @@ public class RuleServiceImpl
     /**
      * Create the rule object from the rule node reference
      * 
-     * @param ruleNodeRef    the rule node reference
-     * @return                the rule
+     * @param ruleNodeRef
+     *            the rule node reference
+     * @return the rule
      */
     @SuppressWarnings("unchecked")
     public Rule getRule(NodeRef ruleNodeRef)
     {
         // Get the rule properties
         Map<QName, Serializable> props = this.runtimeNodeService.getProperties(ruleNodeRef);
-        
+
         // Create the rule
         Rule rule = new Rule(ruleNodeRef);
-        
+
         // Set the title and description
         String title = DefaultTypeConverter.INSTANCE.convert(String.class, props.get(ContentModel.PROP_TITLE));
         String description = DefaultTypeConverter.INSTANCE.convert(String.class, props.get(ContentModel.PROP_DESCRIPTION));
         rule.setTitle(title);
         rule.setDescription(description);
-        
+
         // Set the rule types
-        rule.setRuleTypes((List<String>)props.get(RuleModel.PROP_RULE_TYPE));
-        
+        rule.setRuleTypes((List<String>) props.get(RuleModel.PROP_RULE_TYPE));
+
         // Set the applied to children value
         boolean isAppliedToChildren = false;
-        Boolean value = (Boolean)props.get(RuleModel.PROP_APPLY_TO_CHILDREN);
+        Boolean value = (Boolean) props.get(RuleModel.PROP_APPLY_TO_CHILDREN);
         if (value != null)
         {
             isAppliedToChildren = value.booleanValue();
         }
         rule.applyToChildren(isAppliedToChildren);
-        
+
         // Set the execute asynchronously value
         boolean executeAsync = false;
-        Boolean value2 = (Boolean)props.get(RuleModel.PROP_EXECUTE_ASYNC);
+        Boolean value2 = (Boolean) props.get(RuleModel.PROP_EXECUTE_ASYNC);
         if (value2 != null)
         {
             executeAsync = value2.booleanValue();
         }
         rule.setExecuteAsynchronously(executeAsync);
-        
+
         // Set the disabled value
         boolean ruleDisabled = false;
-        Boolean value3 = (Boolean)props.get(RuleModel.PROP_DISABLED);
+        Boolean value3 = (Boolean) props.get(RuleModel.PROP_DISABLED);
         if (value3 != null)
         {
             ruleDisabled = value3.booleanValue();
         }
         rule.setRuleDisabled(ruleDisabled);
-        
+
         // Get the action node reference
         List<ChildAssociationRef> actions = this.nodeService.getChildAssocs(ruleNodeRef, RuleModel.ASSOC_ACTION, RuleModel.ASSOC_ACTION);
         if (actions.size() == 0)
@@ -848,11 +848,11 @@ public class RuleServiceImpl
             throw new RuleServiceException("Rule exists with more than one specified action");
         }
         NodeRef actionNodeRef = actions.get(0).getChildRef();
-        
+
         // Here we need to create the action from the action node reference
         Action action = runtimeActionService.createAction(actionNodeRef);
         rule.setAction(action);
-        
+
         return rule;
     }
 
@@ -860,7 +860,7 @@ public class RuleServiceImpl
     public Rule saveRule(NodeRef nodeRef, Rule rule)
     {
         checkForLinkedRules(nodeRef);
-        
+
         if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) != ALLOWED)
         {
             throw new RuleServiceException("Insufficient permissions to save a rule.");
@@ -899,7 +899,7 @@ public class RuleServiceImpl
             ParameterCheck.mandatoryString("Rule name", title);
             this.nodeService.setProperty(ruleNodeRef, ContentModel.PROP_TITLE, title);
             this.nodeService.setProperty(ruleNodeRef, ContentModel.PROP_DESCRIPTION, rule.getDescription());
-            this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_RULE_TYPE, (Serializable)rule.getRuleTypes());
+            this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_RULE_TYPE, (Serializable) rule.getRuleTypes());
             this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_APPLY_TO_CHILDREN, rule.isAppliedToChildren());
             this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_EXECUTE_ASYNC, rule.getExecuteAsynchronously());
             this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_DISABLED, rule.getRuleDisabled());
@@ -915,14 +915,14 @@ public class RuleServiceImpl
         }
         return rule;
     }
-    
+
     @Override
     public void saveRule(NodeRef nodeRef, Rule rule, int index)
     {
         saveRule(nodeRef, rule);
         setRulePosition(nodeRef, rule.getNodeRef(), index);
     }
-    
+
     @Override
     public void setRulePosition(NodeRef nodeRef, NodeRef ruleNodeRef, int index)
     {
@@ -943,12 +943,12 @@ public class RuleServiceImpl
                 {
                     orderedAssocs.add(assoc);
                 }
-            }          
+            }
             if (movedAssoc != null)
             {
                 orderedAssocs.add(index, movedAssoc);
             }
-            
+
             index = 0;
             for (ChildAssociationRef orderedAssoc : orderedAssocs)
             {
@@ -957,25 +957,27 @@ public class RuleServiceImpl
             }
         }
     }
-    
+
     @Override
     public void setRulePosition(NodeRef nodeRef, Rule rule, int index)
     {
         setRulePosition(nodeRef, rule.getNodeRef(), index);
     }
-    
+
     /**
      * Save the action related to the rule.
      * 
-     * @param ruleNodeRef   the node reference representing the rule
-     * @param rule          the rule
+     * @param ruleNodeRef
+     *            the node reference representing the rule
+     * @param rule
+     *            the rule
      */
     private void saveAction(NodeRef ruleNodeRef, Rule rule)
     {
         // Get the action definition from the rule
         Action action = rule.getAction();
         ParameterCheck.mandatory("Rule action", action);
-        
+
         // Get the current action node reference
         NodeRef actionNodeRef = null;
         List<ChildAssociationRef> actions = this.nodeService.getChildAssocs(ruleNodeRef, RuleModel.ASSOC_ACTION, RuleModel.ASSOC_ACTION);
@@ -994,23 +996,23 @@ public class RuleServiceImpl
         {
             throw new RuleServiceException("The rule has become corrupt.  More than one action is associated with the rule.");
         }
-        
+
         // Create the new action node reference
         if (actionNodeRef == null)
         {
             actionNodeRef = this.runtimeActionService.createActionNodeRef(action, ruleNodeRef, RuleModel.ASSOC_ACTION, RuleModel.ASSOC_ACTION);
         }
-        
+
         // Update the action node
         this.runtimeActionService.saveActionImpl(actionNodeRef, action);
-            
+
     }
-    
+
     @Override
     public void removeRule(NodeRef nodeRef, Rule rule)
     {
         checkForLinkedRules(nodeRef);
-        
+
         if (permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == ALLOWED)
         {
             if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES))
@@ -1028,9 +1030,9 @@ public class RuleServiceImpl
                 {
                     enableRules(nodeRef);
                 }
-                
+
                 // If this was the last rule on the node, remove the aspect
-                if(countRules(nodeRef) == 0)
+                if (countRules(nodeRef) == 0)
                 {
                     // Since this is the last rule, unlink any linked rulesets
                     List<NodeRef> linkedFrom = getLinkedFromRuleNodes(nodeRef);
@@ -1040,10 +1042,10 @@ public class RuleServiceImpl
                         {
                             NodeRef ruleFolder = getSavedRuleFolderAssoc(nodeRef).getChildRef();
                             nodeService.removeChild(linkedFromNodeRef, ruleFolder);
-                            nodeService.removeAspect(linkedFromNodeRef, RuleModel.ASPECT_RULES);                            
+                            nodeService.removeAspect(linkedFromNodeRef, RuleModel.ASPECT_RULES);
                         }
                     }
-                    
+
                     nodeService.removeAspect(nodeRef, RuleModel.ASPECT_RULES);
                 }
             }
@@ -1059,11 +1061,12 @@ public class RuleServiceImpl
     /**
      * Checks if rules are linked and throws an exception if they are.
      * 
-     * @param nodeRef   node reference of rule node
+     * @param nodeRef
+     *            node reference of rule node
      */
     private void checkForLinkedRules(NodeRef nodeRef)
     {
-        if (isLinkedToRuleNode(nodeRef)== true)
+        if (isLinkedToRuleNode(nodeRef) == true)
         {
             throw new RuleServiceException("Can not edit rules as they are linked to another rule set.");
         }
@@ -1073,24 +1076,24 @@ public class RuleServiceImpl
     public void removeAllRules(NodeRef nodeRef)
     {
         checkForLinkedRules(nodeRef);
-        
+
         if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == ALLOWED)
         {
-            if (this.nodeService.exists(nodeRef) == true && 
-                this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
+            if (this.nodeService.exists(nodeRef) == true &&
+                    this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
             {
                 NodeRef folder = getSavedRuleFolderRef(nodeRef);
                 if (folder != null)
                 {
                     List<ChildAssociationRef> ruleChildAssocs = this.nodeService.getChildAssocs(
-                                                                                folder, 
-                                                                                MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+                            folder,
+                            MATCH_ALL, ASSOC_NAME_RULES_REGEX);
                     for (ChildAssociationRef ruleChildAssoc : ruleChildAssocs)
                     {
                         this.nodeService.removeChild(folder, ruleChildAssoc.getChildRef());
                     }
                 }
-                
+
                 // As this was the last rule on the node, remove the aspect
                 this.nodeService.removeAspect(nodeRef, RuleModel.ASPECT_RULES);
             }
@@ -1102,9 +1105,9 @@ public class RuleServiceImpl
             throw new RuleServiceException("Insufficient permissions to remove a rule.");
         }
     }
-    
+
     @Override
-    public void addRulePendingExecution(NodeRef actionableNodeRef, NodeRef actionedUponNodeRef, Rule rule) 
+    public void addRulePendingExecution(NodeRef actionableNodeRef, NodeRef actionedUponNodeRef, Rule rule)
     {
         addRulePendingExecution(actionableNodeRef, actionedUponNodeRef, rule, false);
     }
@@ -1114,7 +1117,7 @@ public class RuleServiceImpl
     public void removeRulePendingExecution(NodeRef actionedUponNodeRef)
     {
         ParameterCheck.mandatory("actionedUponNodeRef", actionedUponNodeRef);
-        
+
         List<PendingRuleData> pendingRules = (List<PendingRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_PENDING);
         if (pendingRules != null)
         {
@@ -1129,7 +1132,7 @@ public class RuleServiceImpl
                     listUpdated = true;
                 }
             }
-            
+
             if (listUpdated == true)
             {
                 AlfrescoTransactionSupport.bindResource(KEY_RULES_PENDING, pendingRules);
@@ -1137,24 +1140,23 @@ public class RuleServiceImpl
             }
         }
     }
-    
+
     @Override
     @SuppressWarnings("unchecked")
-    public void addRulePendingExecution(NodeRef actionableNodeRef, NodeRef actionedUponNodeRef, Rule rule, boolean executeAtEnd) 
+    public void addRulePendingExecution(NodeRef actionableNodeRef, NodeRef actionedUponNodeRef, Rule rule, boolean executeAtEnd)
     {
         ParameterCheck.mandatory("actionableNodeRef", actionableNodeRef);
         ParameterCheck.mandatory("actionedUponNodeRef", actionedUponNodeRef);
-        
+
         // First check to see if the node has been disabled
         if (this.isEnabled() == true &&
-            this.rulesEnabled(this.getOwningNodeRef(rule)) &&
-            this.disabledRules.contains(rule) == false)
+                this.rulesEnabled(this.getOwningNodeRef(rule)) &&
+                this.disabledRules.contains(rule) == false)
         {
             PendingRuleData pendingRuleData = new PendingRuleData(actionableNodeRef, actionedUponNodeRef, rule, executeAtEnd);
             pendingRuleData.setRunAsUser(AuthenticationUtil.getRunAsUser());
 
-            List<PendingRuleData> pendingRules =
-                (List<PendingRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_PENDING);
+            List<PendingRuleData> pendingRules = (List<PendingRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_PENDING);
             if (pendingRules == null)
             {
                 // bind pending rules to the current transaction
@@ -1162,19 +1164,19 @@ public class RuleServiceImpl
                 AlfrescoTransactionSupport.bindResource(KEY_RULES_PENDING, pendingRules);
                 // bind the rule transaction listener
                 AlfrescoTransactionSupport.bindListener(this.ruleTransactionListener);
-                
+
                 if (logger.isDebugEnabled() == true)
                 {
                     logger.debug("Rule '" + rule.getTitle() + "' has been added pending execution to action upon node '" + actionedUponNodeRef.getId() + "'");
                 }
             }
-            
-            // Prevent the same rule being executed more than once in the same transaction    
+
+            // Prevent the same rule being executed more than once in the same transaction
             if (pendingRules.contains(pendingRuleData) == false)
             {
                 if ((AuthenticationUtil.isRunAsUserTheSystemUser()) && (rule.getAction() instanceof ActionImpl))
                 {
-                    ((ActionImpl)rule.getAction()).setRunAsUser(AuthenticationUtil.SYSTEM_USER_NAME);
+                    ((ActionImpl) rule.getAction()).setRunAsUser(AuthenticationUtil.SYSTEM_USER_NAME);
                 }
                 pendingRules.add(pendingRuleData);
             }
@@ -1187,34 +1189,34 @@ public class RuleServiceImpl
             }
         }
     }
-    
+
     @Override
-    public void executePendingRules() 
-    {           
+    public void executePendingRules()
+    {
         if (AlfrescoTransactionSupport.getResource(KEY_RULES_EXECUTED) == null)
         {
-        	 if (logger.isDebugEnabled() == true)
-             {
-                 logger.debug("Creating the executed rules list");
-             }
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Creating the executed rules list");
+            }
             AlfrescoTransactionSupport.bindResource(KEY_RULES_EXECUTED, new HashSet<ExecutedRuleData>());
         }
         else
         {
-        	if (logger.isDebugEnabled() == true)
-        	{
-        		logger.debug("Executed rules list already exists");
-        	}
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Executed rules list already exists");
+            }
         }
-    	
-    	List<PendingRuleData> executeAtEndRules = new ArrayList<PendingRuleData>();
+
+        List<PendingRuleData> executeAtEndRules = new ArrayList<PendingRuleData>();
         executePendingRulesImpl(executeAtEndRules);
         for (PendingRuleData data : executeAtEndRules)
         {
             executePendingRule(data);
         }
-    }     
-    
+    }
+
     /**
      * Executes the pending rules, iterating until all pending rules have been executed
      */
@@ -1222,8 +1224,7 @@ public class RuleServiceImpl
     private void executePendingRulesImpl(List<PendingRuleData> executeAtEndRules)
     {
         // get the transaction-local rules to execute
-        List<PendingRuleData> pendingRules =
-                (List<PendingRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_PENDING);
+        List<PendingRuleData> pendingRules = (List<PendingRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_PENDING);
         // only execute if there are rules present
         if (pendingRules != null && !pendingRules.isEmpty())
         {
@@ -1231,7 +1232,7 @@ public class RuleServiceImpl
             // remove all pending rules from the transaction
             AlfrescoTransactionSupport.unbindResource(KEY_RULES_PENDING);
             // execute each rule
-            for (PendingRuleData pendingRule : pendingRulesArr) 
+            for (PendingRuleData pendingRule : pendingRulesArr)
             {
                 if (pendingRule.getExecuteAtEnd() == false)
                 {
@@ -1242,24 +1243,24 @@ public class RuleServiceImpl
                     executeAtEndRules.add(pendingRule);
                 }
             }
-            
+
             // Run any rules that have been marked as pending during execution
             executePendingRulesImpl(executeAtEndRules);
-        }   
+        }
     }
-    
+
     /**
      * Executes a pending rule
      * 
-	 * @param pendingRule	the pending rule data object
+     * @param pendingRule
+     *            the pending rule data object
      */
-    private void executePendingRule(final PendingRuleData pendingRule) 
+    private void executePendingRule(final PendingRuleData pendingRule)
     {
         if (AuthenticationUtil.getRunAsAuthentication() == null && pendingRule.getRunAsUser() != null)
         {
             // MNT-11670: runAsUser was set previously
-            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
                 public Void doWork() throws Exception
                 {
                     executePendingRuleImpl(pendingRule);
@@ -1272,22 +1273,21 @@ public class RuleServiceImpl
             executePendingRuleImpl(pendingRule);
         }
     }
-    
+
     @SuppressWarnings("unchecked")
-    private void executePendingRuleImpl(PendingRuleData pendingRule) 
+    private void executePendingRuleImpl(PendingRuleData pendingRule)
     {
-        Set<ExecutedRuleData> executedRules =
-               (Set<ExecutedRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_EXECUTED);
+        Set<ExecutedRuleData> executedRules = (Set<ExecutedRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_EXECUTED);
 
         NodeRef actionedUponNodeRef = pendingRule.getActionedUponNodeRef();
         Rule rule = pendingRule.getRule();
-        
+
         boolean isSystemUser = false;
-        if (!(AuthenticationUtil.isRunAsUserTheSystemUser()) && (rule.getAction()!=null) && (rule.getAction() instanceof ActionImpl))
+        if (!(AuthenticationUtil.isRunAsUserTheSystemUser()) && (rule.getAction() != null) && (rule.getAction() instanceof ActionImpl))
         {
             isSystemUser = AuthenticationUtil.SYSTEM_USER_NAME.equals(((ActionImpl) rule.getAction()).getRunAsUser());
         }
-		
+
         NodeRef ruleNodeRef = rule.getNodeRef();
         if (!ruleNodeRef.getStoreRef().equals(actionedUponNodeRef.getStoreRef()) && !nodeService.exists(ruleNodeRef))
         {
@@ -1296,12 +1296,11 @@ public class RuleServiceImpl
             {
                 ruleNodeRef = newRuleNodeRef;
             }
-            
+
         }
         final NodeRef finalRuleNodeRef = ruleNodeRef;
         // update all associations and actions
-        rule = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Rule>()
-        {
+        rule = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Rule>() {
             public Rule doWork() throws Exception
             {
                 return getRule(finalRuleNodeRef);
@@ -1315,8 +1314,7 @@ public class RuleServiceImpl
                 final Rule fRule = rule;
                 final NodeRef fActionedUponNodeRef = actionedUponNodeRef;
                 final Set<ExecutedRuleData> fExecutedRules = executedRules;
-                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         executeRule(fRule, fActionedUponNodeRef, fExecutedRules);
@@ -1330,7 +1328,7 @@ public class RuleServiceImpl
             }
         }
     }
-    
+
     @Override
     public void executeRule(Rule rule, NodeRef actionedUponNodeRef, Set<ExecutedRuleData> executedRules)
     {
@@ -1340,21 +1338,21 @@ public class RuleServiceImpl
         {
             throw new RuleServiceException("Attempting to execute a rule that does not have a rule specified.");
         }
-        
+
         // Evaluate the condition
         if (this.actionService.evaluateAction(action, actionedUponNodeRef) == true)
         {
             if (executedRules != null)
             {
                 // Add the rule to the executed rule list
-                // (do this before this is executed to prevent rules being added to the pending list) 
+                // (do this before this is executed to prevent rules being added to the pending list)
                 executedRules.add(new ExecutedRuleData(actionedUponNodeRef, rule));
                 if (logger.isDebugEnabled() == true)
                 {
                     logger.debug(" ... Adding rule (" + rule.getTitle() + ") and nodeRef (" + actionedUponNodeRef.getId() + ") to executed list");
                 }
             }
-            
+
             // Execute the rule
             boolean executeAsync = rule.getExecuteAsynchronously();
             // ALF-718: Treats email actions as a special case where they may be performed after the
@@ -1367,7 +1365,7 @@ public class RuleServiceImpl
             // successful commit works in the context of a Rule but not for the InvitationService.
             if (action.getActionDefinitionName().equals(CompositeActionExecuter.NAME))
             {
-                for (Action subAction : ((CompositeAction)action).getActions())
+                for (Action subAction : ((CompositeAction) action).getActions())
                 {
                     if (subAction.getActionDefinitionName().equals(MailActionExecuter.NAME))
                     {
@@ -1379,7 +1377,7 @@ public class RuleServiceImpl
             {
                 action.setParameterValue(MailActionExecuter.PARAM_SEND_AFTER_COMMIT, true);
             }
-    
+
             executeAction(action, actionedUponNodeRef, executeAsync);
         }
     }
@@ -1388,42 +1386,42 @@ public class RuleServiceImpl
     {
         this.actionService.executeAction(action, actionedUponNodeRef, true, executeAsynchronously);
     }
-    
+
     /**
      * Determines whether the rule can be executed
      */
     private boolean canExecuteRule(Set<ExecutedRuleData> executedRules, NodeRef actionedUponNodeRef, Rule rule)
     {
         boolean result = true;
-        
+
         if (logger.isDebugEnabled() == true)
         {
             logger.debug(" >> Current executed items count = " + executedRules.size());
         }
-        
+
         if (executedRules != null)
         {
             if (executedRules.contains(new ExecutedRuleData(actionedUponNodeRef, rule)) == true)
             {
                 if (logger.isDebugEnabled() == true)
                 {
-                    logger.debug(" >> Already executed this rule (" + rule.getTitle()+ ") on this nodeRef (" + actionedUponNodeRef.getId() + ")");
+                    logger.debug(" >> Already executed this rule (" + rule.getTitle() + ") on this nodeRef (" + actionedUponNodeRef.getId() + ")");
                 }
                 result = false;
             }
             else
             {
-                result = checkForCopy(executedRules, actionedUponNodeRef, rule);                
+                result = checkForCopy(executedRules, actionedUponNodeRef, rule);
             }
         }
         else
         {
             if (logger.isDebugEnabled() == true)
             {
-                logger.debug(" >> Executed this rule (" + rule.getTitle()+ ") on (" + actionedUponNodeRef.getId() + ") executed rule is null");
+                logger.debug(" >> Executed this rule (" + rule.getTitle() + ") on (" + actionedUponNodeRef.getId() + ") executed rule is null");
             }
         }
-        
+
         return result;
     }
 
@@ -1441,14 +1439,14 @@ public class RuleServiceImpl
             {
                 logger.debug(" >> Got the copiedFrom nodeRef (" + copiedFrom + ")");
             }
-            
+
             if (copiedFrom != null)
             {
                 if (executedRules.contains(new ExecutedRuleData(copiedFrom, rule)) == true)
                 {
                     if (logger.isDebugEnabled() == true)
                     {
-                        logger.debug(" >> Already executed this rule (" + rule.getTitle()+ ") on this the copied from nodeRef (" + copiedFrom.getId() + ")");
+                        logger.debug(" >> Already executed this rule (" + rule.getTitle() + ") on this the copied from nodeRef (" + copiedFrom.getId() + ")");
                     }
                     return false;
                 }
@@ -1456,7 +1454,7 @@ public class RuleServiceImpl
                 {
                     if (logger.isDebugEnabled() == true)
                     {
-                        logger.debug(" >> Executed this rule (" + rule.getTitle()+ ") on (" + actionedUponNodeRef.getId() + ") copiedFrom is not is list");
+                        logger.debug(" >> Executed this rule (" + rule.getTitle() + ") on (" + actionedUponNodeRef.getId() + ") copiedFrom is not is list");
                         logger.debug("  > Checking copy");
                     }
                     result = checkForCopy(executedRules, copiedFrom, rule);
@@ -1467,22 +1465,23 @@ public class RuleServiceImpl
         {
             if (logger.isDebugEnabled() == true)
             {
-                logger.debug(" >> Executed this rule (" + rule.getTitle()+ ") on (" + actionedUponNodeRef.getId() + ") no copied from aspect");
+                logger.debug(" >> Executed this rule (" + rule.getTitle() + ") on (" + actionedUponNodeRef.getId() + ") no copied from aspect");
             }
         }
         return result;
     }
-    
+
     /**
      * Register the rule type
      * 
-     * @param ruleType  the rule type adapter
+     * @param ruleType
+     *            the rule type adapter
      */
-    public void registerRuleType(RuleType ruleType) 
+    public void registerRuleType(RuleType ruleType)
     {
         this.ruleTypes.put(ruleType.getName(), ruleType);
-    }    
-    
+    }
+
     /**
      * Helper class to contain the information about a rule that is executed
      * 
@@ -1493,8 +1492,8 @@ public class RuleServiceImpl
 
         protected NodeRef actionableNodeRef;
         protected Rule rule;
-        
-        public ExecutedRuleData(NodeRef actionableNodeRef, Rule rule) 
+
+        public ExecutedRuleData(NodeRef actionableNodeRef, Rule rule)
         {
             this.actionableNodeRef = actionableNodeRef;
             this.rule = rule;
@@ -1509,17 +1508,17 @@ public class RuleServiceImpl
         {
             return rule;
         }
-        
+
         @Override
-        public int hashCode() 
+        public int hashCode()
         {
             int i = actionableNodeRef.hashCode();
-            i = (i*37) + rule.hashCode();
+            i = (i * 37) + rule.hashCode();
             return i;
         }
-        
+
         @Override
-        public boolean equals(Object obj) 
+        public boolean equals(Object obj)
         {
             if (this == obj)
             {
@@ -1548,24 +1547,24 @@ public class RuleServiceImpl
         private NodeRef actionedUponNodeRef;
         private boolean executeAtEnd = false;
         private String runAsUserName = null;
-            
-        public PendingRuleData(NodeRef actionableNodeRef, NodeRef actionedUponNodeRef, Rule rule, boolean executeAtEnd) 
+
+        public PendingRuleData(NodeRef actionableNodeRef, NodeRef actionedUponNodeRef, Rule rule, boolean executeAtEnd)
         {
             super(actionableNodeRef, rule);
             this.actionedUponNodeRef = actionedUponNodeRef;
             this.executeAtEnd = executeAtEnd;
         }
-        
-        public NodeRef getActionedUponNodeRef() 
+
+        public NodeRef getActionedUponNodeRef()
         {
             return actionedUponNodeRef;
         }
-        
+
         public boolean getExecuteAtEnd()
         {
             return this.executeAtEnd;
         }
-        
+
         public String getRunAsUser()
         {
             return this.runAsUserName;
@@ -1575,17 +1574,17 @@ public class RuleServiceImpl
         {
             this.runAsUserName = runAsUserName;
         }
-        
+
         @Override
-        public int hashCode() 
+        public int hashCode()
         {
             int i = super.hashCode();
-            i = (i*37) + actionedUponNodeRef.hashCode();
+            i = (i * 37) + actionedUponNodeRef.hashCode();
             return i;
         }
-        
+
         @Override
-        public boolean equals(Object obj) 
+        public boolean equals(Object obj)
         {
             if (this == obj)
             {
@@ -1609,18 +1608,17 @@ public class RuleServiceImpl
     public NodeRef getOwningNodeRef(final Rule rule)
     {
         // Run from system user: https://issues.alfresco.com/jira/browse/ALF-607
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>() {
             public NodeRef doWork() throws Exception
             {
                 NodeRef result = null;
-        
+
                 NodeRef ruleNodeRef = rule.getNodeRef();
                 if (ruleNodeRef != null)
                 {
                     result = getOwningNodeRefRuleImpl(ruleNodeRef);
                 }
-        
+
                 return result;
             }
         }, AuthenticationUtil.getSystemUserName());
@@ -1630,7 +1628,7 @@ public class RuleServiceImpl
     {
         // Get the system folder parent
         NodeRef systemFolder = this.nodeService.getPrimaryParent(ruleNodeRef).getParentRef();
-        
+
         // Get the owning node ref
         return this.nodeService.getPrimaryParent(systemFolder).getParentRef();
     }
@@ -1645,8 +1643,7 @@ public class RuleServiceImpl
     public NodeRef getOwningNodeRef(final Action action)
     {
         // Run from system user: https://issues.alfresco.com/jira/browse/ALF-607
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>()
-        {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<NodeRef>() {
 
             public NodeRef doWork() throws Exception
             {
@@ -1657,7 +1654,7 @@ public class RuleServiceImpl
                 {
                     result = getOwningNodeRefActionImpl(actionNodeRef);
                 }
-        
+
                 return result;
             }
         }, AuthenticationUtil.getSystemUserName());
@@ -1674,25 +1671,25 @@ public class RuleServiceImpl
             {
                 result = getOwningNodeRefRuleImpl(parentNodeRef);
             }
-            else if (ActionModel.TYPE_COMPOSITE_ACTION.equals(parentType) == true) 
+            else if (ActionModel.TYPE_COMPOSITE_ACTION.equals(parentType) == true)
             {
                 result = getOwningNodeRefActionImpl(parentNodeRef);
             }
         }
         return result;
     }
-    
+
     @Override
     public boolean isLinkedToRuleNode(NodeRef nodeRef)
     {
         return (getLinkedToRuleNode(nodeRef) != null);
     }
-    
+
     @Override
     public NodeRef getLinkedToRuleNode(NodeRef nodeRef)
     {
         NodeRef result = null;
-        
+
         // Check whether the node reference has the rule aspect
         if (nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
         {
@@ -1702,10 +1699,10 @@ public class RuleServiceImpl
                 result = nodeService.getPrimaryParent(assoc.getChildRef()).getParentRef();
             }
         }
-        
+
         return result;
     }
-    
+
     @Override
     public List<NodeRef> getLinkedFromRuleNodes(NodeRef nodeRef)
     {
@@ -1734,9 +1731,9 @@ public class RuleServiceImpl
     public NodeRef getRuleSetNode(final NodeRef folderNodeRef)
     {
         return runtimeNodeService.getChildAssocs(folderNodeRef, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER).stream()
-            .map(ChildAssociationRef::getChildRef)
-            .findFirst()
-            .orElse(null);
+                .map(ChildAssociationRef::getChildRef)
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
@@ -1759,15 +1756,18 @@ public class RuleServiceImpl
     private boolean isChildOf(final NodeRef childNodeRef, final QNamePattern associationType, final NodeRef parentNodeRef)
     {
         final List<ChildAssociationRef> associations;
-        if (associationType == null) {
+        if (associationType == null)
+        {
             associations = runtimeNodeService.getParentAssocs(childNodeRef);
-        } else {
+        }
+        else
+        {
             associations = runtimeNodeService.getParentAssocs(childNodeRef, associationType, associationType);
         }
 
         return associations.stream()
-            .map(ChildAssociationRef::getParentRef)
-            .anyMatch(parentNodeRef::equals);
+                .map(ChildAssociationRef::getParentRef)
+                .anyMatch(parentNodeRef::equals);
     }
 
     @Override
@@ -1775,6 +1775,6 @@ public class RuleServiceImpl
     public boolean isRuleSetShared(final NodeRef ruleSetNodeRef)
     {
         return runtimeNodeService.getParentAssocs(ruleSetNodeRef).stream()
-            .anyMatch(association -> !association.isPrimary());
+                .anyMatch(association -> !association.isPrimary());
     }
 }

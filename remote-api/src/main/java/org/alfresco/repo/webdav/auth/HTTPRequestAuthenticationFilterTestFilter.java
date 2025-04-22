@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -101,7 +100,7 @@ public class HTTPRequestAuthenticationFilterTestFilter implements Filter
 
     private HttpServletRequest getProxy(HttpServletRequest req)
     {
-        HttpServletRequest proxy = (HttpServletRequest) Proxy.newProxyInstance(HttpServletRequest.class.getClassLoader(), new Class[] { HttpServletRequest.class },
+        HttpServletRequest proxy = (HttpServletRequest) Proxy.newProxyInstance(HttpServletRequest.class.getClassLoader(), new Class[]{HttpServletRequest.class},
                 new Handler(req));
         return proxy;
     }

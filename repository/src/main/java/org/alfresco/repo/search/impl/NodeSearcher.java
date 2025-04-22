@@ -32,6 +32,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
+import org.jaxen.JaxenException;
+
 import org.alfresco.repo.search.DocumentNavigator;
 import org.alfresco.repo.search.NodeServiceXPath;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -43,17 +45,11 @@ import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
-import org.jaxen.JaxenException;
 
 /**
  * Helper class that walks a node hierarchy.
  * <p>
- * Some searcher methods on
- * {@link org.alfresco.service.cmr.search.SearchService} can use this directly
- * as its only dependencies are
- * {@link org.alfresco.service.cmr.repository.NodeService},
- * {@link org.alfresco.service.cmr.dictionary.DictionaryService} and a
- * {@link org.alfresco.service.cmr.search.SearchService}
+ * Some searcher methods on {@link org.alfresco.service.cmr.search.SearchService} can use this directly as its only dependencies are {@link org.alfresco.service.cmr.repository.NodeService}, {@link org.alfresco.service.cmr.dictionary.DictionaryService} and a {@link org.alfresco.service.cmr.search.SearchService}
  * 
  * @author Derek Hulley
  */
@@ -116,7 +112,7 @@ public class NodeSearcher
             if (order != null)
             {
                 orderNodes(answer, order);
-                for(NodeRef node : answer)
+                for (NodeRef node : answer)
                 {
                     StringBuffer buffer = new StringBuffer();
                     for (AttributeOrder attOrd : order)
@@ -142,14 +138,14 @@ public class NodeSearcher
     {
         List<AttributeOrder> order;
         NodeService nodeService;
-        
+
         NodeRefComparator(NodeService nodeService, List<AttributeOrder> order)
         {
             this.nodeService = nodeService;
             this.order = order;
         }
-        
-        @SuppressWarnings({ "unchecked", "rawtypes" })
+
+        @SuppressWarnings({"unchecked", "rawtypes"})
         public int compare(NodeRef n1, NodeRef n2)
         {
             for (AttributeOrder attributeOrder : order)
@@ -178,7 +174,7 @@ public class NodeSearcher
                     {
                         if ((o1 instanceof Comparable) && (o2 instanceof Comparable))
                         {
-                            return (attributeOrder.ascending ? 1 : -1) * ((Comparable)o1).compareTo((Comparable) o2);
+                            return (attributeOrder.ascending ? 1 : -1) * ((Comparable) o1).compareTo((Comparable) o2);
                         }
                         else
                         {

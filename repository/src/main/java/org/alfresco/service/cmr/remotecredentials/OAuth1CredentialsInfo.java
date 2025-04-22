@@ -31,15 +31,15 @@ package org.alfresco.service.cmr.remotecredentials;
  * @author Nick Burch
  * @since 4.0.2
  */
-public interface OAuth1CredentialsInfo extends BaseCredentialsInfo 
+public interface OAuth1CredentialsInfo extends BaseCredentialsInfo
 {
-   /**
-    * @return the OAuth Token Identifier
-    */
-   String getOAuthToken();
-   
-   /**
-    * @return the OAuth Token Secret
-    */
-   String getOAuthSecret();
+    /**
+     * @return the OAuth Token Identifier
+     */
+    String getOAuthToken();
+
+    /**
+     * @return the OAuth Token Secret
+     */
+    String getOAuthSecret();
 }

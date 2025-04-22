@@ -34,7 +34,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Blog details.  Contains the detail of a blog.
+ * Blog details. Contains the detail of a blog.
  * 
  * @author Roy Wetherall
  */
@@ -42,34 +42,36 @@ public class BlogDetails implements BlogIntegrationModel
 {
     /** Node that has the blog details aspect applied */
     private NodeRef nodeRef;
-    
+
     /** The blog implementation name (eg: wordpress, typepad, etc) */
     private String implementationName;
-    
+
     /** The blog id */
     private String blogId;
-    
+
     /** The blog URL */
     private String url;
-    
+
     /** The user name */
     private String userName;
-    
+
     /** The password */
     private String password;
-    
+
     /** The display name of the blog */
     private String name;
-    
+
     /** The description of the blog */
     private String description;
-    
+
     /**
      * Create a BlogDetails object from a node that has the blogDetails aspect applied.
      * 
-     * @param nodeService   the node service
-     * @param nodeRef       the node reference
-     * @return BlogDetails  the blog details 
+     * @param nodeService
+     *            the node service
+     * @param nodeRef
+     *            the node reference
+     * @return BlogDetails the blog details
      */
     public static BlogDetails createBlogDetails(NodeService nodeService, NodeRef nodeRef)
     {
@@ -78,47 +80,62 @@ public class BlogDetails implements BlogIntegrationModel
         {
             throw new BlogIntegrationRuntimeException("Can not create blog details object since node does not have blogDetails aspect.");
         }
-        
+
         // Get the blog details
         Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
         return new BlogDetails(
-                (String)props.get(PROP_BLOG_IMPLEMENTATION),
-                (String)props.get(PROP_ID),
-                (String)props.get(PROP_URL),
-                (String)props.get(PROP_USER_NAME),
-                (String)props.get(PROP_PASSWORD),
-                (String)props.get(PROP_NAME),
-                (String)props.get(PROP_DESCRIPTION),
-                nodeRef);        
+                (String) props.get(PROP_BLOG_IMPLEMENTATION),
+                (String) props.get(PROP_ID),
+                (String) props.get(PROP_URL),
+                (String) props.get(PROP_USER_NAME),
+                (String) props.get(PROP_PASSWORD),
+                (String) props.get(PROP_NAME),
+                (String) props.get(PROP_DESCRIPTION),
+                nodeRef);
     }
-    
+
     /**
      * Constructor
      * 
-     * @param implementationName    the implementation name
-     * @param blogId                the blog id
-     * @param url                   the blog URL
-     * @param userName              the user name
-     * @param password              the password
-     * @param name                  the name
-     * @param description           the description
+     * @param implementationName
+     *            the implementation name
+     * @param blogId
+     *            the blog id
+     * @param url
+     *            the blog URL
+     * @param userName
+     *            the user name
+     * @param password
+     *            the password
+     * @param name
+     *            the name
+     * @param description
+     *            the description
      */
     public BlogDetails(String implementationName, String blogId, String url, String userName, String password, String name, String description)
     {
         this(implementationName, blogId, url, userName, password, name, description, null);
     }
-    
+
     /**
-     * Constructor 
+     * Constructor
      * 
-     * @param implementationName    the implementation name
-     * @param blogId                the blog id
-     * @param url                   the blog URL
-     * @param userName              the user name
-     * @param password              the password
-     * @param name                  the name
-     * @param description           the description
-     * @param nodeRef               the node reference
+     * @param implementationName
+     *            the implementation name
+     * @param blogId
+     *            the blog id
+     * @param url
+     *            the blog URL
+     * @param userName
+     *            the user name
+     * @param password
+     *            the password
+     * @param name
+     *            the name
+     * @param description
+     *            the description
+     * @param nodeRef
+     *            the node reference
      */
     public BlogDetails(String implementationName, String blogId, String url, String userName, String password, String name, String description, NodeRef nodeRef)
     {
@@ -131,81 +148,81 @@ public class BlogDetails implements BlogIntegrationModel
         this.description = description;
         this.nodeRef = nodeRef;
     }
-    
+
     /**
      * Gets the node reference
      * 
-     * @return NodeRef  the node reference
+     * @return NodeRef the node reference
      */
     public NodeRef getNodeRef()
     {
         return nodeRef;
     }
-    
+
     /**
      * Get the implementation name
      * 
-     * @return String   the implementation name
+     * @return String the implementation name
      */
     public String getImplementationName()
     {
         return this.implementationName;
     }
-    
+
     /**
      * Get the blog id
      * 
-     * @return String   the blog id
+     * @return String the blog id
      */
     public String getBlogId()
     {
         return this.blogId;
     }
-    
+
     /**
      * Get the blog URL
      * 
-     * @return String   the blog URL
+     * @return String the blog URL
      */
     public String getUrl()
     {
         return this.url;
     }
-    
+
     /**
      * Get the user name
      * 
-     * @return String   the user name
+     * @return String the user name
      */
     public String getUserName()
     {
         return this.userName;
     }
-    
+
     /**
      * Get the password
      * 
-     * @return String   the password
+     * @return String the password
      */
     public String getPassword()
     {
         return this.password;
     }
-    
+
     /**
      * Get the name
      * 
-     * @return String   the name
+     * @return String the name
      */
     public String getName()
     {
         return name;
     }
-    
+
     /**
      * Get the description
      * 
-     * @return String   the description
+     * @return String the description
      */
     public String getDescription()
     {

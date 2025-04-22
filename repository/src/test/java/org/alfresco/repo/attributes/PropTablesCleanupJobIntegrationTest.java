@@ -28,11 +28,12 @@ package org.alfresco.repo.attributes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.alfresco.util.ApplicationContextHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.JobDetail;
 import org.springframework.context.ApplicationContext;
+
+import org.alfresco.util.ApplicationContextHelper;
 
 /**
  * Integration tests for the {@link PropTablesCleanupJob} class.
@@ -43,19 +44,19 @@ public class PropTablesCleanupJobIntegrationTest
 {
     private ApplicationContext ctx;
     private JobDetail jobDetail;
-    
+
     @Before
     public void setUp() throws Exception
     {
         ctx = ApplicationContextHelper.getApplicationContext();
         jobDetail = ctx.getBean("propTablesCleanupJobDetail", JobDetail.class);
     }
-    
+
     @Test
     public void checkJobDetails()
     {
         assertEquals(PropTablesCleanupJob.class, jobDetail.getJobClass());
         assertTrue("JobDetail did not contain PropTablesCleaner reference",
-                    jobDetail.getJobDataMap().get("propTablesCleaner") instanceof PropTablesCleaner);
+                jobDetail.getJobDataMap().get("propTablesCleaner") instanceof PropTablesCleaner);
     }
 }

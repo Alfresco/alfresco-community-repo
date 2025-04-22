@@ -27,6 +27,10 @@ package org.alfresco.repo.thumbnail.script;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.mozilla.javascript.Scriptable;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.jscript.ScriptNode;
@@ -35,9 +39,6 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * @author Roy Wetherall
@@ -54,9 +55,12 @@ public class ScriptThumbnail extends ScriptNode
     /**
      * Constructor
      * 
-     * @param nodeRef NodeRef
-     * @param services ServiceRegistry
-     * @param scope Scriptable
+     * @param nodeRef
+     *            NodeRef
+     * @param services
+     *            ServiceRegistry
+     * @param scope
+     *            Scriptable
      */
     public ScriptThumbnail(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {
@@ -74,21 +78,21 @@ public class ScriptThumbnail extends ScriptNode
         {
             StringBuilder msg = new StringBuilder();
             msg.append("Node ")
-                .append(nodeRef)
-                .append(" has ")
-                .append(parentRefs.size())
-                .append(" rendition parents. Unable to update.");
+                    .append(nodeRef)
+                    .append(" has ")
+                    .append(parentRefs.size())
+                    .append(" rendition parents. Unable to update.");
             if (logger.isWarnEnabled())
             {
                 logger.warn(msg.toString());
             }
             throw new AlfrescoRuntimeException(msg.toString());
         }
-        
+
         String name = parentRefs.get(0).getQName().getLocalName();
-        
+
         ThumbnailDefinition def = services.getThumbnailService().getThumbnailRegistry().getThumbnailDefinition(name);
         services.getThumbnailService().updateThumbnail(this.nodeRef, def.getTransformationOptions());
     }
-    
+
 }

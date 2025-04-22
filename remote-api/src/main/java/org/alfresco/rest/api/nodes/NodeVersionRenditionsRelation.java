@@ -26,8 +26,11 @@
 
 package org.alfresco.rest.api.nodes;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.webscripts.Status;
 
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.rest.api.DirectAccessUrlHelper;
@@ -51,19 +54,12 @@ import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.webscripts.Status;
 
 /**
  *
  * Node version renditions
  *
- * - GET    /nodes/{nodeId}/versions/{versionId}/renditions
- * - POST   /nodes/{nodeId}/versions/{versionId}/renditions
- * - GET    /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}
- * - DELETE /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}
- * - GET    /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content
- * - POST   /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/request-direct-access-url
+ * - GET /nodes/{nodeId}/versions/{versionId}/renditions - POST /nodes/{nodeId}/versions/{versionId}/renditions - GET /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId} - DELETE /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId} - GET /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content - POST /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/request-direct-access-url
  *
  * @author janv
  */
@@ -124,7 +120,7 @@ public class NodeVersionRenditionsRelation implements RelationshipResourceAction
     }
 
     @WebApiDescription(title = "Download rendition", description = "Download rendition")
-    @BinaryProperties({ "content" })
+    @BinaryProperties({"content"})
     @Override
     public BinaryResource readProperty(String nodeId, String versionId, Parameters parameters)
     {
@@ -134,18 +130,18 @@ public class NodeVersionRenditionsRelation implements RelationshipResourceAction
         return renditions.getContent(nodeRef, versionId, renditionId, parameters);
     }
 
-    @Operation ("request-direct-access-url")
-    @WebApiParam (name = "directAccessUrlRequest",
-                  title = "Request direct access url",
-                  description = "Options for direct access url request",
-                  kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
+    @Operation("request-direct-access-url")
+    @WebApiParam(name = "directAccessUrlRequest",
+            title = "Request direct access url",
+            description = "Options for direct access url request",
+            kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Request content url",
-                       description="Generates a direct access URL.",
-                       successStatus = HttpServletResponse.SC_OK)
+            description = "Generates a direct access URL.",
+            successStatus = HttpServletResponse.SC_OK)
     public DirectAccessUrl requestContentDirectUrl(String nodeId,
-                                                   String versionId,
-                                                   DirectAccessUrlRequest directAccessUrlRequest,
-                                                   Parameters parameters, WithResponse withResponse)
+            String versionId,
+            DirectAccessUrlRequest directAccessUrlRequest,
+            Parameters parameters, WithResponse withResponse)
     {
         boolean attachment = directAccessUrlHelper.getAttachment(directAccessUrlRequest);
         Long validFor = directAccessUrlHelper.getDefaultExpiryTimeInSec();

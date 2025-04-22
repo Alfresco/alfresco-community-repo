@@ -52,24 +52,28 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
     }
 
     /**
-     * Add or Update OAuth2 Credentials for the current user to the OAuth2
-     * Credential Store
+     * Add or Update OAuth2 Credentials for the current user to the OAuth2 Credential Store
      * 
-     * @param remoteSystemId String
-     * @param accessToken String
-     * @param refreshToken String
-     * @param expiresAt Date
-     * @param issuedAt if null, the current Datetime will be used
+     * @param remoteSystemId
+     *            String
+     * @param accessToken
+     *            String
+     * @param refreshToken
+     *            String
+     * @param expiresAt
+     *            Date
+     * @param issuedAt
+     *            if null, the current Datetime will be used
      * @return OAuth2CredentialsInfo
      */
     @Override
     public OAuth2CredentialsInfo storePersonalOAuth2Credentials(String remoteSystemId,
-                String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
-                throws NoSuchSystemException
+            String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
+            throws NoSuchSystemException
     {
 
         OAuth2CredentialsInfo credentials = buildPersonalOAuth2CredentialsInfo(remoteSystemId,
-                    accessToken, refreshToken, expiresAt, issuedAt);
+                accessToken, refreshToken, expiresAt, issuedAt);
 
         if (credentials.getNodeRef() != null)
         {
@@ -78,7 +82,7 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
         else
         {
             return (OAuth2CredentialsInfo) remoteCredentialsService.createPersonCredentials(
-                        remoteSystemId, credentials);
+                    remoteSystemId, credentials);
         }
 
     }
@@ -86,39 +90,50 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
     /**
      * Add Shared OAuth2 Credentials to the OAuth2 Credential Store
      * 
-     * @param remoteSystemId String
-     * @param accessToken String
-     * @param refreshToken String
-     * @param expiresAt Date
-     * @param issuedAt Date
+     * @param remoteSystemId
+     *            String
+     * @param accessToken
+     *            String
+     * @param refreshToken
+     *            String
+     * @param expiresAt
+     *            Date
+     * @param issuedAt
+     *            Date
      * @return OAuth2CredentialsInfo
      */
     @Override
     public OAuth2CredentialsInfo storeSharedOAuth2Credentials(String remoteSystemId,
-                String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
-                throws NoSuchSystemException
+            String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
+            throws NoSuchSystemException
     {
         OAuth2CredentialsInfo credentials = buildSharedOAuth2CredentialsInfo(remoteSystemId,
-                    accessToken, refreshToken, expiresAt, issuedAt);
+                accessToken, refreshToken, expiresAt, issuedAt);
 
         return (OAuth2CredentialsInfo) remoteCredentialsService.createSharedCredentials(
-                    remoteSystemId, credentials);
+                remoteSystemId, credentials);
     }
 
     /**
-     * @param exisitingCredentials OAuth2CredentialsInfo
-     * @param remoteSystemId String
-     * @param accessToken String
-     * @param refreshToken String
-     * @param expiresAt Date
-     * @param issuedAt Date
+     * @param exisitingCredentials
+     *            OAuth2CredentialsInfo
+     * @param remoteSystemId
+     *            String
+     * @param accessToken
+     *            String
+     * @param refreshToken
+     *            String
+     * @param expiresAt
+     *            Date
+     * @param issuedAt
+     *            Date
      * @return OAuth2CredentialsInfo
      */
     @Override
     public OAuth2CredentialsInfo updateSharedOAuth2Credentials(
-                OAuth2CredentialsInfo exisitingCredentials, String remoteSystemId,
-                String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
-                throws NoSuchSystemException
+            OAuth2CredentialsInfo exisitingCredentials, String remoteSystemId,
+            String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
+            throws NoSuchSystemException
     {
         List<OAuth2CredentialsInfo> shared = listSharedOAuth2Credentials(remoteSystemId);
 
@@ -127,9 +142,9 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
             if (credential.getNodeRef().equals(exisitingCredentials.getNodeRef()))
             {
                 OAuth2CredentialsInfoImpl credentials = new OAuth2CredentialsInfoImpl(
-                            exisitingCredentials.getNodeRef(),
-                            exisitingCredentials.getRemoteSystemName(),
-                            exisitingCredentials.getRemoteSystemContainerNodeRef());
+                        exisitingCredentials.getNodeRef(),
+                        exisitingCredentials.getRemoteSystemName(),
+                        exisitingCredentials.getRemoteSystemContainerNodeRef());
 
                 credentials.setOauthAccessToken(accessToken);
                 credentials.setOauthRefreshToken(refreshToken);
@@ -144,25 +159,30 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
                 }
 
                 return (OAuth2CredentialsInfo) remoteCredentialsService
-                            .updateCredentials(credentials);
+                        .updateCredentials(credentials);
 
             }
         }
 
         throw new AlfrescoRuntimeException(
-                    "Cannot update Credentials which haven't been persisted yet!");
+                "Cannot update Credentials which haven't been persisted yet!");
     }
 
     /**
-     * @param remoteSystemId String
-     * @param accessToken String
-     * @param refreshToken String
-     * @param expiresAt Date
-     * @param issuedAt Date
+     * @param remoteSystemId
+     *            String
+     * @param accessToken
+     *            String
+     * @param refreshToken
+     *            String
+     * @param expiresAt
+     *            Date
+     * @param issuedAt
+     *            Date
      * @return OAuth2CredentialsInfo
      */
     private OAuth2CredentialsInfo buildPersonalOAuth2CredentialsInfo(String remoteSystemId,
-                String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
+            String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
     {
         OAuth2CredentialsInfoImpl credentials = new OAuth2CredentialsInfoImpl();
 
@@ -188,15 +208,20 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
     }
 
     /**
-     * @param remoteSystemId String
-     * @param accessToken String
-     * @param refreshToken String
-     * @param expiresAt Date
-     * @param issuedAt Date
+     * @param remoteSystemId
+     *            String
+     * @param accessToken
+     *            String
+     * @param refreshToken
+     *            String
+     * @param expiresAt
+     *            Date
+     * @param issuedAt
+     *            Date
      * @return OAuth2CredentialsInfo
      */
     private OAuth2CredentialsInfo buildSharedOAuth2CredentialsInfo(String remoteSystemId,
-                String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
+            String accessToken, String refreshToken, Date expiresAt, Date issuedAt)
     {
         OAuth2CredentialsInfoImpl credentials = new OAuth2CredentialsInfoImpl();
 
@@ -218,45 +243,51 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
     /**
      * Get the current users OAuth2Credentials for the remote systems
      * 
-     * @param remoteSystemId String
+     * @param remoteSystemId
+     *            String
      * @return OAuth2CredentialsInfo
      */
     @Override
     public OAuth2CredentialsInfo getPersonalOAuth2Credentials(String remoteSystemId)
-                throws NoSuchSystemException
+            throws NoSuchSystemException
     {
         return (OAuth2CredentialsInfo) remoteCredentialsService
-                    .getPersonCredentials(remoteSystemId);
+                .getPersonCredentials(remoteSystemId);
     }
 
     /**
-     * @param remoteSystemId String
+     * @param remoteSystemId
+     *            String
      */
     @Override
     public List<OAuth2CredentialsInfo> listSharedOAuth2Credentials(String remoteSystemId)
-                throws NoSuchSystemException
+            throws NoSuchSystemException
     {
         PagingRequest paging = new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE);
         @SuppressWarnings("unchecked")
         PagingResults<OAuth2CredentialsInfo> pagingResults = (PagingResults<OAuth2CredentialsInfo>) remoteCredentialsService
-                    .listSharedCredentials(remoteSystemId,
-                                RemoteCredentialsModel.TYPE_OAUTH2_CREDENTIALS, paging);
+                .listSharedCredentials(remoteSystemId,
+                        RemoteCredentialsModel.TYPE_OAUTH2_CREDENTIALS, paging);
         return pagingResults.getPage();
     }
 
     /**
      * Delete the current users OAuth2 Credentials for the remote system
      * 
-     * @param remoteSystemId String
+     * @param remoteSystemId
+     *            String
      * @return boolean
      */
     @Override
     public boolean deletePersonalOAuth2Credentials(String remoteSystemId)
-                throws NoSuchSystemException
+            throws NoSuchSystemException
     {
         OAuth2CredentialsInfo credentials = getPersonalOAuth2Credentials(remoteSystemId);
 
-        if (credentials == null) { return false; }
+        if (credentials == null)
+        {
+            return false;
+        }
 
         remoteCredentialsService.deleteCredentials(credentials);
 
@@ -265,11 +296,14 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
 
     @Override
     public boolean deleteSharedOAuth2Credentials(String remoteSystemId,
-                OAuth2CredentialsInfo credentials) throws NoSuchSystemException
+            OAuth2CredentialsInfo credentials) throws NoSuchSystemException
     {
         List<OAuth2CredentialsInfo> shared = listSharedOAuth2Credentials(remoteSystemId);
 
-        if (shared.isEmpty()) { return false; }
+        if (shared.isEmpty())
+        {
+            return false;
+        }
 
         for (OAuth2CredentialsInfo credential : shared)
         {
@@ -287,15 +321,17 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
     }
 
     /**
-     * @param succeeded boolean
-     * @param credentials OAuth2CredentialsInfo
+     * @param succeeded
+     *            boolean
+     * @param credentials
+     *            OAuth2CredentialsInfo
      * @return OAuth2CredentialsInfo
      */
     @Override
     public OAuth2CredentialsInfo updateCredentialsAuthenticationSucceeded(boolean succeeded,
-                OAuth2CredentialsInfo credentials)
+            OAuth2CredentialsInfo credentials)
     {
         return (OAuth2CredentialsInfo) remoteCredentialsService
-                    .updateCredentialsAuthenticationSucceeded(succeeded, credentials);
+                .updateCredentialsAuthenticationSucceeded(succeeded, credentials);
     }
 }

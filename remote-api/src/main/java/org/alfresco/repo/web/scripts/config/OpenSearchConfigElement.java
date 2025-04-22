@@ -35,7 +35,6 @@ import org.springframework.extensions.config.ConfigElement;
 import org.springframework.extensions.config.ConfigException;
 import org.springframework.extensions.config.element.ConfigElementAdapter;
 
-
 /**
  * Custom config element that represents the config data for open search
  * 
@@ -48,8 +47,7 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
     private ProxyConfig proxy;
     private Set<EngineConfig> engines = new HashSet<EngineConfig>(8, 10f);
     private Map<String, EngineConfig> enginesByProxy = new HashMap<String, EngineConfig>();
-        
-    
+
     /**
      * Default constructor
      */
@@ -61,7 +59,8 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
     /**
      * Constructor
      * 
-     * @param name  Name of the element this config element represents
+     * @param name
+     *            Name of the element this config element represents
      */
     public OpenSearchConfigElement(String name)
     {
@@ -95,7 +94,7 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
         {
             combinedElement.addEngine(plugin);
         }
-        
+
         // set the proxy configuration
         ProxyConfig proxyConfig = this.getProxy();
         if (proxyConfig != null)
@@ -109,13 +108,14 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
     /**
      * Sets the proxy configuration
      * 
-     * @param proxyConfig ProxyConfig
+     * @param proxyConfig
+     *            ProxyConfig
      */
-    /*package*/ void setProxy(ProxyConfig proxyConfig)
+    /* package */ void setProxy(ProxyConfig proxyConfig)
     {
         this.proxy = proxyConfig;
     }
-    
+
     /**
      * Gets the proxy configuration
      * 
@@ -125,7 +125,7 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
     {
         return this.proxy;
     }
-    
+
     /**
      * @return Returns a set of the engines
      */
@@ -133,22 +133,24 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
     {
         return this.engines;
     }
-    
+
     /**
-     * @param proxy  name of engine proxy
-     * @return  associated engine config (or null, if none registered against proxy)
+     * @param proxy
+     *            name of engine proxy
+     * @return associated engine config (or null, if none registered against proxy)
      */
     public EngineConfig getEngine(String proxy)
     {
-       return this.enginesByProxy.get(proxy); 
+        return this.enginesByProxy.get(proxy);
     }
 
     /**
      * Adds an engine
      * 
-     * @param engineConfig  A pre-configured engine config object
+     * @param engineConfig
+     *            A pre-configured engine config object
      */
-    /*package*/ void addEngine(EngineConfig engineConfig)
+    /* package */ void addEngine(EngineConfig engineConfig)
     {
         this.engines.add(engineConfig);
         String proxy = engineConfig.getProxy();
@@ -157,7 +159,6 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
             this.enginesByProxy.put(proxy, engineConfig);
         }
     }
-
 
     /**
      * Inner class representing the configuration of an OpenSearch engine
@@ -171,12 +172,13 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
         protected String proxy;
         protected Map<String, String> urls = new HashMap<String, String>(8, 10f);
 
-        
         /**
          * Construct
          * 
-         * @param label String
-         * @param labelId String
+         * @param label
+         *            String
+         * @param labelId
+         *            String
          */
         public EngineConfig(String label, String labelId)
         {
@@ -191,9 +193,12 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
         /**
          * Construct
          * 
-         * @param label String
-         * @param labelId String
-         * @param proxy String
+         * @param label
+         *            String
+         * @param labelId
+         *            String
+         * @param proxy
+         *            String
          */
         public EngineConfig(String label, String labelId, String proxy)
         {
@@ -202,7 +207,7 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
         }
 
         /**
-         * @return  I18N label id
+         * @return I18N label id
          */
         public String getLabelId()
         {
@@ -210,7 +215,7 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
         }
 
         /**
-         * @return  label
+         * @return label
          */
         public String getLabel()
         {
@@ -218,17 +223,17 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
         }
 
         /**
-         * @return  proxy
+         * @return proxy
          */
         public String getProxy()
         {
             return proxy;
         }
-        
+
         /**
          * Gets the urls supported by this engine
          * 
-         * @return  urls
+         * @return urls
          */
         public Map<String, String> getUrls()
         {
@@ -238,17 +243,18 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
         /**
          * Adds a url
          * 
-         * @param mimetype  mime type
-         * @param uri  uri
+         * @param mimetype
+         *            mime type
+         * @param uri
+         *            uri
          */
-        /*package*/ void addUrl(String mimetype, String uri)
+        /* package */ void addUrl(String mimetype, String uri)
         {
             this.urls.put(mimetype, uri);
         }
-        
+
     }
 
-    
     /**
      * Inner class representing the configuration of the OpenSearch proxy
      * 
@@ -257,11 +263,12 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
     public static class ProxyConfig
     {
         protected String url;
-        
+
         /**
          * Construct
          * 
-         * @param url String
+         * @param url
+         *            String
          */
         public ProxyConfig(String url)
         {
@@ -273,12 +280,12 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
         }
 
         /**
-         * @return  url
+         * @return url
          */
         public String getUrl()
         {
             return url;
         }
     }
-    
+
 }

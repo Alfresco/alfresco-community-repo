@@ -41,40 +41,40 @@ public abstract class BaseParameterizedItemDefinitionImplTest extends TestCase
 {
     protected static final String NAME = "name";
     protected static final String TITLE = "title";
-    protected static final String DESCRIPTION = "description";    
+    protected static final String DESCRIPTION = "description";
     protected List<ParameterDefinition> paramDefs = new ArrayList<ParameterDefinition>();
     protected List<ParameterDefinition> duplicateParamDefs = new ArrayList<ParameterDefinition>();
-    
+
     private static final String PARAM1_DISPLAYNAME = "param1-displayname";
     private static final String PARAM1_NAME = "param1-name";
     private static final QName PARAM1_TYPE = DataTypeDefinition.TEXT;
     private static final QName PARAM2_TYPE = DataTypeDefinition.TEXT;
     private static final String PARAM2_DISPLAYNAME = "param2-displaname";
     private static final String PARAM2_NAME = "param2-name";
-    
+
     @Override
     protected void setUp() throws Exception
     {
         // Create param def lists
         this.paramDefs.add(new ParameterDefinitionImpl(PARAM1_NAME, PARAM1_TYPE, false, PARAM1_DISPLAYNAME));
-        this.paramDefs.add(new ParameterDefinitionImpl(PARAM2_NAME, PARAM2_TYPE, false,  PARAM2_DISPLAYNAME));        
-        this.duplicateParamDefs.add(new ParameterDefinitionImpl(PARAM1_NAME, PARAM1_TYPE, false,  PARAM1_DISPLAYNAME));
-        this.duplicateParamDefs.add(new ParameterDefinitionImpl(PARAM1_NAME, PARAM1_TYPE, false,  PARAM1_DISPLAYNAME));
+        this.paramDefs.add(new ParameterDefinitionImpl(PARAM2_NAME, PARAM2_TYPE, false, PARAM2_DISPLAYNAME));
+        this.duplicateParamDefs.add(new ParameterDefinitionImpl(PARAM1_NAME, PARAM1_TYPE, false, PARAM1_DISPLAYNAME));
+        this.duplicateParamDefs.add(new ParameterDefinitionImpl(PARAM1_NAME, PARAM1_TYPE, false, PARAM1_DISPLAYNAME));
     }
-    
+
     public void testConstructor()
     {
         create();
     }
 
     protected abstract ParameterizedItemDefinitionImpl create();
-    
+
     public void testGetName()
     {
         ParameterizedItemDefinitionImpl temp = create();
         assertEquals(NAME, temp.getName());
     }
-    
+
     public void testGetParameterDefintions()
     {
         ParameterizedItemDefinitionImpl temp = create();
@@ -99,7 +99,7 @@ public abstract class BaseParameterizedItemDefinitionImplTest extends TestCase
             i++;
         }
     }
-    
+
     public void testGetParameterDefinition()
     {
         ParameterizedItemDefinitionImpl temp = create();
@@ -108,7 +108,7 @@ public abstract class BaseParameterizedItemDefinitionImplTest extends TestCase
         assertEquals(PARAM1_NAME, definition.getName());
         assertEquals(PARAM1_TYPE, definition.getType());
         assertEquals(PARAM1_DISPLAYNAME, definition.getDisplayLabel());
-        
+
         ParameterDefinition nullDef = temp.getParameterDefintion("bobbins");
         assertNull(nullDef);
     }

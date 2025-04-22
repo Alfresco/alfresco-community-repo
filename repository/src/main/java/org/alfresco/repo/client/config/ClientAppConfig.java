@@ -26,13 +26,6 @@
 
 package org.alfresco.repo.client.config;
 
-import org.alfresco.util.PropertyCheck;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,9 +35,16 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
+import org.alfresco.util.PropertyCheck;
+
 /**
- * This class picks up all the loaded properties passed to it and uses a naming
- * convention to isolate the client's name and the related values.
+ * This class picks up all the loaded properties passed to it and uses a naming convention to isolate the client's name and the related values.
  * <p>
  * The naming convention must confirm to the following:
  * <p>
@@ -52,18 +52,14 @@ import java.util.concurrent.ConcurrentMap;
  * <p>
  * Also, the client-name or property name ({@literal <propertyName>}) must not contain a dot {@literal ('.')}
  * <p>
- * Note also, that any property without a value is ignored and the client will not be registered
- * if all the properties of that client have no values.
+ * Note also, that any property without a value is ignored and the client will not be registered if all the properties of that client have no values.
  * <p>
- * So, if a new client (e.g. MyClientName) is required to send a shared-link email and the service or the API requires,
- * for example, <i>sharedLinkBaseUrl</i> and <i>templateAssetsUrl</i> properties, then the following
- * needs to be put into a properties file.
+ * So, if a new client (e.g. MyClientName) is required to send a shared-link email and the service or the API requires, for example, <i>sharedLinkBaseUrl</i> and <i>templateAssetsUrl</i> properties, then the following needs to be put into a properties file.
  * <ul>
  * <li>repo.client-app.MyClientName.sharedLinkBaseUrl=http://localhost:8080/MyClientName/s</li>
  * <li>repo.client-app.MyClientName.templateAssetsUrl=http://localhost:8080/MyClientName/assets</li>
  * </ul>
- * The default property file is <b>alfresco/client/config/repo-clients-apps.properties</b> which
- * could be overridden (or add new clients) by <b>alfresco-global</b> properties file.
+ * The default property file is <b>alfresco/client/config/repo-clients-apps.properties</b> which could be overridden (or add new clients) by <b>alfresco-global</b> properties file.
  *
  * @author Jamal Kaabi-Mofrad
  */
@@ -80,8 +76,7 @@ public class ClientAppConfig extends AbstractLifecycleBean
     private ConcurrentMap<String, ClientApp> clients = new ConcurrentHashMap<>();
 
     public ClientAppConfig()
-    {
-    }
+    {}
 
     public void setDefaultProperties(Properties defaultProperties)
     {
@@ -110,7 +105,8 @@ public class ClientAppConfig extends AbstractLifecycleBean
     /**
      * Returns the named client or null if no client exists with the given name.
      *
-     * @param name the name of the client to retrieve
+     * @param name
+     *            the name of the client to retrieve
      */
     public ClientApp getClient(String name)
     {
@@ -142,9 +138,12 @@ public class ClientAppConfig extends AbstractLifecycleBean
     /**
      * Processes the property's key and extracts the clients' names.
      *
-     * @param allProps the merged properties
-     * @param  clientsNames a set of strings which will be populated with client names
-     * @param  propsNames a set of strings which will be populated with properties names (i.e.the property after the client name)
+     * @param allProps
+     *            the merged properties
+     * @param clientsNames
+     *            a set of strings which will be populated with client names
+     * @param propsNames
+     *            a set of strings which will be populated with properties names (i.e.the property after the client name)
      */
     protected void processPropertyKeys(Map<String, String> allProps, Set<String> clientsNames, Set<String> propsNames)
     {
@@ -189,12 +188,14 @@ public class ClientAppConfig extends AbstractLifecycleBean
     }
 
     /**
-     * Processes the given properties and if the properties' values are valid, creates
-     * a map of {@code ClientApp} with the client's name as the key.
+     * Processes the given properties and if the properties' values are valid, creates a map of {@code ClientApp} with the client's name as the key.
      *
-     * @param clientsNames the processed clients' names
-     * @param propsNames the processed properties names
-     * @param allProps     the merged properties
+     * @param clientsNames
+     *            the processed clients' names
+     * @param propsNames
+     *            the processed properties names
+     * @param allProps
+     *            the merged properties
      * @return a map of {@code ClientApp} with the client's name as the key.
      */
     protected Map<String, ClientApp> processClients(Set<String> clientsNames, Set<String> propsNames, Map<String, String> allProps)
@@ -356,9 +357,9 @@ public class ClientAppConfig extends AbstractLifecycleBean
         {
             final StringBuilder sb = new StringBuilder(250);
             sb.append("ClientApp [name=").append(name)
-                        .append(", templateAssetsUrl=").append(templateAssetsUrl)
-                        .append(", properties=").append(properties)
-                        .append(']');
+                    .append(", templateAssetsUrl=").append(templateAssetsUrl)
+                    .append(", properties=").append(properties)
+                    .append(']');
             return sb.toString();
         }
     }

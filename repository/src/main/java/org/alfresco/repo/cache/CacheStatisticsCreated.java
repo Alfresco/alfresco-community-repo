@@ -38,7 +38,7 @@ public class CacheStatisticsCreated extends ApplicationEvent
     private static final long serialVersionUID = 1L;
     private final CacheStatistics cacheStats;
     private final String cacheName;
-    
+
     public CacheStatisticsCreated(CacheStatistics cacheStats, String cacheName)
     {
         super(cacheStats);

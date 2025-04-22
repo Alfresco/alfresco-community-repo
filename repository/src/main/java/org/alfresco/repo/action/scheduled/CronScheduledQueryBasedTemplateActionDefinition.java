@@ -27,6 +27,12 @@ package org.alfresco.repo.action.scheduled;
 
 import java.util.LinkedList;
 import java.util.List;
+
+import org.quartz.CronScheduleBuilder;
+import org.quartz.Scheduler;
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
+
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -35,77 +41,48 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.quartz.CronScheduleBuilder;
-import org.quartz.Scheduler;
-import org.quartz.Trigger;
-import org.quartz.TriggerBuilder;
 
 /**
- * A scheduled action for which the trigger is defined in the standard cron format and the nodes to which the action
- * should be run is defined from the nodes selected by query.
+ * A scheduled action for which the trigger is defined in the standard cron format and the nodes to which the action should be run is defined from the nodes selected by query.
  * 
  * @author Andy Hind
  */
 public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractScheduledAction
 {
-    /*
-     * The search service.
-     */
+    /* The search service. */
     private SearchService searchService;
 
-    /*
-     * The template service.
-     */
+    /* The template service. */
     private TemplateService templateService;
 
-    /*
-     * The query language to use
-     */
+    /* The query language to use */
     private String queryLanguage;
 
-    /*
-     * The stores against which the query should run
-     */
+    /* The stores against which the query should run */
     private List<String> stores;
 
-    /*
-     * The template for the query
-     */
+    /* The template for the query */
     private String queryTemplate;
 
-    /*
-     * The cron expression
-     */
+    /* The cron expression */
     private String cronExpression;
 
-    /*
-     * The name of the job
-     */
+    /* The name of the job */
     private String jobName;
 
-    /*
-     * The job group
-     */
+    /* The job group */
     private String jobGroup;
 
-    /*
-     * The name of the trigger
-     */
+    /* The name of the trigger */
     private String triggerName;
 
-    /*
-     * The name of the trigger group
-     */
+    /* The name of the trigger group */
     private String triggerGroup;
 
-    /*
-     * The scheduler
-     */
+    /* The scheduler */
     private Scheduler scheduler;
 
-    /*
-     * The templateModelFactory This defines in which template language the query template is defined
-     */
+    /* The templateModelFactory This defines in which template language the query template is defined */
     private TemplateActionModelFactory templateActionModelFactory;
 
     /**
@@ -133,7 +110,8 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     /**
      * Set the search service.
      * 
-     * @param searchService SearchService
+     * @param searchService
+     *            SearchService
      */
     public void setSearchService(SearchService searchService)
     {
@@ -153,7 +131,8 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     /**
      * Set the template service.
      * 
-     * @param templateService TemplateService
+     * @param templateService
+     *            TemplateService
      */
     public void setTemplateService(TemplateService templateService)
     {
@@ -162,6 +141,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Get the scheduler.
+     * 
      * @return - the scheduler.
      */
     public Scheduler getScheduler()
@@ -171,7 +151,9 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Set the scheduler.
-     * @param scheduler Scheduler
+     * 
+     * @param scheduler
+     *            Scheduler
      */
     public void setScheduler(Scheduler scheduler)
     {
@@ -180,6 +162,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Get the template action model factory.
+     * 
      * @return - the template action model factory.
      */
     public TemplateActionModelFactory getTemplateActionModelFactory()
@@ -189,7 +172,9 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Set the template action model factory.
-     * @param templateActionModelFactory TemplateActionModelFactory
+     * 
+     * @param templateActionModelFactory
+     *            TemplateActionModelFactory
      */
     public void setTemplateActionModelFactory(TemplateActionModelFactory templateActionModelFactory)
     {
@@ -199,7 +184,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     //
     // End of IOC
     //
-    
+
     @Override
     public Trigger getTrigger()
     {
@@ -270,8 +255,8 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.action.scheduled.AbstractScheduledAction#getAction(org.alfresco.service.cmr.repository.NodeRef)
-     */
+     * 
+     * @see org.alfresco.repo.action.scheduled.AbstractScheduledAction#getAction(org.alfresco.service.cmr.repository.NodeRef) */
     @Override
     public Action getAction(NodeRef nodeRef)
     {
@@ -285,7 +270,9 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Set the query language
-     * @param queryLanguage String
+     * 
+     * @param queryLanguage
+     *            String
      */
     public void setQueryLanguage(String queryLanguage)
     {
@@ -294,6 +281,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Get the query language.
+     * 
      * @return - the query language.
      */
     public String getQueryLanguage()
@@ -303,7 +291,9 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Set alist of stores to use.
-     * @param stores - the list of stores.
+     * 
+     * @param stores
+     *            - the list of stores.
      */
     public void setStores(List<String> stores)
     {
@@ -323,7 +313,8 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     /**
      * Set the template for the query.
      * 
-     * @param queryTemplate String
+     * @param queryTemplate
+     *            String
      */
     public void setQueryTemplate(String queryTemplate)
     {
@@ -332,6 +323,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Get the template from which to build the query.
+     * 
      * @return - the template for the query.
      */
     public String getQueryTemplate()
@@ -341,16 +333,18 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Set the cron expression - see the wiki for examples.
-     * @param cronExpression String
+     * 
+     * @param cronExpression
+     *            String
      */
     public void setCronExpression(String cronExpression)
     {
         this.cronExpression = cronExpression;
     }
 
-
     /**
      * Get the cron expression.
+     * 
      * @return - the cron expression.
      */
     public String getCronExpression()
@@ -360,7 +354,9 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Set the job name.
-     * @param jobName String
+     * 
+     * @param jobName
+     *            String
      */
     public void setJobName(String jobName)
     {
@@ -369,6 +365,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Get the job name
+     * 
      * @return - the job name.
      * 
      */
@@ -379,7 +376,9 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Set the job group.
-     * @param jobGroup String
+     * 
+     * @param jobGroup
+     *            String
      */
     public void setJobGroup(String jobGroup)
     {
@@ -388,6 +387,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Get the job group.
+     * 
      * @return - the job group.
      */
     public String getJobGroup()
@@ -395,9 +395,11 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
         return jobGroup;
     }
 
-    /** 
+    /**
      * Set the trigger name.
-     * @param triggerName String
+     * 
+     * @param triggerName
+     *            String
      */
     public void setTriggerName(String triggerName)
     {
@@ -406,6 +408,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Get the trigger name
+     * 
      * @return - the trigger name.
      */
     public String getTriggerName()
@@ -415,7 +418,9 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Set the trigger group.
-     * @param triggerGroup String
+     * 
+     * @param triggerGroup
+     *            String
      */
     public void setTriggerGroup(String triggerGroup)
     {
@@ -424,6 +429,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Get the name of the trigger group.
+     * 
      * @return - the trigger group.
      * 
      */
@@ -434,7 +440,8 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Register with the scheduler.
-     * @throws Exception 
+     * 
+     * @throws Exception
      */
     public void afterPropertiesSet() throws Exception
     {

@@ -38,10 +38,10 @@ import org.alfresco.service.cmr.repository.Path;
  */
 public class TransferManifestDeletedNode implements TransferManifestNode
 {
-    private NodeRef nodeRef;   
+    private NodeRef nodeRef;
     private ChildAssociationRef primaryParentAssoc;
     private String uuid;
-    private Path parentPath; 
+    private Path parentPath;
 
     public void setNodeRef(NodeRef nodeRef)
     {
@@ -62,7 +62,7 @@ public class TransferManifestDeletedNode implements TransferManifestNode
     {
         return uuid;
     }
-    
+
     public void setParentPath(Path parentPath)
     {
         this.parentPath = parentPath;
@@ -82,6 +82,5 @@ public class TransferManifestDeletedNode implements TransferManifestNode
     {
         return primaryParentAssoc;
     }
-
 
 }

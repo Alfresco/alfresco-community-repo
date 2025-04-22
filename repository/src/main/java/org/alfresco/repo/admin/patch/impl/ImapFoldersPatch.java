@@ -33,6 +33,10 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
+import org.springframework.context.MessageSource;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.util.FileCopyUtils;
+
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.importer.ImporterBootstrap;
@@ -46,15 +50,11 @@ import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.util.TempFileProvider;
-import org.springframework.context.MessageSource;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.util.FileCopyUtils;
+
 /**
  * Builds folders tree necessary for IMAP functionality and imports email action scripts.
  * 
- * 1. Company Home > Data Dictionary > Imap Config > Templates
- * 2. Company Home > Data Dictionary > Email Actions > search
- * 3. Company Home > Data Dictionary > Scripts > command-processor.js, command-search.js
+ * 1. Company Home > Data Dictionary > Imap Config > Templates 2. Company Home > Data Dictionary > Email Actions > search 3. Company Home > Data Dictionary > Scripts > command-processor.js, command-search.js
  * 
  * @author Arseny Kovalchuk
  */
@@ -225,8 +225,7 @@ public class ImapFoldersPatch extends AbstractPatch
         if (imapConfigFolderNodeRef == null)
         {
             // import the content
-            final RunAsWork<Object> importRunAs = new RunAsWork<Object>()
-            {
+            final RunAsWork<Object> importRunAs = new RunAsWork<Object>() {
                 public Object doWork() throws Exception
                 {
                     importImapConfig();
@@ -235,17 +234,16 @@ public class ImapFoldersPatch extends AbstractPatch
                     return null;
                 }
             };
-            
-            RetryingTransactionCallback<Object> cb = new RetryingTransactionCallback<Object>()
-            {
-                public Object execute() throws Throwable 
+
+            RetryingTransactionCallback<Object> cb = new RetryingTransactionCallback<Object>() {
+                public Object execute() throws Throwable
                 {
                     AuthenticationUtil.runAs(importRunAs, authenticationContext.getSystemUserName());
                     return null;
                 }
-         
+
             };
-            
+
             transactionHelper.doInTransaction(cb, false, true);
             msg = I18NUtil.getMessage(MSG_CREATED);
         }
@@ -291,14 +289,14 @@ public class ImapFoldersPatch extends AbstractPatch
         else
         {
             // Try as a classpath location
-            
+
             // Get input stream
             InputStream viewStream = getClass().getClassLoader().getResourceAsStream(acpName);
             if (viewStream == null)
             {
                 throw new ImporterException("Could not find view file " + acpName);
             }
-            
+
             // Create output stream
             File tempFile = TempFileProvider.createTempFile("acpImport", ".tmp");
             try

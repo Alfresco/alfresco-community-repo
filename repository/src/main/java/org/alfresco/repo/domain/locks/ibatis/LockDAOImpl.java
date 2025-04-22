@@ -29,11 +29,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.dao.ConcurrencyFailureException;
+
 import org.alfresco.repo.domain.locks.AbstractLockDAOImpl;
 import org.alfresco.repo.domain.locks.LockEntity;
 import org.alfresco.repo.domain.locks.LockResourceEntity;
-import org.mybatis.spring.SqlSessionTemplate;
-import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * iBatis-specific implementation of the Locks DAO.
@@ -51,16 +52,14 @@ public class LockDAOImpl extends AbstractLockDAOImpl
     private static final String INSERT_LOCK = "alfresco.lock.insert.insert_Lock";
     private static final String UPDATE_LOCK = "alfresco.lock.update_Lock";
     private static final String UPDATE_EXCLUSIVE_LOCK = "alfresco.lock.update_ExclusiveLock";
-    
-    
+
     private SqlSessionTemplate template;
-    
-    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
+
+    public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate)
     {
         this.template = sqlSessionTemplate;
     }
-    
-    
+
     @Override
     protected LockResourceEntity getLockResource(Long qnameNamespaceId, String qnameLocalName)
     {
@@ -92,7 +91,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         // Done
         return locks;
     }
-    
+
     @Override
     protected LockEntity getLock(Long id)
     {
@@ -141,7 +140,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         LockEntity updateLockEntity = new LockEntity();
         updateLockEntity.setId(lockEntity.getId());
         updateLockEntity.setVersion(lockEntity.getVersion());
-        updateLockEntity.incrementVersion();            // Increment the version number
+        updateLockEntity.incrementVersion(); // Increment the version number
         updateLockEntity.setSharedResourceId(lockEntity.getSharedResourceId());
         updateLockEntity.setExclusiveResourceId(lockEntity.getExclusiveResourceId());
         updateLockEntity.setLockToken(lockToken == null ? null : lockToken.toLowerCase());
@@ -149,14 +148,14 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         long exp = (timeToLive > 0) ? (now + timeToLive) : 0L;
         updateLockEntity.setStartTime(Long.valueOf(now));
         updateLockEntity.setExpiryTime(Long.valueOf(exp));
-        
+
         int updated = template.update(UPDATE_LOCK, updateLockEntity);
         if (updated != 1)
         {
             // unexpected number of rows affected
             throw new ConcurrencyFailureException("Incorrect number of rows affected for updateLock: " + updateLockEntity + ": expected 1, actual " + updated);
         }
-        
+
         // Done
         return updateLockEntity;
     }

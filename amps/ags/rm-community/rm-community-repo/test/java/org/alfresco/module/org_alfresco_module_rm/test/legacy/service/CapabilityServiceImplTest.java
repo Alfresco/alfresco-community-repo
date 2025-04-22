@@ -45,8 +45,7 @@ public class CapabilityServiceImplTest extends BaseRMTestCase
 {
     public void testGetAddRemoveGroups() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -60,8 +59,7 @@ public class CapabilityServiceImplTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -73,7 +71,7 @@ public class CapabilityServiceImplTest extends BaseRMTestCase
                 testGroup.setTitle("Test group");
                 capabilityService.addGroup(testGroup);
 
-                assertEquals(initialSize+1, capabilityService.getGroups().size());
+                assertEquals(initialSize + 1, capabilityService.getGroups().size());
 
                 Group group = capabilityService.getGroup("testGroup");
                 assertNotNull(group);
@@ -85,8 +83,7 @@ public class CapabilityServiceImplTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -95,7 +92,7 @@ public class CapabilityServiceImplTest extends BaseRMTestCase
                 int initialSize = capabilityService.getGroups().size();
 
                 capabilityService.removeGroup(testGroup);
-                assertEquals(initialSize-1, capabilityService.getGroups().size());
+                assertEquals(initialSize - 1, capabilityService.getGroups().size());
 
                 return null;
             }
@@ -104,8 +101,7 @@ public class CapabilityServiceImplTest extends BaseRMTestCase
 
     public void testGetCapabilitiesByGroup() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {

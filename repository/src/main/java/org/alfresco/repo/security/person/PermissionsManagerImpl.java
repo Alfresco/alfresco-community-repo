@@ -25,15 +25,15 @@
  */
 package org.alfresco.repo.security.person;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
-
-import java.util.Map;
-import java.util.Set;
 
 public class PermissionsManagerImpl implements PermissionsManager
 {

@@ -25,12 +25,13 @@
  */
 package org.alfresco.rest.api.search.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Maps to and from a StoreRef for the json public api.
@@ -52,7 +53,9 @@ public class StoreMapper
 
     /**
      * Work out which StoreRef this store belongs to.
-     * @param String representing a store
+     * 
+     * @param String
+     *            representing a store
      * @return StoreRef
      */
     public StoreRef getStoreRef(String store)
@@ -61,22 +64,23 @@ public class StoreMapper
         {
             switch (store.toLowerCase())
             {
-                case LIVE_NODES:
-                    return StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
-                case VERSIONS:
-                    return STORE_REF_VERSION2_SPACESSTORE;
-                case DELETED:
-                    return StoreRef.STORE_REF_ARCHIVE_SPACESSTORE;
-                case HISTORY:
-                    return STORE_REF_HISTORY;
+            case LIVE_NODES:
+                return StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+            case VERSIONS:
+                return STORE_REF_VERSION2_SPACESSTORE;
+            case DELETED:
+                return StoreRef.STORE_REF_ARCHIVE_SPACESSTORE;
+            case HISTORY:
+                return STORE_REF_HISTORY;
             }
         }
         throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
-                    new Object[] { ": scope allowed values: nodes,deleted-nodes,versions" });
+                new Object[]{": scope allowed values: nodes,deleted-nodes,versions"});
     }
 
     /**
      * Work out which store this noderef belongs to.
+     * 
      * @param nodeRef
      * @return String representing a store
      */
@@ -105,7 +109,7 @@ public class StoreMapper
             }
         }
 
-        logger.warn("Unknown store ref: "+nodeRef);
+        logger.warn("Unknown store ref: " + nodeRef);
         return null;
     }
 }

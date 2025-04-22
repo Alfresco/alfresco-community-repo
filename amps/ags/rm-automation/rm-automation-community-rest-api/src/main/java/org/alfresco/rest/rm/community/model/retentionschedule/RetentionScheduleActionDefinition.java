@@ -27,6 +27,7 @@
 package org.alfresco.rest.rm.community.model.retentionschedule;
 
 import java.util.List;
+
 import lombok.Data;
 
 /**

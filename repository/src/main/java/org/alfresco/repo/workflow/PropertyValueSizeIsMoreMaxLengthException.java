@@ -36,7 +36,7 @@ public class PropertyValueSizeIsMoreMaxLengthException extends AlfrescoRuntimeEx
     {
         super("Property '" + name.getLocalName() + "' has size more than max value.");
     }
-    
+
     public PropertyValueSizeIsMoreMaxLengthException(String name)
     {
         super("Property '" + name + "' has size more than max value.");

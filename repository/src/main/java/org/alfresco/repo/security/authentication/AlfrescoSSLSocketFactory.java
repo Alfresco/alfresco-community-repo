@@ -25,12 +25,6 @@
  */
 package org.alfresco.repo.security.authentication;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -40,10 +34,16 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * SSL socket factory that uses custom trustStore
- * <br>The factory should be first initialized
+ * SSL socket factory that uses custom trustStore <br>
+ * The factory should be first initialized
  *
  * @author alex.mukha
  * @since 5.0
@@ -53,12 +53,13 @@ public class AlfrescoSSLSocketFactory extends SSLSocketFactory
     private static SSLContext context;
 
     public AlfrescoSSLSocketFactory()
-    {
-    }
+    {}
 
     /**
      * Initialize the factory with custom trustStore
-     * @param trustStore KeyStore
+     * 
+     * @param trustStore
+     *            KeyStore
      */
     public static synchronized void initTrustedSSLSocketFactory(final KeyStore trustStore)
     {

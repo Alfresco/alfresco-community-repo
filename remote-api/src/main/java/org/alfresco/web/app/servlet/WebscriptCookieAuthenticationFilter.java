@@ -26,7 +26,6 @@
 package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -35,15 +34,15 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
-import org.alfresco.repo.webdav.auth.AuthenticationDriver;
-import org.alfresco.repo.webdav.auth.BaseAuthenticationFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
+import org.alfresco.repo.webdav.auth.AuthenticationDriver;
+import org.alfresco.repo.webdav.auth.BaseAuthenticationFilter;
+
 /**
- * WebScript aware Authentication Filter. Directly handles login script calls, allowing Surf to establish a cookie
- * for a manual login, rather than the usual stateless ticket based logins.
+ * WebScript aware Authentication Filter. Directly handles login script calls, allowing Surf to establish a cookie for a manual login, rather than the usual stateless ticket based logins.
  * <p>
  * This functionality has been extracted from the WebScriptSSOAuthenticationFilter so that they can work independently.
  * 
@@ -53,20 +52,19 @@ public class WebscriptCookieAuthenticationFilter extends BaseAuthenticationFilte
 {
     private static final Log logger = LogFactory.getLog(WebscriptCookieAuthenticationFilter.class);
     private static final String API_LOGIN = "/api/login";
-    
+
     public WebscriptCookieAuthenticationFilter()
     {
         setUserAttributeName(AuthenticationDriver.AUTHENTICATION_USER);
     }
 
-    
     @Override
     public void doFilter(ServletContext context, ServletRequest sreq, ServletResponse sresp, FilterChain chain) throws IOException, ServletException
     {
         // Get the HTTP request/response
-        HttpServletRequest req = (HttpServletRequest)sreq;
-        HttpServletResponse res = (HttpServletResponse)sresp;
-        
+        HttpServletRequest req = (HttpServletRequest) sreq;
+        HttpServletResponse res = (HttpServletResponse) sresp;
+
         // Allow propagation of manual logins to the session user
         if (API_LOGIN.equals(req.getPathInfo()) && req.getMethod().equalsIgnoreCase("POST"))
         {
@@ -77,7 +75,7 @@ public class WebscriptCookieAuthenticationFilter extends BaseAuthenticationFilte
             chain.doFilter(sreq, sresp);
         }
     }
-    
+
     @Override
     protected Log getLogger()
     {

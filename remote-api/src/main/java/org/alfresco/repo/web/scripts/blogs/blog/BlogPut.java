@@ -29,6 +29,12 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.simple.JSONObject;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.model.BlogIntegrationModel;
 import org.alfresco.repo.blog.BlogServiceImpl;
 import org.alfresco.repo.web.scripts.blogs.AbstractBlogWebScript;
@@ -37,11 +43,6 @@ import org.alfresco.service.cmr.blog.BlogPostInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.namespace.QName;
-import org.json.simple.JSONObject;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * This class is the controller for the blog.put web script.
@@ -55,33 +56,33 @@ public class BlogPut extends AbstractBlogWebScript
 {
     @Override
     protected Map<String, Object> executeImpl(SiteInfo site, NodeRef containerNodeRef,
-         BlogPostInfo blog, WebScriptRequest req, JSONObject json, Status status, Cache cache) 
+            BlogPostInfo blog, WebScriptRequest req, JSONObject json, Status status, Cache cache)
     {
-       if (blog != null)
-       {
-          // They appear to have supplied a blog post itself...
-          // Oh well, let's hope for the best!
-           throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Blog post should not be updated via this web script.");
-       }
-       
-       if (site != null && containerNodeRef == null)
-       {
-          // Force the lazy creation
-          // This is a bit icky, but it'll have to do for now...
-          containerNodeRef = siteService.createContainer(
-                site.getShortName(), BlogServiceImpl.BLOG_COMPONENT, null, null);
-       }
-        
-       // Do the work
-       updateBlog(containerNodeRef, json);
+        if (blog != null)
+        {
+            // They appear to have supplied a blog post itself...
+            // Oh well, let's hope for the best!
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Blog post should not be updated via this web script.");
+        }
 
-       // Record it as done
-       Map<String, Object> model = new HashMap<String, Object>();
-       model.put("item", containerNodeRef);
+        if (site != null && containerNodeRef == null)
+        {
+            // Force the lazy creation
+            // This is a bit icky, but it'll have to do for now...
+            containerNodeRef = siteService.createContainer(
+                    site.getShortName(), BlogServiceImpl.BLOG_COMPONENT, null, null);
+        }
 
-       return model;
+        // Do the work
+        updateBlog(containerNodeRef, json);
+
+        // Record it as done
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("item", containerNodeRef);
+
+        return model;
     }
-    
+
     /**
      * Creates a post inside the passed forum node.
      */
@@ -89,7 +90,7 @@ public class BlogPut extends AbstractBlogWebScript
     private void updateBlog(NodeRef node, JSONObject json)
     {
         Map<QName, Serializable> arr = BlogLibJs.getBlogPropertiesArray(json);
-        
+
         if (nodeService.hasAspect(node, BlogIntegrationModel.ASPECT_BLOG_DETAILS))
         {
             Map<QName, Serializable> properties = nodeService.getProperties(node);

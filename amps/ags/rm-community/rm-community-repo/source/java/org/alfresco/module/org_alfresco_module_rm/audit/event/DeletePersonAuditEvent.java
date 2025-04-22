@@ -48,13 +48,14 @@ import org.alfresco.service.namespace.QName;
 @BehaviourBean
 public class DeletePersonAuditEvent extends AuditEvent implements BeforeDeleteNodePolicy
 {
-    /** Node Service*/
+    /** Node Service */
     private NodeService nodeService;
 
     /**
      * Sets the node service
      *
-     * @param nodeService nodeService to set
+     * @param nodeService
+     *            nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -64,25 +65,23 @@ public class DeletePersonAuditEvent extends AuditEvent implements BeforeDeleteNo
     /**
      * Behaviour that will audit user deletion
      *
-     * @param  nodeRef the node to be deleted
+     * @param nodeRef
+     *            the node to be deleted
      *
      */
 
     @Override
-    @Behaviour
-    (
-        kind = BehaviourKind.CLASS,
-        type = "cm:person"
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            type = "cm:person")
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        //retrieve the username property to be audited
+        // retrieve the username property to be audited
         Map<QName, Serializable> userName = new HashMap<>();
         userName.put(ContentModel.PROP_USERNAME, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
 
-        //audit the property values before the delete event
+        // audit the property values before the delete event
         recordsManagementAuditService.auditEvent(nodeRef, getName(), userName, null, true, false);
     }
-
 
 }

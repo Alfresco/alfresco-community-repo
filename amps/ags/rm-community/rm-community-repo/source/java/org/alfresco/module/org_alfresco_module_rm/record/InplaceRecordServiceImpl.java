@@ -63,7 +63,8 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
     private FileFolderService fileFolderService;
 
     /**
-     * @param siteService site service
+     * @param siteService
+     *            site service
      */
     public void setSiteService(SiteService siteService)
     {
@@ -71,7 +72,8 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
     }
 
     /**
-     * @param extendedSecurityService extended security service
+     * @param extendedSecurityService
+     *            extended security service
      */
     public void setExtendedSecurityService(
             ExtendedSecurityService extendedSecurityService)
@@ -80,7 +82,8 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
     }
 
     /**
-     * @param fileFolderService file folder service
+     * @param fileFolderService
+     *            file folder service
      */
     public void setFileFolderService(FileFolderService fileFolderService)
     {
@@ -96,14 +99,13 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
         ParameterCheck.mandatory("NodeRef", nodeRef);
 
         // do the work of hiding the record as the system user
-        authenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        authenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
                 // remove the child association
                 NodeRef originatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
-                
+
                 if (originatingLocation != null)
                 {
                     List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
@@ -117,7 +119,7 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
                             break;
                         }
                     }
-    
+
                     // remove the extended security from the node
                     // this prevents the users from continuing to see the record in searchs and other linked locations
                     extendedSecurityService.remove(nodeRef);
@@ -169,8 +171,7 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
 
         final NodeRef source = sourceParentNodeRef;
 
-        authenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        authenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
@@ -184,7 +185,7 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
                 }
                 catch (FileExistsException | FileNotFoundException ex)
                 {
-                    throw new AlfrescoRuntimeException("Can't move node: " +  ex);
+                    throw new AlfrescoRuntimeException("Can't move node: " + ex);
                 }
 
                 return null;

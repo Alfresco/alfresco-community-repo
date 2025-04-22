@@ -28,6 +28,7 @@ package org.alfresco.util;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -39,14 +40,16 @@ import org.apache.commons.logging.LogFactory;
  */
 public class DatabaseMetaDataHelper
 {
-	
-	private static Log logger = LogFactory.getLog(DatabaseMetaDataHelper.class);
 
-	/**
-	 * Tries to determine the schema name from the DatabaseMetaData obtained from the Connection.
-	 * @param connection A database connection
-	 * @return String
-	 */
+    private static Log logger = LogFactory.getLog(DatabaseMetaDataHelper.class);
+
+    /**
+     * Tries to determine the schema name from the DatabaseMetaData obtained from the Connection.
+     * 
+     * @param connection
+     *            A database connection
+     * @return String
+     */
     public String getSchema(Connection connection)
     {
         if (connection == null)
@@ -78,7 +81,7 @@ public class DatabaseMetaDataHelper
         }
         catch (Exception e)
         {
-            logger.error("Unable to determine current schema.",e);
+            logger.error("Unable to determine current schema.", e);
         }
         finally
         {
@@ -90,7 +93,7 @@ public class DatabaseMetaDataHelper
                 }
                 catch (Exception e)
                 {
-                    //noop
+                    // noop
                 }
             }
         }

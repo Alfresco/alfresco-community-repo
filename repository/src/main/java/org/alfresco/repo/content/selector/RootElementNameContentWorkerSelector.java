@@ -30,27 +30,23 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.alfresco.repo.content.ContentWorker;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import org.alfresco.repo.content.ContentWorker;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.util.PropertyCheck;
+
 /**
- * A selector that looks at the root node of an XML document to determine which worker to provide.
- * There are many ways to identify XML documents and this is probably the simplest.  Alternate
- * implementations might execute a series of xpath statements or look for specific namespace
- * declarations in the document.  The net result is the same, i.e. given an XML document, a
- * worker is provided to the caller.
+ * A selector that looks at the root node of an XML document to determine which worker to provide. There are many ways to identify XML documents and this is probably the simplest. Alternate implementations might execute a series of xpath statements or look for specific namespace declarations in the document. The net result is the same, i.e. given an XML document, a worker is provided to the caller.
  * 
  * @since 2.1
  * @author Derek Hulley
@@ -60,11 +56,11 @@ public class RootElementNameContentWorkerSelector<W extends ContentWorker>
         implements ContentWorkerSelector<ContentWorker>
 {
     private static Log logger = LogFactory.getLog(RootElementNameContentWorkerSelector.class);
-    
+
     private SAXParserFactory saxParserFactory;
     private Set<String> supportedMimetypes;
     private Map<String, W> workersByRootElementName;
-    
+
     public RootElementNameContentWorkerSelector()
     {
         saxParserFactory = SAXParserFactory.newInstance();
@@ -78,16 +74,16 @@ public class RootElementNameContentWorkerSelector<W extends ContentWorker>
     {
         StringBuilder sb = new StringBuilder(50);
         sb.append("RootElementNameContentWorkerSelector")
-          .append("[ workers=").append(workersByRootElementName)
-          .append("]");
+                .append("[ workers=").append(workersByRootElementName)
+                .append("]");
         return sb.toString();
     }
 
     /**
-     * Optionally set the mimetypes supported.  They must be XML formats that the chosen
-     * parser will be able to handle.
+     * Optionally set the mimetypes supported. They must be XML formats that the chosen parser will be able to handle.
      * 
-     * @param supportedMimetypes        the list of mimetypes.  The default is <b>text/xml</b>.
+     * @param supportedMimetypes
+     *            the list of mimetypes. The default is <b>text/xml</b>.
      */
     public void setSupportedMimetypes(Set<String> supportedMimetypes)
     {
@@ -97,8 +93,8 @@ public class RootElementNameContentWorkerSelector<W extends ContentWorker>
     /**
      * Set the workers to choose from.
      * 
-     * @param workers               a map of {@linkplain ContentWorker} instances
-     *                              keyed by root element name
+     * @param workers
+     *            a map of {@linkplain ContentWorker} instances keyed by root element name
      */
     public void setWorkers(Map<String, W> workers)
     {
@@ -113,7 +109,7 @@ public class RootElementNameContentWorkerSelector<W extends ContentWorker>
         PropertyCheck.mandatory(this, "workers", workersByRootElementName);
         PropertyCheck.mandatory(this, "supportedMimetypes", supportedMimetypes);
     }
-    
+
     /**
      * Performs a match of the root element name to find the correct content worker.
      */
@@ -150,7 +146,12 @@ public class RootElementNameContentWorkerSelector<W extends ContentWorker>
         {
             if (is != null)
             {
-                try { is.close(); } catch (Throwable e) {}
+                try
+                {
+                    is.close();
+                }
+                catch (Throwable e)
+                {}
             }
         }
         // Done
@@ -178,11 +179,13 @@ public class RootElementNameContentWorkerSelector<W extends ContentWorker>
     {
         private static final long serialVersionUID = 6845880422947198814L;
         private String elementName;
+
         public RootElementFoundException(String elementName)
         {
             super(elementName);
             this.elementName = elementName;
         }
+
         public String getElementName()
         {
             return elementName;

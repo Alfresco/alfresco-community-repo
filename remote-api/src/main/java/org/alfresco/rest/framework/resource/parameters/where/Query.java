@@ -34,7 +34,7 @@ import org.antlr.runtime.tree.CommonTree;
  */
 public interface Query
 {
-    
+
     /**
      * Returns the list of operations
      */

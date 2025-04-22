@@ -1,5 +1,9 @@
 package org.alfresco.rest.workflow.processDefinitions;
 
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
@@ -7,9 +11,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Created by Claudia Agache on 12/5/2016.
@@ -25,10 +26,10 @@ public class GetProcessDefinitionCoreTests extends RestTest
         adminUser = dataUser.getAdminUser();
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION },
+    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION},
             executionType = ExecutionType.REGRESSION,
             description = "Verify if get process definition returns status code 404 when invalid processDefinitionId is used")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESS_DEFINITION, TestGroup.REGRESSION})
     public void getProcessDefinitionUsingInvalidProcessDefinitionId() throws Exception
     {
         restClient.authenticateUser(adminUser);

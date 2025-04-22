@@ -26,18 +26,13 @@
 
 package org.alfresco.rest.api.lookups;
 
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Acts as a central point for property lookups
@@ -51,18 +46,19 @@ public class PropertyLookupRegistry
 
     /**
      * Set the supported property lookup classes.
+     * 
      * @param lookups
      */
     public void setLookups(List<PropertyLookup> lookups)
     {
-        lookups.forEach(entry ->
-        {
-            entry.supports().forEach( propKey -> propertyLookups.put((String) propKey, entry) );
+        lookups.forEach(entry -> {
+            entry.supports().forEach(propKey -> propertyLookups.put((String) propKey, entry));
         });
     }
 
     /**
      * The list of property keys that are supported by this class
+     * 
      * @return Set<String> property keys
      */
     public Set<String> supports()
@@ -72,8 +68,11 @@ public class PropertyLookupRegistry
 
     /**
      * Looks up the property value using a PropertyLookup
-     * @param propertyName the property name/type
-     * @param propertyValue the value to lookup
+     * 
+     * @param propertyName
+     *            the property name/type
+     * @param propertyValue
+     *            the value to lookup
      * @return Object to be serialized as json
      */
     public Object lookup(String propertyName, String propertyValue)

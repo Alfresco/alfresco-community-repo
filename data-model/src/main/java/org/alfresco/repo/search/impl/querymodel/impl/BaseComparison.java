@@ -54,7 +54,7 @@ public abstract class BaseComparison extends BaseFunction
      * Right hand side
      */
     public final static String ARG_RHS = "RHS";
-    
+
     /**
      * Mode: SVP or mode for MVP comparisons
      */
@@ -70,7 +70,7 @@ public abstract class BaseComparison extends BaseFunction
     private StaticArgument staticArgument;
 
     private FunctionArgument functionArgument;
-    
+
     private String staticPosition;
 
     static
@@ -79,12 +79,14 @@ public abstract class BaseComparison extends BaseFunction
         ARGS.put(ARG_LHS, new BaseArgumentDefinition(Multiplicity.ANY, ARG_LHS, DataTypeDefinition.ANY, true));
         ARGS.put(ARG_RHS, new BaseArgumentDefinition(Multiplicity.ANY, ARG_RHS, DataTypeDefinition.ANY, true));
         ARGS.put(ARG_MODE, new BaseArgumentDefinition(Multiplicity.ANY, ARG_MODE, DataTypeDefinition.ANY, true));
-        
+
     }
 
     /**
-     * @param name String
-     * @param returnType QName
+     * @param name
+     *            String
+     * @param returnType
+     *            QName
      */
     public BaseComparison(String name, QName returnType, LinkedHashMap<String, ArgumentDefinition> argumentDefinitions)
     {

@@ -29,6 +29,7 @@ import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
@@ -42,7 +43,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @author Sergey Scherbovich
@@ -54,9 +54,9 @@ public class LanguagesTest extends TestCase
     private TransactionService transactionService;
     private NodeService nodeService;
     private FileFolderService fileFolderService;
-    
+
     private ServiceRegistry serviceRegistry;
-    
+
     private UserTransaction txn;
     private NodeRef rootNodeRef;
     private NodeRef workingRootNodeRef;
@@ -68,7 +68,7 @@ public class LanguagesTest extends TestCase
         transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();
         fileFolderService = serviceRegistry.getFileFolderService();
-        
+
         // start the transaction
         txn = transactionService.getUserTransaction();
         txn.begin();
@@ -106,7 +106,7 @@ public class LanguagesTest extends TestCase
             e.printStackTrace();
         }
     }
-    
+
     /* MNT-10388 test */
     public void testCreateNodeInUTF8() throws Exception
     {
@@ -114,12 +114,12 @@ public class LanguagesTest extends TestCase
         String Czech2 = "Nová složka " + System.currentTimeMillis();
         String Russian = "На русском " + System.currentTimeMillis();
         String Japaneese = "日本語でのタイトル " + System.currentTimeMillis();
-        
+
         testNodesCreating(new String[]{Czech1, Czech2});
         testNodesCreating(new String[]{Russian});
         testNodesCreating(new String[]{Japaneese});
     }
-    
+
     private void testNodesCreating(String[] nodeNames)
     {
         for (String node : nodeNames)

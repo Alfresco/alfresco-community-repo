@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.activities.feed;
 
-
 /**
  * Interface for feed notifier
  * 
@@ -35,7 +34,8 @@ public interface FeedNotifier
 {
     /**
      * 
-     * @param repeatIntervalMins system-wide job repeat interval (in minutes)
+     * @param repeatIntervalMins
+     *            system-wide job repeat interval (in minutes)
      */
     public void execute(int repeatIntervalMins);
 }

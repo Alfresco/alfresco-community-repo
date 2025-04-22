@@ -1,5 +1,10 @@
 package org.alfresco.rest.favorites;
 
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
@@ -11,10 +16,6 @@ import org.alfresco.utility.model.*;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class AddFavoritesTests extends RestTest
 {
@@ -28,7 +29,7 @@ public class AddFavoritesTests extends RestTest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        adminUserModel = dataUser.getAdminUser();        
+        adminUserModel = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
@@ -39,10 +40,10 @@ public class AddFavoritesTests extends RestTest
         folder1 = dataContent.usingSite(siteModel).usingUser(adminUserModel).createFolder();
     }
 
-    //    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
-    @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+    // @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.SANITY,
             description = "Verify Manager user gets status code 401 if authentication call fails")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY})
     public void managerIsNotAbleToAddToFavoritesIfAuthenticationFails() throws Exception
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
@@ -51,42 +52,42 @@ public class AddFavoritesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
-              description = "Verify Collaborator user add site to favorites with Rest API and status code is 201")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify Collaborator user add site to favorites with Rest API and status code is 201")
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void collaboratorIsAbleToAddToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
-                  .withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
+                .withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restPersonFavoritesModel.and().field("targetGuid").is(siteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
-              description = "Verify Contributor user add site to favorites with Rest API and status code is 201")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify Contributor user add site to favorites with Rest API and status code is 201")
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void contributorIsAbleToAddToFavorites() throws JsonToModelConversionException, Exception
     {
-        restPersonFavoritesModel= restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
-                  .withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
+        restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
+                .withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restPersonFavoritesModel.and().field("targetGuid").is(siteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
-              description = "Verify Consumer user add site to favorites with Rest API and status code is 201")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify Consumer user add site to favorites with Rest API and status code is 201")
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void consumerIsAbleToAddToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
-                  .withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
+                .withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restPersonFavoritesModel.and().field("targetGuid").is(siteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user add site to favorites with Rest API and status code is 201")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void adminIsAbleToAddToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().addSiteToFavorites(siteModel);
@@ -95,9 +96,9 @@ public class AddFavoritesTests extends RestTest
     }
 
     @Bug(id = "MNT-17157")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Check that if a favorite already exists with the specified id status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void addFavoriteTwice() throws Exception
     {
         SiteModel site = dataSite.usingUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager)).createPublicRandomSite();
@@ -107,9 +108,9 @@ public class AddFavoritesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CONFLICT);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.SANITY,
             description = "Add to favorites a file for a Manager, check it was added")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY})
     public void managerIsAbleToAddFileToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
@@ -124,9 +125,9 @@ public class AddFavoritesTests extends RestTest
                 .field("createdBy").is(adminUserModel.getUsername());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.SANITY,
             description = "Add to favorites a folder for a Manager, check it was added")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY})
     public void managerIsAbleToAddFolderToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
@@ -140,9 +141,9 @@ public class AddFavoritesTests extends RestTest
                 .field("createdBy").is(adminUserModel.getUsername());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.SANITY,
             description = "Add to favorites a site for a Manager, check it was added")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY})
     public void managerIsAbleToAddSiteToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
@@ -158,9 +159,9 @@ public class AddFavoritesTests extends RestTest
                 .field("title").is(siteModel.getTitle());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify add favorite specifying -me- string in place of <personid> for request")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsAbleToAddFavoriteWhenUsingMeAsUsername() throws Exception
     {
         UserModel user = dataUser.createRandomTestUser();
@@ -172,9 +173,9 @@ public class AddFavoritesTests extends RestTest
         restClient.authenticateUser(user).withCoreAPI().usingAuthUser().getFavoriteSites().assertThat().entriesListContains("guid", siteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Add to favorites a file for a Collaborator, check it was added")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void collaboratorIsAbleToAddFileToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
@@ -183,9 +184,9 @@ public class AddFavoritesTests extends RestTest
         restPersonFavoritesModel.assertThat().field("targetGuid").is(document.getNodeRefWithoutVersion());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Add to favorites a file for a Contributor, check it was added")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void contributorIsAbleToAddFileToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
@@ -194,9 +195,9 @@ public class AddFavoritesTests extends RestTest
         restPersonFavoritesModel.assertThat().field("targetGuid").is(document.getNodeRefWithoutVersion());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Add to favorites a file for a Consumer, check it was added")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void consumerIsAbleToAddFileToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
@@ -205,9 +206,9 @@ public class AddFavoritesTests extends RestTest
         restPersonFavoritesModel.assertThat().field("targetGuid").is(document.getNodeRefWithoutVersion());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Add to favorites a folder for a Collaborator, check it was added")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void collaboratorIsAbleToAddFolderToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
@@ -216,9 +217,9 @@ public class AddFavoritesTests extends RestTest
         restPersonFavoritesModel.assertThat().field("targetGuid").is(folder.getNodeRefWithoutVersion());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Add to favorites a folder for a Contributor, check it was added")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void contributorIsAbleToAddFolderToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
@@ -227,9 +228,9 @@ public class AddFavoritesTests extends RestTest
         restPersonFavoritesModel.assertThat().field("targetGuid").is(folder.getNodeRefWithoutVersion());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Add to favorites a folder for a Consumer, check it was added")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void consumerIsAbleToAddFolderToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
@@ -238,9 +239,9 @@ public class AddFavoritesTests extends RestTest
         restPersonFavoritesModel.assertThat().field("targetGuid").is(folder.getNodeRefWithoutVersion());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Add to favorites a site for a Collaborator, check it was added")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void collaboratorIsAbleToAddSiteToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
@@ -249,9 +250,9 @@ public class AddFavoritesTests extends RestTest
         restPersonFavoritesModel.assertThat().field("targetGuid").is(siteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Add to favorites a site for a Contributor, check it was added")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void contributorIsAbleToAddSiteToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor))
@@ -260,9 +261,9 @@ public class AddFavoritesTests extends RestTest
         restPersonFavoritesModel.assertThat().field("targetGuid").is(siteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Add to favorites a site for a Consumer, check it was added")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void consumerIsAbleToAddSiteToFavorites() throws Exception
     {
         restPersonFavoritesModel = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer))
@@ -271,9 +272,9 @@ public class AddFavoritesTests extends RestTest
         restPersonFavoritesModel.assertThat().field("targetGuid").is(siteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Check that if target guid does not describe a site, file, or folder status code is 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void addFavoriteUsingInvalidGuid() throws Exception
     {
         LinkModel link = dataLink.usingAdmin().usingSite(siteModel).createRandomLink();
@@ -284,9 +285,9 @@ public class AddFavoritesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, site.getGuid().split("/")[3]));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Check that if personId does not exist, status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void addFavoriteUsingInexistentUser() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(new UserModel("random_user", "random_password")).addSiteToFavorites(siteModel);
@@ -294,9 +295,9 @@ public class AddFavoritesTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "random_user"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Check that if target guid does not exist, status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void addFavoriteUsingInexistentGuid() throws Exception
     {
         SiteModel site = dataSite.usingUser(adminUserModel).createPublicRandomSite();
@@ -307,9 +308,9 @@ public class AddFavoritesTests extends RestTest
                 .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "random_guid"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Check that if user provides file in target but guid is of a folder status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void addFileToFavoritesUsingFolderGuid() throws Exception
     {
         String nodeRef = document.getNodeRef();
@@ -322,9 +323,9 @@ public class AddFavoritesTests extends RestTest
         document.setNodeRef(nodeRef);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify add favorite, perform getFavorites call, check value is updated")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void verifyGetFavoritesAfterFavoritingSite() throws Exception
     {
         UserModel user = dataUser.createRandomTestUser();
@@ -336,10 +337,10 @@ public class AddFavoritesTests extends RestTest
                 .assertThat().entriesListContains("guid", siteModel.getGuid());
     }
 
-    //    @Bug(id = "MNT-17158", description="Not a bug, If we need to stop comments from being favorited then an improvement/enhancement request should be raised against the platform.")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    // @Bug(id = "MNT-17158", description="Not a bug, If we need to stop comments from being favorited then an improvement/enhancement request should be raised against the platform.")
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify add file favorite with comment id returns status code 201")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void addFileFavoriteUsingCommentId() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -351,9 +352,9 @@ public class AddFavoritesTests extends RestTest
         restPersonFavoritesModel.assertThat().field("targetGuid").is(file.getNodeRef());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify add file favorite with tag id returns status code 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void addFileFavoriteUsingTagId() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
@@ -365,9 +366,9 @@ public class AddFavoritesTests extends RestTest
                 adminUserModel.getUsername(), returnedModel.getId()));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Check that if user provides site in target but id is of a file status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void addSiteToFavoritesUsingFileId() throws Exception
     {
         String guid = siteModel.getGuid();
@@ -379,9 +380,9 @@ public class AddFavoritesTests extends RestTest
         siteModel.setGuid(guid);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Check that if user provides folder in target but guid is of a file status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void addFolderToFavoritesUsingFileGuid() throws Exception
     {
         String nodeRef = folder1.getNodeRef();
@@ -393,9 +394,9 @@ public class AddFavoritesTests extends RestTest
         folder1.setNodeRef(nodeRef);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Check that if user provides file in target but guid is of a site status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void addSiteToFavoritesUsingFolderId() throws Exception
     {
         SiteModel newSiteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
@@ -405,9 +406,9 @@ public class AddFavoritesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, folder.getNodeRef()));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Check that if user provides folder in target but guid is of a site status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void addFolderToFavoritesUsingSiteId() throws Exception
     {
         FolderModel newFolder = dataContent.usingSite(siteModel).usingUser(adminUserModel).createFolder();
@@ -419,9 +420,9 @@ public class AddFavoritesTests extends RestTest
     }
 
     @Bug(id = "REPO-1061")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Check that if user does not have permission to favorite a site status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void verifyFavoriteASiteIfTheUserDoesNotHavePermission() throws Exception
     {
         SiteModel privateSite = dataSite.usingUser(adminUserModel).createPrivateRandomSite();
@@ -434,9 +435,9 @@ public class AddFavoritesTests extends RestTest
     }
 
     @Bug(id = "REPO-4000")
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify the response of favorite a sie with empty body at request")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void verifyFavoriteASiteWithEmptyBody() throws Exception
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI();

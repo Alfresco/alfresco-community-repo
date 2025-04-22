@@ -31,6 +31,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.action.RuntimeActionService;
@@ -44,17 +47,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * This class provides the implementation of RenditionDefinition persistence.
  * <p/>
- * N.B. {@link RenditionDefinition Rendition definitions} are stored within the Data Dictionary in the
- * Alfresco Repository &amp; therefore calls to load or save definitions will be subject to the normal
- * authorisation checks for those nodes. In particular this means that if the Data Dictionary has been
- * given restricted access control (it is Consumer for Group ALL by default), it may not be possible for
- * normal users to load rendition definitions.
+ * N.B. {@link RenditionDefinition Rendition definitions} are stored within the Data Dictionary in the Alfresco Repository &amp; therefore calls to load or save definitions will be subject to the normal authorisation checks for those nodes. In particular this means that if the Data Dictionary has been given restricted access control (it is Consumer for Group ALL by default), it may not be possible for normal users to load rendition definitions.
  * 
  * @author Nick Smith
  * @author Neil McErlean
@@ -79,7 +76,8 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
     /**
      * Injects the NodeService bean.
      * 
-     * @param nodeService the NodeService.
+     * @param nodeService
+     *            the NodeService.
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -89,19 +87,19 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
     /**
      * Injects the RuntimeActionService bean.
      * 
-     * @param runtimeActionService the RuntimeActionService.
+     * @param runtimeActionService
+     *            the RuntimeActionService.
      */
     public void setRuntimeActionService(RuntimeActionService runtimeActionService)
     {
         this.runtimeActionService = runtimeActionService;
     }
-    
+
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
     }
-    
-    
+
     public List<RenditionDefinition> loadRenditionDefinitions()
     {
         checkRenderingActionRootNodeExists();
@@ -123,7 +121,7 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
 
         return renderingActions;
     }
-    
+
     public List<RenditionDefinition> loadRenditionDefinitions(String renditionEngineName)
     {
         if (renditionEngineName == null)
@@ -145,7 +143,6 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
         return filteredRenditionDefinitions;
     }
 
-
     public RenditionDefinition loadRenditionDefinition(QName renditionDefinitionName)
     {
         NodeRef actionNode = findActionNode(renditionDefinitionName);
@@ -165,17 +162,17 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
         else
             return null;
     }
-    
+
     public void saveRenditionDefinition(RenditionDefinition renderingAction)
     {
         NodeRef actionNodeRef = findOrCreateActionNode(renderingAction);
-        
+
         // ALF-9166 describes a problem whereby versionable saved rendition definition nodes cause problems on upgrade.
         // This appears to be due to a rule defined on Company Home. The behaviour suppression below is a workaround for that issue.
         try
         {
             behaviourFilter.disableBehaviour(actionNodeRef, ContentModel.ASPECT_VERSIONABLE);
-            
+
             // TODO Serialize using JSON content instead.
             // The current serialization mechanism creates a complex content model
             // structure which is verbose and a JSON-based approach using a simplified
@@ -187,22 +184,23 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
             behaviourFilter.enableBehaviour(actionNodeRef, ContentModel.ASPECT_VERSIONABLE);
         }
     }
-    
+
     public void deleteRenditionDefinition(RenditionDefinition renderingAction)
     {
         NodeRef actionNodeRef = findOrCreateActionNode(renderingAction);
-        if(actionNodeRef != null) {
-           nodeService.deleteNode(actionNodeRef);
+        if (actionNodeRef != null)
+        {
+            nodeService.deleteNode(actionNodeRef);
         }
     }
-    
+
     private NodeRef findActionNode(QName renditionDefinitionName)
     {
         checkRenderingActionRootNodeExists();
         List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(//
-                    RENDERING_ACTION_ROOT_NODE_REF,//
-                    ContentModel.ASSOC_CONTAINS,//
-                    renditionDefinitionName);
+                RENDERING_ACTION_ROOT_NODE_REF, //
+                ContentModel.ASSOC_CONTAINS, //
+                renditionDefinitionName);
         if (childAssocs.isEmpty())
         {
             return null;
@@ -225,19 +223,19 @@ public class RenditionDefinitionPersisterImpl implements RenditionDefinitionPers
         if (actionNode == null)
         {
             actionNode = runtimeActionService.createActionNodeRef(//
-                        renderingAction,//
-                        RENDERING_ACTION_ROOT_NODE_REF,//
-                        ContentModel.ASSOC_CONTAINS,//
-                        actionName);
+                    renderingAction, //
+                    RENDERING_ACTION_ROOT_NODE_REF, //
+                    ContentModel.ASSOC_CONTAINS, //
+                    actionName);
         }
         return actionNode;
     }
 
     /**
-     * This method checks whether the folder containing Rendering Action nodes
-     * exists.
+     * This method checks whether the folder containing Rendering Action nodes exists.
      * 
-     * @throws RenditionServiceException if the folder node does not exist.
+     * @throws RenditionServiceException
+     *             if the folder node does not exist.
      */
     private void checkRenderingActionRootNodeExists()
     {

@@ -39,6 +39,5 @@ import org.alfresco.ibatis.BatchingDAO;
 public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
 {
     protected AbstractPatchDAOImpl()
-    {
-    }
+    {}
 }

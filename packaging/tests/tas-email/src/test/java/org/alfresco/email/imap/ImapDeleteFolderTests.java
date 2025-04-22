@@ -1,16 +1,16 @@
 package org.alfresco.email.imap;
 
+import jakarta.mail.FolderNotFoundException;
+
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.email.EmailTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.*;
-import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import jakarta.mail.FolderNotFoundException;
 
 public class ImapDeleteFolderTests extends EmailTest
 {
@@ -23,9 +23,9 @@ public class ImapDeleteFolderTests extends EmailTest
         testSite = dataSite.usingUser(testUser).createIMAPSite();
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.SANITY,
             description = "Verify admin can delete folder")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY})
     public void adminShouldDeleteFolder() throws Exception
     {
         testFolder = FolderModel.getRandomFolderModel();
@@ -37,9 +37,9 @@ public class ImapDeleteFolderTests extends EmailTest
                 .usingSite(adminSite).assertThat().doesNotContain(testFolder);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.SANITY,
             description = "Verify site Manager can delete a folder with a message(file)")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.SANITY})
     public void siteManagerShouldDeleteNonEmptyFolder() throws Exception
     {
         UserModel user = dataUser.createRandomTestUser();
@@ -55,9 +55,9 @@ public class ImapDeleteFolderTests extends EmailTest
                 .usingSite(site).assertThat().doesNotContain(folder);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify that site manager can delete a empty folder")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE})
     public void siteManagerShouldDeleteFolder() throws Exception
     {
         testFolder = FolderModel.getRandomFolderModel();
@@ -69,9 +69,9 @@ public class ImapDeleteFolderTests extends EmailTest
                 .usingSite(testSite).assertThat().doesNotContain(testFolder);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify that site manager can delete a folder that contains collaborator user messages")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE }, enabled = false)//disable since it's failing intermitent
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE}, enabled = false) // disable since it's failing intermitent
     public void siteManagerShouldDeleteFolderWithCollaboratorMessages() throws Exception
     {
         UserModel collaboratorUser = dataUser.createRandomTestUser();
@@ -88,9 +88,9 @@ public class ImapDeleteFolderTests extends EmailTest
                 .usingSite(testSite).assertThat().doesNotContain(testFolder);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify that site manager can delete a folder that contains contributor user messages")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE }, enabled = false)//disable since it's failing intermitent
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE}, enabled = false) // disable since it's failing intermitent
     public void siteManagerShouldDeleteFolderWithContributorMessages() throws Exception
     {
         UserModel contributorUser = dataUser.createRandomTestUser();
@@ -106,9 +106,9 @@ public class ImapDeleteFolderTests extends EmailTest
                 .usingSite(testSite).assertThat().doesNotContain(testFolder);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify that an unauthorized user can not delete folder")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE }, expectedExceptions = FolderNotFoundException.class)
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.CORE}, expectedExceptions = FolderNotFoundException.class)
     public void unauthorizedUserShouldNotDeleteFolder() throws Exception
     {
         UserModel unauthorizedUser = dataUser.createRandomTestUser();
@@ -116,9 +116,9 @@ public class ImapDeleteFolderTests extends EmailTest
         imapProtocol.authenticateUser(unauthorizedUser).usingResource(testFolder).delete();
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify that site manager can delete a folder that contains consumer user messages")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL})
     public void siteManagerShouldDeleteFolderWithConsumerMessages() throws Exception
     {
         UserModel consumerUser = dataUser.createRandomTestUser();
@@ -136,9 +136,9 @@ public class ImapDeleteFolderTests extends EmailTest
                 .usingSite(testSite).assertThat().doesNotContain(testFolder);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify user cannot delete folder that no longer exists")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL }, expectedExceptions = FolderNotFoundException.class)
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL}, expectedExceptions = FolderNotFoundException.class)
     public void userCannotDeleteFolderThatNoLongerExists() throws Exception
     {
         testFolder = FolderModel.getRandomFolderModel();
@@ -152,9 +152,9 @@ public class ImapDeleteFolderTests extends EmailTest
                 .delete();
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify deleting folder that contains messages by COLLABORATOR user")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL})
     public void collaboratorTriesToDeleteFolderContainingMessagesByCollaborator() throws Exception
     {
         UserModel collaboratorUser1 = dataUser.createRandomTestUser();
@@ -176,9 +176,9 @@ public class ImapDeleteFolderTests extends EmailTest
                 .usingSite(testSite).assertThat().contains(testFolder);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify deleting folder that contains messages by CONTRIBUTOR user")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL})
     public void contributorTriesToDeleteFolderContainingMessagesByContributor() throws Exception
     {
         UserModel contributorUser1 = dataUser.createRandomTestUser();
@@ -200,9 +200,9 @@ public class ImapDeleteFolderTests extends EmailTest
                 .usingSite(testSite).assertThat().contains(testFolder);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify deleting folder that contains messages by CONSUMER user")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL })
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL})
     public void consumerTriesToDeleteFolderContainingMessagesByConsumer() throws Exception
     {
         UserModel consumerUser1 = dataUser.createRandomTestUser();
@@ -226,9 +226,9 @@ public class ImapDeleteFolderTests extends EmailTest
                 .usingSite(testSite).assertThat().contains(testFolder);
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify delete folder from a location where you don't have permission")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL }, expectedExceptions = FolderNotFoundException.class)
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL}, expectedExceptions = FolderNotFoundException.class)
     public void userTriesToDeleteFolderFromALocationToWhichHeDoesNotHavePermissionToDelete() throws Exception
     {
         UserModel userModel = dataUser.createRandomTestUser();
@@ -244,10 +244,10 @@ public class ImapDeleteFolderTests extends EmailTest
         imapProtocol.authenticateUser(userModel).usingSite(testSite).usingResource(testFolder).delete();
     }
 
-    @TestRail(section = { TestGroup.PROTOCOLS, TestGroup.IMAP }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.PROTOCOLS, TestGroup.IMAP}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin cannot delete a open folder")
-    @Test(groups = { TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL }, expectedExceptions = IllegalStateException.class,
-        expectedExceptionsMessageRegExp = "This operation is not allowed on an open folder")
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.IMAP, TestGroup.FULL}, expectedExceptions = IllegalStateException.class,
+            expectedExceptionsMessageRegExp = "This operation is not allowed on an open folder")
     public void adminTriesToDeleteOpenFolder() throws Exception
     {
         testFolder = FolderModel.getRandomFolderModel();

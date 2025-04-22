@@ -25,7 +25,6 @@
  */
 package org.alfresco.service.cmr.view;
 
-
 /**
  * Enumeration of various types of Reference
  * 
@@ -33,6 +32,5 @@ package org.alfresco.service.cmr.view;
  */
 public enum ReferenceType
 {
-    NODEREF,
-    PATHREF
+    NODEREF, PATHREF
 }

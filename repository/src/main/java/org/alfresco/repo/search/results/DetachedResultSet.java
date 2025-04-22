@@ -40,20 +40,23 @@ import org.alfresco.service.cmr.search.ResultSetRow;
 
 /**
  * Detached result set
+ * 
  * @author andyh
  *
  */
 public class DetachedResultSet extends AbstractResultSet
 {
     List<ResultSetRow> rows = null;
-    
+
     ResultSetMetaData rsmd;
-    
+
     long numberFound;
-    
+
     /**
      * Detached result set based on that provided
-     * @param resultSet ResultSet
+     * 
+     * @param resultSet
+     *            ResultSet
      */
     public DetachedResultSet(ResultSet resultSet)
     {
@@ -84,7 +87,7 @@ public class DetachedResultSet extends AbstractResultSet
 
     public Iterator<ResultSetRow> iterator()
     {
-       return rows.iterator();
+        return rows.iterator();
     }
 
     public ChildAssociationRef getChildAssocRef(int n)
@@ -108,12 +111,12 @@ public class DetachedResultSet extends AbstractResultSet
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound()
-     */
+     * 
+     * @see org.alfresco.service.cmr.search.ResultSetSPI#getNumberFound() */
     @Override
     public long getNumberFound()
     {
-       return numberFound;
+        return numberFound;
     }
 
 }

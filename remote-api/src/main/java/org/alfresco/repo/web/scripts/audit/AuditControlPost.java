@@ -45,9 +45,9 @@ public class AuditControlPost extends AbstractAuditWebScript
 
         String appName = getParamAppName(req);
         String path = getParamPath(req);
-        
+
         boolean enable = getParamEnableDisable(req);
-        
+
         if (appName == null)
         {
             // Global operation
@@ -66,7 +66,7 @@ public class AuditControlPost extends AbstractAuditWebScript
             }
         }
         model.put(JSON_KEY_ENABLED, enable);
-        
+
         // Done
         if (logger.isDebugEnabled())
         {

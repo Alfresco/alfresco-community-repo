@@ -29,16 +29,17 @@ import jakarta.transaction.RollbackException;
 import jakarta.transaction.Status;
 import jakarta.transaction.UserTransaction;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.transaction.TransactionService;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Class containing transactions helper methods and interfaces.
  * 
- * @deprecated  Use a {@link RetryingTransactionHelper} instance
+ * @deprecated Use a {@link RetryingTransactionHelper} instance
  * 
  * @author Derek Hulley
  */
@@ -49,8 +50,7 @@ public class TransactionUtil
     /**
      * Transaction work interface.
      * <p>
-     * This interface encapsulates a unit of work that should be done within a
-     * transaction.
+     * This interface encapsulates a unit of work that should be done within a transaction.
      * 
      * @deprecated
      * @see RetryingTransactionHelper.RetryingTransactionCallback
@@ -72,16 +72,19 @@ public class TransactionUtil
     {
         AlfrescoTransactionSupport.flush();
     }
-    
+
     /**
      * Execute the transaction work in a user transaction
      * 
-     * @param transactionService the transaction service
-     * @param transactionWork the transaction work
+     * @param transactionService
+     *            the transaction service
+     * @param transactionWork
+     *            the transaction work
      * 
-     * @throws java.lang.RuntimeException if the transaction was rolled back
+     * @throws java.lang.RuntimeException
+     *             if the transaction was rolled back
      * 
-     * @deprecated  Use a {@link RetryingTransactionHelper} instance
+     * @deprecated Use a {@link RetryingTransactionHelper} instance
      */
     public static <R> R executeInUserTransaction(
             TransactionService transactionService,
@@ -91,16 +94,19 @@ public class TransactionUtil
     }
 
     /**
-     * Execute the transaction work in a user transaction.
-     * Any current transaction will be continued.
+     * Execute the transaction work in a user transaction. Any current transaction will be continued.
      * 
-     * @param transactionService the transaction service
-     * @param transactionWork the transaction work
-     * @param readOnly true if the transaction should be read-only
+     * @param transactionService
+     *            the transaction service
+     * @param transactionWork
+     *            the transaction work
+     * @param readOnly
+     *            true if the transaction should be read-only
      * 
-     * @throws java.lang.RuntimeException if the transaction was rolled back
+     * @throws java.lang.RuntimeException
+     *             if the transaction was rolled back
      * 
-     * @deprecated  Use a {@link RetryingTransactionHelper} instance
+     * @deprecated Use a {@link RetryingTransactionHelper} instance
      */
     public static <R> R executeInUserTransaction(
             TransactionService transactionService,
@@ -111,15 +117,17 @@ public class TransactionUtil
     }
 
     /**
-     * Execute the transaction work in a <b>writable</b>, non-propagating user transaction.
-     * Any current transaction will be suspended a new one started.
+     * Execute the transaction work in a <b>writable</b>, non-propagating user transaction. Any current transaction will be suspended a new one started.
      * 
-     * @param transactionService the transaction service
-     * @param transactionWork the transaction work
+     * @param transactionService
+     *            the transaction service
+     * @param transactionWork
+     *            the transaction work
      * 
-     * @throws java.lang.RuntimeException if the transaction was rolled back
+     * @throws java.lang.RuntimeException
+     *             if the transaction was rolled back
      * 
-     * @deprecated  Use a {@link RetryingTransactionHelper} instance
+     * @deprecated Use a {@link RetryingTransactionHelper} instance
      */
     public static <R> R executeInNonPropagatingUserTransaction(
             TransactionService transactionService,
@@ -129,16 +137,19 @@ public class TransactionUtil
     }
 
     /**
-     * Execute the transaction work in a non-propagating user transaction.
-     * Any current transaction will be suspended a new one started.
+     * Execute the transaction work in a non-propagating user transaction. Any current transaction will be suspended a new one started.
      * 
-     * @param transactionService the transaction service
-     * @param transactionWork the transaction work
-     * @param readOnly true if the transaction should be read-only
+     * @param transactionService
+     *            the transaction service
+     * @param transactionWork
+     *            the transaction work
+     * @param readOnly
+     *            true if the transaction should be read-only
      * 
-     * @throws java.lang.RuntimeException if the transaction was rolled back
+     * @throws java.lang.RuntimeException
+     *             if the transaction was rolled back
      * 
-     * @deprecated  Use a {@link RetryingTransactionHelper} instance
+     * @deprecated Use a {@link RetryingTransactionHelper} instance
      */
     public static <R> R executeInNonPropagatingUserTransaction(
             TransactionService transactionService,
@@ -151,13 +162,17 @@ public class TransactionUtil
     /**
      * Execute the transaction work in a user transaction of a specified type
      * 
-     * @param transactionService the transaction service
-     * @param transactionWork the transaction work
-     * @param nonPropagatingUserTransaction indicates whether the transaction
-     *        should be non propigating or not
-     * @param readOnly true if the transaction should be read-only
+     * @param transactionService
+     *            the transaction service
+     * @param transactionWork
+     *            the transaction work
+     * @param nonPropagatingUserTransaction
+     *            indicates whether the transaction should be non propigating or not
+     * @param readOnly
+     *            true if the transaction should be read-only
      * 
-     * @throws java.lang.RuntimeException if the transaction was rolled back
+     * @throws java.lang.RuntimeException
+     *             if the transaction was rolled back
      */
     private static <R> R executeInTransaction(
             TransactionService transactionService,

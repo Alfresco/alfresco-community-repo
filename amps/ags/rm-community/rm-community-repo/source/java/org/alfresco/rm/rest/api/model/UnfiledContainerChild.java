@@ -33,5 +33,4 @@ package org.alfresco.rm.rest.api.model;
  * @since 2.6
  */
 public class UnfiledContainerChild extends UnfiledChild
-{
-}
+{}

@@ -25,6 +25,19 @@
  */
 package org.alfresco.repo.activities.feed;
 
+import java.util.Collections;
+import java.util.List;
+
+import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.post.lookup.PostLookup;
 import org.alfresco.repo.domain.activities.ActivitiesDAO;
@@ -51,18 +64,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.quartz.JobDetail;
-import org.quartz.Scheduler;
-import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.test.context.ContextConfiguration;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Feed notifier tests.
@@ -143,8 +144,7 @@ public class FeedNotifierTest extends BaseSpringTest
         this.actionService = (ActionService) applicationContext.getBean("ActionService");
 
         // create some users
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void execute() throws Throwable
             {
@@ -180,8 +180,7 @@ public class FeedNotifierTest extends BaseSpringTest
         }, false, true);
 
         // and some activities for those users
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void execute() throws Throwable
             {
@@ -207,8 +206,7 @@ public class FeedNotifierTest extends BaseSpringTest
 
         // one of the users follows the other user (so that we can test that notification failures for one of the users does not
         // affect other users)
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void execute() throws Throwable
             {
@@ -251,14 +249,14 @@ public class FeedNotifierTest extends BaseSpringTest
             maxSequence = postDAO.getMaxActivitySeq();
         }
     }
-    
+
     /**
      * MNT-13625 test
      */
     @Test
     public void testNumThread() throws Exception
     {
-    	AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         generateActivities();
         // set activities.feedNotifier.numThreads property to 1
         feedNotifier.setNumThreads(1);
@@ -308,8 +306,7 @@ public class FeedNotifierTest extends BaseSpringTest
         final String jsonActivityData = "{\"status\":\"test\"}";
 
         // and activity for userName3
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
             @SuppressWarnings("synthetic-access")
             public Void execute() throws Throwable
             {
@@ -349,6 +346,5 @@ public class FeedNotifierTest extends BaseSpringTest
 
     @Test
     public void testSetup()
-    {
-    }
+    {}
 }

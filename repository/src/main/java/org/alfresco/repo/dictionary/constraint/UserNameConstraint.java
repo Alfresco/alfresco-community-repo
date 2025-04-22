@@ -54,9 +54,9 @@ public class UserNameConstraint extends AbstractConstraint
         {
             throw new ConstraintException(ERR_NON_STRING, value);
         }
-        
+
         AuthorityType type = AuthorityType.getAuthorityType(checkValue);
-        if((type != AuthorityType.USER) && (type != AuthorityType.GUEST))
+        if ((type != AuthorityType.USER) && (type != AuthorityType.GUEST))
         {
             throw new ConstraintException(ERR_INVALID_USERNAME, value, type);
         }

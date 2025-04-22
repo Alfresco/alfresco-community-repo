@@ -34,10 +34,11 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.alfresco.util.GUID;
-import org.alfresco.util.TempFileProvider;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.junit.Test;
+
+import org.alfresco.util.GUID;
+import org.alfresco.util.TempFileProvider;
 
 /**
  * Unit tests for import action executor.

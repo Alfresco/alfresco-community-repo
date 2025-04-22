@@ -29,6 +29,8 @@ package org.alfresco.repo.forms.processor.workflow;
 import java.io.Serializable;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.ContentModelItemData;
@@ -44,7 +46,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
 
 /**
  * Helper class that persists a form, transitioning the task if requested.
@@ -56,14 +57,14 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
 {
     private final TaskUpdater updater;
     private String transitionId = null;
-    
+
     public TaskFormPersister(ContentModelItemData<WorkflowTask> itemData,
-                NamespaceService namespaceService,
-                DictionaryService dictionaryService,
-                WorkflowService workflowService,
-                NodeService nodeService,
-                AuthenticationService authenticationService,
-                BehaviourFilter behaviourFilter, Log logger)
+            NamespaceService namespaceService,
+            DictionaryService dictionaryService,
+            WorkflowService workflowService,
+            NodeService nodeService,
+            AuthenticationService authenticationService,
+            BehaviourFilter behaviourFilter, Log logger)
     {
         super(itemData, namespaceService, dictionaryService, logger);
         WorkflowTask item = itemData.getItem();
@@ -79,12 +80,12 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
         {
             throw new AccessDeniedException("Failed to update task with id '" + item.getId() + "'.");
         }
-        
+
         this.updater = new TaskUpdater(item.getId(), workflowService, nodeService, behaviourFilter);
     }
-    
+
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     protected boolean addAssociation(QName qName, List<NodeRef> values)
@@ -94,7 +95,7 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
     }
 
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     protected boolean removeAssociation(QName qName, List<NodeRef> values)
@@ -104,7 +105,7 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
     }
 
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     protected boolean updateProperty(QName qName, Serializable value)
@@ -114,7 +115,7 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
     }
 
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     protected boolean addTransientAssociation(String fieldName, List<NodeRef> values)
@@ -124,12 +125,12 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
             updater.addPackageItems(values);
             return true;
         }
-        
+
         return false;
     }
-    
+
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     protected boolean removeTransientAssociation(String fieldName, List<NodeRef> values)
@@ -139,12 +140,12 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
             updater.removePackageItems(values);
             return true;
         }
-        
+
         return false;
     }
-    
+
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     protected boolean updateTransientProperty(String fieldName, FieldData fieldData)
@@ -156,16 +157,16 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
             {
                 value = "";
             }
-            
+
             transitionId = value.toString();
             return true;
         }
-        
+
         return false;
     }
-    
+
     /**
-    * {@inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     public WorkflowTask persist()
@@ -188,5 +189,5 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
                 return updater.transition(transitionId);
             }
         }
-    }    
+    }
 }

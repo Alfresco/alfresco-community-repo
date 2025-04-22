@@ -42,15 +42,18 @@ public interface InplaceRecordService
     /**
      * Hides a record within a collaboration site
      *
-     * @param nodeRef   The record which should be hidden
+     * @param nodeRef
+     *            The record which should be hidden
      */
     void hideRecord(NodeRef nodeRef);
 
     /**
      * Moves a record within a collaboration site
      *
-     * @param nodeRef                The record which should be moved
-     * @param targetNodeRef          The target node reference where it should be moved to
+     * @param nodeRef
+     *            The record which should be moved
+     * @param targetNodeRef
+     *            The target node reference where it should be moved to
      */
     void moveRecord(NodeRef nodeRef, NodeRef targetNodeRef);
 }

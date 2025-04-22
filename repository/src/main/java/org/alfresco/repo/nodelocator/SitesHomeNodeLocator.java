@@ -26,7 +26,6 @@
 
 package org.alfresco.repo.nodelocator;
 
-
 import java.io.Serializable;
 import java.util.Map;
 
@@ -41,13 +40,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class SitesHomeNodeLocator extends AbstractNodeLocator
 {
-    public static final String NAME = "siteshome"; 
+    public static final String NAME = "siteshome";
 
     SiteServiceInternal siteService;
-    
+
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public NodeRef getNode(NodeRef source, Map<String, Serializable> params)
     {
@@ -55,8 +54,8 @@ public class SitesHomeNodeLocator extends AbstractNodeLocator
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     @Override
     public String getName()
     {
@@ -64,7 +63,8 @@ public class SitesHomeNodeLocator extends AbstractNodeLocator
     }
 
     /**
-     * @param siteService the siteService to set
+     * @param siteService
+     *            the siteService to set
      */
     public void setSiteService(SiteServiceInternal siteService)
     {

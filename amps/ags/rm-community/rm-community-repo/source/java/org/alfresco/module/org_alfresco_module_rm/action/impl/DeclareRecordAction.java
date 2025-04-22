@@ -44,7 +44,7 @@ import org.alfresco.util.ParameterCheck;
 public class DeclareRecordAction extends RMActionExecuterAbstractBase
 {
     private static final String MISSING_PROPERTIES = "missingProperties";
-    
+
     /** action name */
     public static final String NAME = "declareRecord";
 
@@ -54,7 +54,8 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
     /**
      * Sets the record service
      *
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -82,5 +83,5 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
         }
 
     }
-    
+
 }

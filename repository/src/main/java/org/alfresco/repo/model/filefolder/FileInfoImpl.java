@@ -65,19 +65,19 @@ public class FileInfoImpl implements FileInfo
     {
         this.nodeRef = nodeRef;
         this.typeQName = typeQName;
-        
+
         this.isFolder = isFolder;
         this.properties = properties;
         this.isHidden = isHidden;
-        
+
         // Check if this is a link node
-        if ( properties.containsKey( ContentModel.PROP_LINK_DESTINATION))
+        if (properties.containsKey(ContentModel.PROP_LINK_DESTINATION))
         {
-        	isLink = true;
-        	linkNodeRef = (NodeRef) properties.get( ContentModel.PROP_LINK_DESTINATION);
+            isLink = true;
+            linkNodeRef = (NodeRef) properties.get(ContentModel.PROP_LINK_DESTINATION);
         }
     }
-    
+
     /**
      * @see #getNodeRef()
      * @see NodeRef#equals(Object)
@@ -121,20 +121,20 @@ public class FileInfoImpl implements FileInfo
     {
         StringBuilder sb = new StringBuilder(80);
         sb.append("FileInfo")
-          .append("[name=").append(getName())
-          .append(", isFolder=").append(isFolder)
-          .append(", nodeRef=").append(nodeRef);
-        
-        if ( isLink())
+                .append("[name=").append(getName())
+                .append(", isFolder=").append(isFolder)
+                .append(", nodeRef=").append(nodeRef);
+
+        if (isLink())
         {
-        	sb.append(", linkref=");
-        	sb.append(linkNodeRef);
+            sb.append(", linkref=");
+            sb.append(linkNodeRef);
         }
-        
+
         sb.append("]");
         return sb.toString();
     }
-    
+
     public NodeRef getNodeRef()
     {
         return nodeRef;
@@ -147,18 +147,19 @@ public class FileInfoImpl implements FileInfo
 
     public boolean isLink()
     {
-    	return isLink;
+        return isLink;
     }
-  
-    public boolean isHidden() {
-    	return isHidden;
+
+    public boolean isHidden()
+    {
+        return isHidden;
     }
 
     public NodeRef getLinkNodeRef()
     {
-    	return linkNodeRef;
+        return linkNodeRef;
     }
-    
+
     public String getName()
     {
         return (String) properties.get(ContentModel.PROP_NAME);
@@ -173,7 +174,7 @@ public class FileInfoImpl implements FileInfo
     {
         return DefaultTypeConverter.INSTANCE.convert(Date.class, properties.get(ContentModel.PROP_MODIFIED));
     }
-    
+
     public ContentData getContentData()
     {
         return DefaultTypeConverter.INSTANCE.convert(ContentData.class, properties.get(ContentModel.PROP_CONTENT));
@@ -183,7 +184,7 @@ public class FileInfoImpl implements FileInfo
     {
         return properties;
     }
-    
+
     public QName getType()
     {
         return typeQName;

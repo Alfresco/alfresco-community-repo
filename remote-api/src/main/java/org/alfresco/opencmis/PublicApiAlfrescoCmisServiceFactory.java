@@ -42,14 +42,14 @@ public class PublicApiAlfrescoCmisServiceFactory extends AlfrescoCmisServiceFact
 
     public void setNetworksService(NetworksService networksService)
     {
-		this.networksService = networksService;
-	}
+        this.networksService = networksService;
+    }
 
-	public void setTenantAdminService(TenantAdminService tenantAdminService)
+    public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
         this.tenantAdminService = tenantAdminService;
     }
-    
+
     @Override
     protected AlfrescoCmisService getCmisServiceTarget(CMISConnector connector)
     {

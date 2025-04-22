@@ -42,15 +42,15 @@ import org.alfresco.service.cmr.repository.ContentStreamListener;
 public class TestCenteraLikeContentWriter extends FileContentWriter implements ContentStreamListener
 {
     public static final String UNKNOWN_ID = FileContentStore.STORE_PROTOCOL + ContentStore.PROTOCOL_DELIMITER + "UNKNOWN_ID";
-    
+
     private String originalContentUrl;
-    
+
     public TestCenteraLikeContentWriter(File file, String url, ContentReader existingContentReader)
     {
         super(file, UNKNOWN_ID, existingContentReader);
-        
+
         this.originalContentUrl = url;
-        
+
         this.addListener(this);
     }
 

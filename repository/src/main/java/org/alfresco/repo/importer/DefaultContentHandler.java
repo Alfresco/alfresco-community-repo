@@ -34,23 +34,22 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-
 /**
  * Default Import Content Handler
  * 
  * Responsible for interacting with an Alfresco Importer.
  */
 public class DefaultContentHandler
-    implements ImportContentHandler, ErrorHandler
+        implements ImportContentHandler, ErrorHandler
 {
     private ImportContentHandler targetHandler = null;
     private Importer importer = null;
 
-    
     /**
      * Construct
      * 
-     * @param targetHandler ImportContentHandler
+     * @param targetHandler
+     *            ImportContentHandler
      */
     public DefaultContentHandler(ImportContentHandler targetHandler)
     {
@@ -58,48 +57,43 @@ public class DefaultContentHandler
         this.targetHandler = targetHandler;
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.alfresco.repo.importer.ImportContentHandler#setImporter(org.alfresco.repo.importer.Importer)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.importer.ImportContentHandler#setImporter(org.alfresco.repo.importer.Importer) */
     public void setImporter(Importer importer)
     {
         this.importer = importer;
         this.targetHandler.setImporter(importer);
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.alfresco.repo.importer.ImportContentHandler#importStream(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.importer.ImportContentHandler#importStream(java.lang.String) */
     public InputStream importStream(String content)
     {
         return targetHandler.importStream(content);
     }
-    
-    /*
-     *  (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator)
-     */
+
+    /* (non-Javadoc)
+     * 
+     * @see org.xml.sax.ContentHandler#setDocumentLocator(org.xml.sax.Locator) */
     public void setDocumentLocator(Locator locator)
     {
         targetHandler.setDocumentLocator(locator);
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#startDocument()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.xml.sax.ContentHandler#startDocument() */
     public void startDocument() throws SAXException
     {
         importer.start();
         targetHandler.startDocument();
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#endDocument()
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.xml.sax.ContentHandler#endDocument() */
     public void endDocument() throws SAXException
     {
         try
@@ -112,82 +106,73 @@ public class DefaultContentHandler
         }
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.xml.sax.ContentHandler#startPrefixMapping(java.lang.String, java.lang.String) */
     public void startPrefixMapping(String prefix, String uri) throws SAXException
     {
         targetHandler.startPrefixMapping(prefix, uri);
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.xml.sax.ContentHandler#endPrefixMapping(java.lang.String) */
     public void endPrefixMapping(String prefix) throws SAXException
     {
         targetHandler.endPrefixMapping(prefix);
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes) */
     public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException
     {
         targetHandler.startElement(uri, localName, qName, atts);
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String) */
     public void endElement(String uri, String localName, String qName) throws SAXException
     {
         targetHandler.endElement(uri, localName, qName);
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#characters(char[], int, int)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.xml.sax.ContentHandler#characters(char[], int, int) */
     public void characters(char[] ch, int start, int length) throws SAXException
     {
         targetHandler.characters(ch, start, length);
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.xml.sax.ContentHandler#ignorableWhitespace(char[], int, int) */
     public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException
     {
         targetHandler.ignorableWhitespace(ch, start, length);
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.xml.sax.ContentHandler#processingInstruction(java.lang.String, java.lang.String) */
     public void processingInstruction(String target, String data) throws SAXException
     {
         targetHandler.processingInstruction(target, data);
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.xml.sax.ContentHandler#skippedEntity(java.lang.String) */
     public void skippedEntity(String name) throws SAXException
     {
         targetHandler.skippedEntity(name);
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException) */
     public void error(SAXParseException exception) throws SAXException
     {
         try
@@ -200,10 +185,9 @@ public class DefaultContentHandler
         }
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.xml.sax.ErrorHandler#fatalError(org.xml.sax.SAXParseException)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.xml.sax.ErrorHandler#fatalError(org.xml.sax.SAXParseException) */
     public void fatalError(SAXParseException exception) throws SAXException
     {
         try
@@ -216,10 +200,9 @@ public class DefaultContentHandler
         }
     }
 
-    /*
-     *  (non-Javadoc)
-     * @see org.xml.sax.ErrorHandler#warning(org.xml.sax.SAXParseException)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.xml.sax.ErrorHandler#warning(org.xml.sax.SAXParseException) */
     public void warning(SAXParseException exception) throws SAXException
     {
         targetHandler.warning(exception);

@@ -39,8 +39,10 @@ public class BaseParameterArgument extends BaseStaticArgument implements Paramet
     private String parameterName;
 
     /**
-     * @param name String
-     * @param parameterName String
+     * @param name
+     *            String
+     * @param parameterName
+     *            String
      */
     public BaseParameterArgument(String name, String parameterName)
     {
@@ -49,16 +51,16 @@ public class BaseParameterArgument extends BaseStaticArgument implements Paramet
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.ParameterArgument#getParameterName()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.ParameterArgument#getParameterName() */
     public String getParameterName()
     {
         return parameterName;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.querymodel.Argument#getValue()
-     */
+     * 
+     * @see org.alfresco.repo.search.impl.querymodel.Argument#getValue() */
     public Serializable getValue(FunctionEvaluationContext context)
     {
         throw new UnsupportedOperationException();

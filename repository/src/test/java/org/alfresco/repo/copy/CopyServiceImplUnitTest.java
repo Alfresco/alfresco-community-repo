@@ -107,22 +107,18 @@ public class CopyServiceImplUnitTest
     public void testBuildNewName_FileWithoutExtension_JapaneseLocale()
     {
         switchLocale(Locale.JAPANESE);
-        assertEquals(FILE_NAME + copyOfLabelTranslated , copyServiceImpl.buildNewName(FILE_NAME));
+        assertEquals(FILE_NAME + copyOfLabelTranslated, copyServiceImpl.buildNewName(FILE_NAME));
         restoreLocale();
     }
 
-    /*
-     * Helper method to switch Locale
-     */
+    /* Helper method to switch Locale */
     private void switchLocale(Locale newLocale)
     {
         I18NUtil.setLocale(newLocale);
         copyOfLabelTranslated = I18NUtil.getMessage(COPY_OF_LABEL, "");
     }
 
-    /*
-     * Helper method to restore Locale
-     */
+    /* Helper method to restore Locale */
     private void restoreLocale()
     {
         I18NUtil.setLocale(preservedLocale);

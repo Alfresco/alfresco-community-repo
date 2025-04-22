@@ -34,15 +34,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
-import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;
-import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric.METRIC_TYPE;
-import org.alfresco.repo.search.impl.solr.facet.facetsresponse.SimpleMetric;
 import org.alfresco.service.cmr.search.RangeParameters;
 
-/**Helper to map range results.
+/**
+ * Helper to map range results.
  *
  * @author Michael Suzuki
  */
@@ -50,11 +47,12 @@ public class RangeResultMapper
 {
     /**
      * Transforms the facet range response into generic facet response.
+     * 
      * @param facetFields
      * @param searchQuery
      * @return GenericFacetResponse
      */
-    public static List<GenericFacetResponse> getGenericFacetsForRanges(Map<String,List<Map<String,String>>> facetFields, List<RangeParameters> ranges)
+    public static List<GenericFacetResponse> getGenericFacetsForRanges(Map<String, List<Map<String, String>>> facetFields, List<RangeParameters> ranges)
     {
         List<GenericFacetResponse> ffcs = new ArrayList<>(facetFields.size());
         if (facetFields != null && !facetFields.isEmpty() && ranges != null)
@@ -69,14 +67,15 @@ public class RangeResultMapper
         }
         return ffcs;
     }
-    
+
     /**
      * Builds the generic facet response out of range results.
+     * 
      * @param facetField
      * @param facet
      * @return
      */
-    public static GenericBucket buildGenericBucketFromRange(String facetField, Map<String,String> facet, List<RangeParameters> ranges)
+    public static GenericBucket buildGenericBucketFromRange(String facetField, Map<String, String> facet, List<RangeParameters> ranges)
     {
         String start = facet.get(GenericFacetResponse.START);
         String end = facet.get(GenericFacetResponse.END);
@@ -85,87 +84,88 @@ public class RangeResultMapper
         String startFilterQuery = "[";
         String endFilterQuery = ">";
         StringBuilder filterQ = new StringBuilder();
-        //Check if other 
-        //We take the position of the bucket into consideration.
+        // Check if other
+        // We take the position of the bucket into consideration.
         switch (facet.get("bucketPosition"))
         {
-            case "head":
-                for(RangeParameters range : ranges)
+        case "head":
+            for (RangeParameters range : ranges)
+            {
+                if (range.getField().equalsIgnoreCase(facetField))
                 {
-                    if(range.getField().equalsIgnoreCase(facetField))
-                    {
-                        startFilterQuery = range.getRangeFirstBucketStartInclusive();
-                        endFilterQuery = range.getRangeFirstBucketEndInclusive();
-                        startInclusive = checkInclusive(startFilterQuery); 
-                        endInclusive = checkInclusive(endFilterQuery);
-                    }
+                    startFilterQuery = range.getRangeFirstBucketStartInclusive();
+                    endFilterQuery = range.getRangeFirstBucketEndInclusive();
+                    startInclusive = checkInclusive(startFilterQuery);
+                    endInclusive = checkInclusive(endFilterQuery);
                 }
-                break;
-            case "tail":
-                for(RangeParameters range : ranges)
+            }
+            break;
+        case "tail":
+            for (RangeParameters range : ranges)
+            {
+                if (range.getField().equalsIgnoreCase(facetField))
                 {
-                    if(range.getField().equalsIgnoreCase(facetField))
+                    startFilterQuery = range.getRangeBucketStartInclusive();
+                    endFilterQuery = range.getRangeLastBucketEndInclusive();
+                    startInclusive = checkInclusive(startFilterQuery);
+                    endInclusive = checkInclusive(endFilterQuery);
+                }
+            }
+            break;
+        default:
+            for (RangeParameters range : ranges)
+            {
+                if (range.getField().equalsIgnoreCase(facetField))
+                {
+                    List<String> includes = range.getInclude();
+                    if (includes != null && !includes.isEmpty())
                     {
                         startFilterQuery = range.getRangeBucketStartInclusive();
-                        endFilterQuery = range.getRangeLastBucketEndInclusive();
-                        startInclusive = checkInclusive(startFilterQuery); 
+                        endFilterQuery = range.getRangeBucketEndInclusive();
+                        startInclusive = checkInclusive(startFilterQuery);
                         endInclusive = checkInclusive(endFilterQuery);
                     }
                 }
-                break;
-            default:
-                for(RangeParameters range : ranges)
-                {
-                    if(range.getField().equalsIgnoreCase(facetField))
-                    {
-                        List<String> includes = range.getInclude();
-                        if(includes != null && !includes.isEmpty())
-                        {
-                            startFilterQuery = range.getRangeBucketStartInclusive();
-                            endFilterQuery = range.getRangeBucketEndInclusive();
-                            startInclusive = checkInclusive(startFilterQuery); 
-                            endInclusive = checkInclusive(endFilterQuery);
-                        }
-                    }
-                }
-                break;
+            }
+            break;
         }
-        
+
         facet.put(GenericFacetResponse.START_INC.toString(), Boolean.toString(startInclusive));
         facet.put(GenericFacetResponse.END_INC.toString(), Boolean.toString(endInclusive));
-  
+
         facet.remove(GenericFacetResponse.LABEL);
         filterQ.append(facetField).append(":")
-            .append(startFilterQuery)
-            .append("\"").append(start).append("\"")
-            .append(" TO ")
-            .append("\"").append(end).append("\"")
-            .append(endFilterQuery);
-        
+                .append(startFilterQuery)
+                .append("\"").append(start).append("\"")
+                .append(" TO ")
+                .append("\"").append(end).append("\"")
+                .append(endFilterQuery);
+
         Set<Metric> metrics = new HashSet<Metric>(
                 Arrays.asList(new SimpleMetric(
-                        METRIC_TYPE.count,facet.get(
+                        METRIC_TYPE.count, facet.get(
                                 GenericFacetResponse.COUNT))));
         facet.remove("count");
-        
+
         StringBuilder label = new StringBuilder();
-        label.append(startInclusive ? "[" :"(")
-             .append(start)
-             .append(" - ")
-             .append(end)
-             .append(endInclusive ? "]" :")");
+        label.append(startInclusive ? "[" : "(")
+                .append(start)
+                .append(" - ")
+                .append(end)
+                .append(endInclusive ? "]" : ")");
         facet.remove("bucketPosition");
-        
+
         return new GenericBucket(label.toString(),
-                                 filterQ.toString(),
-                                 null, 
-                                 metrics,
-                                 null,
-                                 facet);
-        
+                filterQ.toString(),
+                null,
+                metrics,
+                null,
+                facet);
+
     }
+
     private static boolean checkInclusive(String input)
     {
-        return input.equalsIgnoreCase("[") || input.equalsIgnoreCase("]")? true:false; 
+        return input.equalsIgnoreCase("[") || input.equalsIgnoreCase("]") ? true : false;
     }
 }

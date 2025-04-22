@@ -25,20 +25,22 @@
  */
 package org.alfresco.rest.framework.tests.core;
 
-import org.alfresco.rest.framework.tools.RecognizedParamsExtractorTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import org.alfresco.rest.framework.tools.RecognizedParamsExtractorTest;
+
 /**
  * Runs all the tests for the Public Rest Framework
+ * 
  * @author Gethin James
  */
 @RunWith(Suite.class)
-@SuiteClasses({ InspectorTests.class, JsonJacksonTests.class, ParamsExtractorTests.class,
-            ResourceLocatorTests.class, SerializeTests.class,
-            WhereTests.class, ExecutionTests.class, WithResponseTest.class,
-            ExceptionResolverTests.class, RecognizedParamsExtractorTest.class})
+@SuiteClasses({InspectorTests.class, JsonJacksonTests.class, ParamsExtractorTests.class,
+        ResourceLocatorTests.class, SerializeTests.class,
+        WhereTests.class, ExecutionTests.class, WithResponseTest.class,
+        ExceptionResolverTests.class, RecognizedParamsExtractorTest.class})
 public class AllRestFrameworkTest
 {
 

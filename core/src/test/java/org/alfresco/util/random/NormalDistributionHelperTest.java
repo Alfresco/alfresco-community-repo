@@ -18,11 +18,11 @@
  */
 package org.alfresco.util.random;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import org.junit.Test;
 
 /**
  * @see NormalDistributionHelper
@@ -33,7 +33,7 @@ import static org.junit.Assert.fail;
 public class NormalDistributionHelperTest
 {
     private NormalDistributionHelper normalDistribution = new NormalDistributionHelper();
-    
+
     @Test
     public void testGetValue_Fail()
     {
@@ -61,8 +61,8 @@ public class NormalDistributionHelperTest
     {
         for (int i = 0; i < 1000; i++)
         {
-            long value = normalDistribution.getValue(-1*i, i);
-            assertTrue("Min not respected", value >= -1*i);
+            long value = normalDistribution.getValue(-1 * i, i);
+            assertTrue("Min not respected", value >= -1 * i);
             assertTrue("Max not respected", value <= i);
         }
     }

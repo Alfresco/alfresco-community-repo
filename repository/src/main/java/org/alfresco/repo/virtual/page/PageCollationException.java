@@ -40,18 +40,18 @@ public class PageCollationException extends Exception
     }
 
     public PageCollationException(String message, Throwable cause, boolean enableSuppression,
-                boolean writableStackTrace)
+            boolean writableStackTrace)
     {
         super(message,
-              cause,
-              enableSuppression,
-              writableStackTrace);
+                cause,
+                enableSuppression,
+                writableStackTrace);
     }
 
     public PageCollationException(String message, Throwable cause)
     {
         super(message,
-              cause);
+                cause);
     }
 
     public PageCollationException(String message)

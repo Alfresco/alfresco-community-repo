@@ -61,13 +61,14 @@ public class Workflow extends BaseTemplateProcessorExtension
     /**
      * Sets the service registry
      * 
-     * @param services  the service registry
+     * @param services
+     *            the service registry
      */
     public void setServiceRegistry(ServiceRegistry services)
     {
         this.services = services;
     }
-    
+
     /**
      * Return a list of objects representing the assigned tasks for the current user
      * 
@@ -77,12 +78,12 @@ public class Workflow extends BaseTemplateProcessorExtension
     {
         // get the "in progress" tasks for the current user
         List<WorkflowTask> tasks = getWorkflowService().getAssignedTasks(
-              this.services.getAuthenticationService().getCurrentUserName(),
-              WorkflowTaskState.IN_PROGRESS);
-        
+                this.services.getAuthenticationService().getCurrentUserName(),
+                WorkflowTaskState.IN_PROGRESS);
+
         return convertTasks(tasks);
     }
-    
+
     /**
      * Return a list of objects representing the pooled tasks for the current user
      * 
@@ -92,11 +93,11 @@ public class Workflow extends BaseTemplateProcessorExtension
     {
         // get the "pooled" tasks for the current user
         List<WorkflowTask> tasks = getWorkflowService().getPooledTasks(
-              this.services.getAuthenticationService().getCurrentUserName());
-        
+                this.services.getAuthenticationService().getCurrentUserName());
+
         return convertTasks(tasks);
     }
-    
+
     /**
      * Return a list of objects representing the completed tasks for the current user
      * 
@@ -106,12 +107,12 @@ public class Workflow extends BaseTemplateProcessorExtension
     {
         // get the "completed" tasks for the current user
         List<WorkflowTask> tasks = getWorkflowService().getAssignedTasks(
-              this.services.getAuthenticationService().getCurrentUserName(),
-              WorkflowTaskState.COMPLETED);
-        
+                this.services.getAuthenticationService().getCurrentUserName(),
+                WorkflowTaskState.COMPLETED);
+
         return convertTasks(tasks);
     }
-    
+
     /**
      * Return a single object representing a task of the given taskId for the current user
      * 
@@ -121,14 +122,15 @@ public class Workflow extends BaseTemplateProcessorExtension
     {
         // get the task corresponding to the given taskId
         WorkflowTask task = getWorkflowService().getTaskById(taskId);
-        
+
         return new WorkflowTaskItem(this.services, getTemplateImageResolver(), task);
     }
-    
+
     /**
      * Convert a list of WorkflowTask items into bean objects accessable from templates
      * 
-     * @param tasks     List of WorkflowTask objects to convert
+     * @param tasks
+     *            List of WorkflowTask objects to convert
      * 
      * @return List of WorkflowTaskItem bean wrapper objects
      */
@@ -139,18 +141,17 @@ public class Workflow extends BaseTemplateProcessorExtension
         {
             items.add(new WorkflowTaskItem(this.services, getTemplateImageResolver(), task));
         }
-        
+
         return items;
     }
-    
+
     private WorkflowService getWorkflowService()
     {
         return this.services.getWorkflowService();
     }
-    
-    
+
     /**
-     * Simple bean wrapper around a WorkflowTask item 
+     * Simple bean wrapper around a WorkflowTask item
      */
     public static class WorkflowTaskItem implements NamespacePrefixResolverProvider
     {
@@ -158,66 +159,66 @@ public class Workflow extends BaseTemplateProcessorExtension
         private QNameMap<String, Serializable> properties = null;
         private ServiceRegistry services;
         private TemplateImageResolver resolver;
-        
+
         public WorkflowTaskItem(ServiceRegistry services, TemplateImageResolver resolver, WorkflowTask task)
         {
             this.task = task;
             this.services = services;
             this.resolver = resolver;
         }
-        
+
         public String getType()
         {
             return this.task.title;
         }
-        
+
         public String getQnameType()
         {
-           return this.task.definition.metadata.getName().toString();
+            return this.task.definition.metadata.getName().toString();
         }
-        
+
         public String getName()
         {
             return this.task.description;
         }
-        
+
         public String getDescription()
         {
             return this.task.path.instance.description;
         }
-        
+
         public String getId()
         {
             return this.task.id;
         }
-        
+
         public boolean getIsCompleted()
         {
             return (this.task.state == WorkflowTaskState.COMPLETED);
         }
-        
+
         public Date getStartDate()
         {
             return this.task.path.instance.startDate;
         }
-        
+
         public Map<String, String>[] getTransitions()
         {
-           Map<String, String>[] tranMaps = null;
-           WorkflowTransition[] transitions = this.task.definition.node.transitions;
-           if (transitions != null)
-           {
-              tranMaps = new HashMap[transitions.length];
-              for (int i=0; i<transitions.length; i++)
-              {
-                 tranMaps[i] = new HashMap<String, String>(2, 1.0f);
-                 tranMaps[i].put("label", transitions[i].title);
-                 tranMaps[i].put("id", transitions[i].id);
-              }
-           }
-           return (tranMaps != null ? tranMaps : new HashMap[0]);
+            Map<String, String>[] tranMaps = null;
+            WorkflowTransition[] transitions = this.task.definition.node.transitions;
+            if (transitions != null)
+            {
+                tranMaps = new HashMap[transitions.length];
+                for (int i = 0; i < transitions.length; i++)
+                {
+                    tranMaps[i] = new HashMap<String, String>(2, 1.0f);
+                    tranMaps[i].put("label", transitions[i].title);
+                    tranMaps[i].put("id", transitions[i].id);
+                }
+            }
+            return (tranMaps != null ? tranMaps : new HashMap[0]);
         }
-        
+
         /**
          * @return A TemplateNode representing the initiator (person) of the workflow
          */
@@ -225,31 +226,31 @@ public class Workflow extends BaseTemplateProcessorExtension
         {
             return new TemplateNode(this.task.path.instance.initiator, this.services, this.resolver);
         }
-        
+
         /**
          * @return The workflow package ref
          */
         public NodeRef getPackage()
         {
-            return (NodeRef)this.task.properties.get(WorkflowModel.ASSOC_PACKAGE);
+            return (NodeRef) this.task.properties.get(WorkflowModel.ASSOC_PACKAGE);
         }
-        
-        /** 
-        * @return The workflow package ref as a TemplateNode 
-        */ 
-        public TemplateNode getPackageTemplateNode() 
-        { 
-            NodeRef nodeRef = this.getPackage(); 
-            if (nodeRef != null) 
-            { 
-                return new TemplateNode(nodeRef, this.services, this.resolver); 
+
+        /**
+         * @return The workflow package ref as a TemplateNode
+         */
+        public TemplateNode getPackageTemplateNode()
+        {
+            NodeRef nodeRef = this.getPackage();
+            if (nodeRef != null)
+            {
+                return new TemplateNode(nodeRef, this.services, this.resolver);
             }
             else
-            { 
-                return null; 
-            } 
-        } 
-        
+            {
+                return null;
+            }
+        }
+
         /**
          * @return the resources from the package attached to this workflow task
          */
@@ -257,11 +258,11 @@ public class Workflow extends BaseTemplateProcessorExtension
         {
             List<TemplateContent> resources = new ArrayList<TemplateContent>();
             List<NodeRef> contents = this.services.getWorkflowService().getPackageContents(this.task.id);
-            
+
             NodeService nodeService = this.services.getNodeService();
             DictionaryService ddService = this.services.getDictionaryService();
-            
-            for(NodeRef nodeRef : contents)
+
+            for (NodeRef nodeRef : contents)
             {
                 QName type = nodeService.getType(nodeRef);
 
@@ -270,7 +271,7 @@ public class Workflow extends BaseTemplateProcessorExtension
                 {
                     // look for content nodes or links to content
                     // NOTE: folders within workflow packages are ignored for now
-                    if (ddService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
+                    if (ddService.isSubClass(type, ContentModel.TYPE_CONTENT) ||
                             ApplicationModel.TYPE_FILELINK.equals(type))
                     {
                         resources.add(new TemplateNode(nodeRef, this.services, this.resolver));
@@ -279,7 +280,7 @@ public class Workflow extends BaseTemplateProcessorExtension
             }
             return resources;
         }
-        
+
         /**
          * @return the 'outcome' label from a completed task
          */
@@ -289,7 +290,7 @@ public class Workflow extends BaseTemplateProcessorExtension
             if (task.state.equals(WorkflowTaskState.COMPLETED))
             {
                 // add the outcome label for any completed task
-                String transition = (String)task.properties.get(WorkflowModel.PROP_OUTCOME);
+                String transition = (String) task.properties.get(WorkflowModel.PROP_OUTCOME);
                 if (transition != null)
                 {
                     WorkflowTransition[] transitions = this.task.definition.node.transitions;
@@ -305,7 +306,7 @@ public class Workflow extends BaseTemplateProcessorExtension
             }
             return outcome;
         }
-        
+
         /**
          * @return A map of properties for the workflow task, includes all appropriate bpm model properties.
          */
@@ -319,13 +320,13 @@ public class Workflow extends BaseTemplateProcessorExtension
                 for (QName qname : this.task.properties.keySet())
                 {
                     Serializable value = converter.convertProperty(
-                        this.task.properties.get(qname), qname, this.services, this.resolver);
+                            this.task.properties.get(qname), qname, this.services, this.resolver);
                     this.properties.put(qname.toString(), value);
                 }
             }
             return this.properties;
         }
-        
+
         public NamespacePrefixResolver getNamespacePrefixResolver()
         {
             return this.services.getNamespaceService();

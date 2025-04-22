@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.alfresco.api.AlfrescoPublicApi;     
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.repository.TransformationSourceOptions;
 
@@ -47,74 +47,79 @@ public class ImageTransformationOptions extends TransformationOptions
     public static final String OPT_COMMAND_OPTIONS = "commandOptions";
     public static final String OPT_IMAGE_RESIZE_OPTIONS = "imageResizeOptions";
     public static final String OPT_IMAGE_AUTO_ORIENTATION = "imageAutoOrient";
-    
+
     /** Command string options, provided for backward compatibility */
     private String commandOptions = "";
-    
+
     /** Image resize options */
     private ImageResizeOptions resizeOptions;
-    
+
     private boolean autoOrient = true;
+
     /**
      * Set the command string options
+     * 
      * @deprecated will be removed in a future release and be replaced by individual options that can be checked.
      *
-     * @param commandOptions    the command string options
+     * @param commandOptions
+     *            the command string options
      */
     @Deprecated
     public void setCommandOptions(String commandOptions)
     {
         this.commandOptions = commandOptions;
     }
-    
+
     /**
      * Get the command string options
+     * 
      * @deprecated will be removed in a future release and be replaced by individual options that can be checked.
      *
-     * @return  String  the command string options
+     * @return String the command string options
      */
     @Deprecated
     public String getCommandOptions()
     {
         return commandOptions;
     }
-    
+
     /**
      * Set the image resize options
      * 
-     * @param resizeOptions image resize options
+     * @param resizeOptions
+     *            image resize options
      */
     public void setResizeOptions(ImageResizeOptions resizeOptions)
     {
         this.resizeOptions = resizeOptions;
     }
-    
+
     /**
      * Get the image resize options
      * 
-     * @return  ImageResizeOptions  image resize options
+     * @return ImageResizeOptions image resize options
      */
     public ImageResizeOptions getResizeOptions()
     {
         return resizeOptions;
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
         builder.append("ImageTransformationOptions [commandOptions=").append(this.commandOptions)
-                    .append(", resizeOptions=").append(this.resizeOptions)
-                    .append(", autoOrient=").append(this.autoOrient).append("]");
+                .append(", resizeOptions=").append(this.resizeOptions)
+                .append(", autoOrient=").append(this.autoOrient).append("]");
         if (getSourceOptionsList() != null)
         {
             builder.append(", sourceOptions={ ");
             int i = 0;
             for (TransformationSourceOptions sourceOptions : getSourceOptionsList())
             {
-                builder.append((i != 0) ? " , ": "");
+                builder.append((i != 0) ? " , " : "");
                 builder.append(sourceOptions.getClass().getSimpleName())
-                    .append(sourceOptions.toString());
+                        .append(sourceOptions.toString());
                 i++;
             }
             builder.append("} ");
@@ -126,7 +131,7 @@ public class ImageTransformationOptions extends TransformationOptions
     @Override
     public String toStringAll()
     {
-        return super.toStringAll()+"ImageTransformationOptions{" +
+        return super.toStringAll() + "ImageTransformationOptions{" +
                 "commandOptions='" + commandOptions + '\'' +
                 ", resizeOptions=" + resizeOptions +
                 ", autoOrient=" + autoOrient +
@@ -148,24 +153,25 @@ public class ImageTransformationOptions extends TransformationOptions
     }
 
     /**
-     * @return Will the image be automatically oriented(rotated) based on the EXIF "Orientation" data.
-     * Defaults to TRUE
-     */    
+     * @return Will the image be automatically oriented(rotated) based on the EXIF "Orientation" data. Defaults to TRUE
+     */
     public boolean isAutoOrient()
     {
         return this.autoOrient;
     }
 
     /**
-     * @param autoOrient automatically orient (rotate) based on the EXIF "Orientation" data
-     */ 
+     * @param autoOrient
+     *            automatically orient (rotate) based on the EXIF "Orientation" data
+     */
     public void setAutoOrient(boolean autoOrient)
     {
         this.autoOrient = autoOrient;
     }
-    
+
     @Override
-    public void copyFrom(TransformationOptions origOptions) {
+    public void copyFrom(TransformationOptions origOptions)
+    {
         super.copyFrom(origOptions);
         if (origOptions != null)
         {

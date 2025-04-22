@@ -29,8 +29,9 @@ package org.alfresco.rest.api.impl.rules;
 import static org.alfresco.repo.web.scripts.rule.AbstractRuleWebScript.CANNOT_CREATE_RULE;
 import static org.alfresco.service.cmr.rule.RuleType.OUTBOUND;
 
-import java.util.Collections;
 import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.repo.action.RuntimeActionService;
@@ -40,7 +41,6 @@ import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.rule.Rule;
-import org.apache.commons.collections.CollectionUtils;
 
 @Experimental
 public class ActionPermissionValidator
@@ -61,15 +61,17 @@ public class ActionPermissionValidator
         return rule;
     }
 
-    private void checkRestrictedAccessActions(List<Action> actions) {
+    private void checkRestrictedAccessActions(List<Action> actions)
+    {
         actions.forEach(action -> {
             ActionAccessRestriction.setActionContext(action, ActionAccessRestriction.RULE_ACTION_CONTEXT);
             runtimeActionService.verifyActionAccessRestrictions(action);
         });
     }
 
-    private void checkRuleOutboundHasNoCheckOutAction(Rule rule, List<Action> actions) {
-        //TODO: rule types should never be empty in final implementation
+    private void checkRuleOutboundHasNoCheckOutAction(Rule rule, List<Action> actions)
+    {
+        // TODO: rule types should never be empty in final implementation
         if (CollectionUtils.isNotEmpty(rule.getRuleTypes()) && rule.getRuleTypes().contains(OUTBOUND))
         {
             for (Action action : actions)

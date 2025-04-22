@@ -28,6 +28,12 @@ package org.alfresco.repo.descriptor;
 import java.util.Date;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.mode.ServerModeProvider;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
@@ -35,15 +41,10 @@ import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.license.LicenseDescriptor;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Provide a Repository Startup Log
- *  
+ * 
  * @author davidc
  */
 public class DescriptorStartupLog extends AbstractLifecycleBean
@@ -55,30 +56,32 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
     private DescriptorService descriptorService;
     private TransactionService transactionService;
     private ServerModeProvider serverModeProvider;
-    
+
     private final String SYSTEM_INFO_STARTUP = "system.info.startup";
     private final String SYSTEM_WARN_READONLY = "system.warn.readonly";
     private final String SYSTEM_INFO_NOTRAILID = "system.info.limited_trial";
 
     /**
-     * @param descriptorService  Descriptor Service
+     * @param descriptorService
+     *            Descriptor Service
      */
     public void setDescriptorService(DescriptorService descriptorService)
     {
         this.descriptorService = descriptorService;
     }
-    
+
     /**
-     * @param transactionService        service to tell about read-write mode
+     * @param transactionService
+     *            service to tell about read-write mode
      */
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
     }
-    
+
     public void setServerModeProvider(ServerModeProvider serverModeProvider)
     {
-    	this.serverModeProvider = serverModeProvider;
+        this.serverModeProvider = serverModeProvider;
     }
 
     @Override
@@ -88,7 +91,7 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
         // log output of VM stats
         //
         Properties properties = System.getProperties();
-        String version = (properties.get("java.runtime.version") == null) ? "unknown" : (String)properties.get("java.runtime.version");
+        String version = (properties.get("java.runtime.version") == null) ? "unknown" : (String) properties.get("java.runtime.version");
         long maxHeap = Runtime.getRuntime().maxMemory();
         float maxHeapMB = maxHeap / 1024l;
         maxHeapMB = maxHeapMB / 1024l;
@@ -113,19 +116,19 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
         if (license != null && logger.isInfoEnabled())
         {
             LicenseMode licenseMode = license.getLicenseMode();
-            
+
             String msg = "Alfresco license: Mode " + licenseMode;
-            
-            if(license.isClusterEnabled())
+
+            if (license.isClusterEnabled())
             {
-                 msg += ", cluster:enabled";	
+                msg += ", cluster:enabled";
             }
             else
             {
-                 msg += ", NO CLUSTER";
+                msg += ", NO CLUSTER";
             }
 
-            if(license.isCustomEmbeddedWorkflowEnabled())
+            if (license.isCustomEmbeddedWorkflowEnabled())
             {
                 msg += ", customEmbeddedWorkflow:enabled";
             }
@@ -133,13 +136,13 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
             {
                 msg += ", NO CUSTOM EMBEDDED WORKFLOW";
             }
-            
+
             String holder = license.getHolderOrganisation();
             if (holder != null)
             {
                 msg += " granted to " + holder;
             }
-            
+
             Date validUntil = license.getValidUntil();
 
             Integer days = null;
@@ -147,14 +150,14 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
             {
                 days = license.getDays();
                 Integer remainingDays = license.getRemainingDays();
-                
+
                 msg += " limited to " + days + " days expiring " + validUntil + " (" + remainingDays + " days remaining).";
             }
             else
             {
                 msg += " (does not expire).";
             }
-            
+
             Long maxUsers = license.getMaxUsers();
             if (maxUsers != null)
             {
@@ -165,10 +168,8 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
             {
                 msg += "  Content Object limit is " + maxDocs + ".";
             }
-            
-            /*
-             * This is an important information logging since it logs the license
-             */
+
+            /* This is an important information logging since it logs the license */
             if ("Trial User".equals(holder) && days != null && days == 2)
             {
                 String line = "================================================================";
@@ -182,43 +183,40 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
                 logger.info(msg);
             }
         }
-        
+
         // Log Repository Descriptors
         if (logger.isInfoEnabled())
         {
-        	logger.info("Server Mode :" + serverModeProvider.getServerMode());
+            logger.info("Server Mode :" + serverModeProvider.getServerMode());
             Descriptor serverDescriptor = descriptorService.getServerDescriptor();
             Descriptor currentDescriptor = descriptorService.getCurrentRepositoryDescriptor();
             Descriptor installedRepoDescriptor = descriptorService.getInstalledRepositoryDescriptor();
-            
+
             String serverEdition = serverDescriptor.getEdition();
-            
+
             String currentVersion = currentDescriptor.getVersion();
             int currentSchemaVersion = currentDescriptor.getSchema();
             LicenseMode currentMode = currentDescriptor.getLicenseMode();
-            
+
             String installedRepoVersion = installedRepoDescriptor.getVersion();
             int installedSchemaVersion = installedRepoDescriptor.getSchema();
-            
-            
-            /*
-             * Alfresco started 
-             */
-            Object[] params = new Object[] {
+
+            /* Alfresco started */
+            Object[] params = new Object[]{
                     serverEdition,
-                    currentMode != LicenseMode.TEAM ? "" : (" " + currentMode),     // only append TEAM
+                    currentMode != LicenseMode.TEAM ? "" : (" " + currentMode), // only append TEAM
                     (!AuthenticationUtil.isMtEnabled() ? "" : (" Multi-Tenant")),
                     currentVersion, currentSchemaVersion, installedRepoVersion, installedSchemaVersion};
             logger.info(I18NUtil.getMessage(SYSTEM_INFO_STARTUP, params));
         }
-        
+
         // Issue a warning if the system is in read-only mode
         if (logger.isWarnEnabled() && !transactionService.getAllowWrite())
         {
             logger.warn(I18NUtil.getMessage(SYSTEM_WARN_READONLY));
         }
     }
-    
+
     @Override
     protected void onShutdown(ApplicationEvent event)
     {

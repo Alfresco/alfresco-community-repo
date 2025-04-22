@@ -37,12 +37,14 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.alfresco.repo.admin.SysAdminParams;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+
+import org.alfresco.repo.admin.SysAdminParams;
 
 public class AdminConsoleAuthenticationCookiesServiceUnitTest
 {
@@ -69,7 +71,7 @@ public class AdminConsoleAuthenticationCookiesServiceUnitTest
     @Test
     public void cookieShouldBeFoundInRequestThatContainsIt()
     {
-        when(request.getCookies()).thenReturn(new Cookie[] { new Cookie(COOKIE_NAME, COOKIE_VALUE) });
+        when(request.getCookies()).thenReturn(new Cookie[]{new Cookie(COOKIE_NAME, COOKIE_VALUE)});
 
         String cookie = cookiesService.getCookie(COOKIE_NAME, request);
 
@@ -81,7 +83,7 @@ public class AdminConsoleAuthenticationCookiesServiceUnitTest
     @Test
     public void cookieShouldNotBeFoundInRequestThatDoesNotContainIt()
     {
-        when(request.getCookies()).thenReturn(new Cookie[] { new Cookie(COOKIE_NAME, COOKIE_VALUE) });
+        when(request.getCookies()).thenReturn(new Cookie[]{new Cookie(COOKIE_NAME, COOKIE_VALUE)});
 
         assertNull("The cookie should be null", cookiesService.getCookie("non-contained-cookie", request));
 

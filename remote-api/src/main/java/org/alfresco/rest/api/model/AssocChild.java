@@ -34,8 +34,7 @@ public class AssocChild extends Assoc
     private Boolean isPrimary;
 
     public AssocChild()
-    {
-    }
+    {}
 
     public AssocChild(String prefixAssocTypeQName, boolean isPrimary)
     {

@@ -26,6 +26,18 @@
 
 package org.alfresco.rest.api.impl.rules;
 
+import static org.alfresco.rest.api.impl.rules.RuleSetLoader.INCLUSION_TYPE;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.action.executer.ExecuteAllRulesActionExecuter;
@@ -44,17 +56,6 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.util.GUID;
-import org.apache.commons.collections.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static org.alfresco.rest.api.impl.rules.RuleSetLoader.INCLUSION_TYPE;
 
 @Experimental
 public class RulesImpl implements Rules
@@ -72,9 +73,9 @@ public class RulesImpl implements Rules
 
     @Override
     public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId,
-                                                   final String ruleSetId,
-                                                   final List<String> includes,
-                                                   final Paging paging)
+            final String ruleSetId,
+            final List<String> includes,
+            final Paging paging)
     {
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId, false);
         NodeRef ruleSetNode = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
@@ -153,8 +154,8 @@ public class RulesImpl implements Rules
         actionService.executeAction(action, folderNodeRef, true, false);
 
         return RuleExecution.builder()
-            .eachSubFolderIncluded(eachSubFolderIncluded)
-            .create();
+                .eachSubFolderIncluded(eachSubFolderIncluded)
+                .create();
     }
 
     private org.alfresco.service.cmr.rule.Rule mapToServiceModelAndValidateActions(Rule rule)

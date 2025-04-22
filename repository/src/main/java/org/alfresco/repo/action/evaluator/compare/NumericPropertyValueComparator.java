@@ -42,13 +42,13 @@ public class NumericPropertyValueComparator implements PropertyValueComparator
      * I18N message ids
      */
     private static final String MSGID_INVALID_OPERATION = "numeric_property_value_comparator.invalid_operation";
-    
+
     /**
      * @see org.alfresco.repo.action.evaluator.compare.PropertyValueComparator#compare(java.io.Serializable, java.io.Serializable, org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation)
      */
     public boolean compare(
             Serializable propertyValue,
-            Serializable compareValue, 
+            Serializable compareValue,
             ComparePropertyValueOperation operation)
     {
         boolean result = false;
@@ -56,47 +56,47 @@ public class NumericPropertyValueComparator implements PropertyValueComparator
         {
             operation = ComparePropertyValueOperation.EQUALS;
         }
-        
+
         // TODO need to check that doing this potential conversion does not cause a problem
-        double property = ((Number)propertyValue).doubleValue();
-        double compare = ((Number)compareValue).doubleValue();
-        
+        double property = ((Number) propertyValue).doubleValue();
+        double compare = ((Number) compareValue).doubleValue();
+
         switch (operation)
         {
-            case EQUALS:
-            {
-                result = (property == compare);
-                break;
-            }
-            case GREATER_THAN:
-            {
-                result = (property > compare);
-                break;                
-            }
-            case GREATER_THAN_EQUAL:
-            {
-                result = (property >= compare);
-                break;  
-            }
-            case LESS_THAN:
-            {
-                result = (property < compare);
-                break;  
-            }
-            case LESS_THAN_EQUAL:
-            {
-                result = (property <= compare);
-                break;  
-            }
-            default:
-            {
-                // Raise an invalid operation exception
-                throw new ActionServiceException(
-                        MSGID_INVALID_OPERATION, 
-                        new Object[]{operation.toString()});
-            }
+        case EQUALS:
+        {
+            result = (property == compare);
+            break;
         }
-        
+        case GREATER_THAN:
+        {
+            result = (property > compare);
+            break;
+        }
+        case GREATER_THAN_EQUAL:
+        {
+            result = (property >= compare);
+            break;
+        }
+        case LESS_THAN:
+        {
+            result = (property < compare);
+            break;
+        }
+        case LESS_THAN_EQUAL:
+        {
+            result = (property <= compare);
+            break;
+        }
+        default:
+        {
+            // Raise an invalid operation exception
+            throw new ActionServiceException(
+                    MSGID_INVALID_OPERATION,
+                    new Object[]{operation.toString()});
+        }
+        }
+
         return result;
     }
 
@@ -109,7 +109,7 @@ public class NumericPropertyValueComparator implements PropertyValueComparator
         evaluator.registerComparator(DataTypeDefinition.FLOAT, this);
         evaluator.registerComparator(DataTypeDefinition.INT, this);
         evaluator.registerComparator(DataTypeDefinition.LONG, this);
-        
+
     }
 
 }

@@ -35,27 +35,26 @@ import org.alfresco.utility.model.TestModel;
 public class RestTargetModel extends TestModel implements IRestModel<RestTargetModel>
 {
     @Override
-    public RestTargetModel onModel() 
-    {      
-      return model;
+    public RestTargetModel onModel()
+    {
+        return model;
     }
-  
+
     @JsonProperty(value = "target")
     RestTargetModel model;
-    
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private RestSiteModel site;
-    
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private RestFolderModel folder;
-    
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private RestFileModel file;
-    
+
     public RestTargetModel()
-    {
-    }
-    
+    {}
+
     public RestTargetModel(RestSiteModel site)
     {
         super();
@@ -81,7 +80,7 @@ public class RestTargetModel extends TestModel implements IRestModel<RestTargetM
     {
         this.site = site;
     }
-    
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public RestFolderModel getFolder()
     {
@@ -93,7 +92,7 @@ public class RestTargetModel extends TestModel implements IRestModel<RestTargetM
     {
         this.folder = folder;
     }
-    
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public RestFileModel getFile()
     {

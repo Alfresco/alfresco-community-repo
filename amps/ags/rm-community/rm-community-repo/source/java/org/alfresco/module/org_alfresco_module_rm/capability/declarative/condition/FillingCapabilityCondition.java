@@ -46,12 +46,12 @@ public class FillingCapabilityCondition extends AbstractCapabilityCondition
     public boolean evaluateImpl(NodeRef nodeRef)
     {
         boolean result = false;
-        
+
         if (permissionService.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS) != AccessStatus.DENIED)
         {
             result = true;
         }
-        
-        return result;     
+
+        return result;
     }
 }

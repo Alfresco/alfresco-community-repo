@@ -51,13 +51,12 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 
-
 /**
  * Compiled Class Definition
  * 
  * @author David Caruana
  */
-/*package*/ class M2ClassDefinition implements ClassDefinition
+/* package */ class M2ClassDefinition implements ClassDefinition
 {
     private static final String ERR_CLASS_NOT_DEFINED_NAMESPACE = "d_dictionary.class_definition.class.namespace_not_defined";
     private static final String ERR_PROPERTY_NOT_DEFINED_NAMESPACE = "d_dictionary.class_definition.property.namespace_not_defined";
@@ -79,7 +78,7 @@ import org.alfresco.util.EqualsHelper;
     protected QName name;
     protected QName parentName = null;
     protected ClassDefinition parentClassDefinition;
-    
+
     private Map<QName, M2PropertyOverride> propertyOverrides = new HashMap<QName, M2PropertyOverride>();
     private Map<QName, PropertyDefinition> properties = new HashMap<QName, PropertyDefinition>();
     private Map<QName, PropertyDefinition> inheritedProperties = new HashMap<QName, PropertyDefinition>();
@@ -94,22 +93,26 @@ import org.alfresco.util.EqualsHelper;
     private Boolean inheritedArchive = null;
     private Boolean includedInSuperTypeQuery = null;
     private Boolean inheritedIncludedInSuperTypeQuery = null;
-    private String  analyserResourceBundleName;
+    private String analyserResourceBundleName;
     private transient MessageLookup staticMessageLookup = new StaticMessageLookup();
-    
+
     /**
      * Construct
      * 
-     * @param m2Class  class definition
-     * @param resolver  namepsace resolver
-     * @param modelProperties  global list of model properties
-     * @param modelAssociations  global list of model associations
+     * @param m2Class
+     *            class definition
+     * @param resolver
+     *            namepsace resolver
+     * @param modelProperties
+     *            global list of model properties
+     * @param modelAssociations
+     *            global list of model associations
      */
-    /*package*/ M2ClassDefinition(ModelDefinition model, M2Class m2Class, NamespacePrefixResolver resolver, Map<QName, PropertyDefinition> modelProperties, Map<QName, AssociationDefinition> modelAssociations)
+    /* package */ M2ClassDefinition(ModelDefinition model, M2Class m2Class, NamespacePrefixResolver resolver, Map<QName, PropertyDefinition> modelProperties, Map<QName, AssociationDefinition> modelAssociations)
     {
         this.model = model;
         this.m2Class = m2Class;
-        
+
         // Resolve Names
         this.name = QName.createQName(m2Class.getName(), resolver);
         if (!model.isNamespaceDefined(name.getNamespaceURI()))
@@ -122,7 +125,7 @@ import org.alfresco.util.EqualsHelper;
         {
             this.parentName = QName.createQName(m2Class.getParentName(), resolver);
         }
-        
+
         // Construct Properties
         for (M2Property property : m2Class.getProperties())
         {
@@ -136,7 +139,7 @@ import org.alfresco.util.EqualsHelper;
             {
                 throw new DuplicateDefinitionException(ERR_DUPLICATE_PROPERTY_DEFINITION, def.getName().toPrefixString(), name.toPrefixString());
             }
-            
+
             // Check for existence of property elsewhere within the model
             PropertyDefinition existingDef = modelProperties.get(def.getName());
             if (existingDef != null)
@@ -144,18 +147,18 @@ import org.alfresco.util.EqualsHelper;
                 // TODO: Consider sharing property, if property definitions are equal
                 throw new DuplicateDefinitionException(ERR_DUPLICATE_PROPERTY_EXISTING_DEF, def.getName().toPrefixString(), name.toPrefixString(), existingDef.getContainerClass().getName().toPrefixString());
             }
-            
+
             properties.put(def.getName(), def);
             modelProperties.put(def.getName(), def);
         }
-        
+
         // Construct Associations
         for (M2ClassAssociation assoc : m2Class.getAssociations())
         {
             AssociationDefinition def;
             if (assoc instanceof M2ChildAssociation)
             {
-                def = new M2ChildAssociationDefinition(this, (M2ChildAssociation)assoc, resolver);
+                def = new M2ChildAssociationDefinition(this, (M2ChildAssociation) assoc, resolver);
             }
             else
             {
@@ -169,7 +172,7 @@ import org.alfresco.util.EqualsHelper;
             {
                 throw new DuplicateDefinitionException(ERR_DUPLICATE_ASSOCIATION_DEFINITION, def.getName().toPrefixString(), name.toPrefixString());
             }
-            
+
             // Check for existence of association elsewhere within the model
             AssociationDefinition existingDef = modelAssociations.get(def.getName());
             if (existingDef != null)
@@ -177,11 +180,11 @@ import org.alfresco.util.EqualsHelper;
                 // TODO: Consider sharing association, if association definitions are equal
                 throw new DuplicateDefinitionException(ERR_DUPLICATE_ASSOCIATION_EXISTING_DEF, def.getName().toPrefixString(), name.toPrefixString(), existingDef.getSourceClass().getName().toPrefixString());
             }
-            
+
             associations.put(def.getName(), def);
             modelAssociations.put(def.getName(), def);
         }
-        
+
         // Construct Property overrides
         for (M2PropertyOverride override : m2Class.getPropertyOverrides())
         {
@@ -196,7 +199,7 @@ import org.alfresco.util.EqualsHelper;
             }
             propertyOverrides.put(overrideName, override);
         }
-        
+
         // Resolve qualified names
         for (String aspectName : m2Class.getMandatoryAspects())
         {
@@ -207,19 +210,18 @@ import org.alfresco.util.EqualsHelper;
             }
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(120);
         sb.append("ClassDef")
-          .append("[name=").append(name)
-          .append("]");
+                .append("[name=").append(name)
+                .append("]");
         return sb.toString();
     }
-    
-    
-    /*package*/ void resolveDependencies(
+
+    /* package */ void resolveDependencies(
             ModelQuery query,
             NamespacePrefixResolver prefixResolver,
             Map<QName, ConstraintDefinition> modelConstraints)
@@ -233,14 +235,14 @@ import org.alfresco.util.EqualsHelper;
             }
             parentClassDefinition = parent;
         }
-        
+
         for (PropertyDefinition def : properties.values())
         {
-            ((M2PropertyDefinition)def).resolveDependencies(query, prefixResolver, modelConstraints);
+            ((M2PropertyDefinition) def).resolveDependencies(query, prefixResolver, modelConstraints);
         }
         for (AssociationDefinition def : associations.values())
         {
-            ((M2AssociationDefinition)def).resolveDependencies(query);
+            ((M2AssociationDefinition) def).resolveDependencies(query);
         }
 
         for (Map.Entry<QName, M2PropertyOverride> override : propertyOverrides.entrySet())
@@ -251,7 +253,7 @@ import org.alfresco.util.EqualsHelper;
                 throw new DictionaryException(ERR_PROPERTY_NOT_EXIST, name.toPrefixString(), override.getKey().toPrefixString());
             }
         }
-        
+
         for (QName aspectName : defaultAspectNames)
         {
             AspectDefinition aspect = query.getAspect(aspectName);
@@ -262,16 +264,15 @@ import org.alfresco.util.EqualsHelper;
             defaultAspects.add(aspect);
         }
     }
-    
 
-    /*package*/ void resolveInheritance(
+    /* package */ void resolveInheritance(
             ModelQuery query,
             NamespacePrefixResolver prefixResolver,
             Map<QName, ConstraintDefinition> modelConstraints)
     {
         // Retrieve parent class
         ClassDefinition parentClass = (parentName == null) ? null : query.getClass(parentName);
-        
+
         // Build list of inherited properties (and process overridden values)
         if (parentClass != null)
         {
@@ -290,29 +291,29 @@ import org.alfresco.util.EqualsHelper;
                 }
             }
         }
-        
+
         // Append list of defined properties
         for (PropertyDefinition def : properties.values())
         {
             if (inheritedProperties.containsKey(def.getName()))
             {
-                throw new DuplicateDefinitionException(ERR_DUPLICATE_PROPERTY_IN_CLASS_HIERARCHY, def.getName().toPrefixString(), name.toPrefixString()); 
+                throw new DuplicateDefinitionException(ERR_DUPLICATE_PROPERTY_IN_CLASS_HIERARCHY, def.getName().toPrefixString(), name.toPrefixString());
             }
             inheritedProperties.put(def.getName(), def);
         }
-        
+
         // Build list of inherited associations
         if (parentClass != null)
         {
             inheritedAssociations.putAll(parentClass.getAssociations());
         }
-        
+
         // Append list of defined associations
         for (AssociationDefinition def : associations.values())
         {
             if (inheritedAssociations.containsKey(def.getName()))
             {
-                throw new DuplicateDefinitionException(ERR_DUPLICATE_ASSOCIATION_IN_CLASS_HIERARCHY, def.getName().toPrefixString(), name.toPrefixString()); 
+                throw new DuplicateDefinitionException(ERR_DUPLICATE_ASSOCIATION_IN_CLASS_HIERARCHY, def.getName().toPrefixString(), name.toPrefixString());
             }
             inheritedAssociations.put(def.getName(), def);
         }
@@ -322,16 +323,16 @@ import org.alfresco.util.EqualsHelper;
         {
             if (def instanceof ChildAssociationDefinition)
             {
-                inheritedChildAssociations.put(def.getName(), (ChildAssociationDefinition)def);
+                inheritedChildAssociations.put(def.getName(), (ChildAssociationDefinition) def);
             }
         }
-        
+
         // Build list of inherited default aspects
         if (parentClass != null)
         {
             inheritedDefaultAspects.addAll(parentClass.getDefaultAspects());
         }
-        
+
         // Append list of defined default aspects
         for (AspectDefinition def : defaultAspects)
         {
@@ -340,39 +341,39 @@ import org.alfresco.util.EqualsHelper;
                 inheritedDefaultAspects.add(def);
             }
         }
-        
+
         // Convert to set of names
         for (AspectDefinition aspDef : inheritedDefaultAspects)
         {
             inheritedDefaultAspectNames.add(aspDef.getName());
         }
-        
+
         // resolve archive inheritance
         if (parentClass != null && archive == null)
         {
             // archive not explicitly set on this class and there is a parent class
-            inheritedArchive = ((M2ClassDefinition)parentClass).getArchive();
+            inheritedArchive = ((M2ClassDefinition) parentClass).getArchive();
         }
-        
+
         // resolve includedInSuperTypeQuery inheritance
         if (parentClass != null && includedInSuperTypeQuery == null)
         {
             // archive not explicitly set on this class and there is a parent class
-            inheritedIncludedInSuperTypeQuery = ((M2ClassDefinition)parentClass).getIncludedInSuperTypeQuery();
+            inheritedIncludedInSuperTypeQuery = ((M2ClassDefinition) parentClass).getIncludedInSuperTypeQuery();
         }
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getModel()
-     */
+     * 
+     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getModel() */
     public ModelDefinition getModel()
     {
         return model;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ClassDefinition#getName()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.ClassDefinition#getName() */
     public QName getName()
     {
         return name;
@@ -383,19 +384,19 @@ import org.alfresco.util.EqualsHelper;
     {
         return getDescription(staticMessageLookup);
     }
-    
+
     @Override
     public String getTitle()
     {
         return getTitle(staticMessageLookup);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ClassDefinition#getTitle()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.ClassDefinition#getTitle() */
     public String getTitle(MessageLookup messageLookup)
     {
-        String value = M2Label.getLabel(model, messageLookup, "class", name, "title"); 
+        String value = M2Label.getLabel(model, messageLookup, "class", name, "title");
         if (value == null)
         {
             value = m2Class.getTitle();
@@ -404,11 +405,11 @@ import org.alfresco.util.EqualsHelper;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ClassDefinition#getDescription()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.ClassDefinition#getDescription() */
     public String getDescription(MessageLookup messageLookup)
     {
-        String value = M2Label.getLabel(model, messageLookup, "class", name, "description"); 
+        String value = M2Label.getLabel(model, messageLookup, "class", name, "description");
         if (value == null)
         {
             value = m2Class.getDescription();
@@ -417,39 +418,39 @@ import org.alfresco.util.EqualsHelper;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ClassDefinition#getParentName()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.ClassDefinition#getParentName() */
     public QName getParentName()
     {
         return parentName;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ClassDefinition#isAspect()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.ClassDefinition#isAspect() */
     public boolean isAspect()
     {
         return (m2Class instanceof M2Aspect);
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getArchive()
-     */
+     * 
+     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getArchive() */
     public Boolean getArchive()
     {
         return archive == null ? inheritedArchive : archive;
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#includedInSuperTypeQuery()
-     */
+     * 
+     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#includedInSuperTypeQuery() */
     public Boolean getIncludedInSuperTypeQuery()
     {
-        if(includedInSuperTypeQuery != null)
+        if (includedInSuperTypeQuery != null)
         {
             return includedInSuperTypeQuery;
         }
-        if(inheritedIncludedInSuperTypeQuery != null)
+        if (inheritedIncludedInSuperTypeQuery != null)
         {
             return inheritedIncludedInSuperTypeQuery;
         }
@@ -457,21 +458,21 @@ import org.alfresco.util.EqualsHelper;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ClassDefinition#getProperties()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.ClassDefinition#getProperties() */
     public Map<QName, PropertyDefinition> getProperties()
     {
         return Collections.unmodifiableMap(inheritedProperties);
     }
- 
+
     /**
      * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getDefaultValues()
      */
     public Map<QName, Serializable> getDefaultValues()
     {
         Map<QName, Serializable> result = new HashMap<QName, Serializable>(5);
-        
-        for(Map.Entry<QName, PropertyDefinition> entry : inheritedProperties.entrySet())
+
+        for (Map.Entry<QName, PropertyDefinition> entry : inheritedProperties.entrySet())
         {
             PropertyDefinition propertyDefinition = entry.getValue();
             String defaultValue = propertyDefinition.getDefaultValue();
@@ -480,18 +481,18 @@ import org.alfresco.util.EqualsHelper;
                 result.put(entry.getKey(), defaultValue);
             }
         }
-        
+
         return Collections.unmodifiableMap(result);
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ClassDefinition#getAssociations()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.ClassDefinition#getAssociations() */
     public Map<QName, AssociationDefinition> getAssociations()
     {
         return Collections.unmodifiableMap(inheritedAssociations);
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getDefaultAspects()
      */
@@ -507,7 +508,7 @@ import org.alfresco.util.EqualsHelper;
     {
         return inherited ? getDefaultAspects() : defaultAspects;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getDefaultAspectNames()
      */
@@ -517,16 +518,16 @@ import org.alfresco.util.EqualsHelper;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#isContainer()
-     */
+     * 
+     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#isContainer() */
     public boolean isContainer()
     {
         return !inheritedChildAssociations.isEmpty();
     }
-    
+
     /* (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.ClassDefinition#getChildAssociations()
-     */
+     * 
+     * @see org.alfresco.repo.dictionary.ClassDefinition#getChildAssociations() */
     public Map<QName, ChildAssociationDefinition> getChildAssociations()
     {
         return Collections.unmodifiableMap(inheritedChildAssociations);
@@ -545,91 +546,88 @@ import org.alfresco.util.EqualsHelper;
         {
             return false;
         }
-        return name.equals(((M2ClassDefinition)obj).name);
+        return name.equals(((M2ClassDefinition) obj).name);
     }
 
     /**
      * return differences in class definition
      * 
-     * note:
-     * - checks properties for incremental updates, but does not include the diffs
-     * - checks assocs & child assocs for incremental updates, but does not include the diffs
-     * - incremental updates include changes in title/description, property default value, etc
+     * note: - checks properties for incremental updates, but does not include the diffs - checks assocs & child assocs for incremental updates, but does not include the diffs - incremental updates include changes in title/description, property default value, etc
      */
     /* package */ List<M2ModelDiff> diffClass(ClassDefinition classDef)
     {
         List<M2ModelDiff> modelDiffs = new ArrayList<M2ModelDiff>();
         boolean isUpdated = false;
         boolean isUpdatedIncrementally = false;
-        
+
         if (this == classDef)
         {
             return modelDiffs;
         }
-        
+
         // check name - cannot be null
-        if (! getName().equals(classDef.getName()))
-        { 
+        if (!getName().equals(classDef.getName()))
+        {
             isUpdated = true;
         }
-        
+
         // check title
-        if (! EqualsHelper.nullSafeEquals(getTitle(null), classDef.getTitle(null), false))
-        { 
-            isUpdatedIncrementally = true;
-        }
-        
-        // check description
-        if (! EqualsHelper.nullSafeEquals(getDescription(null), classDef.getDescription(null), false))
-        { 
-            isUpdatedIncrementally = true;
-        }
-        
-        // check parent name
-        if (getParentName() != null) 
+        if (!EqualsHelper.nullSafeEquals(getTitle(null), classDef.getTitle(null), false))
         {
-            if (! getParentName().equals(classDef.getParentName())) 
-            { 
+            isUpdatedIncrementally = true;
+        }
+
+        // check description
+        if (!EqualsHelper.nullSafeEquals(getDescription(null), classDef.getDescription(null), false))
+        {
+            isUpdatedIncrementally = true;
+        }
+
+        // check parent name
+        if (getParentName() != null)
+        {
+            if (!getParentName().equals(classDef.getParentName()))
+            {
                 isUpdated = true;
             }
-        } 
+        }
         else if (classDef.getParentName() != null)
         {
             isUpdated = true;
         }
-        
+
         // check if aspect (or type)
         if (isAspect() != classDef.isAspect())
         {
             isUpdated = true;
         }
-        
+
         // check if container
         if (isContainer() != classDef.isContainer())
         {
             if (isContainer())
             {
                 // updated (non-incrementally) if class was a container and now is not a container - ie. all child associations removed
-                isUpdated = true; 
+                isUpdated = true;
             }
-            
+
             if (classDef.isContainer())
             {
                 // updated incrementally if class was not a container and now is a container - ie. some child associations added
                 isUpdatedIncrementally = true;
             }
         }
-        
+
         // check all properties (including inherited properties)
         Collection<M2ModelDiff> propertyDiffs = M2PropertyDefinition.diffPropertyLists(getProperties().values(), classDef.getProperties().values());
-        
+
         modelDiffs.addAll(propertyDiffs);
-        
+
         // check all associations (including inherited associations, child associations and inherited child associations)
         Collection<M2ModelDiff> assocDiffs = M2AssociationDefinition.diffAssocLists(getAssociations().values(), classDef.getAssociations().values());
-        
+
         modelDiffs.addAll(assocDiffs);
-        
+
         // check default/mandatory aspects
         for (AspectDefinition newAspect : classDef.getDefaultAspects(false))
         {
@@ -642,14 +640,14 @@ import org.alfresco.util.EqualsHelper;
                     break;
                 }
             }
-            
-            if (! found)
+
+            if (!found)
             {
                 // mandatory aspect added (to aspect or type)
                 isUpdated = true;
             }
         }
-        
+
         // check archive/inheritedArchive
         if (getArchive() == null)
         {
@@ -666,7 +664,7 @@ import org.alfresco.util.EqualsHelper;
                 isUpdatedIncrementally = true;
             }
         }
-       
+
         // check includedInSuperTypeQuery/inheritedIncludedInSuperTypeQuery
         if (getIncludedInSuperTypeQuery() == null)
         {
@@ -684,7 +682,7 @@ import org.alfresco.util.EqualsHelper;
                 isUpdatedIncrementally = true;
             }
         }
-        
+
         String modelDiffType;
         if (isAspect())
         {
@@ -694,7 +692,7 @@ import org.alfresco.util.EqualsHelper;
         {
             modelDiffType = M2ModelDiff.TYPE_TYPE;
         }
-        
+
         if (isUpdated)
         {
             modelDiffs.add(new M2ModelDiff(name, modelDiffType, M2ModelDiff.DIFF_UPDATED));
@@ -707,18 +705,18 @@ import org.alfresco.util.EqualsHelper;
         {
             modelDiffs.add(new M2ModelDiff(name, modelDiffType, M2ModelDiff.DIFF_UNCHANGED));
         }
-        
+
         return modelDiffs;
     }
-    
+
     /**
      * return differences in class definition lists
      *
      */
-    /*package*/ static List<M2ModelDiff> diffClassLists(Collection<ClassDefinition> previousClasses, Collection<ClassDefinition> newClasses, String M2ModelDiffType)
-    {                
+    /* package */ static List<M2ModelDiff> diffClassLists(Collection<ClassDefinition> previousClasses, Collection<ClassDefinition> newClasses, String M2ModelDiffType)
+    {
         List<M2ModelDiff> modelDiffs = new ArrayList<M2ModelDiff>();
-        
+
         for (ClassDefinition previousClass : previousClasses)
         {
             boolean found = false;
@@ -726,18 +724,18 @@ import org.alfresco.util.EqualsHelper;
             {
                 if (newClass.getName().equals(previousClass.getName()))
                 {
-                    modelDiffs.addAll(((M2ClassDefinition)previousClass).diffClass(newClass));
+                    modelDiffs.addAll(((M2ClassDefinition) previousClass).diffClass(newClass));
                     found = true;
                     break;
                 }
             }
-            
-            if (! found)
+
+            if (!found)
             {
                 modelDiffs.add(new M2ModelDiff(previousClass.getName(), M2ModelDiffType, M2ModelDiff.DIFF_DELETED));
             }
         }
-        
+
         for (ClassDefinition newClass : newClasses)
         {
             boolean found = false;
@@ -749,19 +747,19 @@ import org.alfresco.util.EqualsHelper;
                     break;
                 }
             }
-            
-            if (! found)
+
+            if (!found)
             {
                 modelDiffs.add(new M2ModelDiff(newClass.getName(), M2ModelDiffType, M2ModelDiff.DIFF_CREATED));
             }
         }
-        
+
         return modelDiffs;
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getParentClassDefinition()
-     */
+     * 
+     * @see org.alfresco.service.cmr.dictionary.ClassDefinition#getParentClassDefinition() */
     @Override
     public ClassDefinition getParentClassDefinition()
     {

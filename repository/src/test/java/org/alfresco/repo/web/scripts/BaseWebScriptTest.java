@@ -35,12 +35,6 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestListener;
 import junit.textui.ResultPrinter;
-
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.web.scripts.servlet.LocalTestRunAsAuthenticatorFactory;
-import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
@@ -59,6 +53,12 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Request;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 import org.springframework.extensions.webscripts.servlet.ServletAuthenticatorFactory;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.web.scripts.servlet.LocalTestRunAsAuthenticatorFactory;
+import org.alfresco.util.testing.category.LuceneTests;
+
 /**
  * Base unit test class for web scripts.
  * 
@@ -74,13 +74,12 @@ public abstract class BaseWebScriptTest extends TestCase
     // Local Server access
     private String customContext = null;
     private ServletAuthenticatorFactory customAuthenticatorFactory = null;
-    
+
     // Remote Server access
     private String defaultRunAs = null;
     private RemoteServer remoteServer = null;
     private HttpClient httpClient = null;
 
-    
     /**
      * Web Script Test Listener
      */
@@ -88,7 +87,7 @@ public abstract class BaseWebScriptTest extends TestCase
     {
         public void addLog(Test test, String log);
     }
-    
+
     /**
      * Default Test Listener
      */
@@ -97,7 +96,8 @@ public abstract class BaseWebScriptTest extends TestCase
         /**
          * Construct
          * 
-         * @param writer PrintStream
+         * @param writer
+         *            PrintStream
          */
         public BaseWebScriptTestListener(PrintStream writer)
         {
@@ -105,71 +105,75 @@ public abstract class BaseWebScriptTest extends TestCase
         }
 
         /* (non-Javadoc)
-         * @see junit.textui.ResultPrinter#addError(junit.framework.Test, java.lang.Throwable)
-         */
+         * 
+         * @see junit.textui.ResultPrinter#addError(junit.framework.Test, java.lang.Throwable) */
         @Override
         public void addError(Test test, Throwable t)
         {
-            getWriter().println("*** Error: " + ((BaseWebScriptTest)test).getName());
+            getWriter().println("*** Error: " + ((BaseWebScriptTest) test).getName());
             t.printStackTrace(getWriter());
         }
 
         /* (non-Javadoc)
-         * @see junit.textui.ResultPrinter#addFailure(junit.framework.Test, junit.framework.AssertionFailedError)
-         */
+         * 
+         * @see junit.textui.ResultPrinter#addFailure(junit.framework.Test, junit.framework.AssertionFailedError) */
         @Override
         public void addFailure(Test test, AssertionFailedError t)
         {
-            getWriter().println("*** Failed: " + ((BaseWebScriptTest)test).getName());
+            getWriter().println("*** Failed: " + ((BaseWebScriptTest) test).getName());
             t.printStackTrace(getWriter());
         }
 
         /* (non-Javadoc)
-         * @see junit.textui.ResultPrinter#endTest(junit.framework.Test)
-         */
+         * 
+         * @see junit.textui.ResultPrinter#endTest(junit.framework.Test) */
         @Override
         public void endTest(Test test)
         {
             getWriter().println();
-            getWriter().println("*** Test completed: " + ((BaseWebScriptTest)test).getName());
+            getWriter().println("*** Test completed: " + ((BaseWebScriptTest) test).getName());
         }
 
         /* (non-Javadoc)
-         * @see junit.textui.ResultPrinter#startTest(junit.framework.Test)
-         */
+         * 
+         * @see junit.textui.ResultPrinter#startTest(junit.framework.Test) */
         @Override
         public void startTest(Test test)
         {
             getWriter().println();
-            getWriter().println("*** Test started: " + ((BaseWebScriptTest)test).getName() + " (remote: " + (((BaseWebScriptTest)test).getRemoteServer() != null));
+            getWriter().println("*** Test started: " + ((BaseWebScriptTest) test).getName() + " (remote: " + (((BaseWebScriptTest) test).getRemoteServer() != null));
         }
 
         /**
          * Add an arbitrary log statement
          * 
-         * @param  test Test
-         * @param  log String
+         * @param test
+         *            Test
+         * @param log
+         *            String
          */
         public void addLog(Test test, String log)
         {
             this.getWriter().println(log);
         }
     }
-    
-    
+
     /**
      * Sets custom context for Test Web Script Server (in-process only)
-     * @param customContext String
+     * 
+     * @param customContext
+     *            String
      */
     public void setCustomContext(String customContext)
     {
         this.customContext = customContext;
     }
-    
+
     /**
      * Sets Test Listener
      *
-     * @param listener WebScriptTestListener
+     * @param listener
+     *            WebScriptTestListener
      */
     public void setListener(WebScriptTestListener listener)
     {
@@ -179,7 +183,8 @@ public abstract class BaseWebScriptTest extends TestCase
     /**
      * Sets whether to trace request / response bodies
      * 
-     * @param traceReqRes boolean
+     * @param traceReqRes
+     *            boolean
      */
     public void setTraceReqRes(boolean traceReqRes)
     {
@@ -189,7 +194,8 @@ public abstract class BaseWebScriptTest extends TestCase
     /**
      * Set Remote Server context
      * 
-     * @param server  remote server
+     * @param server
+     *            remote server
      */
     public void setRemoteServer(RemoteServer server)
     {
@@ -205,11 +211,12 @@ public abstract class BaseWebScriptTest extends TestCase
     {
         return remoteServer;
     }
-    
+
     /**
      * Set Default Local Run As User
      * 
-     * @param localRunAs String
+     * @param localRunAs
+     *            String
      */
     public void setDefaultRunAs(String localRunAs)
     {
@@ -219,7 +226,7 @@ public abstract class BaseWebScriptTest extends TestCase
     /**
      * Get Default Local Run As User
      * 
-     * @return  localRunAs
+     * @return localRunAs
      */
     public String getDefaultRunAs()
     {
@@ -227,9 +234,7 @@ public abstract class BaseWebScriptTest extends TestCase
     }
 
     /**
-     * Returns the custom {@link ServletAuthenticatorFactory} which is injected into
-     *  an {@link TestWebScriptServer} instances that are returned, if any.
-     * Default is not to alter the {@link ServletAuthenticatorFactory}
+     * Returns the custom {@link ServletAuthenticatorFactory} which is injected into an {@link TestWebScriptServer} instances that are returned, if any. Default is not to alter the {@link ServletAuthenticatorFactory}
      */
     public ServletAuthenticatorFactory getCustomAuthenticatorFactory()
     {
@@ -237,8 +242,7 @@ public abstract class BaseWebScriptTest extends TestCase
     }
 
     /**
-     * Sets that a custom {@link ServletAuthenticatorFactory} should be injected into
-     *  instances of {@link TestWebScriptServer} returned from {@link #getServer()}
+     * Sets that a custom {@link ServletAuthenticatorFactory} should be injected into instances of {@link TestWebScriptServer} returned from {@link #getServer()}
      */
     public void setCustomAuthenticatorFactory(ServletAuthenticatorFactory customAuthenticatorFactory)
     {
@@ -249,7 +253,7 @@ public abstract class BaseWebScriptTest extends TestCase
     protected void setUp() throws Exception
     {
         super.setUp();
-        
+
         if (remoteServer != null)
         {
             httpClient = new HttpClient();
@@ -260,7 +264,7 @@ public abstract class BaseWebScriptTest extends TestCase
             }
         }
     }
-    
+
     /**
      * Get the server for the previously-supplied {@link #setCustomContext(String) custom context}
      */
@@ -275,29 +279,29 @@ public abstract class BaseWebScriptTest extends TestCase
         {
             server = TestWebScriptRepoServer.getTestServer(customContext);
         }
-        
+
         if (customAuthenticatorFactory != null)
         {
             server.setServletAuthenticatorFactory(customAuthenticatorFactory);
         }
         return server;
     }
-    
 
     /**
      * Is Log Enabled?
      * 
-     * @return  true => enabled
+     * @return true => enabled
      */
     protected boolean isLogEnabled()
     {
         return listener != null;
     }
-    
+
     /**
      * Log Message to Test Listener
      * 
-     * @param log String
+     * @param log
+     *            String
      */
     protected void log(String log)
     {
@@ -306,32 +310,37 @@ public abstract class BaseWebScriptTest extends TestCase
             listener.addLog(this, log);
         }
     }
-    
+
     /**
      * Send Request to Test Web Script Server (as admin)
      * 
-     * @param req Request
-     * @param expectedStatus int
+     * @param req
+     *            Request
+     * @param expectedStatus
+     *            int
      * @return response
      * @throws IOException
      */
     protected Response sendRequest(Request req, int expectedStatus)
-        throws IOException
+            throws IOException
     {
         return sendRequest(req, expectedStatus, null);
     }
-    
+
     /**
      * Send Request
      * 
-     * @param req Request
-     * @param expectedStatus int
-     * @param asUser String
+     * @param req
+     *            Request
+     * @param expectedStatus
+     *            int
+     * @param asUser
+     *            String
      * @return response
      * @throws IOException
      */
     protected Response sendRequest(Request req, int expectedStatus, String asUser)
-        throws IOException
+            throws IOException
     {
         if (traceReqRes && isLogEnabled())
         {
@@ -348,80 +357,83 @@ public abstract class BaseWebScriptTest extends TestCase
         {
             res = sendRemoteRequest(req, expectedStatus);
         }
-        
+
         if (traceReqRes && isLogEnabled())
         {
             log("");
-            
+
             log("* Response: " + res.getStatus() + " " + res.getContentType() + " " + req.getMethod() + " " + req.getFullUri() + "\n");
-//            if(res.getContentType().equals("application/json"))
-//            {
-//		    	JSONObject jsonRsp = (JSONObject)JSONValue.parse(res.getContentAsString());
-//		    	StringBuilder sb = new StringBuilder();
-//		    	toJSONString(jsonRsp, sb);
-//		    	log(sb.toString());
-//            }
-//            else
-//            {
-            	log(res.getContentAsString());
-            //}
+            // if(res.getContentType().equals("application/json"))
+            // {
+            // JSONObject jsonRsp = (JSONObject)JSONValue.parse(res.getContentAsString());
+            // StringBuilder sb = new StringBuilder();
+            // toJSONString(jsonRsp, sb);
+            // log(sb.toString());
+            // }
+            // else
+            // {
+            log(res.getContentAsString());
+            // }
         }
-        
+
         if (expectedStatus > 0 && expectedStatus != res.getStatus())
         {
             fail("Status code " + res.getStatus() + " returned, but expected " + expectedStatus + " for " + req.getFullUri() + " (" + req.getMethod() + ")\n" + res.getContentAsString());
         }
-        
+
         return res;
     }
-    
-//    private void toJSONString(JSONObject map, StringWriter writer) throws IOException
-//    {
-//		if(map == null)
-//		{
-//			writer.write("null");
-//			return;
-//		}
-//		
-//		boolean first = true;
-//		@SuppressWarnings("rawtypes")
-//		Iterator iter=map.entrySet().iterator();
-//		
-//		writer.write('{');
-//		while(iter.hasNext())
-//		{
-//            if(first)
-//            {
-//                first = false;
-//            }
-//            else
-//            {
-//            	writer.write(',');
-//            }
-//			Map.Entry entry=(Map.Entry)iter.next();
-//			writer.write('\"');
-//			writer.write(JSONObject.escape(String.valueOf(entry.getKey())));
-//			writer.write('\"');
-//			writer.write(':');
-//			JSONValue.writeJSONString(entry.getValue(), writer);
-//		}
-//		writer.write('}');
-//    }
+
+    // private void toJSONString(JSONObject map, StringWriter writer) throws IOException
+    // {
+    // if(map == null)
+    // {
+    // writer.write("null");
+    // return;
+    // }
+    //
+    // boolean first = true;
+    // @SuppressWarnings("rawtypes")
+    // Iterator iter=map.entrySet().iterator();
+    //
+    // writer.write('{');
+    // while(iter.hasNext())
+    // {
+    // if(first)
+    // {
+    // first = false;
+    // }
+    // else
+    // {
+    // writer.write(',');
+    // }
+    // Map.Entry entry=(Map.Entry)iter.next();
+    // writer.write('\"');
+    // writer.write(JSONObject.escape(String.valueOf(entry.getKey())));
+    // writer.write('\"');
+    // writer.write(':');
+    // JSONValue.writeJSONString(entry.getValue(), writer);
+    // }
+    // writer.write('}');
+    // }
 
     /**
      * Send Local Request to Test Web Script Server
      * 
-     * @param req Request
-     * @param expectedStatus int
-     * @param asUser String
+     * @param req
+     *            Request
+     * @param expectedStatus
+     *            int
+     * @param asUser
+     *            String
      * @return response
      * @throws IOException
      */
     protected Response sendLocalRequest(final Request req, final int expectedStatus, String asUser)
-        throws IOException
+            throws IOException
     {
         asUser = (asUser == null) ? defaultRunAs : asUser;
-        
+
         TestWebScriptServer tws = getServer();
         if (AuthenticationUtil.isMtEnabled())
         {
@@ -433,7 +445,7 @@ public abstract class BaseWebScriptTest extends TestCase
                 tws.setServletAuthenticatorFactory(new LocalTestRunAsAuthenticatorFactory());
             }
         }
-        
+
         if (asUser == null)
         {
             return getServer().submitRequest(req.getMethod(), req.getFullUri(), req.getHeaders(), req.getBody(), req.getEncoding(), req.getType());
@@ -441,8 +453,7 @@ public abstract class BaseWebScriptTest extends TestCase
         else
         {
             // send request in context of specified user
-            return AuthenticationUtil.runAs(new RunAsWork<Response>()
-            {
+            return AuthenticationUtil.runAs(new RunAsWork<Response>() {
                 @SuppressWarnings("synthetic-access")
                 public Response doWork() throws Exception
                 {
@@ -451,24 +462,26 @@ public abstract class BaseWebScriptTest extends TestCase
             }, asUser);
         }
     }
-    
+
     /**
      * Send Remote Request to stand-alone Web Script Server
      * 
-     * @param req Request
-     * @param expectedStatus int
+     * @param req
+     *            Request
+     * @param expectedStatus
+     *            int
      * @return response
      * @throws IOException
      */
     protected Response sendRemoteRequest(Request req, int expectedStatus)
-        throws IOException
+            throws IOException
     {
         String uri = req.getFullUri();
         if (!uri.startsWith("http"))
         {
             uri = remoteServer.baseAddress + uri;
         }
-        
+
         // construct method
         HttpMethod httpMethod = null;
         String method = req.getMethod();
@@ -516,7 +529,7 @@ public abstract class BaseWebScriptTest extends TestCase
         httpClient.executeMethod(httpMethod);
         return new HttpMethodResponse(httpMethod);
     }
-    
+
     /**
      * PATCH method
      */
@@ -533,8 +546,7 @@ public abstract class BaseWebScriptTest extends TestCase
             return "PATCH";
         }
     }
-    
-    
+
     /**
      * Remote Context
      */
@@ -549,10 +561,10 @@ public abstract class BaseWebScriptTest extends TestCase
      * HttpMethod wrapped as Web Script Test Response
      */
     public static class HttpMethodResponse
-        implements Response
+            implements Response
     {
         private HttpMethod method;
-        
+
         public HttpMethodResponse(HttpMethod method)
         {
             this.method = method;
@@ -611,5 +623,5 @@ public abstract class BaseWebScriptTest extends TestCase
         }
 
     }
-    
+
 }

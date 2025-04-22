@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 
 /**
  * This class provides the search parameters to construct a search query.
+ * 
  * @author Michael Suzuki
  *
  */
@@ -44,7 +45,7 @@ public class SearchSQLParameters implements BasicSearchParameters
     private List<StoreRef> stores = new ArrayList<>();
     private List<Locale> locales = new ArrayList<>();
     private boolean includeMetadata;
-    
+
     public SearchSQLParameters(String query, String language, List<Locale> locales, boolean includeMetadata)
     {
         this.query = query;
@@ -52,7 +53,7 @@ public class SearchSQLParameters implements BasicSearchParameters
         this.locales = locales;
         this.includeMetadata = includeMetadata;
     }
-    
+
     @Override
     public String getLanguage()
     {
@@ -82,25 +83,27 @@ public class SearchSQLParameters implements BasicSearchParameters
     {
         return null;
     }
+
     /**
-     * Set the stores to be supported - currently there can be only one. Searching across multiple stores is on the todo
-     * list.
+     * Set the stores to be supported - currently there can be only one. Searching across multiple stores is on the todo list.
      * 
-     * @param store StoreRef
+     * @param store
+     *            StoreRef
      */
     public void addStore(StoreRef store)
     {
         stores.add(store);
     }
+
     @Override
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
         builder.append("SearchParameters [language=").append(this.language)
-               .append(", query=").append(this.query).append(", stores=").append(this.stores)
-               .append(", locales=").append(this.locales).append("]");
+                .append(", query=").append(this.query).append(", stores=").append(this.stores)
+                .append(", locales=").append(this.locales).append("]");
         return builder.toString();
-        
+
     }
 
     public boolean isIncludeMetadata()

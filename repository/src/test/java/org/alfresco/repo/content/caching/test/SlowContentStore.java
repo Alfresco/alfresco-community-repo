@@ -44,17 +44,13 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 /**
  * Package-private class used only for testing the CachingContentStore.
  * <p>
- * Simulates a slow content store such as Amazon S3 or XAM. The ContentStore does not provide
- * genuine facilities to store or retrieve content.
+ * Simulates a slow content store such as Amazon S3 or XAM. The ContentStore does not provide genuine facilities to store or retrieve content.
  * <p>
- * Asking for content using {@link #getReader(String)} will result in (generated) content
- * being retrieved for any URL. A counter records how many times each arbitrary URL has been asked for.
+ * Asking for content using {@link #getReader(String)} will result in (generated) content being retrieved for any URL. A counter records how many times each arbitrary URL has been asked for.
  * <p>
- * Attempts to write content using any of the getWriter() methods will succeed. Though the content does not actually
- * get stored anywhere.
+ * Attempts to write content using any of the getWriter() methods will succeed. Though the content does not actually get stored anywhere.
  * <p>
- * Both reads and writes are slow - the readers and writers returned by this class sleep for {@link #pauseMillis} after
- * each operation.
+ * Both reads and writes are slow - the readers and writers returned by this class sleep for {@link #pauseMillis} after each operation.
  * 
  * @author Matt Ward
  */
@@ -62,7 +58,7 @@ class SlowContentStore extends AbstractContentStore
 {
     private ConcurrentMap<String, AtomicLong> urlHits = new ConcurrentHashMap<String, AtomicLong>();
     private int pauseMillis = 50;
-    
+
     @Override
     public boolean isWriteSupported()
     {
@@ -80,10 +76,10 @@ class SlowContentStore extends AbstractContentStore
     {
         if (newContentUrl == null)
             newContentUrl = FileContentStore.createNewFileStoreUrl() + ".slow";
-        
+
         return new SlowWriter(newContentUrl, existingContentReader);
     }
-        
+
     @Override
     public boolean exists(String contentUrl)
     {
@@ -112,23 +108,22 @@ class SlowContentStore extends AbstractContentStore
         @Override
         protected WritableByteChannel getDirectWritableChannel() throws ContentIOException
         {
-            return new WritableByteChannel()
-            {
+            return new WritableByteChannel() {
                 private boolean closed = false;
                 private int left = 200;
-                
+
                 @Override
                 public boolean isOpen()
                 {
                     return !closed;
                 }
-                
+
                 @Override
                 public void close() throws IOException
                 {
                     closed = true;
                 }
-                
+
                 @Override
                 public int write(ByteBuffer src) throws IOException
                 {
@@ -140,9 +135,9 @@ class SlowContentStore extends AbstractContentStore
                     {
                         throw new RuntimeException(error);
                     }
-                    
+
                     if (left > 0)
-                    {                        
+                    {
                         src.get();
                         left--;
                         return 1;
@@ -151,10 +146,9 @@ class SlowContentStore extends AbstractContentStore
                 }
             };
         }
-        
+
     }
-    
-   
+
     private class SlowReader extends AbstractContentReader
     {
         protected SlowReader(String contentUrl)
@@ -189,13 +183,12 @@ class SlowContentStore extends AbstractContentStore
         @Override
         protected ReadableByteChannel getDirectReadableChannel() throws ContentIOException
         {
-            return new ReadableByteChannel()
-            {
+            return new ReadableByteChannel() {
                 private final byte[] content = "This is the content for my slow ReadableByteChannel".getBytes();
                 private int index = 0;
                 private boolean closed = false;
                 private boolean readCounted = false;
-                
+
                 private synchronized void registerReadAttempt()
                 {
                     if (!readCounted)
@@ -207,24 +200,24 @@ class SlowContentStore extends AbstractContentStore
                         readCounted = true;
                     }
                 }
-                
+
                 @Override
                 public boolean isOpen()
                 {
                     return !closed;
                 }
-                
+
                 @Override
                 public void close() throws IOException
                 {
                     closed = true;
                 }
-                
+
                 @Override
                 public int read(ByteBuffer dst) throws IOException
                 {
                     registerReadAttempt();
-                    
+
                     if (index < content.length)
                     {
                         try
@@ -245,9 +238,9 @@ class SlowContentStore extends AbstractContentStore
                 }
             };
         }
-        
+
     }
-    
+
     /**
      * Get statistics for which URLs have been asked for and the frequencies.
      * 
@@ -259,10 +252,10 @@ class SlowContentStore extends AbstractContentStore
     }
 
     /**
-     * Length of time in milliseconds that ReadableByteChannel and WriteableByteChannel objects returned
-     * by SlowContentStore will pause for during read and write operations respectively.
-     *  
-     * @param pauseMillis int
+     * Length of time in milliseconds that ReadableByteChannel and WriteableByteChannel objects returned by SlowContentStore will pause for during read and write operations respectively.
+     * 
+     * @param pauseMillis
+     *            int
      */
     public void setPauseMillis(int pauseMillis)
     {

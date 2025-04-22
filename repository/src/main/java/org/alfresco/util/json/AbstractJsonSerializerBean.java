@@ -35,7 +35,8 @@ public abstract class AbstractJsonSerializerBean<T, S> implements JsonSerializer
     private AlfrescoJsonSerializer jsonSerializer;
 
     /**
-     * @param classToSerialize the classToSerialize to set
+     * @param classToSerialize
+     *            the classToSerialize to set
      */
     public void setClassToSerialize(Class<? extends T> classToSerialize)
     {
@@ -43,7 +44,8 @@ public abstract class AbstractJsonSerializerBean<T, S> implements JsonSerializer
     }
 
     /**
-     * @param jsonSerializer the jsonSerializer to set
+     * @param jsonSerializer
+     *            the jsonSerializer to set
      */
     public void setJsonSerializer(AlfrescoJsonSerializer jsonSerializer)
     {

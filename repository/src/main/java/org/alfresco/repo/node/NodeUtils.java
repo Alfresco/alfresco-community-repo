@@ -53,8 +53,7 @@ public abstract class NodeUtils
 {
     public static Function<String, NodeRef> toNodeRef()
     {
-        return new Function<String, NodeRef>()
-        {
+        return new Function<String, NodeRef>() {
             public NodeRef apply(String value)
             {
                 return new NodeRef(value);
@@ -69,15 +68,14 @@ public abstract class NodeUtils
 
     public static Function<ChildAssociationRef, NodeRef> toChildRef()
     {
-        return new Function<ChildAssociationRef, NodeRef>()
-        {
+        return new Function<ChildAssociationRef, NodeRef>() {
             public NodeRef apply(ChildAssociationRef value)
             {
                 return value.getChildRef();
             }
         };
     }
-    
+
     public static List<NodeRef> toChildRefs(Collection<ChildAssociationRef> assocRefs)
     {
         return CollectionUtils.transform(assocRefs, toChildRef());
@@ -85,15 +83,14 @@ public abstract class NodeUtils
 
     public static Function<ChildAssociationRef, NodeRef> toParentRef()
     {
-        return new Function<ChildAssociationRef, NodeRef>()
-        {
+        return new Function<ChildAssociationRef, NodeRef>() {
             public NodeRef apply(ChildAssociationRef value)
             {
                 return value.getParentRef();
             }
         };
     }
-    
+
     public static List<NodeRef> toParentRefs(Collection<ChildAssociationRef> assocRefs)
     {
         return CollectionUtils.transform(assocRefs, toParentRef());
@@ -101,11 +98,10 @@ public abstract class NodeUtils
 
     public static Function<String, NodeRef> toNodeRefQueitly()
     {
-        return new Function<String, NodeRef>()
-        {
+        return new Function<String, NodeRef>() {
             public NodeRef apply(String value)
             {
-                if(value!=null && NodeRef.isNodeRef(value))
+                if (value != null && NodeRef.isNodeRef(value))
                 {
                     return new NodeRef(value);
                 }
@@ -113,26 +109,25 @@ public abstract class NodeUtils
             }
         };
     }
-    
+
     public static Filter<NodeRef> exists(final NodeService nodeService)
     {
-        return new Filter<NodeRef>()
-        {
+        return new Filter<NodeRef>() {
             public Boolean apply(NodeRef value)
             {
                 return nodeService.exists(value);
             }
         };
     }
-    
+
     public static boolean exists(NodeRef node, NodeService nodeService)
     {
         return node != null && nodeService.exists(node);
     }
-    
+
     public static NodeRef getSingleChildAssocNode(Collection<ChildAssociationRef> assocs, boolean getChild)
     {
-        if(assocs != null && assocs.size()==1 )
+        if (assocs != null && assocs.size() == 1)
         {
             ChildAssociationRef association = assocs.iterator().next();
             return getChild ? association.getChildRef() : association.getParentRef();
@@ -142,15 +137,15 @@ public abstract class NodeUtils
 
     public static NodeRef getSingleAssocNode(Collection<AssociationRef> assocs, boolean getTarget)
     {
-        if(assocs != null && assocs.size()==1 )
+        if (assocs != null && assocs.size() == 1)
         {
             AssociationRef association = assocs.iterator().next();
             return getTarget ? association.getTargetRef() : association.getSourceRef();
         }
         return null;
     }
-    
-    public List<NodeRef> sortByCreationDate(NodeService nodeService,Collection<NodeRef> nodes)
+
+    public List<NodeRef> sortByCreationDate(NodeService nodeService, Collection<NodeRef> nodes)
     {
         ArrayList<NodeRef> sorted = new ArrayList<NodeRef>(nodes);
         Collections.sort(sorted, getNodeCreationDateComparator(nodeService));
@@ -159,21 +154,20 @@ public abstract class NodeUtils
 
     public Comparator<NodeRef> getNodeCreationDateComparator(final NodeService nodeService)
     {
-        return new Comparator<NodeRef>()
-        {
+        return new Comparator<NodeRef>() {
             private Map<NodeRef, Long> dates = new HashMap<NodeRef, Long>();
-            
+
             public int compare(NodeRef o1, NodeRef o2)
             {
                 long date1 = getDate(o1);
                 long date2 = getDate(o1);
-                return (int)(date1 - date2);
+                return (int) (date1 - date2);
             }
 
             private long getDate(NodeRef node)
             {
                 Long date = dates.get(node);
-                if(date == null)
+                if (date == null)
                 {
                     Date dateObj = (Date) nodeService.getProperty(node, ContentModel.PROP_CREATED);
                     date = dateObj == null ? -1 : dateObj.getTime();
@@ -181,6 +175,6 @@ public abstract class NodeUtils
                 }
                 return date;
             }
-        }; 
+        };
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -76,7 +76,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
     protected WebScriptHomeAuthenticator webScriptHomeAuthenticator;
 
     private boolean alwaysAllowBasicAuthForAdminConsole = true;
-    private boolean alwaysAllowBasicAuthForWebScriptHome = true;
+    private boolean allowBasicAuthWebHome = true;
     List<String> adminConsoleScriptFamilies;
     List<String> webScriptHomeFamilies;
     long getRemoteUserTimeoutMilliseconds = GET_REMOTE_USER_TIMEOUT_MILLISECONDS_DEFAULT;
@@ -103,12 +103,12 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
 
     public boolean isAlwaysAllowBasicAuthForWebScriptHome()
     {
-        return alwaysAllowBasicAuthForWebScriptHome;
+        return allowBasicAuthWebHome;
     }
 
-    public void setAlwaysAllowBasicAuthForWebScriptHome(boolean alwaysAllowBasicAuthForWebScriptHome)
+    public void setAllowBasicAuthWebHome(boolean allowBasicAuthWebHome)
     {
-        this.alwaysAllowBasicAuthForWebScriptHome = alwaysAllowBasicAuthForWebScriptHome;
+        this.allowBasicAuthWebHome = allowBasicAuthWebHome;
     }
 
     public List<String> getAdminConsoleScriptFamilies()
@@ -119,11 +119,6 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
     public void setAdminConsoleScriptFamilies(List<String> adminConsoleScriptFamilies)
     {
         this.adminConsoleScriptFamilies = adminConsoleScriptFamilies;
-    }
-
-    public List<String> getWebScriptHomeFamilies()
-    {
-        return webScriptHomeFamilies;
     }
 
     public void setWebScriptHomeFamilies(List<String> webScriptHomeFamilies)
@@ -219,16 +214,16 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                     }
                     if (isAlwaysAllowBasicAuthForWebScriptHome())
                     {
-                        final boolean useTimeoutForAdminAccessingWebScript = shouldUseTimeoutForAdminAccessingWebScriptHome(required, isGuest);
+                        final boolean adminWebHomeTimeout = shouldUseTimeoutForAdminAccessingWebScriptHome(required, isGuest);
 
-                        if (useTimeoutForAdminAccessingWebScript && isBasicAuthHeaderPresentForAdmin())
+                        if (adminWebHomeTimeout && isBasicAuthHeaderPresentForAdmin())
                         {
                             return callBasicAuthForWebScriptHomeAccess(required, isGuest);
                         }
 
                         try
                         {
-                            userId = getRemoteUserWithTimeout(useTimeoutForAdminAccessingWebScript);
+                            userId = getRemoteUserWithTimeout(adminWebHomeTimeout);
                         }
                         catch (AuthenticationTimeoutException e)
                         {
@@ -366,14 +361,14 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
 
         private boolean shouldUseTimeoutForAdminAccessingWebScriptHome(RequiredAuthentication required, boolean isGuest)
         {
-            boolean useTimeoutForAdminAccessingAdminConsole = RequiredAuthentication.admin.equals(required) && !isGuest &&
+            boolean adminWebHomeTimeout = RequiredAuthentication.admin.equals(required) && !isGuest &&
                     servletReq.getServiceMatch() != null && isWebScriptHome(servletReq.getServiceMatch().getWebScript());
 
             if (LOGGER.isTraceEnabled())
             {
-                LOGGER.trace("Should ensure that the admins can login with basic auth: " + useTimeoutForAdminAccessingAdminConsole);
+                LOGGER.trace("Should ensure that the admins can login with basic auth: " + adminWebHomeTimeout);
             }
-            return useTimeoutForAdminAccessingAdminConsole;
+            return adminWebHomeTimeout;
         }
 
         private boolean isRemoteUserMapperActive()

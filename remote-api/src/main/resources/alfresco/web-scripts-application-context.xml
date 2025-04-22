@@ -218,8 +218,8 @@
       <property name="alwaysAllowBasicAuthForAdminConsole">
          <value>${authentication.alwaysAllowBasicAuthForAdminConsole.enabled}</value>
       </property>
-       <property name="alwaysAllowBasicAuthForWebScriptHome">
-           <value>${authentication.alwaysAllowBasicAuthForWebScriptHome.enabled}</value>
+       <property name="allowBasicAuthWebHome">
+           <value>${authentication.allowBasicAuthWebHome.enabled}</value>
        </property>
       <property name="getRemoteUserTimeoutMilliseconds">
          <value>${authentication.getRemoteUserTimeoutMilliseconds}</value>

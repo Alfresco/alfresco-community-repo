@@ -171,7 +171,10 @@ public class IdentityServiceWebScriptHomeAuthenticator implements WebScriptHomeA
         }
         catch (Exception e)
         {
-            LOGGER.debug("WebScript token refresh failed: {}", e.getMessage());
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("WebScript token refresh failed: {}", e.getMessage());
+            }
             bearerToken = null;
             resetCookies(response);
         }

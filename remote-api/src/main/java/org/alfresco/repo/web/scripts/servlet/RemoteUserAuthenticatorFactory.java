@@ -196,15 +196,15 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                 {
                     if (isAlwaysAllowBasicAuthForAdminConsole())
                     {
-                        final boolean useTimeoutForAdminAccessingAdminConsole = shouldUseTimeoutForAdminAccessingAdminConsole(required, isGuest);
+                        final boolean adminConsoleTimeout = shouldUseTimeoutForAdminAccessingAdminConsole(required, isGuest);
 
-                        if (useTimeoutForAdminAccessingAdminConsole && isBasicAuthHeaderPresentForAdmin())
+                        if (adminConsoleTimeout && isBasicAuthHeaderPresentForAdmin())
                         {
                             return callBasicAuthForAdminConsoleAccess(required, isGuest);
                         }
                         try
                         {
-                            userId = getRemoteUserWithTimeout(useTimeoutForAdminAccessingAdminConsole);
+                            userId = getRemoteUserWithTimeout(adminConsoleTimeout);
                         }
                         catch (AuthenticationTimeoutException e)
                         {

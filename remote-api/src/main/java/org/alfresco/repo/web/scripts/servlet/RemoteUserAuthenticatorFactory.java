@@ -446,7 +446,6 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             return isWebScriptHome;
         }
 
-
         protected String getRemoteUserWithTimeout(boolean useTimeout) throws AuthenticationTimeoutException
         {
             if (!useTimeout)
@@ -563,7 +562,6 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
 
             return userId;
         }
-
 
         class GetRemoteUserRunnable implements Runnable
         {

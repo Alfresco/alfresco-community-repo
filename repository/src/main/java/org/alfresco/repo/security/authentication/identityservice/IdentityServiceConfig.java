@@ -374,8 +374,8 @@ public class IdentityServiceConfig
     public Set<String> getWebScriptHomeScopes()
     {
         return Stream.of(webScriptHomeScopes.split(","))
-                    .map(String::trim)
-                    .collect(Collectors.toUnmodifiableSet());
+                .map(String::trim)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     public void setWebScriptHomeScopes(String webScriptHomeScopes)

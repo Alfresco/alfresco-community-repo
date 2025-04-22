@@ -53,5 +53,5 @@ public interface WebScriptHomeAuthenticator
      *            the response
      */
     void requestAuthentication(HttpServletRequest request, HttpServletResponse response);
-}
 
+}

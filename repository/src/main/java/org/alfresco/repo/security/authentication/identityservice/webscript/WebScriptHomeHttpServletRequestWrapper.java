@@ -39,6 +39,7 @@ import org.alfresco.util.PropertyCheck;
 
 public class WebScriptHomeHttpServletRequestWrapper extends HttpServletRequestWrapper
 {
+
     private final Map<String, String> additionalHeaders;
     private final HttpServletRequest wrappedRequest;
 

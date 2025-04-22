@@ -37,15 +37,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.Identifier;
 import com.nimbusds.oauth2.sdk.id.State;
-
-import org.alfresco.repo.security.authentication.external.WebScriptHomeAuthenticator;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,12 +53,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
+import org.alfresco.repo.security.authentication.external.WebScriptHomeAuthenticator;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
-
 
 /**
  * A {@link WebScriptHomeAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow.
@@ -118,7 +115,6 @@ public class IdentityServiceWebScriptHomeAuthenticator implements WebScriptHomeA
         respondWithAuthChallenge(request, response);
     }
 
-
     public void respondWithAuthChallenge(HttpServletRequest request, HttpServletResponse response)
     {
         try
@@ -146,7 +142,7 @@ public class IdentityServiceWebScriptHomeAuthenticator implements WebScriptHomeA
         try
         {
             AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
-                        authorizationCode(code, request.getRequestURL().toString()));
+                    authorizationCode(code, request.getRequestURL().toString()));
             addCookies(response, accessTokenAuthorization);
             bearerToken = accessTokenAuthorization.getAccessToken().getTokenValue();
         }
@@ -155,13 +151,12 @@ public class IdentityServiceWebScriptHomeAuthenticator implements WebScriptHomeA
             if (LOGGER.isWarnEnabled())
             {
                 LOGGER.warn(
-                            "Error while trying to retrieve a response using the Authorization Code at the Token Endpoint: {}",
-                            exception.getMessage());
+                        "Error while trying to retrieve a response using the Authorization Code at the Token Endpoint: {}",
+                        exception.getMessage());
             }
         }
         return bearerToken;
     }
-
 
     private String refreshTokenIfNeeded(HttpServletRequest request, HttpServletResponse response, String bearerToken)
     {
@@ -196,11 +191,11 @@ public class IdentityServiceWebScriptHomeAuthenticator implements WebScriptHomeA
         State state = new State();
 
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(clientRegistration.getProviderDetails().getAuthorizationUri())
-                    .queryParam("client_id", clientRegistration.getClientId())
-                    .queryParam("redirect_uri", getRedirectUri(request.getRequestURL().toString()))
-                    .queryParam("response_type", "code")
-                    .queryParam("scope", String.join("+", getScopes(clientRegistration)))
-                    .queryParam("state", state.toString());
+                .queryParam("client_id", clientRegistration.getClientId())
+                .queryParam("redirect_uri", getRedirectUri(request.getRequestURL().toString()))
+                .queryParam("response_type", "code")
+                .queryParam("scope", String.join("+", getScopes(clientRegistration)))
+                .queryParam("state", state.toString());
 
         if (StringUtils.isNotBlank(identityServiceConfig.getAudience()))
         {
@@ -213,20 +208,20 @@ public class IdentityServiceWebScriptHomeAuthenticator implements WebScriptHomeA
     private Set<String> getScopes(ClientRegistration clientRegistration)
     {
         return Optional.ofNullable(clientRegistration.getProviderDetails())
-                    .map(ProviderDetails::getConfigurationMetadata)
-                    .map(metadata -> metadata.get(SCOPES_SUPPORTED.getValue()))
-                    .filter(Scope.class::isInstance)
-                    .map(Scope.class::cast)
-                    .map(this::getSupportedScopes)
-                    .orElse(clientRegistration.getScopes());
+                .map(ProviderDetails::getConfigurationMetadata)
+                .map(metadata -> metadata.get(SCOPES_SUPPORTED.getValue()))
+                .filter(Scope.class::isInstance)
+                .map(Scope.class::cast)
+                .map(this::getSupportedScopes)
+                .orElse(clientRegistration.getScopes());
     }
 
     private Set<String> getSupportedScopes(Scope scopes)
     {
         return scopes.stream()
-                    .filter(this::hasWebScriptHomeScope)
-                    .map(Identifier::getValue)
-                    .collect(Collectors.toSet());
+                .filter(this::hasWebScriptHomeScope)
+                .map(Identifier::getValue)
+                .collect(Collectors.toSet());
     }
 
     private boolean hasWebScriptHomeScope(Scope.Value scope)
@@ -246,12 +241,11 @@ public class IdentityServiceWebScriptHomeAuthenticator implements WebScriptHomeA
             String fragment = originalUri.getFragment();
 
             URI redirectUri = new URI(
-                        originalUri.getScheme(),
-                        originalUri.getAuthority(),
-                        fullOriginalPath,  // preserves /alfresco/s/index/** whatever it is
-                        query,
-                        fragment
-            );
+                    originalUri.getScheme(),
+                    originalUri.getAuthority(),
+                    fullOriginalPath, // preserves /alfresco/s/index/** whatever it is
+                    query,
+                    fragment);
 
             return redirectUri.toASCIIString();
         }
@@ -261,7 +255,6 @@ public class IdentityServiceWebScriptHomeAuthenticator implements WebScriptHomeA
             throw new AuthenticationException(e.getMessage(), e);
         }
     }
-
 
     private void resetCookies(HttpServletResponse response)
     {
@@ -280,7 +273,7 @@ public class IdentityServiceWebScriptHomeAuthenticator implements WebScriptHomeA
     private AccessTokenAuthorization doRefreshAuthToken(String refreshToken)
     {
         AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
-                    AuthorizationGrant.refreshToken(refreshToken));
+                AuthorizationGrant.refreshToken(refreshToken));
         if (accessTokenAuthorization == null || accessTokenAuthorization.getAccessToken() == null)
         {
             throw new AuthenticationException("WebScript refresh token response is invalid.");

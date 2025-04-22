@@ -32,7 +32,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import net.sf.acegisecurity.DisabledException;
-import org.alfresco.repo.security.authentication.external.WebScriptHomeAuthenticator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Authenticator;
@@ -49,6 +48,7 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.external.AdminConsoleAuthenticator;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
+import org.alfresco.repo.security.authentication.external.WebScriptHomeAuthenticator;
 import org.alfresco.repo.web.auth.AuthenticationListener;
 import org.alfresco.repo.web.auth.TicketCredentials;
 import org.alfresco.repo.web.auth.WebCredentials;
@@ -148,7 +148,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
     }
 
     public void setWebScriptHomeAuthenticator(
-                WebScriptHomeAuthenticator webScriptHomeAuthenticator)
+            WebScriptHomeAuthenticator webScriptHomeAuthenticator)
     {
         this.webScriptHomeAuthenticator = webScriptHomeAuthenticator;
     }
@@ -191,8 +191,8 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                     userId = getAdminConsoleUser();
                 }
                 else if (servletReq.getServiceMatch() != null &&
-                            isWebScriptHome(servletReq.getServiceMatch().getWebScript())
-                            && isWebScriptAuthenticatorActive())
+                        isWebScriptHome(servletReq.getServiceMatch().getWebScript())
+                        && isWebScriptAuthenticatorActive())
                 {
                     userId = getWebScriptHomeUser();
                 }
@@ -314,17 +314,15 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                 if (isAdminConsoleWebScript(webScript) && isAdminConsoleAuthenticatorActive())
                 {
                     adminConsoleAuthenticator.requestAuthentication(
-                                this.servletReq.getHttpServletRequest(),
-                                this.servletRes.getHttpServletResponse()
-                    );
+                            this.servletReq.getHttpServletRequest(),
+                            this.servletRes.getHttpServletResponse());
                 }
                 else if (isWebScriptHome(webScript)
-                            && isWebScriptAuthenticatorActive())
+                        && isWebScriptAuthenticatorActive())
                 {
                     webScriptHomeAuthenticator.requestAuthentication(
-                                this.servletReq.getHttpServletRequest(),
-                                this.servletRes.getHttpServletResponse()
-                    );
+                            this.servletReq.getHttpServletRequest(),
+                            this.servletRes.getHttpServletResponse());
                 }
             }
             return authenticated;
@@ -369,7 +367,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
         private boolean shouldUseTimeoutForAdminAccessingWebScriptHome(RequiredAuthentication required, boolean isGuest)
         {
             boolean useTimeoutForAdminAccessingAdminConsole = RequiredAuthentication.admin.equals(required) && !isGuest &&
-                        servletReq.getServiceMatch() != null && isWebScriptHome(servletReq.getServiceMatch().getWebScript());
+                    servletReq.getServiceMatch() != null && isWebScriptHome(servletReq.getServiceMatch().getWebScript());
 
             if (LOGGER.isTraceEnabled())
             {
@@ -422,7 +420,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
         protected boolean isWebScriptHome(WebScript webScript)
         {
             if (webScript == null || webScriptHomeFamilies == null || webScript.getDescription() == null
-                        || webScript.getDescription().getFamilys() == null)
+                    || webScript.getDescription().getFamilys() == null)
             {
                 return false;
             }
@@ -434,7 +432,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
 
             // intersect the "family" sets defined
             Set<String> families = new HashSet<>(webScript.getDescription()
-                                                             .getFamilys());
+                    .getFamilys());
             families.retainAll(webScriptHomeFamilies);
             final boolean isWebScriptHome = !families.isEmpty();
 

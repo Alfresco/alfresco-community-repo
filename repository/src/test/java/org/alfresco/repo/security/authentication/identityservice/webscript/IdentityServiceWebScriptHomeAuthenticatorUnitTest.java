@@ -119,7 +119,7 @@ public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
     {
         when(cookiesService.getCookie(ALFRESCO_ACCESS_TOKEN, request)).thenReturn("JWT_TOKEN");
         when(cookiesService.getCookie(ALFRESCO_TOKEN_EXPIRATION, request)).thenReturn(
-                    String.valueOf(Instant.now().plusSeconds(60).toEpochMilli()));
+                String.valueOf(Instant.now().plusSeconds(60).toEpochMilli()));
         when(remoteUserMapper.getRemoteUser(requestCaptor.capture())).thenReturn("admin");
 
         String username = authenticator.getWebScriptHomeUser(request, response);
@@ -135,7 +135,7 @@ public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
         when(cookiesService.getCookie(ALFRESCO_ACCESS_TOKEN, request)).thenReturn("EXPIRED_JWT_TOKEN");
         when(cookiesService.getCookie(ALFRESCO_REFRESH_TOKEN, request)).thenReturn("REFRESH_TOKEN");
         when(cookiesService.getCookie(ALFRESCO_TOKEN_EXPIRATION, request)).thenReturn(
-                    String.valueOf(Instant.now().minusSeconds(60).toEpochMilli()));
+                String.valueOf(Instant.now().minusSeconds(60).toEpochMilli()));
         when(accessToken.getTokenValue()).thenReturn("REFRESHED_JWT_TOKEN");
         when(accessToken.getExpiresAt()).thenReturn(Instant.now().plusSeconds(60));
         when(accessTokenAuthorization.getAccessToken()).thenReturn(accessToken);
@@ -161,7 +161,7 @@ public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
         when(identityServiceConfig.getWebScriptHomeRedirectPath()).thenReturn(redirectPath);
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
-                    .formatted("http://localhost:8080", redirectPath);
+                .formatted("http://localhost:8080", redirectPath);
 
         authenticator.requestAuthentication(request, response);
 
@@ -185,7 +185,7 @@ public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
         when(identityServiceConfig.getWebScriptHomeScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
-                    .formatted("http://localhost:8080", redirectPath);
+                .formatted("http://localhost:8080", redirectPath);
 
         authenticator.requestAuthentication(request, response);
 
@@ -205,7 +205,7 @@ public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
         when(cookiesService.getCookie(ALFRESCO_ACCESS_TOKEN, request)).thenReturn("EXPIRED_JWT_TOKEN");
         when(cookiesService.getCookie(ALFRESCO_REFRESH_TOKEN, request)).thenReturn("REFRESH_TOKEN");
         when(cookiesService.getCookie(ALFRESCO_TOKEN_EXPIRATION, request)).thenReturn(
-                    String.valueOf(Instant.now().minusSeconds(60).toEpochMilli()));
+                String.valueOf(Instant.now().minusSeconds(60).toEpochMilli()));
 
         when(identityServiceFacade.authorize(any(AuthorizationGrant.class))).thenThrow(AuthorizationException.class);
 
@@ -226,8 +226,8 @@ public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
         when(accessTokenAuthorization.getAccessToken()).thenReturn(accessToken);
         when(accessTokenAuthorization.getRefreshTokenValue()).thenReturn("REFRESH_TOKEN");
         when(identityServiceFacade.authorize(
-                    AuthorizationGrant.authorizationCode("auth_code", webScriptHomeURL.toString())))
-                    .thenReturn(accessTokenAuthorization);
+                AuthorizationGrant.authorizationCode("auth_code", webScriptHomeURL.toString())))
+                        .thenReturn(accessTokenAuthorization);
         when(remoteUserMapper.getRemoteUser(requestCaptor.capture())).thenReturn("admin");
 
         String username = authenticator.getWebScriptHomeUser(request, response);

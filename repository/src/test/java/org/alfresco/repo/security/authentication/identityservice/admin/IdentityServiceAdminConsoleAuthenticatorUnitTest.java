@@ -156,7 +156,6 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     {
         String redirectPath = "/alfresco/s/admin/admin-communitysummary";
 
-        when(request.getRequestURL()).thenReturn(adminConsoleURL);
         when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
         when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn("/alfresco/s/admin/admin-communitysummary");
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
@@ -179,7 +178,6 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     {
         String audience = "http://localhost:8082";
         String redirectPath = "/alfresco/s/admin/admin-communitysummary";
-        when(request.getRequestURL()).thenReturn(adminConsoleURL);
         when(identityServiceConfig.getAudience()).thenReturn(audience);
         when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(redirectPath);
         when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));

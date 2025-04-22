@@ -105,8 +105,8 @@ public class WebScriptHomeAuthenticationCookiesService
     private void internalAddCookie(String name, String value, int maxAge, HttpServletResponse servletResponse)
     {
         Cookie authCookie = new Cookie(name, value);
-        authCookie.setPath("/");                      // Set the cookie's valid path
-        authCookie.setMaxAge(maxAge);                 // Set expiration time (in seconds)
+        authCookie.setPath("/"); // Set the cookie's valid path
+        authCookie.setMaxAge(maxAge); // Set expiration time (in seconds)
 
         // Ensure the cookie is only transmitted over secure connections (HTTPS)
         authCookie.setSecure(sysAdminParams.getAlfrescoProtocol().equalsIgnoreCase("https"));

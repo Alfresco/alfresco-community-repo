@@ -29,5 +29,4 @@ package org.alfresco.rm.rest.api.model;
 import java.util.List;
 
 public record RoleModelList(List<RoleModel> roleModelList)
-{
-}
+{}

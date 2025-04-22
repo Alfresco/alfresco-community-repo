@@ -26,7 +26,5 @@
  */
 package org.alfresco.rm.rest.api.model;
 
-
 public record CapabilityModel(String name, String title, String description, GroupModel group, int index)
-{
-}
+{}

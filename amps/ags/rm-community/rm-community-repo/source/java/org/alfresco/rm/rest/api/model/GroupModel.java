@@ -27,5 +27,4 @@
 package org.alfresco.rm.rest.api.model;
 
 public record GroupModel(String id, String title)
-{
-}
+{}

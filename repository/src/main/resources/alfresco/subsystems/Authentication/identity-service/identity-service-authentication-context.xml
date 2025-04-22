@@ -170,6 +170,9 @@
        <property name="adminConsoleScopes">
            <value>${identity-service.admin-console.scopes:openid,profile,email,offline_access}</value>
        </property>
+       <property name="webScriptHomeScopes">
+           <value>${identity-service.webscript-home.scopes:openid,profile,email,offline_access}</value>
+       </property>
        <property name="passwordGrantScopes">
            <value>${identity-service.password-grant.scopes:openid,profile,email}</value>
        </property>
@@ -205,6 +208,11 @@
       <constructor-arg value="${admin.console.cookie.lifetime:86400}" />
    </bean>
 
+    <bean id="webScriptHomeAuthenticationCookiesService" class="org.alfresco.repo.security.authentication.identityservice.webscript.WebScriptHomeAuthenticationCookiesService">
+        <constructor-arg ref="sysAdminParams" />
+        <constructor-arg value="${admin.console.cookie.lifetime:86400}" />
+    </bean>
+
    <bean id="adminConsoleAuthenticator" class="org.alfresco.repo.security.authentication.identityservice.admin.IdentityServiceAdminConsoleAuthenticator">
       <property name="active">
          <value>${identity-service.authentication.enabled}</value>
@@ -222,6 +230,24 @@
          <ref bean="identityServiceConfig" />
       </property>
    </bean>
+
+    <bean id="webScriptHomeAuthenticator" class="org.alfresco.repo.security.authentication.identityservice.webscript.IdentityServiceWebScriptHomeAuthenticator">
+        <property name="active">
+            <value>${identity-service.authentication.enabled}</value>
+        </property>
+        <property name="identityServiceFacade">
+            <ref bean="identityServiceFacade"/>
+        </property>
+        <property name="cookiesService">
+            <ref bean="webScriptHomeAuthenticationCookiesService" />
+        </property>
+        <property name="remoteUserMapper">
+            <ref bean="remoteUserMapper" />
+        </property>
+        <property name="identityServiceConfig">
+            <ref bean="identityServiceConfig" />
+        </property>
+    </bean>
 
    <bean id="jitProvisioningHandler" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandler">
       <constructor-arg ref="PersonService"/>

@@ -77,6 +77,7 @@ public class IdentityServiceConfig
     private String emailAttribute;
     private long jwtClockSkewMs;
     private String webScriptHomeRedirectPath;
+    private String webScriptHomeScopes;
 
     public String getWebScriptHomeRedirectPath()
     {
@@ -368,6 +369,18 @@ public class IdentityServiceConfig
     public void setAdminConsoleScopes(String adminConsoleScopes)
     {
         this.adminConsoleScopes = adminConsoleScopes;
+    }
+
+    public Set<String> getWebScriptHomeScopes()
+    {
+        return Stream.of(webScriptHomeScopes.split(","))
+                    .map(String::trim)
+                    .collect(Collectors.toUnmodifiableSet());
+    }
+
+    public void setWebScriptHomeScopes(String webScriptHomeScopes)
+    {
+        this.webScriptHomeScopes = webScriptHomeScopes;
     }
 
     public Set<String> getPasswordGrantScopes()

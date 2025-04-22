@@ -6,7 +6,7 @@
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
- * the paid license agreement will prevail.  Otherwise, the software is
+ * the paid license agreement will prevail. Otherwise, the software is
  * provided under the following open source license terms:
  *
  * Alfresco is free software: you can redistribute it and/or modify
@@ -16,14 +16,14 @@
  *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.identityservice.admin;
+package org.alfresco.repo.security.authentication.identityservice.webscript;
 
 import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant.authorizationCode;
 import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKey.SCOPES_SUPPORTED;
@@ -37,12 +37,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.Identifier;
 import com.nimbusds.oauth2.sdk.id.State;
+
+import org.alfresco.repo.security.authentication.external.WebScriptHomeAuthenticator;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +55,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.external.AdminConsoleAuthenticator;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade;
@@ -60,12 +62,13 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
 
+
 /**
- * An {@link AdminConsoleAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow.
+ * A {@link WebScriptHomeAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow.
  */
-public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAuthenticator, ActivateableBean
+public class IdentityServiceWebScriptHomeAuthenticator implements WebScriptHomeAuthenticator, ActivateableBean
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(IdentityServiceAdminConsoleAuthenticator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IdentityServiceWebScriptHomeAuthenticator.class);
 
     private static final String ALFRESCO_ACCESS_TOKEN = "ALFRESCO_ACCESS_TOKEN";
     private static final String ALFRESCO_REFRESH_TOKEN = "ALFRESCO_REFRESH_TOKEN";
@@ -73,14 +76,13 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
 
     private IdentityServiceConfig identityServiceConfig;
     private IdentityServiceFacade identityServiceFacade;
-    private AdminConsoleAuthenticationCookiesService cookiesService;
+    private WebScriptHomeAuthenticationCookiesService cookiesService;
     private RemoteUserMapper remoteUserMapper;
     private boolean isEnabled;
 
     @Override
-    public String getAdminConsoleUser(HttpServletRequest request, HttpServletResponse response)
+    public String getWebScriptHomeUser(HttpServletRequest request, HttpServletResponse response)
     {
-        // Try to extract username from the authorization header
         String username = remoteUserMapper.getRemoteUser(request);
         if (username != null)
         {
@@ -116,7 +118,8 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         respondWithAuthChallenge(request, response);
     }
 
-    private void respondWithAuthChallenge(HttpServletRequest request, HttpServletResponse response)
+
+    public void respondWithAuthChallenge(HttpServletRequest request, HttpServletResponse response)
     {
         try
         {
@@ -128,7 +131,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         }
         catch (IOException e)
         {
-            LOGGER.error("Error while trying to respond with the authentication challenge: {}", e.getMessage(), e);
+            LOGGER.error("WebScript Home Auth challenge failed: {}", e.getMessage(), e);
             throw new AuthenticationException(e.getMessage(), e);
         }
     }
@@ -143,7 +146,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         try
         {
             AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
-                    authorizationCode(code, request.getRequestURL().toString()));
+                        authorizationCode(code, request.getRequestURL().toString()));
             addCookies(response, accessTokenAuthorization);
             bearerToken = accessTokenAuthorization.getAccessToken().getTokenValue();
         }
@@ -152,12 +155,13 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
             if (LOGGER.isWarnEnabled())
             {
                 LOGGER.warn(
-                        "Error while trying to retrieve a response using the Authorization Code at the Token Endpoint: {}",
-                        exception.getMessage());
+                            "Error while trying to retrieve a response using the Authorization Code at the Token Endpoint: {}",
+                            exception.getMessage());
             }
         }
         return bearerToken;
     }
+
 
     private String refreshTokenIfNeeded(HttpServletRequest request, HttpServletResponse response, String bearerToken)
     {
@@ -172,10 +176,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         }
         catch (Exception e)
         {
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("Error while trying to refresh Auth Token: {}", e.getMessage());
-            }
+            LOGGER.debug("WebScript token refresh failed: {}", e.getMessage());
             bearerToken = null;
             resetCookies(response);
         }
@@ -185,8 +186,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
     private void addCookies(HttpServletResponse response, AccessTokenAuthorization accessTokenAuthorization)
     {
         cookiesService.addCookie(ALFRESCO_ACCESS_TOKEN, accessTokenAuthorization.getAccessToken().getTokenValue(), response);
-        cookiesService.addCookie(ALFRESCO_TOKEN_EXPIRATION, String.valueOf(
-                accessTokenAuthorization.getAccessToken().getExpiresAt().toEpochMilli()), response);
+        cookiesService.addCookie(ALFRESCO_TOKEN_EXPIRATION, String.valueOf(accessTokenAuthorization.getAccessToken().getExpiresAt().toEpochMilli()), response);
         cookiesService.addCookie(ALFRESCO_REFRESH_TOKEN, accessTokenAuthorization.getRefreshTokenValue(), response);
     }
 
@@ -195,43 +195,43 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         ClientRegistration clientRegistration = identityServiceFacade.getClientRegistration();
         State state = new State();
 
-        UriComponentsBuilder authRequestBuilder = UriComponentsBuilder.fromUriString(clientRegistration.getProviderDetails().getAuthorizationUri())
-                .queryParam("client_id", clientRegistration.getClientId())
-                .queryParam("redirect_uri", getRedirectUri(request.getRequestURL().toString()))
-                .queryParam("response_type", "code")
-                .queryParam("scope", String.join("+", getScopes(clientRegistration)))
-                .queryParam("state", state.toString());
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(clientRegistration.getProviderDetails().getAuthorizationUri())
+                    .queryParam("client_id", clientRegistration.getClientId())
+                    .queryParam("redirect_uri", getRedirectUri(request.getRequestURL().toString()))
+                    .queryParam("response_type", "code")
+                    .queryParam("scope", String.join("+", getScopes(clientRegistration)))
+                    .queryParam("state", state.toString());
 
         if (StringUtils.isNotBlank(identityServiceConfig.getAudience()))
         {
-            authRequestBuilder.queryParam("audience", identityServiceConfig.getAudience());
+            builder.queryParam("audience", identityServiceConfig.getAudience());
         }
 
-        return authRequestBuilder.build().toUriString();
+        return builder.build().toUriString();
     }
 
     private Set<String> getScopes(ClientRegistration clientRegistration)
     {
         return Optional.ofNullable(clientRegistration.getProviderDetails())
-                .map(ProviderDetails::getConfigurationMetadata)
-                .map(metadata -> metadata.get(SCOPES_SUPPORTED.getValue()))
-                .filter(Scope.class::isInstance)
-                .map(Scope.class::cast)
-                .map(this::getSupportedScopes)
-                .orElse(clientRegistration.getScopes());
+                    .map(ProviderDetails::getConfigurationMetadata)
+                    .map(metadata -> metadata.get(SCOPES_SUPPORTED.getValue()))
+                    .filter(Scope.class::isInstance)
+                    .map(Scope.class::cast)
+                    .map(this::getSupportedScopes)
+                    .orElse(clientRegistration.getScopes());
     }
 
     private Set<String> getSupportedScopes(Scope scopes)
     {
         return scopes.stream()
-                .filter(this::hasAdminConsoleScope)
-                .map(Identifier::getValue)
-                .collect(Collectors.toSet());
+                    .filter(this::hasWebScriptHomeScope)
+                    .map(Identifier::getValue)
+                    .collect(Collectors.toSet());
     }
 
-    private boolean hasAdminConsoleScope(Scope.Value scope)
+    private boolean hasWebScriptHomeScope(Scope.Value scope)
     {
-        return identityServiceConfig.getAdminConsoleScopes().contains(scope.getValue());
+        return identityServiceConfig.getWebScriptHomeScopes().contains(scope.getValue());
     }
 
     private String getRedirectUri(String requestURL)
@@ -239,16 +239,29 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         try
         {
             URI originalUri = new URI(requestURL);
-            String redirectPath = identityServiceConfig.getAdminConsoleRedirectPath();
-            URI redirectUri = new URI(originalUri.getScheme(), originalUri.getAuthority(), redirectPath, originalUri.getQuery(), originalUri.getFragment());
+
+            // Keep full original path so we return to the correct page after login
+            String fullOriginalPath = originalUri.getPath();
+            String query = originalUri.getQuery();
+            String fragment = originalUri.getFragment();
+
+            URI redirectUri = new URI(
+                        originalUri.getScheme(),
+                        originalUri.getAuthority(),
+                        fullOriginalPath,  // preserves /alfresco/s/index/** whatever it is
+                        query,
+                        fragment
+            );
+
             return redirectUri.toASCIIString();
         }
         catch (URISyntaxException e)
         {
-            LOGGER.error("Error while trying to get the redirect URI and respond with the authentication challenge: {}", e.getMessage(), e);
+            LOGGER.error("WebScript redirect URI construction failed: {}", e.getMessage(), e);
             throw new AuthenticationException(e.getMessage(), e);
         }
     }
+
 
     private void resetCookies(HttpServletResponse response)
     {
@@ -267,10 +280,10 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
     private AccessTokenAuthorization doRefreshAuthToken(String refreshToken)
     {
         AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
-                AuthorizationGrant.refreshToken(refreshToken));
+                    AuthorizationGrant.refreshToken(refreshToken));
         if (accessTokenAuthorization == null || accessTokenAuthorization.getAccessToken() == null)
         {
-            throw new AuthenticationException("AccessTokenResponse is null or empty");
+            throw new AuthenticationException("WebScript refresh token response is invalid.");
         }
         return accessTokenAuthorization;
     }
@@ -282,13 +295,12 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
 
     private HttpServletRequest decorateBearerHeader(String authToken, HttpServletRequest servletRequest)
     {
-        Map<String, String> additionalHeaders = new HashMap<>();
-        additionalHeaders.put("Authorization", "Bearer " + authToken);
-        return new AdminConsoleHttpServletRequestWrapper(additionalHeaders, servletRequest);
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer " + authToken);
+        return new WebScriptHomeHttpServletRequestWrapper(headers, servletRequest);
     }
 
-    public void setIdentityServiceFacade(
-            IdentityServiceFacade identityServiceFacade)
+    public void setIdentityServiceFacade(IdentityServiceFacade identityServiceFacade)
     {
         this.identityServiceFacade = identityServiceFacade;
     }
@@ -298,14 +310,12 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         this.remoteUserMapper = remoteUserMapper;
     }
 
-    public void setCookiesService(
-            AdminConsoleAuthenticationCookiesService cookiesService)
+    public void setCookiesService(WebScriptHomeAuthenticationCookiesService cookiesService)
     {
         this.cookiesService = cookiesService;
     }
 
-    public void setIdentityServiceConfig(
-            IdentityServiceConfig identityServiceConfig)
+    public void setIdentityServiceConfig(IdentityServiceConfig identityServiceConfig)
     {
         this.identityServiceConfig = identityServiceConfig;
     }

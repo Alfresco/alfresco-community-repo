@@ -26,6 +26,7 @@
 package org.alfresco.repo.domain.subscriptions;
 
 import junit.framework.TestCase;
+import org.alfresco.util.testing.category.DBTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -45,7 +46,7 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.NeverRunsTests;
 
-@Category({OwnJVMTestsCategory.class, NeverRunsTests.class})
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class SubscriptionDAOTest extends TestCase
 {
     private ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

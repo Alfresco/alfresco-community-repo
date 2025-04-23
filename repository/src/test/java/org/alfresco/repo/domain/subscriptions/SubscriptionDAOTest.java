@@ -44,6 +44,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.DBTests;
+
 @Category({OwnJVMTestsCategory.class, DBTests.class})
 public class SubscriptionDAOTest extends TestCase
 {

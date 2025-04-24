@@ -411,7 +411,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             Date groupLastModified = groupLastModifiedMillis == -1 ? null : new Date(groupLastModifiedMillis);
             Date personLastModified = personLastModifiedMillis == -1 ? null : new Date(personLastModifiedMillis);
 
-            plugin.initSync();
+            plugin.initSync(groupLastModified, syncDelete);
             ret.setGroups(plugin.getGroupNames());
 
             ret.setUsers(plugin.getPersonNames());
@@ -900,7 +900,6 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 SyncProcess.AUTHORITY_DELETION.getTitle(zone)
         };
 
-        userRegistry.initSync();
         notifySyncDirectoryStart(zone, reservedBatchProcessNames);
 
         // Ensure that the zoneId exists before multiple threads start using it
@@ -920,7 +919,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 : getMostRecentUpdateTime(
                         ChainingUserRegistrySynchronizer.GROUP_LAST_MODIFIED_ATTRIBUTE, zoneId, splitTxns);
         Date lastModified = lastModifiedMillis == -1 ? null : new Date(lastModifiedMillis);
-
+        userRegistry.initSync(lastModified, syncDelete);
         if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
         {
             if (lastModified == null)

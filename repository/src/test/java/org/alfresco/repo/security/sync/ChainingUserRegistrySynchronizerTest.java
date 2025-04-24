@@ -1258,7 +1258,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         }
 
         @Override
-        public void initSync()
+        public void initSync(Date lastSyncTime, boolean syncDelete)
         {
 
         }

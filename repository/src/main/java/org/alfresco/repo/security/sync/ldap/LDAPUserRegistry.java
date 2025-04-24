@@ -556,18 +556,16 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.security.sync.UserRegistry#initSync()
-     */
-    @Override
-    public void initSync()
+     * 
+     * @see org.alfresco.repo.security.sync.UserRegistry#initSync() */
+    public void initSync(Date lastSyncTime, boolean syncDelete)
     {
         // nothing to do
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.sync.UserRegistry#getPersons(java.util.Date)
-     */
+    /* (non-Javadoc)
+     * 
+     * @see org.alfresco.repo.security.sync.UserRegistry#getPersons(java.util.Date) */
     public Collection<NodeDescription> getPersons(Date modifiedSince)
     {
         return new PersonCollection(modifiedSince);

@@ -349,14 +349,14 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
 
         private boolean shouldUseTimeoutForAdminAccessingAdminConsole(RequiredAuthentication required, boolean isGuest)
         {
-            boolean useTimeoutForAdminAccessingAdminConsole = RequiredAuthentication.admin.equals(required) && !isGuest &&
+            boolean adminConsoleTimeout = RequiredAuthentication.admin.equals(required) && !isGuest &&
                     servletReq.getServiceMatch() != null && isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript());
 
             if (LOGGER.isTraceEnabled())
             {
-                LOGGER.trace("Should ensure that the admins can login with basic auth: " + useTimeoutForAdminAccessingAdminConsole);
+                LOGGER.trace("Should ensure that the admins can login with basic auth: " + adminConsoleTimeout);
             }
-            return useTimeoutForAdminAccessingAdminConsole;
+            return adminConsoleTimeout;
         }
 
         private boolean shouldUseTimeoutForAdminAccessingWebScriptHome(RequiredAuthentication required, boolean isGuest)

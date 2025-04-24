@@ -102,6 +102,7 @@ public class IdentityServiceWebScriptHomeAuthenticator extends AbstractIdentityS
         return false;
     }
 
+    @Override
     protected String getRedirectUri(String requestURL)
     {
         return getWebScriptHomeRedirectUri(requestURL);

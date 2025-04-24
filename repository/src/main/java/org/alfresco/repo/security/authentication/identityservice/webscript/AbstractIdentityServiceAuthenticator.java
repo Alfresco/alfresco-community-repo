@@ -63,8 +63,6 @@ public abstract class AbstractIdentityServiceAuthenticator
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIdentityServiceAuthenticator.class);
 
-    protected abstract boolean isWebScriptHome();
-
     protected IdentityServiceConfig identityServiceConfig;
     protected IdentityServiceFacade identityServiceFacade;
     protected AdminAuthenticationCookiesService cookiesService;
@@ -73,6 +71,8 @@ public abstract class AbstractIdentityServiceAuthenticator
     public static final String ALFRESCO_ACCESS_TOKEN = "ALFRESCO_ACCESS_TOKEN";
     public static final String ALFRESCO_REFRESH_TOKEN = "ALFRESCO_REFRESH_TOKEN";
     public static final String ALFRESCO_TOKEN_EXPIRATION = "ALFRESCO_TOKEN_EXPIRATION";
+
+    protected abstract boolean isWebScriptHome();
 
     public String resolveUser(HttpServletRequest request, HttpServletResponse response)
     {
@@ -225,7 +225,10 @@ public abstract class AbstractIdentityServiceAuthenticator
         }
         catch (Exception e)
         {
-            LOGGER.debug("Token refresh failed: {}", e.getMessage());
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("Token refresh failed: {}", e.getMessage());
+            }
             bearerToken = null;
             resetCookies(response);
         }

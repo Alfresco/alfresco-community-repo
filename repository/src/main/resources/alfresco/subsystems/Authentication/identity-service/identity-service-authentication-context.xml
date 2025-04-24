@@ -203,12 +203,7 @@
       </property>
    </bean>
 
-   <bean id="adminConsoleAuthenticationCookiesService" class="org.alfresco.repo.security.authentication.identityservice.admin.AdminConsoleAuthenticationCookiesService">
-      <constructor-arg ref="sysAdminParams" />
-      <constructor-arg value="${admin.console.cookie.lifetime:86400}" />
-   </bean>
-
-    <bean id="webScriptHomeAuthenticationCookiesService" class="org.alfresco.repo.security.authentication.identityservice.webscript.WebScriptHomeAuthenticationCookiesService">
+    <bean id="adminAuthenticationCookiesService" class="org.alfresco.repo.security.authentication.identityservice.admin.AdminAuthenticationCookiesService">
         <constructor-arg ref="sysAdminParams" />
         <constructor-arg value="${admin.console.cookie.lifetime:86400}" />
     </bean>
@@ -221,7 +216,7 @@
          <ref bean="identityServiceFacade"/>
       </property>
       <property name="cookiesService">
-         <ref bean="adminConsoleAuthenticationCookiesService" />
+         <ref bean="adminAuthenticationCookiesService" />
       </property>
       <property name="remoteUserMapper">
          <ref bean="remoteUserMapper" />
@@ -239,7 +234,7 @@
             <ref bean="identityServiceFacade"/>
         </property>
         <property name="cookiesService">
-            <ref bean="webScriptHomeAuthenticationCookiesService" />
+            <ref bean="adminAuthenticationCookiesService" />
         </property>
         <property name="remoteUserMapper">
             <ref bean="remoteUserMapper" />

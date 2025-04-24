@@ -25,98 +25,39 @@
  */
 package org.alfresco.repo.security.authentication.identityservice.admin;
 
-import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant.authorizationCode;
-import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKey.SCOPES_SUPPORTED;
-
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.Identifier;
-import com.nimbusds.oauth2.sdk.id.State;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.external.AdminConsoleAuthenticator;
-import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
+import org.alfresco.repo.security.authentication.identityservice.webscript.AbstractIdentityServiceAuthenticator;
 
 /**
  * An {@link AdminConsoleAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow.
  */
-public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAuthenticator, ActivateableBean
+public class IdentityServiceAdminConsoleAuthenticator extends AbstractIdentityServiceAuthenticator
+        implements AdminConsoleAuthenticator, ActivateableBean
 {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(IdentityServiceAdminConsoleAuthenticator.class);
 
-    private static final String ALFRESCO_ACCESS_TOKEN = "ALFRESCO_ACCESS_TOKEN";
-    private static final String ALFRESCO_REFRESH_TOKEN = "ALFRESCO_REFRESH_TOKEN";
-    private static final String ALFRESCO_TOKEN_EXPIRATION = "ALFRESCO_TOKEN_EXPIRATION";
-
-    private IdentityServiceConfig identityServiceConfig;
-    private IdentityServiceFacade identityServiceFacade;
-    private AdminConsoleAuthenticationCookiesService cookiesService;
-    private RemoteUserMapper remoteUserMapper;
     private boolean isEnabled;
 
     @Override
     public String getAdminConsoleUser(HttpServletRequest request, HttpServletResponse response)
     {
-        // Try to extract username from the authorization header
-        String username = remoteUserMapper.getRemoteUser(request);
-        if (username != null)
-        {
-            return username;
-        }
-
-        String bearerToken = cookiesService.getCookie(ALFRESCO_ACCESS_TOKEN, request);
-
-        if (bearerToken != null)
-        {
-            bearerToken = refreshTokenIfNeeded(request, response, bearerToken);
-        }
-        else
-        {
-            String code = request.getParameter("code");
-            if (code != null)
-            {
-                bearerToken = retrieveTokenUsingAuthCode(request, response, code);
-            }
-        }
-
-        if (bearerToken == null)
-        {
-            return null;
-        }
-
-        return remoteUserMapper.getRemoteUser(decorateBearerHeader(bearerToken, request));
+        return resolveUser(request, response);
     }
 
     @Override
     public void requestAuthentication(HttpServletRequest request, HttpServletResponse response)
-    {
-        respondWithAuthChallenge(request, response);
-    }
-
-    private void respondWithAuthChallenge(HttpServletRequest request, HttpServletResponse response)
     {
         try
         {
@@ -128,192 +69,51 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         }
         catch (IOException e)
         {
-            LOGGER.error("Error while trying to respond with the authentication challenge: {}", e.getMessage(), e);
+            LOGGER.error("Admin Console Auth challenge failed: {}", e.getMessage(), e);
             throw new AuthenticationException(e.getMessage(), e);
         }
     }
 
-    private String retrieveTokenUsingAuthCode(HttpServletRequest request, HttpServletResponse response, String code)
+    @Override
+    protected boolean isWebScriptHome()
     {
-        String bearerToken = null;
-        if (LOGGER.isDebugEnabled())
-        {
-            LOGGER.debug("Retrieving a response using the Authorization Code at the Token Endpoint");
-        }
-        try
-        {
-            AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
-                    authorizationCode(code, request.getRequestURL().toString()));
-            addCookies(response, accessTokenAuthorization);
-            bearerToken = accessTokenAuthorization.getAccessToken().getTokenValue();
-        }
-        catch (AuthorizationException exception)
-        {
-            if (LOGGER.isWarnEnabled())
-            {
-                LOGGER.warn(
-                        "Error while trying to retrieve a response using the Authorization Code at the Token Endpoint: {}",
-                        exception.getMessage());
-            }
-        }
-        return bearerToken;
+        return false;
     }
 
-    private String refreshTokenIfNeeded(HttpServletRequest request, HttpServletResponse response, String bearerToken)
+    @Override
+    protected HttpServletRequest newRequestWrapper(Map<String, String> headers, HttpServletRequest request)
     {
-        String refreshToken = cookiesService.getCookie(ALFRESCO_REFRESH_TOKEN, request);
-        String authTokenExpiration = cookiesService.getCookie(ALFRESCO_TOKEN_EXPIRATION, request);
-        try
-        {
-            if (isAuthTokenExpired(authTokenExpiration))
-            {
-                bearerToken = refreshAuthToken(refreshToken, response);
-            }
-        }
-        catch (Exception e)
-        {
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("Error while trying to refresh Auth Token: {}", e.getMessage());
-            }
-            bearerToken = null;
-            resetCookies(response);
-        }
-        return bearerToken;
+        return new AdminConsoleHttpServletRequestWrapper(headers, request);
     }
 
-    private void addCookies(HttpServletResponse response, AccessTokenAuthorization accessTokenAuthorization)
+    @Override
+    protected String buildAuthRequestUrl(HttpServletRequest request)
     {
-        cookiesService.addCookie(ALFRESCO_ACCESS_TOKEN, accessTokenAuthorization.getAccessToken().getTokenValue(), response);
-        cookiesService.addCookie(ALFRESCO_TOKEN_EXPIRATION, String.valueOf(
-                accessTokenAuthorization.getAccessToken().getExpiresAt().toEpochMilli()), response);
-        cookiesService.addCookie(ALFRESCO_REFRESH_TOKEN, accessTokenAuthorization.getRefreshTokenValue(), response);
+        return getAuthenticationRequest(request);
     }
 
-    private String getAuthenticationRequest(HttpServletRequest request)
+    @Override
+    protected boolean hasWebScriptHomeScope(Identifier scope)
     {
-        ClientRegistration clientRegistration = identityServiceFacade.getClientRegistration();
-        State state = new State();
-
-        UriComponentsBuilder authRequestBuilder = UriComponentsBuilder.fromUriString(clientRegistration.getProviderDetails().getAuthorizationUri())
-                .queryParam("client_id", clientRegistration.getClientId())
-                .queryParam("redirect_uri", getRedirectUri(request.getRequestURL().toString()))
-                .queryParam("response_type", "code")
-                .queryParam("scope", String.join("+", getScopes(clientRegistration)))
-                .queryParam("state", state.toString());
-
-        if (StringUtils.isNotBlank(identityServiceConfig.getAudience()))
-        {
-            authRequestBuilder.queryParam("audience", identityServiceConfig.getAudience());
-        }
-
-        return authRequestBuilder.build().toUriString();
+        return false;
     }
 
-    private Set<String> getScopes(ClientRegistration clientRegistration)
-    {
-        return Optional.ofNullable(clientRegistration.getProviderDetails())
-                .map(ProviderDetails::getConfigurationMetadata)
-                .map(metadata -> metadata.get(SCOPES_SUPPORTED.getValue()))
-                .filter(Scope.class::isInstance)
-                .map(Scope.class::cast)
-                .map(this::getSupportedScopes)
-                .orElse(clientRegistration.getScopes());
-    }
-
-    private Set<String> getSupportedScopes(Scope scopes)
-    {
-        return scopes.stream()
-                .filter(this::hasAdminConsoleScope)
-                .map(Identifier::getValue)
-                .collect(Collectors.toSet());
-    }
-
-    private boolean hasAdminConsoleScope(Scope.Value scope)
+    @Override
+    protected boolean hasAdminConsoleScope(Identifier scope)
     {
         return identityServiceConfig.getAdminConsoleScopes().contains(scope.getValue());
     }
 
-    private String getRedirectUri(String requestURL)
+    @Override
+    protected String getRedirectUri(String requestURL)
     {
-        try
-        {
-            URI originalUri = new URI(requestURL);
-            String redirectPath = identityServiceConfig.getAdminConsoleRedirectPath();
-            URI redirectUri = new URI(originalUri.getScheme(), originalUri.getAuthority(), redirectPath, originalUri.getQuery(), originalUri.getFragment());
-            return redirectUri.toASCIIString();
-        }
-        catch (URISyntaxException e)
-        {
-            LOGGER.error("Error while trying to get the redirect URI and respond with the authentication challenge: {}", e.getMessage(), e);
-            throw new AuthenticationException(e.getMessage(), e);
-        }
-    }
-
-    private void resetCookies(HttpServletResponse response)
-    {
-        cookiesService.resetCookie(ALFRESCO_TOKEN_EXPIRATION, response);
-        cookiesService.resetCookie(ALFRESCO_ACCESS_TOKEN, response);
-        cookiesService.resetCookie(ALFRESCO_REFRESH_TOKEN, response);
-    }
-
-    private String refreshAuthToken(String refreshToken, HttpServletResponse response)
-    {
-        AccessTokenAuthorization accessTokenAuthorization = doRefreshAuthToken(refreshToken);
-        addCookies(response, accessTokenAuthorization);
-        return accessTokenAuthorization.getAccessToken().getTokenValue();
-    }
-
-    private AccessTokenAuthorization doRefreshAuthToken(String refreshToken)
-    {
-        AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
-                AuthorizationGrant.refreshToken(refreshToken));
-        if (accessTokenAuthorization == null || accessTokenAuthorization.getAccessToken() == null)
-        {
-            throw new AuthenticationException("AccessTokenResponse is null or empty");
-        }
-        return accessTokenAuthorization;
-    }
-
-    private static boolean isAuthTokenExpired(String authTokenExpiration)
-    {
-        return Instant.now().compareTo(Instant.ofEpochMilli(Long.parseLong(authTokenExpiration))) >= 0;
-    }
-
-    private HttpServletRequest decorateBearerHeader(String authToken, HttpServletRequest servletRequest)
-    {
-        Map<String, String> additionalHeaders = new HashMap<>();
-        additionalHeaders.put("Authorization", "Bearer " + authToken);
-        return new AdminConsoleHttpServletRequestWrapper(additionalHeaders, servletRequest);
-    }
-
-    public void setIdentityServiceFacade(
-            IdentityServiceFacade identityServiceFacade)
-    {
-        this.identityServiceFacade = identityServiceFacade;
-    }
-
-    public void setRemoteUserMapper(RemoteUserMapper remoteUserMapper)
-    {
-        this.remoteUserMapper = remoteUserMapper;
-    }
-
-    public void setCookiesService(
-            AdminConsoleAuthenticationCookiesService cookiesService)
-    {
-        this.cookiesService = cookiesService;
-    }
-
-    public void setIdentityServiceConfig(
-            IdentityServiceConfig identityServiceConfig)
-    {
-        this.identityServiceConfig = identityServiceConfig;
+        return super.getRedirectUri(requestURL);
     }
 
     @Override
     public boolean isActive()
     {
-        return this.isEnabled;
+        return isEnabled;
     }
 
     public void setActive(boolean isEnabled)

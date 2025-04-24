@@ -58,6 +58,7 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
+import org.alfresco.repo.security.authentication.identityservice.admin.AdminAuthenticationCookiesService;
 
 @SuppressWarnings("PMD.AvoidStringBufferField")
 public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
@@ -76,7 +77,7 @@ public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
     @Mock
     IdentityServiceConfig identityServiceConfig;
     @Mock
-    WebScriptHomeAuthenticationCookiesService cookiesService;
+    AdminAuthenticationCookiesService cookiesService;
     @Mock
     RemoteUserMapper remoteUserMapper;
     @Mock

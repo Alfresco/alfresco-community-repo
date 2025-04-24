@@ -76,7 +76,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     @Mock
     IdentityServiceConfig identityServiceConfig;
     @Mock
-    AdminConsoleAuthenticationCookiesService cookiesService;
+    AdminAuthenticationCookiesService cookiesService;
     @Mock
     RemoteUserMapper remoteUserMapper;
     @Mock

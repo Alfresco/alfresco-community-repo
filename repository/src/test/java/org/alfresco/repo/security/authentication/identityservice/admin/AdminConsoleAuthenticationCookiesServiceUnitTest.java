@@ -59,13 +59,13 @@ public class AdminConsoleAuthenticationCookiesServiceUnitTest
     private SysAdminParams sysAdminParams;
     @Captor
     private ArgumentCaptor<Cookie> cookieCaptor;
-    private AdminConsoleAuthenticationCookiesService cookiesService;
+    private AdminAuthenticationCookiesService cookiesService;
 
     @Before
     public void setUp()
     {
         initMocks(this);
-        cookiesService = new AdminConsoleAuthenticationCookiesService(sysAdminParams, DEFAULT_COOKIE_LIFETIME);
+        cookiesService = new AdminAuthenticationCookiesService(sysAdminParams, DEFAULT_COOKIE_LIFETIME);
     }
 
     @Test
@@ -138,7 +138,7 @@ public class AdminConsoleAuthenticationCookiesServiceUnitTest
     public void cookieWithCustomMaxAgeShouldBeAddedToTheResponse()
     {
         int customMaxAge = 60;
-        cookiesService = new AdminConsoleAuthenticationCookiesService(sysAdminParams, customMaxAge);
+        cookiesService = new AdminAuthenticationCookiesService(sysAdminParams, customMaxAge);
         when(sysAdminParams.getAlfrescoProtocol()).thenReturn("https");
 
         cookiesService.addCookie(COOKIE_NAME, COOKIE_VALUE, response);

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -43,9 +43,9 @@ import org.alfresco.service.cmr.subscriptions.SubscriptionItemTypeEnum;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.testing.category.NeverRunsTests;
+import org.alfresco.util.testing.category.DBTests;
 
-@Category({OwnJVMTestsCategory.class, NeverRunsTests.class})
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class SubscriptionDAOTest extends TestCase
 {
     private ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

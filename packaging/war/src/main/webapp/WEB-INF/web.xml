@@ -500,7 +500,7 @@
          org.hibernate.dialect.MySQLInnoDBDialect,
          org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect,
          org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect,
-         org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect, org.hibernate.dialect.PostgreSQLDialect</description>
+         org.alfresco.repo.domain.hibernate.dialect.SQLServerDialect, org.hibernate.dialect.PostgreSQLDialect</description>
       <env-entry-name>properties/hibernate.dialect</env-entry-name>
       <env-entry-type>java.lang.String</env-entry-type>
       <env-entry-value/> <!-- Empty value included for JBoss compatibility -->

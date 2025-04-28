@@ -143,7 +143,7 @@
    </bean>
    <bean id="nodeDAO.org.alfresco.repo.domain.dialect.Dialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl" parent="nodeDAObase" />
    <bean id="nodeDAO.org.alfresco.repo.domain.dialect.MySQLInnoDBDialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl$MySQL" parent="nodeDAO.org.alfresco.repo.domain.dialect.Dialect" />
-   <bean id="nodeDAO.org.alfresco.repo.domain.dialect.AlfrescoSQLServerDialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl$MSSQL" parent="nodeDAO.org.alfresco.repo.domain.dialect.Dialect" />
+   <bean id="nodeDAO.org.alfresco.repo.domain.dialect.SQLServerDialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl$MSSQL" parent="nodeDAO.org.alfresco.repo.domain.dialect.Dialect" />
    
    <!-- WARNING: Experimental/unsupported - see MySQLClusterNDBDialect ! -->
    <bean id="nodeDAO.org.alfresco.repo.domain.dialect.AlfrescoMySQLClusterNDBDialect" class="org.alfresco.repo.domain.node.ibatis.NodeDAOImpl$MySQLClusterNDB" parent="nodeDAO.org.alfresco.repo.domain.dialect.Dialect" />

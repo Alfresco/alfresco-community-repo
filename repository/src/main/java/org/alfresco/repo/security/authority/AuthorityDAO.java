@@ -248,4 +248,9 @@ public interface AuthorityDAO
      * Remove an authority from zones.
      */
     public void removeAuthorityFromZones(String authorityName, Set<String> zones);
+
+    /**
+     * @return Returns the authority container, <b>which must exist</b>
+     */
+    NodeRef getAuthorityContainer();
 }

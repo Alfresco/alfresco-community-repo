@@ -1258,12 +1258,6 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         }
 
         @Override
-        public void initSync(Date lastSyncTime, boolean syncDelete)
-        {
-
-        }
-
-        @Override
         public void updateState(Collection<NodeDescription> persons, Collection<NodeDescription> groups)
         {
             List<NodeDescription> newPersons = new ArrayList<NodeDescription>(this.persons);

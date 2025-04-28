@@ -85,5 +85,8 @@ public interface UserRegistry
      * @param syncDelete
      *            if <code>true</code> then registry will be queried for all users and groups to calculate deleted entities
      */
-    void initSync(Date modifiedSince, boolean syncDelete);
+    default void initSync(Date modifiedSince, boolean syncDelete)
+    {
+        // default implementation does nothing
+    }
 }

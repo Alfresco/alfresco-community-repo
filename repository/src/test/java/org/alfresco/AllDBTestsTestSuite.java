@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -54,6 +54,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
 
         // From AppContext05TestSuite
         org.alfresco.repo.domain.node.NodeDAOTest.class,
+        org.alfresco.repo.domain.subscriptions.SubscriptionDAOTest.class,
         org.alfresco.repo.security.permissions.impl.AclDaoComponentTest.class,
         org.alfresco.repo.domain.contentdata.ContentDataDAOTest.class,
         org.alfresco.repo.domain.encoding.EncodingDAOTest.class,

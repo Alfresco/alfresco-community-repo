@@ -93,6 +93,7 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.SearchAPI;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.data.DataUserAIS;
@@ -127,6 +128,10 @@ public class BaseRMRestTest extends RestTest
     @Getter(value = PROTECTED)
     private SearchAPI searchApi;
 
+    @Autowired
+    @Getter(value = PROTECTED)
+    private RMRolesAndActionsAPI rmRolesAndActionsOldAPI;
+    
     protected static final String iso8601_DateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
 
     /**

@@ -31,6 +31,8 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 
+
+
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
@@ -303,4 +305,31 @@ public class FilePlanAPI extends RMModelRequest
     {
         return getHolds(filePlanId, EMPTY);
     }
+
+    /**
+     * Gets the roles and Capabilities of a file plan.
+     *
+     * @param filePlanId
+     *            The identifier of a file plan
+     * @param parameters
+     *            The URL parameters to add
+     * @return The {Pagination and RoleModel Entries} for the given {@code filePlanId}
+     * @throws RuntimeException
+     *             for the following cases:
+     *             <ul>
+     *             <li>authentication fails</li>
+     *             <li>current user does not have permission to read {@code filePlanId}</li>
+     *             <li>{@code filePlanId} does not exist</li>
+     *             </ul>
+     */
+    public Object getFilePlanRolesAndRelation(String filePlanId, String parameters)
+    {
+        mandatoryString("filePlanId", filePlanId);
+        return getRmRestWrapper().processModels(Object.class, simpleRequest(
+            GET,
+            "file-plans/{filePlanId}/roles?{parameters}",
+            filePlanId,
+            parameters));
+    }
+
 }

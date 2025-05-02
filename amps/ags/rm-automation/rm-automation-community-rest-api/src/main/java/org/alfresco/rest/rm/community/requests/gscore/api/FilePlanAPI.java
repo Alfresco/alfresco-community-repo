@@ -31,8 +31,6 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 
-
-
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;

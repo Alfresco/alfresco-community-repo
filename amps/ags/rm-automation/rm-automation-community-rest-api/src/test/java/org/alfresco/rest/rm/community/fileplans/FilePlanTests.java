@@ -28,6 +28,7 @@ package org.alfresco.rest.rm.community.fileplans;
 
 import static java.util.Arrays.asList;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -85,8 +86,6 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.utility.constants.ContainerName;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
-
-import static com.google.common.collect.Sets.newHashSet;
 
 /**
  * This class contains the tests for the File Plan CRUD API
@@ -685,7 +684,7 @@ public class FilePlanTests extends BaseRMRestTest
         assertEquals((String) roleModelMap.get("displayLabel"), ROLE_RM_USER.displayName);
     }
 
-     /**
+    /**
      * <pre>
      * Given that a file plan exists
      * When a RM_Power_User asks the API for the roles and relation
@@ -719,7 +718,7 @@ public class FilePlanTests extends BaseRMRestTest
     {
         // Create a new role using old API
         getRmRolesAndActionsOldAPI().createRole(getAdminUser().getUsername(), getAdminUser().getPassword(), "NewTestRole",
-        "New Role Label", CAPABILITIES);
+                "New Role Label", CAPABILITIES);
         // Create a random user
         UserModel rmNewUser = getDataUser().createRandomTestUser("rmPowerUser");
         // Assign rmPowerUser role to user

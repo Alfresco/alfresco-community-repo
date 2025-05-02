@@ -324,10 +324,10 @@ public class FilePlanAPI extends RMModelRequest
     {
         mandatoryString("filePlanId", filePlanId);
         return getRmRestWrapper().processModels(Object.class, simpleRequest(
-            GET,
-            "file-plans/{filePlanId}/roles?{parameters}",
-            filePlanId,
-            parameters));
+                GET,
+                "file-plans/{filePlanId}/roles?{parameters}",
+                filePlanId,
+                parameters));
     }
 
 }

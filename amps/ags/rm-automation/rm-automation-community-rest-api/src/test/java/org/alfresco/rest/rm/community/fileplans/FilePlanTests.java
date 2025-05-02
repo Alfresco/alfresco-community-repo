@@ -67,6 +67,7 @@ import static org.alfresco.utility.data.RandomData.getRandomName;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.testng.annotations.DataProvider;
@@ -626,6 +627,25 @@ public class FilePlanTests extends BaseRMRestTest
     /**
      * <pre>
      * Given that a file plan exists
+     * When rmAdmin user ask the API for roles and relations with SystemRoles as false
+     * It provides list of all roles and relations excluding SystemRoles
+     * </pre>
+     */
+    @Test
+    public void listFilePlanAllRolesAndRelationExcludeSystemRoles()
+    {
+        String parameters = "where=(systemRoles=false)";
+        // Call to new API to get the roles and capabilities
+        Object response = getRestAPIFactory().getFilePlansAPI().getFilePlanRolesAndRelation(FILE_PLAN_ALIAS, parameters);
+        assertStatusCode(OK);
+        LinkedHashMap<?, ?> linkedHashMap = (LinkedHashMap<?, ?>) response;
+        ArrayList<?> roleModelList = (ArrayList<?>) linkedHashMap.get("entries");
+        assertEquals(roleModelList.size(), 5);
+    }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
      * When a non-RM user asks the API for the roles and relation
      * Then the status code 403 (Permission denied) is return
      * </pre>
@@ -732,6 +752,24 @@ public class FilePlanTests extends BaseRMRestTest
         LinkedHashMap<?, ?> viewRecordsCapability = (LinkedHashMap<?, ?>) ((ArrayList<?>) roleModelMap.get("capabilities")).get(1);
         assertEquals((String) declareRecordsCapability.get("name"), UserCapabilities.DECLARE_RECORDS_CAP);
         assertEquals((String) viewRecordsCapability.get("name"), UserCapabilities.VIEW_RECORDS_CAP);
+    }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When API call happens with Capability filter
+     * returns roles associated with the capability
+     * </pre>
+     */
+    @Test
+    public void filePlanRolesAndCapabilitiesFilter()
+    {
+        String parameters = "where=(systemRoles=true and capabilityName in ('ManageRules'))";
+        // Call to new API to get the roles and capabilities, filter by capability, include assigned users
+        Object response = getRestAPIFactory().getFilePlansAPI().getFilePlanRolesAndRelation(FILE_PLAN_ALIAS, parameters);
+        assertStatusCode(OK);
+        Map<?, ?> roleModelMap = getRoleModelMap(response);
+        assertEquals((String) roleModelMap.get("displayLabel"), ROLE_RM_ADMIN.displayName);
     }
 
     private LinkedHashMap<?, ?> getRoleModelMap(Object response)

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,6 +26,8 @@
 package org.alfresco.repo.domain.subscriptions;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -41,11 +43,9 @@ import org.alfresco.service.cmr.subscriptions.SubscriptionItemTypeEnum;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.testing.category.NeverRunsTests;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
+import org.alfresco.util.testing.category.DBTests;
 
-@Category({OwnJVMTestsCategory.class, NeverRunsTests.class})
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class SubscriptionDAOTest extends TestCase
 {
     private ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -59,8 +59,7 @@ public class SubscriptionDAOTest extends TestCase
     {
         final PersonService ps = personService;
 
-        return AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-        {
+        return AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
             @Override
             public NodeRef doWork() throws Exception
             {
@@ -71,8 +70,7 @@ public class SubscriptionDAOTest extends TestCase
 
     protected void insert(final String userId, final NodeRef node) throws Exception
     {
-        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 subscriptionsDAO.insertSubscription(userId, node);
@@ -84,8 +82,7 @@ public class SubscriptionDAOTest extends TestCase
 
     protected void delete(final String userId, final NodeRef node) throws Exception
     {
-        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
-        {
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>() {
             public Object execute() throws Throwable
             {
                 subscriptionsDAO.deleteSubscription(userId, node);
@@ -97,8 +94,7 @@ public class SubscriptionDAOTest extends TestCase
 
     protected int count(final String userId) throws Exception
     {
-        RetryingTransactionCallback<Integer> callback = new RetryingTransactionCallback<Integer>()
-        {
+        RetryingTransactionCallback<Integer> callback = new RetryingTransactionCallback<Integer>() {
             public Integer execute() throws Throwable
             {
                 return subscriptionsDAO.countSubscriptions(userId, SubscriptionItemTypeEnum.USER);
@@ -110,8 +106,7 @@ public class SubscriptionDAOTest extends TestCase
 
     protected boolean hasSubscribed(final String userId, final NodeRef node) throws Exception
     {
-        RetryingTransactionCallback<Boolean> callback = new RetryingTransactionCallback<Boolean>()
-        {
+        RetryingTransactionCallback<Boolean> callback = new RetryingTransactionCallback<Boolean>() {
             public Boolean execute() throws Throwable
             {
                 return subscriptionsDAO.hasSubscribed(userId, node);
@@ -123,8 +118,7 @@ public class SubscriptionDAOTest extends TestCase
 
     protected PagingSubscriptionResults select(final String userId) throws Exception
     {
-        RetryingTransactionCallback<PagingSubscriptionResults> callback = new RetryingTransactionCallback<PagingSubscriptionResults>()
-        {
+        RetryingTransactionCallback<PagingSubscriptionResults> callback = new RetryingTransactionCallback<PagingSubscriptionResults>() {
             public PagingSubscriptionResults execute() throws Throwable
             {
                 return subscriptionsDAO.selectSubscriptions(userId, SubscriptionItemTypeEnum.USER, new PagingRequest(
@@ -137,8 +131,7 @@ public class SubscriptionDAOTest extends TestCase
 
     protected int countFollowers(final String userId) throws Exception
     {
-        RetryingTransactionCallback<Integer> callback = new RetryingTransactionCallback<Integer>()
-        {
+        RetryingTransactionCallback<Integer> callback = new RetryingTransactionCallback<Integer>() {
             public Integer execute() throws Throwable
             {
                 return subscriptionsDAO.countFollowers(userId);
@@ -150,8 +143,7 @@ public class SubscriptionDAOTest extends TestCase
 
     protected PagingFollowingResults selectFollowing(final String userId) throws Exception
     {
-        RetryingTransactionCallback<PagingFollowingResults> callback = new RetryingTransactionCallback<PagingFollowingResults>()
-        {
+        RetryingTransactionCallback<PagingFollowingResults> callback = new RetryingTransactionCallback<PagingFollowingResults>() {
             public PagingFollowingResults execute() throws Throwable
             {
                 return subscriptionsDAO.selectFollowing(userId, new PagingRequest(100000, null));
@@ -163,8 +155,7 @@ public class SubscriptionDAOTest extends TestCase
 
     protected PagingFollowingResults selectFollowers(final String userId) throws Exception
     {
-        RetryingTransactionCallback<PagingFollowingResults> callback = new RetryingTransactionCallback<PagingFollowingResults>()
-        {
+        RetryingTransactionCallback<PagingFollowingResults> callback = new RetryingTransactionCallback<PagingFollowingResults>() {
             public PagingFollowingResults execute() throws Throwable
             {
                 return subscriptionsDAO.selectFollowers(userId, new PagingRequest(100000, null));

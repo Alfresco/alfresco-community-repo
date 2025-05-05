@@ -99,7 +99,7 @@ public class FilePlanTests extends BaseRMRestTest
     // ** Number of children (for children creation test) */
     private static final int NUMBER_OF_CHILDREN = 10;
     /** A list of capabilities. */
-    private static final java.util.HashSet<String> CAPABILITIES = newHashSet(UserCapabilities.VIEW_RECORDS_CAP, UserCapabilities.DECLARE_RECORDS_CAP);
+    private static final java.util.Set<String> CAPABILITIES = newHashSet(UserCapabilities.VIEW_RECORDS_CAP, UserCapabilities.DECLARE_RECORDS_CAP);
 
     /**
      * Data Provider with: with the object types not allowed as children for a record category
@@ -617,10 +617,10 @@ public class FilePlanTests extends BaseRMRestTest
         // Call to new API to get the roles and capabilities
         Object response = getRestAPIFactory().getFilePlansAPI().getFilePlanRolesAndRelation(FILE_PLAN_ALIAS, "");
         assertStatusCode(OK);
-        LinkedHashMap<?, ?> linkedHashMap = (LinkedHashMap<?, ?>) response;
-        ArrayList<?> roleModelList = (ArrayList<?>) linkedHashMap.get("entries");
+        Map<?, ?> roleModelEntries = (LinkedHashMap<?, ?>) response;
+        List<?> roleModelList = (ArrayList<?>) roleModelEntries.get("entries");
         assertEquals(roleModelList.size(), 7);
-        LinkedHashMap<?, ?> adminRoleModelMap = getRoleModelMap(response);
+        Map<?, ?> adminRoleModelMap = getRoleModelMap(response);
         assertEquals((String) adminRoleModelMap.get("displayLabel"), ROLE_RM_ADMIN.displayName);
     }
 
@@ -638,8 +638,8 @@ public class FilePlanTests extends BaseRMRestTest
         // Call to new API to get the roles and capabilities
         Object response = getRestAPIFactory().getFilePlansAPI().getFilePlanRolesAndRelation(FILE_PLAN_ALIAS, parameters);
         assertStatusCode(OK);
-        LinkedHashMap<?, ?> linkedHashMap = (LinkedHashMap<?, ?>) response;
-        ArrayList<?> roleModelList = (ArrayList<?>) linkedHashMap.get("entries");
+        Map<?, ?> roleModelEntries = (LinkedHashMap<?, ?>) response;
+        List<?> roleModelList = (ArrayList<?>) roleModelEntries.get("entries");
         assertEquals(roleModelList.size(), 5);
     }
 
@@ -678,7 +678,7 @@ public class FilePlanTests extends BaseRMRestTest
         // Call to new API to get the roles and capabilities
         Object response = getRestAPIFactory().getFilePlansAPI(managerUser).getFilePlanRolesAndRelation(FILE_PLAN_ALIAS, parameters);
         assertStatusCode(OK);
-        LinkedHashMap<?, ?> roleModelMap = getRoleModelMap(response);
+        Map<?, ?> roleModelMap = getRoleModelMap(response);
         assertEquals((String) roleModelMap.get("displayLabel"), ROLE_RM_MANAGER.displayName);
     }
 
@@ -700,7 +700,7 @@ public class FilePlanTests extends BaseRMRestTest
         // Call to new API to get the roles and capabilities
         Object response = getRestAPIFactory().getFilePlansAPI(rmUser).getFilePlanRolesAndRelation(FILE_PLAN_ALIAS, parameters);
         assertStatusCode(OK);
-        LinkedHashMap<?, ?> roleModelMap = getRoleModelMap(response);
+        Map<?, ?> roleModelMap = getRoleModelMap(response);
         assertEquals((String) roleModelMap.get("displayLabel"), ROLE_RM_USER.displayName);
     }
 
@@ -722,7 +722,7 @@ public class FilePlanTests extends BaseRMRestTest
         // Call to new API to get the roles and capabilities
         Object response = getRestAPIFactory().getFilePlansAPI(rmPowerUser).getFilePlanRolesAndRelation(FILE_PLAN_ALIAS, parameters);
         assertStatusCode(OK);
-        LinkedHashMap<?, ?> roleModelMap = getRoleModelMap(response);
+        Map<?, ?> roleModelMap = getRoleModelMap(response);
         assertEquals((String) roleModelMap.get("displayLabel"), ROLE_RM_POWER_USER.displayName);
     }
 
@@ -747,9 +747,9 @@ public class FilePlanTests extends BaseRMRestTest
         // Call to new API to get the roles and capabilities
         Object response = getRestAPIFactory().getFilePlansAPI(rmNewUser).getFilePlanRolesAndRelation(FILE_PLAN_ALIAS, parameters);
         assertStatusCode(OK);
-        LinkedHashMap<?, ?> roleModelMap = getRoleModelMap(response);
-        LinkedHashMap<?, ?> declareRecordsCapability = (LinkedHashMap<?, ?>) ((ArrayList<?>) roleModelMap.get("capabilities")).get(0);
-        LinkedHashMap<?, ?> viewRecordsCapability = (LinkedHashMap<?, ?>) ((ArrayList<?>) roleModelMap.get("capabilities")).get(1);
+        Map<?, ?> roleModelMap = getRoleModelMap(response);
+        Map<?, ?> declareRecordsCapability = (LinkedHashMap<?, ?>) ((ArrayList<?>) roleModelMap.get("capabilities")).get(0);
+        Map<?, ?> viewRecordsCapability = (LinkedHashMap<?, ?>) ((ArrayList<?>) roleModelMap.get("capabilities")).get(1);
         assertEquals((String) declareRecordsCapability.get("name"), UserCapabilities.DECLARE_RECORDS_CAP);
         assertEquals((String) viewRecordsCapability.get("name"), UserCapabilities.VIEW_RECORDS_CAP);
     }

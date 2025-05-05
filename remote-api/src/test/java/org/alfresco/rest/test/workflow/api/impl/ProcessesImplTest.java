@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -212,7 +212,7 @@ public class ProcessesImplTest extends TestCase implements RecognizedParamsExtra
     {
         // the tests are always run on PostgreSQL only
 //        Dialect dialect = (Dialect) applicationContext.getBean("dialect");
-//        if (dialect instanceof AlfrescoSQLServerDialect)
+//        if (dialect instanceof SQLServerDialect)
 //        {
             // REPO-1104: we do not run this test on MS SQL server because it will fail 
             // until the Activiti defect related to REPO-1104 will be fixed

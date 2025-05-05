@@ -772,7 +772,7 @@ public class FilePlanTests extends BaseRMRestTest
         assertEquals((String) roleModelMap.get("displayLabel"), ROLE_RM_ADMIN.displayName);
     }
 
-    private LinkedHashMap<?, ?> getRoleModelMap(Object response)
+    private Map<?, ?> getRoleModelMap(Object response)
     {
         return (LinkedHashMap<?, ?>) ((LinkedHashMap<?, ?>) ((ArrayList<?>) ((LinkedHashMap<?, ?>) response).get("entries")).get(0)).get("entry");
     }

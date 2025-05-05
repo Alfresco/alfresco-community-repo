@@ -129,7 +129,7 @@ public class BaseRMRestTest extends RestTest
     private SearchAPI searchApi;
 
     @Autowired
-    @Getter(value = PROTECTED)
+    @Getter(PROTECTED)
     private RMRolesAndActionsAPI rmRolesAndActionsOldAPI;
 
     protected static final String iso8601_DateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";

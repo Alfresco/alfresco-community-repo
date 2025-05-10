@@ -848,17 +848,25 @@ public class SearchMapper
     {
         if (limits != null)
         {
+            LimitBy existingLimitBy = sp.getLimitBy();
+
             if (limits.getPermissionEvaluationCount() != null)
             {
-                sp.setLimit(-1);
-                sp.setLimitBy(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS);
+                if (existingLimitBy == LimitBy.UNLIMITED)
+                {
+                    sp.setLimit(-1);
+                    sp.setLimitBy(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS);
+                }
                 sp.setMaxPermissionChecks(limits.getPermissionEvaluationCount());
             }
 
             if (limits.getPermissionEvaluationTime() != null)
             {
-                sp.setLimit(-1);
-                sp.setLimitBy(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS);
+                if (existingLimitBy == LimitBy.UNLIMITED)
+                {
+                    sp.setLimit(-1);
+                    sp.setLimitBy(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS);
+                }
                 sp.setMaxPermissionCheckTimeMillis(limits.getPermissionEvaluationTime());
             }
 

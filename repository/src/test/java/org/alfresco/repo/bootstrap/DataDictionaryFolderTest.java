@@ -46,12 +46,12 @@ import org.alfresco.util.test.junitrules.WellKnownNodes;
 public class DataDictionaryFolderTest extends BaseSpringTest
 {
     @ClassRule
-    private static final ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
+    public static final ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
 
     private static final String DATA_DICTIONARY = "Data Dictionary";
 
     @Rule
-    private WellKnownNodes wellKnownNodes = new WellKnownNodes(APP_CONTEXT_INIT);
+    public WellKnownNodes wellKnownNodes = new WellKnownNodes(APP_CONTEXT_INIT);
 
     private NodeService nodeService;
 

@@ -40,6 +40,7 @@
 		"items":
 		[
 		<#list results as row>
+			<#if row.item.hasPermission("Read")>
 			{
 				"type": "${row.item.typeShort}",
 				"parentType": "${row.item.parentTypeShort!""}",
@@ -75,6 +76,7 @@
 				"nodeRef": "${row.item.nodeRef}"<#if row.selectable?exists>,
 				"selectable" : ${row.selectable?string}</#if>
 			}<#if row_has_next>,</#if>
+			</#if>
 		</#list>
 		]
 	}

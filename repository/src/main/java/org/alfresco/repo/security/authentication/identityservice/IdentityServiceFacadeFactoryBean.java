@@ -459,11 +459,11 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     .map(URI::toASCIIString)
                     .orElse(null);
 
-            var metadataIssuer = getMetadataIssuer(metadata, config);
+            Optional<String> metadataIssuer = getMetadataIssuer(metadata, config);
             final String issuerUri = metadataIssuer
                     .orElseGet(() -> (StringUtils.isNotBlank(config.getRealm()) && StringUtils.isBlank(config.getIssuerUrl())) ? config.getAuthServerUrl() : config.getIssuerUrl());
 
-            final var usernameAttribute = StringUtils.isNotBlank(config.getPrincipalAttribute()) ? config.getPrincipalAttribute() : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME;
+            final String usernameAttribute = StringUtils.isNotBlank(config.getPrincipalAttribute()) ? config.getPrincipalAttribute() : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME;
 
             return ClientRegistration
                     .withRegistrationId("ids")

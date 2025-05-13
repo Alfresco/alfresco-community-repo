@@ -25,17 +25,50 @@
  */
 package org.alfresco.repo.security.authentication.identityservice.user;
 
-/**
- * The UserInfoAttrMapping record represents the mapping of claims fetched from the UserInfo endpoint to create an Alfresco user.
- *
- * @param usernameClaim
- *            the claim that represents the username
- * @param firstNameClaim
- *            the claim that represents the first name
- * @param lastNameClaim
- *            the claim that represents the last name
- * @param emailClaim
- *            the claim that represents the email
- */
-public record UserInfoAttrMapping(String usernameClaim, String firstNameClaim, String lastNameClaim, String emailClaim)
-{}
+public class UserInfoAttrMapping
+{
+    private final String usernameClaim;
+    private final String firstNameClaim;
+    private final String lastNameClaim;
+    private final String emailClaim;
+
+    /**
+     * The UserInfoAttrMapping class represents the mapping of claims fetched from the UserInfo endpoint to create an Alfresco user.
+     *
+     * @param usernameClaim
+     *            the claim that represents the username
+     * @param firstNameClaim
+     *            the claim that represents the first name
+     * @param lastNameClaim
+     *            the claim that represents the last name
+     * @param emailClaim
+     *            the claim that represents the email
+     */
+    public UserInfoAttrMapping(String usernameClaim, String firstNameClaim, String lastNameClaim, String emailClaim)
+    {
+        this.usernameClaim = usernameClaim;
+        this.firstNameClaim = firstNameClaim;
+        this.lastNameClaim = lastNameClaim;
+        this.emailClaim = emailClaim;
+    }
+
+    public String usernameClaim()
+    {
+        return usernameClaim;
+    }
+
+    public String firstNameClaim()
+    {
+        return firstNameClaim;
+    }
+
+    public String lastNameClaim()
+    {
+        return lastNameClaim;
+    }
+
+    public String emailClaim()
+    {
+        return emailClaim;
+    }
+}

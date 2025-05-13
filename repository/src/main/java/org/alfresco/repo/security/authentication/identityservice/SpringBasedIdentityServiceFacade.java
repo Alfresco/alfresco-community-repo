@@ -230,11 +230,11 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
 
     private Optional<DecodedTokenUser> mapOAuth2UserToDecodedTokenUser(OAuth2User oAuth2User, UserInfoAttrMapping userInfoAttrMapping)
     {
-        var preferredUsername = Optional.ofNullable(oAuth2User.getAttribute(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME))
+        Optional<String> preferredUsername = Optional.ofNullable(oAuth2User.getAttribute(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME))
                 .filter(String.class::isInstance)
                 .map(String.class::cast)
                 .filter(StringUtils::isNotEmpty);
-        var userName = Optional.ofNullable(oAuth2User.getName()).filter(username -> !username.isEmpty()).or(() -> preferredUsername);
+        Optional<String> userName = Optional.ofNullable(oAuth2User.getName()).filter(username -> !username.isEmpty()).or(() -> preferredUsername);
         return userName.map(name -> DecodedTokenUser.validateAndCreate(name,
                 oAuth2User.getAttribute(userInfoAttrMapping.firstNameClaim()),
                 oAuth2User.getAttribute(userInfoAttrMapping.lastNameClaim()),

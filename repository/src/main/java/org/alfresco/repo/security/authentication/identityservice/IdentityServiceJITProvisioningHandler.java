@@ -89,7 +89,7 @@ public class IdentityServiceJITProvisioningHandler
         {
             return oidcUserInfo;
         }
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<>() {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Optional<OIDCUserInfo>>() {
             @Override
             public Optional<OIDCUserInfo> doWork() throws Exception
             {

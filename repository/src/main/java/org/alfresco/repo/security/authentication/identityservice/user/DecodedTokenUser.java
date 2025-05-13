@@ -27,8 +27,20 @@ package org.alfresco.repo.security.authentication.identityservice.user;
 
 import java.util.Optional;
 
-public record DecodedTokenUser(String username, String firstName, String lastName, String email)
+public class DecodedTokenUser
 {
+    private final String username;
+    private final String firstName;
+    private final String lastName;
+    private final String email;
+
+    public DecodedTokenUser(String username, String firstName, String lastName, String email)
+    {
+        this.username = username;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+    }
 
     private static final String EMPTY_STRING = "";
 
@@ -40,5 +52,25 @@ public record DecodedTokenUser(String username, String firstName, String lastNam
     private static String getStringVal(Object firstName)
     {
         return Optional.ofNullable(firstName).filter(String.class::isInstance).map(String.class::cast).orElse(EMPTY_STRING);
+    }
+
+    public String username()
+    {
+        return username;
+    }
+
+    public String firstName()
+    {
+        return firstName;
+    }
+
+    public String lastName()
+    {
+        return lastName;
+    }
+
+    public String email()
+    {
+        return email;
     }
 }

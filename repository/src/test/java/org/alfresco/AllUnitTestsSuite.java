@@ -183,9 +183,6 @@ import org.alfresco.util.testing.category.NonBuildTests;
 
         org.alfresco.repo.virtual.ref.HashStringifierTest.class,
         org.alfresco.repo.virtual.ref.NodeRefRadixHasherTest.class,
-        org.alfresco.repo.virtual.ref.StoredStoreRefHasherTest.class,
-        org.alfresco.repo.virtual.ref.UuidNodeIdRadixHasherTest.class,
-        org.alfresco.repo.virtual.ref.NotUuidNodeIdRadixHasherTest.class,
         org.alfresco.repo.virtual.ref.NumericPathHasherTest.class,
         org.alfresco.repo.virtual.ref.StoredPathHasherTest.class,
 

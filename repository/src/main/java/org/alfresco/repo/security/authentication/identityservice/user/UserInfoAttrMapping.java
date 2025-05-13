@@ -25,7 +25,9 @@
  */
 package org.alfresco.repo.security.authentication.identityservice.user;
 
-public class UserInfoAttrMapping
+import java.util.Objects;
+
+public final class UserInfoAttrMapping
 {
     private final String usernameClaim;
     private final String firstNameClaim;
@@ -70,5 +72,37 @@ public class UserInfoAttrMapping
     public String emailClaim()
     {
         return emailClaim;
+    }
+
+    @Override
+    public boolean equals(Object object)
+    {
+        if (this == object)
+        {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass())
+        {
+            return false;
+        }
+        UserInfoAttrMapping that = (UserInfoAttrMapping) object;
+        return Objects.equals(usernameClaim, that.usernameClaim) && Objects.equals(firstNameClaim, that.firstNameClaim) && Objects.equals(lastNameClaim, that.lastNameClaim) && Objects.equals(emailClaim, that.emailClaim);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(usernameClaim, firstNameClaim, lastNameClaim, emailClaim);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "UserInfoAttrMapping{" +
+                "usernameClaim='" + usernameClaim + '\'' +
+                ", firstNameClaim='" + firstNameClaim + '\'' +
+                ", lastNameClaim='" + lastNameClaim + '\'' +
+                ", emailClaim='" + emailClaim + '\'' +
+                '}';
     }
 }

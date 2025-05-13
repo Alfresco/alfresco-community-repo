@@ -47,7 +47,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
  */
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
-@Suite.SuiteClasses(value = {
+@Suite.SuiteClasses({
         org.alfresco.repo.site.SiteMembershipTest.class,
         org.alfresco.encryption.EncryptorTest.class,
         org.alfresco.encryption.KeyStoreKeyProviderTest.class,

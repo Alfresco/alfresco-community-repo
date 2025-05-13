@@ -266,7 +266,7 @@ public class Person implements Serializable
 
     public Boolean isEnabled()
     {
-        return enabled;
+        return enabled == null ? Boolean.FALSE : enabled;
     }
 
     public void setEnabled(Boolean enabled)

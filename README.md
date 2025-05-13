@@ -12,7 +12,7 @@
 
 
 ## Content
-Alfresco Community Repository contains following libraries:
+Alfresco Community Repository contains the following libraries:
 
 ### Alfresco Core
 Core is a library packaged as a jar file which contains the following:

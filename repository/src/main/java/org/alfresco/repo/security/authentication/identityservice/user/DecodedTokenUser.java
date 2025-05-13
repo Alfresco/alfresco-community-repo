@@ -25,10 +25,13 @@
  */
 package org.alfresco.repo.security.authentication.identityservice.user;
 
+import java.util.Objects;
 import java.util.Optional;
 
-public class DecodedTokenUser
+public final class DecodedTokenUser
 {
+    private static final String EMPTY_STRING = "";
+
     private final String username;
     private final String firstName;
     private final String lastName;
@@ -41,8 +44,6 @@ public class DecodedTokenUser
         this.lastName = lastName;
         this.email = email;
     }
-
-    private static final String EMPTY_STRING = "";
 
     public static DecodedTokenUser validateAndCreate(String username, Object firstName, Object lastName, Object email)
     {
@@ -72,5 +73,37 @@ public class DecodedTokenUser
     public String email()
     {
         return email;
+    }
+
+    @Override
+    public boolean equals(Object object)
+    {
+        if (this == object)
+        {
+            return true;
+        }
+        if (object == null || getClass() != object.getClass())
+        {
+            return false;
+        }
+        DecodedTokenUser that = (DecodedTokenUser) object;
+        return Objects.equals(username, that.username) && Objects.equals(firstName, that.firstName) && Objects.equals(lastName, that.lastName) && Objects.equals(email, that.email);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(username, firstName, lastName, email);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "DecodedTokenUser{" +
+                "username='" + username + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                '}';
     }
 }

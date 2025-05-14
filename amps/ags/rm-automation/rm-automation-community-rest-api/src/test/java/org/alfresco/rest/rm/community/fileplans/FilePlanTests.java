@@ -99,6 +99,7 @@ import org.alfresco.utility.report.Bug;
  * @author Rodica Sutu
  * @since 2.6
  */
+@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 public class FilePlanTests extends BaseRMRestTest
 {
     // ** Number of children (for children creation test) */

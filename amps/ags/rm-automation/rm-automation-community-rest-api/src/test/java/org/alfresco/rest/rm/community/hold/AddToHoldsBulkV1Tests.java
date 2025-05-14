@@ -125,6 +125,15 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
             addedFiles.add(documentHeld);
         }
 
+        RestRequestQueryModel queryReq = getContentFromSiteQuery(testSite.getId());
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.setQuery(queryReq);
+
+        STEP("Wait until all files are searchable.");
+        await().atMost(30, TimeUnit.SECONDS)
+                .until(() -> getRestAPIFactory().getSearchAPI(null).search(searchRequest).getPagination()
+                        .getTotalItems() == NUMBER_OF_FILES);
+
         RestRequestQueryModel ancestorReq = getContentFromFolderAndAllSubfoldersQuery(rootFolder.getNodeRefWithoutVersion());
         SearchRequest ancestorSearchRequest = new SearchRequest();
         ancestorSearchRequest.setQuery(ancestorReq);
@@ -135,7 +144,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
                         .getTotalItems() == NUMBER_OF_FILES);
 
         holdBulkOperation = HoldBulkOperation.builder()
-                .query(ancestorReq)
+                .query(queryReq)
                 .op(HoldBulkOperationType.ADD).build();
     }
 

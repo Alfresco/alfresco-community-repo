@@ -125,17 +125,17 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
             addedFiles.add(documentHeld);
         }
 
-        RestRequestQueryModel queryReq = getContentFromSiteQuery(testSite.getId());
-        SearchRequest searchRequest = new SearchRequest();
-        searchRequest.setQuery(queryReq);
+        RestRequestQueryModel ancestorReq = getContentFromFolderAndAllSubfoldersQuery(rootFolder.getNodeRefWithoutVersion());
+        SearchRequest ancestorSearchRequest = new SearchRequest();
+        ancestorSearchRequest.setQuery(ancestorReq);
 
-        STEP("Wait until all files are searchable.");
+        STEP("Wait until paths are indexed.");
         await().atMost(30, TimeUnit.SECONDS)
-                .until(() -> getRestAPIFactory().getSearchAPI(null).search(searchRequest).getPagination()
-                        .getTotalItems() == NUMBER_OF_FILES);
+            .until(() -> getRestAPIFactory().getSearchAPI(null).search(ancestorSearchRequest).getPagination()
+                .getTotalItems() == NUMBER_OF_FILES);
 
         holdBulkOperation = HoldBulkOperation.builder()
-                .query(queryReq)
+                .query(ancestorReq)
                 .op(HoldBulkOperationType.ADD).build();
     }
 
@@ -183,7 +183,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
      * Given a user with the add to hold capability and hold filing permission When the user adds content from a folder and all subfolders to a hold using the bulk API Then the content is added to the hold and the status of the bulk operation is DONE
      */
     @Test
-    public void addContentFromFolderAndAllSubfoldersToHoldUsingBulkAPI() throws InterruptedException
+    public void addContentFromFolderAndAllSubfoldersToHoldUsingBulkAPI()
     {
         hold3 = getRestAPIFactory().getFilePlansAPI(getAdminUser()).createHold(
                 Hold.builder().name("HOLD" + generateTestPrefix(AddToHoldsV1Tests.class)).description(HOLD_DESCRIPTION)
@@ -195,7 +195,6 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
                 UserRole.SiteCollaborator, hold3.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
         users.add(userAddHoldPermission);
 
-        Thread.sleep(30000);
         STEP("Add content from the site to the hold using the bulk API.");
         // Get content from folder and all subfolders of the root folder
         HoldBulkOperation bulkOperation = HoldBulkOperation.builder()

@@ -184,7 +184,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
      * Then the content is added to the hold and the status of the bulk operation is DONE
      */
     @Test
-    public void addContentFromFolderAndAllSubfoldersToHoldUsingBulkAPI()
+    public void addContentFromFolderAndAllSubfoldersToHoldUsingBulkAPI() throws InterruptedException
     {
         hold3 = getRestAPIFactory().getFilePlansAPI(getAdminUser()).createHold(
             Hold.builder().name("HOLD" + generateTestPrefix(AddToHoldsV1Tests.class)).description(HOLD_DESCRIPTION)
@@ -195,6 +195,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
             UserRole.SiteCollaborator, hold3.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
         users.add(userAddHoldPermission);
 
+        Thread.sleep(30000);
         STEP("Add content from the site to the hold using the bulk API.");
         // Get content from folder and all subfolders of the root folder
         HoldBulkOperation bulkOperation = HoldBulkOperation.builder()

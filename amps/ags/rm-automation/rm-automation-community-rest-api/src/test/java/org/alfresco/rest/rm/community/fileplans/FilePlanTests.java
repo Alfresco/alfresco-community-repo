@@ -637,7 +637,7 @@ public class FilePlanTests extends BaseRMRestTest
      * </pre>
      */
     @Test
-    public void listFilePlanAllRolesAndRelationExcludeSystemRoles()
+    public void listFilePlanAllRolesExcludeSystemRoles()
     {
         String parameters = "where=(systemRoles=false)";
         List<String> systemRolesDisplayNames = asList(IN_PLACE_WRITERS.displayName, IN_PLACE_READERS.displayName);

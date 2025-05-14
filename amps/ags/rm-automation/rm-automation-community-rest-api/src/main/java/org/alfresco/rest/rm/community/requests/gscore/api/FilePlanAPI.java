@@ -43,6 +43,7 @@ import org.alfresco.rest.rm.community.model.hold.Hold;
 import org.alfresco.rest.rm.community.model.hold.HoldCollection;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryCollection;
+import org.alfresco.rest.rm.community.model.role.RoleCollection;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 
 /**
@@ -305,7 +306,7 @@ public class FilePlanAPI extends RMModelRequest
     }
 
     /**
-     * Gets the roles and Capabilities of a file plan.
+     * Gets the roles of a file plan.
      *
      * @param filePlanId
      *            The identifier of a file plan
@@ -320,14 +321,22 @@ public class FilePlanAPI extends RMModelRequest
      *             <li>{@code filePlanId} does not exist</li>
      *             </ul>
      */
-    public Object getFilePlanRolesAndRelation(String filePlanId, String parameters)
+    public RoleCollection getFilePlanRoles(String filePlanId, String parameters)
     {
         mandatoryString("filePlanId", filePlanId);
-        return getRmRestWrapper().processModels(Object.class, simpleRequest(
+        return getRmRestWrapper().processModels(RoleCollection.class, simpleRequest(
                 GET,
                 "file-plans/{filePlanId}/roles?{parameters}",
                 filePlanId,
                 parameters));
+    }
+
+    /**
+     * See {@link #getFilePlanRoles(String, String)}
+     */
+    public RoleCollection getFilePlanRoles(String filePlanId)
+    {
+        return getFilePlanRoles(filePlanId, EMPTY);
     }
 
 }

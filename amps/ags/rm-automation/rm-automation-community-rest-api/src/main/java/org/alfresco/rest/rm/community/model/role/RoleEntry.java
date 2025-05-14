@@ -1,4 +1,4 @@
-/*
+/*-
  * #%L
  * Alfresco Records Management Module
  * %%
@@ -24,9 +24,24 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model;
+package org.alfresco.rest.rm.community.model.role;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
-public record RoleModel(String name, String displayLabel, List<CapabilityModel> capabilities, String roleGroupName, String groupShortName, List<String> assignedUsers, List<String> assignedGroups)
-{}
+import org.alfresco.rest.core.RestModels;
+
+@Builder
+@Data
+@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+@AllArgsConstructor
+public class RoleEntry extends RestModels<Role, RoleEntry>
+{
+    @JsonProperty
+    private Role entry;
+}

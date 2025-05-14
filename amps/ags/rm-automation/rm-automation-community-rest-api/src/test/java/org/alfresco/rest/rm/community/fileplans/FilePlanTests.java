@@ -686,7 +686,7 @@ public class FilePlanTests extends BaseRMRestTest
         RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI(managerUser).getFilePlanRoles(FILE_PLAN_ALIAS, parameters);
         roleCollection.getEntries().forEach(roleModelEntry -> {
             Role role = roleModelEntry.getEntry();
-            assertTrue(ROLE_RM_MANAGER.displayName.equals(role.getDisplayLabel()));
+            assertEquals(ROLE_RM_MANAGER.displayName, role.getDisplayLabel());
             assertNotNull(role.getCapabilities());
         });
 
@@ -730,10 +730,10 @@ public class FilePlanTests extends BaseRMRestTest
     public void newRoleUserFilePlanRolesAndCapabilities()
     {
         /** A list of capabilities. */
-        Set<String> CAPABILITIES = newHashSet(UserCapabilities.VIEW_RECORDS_CAP, UserCapabilities.DECLARE_RECORDS_CAP);
+        Set<String> newCapabilities = newHashSet(UserCapabilities.VIEW_RECORDS_CAP, UserCapabilities.DECLARE_RECORDS_CAP);
         // Create a new role using old API
         getRmRolesAndActionsV0API().createRole(getAdminUser().getUsername(), getAdminUser().getPassword(), "NewTestRole",
-                "New Role Label", CAPABILITIES);
+                "New Role Label", newCapabilities);
         // Create a random user
         UserModel rmNewUser = getDataUser().createRandomTestUser("rmPowerUser");
         // Assign New role to user
@@ -746,7 +746,7 @@ public class FilePlanTests extends BaseRMRestTest
         roleCollection.getEntries().forEach(roleModelEntry -> {
             List<CapabilityModel> capabilities = roleModelEntry.getEntry().getCapabilities();
             capabilities.forEach(capabilityModel -> {
-                assertTrue(CAPABILITIES.contains(capabilityModel.name()));
+                assertTrue(newCapabilities.contains(capabilityModel.name()));
             });
         });
     }

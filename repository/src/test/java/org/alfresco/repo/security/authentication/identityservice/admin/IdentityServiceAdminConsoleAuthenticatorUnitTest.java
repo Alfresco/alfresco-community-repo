@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -38,18 +38,11 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
-
-import com.nimbusds.oauth2.sdk.Scope;
-
+import java.util.Set;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessToken;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
+
+import com.nimbusds.oauth2.sdk.Scope;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -57,6 +50,14 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
+
+import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessToken;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
 
 @SuppressWarnings("PMD.AvoidStringBufferField")
 public class IdentityServiceAdminConsoleAuthenticatorUnitTest
@@ -118,7 +119,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     {
         when(cookiesService.getCookie(ALFRESCO_ACCESS_TOKEN, request)).thenReturn("JWT_TOKEN");
         when(cookiesService.getCookie(ALFRESCO_TOKEN_EXPIRATION, request)).thenReturn(
-            String.valueOf(Instant.now().plusSeconds(60).toEpochMilli()));
+                String.valueOf(Instant.now().plusSeconds(60).toEpochMilli()));
         when(remoteUserMapper.getRemoteUser(requestCaptor.capture())).thenReturn("admin");
 
         String username = authenticator.getAdminConsoleUser(request, response);
@@ -134,7 +135,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         when(cookiesService.getCookie(ALFRESCO_ACCESS_TOKEN, request)).thenReturn("EXPIRED_JWT_TOKEN");
         when(cookiesService.getCookie(ALFRESCO_REFRESH_TOKEN, request)).thenReturn("REFRESH_TOKEN");
         when(cookiesService.getCookie(ALFRESCO_TOKEN_EXPIRATION, request)).thenReturn(
-            String.valueOf(Instant.now().minusSeconds(60).toEpochMilli()));
+                String.valueOf(Instant.now().minusSeconds(60).toEpochMilli()));
         when(accessToken.getTokenValue()).thenReturn("REFRESHED_JWT_TOKEN");
         when(accessToken.getExpiresAt()).thenReturn(Instant.now().plusSeconds(60));
         when(accessTokenAuthorization.getAccessToken()).thenReturn(accessToken);
@@ -155,10 +156,11 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     {
         String redirectPath = "/alfresco/s/admin/admin-communitysummary";
 
+        when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
         when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn("/alfresco/s/admin/admin-communitysummary");
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
-            .formatted("http://localhost:8080", redirectPath);
+                .formatted("http://localhost:8080", redirectPath);
 
         authenticator.requestAuthentication(request, response);
 
@@ -178,9 +180,10 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         String redirectPath = "/alfresco/s/admin/admin-communitysummary";
         when(identityServiceConfig.getAudience()).thenReturn(audience);
         when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(redirectPath);
+        when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
-            .formatted("http://localhost:8080", redirectPath);
+                .formatted("http://localhost:8080", redirectPath);
 
         authenticator.requestAuthentication(request, response);
 
@@ -200,7 +203,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         when(cookiesService.getCookie(ALFRESCO_ACCESS_TOKEN, request)).thenReturn("EXPIRED_JWT_TOKEN");
         when(cookiesService.getCookie(ALFRESCO_REFRESH_TOKEN, request)).thenReturn("REFRESH_TOKEN");
         when(cookiesService.getCookie(ALFRESCO_TOKEN_EXPIRATION, request)).thenReturn(
-            String.valueOf(Instant.now().minusSeconds(60).toEpochMilli()));
+                String.valueOf(Instant.now().minusSeconds(60).toEpochMilli()));
 
         when(identityServiceFacade.authorize(any(AuthorizationGrant.class))).thenThrow(AuthorizationException.class);
 
@@ -221,8 +224,8 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         when(accessTokenAuthorization.getAccessToken()).thenReturn(accessToken);
         when(accessTokenAuthorization.getRefreshTokenValue()).thenReturn("REFRESH_TOKEN");
         when(identityServiceFacade.authorize(
-            AuthorizationGrant.authorizationCode("auth_code", adminConsoleURL.toString())))
-            .thenReturn(accessTokenAuthorization);
+                AuthorizationGrant.authorizationCode("auth_code", adminConsoleURL.toString())))
+                        .thenReturn(accessTokenAuthorization);
         when(remoteUserMapper.getRemoteUser(requestCaptor.capture())).thenReturn("admin");
 
         String username = authenticator.getAdminConsoleUser(request, response);

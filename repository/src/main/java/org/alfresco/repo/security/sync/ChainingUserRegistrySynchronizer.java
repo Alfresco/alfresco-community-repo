@@ -411,6 +411,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             Date groupLastModified = groupLastModifiedMillis == -1 ? null : new Date(groupLastModifiedMillis);
             Date personLastModified = personLastModifiedMillis == -1 ? null : new Date(personLastModifiedMillis);
 
+            plugin.initSync(groupLastModified, syncDelete);
             ret.setGroups(plugin.getGroupNames());
 
             ret.setUsers(plugin.getPersonNames());
@@ -918,7 +919,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 : getMostRecentUpdateTime(
                         ChainingUserRegistrySynchronizer.GROUP_LAST_MODIFIED_ATTRIBUTE, zoneId, splitTxns);
         Date lastModified = lastModifiedMillis == -1 ? null : new Date(lastModifiedMillis);
-
+        userRegistry.initSync(lastModified, syncDelete);
         if (ChainingUserRegistrySynchronizer.logger.isInfoEnabled())
         {
             if (lastModified == null)
@@ -945,6 +946,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 this.loggingInterval);
         class Analyzer extends BaseBatchProcessWorker<NodeDescription>
         {
+            private final Map<String, NodeDescription> nodeDescriptions = new HashMap<>();
             private final Map<String, String> groupsToCreate = new TreeMap<String, String>();
             private final Map<String, Set<String>> personParentAssocsToCreate = newPersonMap();
             private final Map<String, Set<String>> personParentAssocsToDelete = newPersonMap();
@@ -1103,6 +1105,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             {
                 PropertyMap groupProperties = group.getProperties();
                 String groupName = (String) groupProperties.get(ContentModel.PROP_AUTHORITY_NAME);
+                nodeDescriptions.put(groupName, group);
                 String groupDisplayName = (String) groupProperties.get(ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
                 if (groupDisplayName == null)
                 {
@@ -1565,9 +1568,11 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                                                 + groupShortName + "'");
                                     }
                                     // create the group
+                                    Map<QName, Serializable> groupProperties = Optional.ofNullable(Analyzer.this.nodeDescriptions.get(child))
+                                            .map(NodeDescription::getProperties)
+                                            .orElse(new PropertyMap());
                                     ChainingUserRegistrySynchronizer.this.authorityService.createAuthority(
-                                            AuthorityType.getAuthorityType(child), groupShortName, groupDisplayName,
-                                            zoneSet);
+                                            AuthorityType.getAuthorityType(child), groupShortName, groupDisplayName, zoneSet, groupProperties);
                                 }
                                 else
                                 {

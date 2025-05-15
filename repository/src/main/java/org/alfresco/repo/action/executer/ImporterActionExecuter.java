@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipException;
 
+import org.alfresco.service.cmr.model.FolderExistsException;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.InputStreamStatistics;
@@ -366,7 +367,11 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
             catch (FileExistsException e)
             {
                 // TODO: add failed file info to status message?
-                throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
+                if (e.getType().equalsIgnoreCase("folder"))
+                {
+                    throw new FolderExistsException(root, file.getName());
+                }
+                throw e;
             }
         }
     }

@@ -40,6 +40,7 @@ import java.util.ResourceBundle.Control;
 import java.util.Set;
 import java.util.Stack;
 
+import org.alfresco.service.cmr.model.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -63,13 +64,6 @@ import org.alfresco.repo.security.permissions.PermissionCheckedValue.PermissionC
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.model.FileExistsException;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileFolderServiceType;
-import org.alfresco.service.cmr.model.FileFolderUtil;
-import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.model.SubFolderFilter;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -1314,7 +1308,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         }
         catch (DuplicateChildNodeNameException e)
         {
-            throw new FileExistsException(parentNodeRef, name);
+            throw new FileExistsException(parentNodeRef, name, typeQName.getLocalName());
         }
 
         NodeRef nodeRef = assocRef.getChildRef();

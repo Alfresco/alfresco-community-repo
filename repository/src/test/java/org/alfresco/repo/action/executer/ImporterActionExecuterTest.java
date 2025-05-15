@@ -25,15 +25,11 @@
  */
 package org.alfresco.repo.action.executer;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import org.alfresco.service.cmr.model.FileExistsException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -56,6 +52,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
+
+import static org.junit.Assert.*;
 
 /**
  * This class contains tests for {@link ImporterActionExecuter}.
@@ -327,6 +325,49 @@ public class ImporterActionExecuterTest
                     NodeRef importedFolder = nodeService.getChildByName(targetFolderNodeRef, ContentModel.ASSOC_CONTAINS, "accentCharTestZip");
                     assertNotNull("unzip action failed", importedFolder);
                     assertTrue("multiple folder structure created", nodeService.getChildAssocs(importedFolder).size() == 1);
+                }
+                finally
+                {
+                    // clean test data
+                    nodeService.deleteNode(targetFolderNodeRef);
+                    nodeService.deleteNode(zipFileNodeRef);
+                }
+
+                return null;
+            }
+        });
+    }
+
+    @Test
+    public void testDuplicateUnzipping() throws IOException
+    {
+        final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
+
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
+
+            {
+                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+
+                // create test data
+                NodeRef zipFileNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_CONTENT).getChildRef();
+                NodeRef targetFolderNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_FOLDER).getChildRef();
+
+                putContent(zipFileNodeRef, "import-archive-test/accentCharTestZip.zip");
+
+                Action action = createAction(zipFileNodeRef, "ImporterActionExecuterTestActionDefinition", targetFolderNodeRef);
+
+                try
+                {
+                    importerActionExecuter.setUncompressedBytesLimit("100000");
+                    importerActionExecuter.execute(action, zipFileNodeRef);
+                    //unzip again to duplicate node
+                    importerActionExecuter.execute(action, zipFileNodeRef);
+                }
+                catch (FileExistsException e)
+                {
+                    assertEquals(e.getMessage(), "File or folder accentCharTestZip already exists");
                 }
                 finally
                 {

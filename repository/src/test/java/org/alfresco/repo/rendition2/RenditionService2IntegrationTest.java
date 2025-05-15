@@ -25,13 +25,16 @@
  */
 package org.alfresco.repo.rendition2;
 
-import static org.alfresco.model.ContentModel.PROP_CONTENT;
 import static org.junit.Assert.assertNotEquals;
+import static org.alfresco.model.ContentModel.PROP_CONTENT;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
@@ -44,8 +47,6 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  * Integration tests for {@link RenditionService2}
@@ -62,36 +63,42 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     // PDF transformation
 
     @Test
+
     public void testLocalRenderPdfToJpegMedium() 
     {
         checkRendition("quick.pdf", "medium", true);
     }
 
     @Test
+
     public void testLocalRenderPdfToDoclib() 
     {
         checkRendition("quick.pdf", "doclib", true);
     }
 
     @Test
+
     public void testLocalRenderPdfJpegImgpreview() 
     {
         checkRendition("quick.pdf", "imgpreview", true);
     }
 
     @Test
+
     public void testLocalRenderPdfPngAvatar() 
     {
         checkRendition("quick.pdf", "avatar", true);
     }
 
     @Test
+
     public void testLocalRenderPdfPngAvatar32() 
     {
         checkRendition("quick.pdf", "avatar32", true);
     }
 
     @Test
+
     public void testLocalRenderPdfFlashWebpreview() 
     {
         checkRendition("quick.pdf", "webpreview", false);
@@ -100,48 +107,56 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     // DOCX transformation
 
     @Test
+
     public void testLocalRenderDocxJpegMedium() 
     {
         checkRendition("quick.docx", "medium", true);
     }
 
     @Test
+
     public void testLocalRenderDocxDoclib() 
     {
         checkRendition("quick.docx", "doclib", true);
     }
 
     @Test
+
     public void testLocalRenderDocxJpegImgpreview() 
     {
         checkRendition("quick.docx", "imgpreview", true);
     }
 
     @Test
+
     public void testLocalRenderDocxPngAvatar() 
     {
         checkRendition("quick.docx", "avatar", true);
     }
 
     @Test
+
     public void testLocalRenderDocxPngAvatar32() 
     {
         checkRendition("quick.docx", "avatar32", true);
     }
 
     @Test
+
     public void testLocalRenderDocxFlashWebpreview() 
     {
         checkRendition("quick.docx", "webpreview", false);
     }
 
     @Test
+
     public void testLocalRenderDocxPdf() 
     {
         checkRendition("quick.docx", "pdf", true);
     }
 
     @Test
+
     public void basicRendition()
     {
         NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");
@@ -150,6 +165,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     }
 
     @Test
+
     public void changedSourceToNullContent() 
     {
         NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");
@@ -197,6 +213,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     }
 
     @Test
+
     public void testCreateRenditionByUser() 
     {
         String userName = createRandomUser();
@@ -207,6 +224,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     }
 
     @Test
+
     public void testReadRenditionByOtherUser() 
     {
         String ownerUserName = createRandomUser();
@@ -226,6 +244,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     }
 
     @Test
+
     public void testRenderByReader() 
     {
         String ownerUserName = createRandomUser();
@@ -245,6 +264,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     }
 
     @Test
+
     public void testAccessWithNoPermissions() 
     {
         String ownerUserName = createRandomUser();

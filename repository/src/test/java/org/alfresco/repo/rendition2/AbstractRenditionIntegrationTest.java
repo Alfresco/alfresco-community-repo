@@ -26,6 +26,7 @@
 package org.alfresco.repo.rendition2;
 
 import static java.lang.Thread.sleep;
+
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
 import static org.alfresco.model.RenditionModel.PROP_RENDITION_CONTENT_HASH_CODE;
 import static org.alfresco.repo.content.MimetypeMap.EXTENSION_BINARY;
@@ -34,6 +35,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.Collections;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.quartz.CronExpression;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ResourceUtils;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -55,13 +64,6 @@ import org.alfresco.transform.registry.TransformServiceRegistry;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.quartz.CronExpression;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.ResourceUtils;
 
 import junit.framework.AssertionFailedError;
 
@@ -486,11 +488,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
         createUser(username, "firstName", "lastName", "jobTitle", 0);
     }
 
-    void createUser(final String username,
-                    final String firstName,
-                    final String lastName,
-                    final String jobTitle,
-                    final long quota)
+    void createUser(final String username, final String firstName, final String lastName, final String jobTitle, final long quota)
     {
         RetryingTransactionHelper.RetryingTransactionCallback<Void> createUserCallback = () -> {
             authenticationService.createAuthentication(username, PASSWORD.toCharArray());
@@ -534,7 +532,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
      * @param renditionNodeRef
      *            the rendition node
      *
-     @return -1 in case of there is no content, -2 in case rendition doesn't exist, the actual content hash code otherwise
+     * @return -1 in case of there is no content, -2 in case rendition doesn't exist, the actual content hash code otherwise
      */
     protected int getRenditionContentHashCode(NodeRef renditionNodeRef)
     {
@@ -548,6 +546,7 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
 
         return renditionContentHashCode;
     }
+
     /**
      * Helper method which gets the content hash code from the supplied source node (the equivalent method from {@link RenditionService2Impl} is not public)
      *

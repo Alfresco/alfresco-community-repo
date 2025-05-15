@@ -540,66 +540,6 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/file-plans/{filePlanId}/roles':
-    get:
-      tags:
-        - file-plans
-      summary: Get roles in a file plan
-      description: |
-        Gets a list of roles for the specified file plan **filePlanId**.
-        
-        You can use the **include** parameter to return additional information.
-        
-        The **where** parameter can also be used to filter by **personId**, **systemRoles** and **capabilityName**.
-
-        You can use the **where** parameter to 
-        * filter roles by user:
-        `where=(personId='admin')`
-        
-        * not include system roles in the results:
-        `where=(systemRoles=false)`
-        
-        * filter roles by specified capabilities:
-        `where=(capabilityName in ('AddToHold', 'ViewRecords'))`
-        
-        This may be combined with all filter, as shown below:
-        
-        `where=(systemRoles=false and personId='johndoe' and capabilityName in ('AddToHold', 'ViewRecords'))`
-
-      operationId: getFilePlanRoles
-      parameters:
-        - $ref: '#/parameters/filePlanIdWithAliasParam'
-        - $ref: '#/parameters/whereParam'
-        - $ref: '#/parameters/rolesIncludeParam'
-        - $ref: '#/parameters/skipCountParam'
-        - $ref: '#/parameters/maxItemsParam'
-      produces:
-        - application/json
-      responses:
-        '200':
-          description: Successful response
-          schema:
-            type: object
-            properties:
-              list:
-                type: array
-                items:
-                  $ref: '#/definitions/RoleModel'
-              pagination:
-                $ref: '#/definitions/Pagination'
-        '400':
-          description: |
-            Invalid parameter: value of **maxItems** or **skipCount**, or **include**, or **where** is invalid
-        '401':
-          description: Authentication failed
-        '403':
-          description: Current user does not have permission to read **filePlanId**
-        '404':
-          description: "**filePlanId** does not exist"
-        default:
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
   ## Unfiled records containers
   '/unfiled-containers/{unfiledContainerId}':
     get:
@@ -3367,21 +3307,6 @@ parameters:
       * actions
     required: false
     type: string
-  rolesIncludeParam:
-    name: include
-    in: query
-    description: |
-      Returns additional information about roles. Any optional field from the response model can be requested. For example:
-      * assignedUsers
-      * assignedGroups
-    required: false
-    type: string
-  whereParam:
-    name: where
-    in: query
-    description: A string to restrict the returned objects by using a predicate.
-    required: false
-    type: string
 definitions:
   FilePlanComponentBodyUpdate:
     type: object
@@ -4464,49 +4389,6 @@ definitions:
       query:
         description: The query which may have been generated in some way from the userQuery
         type: string
-  CapabilityModel:
-    type: object
-    properties:
-      name:
-        type: string
-      title:
-        type: string
-      description:
-        type: string
-      group:
-        $ref: '#/definitions/GroupModel'
-      index:
-        type: integer
-  GroupModel:
-    type: object
-    properties:
-      id:
-        type: string
-      title:
-        type: string
-  RoleModel:
-    type: object
-    properties:
-      name:
-        type: string
-      displayLabel:
-        type: string
-      capabilities:
-        type: array
-        items:
-          $ref: '#/definitions/CapabilityModel'
-      roleGroupName:
-        type: string
-      groupShortName:
-        type: string
-      assignedUsers:
-        type: array
-        items:
-          type: string
-      assignedGroups:
-        type: array
-        items:
-          type: string
   HoldBulkOperation:
     type: object
     properties:

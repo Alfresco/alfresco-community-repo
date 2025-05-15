@@ -66,15 +66,18 @@ public class RMRolesImpl implements RMRoles
 
         Predicate<RoleModel> roleModelPredicate = role -> role.capabilities().stream().anyMatch(capability -> capabilities.contains(capability.name()));
 
-        var page = roles.stream()
+        var filteredRoles = roles.stream()
                 .map(role -> createRoleModel(filePlan, role, parameters.getInclude()))
                 .filter(capabilities != null && !capabilities.isEmpty() ? roleModelPredicate : role -> true)
+                .toList();
+        var page = filteredRoles
+                .stream()
                 .sorted(Comparator.comparing(RoleModel::name))
                 .skip(parameters.getPaging().getSkipCount())
                 .limit(parameters.getPaging().getMaxItems())
                 .collect(Collectors.toCollection(LinkedList::new));
 
-        int totalItems = roles.size();
+        int totalItems = filteredRoles.size();
         boolean hasMore = parameters.getPaging().getSkipCount() + parameters.getPaging().getMaxItems() < totalItems;
         return CollectionWithPagingInfo.asPaged(parameters.getPaging(), page, hasMore, totalItems);
     }

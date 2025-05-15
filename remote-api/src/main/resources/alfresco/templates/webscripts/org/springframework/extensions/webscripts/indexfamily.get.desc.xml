@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<webscript xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.springsurf.org/schemas/DescriptionXMLSchema.xsd">
+
+    <shortname>Web Script Family Index</shortname>
+
+    <description>Provide an index of Web Scripts for the specified family</description>
+
+    <url>/index/family/{family}</url>
+
+    <format default="html">any</format>
+
+    <family>Index</family>
+
+    <lifecycle>internal</lifecycle>
+
+    <authentication>admin</authentication>
+
+    <transaction allow="readonly">required</transaction>
+
+    <cache>
+
+        <never>true</never>
+
+        <public>false</public>
+
+        <mustrevalidate>true</mustrevalidate>
+
+    </cache>
+
+    <formdata multipart-processing="true"/>
+
+</webscript>

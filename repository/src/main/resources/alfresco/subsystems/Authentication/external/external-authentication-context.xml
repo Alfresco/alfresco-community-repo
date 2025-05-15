@@ -104,4 +104,7 @@
          <ref bean="transactionService" />
       </property>
    </bean>
+
+    <bean id="webScriptHomeAuthenticator" class="org.alfresco.repo.security.authentication.external.DefaultWebScriptHomeAuthenticator" />
+
 </beans>

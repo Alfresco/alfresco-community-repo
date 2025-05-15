@@ -45,7 +45,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.model.FileExistsException;
+import org.alfresco.service.cmr.model.FolderExistsException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -365,7 +365,7 @@ public class ImporterActionExecuterTest
                     // unzip again to duplicate node
                     importerActionExecuter.execute(action, zipFileNodeRef);
                 }
-                catch (FileExistsException e)
+                catch (FolderExistsException e)
                 {
                     assertTrue(e.getMessage().contains("File or folder accentCharTestZip already exists"));
                 }

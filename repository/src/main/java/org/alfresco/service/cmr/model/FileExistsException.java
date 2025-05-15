@@ -52,7 +52,7 @@ public class FileExistsException extends AlfrescoRuntimeException
         this.name = name;
     }
 
-    public FileExistsException(NodeRef parentNodeRef, String name,String type)
+    public FileExistsException(NodeRef parentNodeRef, String name, String type)
     {
         super(MESSAGE_ID, new Object[]{name});
         this.parentNodeRef = parentNodeRef;
@@ -70,5 +70,8 @@ public class FileExistsException extends AlfrescoRuntimeException
         return name;
     }
 
-    public String getType() { return type; }
+    public String getType()
+    {
+        return type;
+    }
 }

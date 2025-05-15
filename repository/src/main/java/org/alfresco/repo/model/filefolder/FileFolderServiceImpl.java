@@ -40,7 +40,6 @@ import java.util.ResourceBundle.Control;
 import java.util.Set;
 import java.util.Stack;
 
-import org.alfresco.service.cmr.model.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -64,6 +63,7 @@ import org.alfresco.repo.security.permissions.PermissionCheckedValue.PermissionC
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.model.*;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;

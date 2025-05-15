@@ -25,11 +25,12 @@
  */
 package org.alfresco.repo.action.executer;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import org.alfresco.service.cmr.model.FileExistsException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -44,6 +45,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -52,8 +54,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
-
-import static org.junit.Assert.*;
 
 /**
  * This class contains tests for {@link ImporterActionExecuter}.
@@ -362,7 +362,7 @@ public class ImporterActionExecuterTest
                 {
                     importerActionExecuter.setUncompressedBytesLimit("100000");
                     importerActionExecuter.execute(action, zipFileNodeRef);
-                    //unzip again to duplicate node
+                    // unzip again to duplicate node
                     importerActionExecuter.execute(action, zipFileNodeRef);
                 }
                 catch (FileExistsException e)

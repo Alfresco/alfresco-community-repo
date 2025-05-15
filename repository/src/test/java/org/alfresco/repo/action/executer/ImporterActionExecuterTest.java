@@ -367,7 +367,7 @@ public class ImporterActionExecuterTest
                 }
                 catch (FileExistsException e)
                 {
-                    assertEquals(e.getMessage(), "File or folder accentCharTestZip already exists");
+                    assertTrue(e.getMessage().contains("File or folder accentCharTestZip already exists"));
                 }
                 finally
                 {

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -217,8 +217,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     @Override
     public void transform(NodeRef sourceNodeRef, TransformDefinition transformDefinition)
     {
-        requestAsyncTransformOrRendition(sourceNodeRef, new RenderOrTransformCallBack()
-        {
+        requestAsyncTransformOrRendition(sourceNodeRef, new RenderOrTransformCallBack() {
             @Override
             public String getName()
             {
@@ -237,8 +236,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     @Override
     public void render(NodeRef sourceNodeRef, String renditionName)
     {
-        requestAsyncTransformOrRendition(sourceNodeRef, new RenderOrTransformCallBack()
-        {
+        requestAsyncTransformOrRendition(sourceNodeRef, new RenderOrTransformCallBack() {
             @Override
             public String getName()
             {
@@ -277,7 +275,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                 int renditionContentHashCode = getRenditionContentHashCode(renditionNode);
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug(getName() + ": Source " + sourceContentHashCode + " rendition " + renditionContentHashCode+ " hashCodes");
+                    logger.debug(getName() + ": Source " + sourceContentHashCode + " rendition " + renditionContentHashCode + " hashCodes");
                 }
                 if (renditionContentHashCode == sourceContentHashCode)
                 {
@@ -299,14 +297,14 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
 
             if (!nodeService.exists(sourceNodeRef))
             {
-                throw new IllegalArgumentException(renderOrTransform.getName()+ ": The supplied sourceNodeRef "+sourceNodeRef+" does not exist.");
+                throw new IllegalArgumentException(renderOrTransform.getName() + ": The supplied sourceNodeRef " + sourceNodeRef + " does not exist.");
             }
 
             RenditionDefinition2 renditionDefinition = renderOrTransform.getRenditionDefinition();
 
             if (logger.isDebugEnabled())
             {
-                logger.debug(renderOrTransform.getName()+ ": transform " +sourceNodeRef);
+                logger.debug(renderOrTransform.getName() + ": transform " + sourceNodeRef);
             }
 
             AtomicBoolean supported = new AtomicBoolean(true);
@@ -328,14 +326,13 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             }
 
             String user = AuthenticationUtil.getRunAsUser();
-            RetryingTransactionHelper.RetryingTransactionCallback callback = () ->
-            {
+            RetryingTransactionHelper.RetryingTransactionCallback callback = () -> {
                 int sourceContentHashCode = getSourceContentHashCode(sourceNodeRef);
                 if (!supported.get())
                 {
                     if (logger.isDebugEnabled())
                     {
-                        logger.debug(renderOrTransform.getName() +" is not supported. " +
+                        logger.debug(renderOrTransform.getName() + " is not supported. " +
                                 "The content might be too big or the source mimetype cannot be converted.");
                     }
                     failure(sourceNodeRef, renditionDefinition, sourceContentHashCode);
@@ -372,12 +369,10 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     public void failure(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, int transformContentHashCode)
     {
         // The original transaction may have already have failed
-        AuthenticationUtil.runAsSystem((AuthenticationUtil.RunAsWork<Void>) () ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                {
-                    consume(sourceNodeRef, null, renditionDefinition, transformContentHashCode);
-                    return null;
-                }, false, true));
+        AuthenticationUtil.runAsSystem((AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            consume(sourceNodeRef, null, renditionDefinition, transformContentHashCode);
+            return null;
+        }, false, true));
     }
 
     public void consume(NodeRef sourceNodeRef, InputStream transformInputStream, RenditionDefinition2 renditionDefinition,
@@ -391,7 +386,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
 
         if (renditionDefinition instanceof TransformDefinition)
         {
-            TransformDefinition transformDefinition = (TransformDefinition)renditionDefinition;
+            TransformDefinition transformDefinition = (TransformDefinition) renditionDefinition;
             String targetMimetype = transformDefinition.getTargetMimetype();
             if (AsynchronousExtractor.isMetadataExtractMimetype(targetMimetype))
             {
@@ -484,9 +479,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     }
 
     /**
-     *  Takes a transformation (InputStream) and attaches it as a rendition to the source node.
-     *  Does nothing if there is already a newer rendition.
-     *  If the transformInputStream is null, this is taken to be a transform failure.
+     * Takes a transformation (InputStream) and attaches it as a rendition to the source node. Does nothing if there is already a newer rendition. If the transformInputStream is null, this is taken to be a transform failure.
      */
     private void consumeRendition(NodeRef sourceNodeRef, int sourceContentHashCode, InputStream transformInputStream,
                                   RenditionDefinition2 renditionDefinition, int transformContentHashCode)
@@ -507,93 +500,92 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                         (transformInputStream == null ? " to null as the transform failed" : " to the transform result"));
             }
 
-            AuthenticationUtil.runAsSystem((AuthenticationUtil.RunAsWork<Void>) () ->
-                    transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+            AuthenticationUtil.runAsSystem((AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+                // Ensure that the creation of a rendition does not cause updates to the modified, modifier properties on the source node
+                NodeRef renditionNode = getRenditionNode(sourceNodeRef, renditionName);
+                boolean createRenditionNode = renditionNode == null;
+                boolean sourceHasAspectRenditioned = nodeService.hasAspect(sourceNodeRef, RenditionModel.ASPECT_RENDITIONED);
+                try
+                {
+                    ruleService.disableRuleType(RuleType.UPDATE);
+                    behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_AUDITABLE);
+                    behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
+
+                    // If they do not exist create the rendition association and the rendition node.
+                    if (createRenditionNode)
                     {
-                        // Ensure that the creation of a rendition does not cause updates to the modified, modifier properties on the source node
-                        NodeRef renditionNode = getRenditionNode(sourceNodeRef, renditionName);
-                        boolean createRenditionNode = renditionNode == null;
-                        boolean sourceHasAspectRenditioned = nodeService.hasAspect(sourceNodeRef, RenditionModel.ASPECT_RENDITIONED);
+                        renditionNode = createRenditionNode(sourceNodeRef, renditionDefinition);
+                    }
+                    else if (!nodeService.hasAspect(renditionNode, RenditionModel.ASPECT_RENDITION2))
+                    {
+                        nodeService.addAspect(renditionNode, RenditionModel.ASPECT_RENDITION2, null);
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Added rendition2 aspect to rendition " + renditionName + " on " + sourceNodeRef);
+                        }
+                    }
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Set ThumbnailLastModified for " + renditionName);
+                    }
+                    setThumbnailLastModified(sourceNodeRef, renditionName);
+
+                    if (transformInputStream != null)
+                    {
                         try
                         {
-                            ruleService.disableRuleType(RuleType.UPDATE);
-                            behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_AUDITABLE);
-                            behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
+                            // Set or replace rendition content
+                            ContentWriter contentWriter = contentService.getWriter(renditionNode, DEFAULT_RENDITION_CONTENT_PROP, true);
+                            String targetMimetype = renditionDefinition.getTargetMimetype();
+                            contentWriter.setMimetype(targetMimetype);
+                            contentWriter.setEncoding(DEFAULT_ENCODING);
+                            ContentWriter renditionWriter = contentWriter;
+                            renditionWriter.putContent(transformInputStream);
 
-                            // If they do not exist create the rendition association and the rendition node.
-                            if (createRenditionNode)
+                            ContentReader contentReader = renditionWriter.getReader();
+                            long sizeOfRendition = contentReader.getSize();
+                            if (sizeOfRendition > 0L)
                             {
-                                renditionNode = createRenditionNode(sourceNodeRef, renditionDefinition);
-                            }
-                            else if (!nodeService.hasAspect(renditionNode, RenditionModel.ASPECT_RENDITION2))
-                            {
-                                nodeService.addAspect(renditionNode, RenditionModel.ASPECT_RENDITION2, null);
                                 if (logger.isDebugEnabled())
                                 {
-                                    logger.debug("Added rendition2 aspect to rendition " + renditionName + " on " + sourceNodeRef);
+                                    logger.debug("Set rendition hashcode for " + renditionName);
                                 }
-                            }
-                            if (logger.isDebugEnabled())
-                            {
-                                logger.debug("Set ThumbnailLastModified for " + renditionName);
-                            }
-                            setThumbnailLastModified(sourceNodeRef, renditionName);
-
-                            if (transformInputStream != null)
-                            {
-                                try
-                                {
-                                    // Set or replace rendition content
-                                    ContentWriter contentWriter = contentService.getWriter(renditionNode, DEFAULT_RENDITION_CONTENT_PROP, true);
-                                    String targetMimetype = renditionDefinition.getTargetMimetype();
-                                    contentWriter.setMimetype(targetMimetype);
-                                    contentWriter.setEncoding(DEFAULT_ENCODING);
-                                    ContentWriter renditionWriter = contentWriter;
-                                    renditionWriter.putContent(transformInputStream);
-
-                                    ContentReader contentReader = renditionWriter.getReader();
-                                    long sizeOfRendition = contentReader.getSize();
-                                    if (sizeOfRendition > 0L)
-                                    {
-                                        if (logger.isDebugEnabled()) {
-                                            logger.debug("Set rendition hashcode for " + renditionName);
-                                        }
-                                        nodeService.setProperty(renditionNode, RenditionModel.PROP_RENDITION_CONTENT_HASH_CODE, transformContentHashCode);
-                                    }
-                                    else
-                                    {
-                                        logger.error("Transform was zero bytes for " + renditionName + " on " + sourceNodeRef);
-                                        clearRenditionContentData(renditionNode);
-                                    }
-                                }
-                                catch (Exception e)
-                                {
-                                    logger.error("Failed to copy transform InputStream into rendition " + renditionName + " on " + sourceNodeRef);
-                                    throw e;
-                                }
+                                nodeService.setProperty(renditionNode, RenditionModel.PROP_RENDITION_CONTENT_HASH_CODE, transformContentHashCode);
                             }
                             else
                             {
+                                logger.error("Transform was zero bytes for " + renditionName + " on " + sourceNodeRef);
                                 clearRenditionContentData(renditionNode);
-                            }
-
-                            if (!sourceHasAspectRenditioned)
-                            {
-                                nodeService.addAspect(sourceNodeRef, RenditionModel.ASPECT_RENDITIONED, null);
                             }
                         }
                         catch (Exception e)
                         {
-                            throw new RenditionService2Exception(TRANSFORMING_ERROR_MESSAGE + e.getMessage(), e);
+                            logger.error("Failed to copy transform InputStream into rendition " + renditionName + " on " + sourceNodeRef);
+                            throw e;
                         }
-                        finally
-                        {
-                            behaviourFilter.enableBehaviour(sourceNodeRef, ContentModel.ASPECT_AUDITABLE);
-                            behaviourFilter.enableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
-                            ruleService.enableRuleType(RuleType.UPDATE);
-                        }
-                        return null;
-                    }, false, true));
+                    }
+                    else
+                    {
+                        clearRenditionContentData(renditionNode);
+                    }
+
+                    if (!sourceHasAspectRenditioned)
+                    {
+                        nodeService.addAspect(sourceNodeRef, RenditionModel.ASPECT_RENDITIONED, null);
+                    }
+                }
+                catch (Exception e)
+                {
+                    throw new RenditionService2Exception(TRANSFORMING_ERROR_MESSAGE + e.getMessage(), e);
+                }
+                finally
+                {
+                    behaviourFilter.enableBehaviour(sourceNodeRef, ContentModel.ASPECT_AUDITABLE);
+                    behaviourFilter.enableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
+                    ruleService.enableRuleType(RuleType.UPDATE);
+                }
+                return null;
+            }, false, true));
         }
     }
 
@@ -634,14 +626,14 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
 
         if (logger.isTraceEnabled())
         {
-            logger.trace("Setting thumbnail last modified date to " + lastModifiedValue +" on source node: " + sourceNodeRef);
+            logger.trace("Setting thumbnail last modified date to " + lastModifiedValue + " on source node: " + sourceNodeRef);
         }
 
         if (nodeService.hasAspect(sourceNodeRef, ContentModel.ASPECT_THUMBNAIL_MODIFICATION))
         {
             List<String> thumbnailMods = (List<String>) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA);
             String target = null;
-            for (String currThumbnailMod: thumbnailMods)
+            for (String currThumbnailMod : thumbnailMods)
             {
                 if (currThumbnailMod.startsWith(prefix))
                 {
@@ -665,8 +657,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     }
 
     /**
-     * Returns the hash code of the source node's content url. As transformations may be returned in a different
-     * sequences to which they were requested, this is used work out if a rendition should be replaced.
+     * Returns the hash code of the source node's content url. As transformations may be returned in a different sequences to which they were requested, this is used work out if a rendition should be replaced.
      */
     private int getSourceContentHashCode(NodeRef sourceNodeRef)
     {
@@ -675,7 +666,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         if (contentData != null)
         {
             // Originally we used the contentData URL, but that is not enough if the mimetype changes.
-            String contentString = contentData.getContentUrl()+contentData.getMimetype();
+            String contentString = contentData.getContentUrl() + contentData.getMimetype();
             if (contentString != null)
             {
                 hashCode = contentString.hashCode();
@@ -685,13 +676,11 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     }
 
     /**
-     * Returns the hash code of source node's content url on the rendition node (node may be null) if it does not exist.
-     * Used work out if a rendition should be replaced. {@code -2} is returned if the rendition does not exist or was
-     * not created by RenditionService2. {@code -1} is returned if there was no source content or the rendition failed.
+     * Returns the hash code of source node's content url on the rendition node (node may be null) if it does not exist. Used work out if a rendition should be replaced. {@code -2} is returned if the rendition does not exist or was not created by RenditionService2. {@code -1} is returned if there was no source content or the rendition failed.
      */
     private int getRenditionContentHashCode(NodeRef renditionNode)
     {
-        if ( renditionNode == null || !nodeService.hasAspect(renditionNode, RenditionModel.ASPECT_RENDITION2))
+        if (renditionNode == null || !nodeService.hasAspect(renditionNode, RenditionModel.ASPECT_RENDITION2))
         {
             return RENDITION2_DOES_NOT_EXIST;
         }
@@ -699,7 +688,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         Serializable hashCode = nodeService.getProperty(renditionNode, PROP_RENDITION_CONTENT_HASH_CODE);
         return hashCode == null
                 ? SOURCE_HAS_NO_CONTENT
-                : (int)hashCode;
+                : (int) hashCode;
     }
 
     private NodeRef getRenditionNode(NodeRef sourceNodeRef, String renditionName)
@@ -773,11 +762,12 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     }
 
     /**
-     * This method checks whether the specified source node is of a content class which has been registered for
-     * rendition prevention.
+     * This method checks whether the specified source node is of a content class which has been registered for rendition prevention.
      *
-     * @param sourceNode the node to check.
-     * @throws RenditionService2PreventedException if the source node is configured for rendition prevention.
+     * @param sourceNode
+     *            the node to check.
+     * @throws RenditionService2PreventedException
+     *             if the source node is configured for rendition prevention.
      */
     // This code is based on the old RenditionServiceImpl.checkSourceNodeForPreventionClass(...)
     private void checkSourceNodeForPreventionClass(NodeRef sourceNode)
@@ -833,8 +823,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     }
 
     /**
-     * Indicates if the rendition is available. Failed renditions (there was an error) don't have a contentUrl
-     * and out of date renditions or those still being created don't have a matching contentHashCode.
+     * Indicates if the rendition is available. Failed renditions (there was an error) don't have a contentUrl and out of date renditions or those still being created don't have a matching contentHashCode.
      */
     public boolean isRenditionAvailable(NodeRef sourceNodeRef, NodeRef renditionNode)
     {
@@ -852,7 +841,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                 int renditionContentHashCode = getRenditionContentHashCode(renditionNode);
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("isRenditionAvailable source " + sourceContentHashCode + " and rendition " + renditionContentHashCode+" hashcodes");
+                    logger.debug("isRenditionAvailable source " + sourceContentHashCode + " and rendition " + renditionContentHashCode + " hashcodes");
                 }
                 if (sourceContentHashCode != renditionContentHashCode)
                 {
@@ -892,25 +881,55 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             }
             ChildAssociationRef childAssoc = renditions.get(0);
             NodeRef renditionNode = childAssoc.getChildRef();
-            return !isRenditionAvailable(sourceNodeRef, renditionNode) ? null: childAssoc;
+            return !isRenditionAvailable(sourceNodeRef, renditionNode) ? null : childAssoc;
         }
     }
 
     @Override
     public void clearRenditionContentDataInTransaction(NodeRef renditionNode)
     {
-        AuthenticationUtil.runAsSystem((AuthenticationUtil.RunAsWork<Void>) () ->
-                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                {
-                    clearRenditionContentData(renditionNode);
-                    return null;
-                }, false, true));
+        AuthenticationUtil.runAsSystem((AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+            clearRenditionContentData(renditionNode);
+            return null;
+        }, false, true));
     }
 
     @Override
     public boolean isEnabled()
     {
         return enabled && thumbnailsEnabled;
+    }
+
+    @Override
+    public void forceRenditionsContentHashCode(NodeRef sourceNodeRef)
+    {
+        if (sourceNodeRef != null && nodeService.exists(sourceNodeRef))
+        {
+            List<ChildAssociationRef> renditions = getRenditionChildAssociations(sourceNodeRef);
+            if (renditions != null)
+            {
+                int sourceContentHashCode = getSourceContentHashCode(sourceNodeRef);
+                for (ChildAssociationRef rendition : renditions)
+                {
+                    NodeRef renditionNode = rendition.getChildRef();
+                    if (nodeService.hasAspect(renditionNode, RenditionModel.ASPECT_RENDITION2))
+                    {
+                        int renditionContentHashCode = getRenditionContentHashCode(renditionNode);
+                        String renditionName = rendition.getQName().getLocalName();
+                        if (sourceContentHashCode != renditionContentHashCode)
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Update content hash code for rendition " + renditionName + " of node "
+                                        + sourceNodeRef);
+                            }
+                            nodeService.setProperty(renditionNode, PROP_RENDITION_CONTENT_HASH_CODE,
+                                    sourceContentHashCode);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -949,5 +968,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             }
         }
     }
+
+
 
 }

@@ -712,7 +712,7 @@ public class PeopleImpl implements People
         Boolean isEnabled = person.isEnabled();
         if (isEnabled != null)
         {
-            if (isAdminAuthority(personIdToUpdate))
+            if (!isEnabled && isAdminAuthority(personIdToUpdate))
             {
                 throw new PermissionDeniedException("Admin authority cannot be disabled.");
             }

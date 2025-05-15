@@ -28,6 +28,7 @@ package org.alfresco.rest.rm.community.fileplans;
 
 import static java.util.Arrays.asList;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -56,19 +57,27 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.IN_PLACE_READERS;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.IN_PLACE_WRITERS;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_ADMIN;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGER;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_USER;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_SECURITY_OFFICER;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.base.DataProviderClass;
+import org.alfresco.rest.rm.community.model.CapabilityModel;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlanProperties;
 import org.alfresco.rest.rm.community.model.hold.Hold;
@@ -76,6 +85,9 @@ import org.alfresco.rest.rm.community.model.hold.HoldCollection;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryCollection;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryProperties;
+import org.alfresco.rest.rm.community.model.role.Role;
+import org.alfresco.rest.rm.community.model.role.RoleCollection;
+import org.alfresco.rest.rm.community.model.user.UserCapabilities;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.utility.constants.ContainerName;
 import org.alfresco.utility.model.UserModel;
@@ -87,6 +99,7 @@ import org.alfresco.utility.report.Bug;
  * @author Rodica Sutu
  * @since 2.6
  */
+@SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
 public class FilePlanTests extends BaseRMRestTest
 {
     // ** Number of children (for children creation test) */
@@ -266,7 +279,7 @@ public class FilePlanTests extends BaseRMRestTest
      * When I ask the API to create a root record category
      * Then it is created as a root record category
      * </pre>
-     * 
+     *
      * <pre>
      * Given that a file plan exists
      * When I use the API to create a folder (cm:folder type) into the fileplan
@@ -314,7 +327,7 @@ public class FilePlanTests extends BaseRMRestTest
      * When I ask the API to create a root category having the same name
      * Then  the response code received is 409 - name clashes with an existing node
      * </pre>
-     * 
+     *
      * <pre>
      * Given a root category
      * When I ask the API to create a root category having the same name  with autoRename parameter on true
@@ -594,4 +607,171 @@ public class FilePlanTests extends BaseRMRestTest
             }
         });
     }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When rmAdmin user ask the API for roles
+     * It provides list of all default roles
+     * </pre>
+     */
+    @Test
+    public void listFilePlanAllDefaultRoles()
+    {
+        List<String> defaultRolesDisplayNames = asList(IN_PLACE_READERS.displayName, ROLE_RM_ADMIN.displayName, ROLE_RM_MANAGER.displayName, ROLE_RM_POWER_USER.displayName, ROLE_RM_USER.displayName, IN_PLACE_WRITERS.displayName, ROLE_RM_SECURITY_OFFICER.displayName);
+        // Call to new API to get the roles and capabilities
+        RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI().getFilePlanRoles(FILE_PLAN_ALIAS);
+        assertStatusCode(OK);
+        roleCollection.getEntries().forEach(roleModelEntry -> {
+            Role role = roleModelEntry.getEntry();
+            assertTrue(defaultRolesDisplayNames.contains(role.getDisplayLabel()));
+            assertNotNull(role.getCapabilities());
+        });
+    }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When rmAdmin user ask the API for roles with SystemRoles as false
+     * It provides list of all roles excluding SystemRoles
+     * </pre>
+     */
+    @Test
+    public void listFilePlanAllRolesExcludeSystemRoles()
+    {
+        String parameters = "where=(systemRoles=false)";
+        List<String> systemRolesDisplayNames = asList(IN_PLACE_WRITERS.displayName, IN_PLACE_READERS.displayName);
+        // Call to new API to get the roles and capabilities
+        RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI().getFilePlanRoles(FILE_PLAN_ALIAS, parameters);
+        assertStatusCode(OK);
+        roleCollection.getEntries().forEach(roleModelEntry -> {
+            Role role = roleModelEntry.getEntry();
+            assertFalse(systemRolesDisplayNames.contains(role.getDisplayLabel()));
+            assertNotNull(role.getCapabilities());
+        });
+    }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When a non-RM user asks the API for the roles
+     * Then the status code 403 (Permission denied) is return
+     * </pre>
+     */
+    @Test
+    public void nonRmUserFilePlanRoles()
+    {
+        // Create a random user
+        UserModel nonRMuser = getDataUser().createRandomTestUser("testUser");
+        // Call to new API to get the roles and capabilities
+        getRestAPIFactory().getFilePlansAPI(nonRMuser).getFilePlanRoles(FILE_PLAN_ALIAS);
+        assertStatusCode(FORBIDDEN);
+    }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When a RM_Manager user asks the API for the roles
+     * returns the RM_Manager role and capabilities
+     * </pre>
+     */
+    @Test
+    public void rmManagerFilePlanRolesAndCapabilities()
+    {
+        // Create a random user
+        UserModel managerUser = getDataUser().createRandomTestUser("managerUser");
+        // Assign RecordsManager role to user
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(managerUser.getUsername(), ROLE_RM_MANAGER.roleId);
+        String parameters = "where=(personId='" + managerUser.getUsername() + "')";
+        // Call to new API to get the roles and capabilities
+        RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI(managerUser).getFilePlanRoles(FILE_PLAN_ALIAS, parameters);
+        roleCollection.getEntries().forEach(roleModelEntry -> {
+            Role role = roleModelEntry.getEntry();
+            assertEquals(ROLE_RM_MANAGER.displayName, role.getDisplayLabel());
+            assertNotNull(role.getCapabilities());
+        });
+
+    }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When a User with more than one role asks the API for the roles and relation
+     * returns the roles and capabilities
+     * </pre>
+     */
+    @Test
+    public void multipleRoleUserFilePlanRolesAndCapabilities()
+    {
+        // Create a random user
+        UserModel rmUser = getDataUser().createRandomTestUser("rmUser");
+        // Assign rmUser role to user
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(rmUser.getUsername(), ROLE_RM_USER.roleId);
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(rmUser.getUsername(), ROLE_RM_POWER_USER.roleId);
+        String parameters = "where=(personId='" + rmUser.getUsername() + "')";
+        // Call to new API to get the roles and capabilities
+        RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI(rmUser).getFilePlanRoles(FILE_PLAN_ALIAS, parameters);
+        assertStatusCode(OK);
+        assertEquals(roleCollection.getEntries().size(), 2);
+        roleCollection.getEntries().forEach(roleModelEntry -> {
+            Role role = roleModelEntry.getEntry();
+            assertTrue(role.getDisplayLabel().equals(ROLE_RM_USER.displayName) || role.getDisplayLabel().equals(ROLE_RM_POWER_USER.displayName));
+            assertNotNull(role.getCapabilities());
+        });
+    }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When a new user with a new role asks the API for the roles and relation
+     * returns the new role and new capabilities
+     * </pre>
+     */
+    @Test
+    public void newRoleUserFilePlanRolesAndCapabilities()
+    {
+        /** A list of capabilities. */
+        Set<String> newCapabilities = newHashSet(UserCapabilities.VIEW_RECORDS_CAP, UserCapabilities.DECLARE_RECORDS_CAP);
+        // Create a new role using old API
+        getRmRolesAndActionsV0API().createRole(getAdminUser().getUsername(), getAdminUser().getPassword(), "NewTestRole",
+                "New Role Label", newCapabilities);
+        // Create a random user
+        UserModel rmNewUser = getDataUser().createRandomTestUser("rmPowerUser");
+        // Assign New role to user
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(rmNewUser.getUsername(), "NewTestRole");
+        String parameters = "where=(personId='" + rmNewUser.getUsername() + "')";
+        // Call to new API to get the roles and capabilities
+        RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI(rmNewUser).getFilePlanRoles(FILE_PLAN_ALIAS, parameters);
+        assertStatusCode(OK);
+        assertEquals(roleCollection.getEntries().size(), 1);
+        roleCollection.getEntries().forEach(roleModelEntry -> {
+            List<CapabilityModel> capabilities = roleModelEntry.getEntry().getCapabilities();
+            capabilities.forEach(capabilityModel -> {
+                assertTrue(newCapabilities.contains(capabilityModel.name()));
+            });
+        });
+    }
+
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When API call happens with Capability filter
+     * returns roles associated with the capability
+     * </pre>
+     */
+    @Test
+    public void filePlanRolesAndCapabilitiesFilter()
+    {
+        String parameters = "where=(systemRoles=true and capabilityName in ('ManageRules'))";
+        // Call to new API to get the roles and capabilities, filter by capability, include assigned users
+        RoleCollection roleCollection = getRestAPIFactory().getFilePlansAPI().getFilePlanRoles(FILE_PLAN_ALIAS, parameters);
+        assertStatusCode(OK);
+        assertEquals(roleCollection.getEntries().size(), 1);
+        roleCollection.getEntries().forEach(roleModelEntry -> {
+            Role role = roleModelEntry.getEntry();
+            assertEquals(ROLE_RM_ADMIN.displayName, role.getDisplayLabel());
+            assertNotNull(role.getCapabilities());
+        });
+    }
+
 }

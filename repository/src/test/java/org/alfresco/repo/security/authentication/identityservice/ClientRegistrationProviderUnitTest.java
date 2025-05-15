@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -38,8 +38,7 @@ import java.util.Set;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
-
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.ClientRegistrationProvider;
+import net.minidev.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -51,12 +50,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.web.client.RestTemplate;
 
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.ClientRegistrationProvider;
+
 public class ClientRegistrationProviderUnitTest
 {
     private static final String CLIENT_ID = "alfresco";
     private static final String OPENID_CONFIGURATION = "{\"token_endpoint\":\"https://login.serviceonline.alfresco/common/oauth2/v2.0/token\",\"token_endpoint_auth_methods_supported\":[\"client_secret_post\",\"private_key_jwt\",\"client_secret_basic\"],\"jwks_uri\":\"https://login.serviceonline.alfresco/common/discovery/v2.0/keys\",\"response_modes_supported\":[\"query\",\"fragment\",\"form_post\"],\"subject_types_supported\":[\"pairwise\"],\"id_token_signing_alg_values_supported\":[\"RS256\"],\"response_types_supported\":[\"code\",\"id_token\",\"code id_token\",\"id_token token\"],\"scopes_supported\":[\"openid\",\"profile\",\"email\",\"offline_access\"],\"issuer\":\"https://login.serviceonline.alfresco/alfresco/v2.0\",\"request_uri_parameter_supported\":false,\"userinfo_endpoint\":\"https://graph.service.alfresco/oidc/userinfo\",\"authorization_endpoint\":\"https://login.serviceonline.alfresco/common/oauth2/v2.0/authorize\",\"device_authorization_endpoint\":\"https://login.serviceonline.alfresco/common/oauth2/v2.0/devicecode\",\"http_logout_supported\":true,\"frontchannel_logout_supported\":true,\"end_session_endpoint\":\"https://login.serviceonline.alfresco/common/oauth2/v2.0/logout\",\"claims_supported\":[\"sub\",\"iss\",\"cloud_instance_name\",\"cloud_instance_host_name\",\"cloud_graph_host_name\",\"msgraph_host\",\"aud\",\"exp\",\"iat\",\"auth_time\",\"acr\",\"nonce\",\"preferred_username\",\"name\",\"tid\",\"ver\",\"at_hash\",\"c_hash\",\"email\"],\"kerberos_endpoint\":\"https://login.serviceonline.alfresco/common/kerberos\",\"tenant_region_scope\":null,\"cloud_instance_name\":\"serviceonline.alfresco\",\"cloud_graph_host_name\":\"graph.oidc.net\",\"msgraph_host\":\"graph.service.alfresco\",\"rbac_url\":\"https://pas.oidc.alfresco\"}";
     private static final String DISCOVERY_PATH_SEGMENTS = "/.well-known/openid-configuration";
     private static final String AUTH_SERVER = "https://login.serviceonline.alfresco";
+    private static final String ADMIN_CONSOLE_SCOPES = "openid,email,profile,offline_access";
+    private static final String PSSWD_GRANT_SCOPES = "openid,email,profile";
+    private static final String ISSUER_ATRR = "issuer";
 
     private IdentityServiceConfig config;
     private RestTemplate restTemplate;
@@ -70,6 +74,9 @@ public class ClientRegistrationProviderUnitTest
         config = new IdentityServiceConfig();
         config.setAuthServerUrl(AUTH_SERVER);
         config.setResource(CLIENT_ID);
+        config.setAdminConsoleScopes(ADMIN_CONSOLE_SCOPES);
+        config.setPasswordGrantScopes(PSSWD_GRANT_SCOPES);
+        config.setIssuerAttribute(ISSUER_ATRR);
 
         restTemplate = mock(RestTemplate.class);
         ResponseEntity responseEntity = mock(ResponseEntity.class);
@@ -90,7 +97,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             ClientRegistration clientRegistration = new ClientRegistrationProvider(config).createClientRegistration(
-                restTemplate);
+                    restTemplate);
             assertThat(clientRegistration).isNotNull();
             assertThat(clientRegistration.getClientId()).isNotNull();
             assertThat(clientRegistration.getProviderDetails().getAuthorizationUri()).isNotNull();
@@ -99,7 +106,7 @@ public class ClientRegistrationProviderUnitTest
             assertThat(clientRegistration.getProviderDetails().getUserInfoEndpoint()).isNotNull();
             assertThat(clientRegistration.getProviderDetails().getIssuerUri()).isNotNull();
             assertThat(requestEntityCaptor.getValue().getUrl().toASCIIString()).isEqualTo(
-                AUTH_SERVER + DISCOVERY_PATH_SEGMENTS);
+                    AUTH_SERVER + DISCOVERY_PATH_SEGMENTS);
         }
     }
 
@@ -112,7 +119,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             ClientRegistration clientRegistration = new ClientRegistrationProvider(config).createClientRegistration(
-                restTemplate);
+                    restTemplate);
             assertThat(clientRegistration).isNotNull();
             assertThat(clientRegistration.getClientId()).isNotNull();
             assertThat(clientRegistration.getProviderDetails().getAuthorizationUri()).isNotNull();
@@ -121,7 +128,7 @@ public class ClientRegistrationProviderUnitTest
             assertThat(clientRegistration.getProviderDetails().getUserInfoEndpoint()).isNotNull();
             assertThat(clientRegistration.getProviderDetails().getIssuerUri()).isNotNull();
             assertThat(requestEntityCaptor.getValue().getUrl().toASCIIString()).isEqualTo(
-                AUTH_SERVER + DISCOVERY_PATH_SEGMENTS);
+                    AUTH_SERVER + DISCOVERY_PATH_SEGMENTS);
         }
     }
 
@@ -134,7 +141,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             assertThrows(IdentityServiceException.class,
-                () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
+                    () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
         }
     }
 
@@ -148,7 +155,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             assertThrows(IdentityServiceException.class,
-                () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
+                    () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
         }
     }
 
@@ -161,7 +168,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             assertThrows(IdentityServiceException.class,
-                () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
+                    () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
         }
     }
 
@@ -174,7 +181,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             assertThrows(IdentityServiceException.class,
-                () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
+                    () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
         }
     }
 
@@ -187,7 +194,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             assertThrows(IdentityServiceException.class,
-                () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
+                    () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
         }
     }
 
@@ -200,7 +207,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             assertThrows(IdentityServiceException.class,
-                () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
+                    () -> new ClientRegistrationProvider(config).createClientRegistration(restTemplate));
         }
     }
 
@@ -215,7 +222,7 @@ public class ClientRegistrationProviderUnitTest
 
             new ClientRegistrationProvider(config).createClientRegistration(restTemplate);
             assertThat(requestEntityCaptor.getValue().getUrl().toASCIIString()).isEqualTo(
-                AUTH_SERVER + "/realms/alfresco" + DISCOVERY_PATH_SEGMENTS);
+                    AUTH_SERVER + "/realms/alfresco" + DISCOVERY_PATH_SEGMENTS);
         }
     }
 
@@ -227,10 +234,10 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             ClientRegistration clientRegistration = new ClientRegistrationProvider(config).createClientRegistration(
-                restTemplate);
+                    restTemplate);
             assertThat(
-                clientRegistration.getScopes().containsAll(
-                    Set.of("openid", "profile", "email"))).isTrue();
+                    clientRegistration.getScopes().containsAll(
+                            Set.of("openid", "profile", "email"))).isTrue();
         }
     }
 
@@ -243,7 +250,7 @@ public class ClientRegistrationProviderUnitTest
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 
             ClientRegistration clientRegistration = new ClientRegistrationProvider(config).createClientRegistration(
-                restTemplate);
+                    restTemplate);
             assertThat(clientRegistration.getScopes().size()).isEqualTo(1);
             assertThat(clientRegistration.getScopes().stream().findFirst().get()).isEqualTo("openid");
         }
@@ -260,7 +267,45 @@ public class ClientRegistrationProviderUnitTest
 
             new ClientRegistrationProvider(config).createClientRegistration(restTemplate);
             assertThat(requestEntityCaptor.getValue().getUrl().toASCIIString()).isEqualTo(
-                "https://login.serviceonline.alfresco/alfresco/v2.0" + DISCOVERY_PATH_SEGMENTS);
+                    "https://login.serviceonline.alfresco/alfresco/v2.0" + DISCOVERY_PATH_SEGMENTS);
         }
+    }
+
+    @Test
+    public void shouldUseDefaultIssuerAttribute()
+    {
+        config.setIssuerUrl(null);
+        try (MockedStatic<OIDCProviderMetadata> providerMetadata = Mockito.mockStatic(OIDCProviderMetadata.class))
+        {
+            providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
+
+            ClientRegistration clientRegistration = new ClientRegistrationProvider(config).createClientRegistration(
+                    restTemplate);
+            assertThat(clientRegistration.getProviderDetails().getIssuerUri()).isEqualTo("https://login.serviceonline.alfresco/alfresco/v2.0");
+
+        }
+    }
+
+    @Test
+    public void shouldUseCustomIssuerAttribute()
+    {
+        try (MockedStatic<OIDCProviderMetadata> providerMetadata = Mockito.mockStatic(OIDCProviderMetadata.class))
+        {
+            config.setIssuerAttribute("access_token_issuer");
+            when(oidcResponse.getCustomParameters()).thenReturn(createJSONObject("access_token_issuer", "https://login.serviceonline.alfresco/alfresco/v2.0/at_trust"));
+            providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
+
+            ClientRegistration clientRegistration = new ClientRegistrationProvider(config).createClientRegistration(
+                    restTemplate);
+            assertThat(clientRegistration.getProviderDetails().getIssuerUri()).isEqualTo("https://login.serviceonline.alfresco/alfresco/v2.0/at_trust");
+
+        }
+    }
+
+    private static JSONObject createJSONObject(String fieldName, String fieldValue)
+    {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.appendField(fieldName, fieldValue);
+        return jsonObject;
     }
 }

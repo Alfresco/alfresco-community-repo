@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -38,12 +38,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import com.nimbusds.openid.connect.sdk.UserInfoErrorResponse;
 import com.nimbusds.openid.connect.sdk.UserInfoRequest;
 import com.nimbusds.openid.connect.sdk.UserInfoResponse;
 import com.nimbusds.openid.connect.sdk.UserInfoSuccessResponse;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.convert.converter.Converter;
@@ -83,15 +84,15 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     private final JwtDecoder jwtDecoder;
 
     SpringBasedIdentityServiceFacade(RestOperations restOperations, ClientRegistration clientRegistration,
-        JwtDecoder jwtDecoder)
+                                     JwtDecoder jwtDecoder)
     {
         requireNonNull(restOperations);
         this.clientRegistration = requireNonNull(clientRegistration);
         this.jwtDecoder = requireNonNull(jwtDecoder);
         this.clients = Map.of(
-            AuthorizationGrantType.AUTHORIZATION_CODE, createAuthorizationCodeClient(restOperations),
-            AuthorizationGrantType.REFRESH_TOKEN, createRefreshTokenClient(restOperations),
-            AuthorizationGrantType.PASSWORD, createPasswordClient(restOperations, clientRegistration));
+                AuthorizationGrantType.AUTHORIZATION_CODE, createAuthorizationCodeClient(restOperations),
+                AuthorizationGrantType.REFRESH_TOKEN, createRefreshTokenClient(restOperations),
+                AuthorizationGrantType.PASSWORD, createPasswordClient(restOperations, clientRegistration));
     }
 
     @Override
@@ -123,38 +124,48 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     public Optional<OIDCUserInfo> getUserInfo(String tokenParameter, String principalAttribute)
     {
         return Optional.ofNullable(tokenParameter)
-            .filter(Predicate.not(String::isEmpty))
-            .flatMap(token -> Optional.ofNullable(clientRegistration)
-                .map(ClientRegistration::getProviderDetails)
-                .map(ClientRegistration.ProviderDetails::getUserInfoEndpoint)
-                .map(ClientRegistration.ProviderDetails.UserInfoEndpoint::getUri)
-                .flatMap(uri -> {
-                    try
-                    {
-                        return Optional.of(
-                            new UserInfoRequest(new URI(uri), new BearerAccessToken(token)).toHTTPRequest().send());
-                    }
-                    catch (IOException | URISyntaxException e)
-                    {
-                        LOGGER.warn("Failed to get user information. Reason: " + e.getMessage());
-                        return Optional.empty();
-                    }
-                })
-                .flatMap(httpResponse -> {
-                    try
-                    {
-                        return Optional.of(UserInfoResponse.parse(httpResponse));
-                    }
-                    catch (ParseException e)
-                    {
-                        LOGGER.warn("Failed to parse user info response. Reason: " + e.getMessage());
-                        return Optional.empty();
-                    }
-                })
-                .map(UserInfoResponse::toSuccessResponse)
-                .map(UserInfoSuccessResponse::getUserInfo))
-            .map(userInfo -> new OIDCUserInfo(userInfo.getStringClaim(principalAttribute), userInfo.getGivenName(),
-                userInfo.getFamilyName(), userInfo.getEmailAddress()));
+                .filter(Predicate.not(String::isEmpty))
+                .flatMap(token -> Optional.ofNullable(clientRegistration)
+                        .map(ClientRegistration::getProviderDetails)
+                        .map(ClientRegistration.ProviderDetails::getUserInfoEndpoint)
+                        .map(ClientRegistration.ProviderDetails.UserInfoEndpoint::getUri)
+                        .flatMap(uri -> {
+                            try
+                            {
+                                return Optional.of(
+                                        new UserInfoRequest(new URI(uri), new BearerAccessToken(token)).toHTTPRequest().send());
+                            }
+                            catch (IOException | URISyntaxException e)
+                            {
+                                LOGGER.warn("Failed to get user information. Reason: " + e.getMessage());
+                                return Optional.empty();
+                            }
+                        })
+                        .flatMap(httpResponse -> {
+                            try
+                            {
+                                UserInfoResponse userInfoResponse = UserInfoResponse.parse(httpResponse);
+
+                                if (userInfoResponse instanceof UserInfoErrorResponse userInfoErrorResponse)
+                                {
+                                    String errorMessage = Optional.ofNullable(userInfoErrorResponse.getErrorObject())
+                                            .map(ErrorObject::getDescription)
+                                            .orElse("No error description found");
+                                    LOGGER.warn("User Info Request failed: " + errorMessage);
+                                    throw new UserInfoException(errorMessage);
+                                }
+                                return Optional.of(userInfoResponse);
+                            }
+                            catch (ParseException e)
+                            {
+                                LOGGER.warn("Failed to parse user info response. Reason: " + e.getMessage());
+                                return Optional.empty();
+                            }
+                        })
+                        .map(UserInfoResponse::toSuccessResponse)
+                        .map(UserInfoSuccessResponse::getUserInfo))
+                .map(userInfo -> new OIDCUserInfo(userInfo.getStringClaim(principalAttribute), userInfo.getGivenName(),
+                        userInfo.getFamilyName(), userInfo.getEmailAddress()));
     }
 
     @Override
@@ -192,29 +203,28 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         if (grant.isRefreshToken())
         {
             final OAuth2AccessToken expiredAccessToken = new OAuth2AccessToken(
-                TokenType.BEARER,
-                "JUST_FOR_FULFILLING_THE_SPRING_API",
-                SOME_INSIGNIFICANT_DATE_IN_THE_PAST,
-                SOME_INSIGNIFICANT_DATE_IN_THE_PAST.plusSeconds(1));
+                    TokenType.BEARER,
+                    "JUST_FOR_FULFILLING_THE_SPRING_API",
+                    SOME_INSIGNIFICANT_DATE_IN_THE_PAST,
+                    SOME_INSIGNIFICANT_DATE_IN_THE_PAST.plusSeconds(1));
             final OAuth2RefreshToken refreshToken = new OAuth2RefreshToken(grant.getRefreshToken(), null);
 
             return new OAuth2RefreshTokenGrantRequest(clientRegistration, expiredAccessToken, refreshToken,
-                clientRegistration.getScopes());
+                    clientRegistration.getScopes());
         }
 
         if (grant.isAuthorizationCode())
         {
             final OAuth2AuthorizationExchange authzExchange = new OAuth2AuthorizationExchange(
-                OAuth2AuthorizationRequest.authorizationCode()
-                    .clientId(clientRegistration.getClientId())
-                    .authorizationUri(clientRegistration.getProviderDetails().getAuthorizationUri())
-                    .redirectUri(grant.getRedirectUri())
-                    .scopes(clientRegistration.getScopes())
-                    .build(),
-                OAuth2AuthorizationResponse.success(grant.getAuthorizationCode())
-                    .redirectUri(grant.getRedirectUri())
-                    .build()
-            );
+                    OAuth2AuthorizationRequest.authorizationCode()
+                            .clientId(clientRegistration.getClientId())
+                            .authorizationUri(clientRegistration.getProviderDetails().getAuthorizationUri())
+                            .redirectUri(grant.getRedirectUri())
+                            .scopes(clientRegistration.getScopes())
+                            .build(),
+                    OAuth2AuthorizationResponse.success(grant.getAuthorizationCode())
+                            .redirectUri(grant.getRedirectUri())
+                            .build());
             return new OAuth2AuthorizationCodeGrantRequest(clientRegistration, authzExchange);
         }
 
@@ -233,7 +243,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     }
 
     private static OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> createAuthorizationCodeClient(
-        RestOperations rest)
+            RestOperations rest)
     {
         final DefaultAuthorizationCodeTokenResponseClient client = new DefaultAuthorizationCodeTokenResponseClient();
         client.setRestOperations(rest);
@@ -241,7 +251,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     }
 
     private static OAuth2AccessTokenResponseClient<OAuth2RefreshTokenGrantRequest> createRefreshTokenClient(
-        RestOperations rest)
+            RestOperations rest)
     {
         final DefaultRefreshTokenTokenResponseClient client = new DefaultRefreshTokenTokenResponseClient();
         client.setRestOperations(rest);
@@ -249,26 +259,26 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     }
 
     private static OAuth2AccessTokenResponseClient<OAuth2PasswordGrantRequest> createPasswordClient(RestOperations rest,
-        ClientRegistration clientRegistration)
+                                                                                                    ClientRegistration clientRegistration)
     {
         final DefaultPasswordTokenResponseClient client = new DefaultPasswordTokenResponseClient();
         client.setRestOperations(rest);
         Optional.of(clientRegistration)
-            .map(ClientRegistration::getProviderDetails)
-            .map(ProviderDetails::getConfigurationMetadata)
-            .map(metadata -> metadata.get(AUDIENCE.getValue()))
-            .filter(String.class::isInstance)
-            .map(String.class::cast)
-            .ifPresent(audienceValue -> {
-                final OAuth2PasswordGrantRequestEntityConverter requestEntityConverter = new OAuth2PasswordGrantRequestEntityConverter();
-                requestEntityConverter.addParametersConverter(audienceParameterConverter(audienceValue));
-                client.setRequestEntityConverter(requestEntityConverter);
-            });
+                .map(ClientRegistration::getProviderDetails)
+                .map(ProviderDetails::getConfigurationMetadata)
+                .map(metadata -> metadata.get(AUDIENCE.getValue()))
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
+                .ifPresent(audienceValue -> {
+                    final OAuth2PasswordGrantRequestEntityConverter requestEntityConverter = new OAuth2PasswordGrantRequestEntityConverter();
+                    requestEntityConverter.addParametersConverter(audienceParameterConverter(audienceValue));
+                    client.setRequestEntityConverter(requestEntityConverter);
+                });
         return client;
     }
 
     private static Converter<OAuth2PasswordGrantRequest, MultiValueMap<String, String>> audienceParameterConverter(
-        String audienceValue)
+            String audienceValue)
     {
         return (grantRequest) -> {
             MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
@@ -297,9 +307,9 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         public String getRefreshTokenValue()
         {
             return Optional.of(tokenResponse)
-                .map(OAuth2AccessTokenResponse::getRefreshToken)
-                .map(AbstractOAuth2Token::getTokenValue)
-                .orElse(null);
+                    .map(OAuth2AccessTokenResponse::getRefreshToken)
+                    .map(AbstractOAuth2Token::getTokenValue)
+                    .orElse(null);
         }
     }
 

@@ -36,6 +36,7 @@ import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.Collections;
 
+import junit.framework.AssertionFailedError;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -64,8 +65,6 @@ import org.alfresco.transform.registry.TransformServiceRegistry;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-
-import junit.framework.AssertionFailedError;
 
 /**
  * Class unites common utility methods for {@link org.alfresco.repo.rendition2} package tests.

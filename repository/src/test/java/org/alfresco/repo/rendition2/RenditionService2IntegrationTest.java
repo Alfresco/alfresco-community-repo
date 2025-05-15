@@ -63,42 +63,36 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     // PDF transformation
 
     @Test
-
     public void testLocalRenderPdfToJpegMedium() 
     {
         checkRendition("quick.pdf", "medium", true);
     }
 
     @Test
-
     public void testLocalRenderPdfToDoclib() 
     {
         checkRendition("quick.pdf", "doclib", true);
     }
 
     @Test
-
     public void testLocalRenderPdfJpegImgpreview() 
     {
         checkRendition("quick.pdf", "imgpreview", true);
     }
 
     @Test
-
     public void testLocalRenderPdfPngAvatar() 
     {
         checkRendition("quick.pdf", "avatar", true);
     }
 
     @Test
-
     public void testLocalRenderPdfPngAvatar32() 
     {
         checkRendition("quick.pdf", "avatar32", true);
     }
 
     @Test
-
     public void testLocalRenderPdfFlashWebpreview() 
     {
         checkRendition("quick.pdf", "webpreview", false);
@@ -107,56 +101,48 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     // DOCX transformation
 
     @Test
-
     public void testLocalRenderDocxJpegMedium() 
     {
         checkRendition("quick.docx", "medium", true);
     }
 
     @Test
-
     public void testLocalRenderDocxDoclib() 
     {
         checkRendition("quick.docx", "doclib", true);
     }
 
     @Test
-
     public void testLocalRenderDocxJpegImgpreview() 
     {
         checkRendition("quick.docx", "imgpreview", true);
     }
 
     @Test
-
     public void testLocalRenderDocxPngAvatar() 
     {
         checkRendition("quick.docx", "avatar", true);
     }
 
     @Test
-
     public void testLocalRenderDocxPngAvatar32() 
     {
         checkRendition("quick.docx", "avatar32", true);
     }
 
     @Test
-
     public void testLocalRenderDocxFlashWebpreview() 
     {
         checkRendition("quick.docx", "webpreview", false);
     }
 
     @Test
-
     public void testLocalRenderDocxPdf() 
     {
         checkRendition("quick.docx", "pdf", true);
     }
 
     @Test
-
     public void basicRendition()
     {
         NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");
@@ -165,7 +151,6 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     }
 
     @Test
-
     public void changedSourceToNullContent() 
     {
         NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");

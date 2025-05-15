@@ -1360,7 +1360,8 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     /**
      * @return Returns the authority container, <b>which must exist</b>
      */
-    private NodeRef getAuthorityContainer()
+    @Override
+    public NodeRef getAuthorityContainer()
     {
         return getSystemContainer(qnameAssocAuthorities);
     }

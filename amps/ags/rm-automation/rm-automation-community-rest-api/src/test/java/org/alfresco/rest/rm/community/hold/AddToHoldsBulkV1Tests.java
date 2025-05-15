@@ -134,6 +134,15 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
                 .until(() -> getRestAPIFactory().getSearchAPI(null).search(searchRequest).getPagination()
                         .getTotalItems() == NUMBER_OF_FILES);
 
+        RestRequestQueryModel ancestorReq = getContentFromFolderAndAllSubfoldersQuery(rootFolder.getNodeRefWithoutVersion());
+        SearchRequest ancestorSearchRequest = new SearchRequest();
+        ancestorSearchRequest.setQuery(ancestorReq);
+
+        STEP("Wait until paths are indexed.");
+        await().atMost(30, TimeUnit.SECONDS)
+                .until(() -> getRestAPIFactory().getSearchAPI(null).search(ancestorSearchRequest).getPagination()
+                        .getTotalItems() == NUMBER_OF_FILES);
+
         holdBulkOperation = HoldBulkOperation.builder()
                 .query(queryReq)
                 .op(HoldBulkOperationType.ADD).build();

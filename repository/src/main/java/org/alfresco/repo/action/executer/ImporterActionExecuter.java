@@ -58,6 +58,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FolderExistsException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -366,7 +367,11 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
             catch (FileExistsException e)
             {
                 // TODO: add failed file info to status message?
-                throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
+                if (e.getType().equalsIgnoreCase("folder"))
+                {
+                    throw new FolderExistsException(root, file.getName());
+                }
+                throw e;
             }
         }
     }

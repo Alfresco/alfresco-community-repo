@@ -167,7 +167,7 @@ public class RMRolesImpl implements RMRoles
                 throw new InvalidArgumentException("Cannot use NOT for " + propertyName);
             }
 
-            if (propertyName.equalsIgnoreCase(PARAM_CAPABILITY_NAME))
+            if (PARAM_CAPABILITY_NAME.equalsIgnoreCase(propertyName))
             {
                 capabilitiesNames = Arrays.asList(propertyValues);
             }

@@ -139,7 +139,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         ancestorSearchRequest.setQuery(ancestorReq);
 
         STEP("Wait until paths are indexed.");
-        await().atMost(30, TimeUnit.SECONDS)
+        await().atMost(60, TimeUnit.SECONDS)
                 .until(() -> getRestAPIFactory().getSearchAPI(null).search(ancestorSearchRequest).getPagination()
                         .getTotalItems() == NUMBER_OF_FILES);
 

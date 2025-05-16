@@ -60,15 +60,11 @@ public class RMRolesImpl implements RMRoles
     public CollectionWithPagingInfo<RoleModel> getRoles(NodeRef filePlan, Parameters parameters)
     {
         var rolesFilter = getRolesFilter(parameters.getQuery());
-        boolean includeSystemRoles = rolesFilter.includeSystemRoles() == null || rolesFilter.includeSystemRoles();
-        var capabilities = rolesFilter.getCapabilities();
-        var roles = getRolesByFilter(filePlan, rolesFilter, includeSystemRoles);
-
-        Predicate<RoleModel> roleModelPredicate = role -> role.capabilities().stream().anyMatch(capability -> capabilities.contains(capability.name()));
+        var roles = getRolesByFilter(filePlan, rolesFilter);
 
         var filteredRoles = roles.stream()
                 .map(role -> createRoleModel(filePlan, role, parameters.getInclude()))
-                .filter(capabilities != null && !capabilities.isEmpty() ? roleModelPredicate : role -> true)
+                .filter(hasRoleCapabilities(rolesFilter.getCapabilities()))
                 .toList();
         var page = filteredRoles
                 .stream()
@@ -82,15 +78,22 @@ public class RMRolesImpl implements RMRoles
         return CollectionWithPagingInfo.asPaged(parameters.getPaging(), page, hasMore, totalItems);
     }
 
-    private Set<Role> getRolesByFilter(NodeRef filePlan, RolesFilter rolesFilter, boolean includeSystemRoles)
+    private Predicate<RoleModel> hasRoleCapabilities(List<String> capabilities)
+    {
+        return role -> capabilities == null ||
+                capabilities.isEmpty() ||
+                role.capabilities().stream().anyMatch(capability -> capabilities.contains(capability.name()));
+    }
+
+    private Set<Role> getRolesByFilter(NodeRef filePlan, RolesFilter rolesFilter)
     {
         if (rolesFilter.getPersonId() != null)
         {
-            return filePlanRoleService.getRolesByUser(filePlan, rolesFilter.getPersonId(), includeSystemRoles);
+            return filePlanRoleService.getRolesByUser(filePlan, rolesFilter.getPersonId(), rolesFilter.includeSystemRoles());
         }
         else
         {
-            return filePlanRoleService.getRoles(filePlan, includeSystemRoles);
+            return filePlanRoleService.getRoles(filePlan, rolesFilter.includeSystemRoles());
         }
     }
 
@@ -196,7 +199,7 @@ public class RMRolesImpl implements RMRoles
 class RolesFilter
 {
     private String personId;
-    private Boolean includeSystemRoles;
+    private boolean includeSystemRoles;
     private List<String> capabilities;
 
     private RolesFilter()
@@ -212,7 +215,7 @@ class RolesFilter
         return personId;
     }
 
-    public Boolean includeSystemRoles()
+    public boolean includeSystemRoles()
     {
         return includeSystemRoles;
     }
@@ -225,7 +228,7 @@ class RolesFilter
     public static class RolesFilterBuilder
     {
         private String personId;
-        private Boolean includeSystemRoles;
+        private boolean includeSystemRoles = true;
         private List<String> capabilities;
 
         public RolesFilterBuilder withPersonId(String personId)
@@ -236,7 +239,10 @@ class RolesFilter
 
         public RolesFilterBuilder withIncludeSystemRoles(Boolean includeSystemRoles)
         {
-            this.includeSystemRoles = includeSystemRoles;
+            if (includeSystemRoles != null)
+            {
+                this.includeSystemRoles = includeSystemRoles;
+            }
             return this;
         }
 

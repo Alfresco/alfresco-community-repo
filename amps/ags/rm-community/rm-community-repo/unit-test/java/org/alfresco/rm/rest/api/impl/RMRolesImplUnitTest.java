@@ -27,8 +27,6 @@
 package org.alfresco.rm.rest.api.impl;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
-import org.alfresco.module.org_alfresco_module_rm.capability.impl.EditNonRecordMetadataCapability;
-import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
@@ -42,7 +40,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -60,8 +57,8 @@ public class RMRolesImplUnitTest extends BaseUnitTest {
     private final Capability viewRecordsCapability = mock(Capability.class);
     private final Capability editMetadataCapability = mock(Capability.class);
 
-    private final Role role1 = new Role("Role1", "Role 1", Set.of(new ViewRecordsCapability()), "Group1");
-    private final Role role2 = new Role("Role2", "Role 2", Set.of(new EditNonRecordMetadataCapability()), "Group2");
+    private final Role role1 = new Role("Role1", "Role 1", Set.of(viewRecordsCapability), "Group1");
+    private final Role role2 = new Role("Role2", "Role 2", Set.of(editMetadataCapability), "Group2");
 
     private final RoleModel roleModel1 = new RoleModel("Role1", "Role 1", List.of(new CapabilityModel("ViewRecords", "", "", null, 0)), "Group1", null, List.of("User1"), List.of("Group1"));
     private final RoleModel roleModel2 = new RoleModel("Role2", "Role 2", List.of(new CapabilityModel("EditMetadata", "", "", null, 0)), "Group2", null, List.of("User2"), List.of("Group2"));
@@ -98,7 +95,7 @@ public class RMRolesImplUnitTest extends BaseUnitTest {
         CollectionWithPagingInfo<RoleModel> result = rmRolesImpl.getRoles(filePlan, parameters);
 
         // then
-        LinkedList<RoleModel> roleModelList = (LinkedList<RoleModel>) result.getCollection();
+        List<RoleModel> roleModelList = (List<RoleModel>) result.getCollection();
         assertEquals(2, (int) result.getTotalItems());
         assertEquals(List.of(roleModel1, roleModel2), roleModelList);
         verify(mockedFilePlanRoleService).getRoles(filePlan, true);
@@ -133,9 +130,8 @@ public class RMRolesImplUnitTest extends BaseUnitTest {
         CollectionWithPagingInfo<RoleModel> result = rmRolesImpl.getRoles(filePlan, parameters);
 
         // then
-        LinkedList<RoleModel> roleModelList = (LinkedList<RoleModel>) result.getCollection();
         assertEquals(1, (int) result.getTotalItems());
-        assertEquals(List.of(roleModel2), roleModelList);
+        assertEquals(List.of(roleModel2), result.getCollection());
         verify(mockedFilePlanRoleService).getRoles(filePlan, false);
         verify(mockedNodesModelFactory).createRoleModel(eq(role2), any(), any());
     }
@@ -143,7 +139,7 @@ public class RMRolesImplUnitTest extends BaseUnitTest {
     @Test
     public void testGetRoles_WithCapabilitiesFilter() {
         // given
-        when(parameters.getQuery()).thenReturn((queryExtractor.getWhereClause("(capabilityName IN ('ViewRecords'))")));
+        when(parameters.getQuery()).thenReturn(queryExtractor.getWhereClause("(capabilityName IN ('ViewRecords'))"));
 
         // when
         CollectionWithPagingInfo<RoleModel> result = rmRolesImpl.getRoles(filePlan, parameters);
@@ -168,7 +164,7 @@ public class RMRolesImplUnitTest extends BaseUnitTest {
         CollectionWithPagingInfo<RoleModel> result = rmRolesImpl.getRoles(filePlan, parameters);
 
         // then
-        LinkedList<RoleModel> roleModelList = (LinkedList<RoleModel>) result.getCollection();
+        List<RoleModel> roleModelList = (List<RoleModel>) result.getCollection();
         assertEquals(1, (int) result.getTotalItems());
         assertEquals(List.of(roleModel1), roleModelList);
         assertEquals(List.of("User1"), roleModelList.get(0).assignedUsers());

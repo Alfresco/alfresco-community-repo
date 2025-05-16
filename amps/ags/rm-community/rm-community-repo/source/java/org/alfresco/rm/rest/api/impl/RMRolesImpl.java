@@ -54,13 +54,13 @@ public class RMRolesImpl implements RMRoles
     private ApiNodesModelFactory nodesModelFactory;
     private FilePlanRoleService filePlanRoleService;
 
-    private final static Set<String> LIST_ROLES_QUERY_PROPERTIES = new HashSet<>(List.of(PARAM_PERSON_ID, PARAM_INCLUDE_SYSTEM_ROLES, PARAM_CAPABILITY_NAME));
+    private static final Set<String> LIST_ROLES_QUERY_PROPERTIES = new HashSet<>(List.of(PARAM_PERSON_ID, PARAM_INCLUDE_SYSTEM_ROLES, PARAM_CAPABILITY_NAME));
 
     @Override
     public CollectionWithPagingInfo<RoleModel> getRoles(NodeRef filePlan, Parameters parameters)
     {
         var rolesFilter = getRolesFilter(parameters.getQuery());
-        boolean includeSystemRoles = rolesFilter.getIncludeSystemRoles() == null || rolesFilter.getIncludeSystemRoles();
+        boolean includeSystemRoles = rolesFilter.includeSystemRoles() == null || rolesFilter.includeSystemRoles();
         var capabilities = rolesFilter.getCapabilities();
         var roles = getRolesByFilter(filePlan, rolesFilter, includeSystemRoles);
 
@@ -142,14 +142,14 @@ public class RMRolesImpl implements RMRoles
             rolesFilterBuilder
                     .withPersonId(propertyWalker.getPersonId())
                     .withCapabilities(propertyWalker.getCapabilitiesNames())
-                    .withIncludeSystemRoles(propertyWalker.getIncludeSystemRoles());
+                    .withIncludeSystemRoles(propertyWalker.includeSystemRoles());
         }
         return rolesFilterBuilder.build();
     }
 
     private static class RolesQueryWalker extends MapBasedQueryWalker
     {
-        private List<String> capabilitiesNames = null;
+        private List<String> capabilitiesNames;
 
         public RolesQueryWalker()
         {
@@ -186,7 +186,7 @@ public class RMRolesImpl implements RMRoles
             return getProperty(PARAM_PERSON_ID, WhereClauseParser.EQUALS, String.class);
         }
 
-        public Boolean getIncludeSystemRoles()
+        public Boolean includeSystemRoles()
         {
             return getProperty(PARAM_INCLUDE_SYSTEM_ROLES, WhereClauseParser.EQUALS, Boolean.class);
         }
@@ -212,7 +212,7 @@ class RolesFilter
         return personId;
     }
 
-    public Boolean getIncludeSystemRoles()
+    public Boolean includeSystemRoles()
     {
         return includeSystemRoles;
     }

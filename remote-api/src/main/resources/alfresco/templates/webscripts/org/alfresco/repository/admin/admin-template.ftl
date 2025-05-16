@@ -12,9 +12,9 @@
 <#macro page title readonly=false controller=DEFAULT_CONTROLLER!"/admin" params="" dialog=false>
 <#assign FORM_ID="admin-jmx-form" />
 <#if server.edition == "Community">
-    <#assign docsEdition = "community" />
+    <#assign docsEdition = "/Alfresco-Content-Services-Community-Edition/" + server.getVersionMajor() + "." + server.getVersionMinor() + "/Alfresco-Content-Services-Community-Edition" />
 <#elseif server.edition == "Enterprise" >
-    <#assign docsEdition = server.getVersionMajor() + "." + server.getVersionMinor() />
+    <#assign docsEdition = "/Alfresco-Content-Services/" + server.getVersionMajor() + "." + server.getVersionMinor() + "/Alfresco-Content-Services" />
 </#if>
 <#if metadata??>
 <#assign HOSTNAME>${msg("admin-console.host")}: ${metadata.hostname}</#assign>
@@ -551,7 +551,7 @@ Admin.addEventListener(window, 'load', function() {
        Template for a full page view
    -->
    <div class="sticky-wrapper">
-      
+
       <div class="header">
          <span><a href="${url.serviceContext}${DEFAULT_CONTROLLER!"/admin"}">${msg("admin-console.header")}</a></span><#if metadata??><span class="meta">${HOSTNAME}</span><span class="meta">${HOSTADDR}</span></#if>
          <div style="float:right"><a href="${msg("admin-console.help-link", docsEdition)}" target="_blank">${msg("admin-console.help")}</a></div>

@@ -43,6 +43,7 @@ import org.alfresco.rest.rm.community.model.hold.Hold;
 import org.alfresco.rest.rm.community.model.hold.HoldCollection;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryCollection;
+import org.alfresco.rest.rm.community.model.role.RoleCollection;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 
 /**
@@ -303,4 +304,39 @@ public class FilePlanAPI extends RMModelRequest
     {
         return getHolds(filePlanId, EMPTY);
     }
+
+    /**
+     * Gets the roles of a file plan.
+     *
+     * @param filePlanId
+     *            The identifier of a file plan
+     * @param parameters
+     *            The URL parameters to add
+     * @return The {Pagination and RoleModel Entries} for the given {@code filePlanId}
+     * @throws RuntimeException
+     *             for the following cases:
+     *             <ul>
+     *             <li>authentication fails</li>
+     *             <li>current user does not have permission to read {@code filePlanId}</li>
+     *             <li>{@code filePlanId} does not exist</li>
+     *             </ul>
+     */
+    public RoleCollection getFilePlanRoles(String filePlanId, String parameters)
+    {
+        mandatoryString("filePlanId", filePlanId);
+        return getRmRestWrapper().processModels(RoleCollection.class, simpleRequest(
+                GET,
+                "file-plans/{filePlanId}/roles?{parameters}",
+                filePlanId,
+                parameters));
+    }
+
+    /**
+     * See {@link #getFilePlanRoles(String, String)}
+     */
+    public RoleCollection getFilePlanRoles(String filePlanId)
+    {
+        return getFilePlanRoles(filePlanId, EMPTY);
+    }
+
 }

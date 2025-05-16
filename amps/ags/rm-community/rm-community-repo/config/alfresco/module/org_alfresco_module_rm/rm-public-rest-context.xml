@@ -78,6 +78,11 @@
       <property name="transactionService" ref="transactionService" />
    </bean>
 
+    <bean class="org.alfresco.rm.rest.api.fileplans.FilePlanRolesRelation">
+        <property name="apiUtils" ref="apiUtils" />
+        <property name="rmRoles" ref="rm.roles" />
+    </bean>
+
    <bean class="org.alfresco.rm.rest.api.holds.HoldsEntityResource" >
       <property name="holdService" ref="HoldService" />
       <property name="apiUtils" ref="apiUtils" />
@@ -227,6 +232,11 @@
    <bean id="rm.sites" class="org.alfresco.rm.rest.api.impl.RMSitesImpl" parent="sites">
         <property name="siteSurfConfig" ref="rm.siteSurfConfig" />
    </bean>
+
+    <bean id="rm.roles" class="org.alfresco.rm.rest.api.impl.RMRolesImpl">
+        <property name="nodesModelFactory" ref="nodesModelFactory" />
+        <property name="filePlanRoleService" ref="FilePlanRoleService"/>
+    </bean>
 
     <bean id="rm.siteSurfConfig" class="org.alfresco.rest.api.impl.SiteSurfConfig">
         <property name="configPath" value="alfresco/module/org_alfresco_module_rm/bootstrap/site"/>

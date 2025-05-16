@@ -30,6 +30,7 @@ package org.alfresco.rm.rest.api.impl;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,12 +43,15 @@ import org.slf4j.LoggerFactory;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
+import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.capability.Group;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinitionImpl;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.ContentInfo;
@@ -55,7 +59,9 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rm.rest.api.model.CapabilityModel;
 import org.alfresco.rm.rest.api.model.FilePlan;
+import org.alfresco.rm.rest.api.model.GroupModel;
 import org.alfresco.rm.rest.api.model.HoldModel;
 import org.alfresco.rm.rest.api.model.RMNode;
 import org.alfresco.rm.rest.api.model.Record;
@@ -66,6 +72,7 @@ import org.alfresco.rm.rest.api.model.RetentionPeriod;
 import org.alfresco.rm.rest.api.model.RetentionSchedule;
 import org.alfresco.rm.rest.api.model.RetentionScheduleActionDefinition;
 import org.alfresco.rm.rest.api.model.RetentionSteps;
+import org.alfresco.rm.rest.api.model.RoleModel;
 import org.alfresco.rm.rest.api.model.Transfer;
 import org.alfresco.rm.rest.api.model.TransferChild;
 import org.alfresco.rm.rest.api.model.TransferContainer;
@@ -694,6 +701,36 @@ public class ApiNodesModelFactory
                 (String) info.getProperties().get(ContentModel.PROP_NAME),
                 (String) info.getProperties().get(ContentModel.PROP_DESCRIPTION),
                 (String) info.getProperties().get(RecordsManagementModel.PROP_HOLD_REASON));
+    }
+
+    public RoleModel createRoleModel(Role role, List<String> assignedUsers, List<String> assignedGroups)
+    {
+        return new RoleModel(role.getName(),
+                role.getDisplayLabel(),
+                role.getCapabilities()
+                        .stream()
+                        .map(this::createCapabilityModel)
+                        .sorted(Comparator.comparing(CapabilityModel::name))
+                        .toList(),
+                role.getRoleGroupName(),
+                role.getGroupShortName(),
+                assignedUsers,
+                assignedGroups);
+    }
+
+    public CapabilityModel createCapabilityModel(Capability capability)
+    {
+        return new CapabilityModel(capability.getName(), capability.getTitle(), capability.getDescription(),
+                createGroupModel(capability.getGroup()), capability.getIndex());
+    }
+
+    public GroupModel createGroupModel(Group group)
+    {
+        if (group == null)
+        {
+            return null;
+        }
+        return new GroupModel(group.getId(), group.getTitle());
     }
 
     /**

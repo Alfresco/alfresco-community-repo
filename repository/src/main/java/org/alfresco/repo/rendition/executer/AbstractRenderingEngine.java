@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1012,7 +1012,28 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         {
             String msg = "A rendition of name: " + renditionQName + " should have been created for source node: "
                         + sourceNode;
-            throw new RenditionServiceException(msg);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(msg);
+            }
+            // Check if the node has the applied renditioned aspect, and if it does,
+            // remove the existing rendition node and assign the newly created rendition node.
+            if (nodeService.hasAspect(sourceNode, RenditionModel.ASPECT_RENDITIONED))
+            {
+                List<ChildAssociationRef> renditions = nodeService.getChildAssocs(sourceNode, RenditionModel.ASSOC_RENDITION, renditionQName);
+                if (!renditions.isEmpty())
+                {
+                    ChildAssociationRef existingRendition = renditions.get(0);
+                    nodeService.removeChild(sourceNode, existingRendition.getChildRef());
+                    renditionAssoc = renditionNode;
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Removing the existing rendition node that doesn't have contentData and "
+                                + "assigning the newly created rendition node: " + renditionAssoc);
+
+                    }
+                }
+            }
         }
         // Return the link between the source and the new, final rendition
         return renditionAssoc;

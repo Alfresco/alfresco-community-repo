@@ -26,6 +26,7 @@
 package org.alfresco.repo.rendition2;
 
 import static org.junit.Assert.assertNotEquals;
+
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
 
 import java.io.ByteArrayInputStream;
@@ -63,37 +64,37 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     // PDF transformation
 
     @Test
-    public void testLocalRenderPdfToJpegMedium() 
+    public void testLocalRenderPdfToJpegMedium()
     {
         checkRendition("quick.pdf", "medium", true);
     }
 
     @Test
-    public void testLocalRenderPdfToDoclib() 
+    public void testLocalRenderPdfToDoclib()
     {
         checkRendition("quick.pdf", "doclib", true);
     }
 
     @Test
-    public void testLocalRenderPdfJpegImgpreview() 
+    public void testLocalRenderPdfJpegImgpreview()
     {
         checkRendition("quick.pdf", "imgpreview", true);
     }
 
     @Test
-    public void testLocalRenderPdfPngAvatar() 
+    public void testLocalRenderPdfPngAvatar()
     {
         checkRendition("quick.pdf", "avatar", true);
     }
 
     @Test
-    public void testLocalRenderPdfPngAvatar32() 
+    public void testLocalRenderPdfPngAvatar32()
     {
         checkRendition("quick.pdf", "avatar32", true);
     }
 
     @Test
-    public void testLocalRenderPdfFlashWebpreview() 
+    public void testLocalRenderPdfFlashWebpreview()
     {
         checkRendition("quick.pdf", "webpreview", false);
     }
@@ -101,43 +102,43 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     // DOCX transformation
 
     @Test
-    public void testLocalRenderDocxJpegMedium() 
+    public void testLocalRenderDocxJpegMedium()
     {
         checkRendition("quick.docx", "medium", true);
     }
 
     @Test
-    public void testLocalRenderDocxDoclib() 
+    public void testLocalRenderDocxDoclib()
     {
         checkRendition("quick.docx", "doclib", true);
     }
 
     @Test
-    public void testLocalRenderDocxJpegImgpreview() 
+    public void testLocalRenderDocxJpegImgpreview()
     {
         checkRendition("quick.docx", "imgpreview", true);
     }
 
     @Test
-    public void testLocalRenderDocxPngAvatar() 
+    public void testLocalRenderDocxPngAvatar()
     {
         checkRendition("quick.docx", "avatar", true);
     }
 
     @Test
-    public void testLocalRenderDocxPngAvatar32() 
+    public void testLocalRenderDocxPngAvatar32()
     {
         checkRendition("quick.docx", "avatar32", true);
     }
 
     @Test
-    public void testLocalRenderDocxFlashWebpreview() 
+    public void testLocalRenderDocxFlashWebpreview()
     {
         checkRendition("quick.docx", "webpreview", false);
     }
 
     @Test
-    public void testLocalRenderDocxPdf() 
+    public void testLocalRenderDocxPdf()
     {
         checkRendition("quick.docx", "pdf", true);
     }
@@ -151,7 +152,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
     }
 
     @Test
-    public void changedSourceToNullContent() 
+    public void changedSourceToNullContent()
     {
         NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");
         render(ADMIN, sourceNodeRef, DOC_LIB);
@@ -199,7 +200,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
 
     @Test
 
-    public void testCreateRenditionByUser() 
+    public void testCreateRenditionByUser()
     {
         String userName = createRandomUser();
         NodeRef sourceNodeRef = createSource(userName, "quick.jpg");
@@ -210,7 +211,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
 
     @Test
 
-    public void testReadRenditionByOtherUser() 
+    public void testReadRenditionByOtherUser()
     {
         String ownerUserName = createRandomUser();
         NodeRef sourceNodeRef = createSource(ownerUserName, "quick.jpg");
@@ -230,7 +231,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
 
     @Test
 
-    public void testRenderByReader() 
+    public void testRenderByReader()
     {
         String ownerUserName = createRandomUser();
         NodeRef sourceNodeRef = createSource(ownerUserName, "quick.jpg");
@@ -250,7 +251,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
 
     @Test
 
-    public void testAccessWithNoPermissions() 
+    public void testAccessWithNoPermissions()
     {
         String ownerUserName = createRandomUser();
         NodeRef sourceNodeRef = createSource(ownerUserName, "quick.jpg");

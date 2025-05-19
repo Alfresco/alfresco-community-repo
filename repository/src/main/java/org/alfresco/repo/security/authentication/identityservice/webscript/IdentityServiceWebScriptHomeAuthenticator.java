@@ -6,7 +6,7 @@
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
- * the paid license agreement will prevail.  Otherwise, the software is
+ * the paid license agreement will prevail. Otherwise, the software is
  * provided under the following open source license terms:
  *
  * Alfresco is free software: you can redistribute it and/or modify
@@ -16,14 +16,14 @@
  *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.identityservice.admin;
+package org.alfresco.repo.security.authentication.identityservice.webscript;
 
 import java.io.IOException;
 import java.util.Map;
@@ -36,22 +36,20 @@ import org.slf4j.LoggerFactory;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.external.AdminConsoleAuthenticator;
-import org.alfresco.repo.security.authentication.identityservice.webscript.AbstractIdentityServiceAuthenticator;
+import org.alfresco.repo.security.authentication.external.WebScriptHomeAuthenticator;
 
 /**
- * An {@link AdminConsoleAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow.
+ * A {@link WebScriptHomeAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow for WebScript Home UI.
  */
-public class IdentityServiceAdminConsoleAuthenticator extends AbstractIdentityServiceAuthenticator
-        implements AdminConsoleAuthenticator, ActivateableBean
+public class IdentityServiceWebScriptHomeAuthenticator extends AbstractIdentityServiceAuthenticator
+        implements WebScriptHomeAuthenticator, ActivateableBean
 {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(IdentityServiceAdminConsoleAuthenticator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IdentityServiceWebScriptHomeAuthenticator.class);
 
     private boolean isEnabled;
 
     @Override
-    public String getAdminConsoleUser(HttpServletRequest request, HttpServletResponse response)
+    public String getWebScriptHomeUser(HttpServletRequest request, HttpServletResponse response)
     {
         return resolveUser(request, response);
     }
@@ -69,7 +67,7 @@ public class IdentityServiceAdminConsoleAuthenticator extends AbstractIdentitySe
         }
         catch (IOException e)
         {
-            LOGGER.error("Admin Console Auth challenge failed: {}", e.getMessage(), e);
+            LOGGER.error("WebScript Home Auth challenge failed: {}", e.getMessage(), e);
             throw new AuthenticationException(e.getMessage(), e);
         }
     }
@@ -77,13 +75,13 @@ public class IdentityServiceAdminConsoleAuthenticator extends AbstractIdentitySe
     @Override
     protected boolean isWebScriptHome()
     {
-        return false;
+        return true;
     }
 
     @Override
     protected HttpServletRequest newRequestWrapper(Map<String, String> headers, HttpServletRequest request)
     {
-        return new AdminConsoleHttpServletRequestWrapper(headers, request);
+        return new WebScriptHomeHttpServletRequestWrapper(headers, request);
     }
 
     @Override
@@ -95,25 +93,25 @@ public class IdentityServiceAdminConsoleAuthenticator extends AbstractIdentitySe
     @Override
     protected boolean hasWebScriptHomeScope(Identifier scope)
     {
-        return false;
+        return identityServiceConfig.getWebScriptHomeScopes().contains(scope.getValue());
     }
 
     @Override
     protected boolean hasAdminConsoleScope(Identifier scope)
     {
-        return identityServiceConfig.getAdminConsoleScopes().contains(scope.getValue());
+        return false;
     }
 
     @Override
     protected String getRedirectUri(String requestURL)
     {
-        return super.getRedirectUri(requestURL);
+        return getWebScriptHomeRedirectUri(requestURL);
     }
 
     @Override
     public boolean isActive()
     {
-        return isEnabled;
+        return this.isEnabled;
     }
 
     public void setActive(boolean isEnabled)

@@ -214,9 +214,13 @@
       <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
       <property name="remoteUserMapper" ref="RemoteUserMapper" />
       <property name="adminConsoleAuthenticator" ref="AdminConsoleAuthenticator" />
+       <property name="webScriptHomeAuthenticator" ref="WebScriptHomeAuthenticator" />
       <property name="alwaysAllowBasicAuthForAdminConsole">
          <value>${authentication.alwaysAllowBasicAuthForAdminConsole.enabled}</value>
       </property>
+       <property name="allowBasicAuthWebHome">
+           <value>${authentication.allowBasicAuthWebHome.enabled}</value>
+       </property>
       <property name="getRemoteUserTimeoutMilliseconds">
          <value>${authentication.getRemoteUserTimeoutMilliseconds}</value>
       </property>
@@ -226,6 +230,23 @@
             <value>AdminConsoleHelper</value>
          </list>
       </property>
+       <property name="webScriptHomeFamilies">
+           <list>
+               <value>Index</value>
+               <value>Admin</value>
+               <value>Content Applications</value>
+               <value>Audit</value>
+               <value>Authentication</value>
+               <value>Bulk Filesystem Import</value>
+               <value>IMAP</value>
+               <value>MultiTenantAdmin</value>
+               <value>QuADDS</value>
+               <value>Remote Share</value>
+               <value>SOLR</value>
+               <value>Tagging</value>
+               <value>googledocs</value>
+           </list>
+       </property>
    </bean>
 
    <!--  HTTP Basic Authenticator (Servlet based - stateless) for MT -->

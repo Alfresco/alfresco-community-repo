@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.identityservice.admin;
+package org.alfresco.repo.security.authentication.identityservice.webscript;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -58,9 +58,10 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
+import org.alfresco.repo.security.authentication.identityservice.admin.AdminAuthenticationCookiesService;
 
 @SuppressWarnings("PMD.AvoidStringBufferField")
-public class IdentityServiceAdminConsoleAuthenticatorUnitTest
+public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
 {
 
     private static final String ALFRESCO_ACCESS_TOKEN = "ALFRESCO_ACCESS_TOKEN";
@@ -84,11 +85,11 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     @Mock
     AccessToken accessToken;
     @Captor
-    ArgumentCaptor<AdminConsoleHttpServletRequestWrapper> requestCaptor;
+    ArgumentCaptor<WebScriptHomeHttpServletRequestWrapper> requestCaptor;
 
-    IdentityServiceAdminConsoleAuthenticator authenticator;
+    IdentityServiceWebScriptHomeAuthenticator authenticator;
 
-    StringBuffer adminConsoleURL = new StringBuffer("http://localhost:8080/admin-console");
+    StringBuffer webScriptHomeURL = new StringBuffer("http://localhost:8080/alfresco/s/index");
 
     @Before
     public void setup()
@@ -103,10 +104,10 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         when(providerDetails.getAuthorizationUri()).thenReturn("http://localhost:8999/auth");
         when(providerDetails.getConfigurationMetadata()).thenReturn(Map.of("scopes_supported", scope));
         when(identityServiceFacade.getClientRegistration()).thenReturn(clientRegistration);
-        when(request.getRequestURL()).thenReturn(adminConsoleURL);
+        when(request.getRequestURL()).thenReturn(webScriptHomeURL);
         when(remoteUserMapper.getRemoteUser(request)).thenReturn(null);
 
-        authenticator = new IdentityServiceAdminConsoleAuthenticator();
+        authenticator = new IdentityServiceWebScriptHomeAuthenticator();
         authenticator.setActive(true);
         authenticator.setIdentityServiceFacade(identityServiceFacade);
         authenticator.setCookiesService(cookiesService);
@@ -122,7 +123,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
                 String.valueOf(Instant.now().plusSeconds(60).toEpochMilli()));
         when(remoteUserMapper.getRemoteUser(requestCaptor.capture())).thenReturn("admin");
 
-        String username = authenticator.getAdminConsoleUser(request, response);
+        String username = authenticator.getWebScriptHomeUser(request, response);
 
         assertEquals("Bearer JWT_TOKEN", requestCaptor.getValue().getHeader("Authorization"));
         assertEquals("admin", username);
@@ -143,7 +144,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         when(identityServiceFacade.authorize(any(AuthorizationGrant.class))).thenReturn(accessTokenAuthorization);
         when(remoteUserMapper.getRemoteUser(requestCaptor.capture())).thenReturn("admin");
 
-        String username = authenticator.getAdminConsoleUser(request, response);
+        String username = authenticator.getWebScriptHomeUser(request, response);
 
         verify(cookiesService).addCookie(ALFRESCO_ACCESS_TOKEN, "REFRESHED_JWT_TOKEN", response);
         verify(cookiesService).addCookie(ALFRESCO_REFRESH_TOKEN, "REFRESH_TOKEN", response);
@@ -152,12 +153,13 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     }
 
     @Test
-    public void shouldCallAuthChallenge() throws IOException
+    public void shouldCallAuthChallengeWebScriptHome() throws IOException
     {
-        String redirectPath = "/alfresco/s/admin/admin-communitysummary";
 
-        when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
-        when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn("/alfresco/s/admin/admin-communitysummary");
+        String redirectPath = "/alfresco/s/index";
+        when(request.getRequestURL()).thenReturn(webScriptHomeURL);
+        when(identityServiceConfig.getWebScriptHomeScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
+        when(identityServiceConfig.getWebScriptHomeRedirectPath()).thenReturn(redirectPath);
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
                 .formatted("http://localhost:8080", redirectPath);
@@ -174,13 +176,14 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     }
 
     @Test
-    public void shouldCallAuthChallengeWithAudience() throws IOException
+    public void shouldCallAuthChallengeWebScriptHomeWithAudience() throws IOException
     {
         String audience = "http://localhost:8082";
-        String redirectPath = "/alfresco/s/admin/admin-communitysummary";
+        String redirectPath = "/alfresco/s/index";
+        when(request.getRequestURL()).thenReturn(webScriptHomeURL);
         when(identityServiceConfig.getAudience()).thenReturn(audience);
-        when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(redirectPath);
-        when(identityServiceConfig.getAdminConsoleScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
+        when(identityServiceConfig.getWebScriptHomeRedirectPath()).thenReturn(redirectPath);
+        when(identityServiceConfig.getWebScriptHomeScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
                 .formatted("http://localhost:8080", redirectPath);
@@ -207,7 +210,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
 
         when(identityServiceFacade.authorize(any(AuthorizationGrant.class))).thenThrow(AuthorizationException.class);
 
-        String username = authenticator.getAdminConsoleUser(request, response);
+        String username = authenticator.getWebScriptHomeUser(request, response);
 
         verify(cookiesService).resetCookie(ALFRESCO_ACCESS_TOKEN, response);
         verify(cookiesService).resetCookie(ALFRESCO_REFRESH_TOKEN, response);
@@ -224,11 +227,11 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         when(accessTokenAuthorization.getAccessToken()).thenReturn(accessToken);
         when(accessTokenAuthorization.getRefreshTokenValue()).thenReturn("REFRESH_TOKEN");
         when(identityServiceFacade.authorize(
-                AuthorizationGrant.authorizationCode("auth_code", adminConsoleURL.toString())))
+                AuthorizationGrant.authorizationCode("auth_code", webScriptHomeURL.toString())))
                         .thenReturn(accessTokenAuthorization);
         when(remoteUserMapper.getRemoteUser(requestCaptor.capture())).thenReturn("admin");
 
-        String username = authenticator.getAdminConsoleUser(request, response);
+        String username = authenticator.getWebScriptHomeUser(request, response);
 
         verify(cookiesService).addCookie(ALFRESCO_ACCESS_TOKEN, "JWT_TOKEN", response);
         verify(cookiesService).addCookie(ALFRESCO_REFRESH_TOKEN, "REFRESH_TOKEN", response);
@@ -241,7 +244,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     {
         when(remoteUserMapper.getRemoteUser(request)).thenReturn("admin");
 
-        String username = authenticator.getAdminConsoleUser(request, response);
+        String username = authenticator.getWebScriptHomeUser(request, response);
 
         assertEquals("admin", username);
     }

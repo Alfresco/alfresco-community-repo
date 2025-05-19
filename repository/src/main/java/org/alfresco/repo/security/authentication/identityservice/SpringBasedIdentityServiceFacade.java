@@ -84,7 +84,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     private final JwtDecoder jwtDecoder;
 
     SpringBasedIdentityServiceFacade(RestOperations restOperations, ClientRegistration clientRegistration,
-                                     JwtDecoder jwtDecoder)
+            JwtDecoder jwtDecoder)
     {
         requireNonNull(restOperations);
         this.clientRegistration = requireNonNull(clientRegistration);
@@ -106,11 +106,13 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         {
             response = client.getTokenResponse(request);
         }
-        catch (OAuth2AuthorizationException e) {
+        catch (OAuth2AuthorizationException e)
+        {
             LOGGER.debug("Failed to authorize against Authorization Server. Reason: " + e.getError() + ".");
             throw new AuthorizationException("Failed to obtain access token. " + e.getError(), e);
         }
-        catch (RuntimeException e) {
+        catch (RuntimeException e)
+        {
             LOGGER.warn("Failed to authorize against Authorization Server. Reason: " + e.getMessage());
             throw new AuthorizationException("Failed to obtain access token.", e);
         }
@@ -257,7 +259,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     }
 
     private static OAuth2AccessTokenResponseClient<OAuth2PasswordGrantRequest> createPasswordClient(RestOperations rest,
-                                                                                                    ClientRegistration clientRegistration)
+            ClientRegistration clientRegistration)
     {
         final DefaultPasswordTokenResponseClient client = new DefaultPasswordTokenResponseClient();
         client.setRestOperations(rest);

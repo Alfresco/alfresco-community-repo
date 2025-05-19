@@ -39,6 +39,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.content.ContentServicePolicies;
@@ -65,9 +69,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * The Async Rendition service. Replaces the original deprecated RenditionService.
@@ -373,7 +374,8 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         }, false, true));
     }
 
-    public void consume(NodeRef sourceNodeRef, InputStream transformInputStream, RenditionDefinition2 renditionDefinition, int transformContentHashCode)
+    public void consume(NodeRef sourceNodeRef, InputStream transformInputStream, RenditionDefinition2 renditionDefinition,
+            int transformContentHashCode)
     {
         int sourceContentHashCode = getSourceContentHashCode(sourceNodeRef);
         if (logger.isDebugEnabled())
@@ -404,7 +406,8 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         }
     }
 
-    private void consumeExtractedMetadata(NodeRef nodeRef, int sourceContentHashCode, InputStream transformInputStream, TransformDefinition transformDefinition, int transformContentHashCode)
+    private void consumeExtractedMetadata(NodeRef nodeRef, int sourceContentHashCode, InputStream transformInputStream,
+            TransformDefinition transformDefinition, int transformContentHashCode)
     {
         if (transformInputStream == null)
         {
@@ -430,7 +433,8 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         }
     }
 
-    private void consumeEmbeddedMetadata(NodeRef nodeRef, int sourceContentHashCode, InputStream transformInputStream, TransformDefinition transformDefinition, int transformContentHashCode)
+    private void consumeEmbeddedMetadata(NodeRef nodeRef, int sourceContentHashCode, InputStream transformInputStream,
+            TransformDefinition transformDefinition, int transformContentHashCode)
     {
         if (transformInputStream == null)
         {
@@ -458,7 +462,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     }
 
     private void consumeTransformReply(NodeRef sourceNodeRef, InputStream transformInputStream,
-                                       TransformDefinition transformDefinition, int transformContentHashCode)
+            TransformDefinition transformDefinition, int transformContentHashCode)
     {
         if (logger.isDebugEnabled())
         {
@@ -476,7 +480,8 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     /**
      * Takes a transformation (InputStream) and attaches it as a rendition to the source node. Does nothing if there is already a newer rendition. If the transformInputStream is null, this is taken to be a transform failure.
      */
-    private void consumeRendition(NodeRef sourceNodeRef, int sourceContentHashCode, InputStream transformInputStream, RenditionDefinition2 renditionDefinition, int transformContentHashCode)
+    private void consumeRendition(NodeRef sourceNodeRef, int sourceContentHashCode, InputStream transformInputStream,
+            RenditionDefinition2 renditionDefinition, int transformContentHashCode)
     {
         String renditionName = renditionDefinition.getRenditionName();
         if (transformContentHashCode != sourceContentHashCode)
@@ -963,6 +968,35 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         }
     }
 
-
-
+    @Override
+    public void forceRenditionsContentHashCode(NodeRef sourceNodeRef)
+    {
+        if (sourceNodeRef != null && nodeService.exists(sourceNodeRef))
+        {
+            List<ChildAssociationRef> renditions = getRenditionChildAssociations(sourceNodeRef);
+            if (renditions != null)
+            {
+                int sourceContentHashCode = getSourceContentHashCode(sourceNodeRef);
+                for (ChildAssociationRef rendition : renditions)
+                {
+                    NodeRef renditionNode = rendition.getChildRef();
+                    if (nodeService.hasAspect(renditionNode, RenditionModel.ASPECT_RENDITION2))
+                    {
+                        int renditionContentHashCode = getRenditionContentHashCode(renditionNode);
+                        String renditionName = rendition.getQName().getLocalName();
+                        if (sourceContentHashCode != renditionContentHashCode)
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Update content hash code for rendition " + renditionName + " of node "
+                                        + sourceNodeRef);
+                            }
+                            nodeService.setProperty(renditionNode, PROP_RENDITION_CONTENT_HASH_CODE,
+                                    sourceContentHashCode);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

@@ -54,7 +54,15 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.rendition.RenditionService;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -487,7 +495,11 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
         createUser(username, "firstName", "lastName", "jobTitle", 0);
     }
 
-    void createUser(final String username, final String firstName, final String lastName, final String jobTitle, final long quota)
+    void createUser(final String username,
+            final String firstName,
+            final String lastName,
+            final String jobTitle,
+            final long quota)
     {
         RetryingTransactionHelper.RetryingTransactionCallback<Void> createUserCallback = () -> {
             authenticationService.createAuthentication(username, PASSWORD.toCharArray());

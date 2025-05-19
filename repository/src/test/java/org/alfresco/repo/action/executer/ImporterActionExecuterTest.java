@@ -63,7 +63,7 @@ import org.alfresco.util.test.junitrules.ApplicationContextInit;
  * 
  * @author abalmus
  */
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+@SuppressWarnings("PMD.UnitTestsShouldIncludeAssert")
 public class ImporterActionExecuterTest
 {
     // Rule to initialise the default Alfresco spring configuration

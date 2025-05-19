@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1320,7 +1320,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         }
         catch (DuplicateChildNodeNameException e)
         {
-            throw new FileExistsException(parentNodeRef, name);
+            throw new FileExistsException(parentNodeRef, name, typeQName.getLocalName());
         }
         
         NodeRef nodeRef = assocRef.getChildRef();

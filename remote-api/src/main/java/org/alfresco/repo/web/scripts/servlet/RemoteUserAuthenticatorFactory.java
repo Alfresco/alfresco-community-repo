@@ -155,6 +155,8 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
      */
     public class RemoteUserAuthenticator extends BasicHttpAuthenticator
     {
+        private static final String WEB_SCRIPTS_BASE_PATH = "org/springframework/extensions/webscripts";
+
         public RemoteUserAuthenticator(WebScriptServletRequest req, WebScriptServletResponse res, AuthenticationListener listener)
         {
             super(req, res, listener);
@@ -181,15 +183,15 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                     {
                         if (isAlwaysAllowBasicAuthForAdminConsole())
                         {
-                            final boolean useTimeoutForAdminAccessingAdminConsole = shouldUseTimeoutForAdminAccessingAdminConsole(required, isGuest);
+                            boolean shouldUseTimeout = shouldUseTimeoutForAdminAccessingAdminConsole(required, isGuest);
 
-                            if (useTimeoutForAdminAccessingAdminConsole && isBasicAuthHeaderPresentForAdmin())
+                            if (shouldUseTimeout && isBasicAuthHeaderPresentForAdmin())
                             {
                                 return callBasicAuthForAdminConsoleOrWebScriptsHomeAccess(required, isGuest);
                             }
                             try
                             {
-                                userId = getRemoteUserWithTimeout(useTimeoutForAdminAccessingAdminConsole);
+                                userId = getRemoteUserWithTimeout(shouldUseTimeout);
                             }
                             catch (AuthenticationTimeoutException e)
                             {
@@ -213,16 +215,16 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                     {
                         if (isAlwaysAllowBasicAuthForWebScriptsHome())
                         {
-                            final boolean adminWebScriptsHomeTimeout = shouldUseTimeoutForAdminAccessingWebScriptsHome(required, isGuest);
+                            boolean shouldUseTimeout = shouldUseTimeoutForAdminAccessingWebScriptsHome(required, isGuest);
 
-                            if (adminWebScriptsHomeTimeout && isBasicAuthHeaderPresentForAdmin())
+                            if (shouldUseTimeout && isBasicAuthHeaderPresentForAdmin())
                             {
                                 return callBasicAuthForAdminConsoleOrWebScriptsHomeAccess(required, isGuest);
                             }
 
                             try
                             {
-                                userId = getRemoteUserWithTimeout(adminWebScriptsHomeTimeout);
+                                userId = getRemoteUserWithTimeout(shouldUseTimeout);
                             }
                             catch (AuthenticationTimeoutException e)
                             {
@@ -350,14 +352,14 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
 
         private boolean shouldUseTimeoutForAdminAccessingWebScriptsHome(RequiredAuthentication required, boolean isGuest)
         {
-            boolean adminWebHomeTimeout = RequiredAuthentication.admin.equals(required) && !isGuest &&
+            boolean adminWebScriptsHomeTimeout = RequiredAuthentication.admin.equals(required) && !isGuest &&
                     servletReq.getServiceMatch() != null && isWebScriptsHome(servletReq.getServiceMatch().getWebScript());
 
             if (LOGGER.isTraceEnabled())
             {
-                LOGGER.trace("Should ensure that the admins can login with basic auth: " + adminWebHomeTimeout);
+                LOGGER.trace("Should ensure that the admins can login with basic auth: " + adminWebScriptsHomeTimeout);
             }
-            return adminWebHomeTimeout;
+            return adminWebScriptsHomeTimeout;
         }
 
         private boolean isRemoteUserMapperActive()
@@ -389,7 +391,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             }
 
             // intersect the "family" sets defined
-            Set<String> families = new HashSet<String>(webScript.getDescription().getFamilys());
+            Set<String> families = new HashSet<>(webScript.getDescription().getFamilys());
             families.retainAll(adminConsoleScriptFamilies);
             final boolean isAdminConsole = !families.isEmpty();
 
@@ -408,7 +410,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                 return false;
             }
 
-            boolean isWebScriptsHome = webScript.toString().contains("webscript");
+            boolean isWebScriptsHome = webScript.toString().startsWith(WEB_SCRIPTS_BASE_PATH);
 
             if (LOGGER.isTraceEnabled() && isWebScriptsHome)
             {

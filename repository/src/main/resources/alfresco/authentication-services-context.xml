@@ -144,7 +144,7 @@
         </property>
     </bean>
 
-    <bean id="WebScriptHomeAuthenticator"
+    <bean id="WebScriptsHomeAuthenticator"
           class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
         <property name="applicationContextManager">
             <ref bean="Authentication" />
@@ -156,7 +156,7 @@
             </list>
         </property>
         <property name="sourceBeanName">
-            <value>webScriptHomeAuthenticator</value>
+            <value>webScriptsHomeAuthenticator</value>
         </property>
     </bean>
 

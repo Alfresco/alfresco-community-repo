@@ -23,10 +23,9 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.identityservice.webscript;
+package org.alfresco.repo.security.authentication.identityservice.authentication.webscripts;
 
 import java.io.IOException;
-import java.util.Map;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -37,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.external.WebScriptsHomeAuthenticator;
+import org.alfresco.repo.security.authentication.identityservice.authentication.AbstractIdentityServiceAuthenticator;
 
 /**
  * A {@link WebScriptsHomeAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow for WebScript Home UI.
@@ -73,15 +73,9 @@ public class IdentityServiceWebScriptsHomeAuthenticator extends AbstractIdentity
     }
 
     @Override
-    protected boolean isWebScriptHome()
+    protected boolean isWebScriptsHome()
     {
         return true;
-    }
-
-    @Override
-    protected HttpServletRequest newRequestWrapper(Map<String, String> headers, HttpServletRequest request)
-    {
-        return new WebScriptHomeHttpServletRequestWrapper(headers, request);
     }
 
     @Override
@@ -91,9 +85,9 @@ public class IdentityServiceWebScriptsHomeAuthenticator extends AbstractIdentity
     }
 
     @Override
-    protected boolean hasWebScriptHomeScope(Identifier scope)
+    protected boolean hasWebScriptsHomeScope(Identifier scope)
     {
-        return identityServiceConfig.getWebScriptHomeScopes().contains(scope.getValue());
+        return identityServiceConfig.getWebScriptsHomeScopes().contains(scope.getValue());
     }
 
     @Override
@@ -105,7 +99,7 @@ public class IdentityServiceWebScriptsHomeAuthenticator extends AbstractIdentity
     @Override
     protected String getRedirectUri(String requestURL)
     {
-        return getWebScriptHomeRedirectUri(requestURL);
+        return buildRedirectUri(requestURL, identityServiceConfig.getWebScriptsHomeRedirectPath());
     }
 
     @Override

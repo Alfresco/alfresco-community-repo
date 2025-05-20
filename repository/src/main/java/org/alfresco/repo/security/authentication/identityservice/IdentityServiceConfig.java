@@ -76,17 +76,17 @@ public class IdentityServiceConfig
     private String lastNameAttribute;
     private String emailAttribute;
     private long jwtClockSkewMs;
-    private String webScriptHomeRedirectPath;
-    private String webScriptHomeScopes;
+    private String webScriptsHomeRedirectPath;
+    private String webScriptsHomeScopes;
 
-    public String getWebScriptHomeRedirectPath()
+    public String getWebScriptsHomeRedirectPath()
     {
-        return webScriptHomeRedirectPath;
+        return webScriptsHomeRedirectPath;
     }
 
-    public void setWebScriptHomeRedirectPath(String webScriptHomeRedirectPath)
+    public void setWebScriptsHomeRedirectPath(String webScriptsHomeRedirectPath)
     {
-        this.webScriptHomeRedirectPath = webScriptHomeRedirectPath;
+        this.webScriptsHomeRedirectPath = webScriptsHomeRedirectPath;
     }
 
     /**
@@ -371,16 +371,16 @@ public class IdentityServiceConfig
         this.adminConsoleScopes = adminConsoleScopes;
     }
 
-    public Set<String> getWebScriptHomeScopes()
+    public Set<String> getWebScriptsHomeScopes()
     {
-        return Stream.of(webScriptHomeScopes.split(","))
+        return Stream.of(webScriptsHomeScopes.split(","))
                 .map(String::trim)
                 .collect(Collectors.toUnmodifiableSet());
     }
 
-    public void setWebScriptHomeScopes(String webScriptHomeScopes)
+    public void setWebScriptsHomeScopes(String webScriptsHomeScopes)
     {
-        this.webScriptHomeScopes = webScriptHomeScopes;
+        this.webScriptsHomeScopes = webScriptsHomeScopes;
     }
 
     public Set<String> getPasswordGrantScopes()

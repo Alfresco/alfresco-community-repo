@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.identityservice.webscript;
+package org.alfresco.repo.security.authentication.identityservice.authentication;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,14 +32,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.alfresco.repo.admin.SysAdminParams;
 
 /**
- * Service to handle Web Script authentication-related cookies.
+ * Service to handle Admin Console authentication-related cookies.
  */
-public class WebScriptHomeAuthenticationCookiesService
+public class AdminAuthenticationCookiesService
 {
     private final SysAdminParams sysAdminParams;
     private final int cookieLifetime;
 
-    public WebScriptHomeAuthenticationCookiesService(SysAdminParams sysAdminParams, int cookieLifetime)
+    public AdminAuthenticationCookiesService(SysAdminParams sysAdminParams, int cookieLifetime)
     {
         this.sysAdminParams = sysAdminParams;
         this.cookieLifetime = cookieLifetime;
@@ -52,7 +52,7 @@ public class WebScriptHomeAuthenticationCookiesService
      *            the name of the cookie
      * @param request
      *            the request that might contain the cookie
-     * @return the cookie value, or null if the cookie cannot be found
+     * @return the cookie, or null if the cookie cannot be found
      */
     public String getCookie(String name, HttpServletRequest request)
     {
@@ -105,16 +105,11 @@ public class WebScriptHomeAuthenticationCookiesService
     private void internalAddCookie(String name, String value, int maxAge, HttpServletResponse servletResponse)
     {
         Cookie authCookie = new Cookie(name, value);
-        authCookie.setPath("/"); // Set the cookie's valid path
-        authCookie.setMaxAge(maxAge); // Set expiration time (in seconds)
-
-        // Ensure the cookie is only transmitted over secure connections (HTTPS)
+        authCookie.setPath("/");
+        authCookie.setMaxAge(maxAge);
         authCookie.setSecure(sysAdminParams.getAlfrescoProtocol().equalsIgnoreCase("https"));
-
-        // Prevent JavaScript access to this cookie for security reasons (XSS protection)
         authCookie.setHttpOnly(true);
-
-        // Add the cookie to the response
         servletResponse.addCookie(authCookie);
     }
+
 }

@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.identityservice.admin;
+package org.alfresco.repo.security.authentication.identityservice.authentication;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -46,7 +46,7 @@ import org.mockito.Mock;
 
 import org.alfresco.repo.admin.SysAdminParams;
 
-public class AdminConsoleAuthenticationCookiesServiceUnitTest
+public class AdminAuthenticationCookiesServiceUnitTest
 {
     private static final int DEFAULT_COOKIE_LIFETIME = 86400;
     private static final String COOKIE_NAME = "cookie";

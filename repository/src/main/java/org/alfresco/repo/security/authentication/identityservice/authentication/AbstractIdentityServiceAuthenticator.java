@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.identityservice.webscript;
+package org.alfresco.repo.security.authentication.identityservice.authentication;
 
 import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant.authorizationCode;
 import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKey.SCOPES_SUPPORTED;
@@ -56,11 +56,9 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
-import org.alfresco.repo.security.authentication.identityservice.admin.AdminAuthenticationCookiesService;
 
 public abstract class AbstractIdentityServiceAuthenticator
 {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIdentityServiceAuthenticator.class);
 
     protected IdentityServiceConfig identityServiceConfig;
@@ -72,7 +70,9 @@ public abstract class AbstractIdentityServiceAuthenticator
     public static final String ALFRESCO_REFRESH_TOKEN = "ALFRESCO_REFRESH_TOKEN";
     public static final String ALFRESCO_TOKEN_EXPIRATION = "ALFRESCO_TOKEN_EXPIRATION";
 
-    protected abstract boolean isWebScriptHome();
+    protected abstract boolean isWebScriptsHome();
+
+    protected abstract String getRedirectUri(String requestURL);
 
     public String resolveUser(HttpServletRequest request, HttpServletResponse response)
     {
@@ -142,24 +142,12 @@ public abstract class AbstractIdentityServiceAuthenticator
     private Set<String> getSupportedScopes(Scope scopes)
     {
         return scopes.stream()
-                .filter(scope -> isWebScriptHome() ? hasWebScriptHomeScope(scope) : hasAdminConsoleScope(scope))
+                .filter(scope -> isWebScriptsHome() ? hasWebScriptsHomeScope(scope) : hasAdminConsoleScope(scope))
                 .map(Identifier::getValue)
                 .collect(Collectors.toSet());
     }
 
-    protected String getRedirectUri(String requestURL)
-    {
-        // This should be for Admin Console
-        return buildRedirectUri(requestURL, identityServiceConfig.getAdminConsoleRedirectPath());
-    }
-
-    protected String getWebScriptHomeRedirectUri(String requestURL)
-    {
-        // This should be for WebScript Home
-        return buildRedirectUri(requestURL, null);
-    }
-
-    private String buildRedirectUri(String requestURL, String overridePath)
+    protected String buildRedirectUri(String requestURL, String overridePath)
     {
         try
         {
@@ -272,11 +260,14 @@ public abstract class AbstractIdentityServiceAuthenticator
         cookiesService.resetCookie(ALFRESCO_REFRESH_TOKEN, response);
     }
 
-    protected abstract HttpServletRequest newRequestWrapper(Map<String, String> headers, HttpServletRequest request);
+    protected HttpServletRequest newRequestWrapper(Map<String, String> headers, HttpServletRequest request)
+    {
+        return new AdditionalHeadersHttpServletRequestWrapper(headers, request);
+    }
 
     protected abstract String buildAuthRequestUrl(HttpServletRequest request);
 
-    protected abstract boolean hasWebScriptHomeScope(Identifier scope);
+    protected abstract boolean hasWebScriptsHomeScope(Identifier scope);
 
     protected abstract boolean hasAdminConsoleScope(Identifier scope);
 

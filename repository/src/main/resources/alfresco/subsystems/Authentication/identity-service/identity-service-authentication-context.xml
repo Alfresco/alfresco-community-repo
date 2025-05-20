@@ -170,8 +170,8 @@
        <property name="adminConsoleScopes">
            <value>${identity-service.admin-console.scopes:openid,profile,email,offline_access}</value>
        </property>
-       <property name="webScriptHomeScopes">
-           <value>${identity-service.webscript-home.scopes:openid,profile,email,offline_access}</value>
+       <property name="webScriptsHomeScopes">
+           <value>${identity-service.webscripts-home.scopes:openid,profile,email,offline_access}</value>
        </property>
        <property name="passwordGrantScopes">
            <value>${identity-service.password-grant.scopes:openid,profile,email}</value>
@@ -182,8 +182,8 @@
        <property name="jwtClockSkewMs">
            <value>${identity-service.jwt-clock-skew-ms:0}</value>
        </property>
-       <property name="webScriptHomeRedirectPath">
-           <value>${identity-service.webscript-home.redirect-path}</value>
+       <property name="webScriptsHomeRedirectPath">
+           <value>${identity-service.webscripts-home.redirect-path}</value>
        </property>
    </bean>
 
@@ -203,12 +203,12 @@
       </property>
    </bean>
 
-    <bean id="adminAuthenticationCookiesService" class="org.alfresco.repo.security.authentication.identityservice.admin.AdminAuthenticationCookiesService">
+    <bean id="adminAuthenticationCookiesService" class="org.alfresco.repo.security.authentication.identityservice.authentication.AdminAuthenticationCookiesService">
         <constructor-arg ref="sysAdminParams" />
         <constructor-arg value="${admin.console.cookie.lifetime:86400}" />
     </bean>
 
-   <bean id="adminConsoleAuthenticator" class="org.alfresco.repo.security.authentication.identityservice.admin.IdentityServiceAdminConsoleAuthenticator">
+   <bean id="adminConsoleAuthenticator" class="org.alfresco.repo.security.authentication.identityservice.authentication.admin.IdentityServiceAdminConsoleAuthenticator">
       <property name="active">
          <value>${identity-service.authentication.enabled}</value>
       </property>
@@ -226,7 +226,7 @@
       </property>
    </bean>
 
-    <bean id="webScriptsHomeAuthenticator" class="org.alfresco.repo.security.authentication.identityservice.webscript.IdentityServiceWebScriptsHomeAuthenticator">
+    <bean id="webScriptsHomeAuthenticator" class="org.alfresco.repo.security.authentication.identityservice.authentication.webscripts.IdentityServiceWebScriptsHomeAuthenticator">
         <property name="active">
             <value>${identity-service.authentication.enabled}</value>
         </property>

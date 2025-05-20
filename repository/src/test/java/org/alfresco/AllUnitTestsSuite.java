@@ -34,9 +34,9 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandlerUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.LazyInstantiatingIdentityServiceFacadeUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.SpringBasedIdentityServiceFacadeUnitTest;
-import org.alfresco.repo.security.authentication.identityservice.admin.AdminConsoleAuthenticationCookiesServiceUnitTest;
-import org.alfresco.repo.security.authentication.identityservice.admin.AdminConsoleHttpServletRequestWrapperUnitTest;
-import org.alfresco.repo.security.authentication.identityservice.admin.IdentityServiceAdminConsoleAuthenticatorUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.authentication.AdditionalHeadersHttpServletRequestWrapperUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.authentication.AdminAuthenticationCookiesServiceUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.authentication.admin.IdentityServiceAdminConsoleAuthenticatorUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.user.AccessTokenToDecodedTokenUserMapperUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.user.TokenUserToOIDCUserMapperUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.webscript.IdentityServiceWebScriptsHomeAuthenticatorUnitTest;
@@ -154,8 +154,8 @@ import org.alfresco.util.testing.category.NonBuildTests;
         IdentityServiceJITProvisioningHandlerUnitTest.class,
         AccessTokenToDecodedTokenUserMapperUnitTest.class,
         TokenUserToOIDCUserMapperUnitTest.class,
-        AdminConsoleAuthenticationCookiesServiceUnitTest.class,
-        AdminConsoleHttpServletRequestWrapperUnitTest.class,
+        AdminAuthenticationCookiesServiceUnitTest.class,
+        AdditionalHeadersHttpServletRequestWrapperUnitTest.class,
         IdentityServiceAdminConsoleAuthenticatorUnitTest.class,
         IdentityServiceWebScriptsHomeAuthenticatorUnitTest.class,
         ClientRegistrationProviderUnitTest.class,

@@ -23,10 +23,9 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.identityservice.admin;
+package org.alfresco.repo.security.authentication.identityservice.authentication.admin;
 
 import java.io.IOException;
-import java.util.Map;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -37,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.external.AdminConsoleAuthenticator;
-import org.alfresco.repo.security.authentication.identityservice.webscript.AbstractIdentityServiceAuthenticator;
+import org.alfresco.repo.security.authentication.identityservice.authentication.AbstractIdentityServiceAuthenticator;
 
 /**
  * An {@link AdminConsoleAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow.
@@ -45,7 +44,6 @@ import org.alfresco.repo.security.authentication.identityservice.webscript.Abstr
 public class IdentityServiceAdminConsoleAuthenticator extends AbstractIdentityServiceAuthenticator
         implements AdminConsoleAuthenticator, ActivateableBean
 {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(IdentityServiceAdminConsoleAuthenticator.class);
 
     private boolean isEnabled;
@@ -75,15 +73,9 @@ public class IdentityServiceAdminConsoleAuthenticator extends AbstractIdentitySe
     }
 
     @Override
-    protected boolean isWebScriptHome()
+    protected boolean isWebScriptsHome()
     {
         return false;
-    }
-
-    @Override
-    protected HttpServletRequest newRequestWrapper(Map<String, String> headers, HttpServletRequest request)
-    {
-        return new AdminConsoleHttpServletRequestWrapper(headers, request);
     }
 
     @Override
@@ -93,7 +85,7 @@ public class IdentityServiceAdminConsoleAuthenticator extends AbstractIdentitySe
     }
 
     @Override
-    protected boolean hasWebScriptHomeScope(Identifier scope)
+    protected boolean hasWebScriptsHomeScope(Identifier scope)
     {
         return false;
     }
@@ -107,7 +99,7 @@ public class IdentityServiceAdminConsoleAuthenticator extends AbstractIdentitySe
     @Override
     protected String getRedirectUri(String requestURL)
     {
-        return super.getRedirectUri(requestURL);
+        return buildRedirectUri(requestURL, identityServiceConfig.getAdminConsoleRedirectPath());
     }
 
     @Override

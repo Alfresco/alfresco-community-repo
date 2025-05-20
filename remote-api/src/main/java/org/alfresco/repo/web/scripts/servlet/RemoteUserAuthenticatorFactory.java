@@ -205,10 +205,10 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                     }
                 }
                 else if (servletReq.getServiceMatch() != null &&
-                        isWebScriptHome(servletReq.getServiceMatch().getWebScript())
+                        isWebScriptsHome(servletReq.getServiceMatch().getWebScript())
                         && isWebScriptsHomeAuthenticatorActive())
                 {
-                    userId = getWebScriptHomeUser();
+                    userId = getWebScriptsHomeUser();
                     if (userId == null)
                     {
                         if (isAlwaysAllowBasicAuthForWebScriptsHome())
@@ -311,7 +311,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                             this.servletReq.getHttpServletRequest(),
                             this.servletRes.getHttpServletResponse());
                 }
-                else if (isWebScriptHome(webScript)
+                else if (isWebScriptsHome(webScript)
                         && isWebScriptsHomeAuthenticatorActive())
                 {
                     webScriptsHomeAuthenticator.requestAuthentication(
@@ -351,7 +351,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
         private boolean shouldUseTimeoutForAdminAccessingWebScriptsHome(RequiredAuthentication required, boolean isGuest)
         {
             boolean adminWebHomeTimeout = RequiredAuthentication.admin.equals(required) && !isGuest &&
-                    servletReq.getServiceMatch() != null && isWebScriptHome(servletReq.getServiceMatch().getWebScript());
+                    servletReq.getServiceMatch() != null && isWebScriptsHome(servletReq.getServiceMatch().getWebScript());
 
             if (LOGGER.isTraceEnabled())
             {
@@ -401,21 +401,21 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             return isAdminConsole;
         }
 
-        protected boolean isWebScriptHome(WebScript webScript)
+        protected boolean isWebScriptsHome(WebScript webScript)
         {
             if (webScript == null || webScript.toString() == null)
             {
                 return false;
             }
 
-            boolean isWebScriptHome = webScript.toString().contains("webscript");
+            boolean isWebScriptsHome = webScript.toString().contains("webscript");
 
-            if (LOGGER.isTraceEnabled() && isWebScriptHome)
+            if (LOGGER.isTraceEnabled() && isWebScriptsHome)
             {
-                LOGGER.trace("Detected a WebScript Home webscript: " + webScript);
+                LOGGER.trace("Detected a WebScripts Home webscript: " + webScript);
             }
 
-            return isWebScriptHome;
+            return isWebScriptsHome;
         }
 
         protected String getRemoteUserWithTimeout(boolean useTimeout) throws AuthenticationTimeoutException
@@ -521,7 +521,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             return userId;
         }
 
-        protected String getWebScriptHomeUser()
+        protected String getWebScriptsHomeUser()
         {
             String userId = null;
 

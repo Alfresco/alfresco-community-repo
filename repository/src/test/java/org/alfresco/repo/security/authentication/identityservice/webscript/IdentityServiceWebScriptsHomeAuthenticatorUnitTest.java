@@ -58,7 +58,9 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
-import org.alfresco.repo.security.authentication.identityservice.admin.AdminAuthenticationCookiesService;
+import org.alfresco.repo.security.authentication.identityservice.authentication.AdditionalHeadersHttpServletRequestWrapper;
+import org.alfresco.repo.security.authentication.identityservice.authentication.AdminAuthenticationCookiesService;
+import org.alfresco.repo.security.authentication.identityservice.authentication.webscripts.IdentityServiceWebScriptsHomeAuthenticator;
 
 @SuppressWarnings("PMD.AvoidStringBufferField")
 public class IdentityServiceWebScriptsHomeAuthenticatorUnitTest
@@ -85,7 +87,7 @@ public class IdentityServiceWebScriptsHomeAuthenticatorUnitTest
     @Mock
     AccessToken accessToken;
     @Captor
-    ArgumentCaptor<WebScriptHomeHttpServletRequestWrapper> requestCaptor;
+    ArgumentCaptor<AdditionalHeadersHttpServletRequestWrapper> requestCaptor;
 
     IdentityServiceWebScriptsHomeAuthenticator authenticator;
 
@@ -158,8 +160,8 @@ public class IdentityServiceWebScriptsHomeAuthenticatorUnitTest
 
         String redirectPath = "/alfresco/s/index";
         when(request.getRequestURL()).thenReturn(webScriptHomeURL);
-        when(identityServiceConfig.getWebScriptHomeScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
-        when(identityServiceConfig.getWebScriptHomeRedirectPath()).thenReturn(redirectPath);
+        when(identityServiceConfig.getWebScriptsHomeScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
+        when(identityServiceConfig.getWebScriptsHomeRedirectPath()).thenReturn(redirectPath);
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
                 .formatted("http://localhost:8080", redirectPath);
@@ -182,8 +184,8 @@ public class IdentityServiceWebScriptsHomeAuthenticatorUnitTest
         String redirectPath = "/alfresco/s/index";
         when(request.getRequestURL()).thenReturn(webScriptHomeURL);
         when(identityServiceConfig.getAudience()).thenReturn(audience);
-        when(identityServiceConfig.getWebScriptHomeRedirectPath()).thenReturn(redirectPath);
-        when(identityServiceConfig.getWebScriptHomeScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
+        when(identityServiceConfig.getWebScriptsHomeRedirectPath()).thenReturn(redirectPath);
+        when(identityServiceConfig.getWebScriptsHomeScopes()).thenReturn(Set.of("openid", "email", "profile", "offline_access"));
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
                 .formatted("http://localhost:8080", redirectPath);

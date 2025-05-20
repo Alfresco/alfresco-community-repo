@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.identityservice.admin;
+package org.alfresco.repo.security.authentication.identityservice.authentication.admin;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -58,11 +58,12 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
+import org.alfresco.repo.security.authentication.identityservice.authentication.AdditionalHeadersHttpServletRequestWrapper;
+import org.alfresco.repo.security.authentication.identityservice.authentication.AdminAuthenticationCookiesService;
 
 @SuppressWarnings("PMD.AvoidStringBufferField")
 public class IdentityServiceAdminConsoleAuthenticatorUnitTest
 {
-
     private static final String ALFRESCO_ACCESS_TOKEN = "ALFRESCO_ACCESS_TOKEN";
     private static final String ALFRESCO_REFRESH_TOKEN = "ALFRESCO_REFRESH_TOKEN";
     private static final String ALFRESCO_TOKEN_EXPIRATION = "ALFRESCO_TOKEN_EXPIRATION";
@@ -84,7 +85,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     @Mock
     AccessToken accessToken;
     @Captor
-    ArgumentCaptor<AdminConsoleHttpServletRequestWrapper> requestCaptor;
+    ArgumentCaptor<AdditionalHeadersHttpServletRequestWrapper> requestCaptor;
 
     IdentityServiceAdminConsoleAuthenticator authenticator;
 

@@ -50,6 +50,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.web.util.UriComponentsBuilder;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.external.ExternalUserAuthenticator;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade;
@@ -57,7 +58,7 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
 
-public abstract class AbstractIdentityServiceAuthenticator
+public abstract class AbstractIdentityServiceAuthenticator implements ExternalUserAuthenticator
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIdentityServiceAuthenticator.class);
 
@@ -70,11 +71,12 @@ public abstract class AbstractIdentityServiceAuthenticator
     public static final String ALFRESCO_REFRESH_TOKEN = "ALFRESCO_REFRESH_TOKEN";
     public static final String ALFRESCO_TOKEN_EXPIRATION = "ALFRESCO_TOKEN_EXPIRATION";
 
-    protected abstract boolean isWebScriptsHome();
+    protected abstract String getConfiguredRedirectPath();
 
-    protected abstract String getRedirectUri(String requestURL);
+    protected abstract Set<String> getConfiguredScopes();
 
-    public String resolveUser(HttpServletRequest request, HttpServletResponse response)
+    @Override
+    public String getUserId(HttpServletRequest request, HttpServletResponse response)
     {
         String username = remoteUserMapper.getRemoteUser(request);
         if (username != null)
@@ -106,7 +108,31 @@ public abstract class AbstractIdentityServiceAuthenticator
         return remoteUserMapper.getRemoteUser(wrappedRequest);
     }
 
-    public String getAuthenticationRequest(HttpServletRequest request)
+    @Override
+    public void requestAuthentication(HttpServletRequest request, HttpServletResponse response)
+    {
+        try
+        {
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("Responding with the authentication challenge");
+            }
+            String authenticationRequest = buildAuthRequestUrl(request);
+            response.sendRedirect(authenticationRequest);
+        }
+        catch (IOException e)
+        {
+            LOGGER.error("Error while trying to respond with the authentication challenge: {}", e.getMessage(), e);
+            throw new AuthenticationException(e.getMessage(), e);
+        }
+    }
+
+    protected String getRedirectUri(String requestURL)
+    {
+        return buildRedirectUri(requestURL, getConfiguredRedirectPath());
+    }
+
+    public String buildAuthRequestUrl(HttpServletRequest request)
     {
         ClientRegistration clientRegistration = identityServiceFacade.getClientRegistration();
         State state = new State();
@@ -116,7 +142,7 @@ public abstract class AbstractIdentityServiceAuthenticator
                 .queryParam("client_id", clientRegistration.getClientId())
                 .queryParam("redirect_uri", getRedirectUri(request.getRequestURL().toString()))
                 .queryParam("response_type", "code")
-                .queryParam("scope", String.join("+", getScopes(clientRegistration)))
+                .queryParam("scope", String.join("+", getConfiguredScopes(clientRegistration)))
                 .queryParam("state", state.toString());
 
         if (StringUtils.isNotBlank(identityServiceConfig.getAudience()))
@@ -128,7 +154,7 @@ public abstract class AbstractIdentityServiceAuthenticator
                 .toUriString();
     }
 
-    private Set<String> getScopes(ClientRegistration clientRegistration)
+    private Set<String> getConfiguredScopes(ClientRegistration clientRegistration)
     {
         return Optional.ofNullable(clientRegistration.getProviderDetails())
                 .map(ProviderDetails::getConfigurationMetadata)
@@ -141,9 +167,10 @@ public abstract class AbstractIdentityServiceAuthenticator
 
     private Set<String> getSupportedScopes(Scope scopes)
     {
+        Set<String> configuredScopes = getConfiguredScopes();
         return scopes.stream()
-                .filter(scope -> isWebScriptsHome() ? hasWebScriptsHomeScope(scope) : hasAdminConsoleScope(scope))
                 .map(Identifier::getValue)
+                .filter(configuredScopes::contains)
                 .collect(Collectors.toSet());
     }
 
@@ -264,12 +291,6 @@ public abstract class AbstractIdentityServiceAuthenticator
     {
         return new AdditionalHeadersHttpServletRequestWrapper(headers, request);
     }
-
-    protected abstract String buildAuthRequestUrl(HttpServletRequest request);
-
-    protected abstract boolean hasWebScriptsHomeScope(Identifier scope);
-
-    protected abstract boolean hasAdminConsoleScope(Identifier scope);
 
     // Setters
     public void setIdentityServiceConfig(IdentityServiceConfig config)

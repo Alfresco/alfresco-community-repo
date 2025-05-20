@@ -135,7 +135,7 @@
         </property>
         <property name="interfaces">
             <list>
-                <value>org.alfresco.repo.security.authentication.external.AdminConsoleAuthenticator</value>
+                <value>org.alfresco.repo.security.authentication.external.ExternalUserAuthenticator</value>
                 <value>org.alfresco.repo.management.subsystems.ActivateableBean</value>
             </list>
         </property>
@@ -151,7 +151,7 @@
         </property>
         <property name="interfaces">
             <list>
-                <value>org.alfresco.repo.security.authentication.external.WebScriptsHomeAuthenticator</value>
+                <value>org.alfresco.repo.security.authentication.external.ExternalUserAuthenticator</value>
                 <value>org.alfresco.repo.management.subsystems.ActivateableBean</value>
             </list>
         </property>

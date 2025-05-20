@@ -125,7 +125,7 @@ public class IdentityServiceWebScriptsHomeAuthenticatorUnitTest
                 String.valueOf(Instant.now().plusSeconds(60).toEpochMilli()));
         when(remoteUserMapper.getRemoteUser(requestCaptor.capture())).thenReturn("admin");
 
-        String username = authenticator.getWebScriptsHomeUser(request, response);
+        String username = authenticator.getUserId(request, response);
 
         assertEquals("Bearer JWT_TOKEN", requestCaptor.getValue().getHeader("Authorization"));
         assertEquals("admin", username);
@@ -146,7 +146,7 @@ public class IdentityServiceWebScriptsHomeAuthenticatorUnitTest
         when(identityServiceFacade.authorize(any(AuthorizationGrant.class))).thenReturn(accessTokenAuthorization);
         when(remoteUserMapper.getRemoteUser(requestCaptor.capture())).thenReturn("admin");
 
-        String username = authenticator.getWebScriptsHomeUser(request, response);
+        String username = authenticator.getUserId(request, response);
 
         verify(cookiesService).addCookie(ALFRESCO_ACCESS_TOKEN, "REFRESHED_JWT_TOKEN", response);
         verify(cookiesService).addCookie(ALFRESCO_REFRESH_TOKEN, "REFRESH_TOKEN", response);
@@ -212,7 +212,7 @@ public class IdentityServiceWebScriptsHomeAuthenticatorUnitTest
 
         when(identityServiceFacade.authorize(any(AuthorizationGrant.class))).thenThrow(AuthorizationException.class);
 
-        String username = authenticator.getWebScriptsHomeUser(request, response);
+        String username = authenticator.getUserId(request, response);
 
         verify(cookiesService).resetCookie(ALFRESCO_ACCESS_TOKEN, response);
         verify(cookiesService).resetCookie(ALFRESCO_REFRESH_TOKEN, response);
@@ -233,7 +233,7 @@ public class IdentityServiceWebScriptsHomeAuthenticatorUnitTest
                         .thenReturn(accessTokenAuthorization);
         when(remoteUserMapper.getRemoteUser(requestCaptor.capture())).thenReturn("admin");
 
-        String username = authenticator.getWebScriptsHomeUser(request, response);
+        String username = authenticator.getUserId(request, response);
 
         verify(cookiesService).addCookie(ALFRESCO_ACCESS_TOKEN, "JWT_TOKEN", response);
         verify(cookiesService).addCookie(ALFRESCO_REFRESH_TOKEN, "REFRESH_TOKEN", response);
@@ -246,7 +246,7 @@ public class IdentityServiceWebScriptsHomeAuthenticatorUnitTest
     {
         when(remoteUserMapper.getRemoteUser(request)).thenReturn("admin");
 
-        String username = authenticator.getWebScriptsHomeUser(request, response);
+        String username = authenticator.getUserId(request, response);
 
         assertEquals("admin", username);
     }

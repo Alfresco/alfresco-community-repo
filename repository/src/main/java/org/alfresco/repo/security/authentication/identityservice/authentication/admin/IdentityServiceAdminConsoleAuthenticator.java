@@ -25,81 +25,30 @@
  */
 package org.alfresco.repo.security.authentication.identityservice.authentication.admin;
 
-import java.io.IOException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import com.nimbusds.oauth2.sdk.id.Identifier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Set;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
-import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.external.AdminConsoleAuthenticator;
+import org.alfresco.repo.security.authentication.external.ExternalUserAuthenticator;
 import org.alfresco.repo.security.authentication.identityservice.authentication.AbstractIdentityServiceAuthenticator;
 
 /**
- * An {@link AdminConsoleAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow.
+ * An {@link ExternalUserAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow.
  */
 public class IdentityServiceAdminConsoleAuthenticator extends AbstractIdentityServiceAuthenticator
-        implements AdminConsoleAuthenticator, ActivateableBean
+        implements ExternalUserAuthenticator, ActivateableBean
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(IdentityServiceAdminConsoleAuthenticator.class);
-
     private boolean isEnabled;
 
     @Override
-    public String getAdminConsoleUser(HttpServletRequest request, HttpServletResponse response)
+    protected Set<String> getConfiguredScopes()
     {
-        return resolveUser(request, response);
+        return identityServiceConfig.getAdminConsoleScopes();
     }
 
     @Override
-    public void requestAuthentication(HttpServletRequest request, HttpServletResponse response)
+    protected String getConfiguredRedirectPath()
     {
-        try
-        {
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("Responding with the authentication challenge");
-            }
-            response.sendRedirect(getAuthenticationRequest(request));
-        }
-        catch (IOException e)
-        {
-            LOGGER.error("Admin Console Auth challenge failed: {}", e.getMessage(), e);
-            throw new AuthenticationException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    protected boolean isWebScriptsHome()
-    {
-        return false;
-    }
-
-    @Override
-    protected String buildAuthRequestUrl(HttpServletRequest request)
-    {
-        return getAuthenticationRequest(request);
-    }
-
-    @Override
-    protected boolean hasWebScriptsHomeScope(Identifier scope)
-    {
-        return false;
-    }
-
-    @Override
-    protected boolean hasAdminConsoleScope(Identifier scope)
-    {
-        return identityServiceConfig.getAdminConsoleScopes().contains(scope.getValue());
-    }
-
-    @Override
-    protected String getRedirectUri(String requestURL)
-    {
-        return buildRedirectUri(requestURL, identityServiceConfig.getAdminConsoleRedirectPath());
+        return identityServiceConfig.getAdminConsoleRedirectPath();
     }
 
     @Override

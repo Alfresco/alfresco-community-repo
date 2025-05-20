@@ -46,9 +46,8 @@ import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.external.AdminConsoleAuthenticator;
+import org.alfresco.repo.security.authentication.external.ExternalUserAuthenticator;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
-import org.alfresco.repo.security.authentication.external.WebScriptsHomeAuthenticator;
 import org.alfresco.repo.web.auth.AuthenticationListener;
 import org.alfresco.repo.web.auth.TicketCredentials;
 import org.alfresco.repo.web.auth.WebCredentials;
@@ -72,8 +71,8 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
 
     protected RemoteUserMapper remoteUserMapper;
     protected AuthenticationComponent authenticationComponent;
-    protected AdminConsoleAuthenticator adminConsoleAuthenticator;
-    protected WebScriptsHomeAuthenticator webScriptsHomeAuthenticator;
+    protected ExternalUserAuthenticator adminConsoleAuthenticator;
+    protected ExternalUserAuthenticator webScriptsHomeAuthenticator;
 
     private boolean alwaysAllowBasicAuthForAdminConsole = true;
     private boolean alwaysAllowBasicAuthForWebScriptsHome = true;
@@ -131,13 +130,13 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
     }
 
     public void setAdminConsoleAuthenticator(
-            AdminConsoleAuthenticator adminConsoleAuthenticator)
+            ExternalUserAuthenticator adminConsoleAuthenticator)
     {
         this.adminConsoleAuthenticator = adminConsoleAuthenticator;
     }
 
     public void setWebScriptsHomeAuthenticator(
-            WebScriptsHomeAuthenticator webScriptsHomeAuthenticator)
+            ExternalUserAuthenticator webScriptsHomeAuthenticator)
     {
         this.webScriptsHomeAuthenticator = webScriptsHomeAuthenticator;
     }
@@ -515,7 +514,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
 
             if (isRemoteUserMapperActive())
             {
-                userId = adminConsoleAuthenticator.getAdminConsoleUser(this.servletReq.getHttpServletRequest(), this.servletRes.getHttpServletResponse());
+                userId = adminConsoleAuthenticator.getUserId(this.servletReq.getHttpServletRequest(), this.servletRes.getHttpServletResponse());
             }
 
             logRemoteUserID(userId);
@@ -529,7 +528,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
 
             if (isRemoteUserMapperActive())
             {
-                userId = webScriptsHomeAuthenticator.getWebScriptsHomeUser(this.servletReq.getHttpServletRequest(), this.servletRes.getHttpServletResponse());
+                userId = webScriptsHomeAuthenticator.getUserId(this.servletReq.getHttpServletRequest(), this.servletRes.getHttpServletResponse());
             }
 
             logRemoteUserID(userId);

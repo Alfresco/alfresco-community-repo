@@ -31,12 +31,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 
 /**
- * A default {@link WebScriptsHomeAuthenticator} implementation. Returns null to request a basic auth challenge.
+ * A default {@link ExternalUserAuthenticator} implementation. Returns null to request a basic auth challenge.
  */
-public class DefaultWebScriptsHomeAuthenticator implements WebScriptsHomeAuthenticator, ActivateableBean
+public class DefaultWebScriptsHomeAuthenticator implements ExternalUserAuthenticator, ActivateableBean
 {
     @Override
-    public String getWebScriptsHomeUser(HttpServletRequest request, HttpServletResponse response)
+    public String getUserId(HttpServletRequest request, HttpServletResponse response)
     {
         return null;
     }

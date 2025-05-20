@@ -25,81 +25,30 @@
  */
 package org.alfresco.repo.security.authentication.identityservice.authentication.webscripts;
 
-import java.io.IOException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import com.nimbusds.oauth2.sdk.id.Identifier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Set;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
-import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.external.WebScriptsHomeAuthenticator;
+import org.alfresco.repo.security.authentication.external.ExternalUserAuthenticator;
 import org.alfresco.repo.security.authentication.identityservice.authentication.AbstractIdentityServiceAuthenticator;
 
 /**
- * A {@link WebScriptsHomeAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow for WebScript Home UI.
+ * An {@link ExternalUserAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow.
  */
 public class IdentityServiceWebScriptsHomeAuthenticator extends AbstractIdentityServiceAuthenticator
-        implements WebScriptsHomeAuthenticator, ActivateableBean
+        implements ExternalUserAuthenticator, ActivateableBean
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(IdentityServiceWebScriptsHomeAuthenticator.class);
-
     private boolean isEnabled;
 
     @Override
-    public String getWebScriptsHomeUser(HttpServletRequest request, HttpServletResponse response)
+    protected String getConfiguredRedirectPath()
     {
-        return resolveUser(request, response);
+        return identityServiceConfig.getWebScriptsHomeRedirectPath();
     }
 
     @Override
-    public void requestAuthentication(HttpServletRequest request, HttpServletResponse response)
+    protected Set<String> getConfiguredScopes()
     {
-        try
-        {
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("Responding with the authentication challenge");
-            }
-            response.sendRedirect(getAuthenticationRequest(request));
-        }
-        catch (IOException e)
-        {
-            LOGGER.error("WebScript Home Auth challenge failed: {}", e.getMessage(), e);
-            throw new AuthenticationException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    protected boolean isWebScriptsHome()
-    {
-        return true;
-    }
-
-    @Override
-    protected String buildAuthRequestUrl(HttpServletRequest request)
-    {
-        return getAuthenticationRequest(request);
-    }
-
-    @Override
-    protected boolean hasWebScriptsHomeScope(Identifier scope)
-    {
-        return identityServiceConfig.getWebScriptsHomeScopes().contains(scope.getValue());
-    }
-
-    @Override
-    protected boolean hasAdminConsoleScope(Identifier scope)
-    {
-        return false;
-    }
-
-    @Override
-    protected String getRedirectUri(String requestURL)
-    {
-        return buildRedirectUri(requestURL, identityServiceConfig.getWebScriptsHomeRedirectPath());
+        return identityServiceConfig.getWebScriptsHomeScopes();
     }
 
     @Override

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -29,29 +29,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * An interface for objects capable of extracting an externally authenticated user ID from the HTTP WebScripts Home request.
+ * An interface for objects capable of extracting an externally authenticated user ID from the HTTP request.
  */
-public interface WebScriptsHomeAuthenticator
+public interface ExternalUserAuthenticator
 {
     /**
-     * Gets an externally authenticated user ID from the HTTP WebScripts Home request.
-     *
-     * @param request
-     *            the request
-     * @param response
-     *            the response
+     * Gets an externally authenticated user ID from the HTTP request.
+     * 
      * @return the user ID or <code>null</code> if the user is unauthenticated
      */
-    String getWebScriptsHomeUser(HttpServletRequest request, HttpServletResponse response);
+    String getUserId(HttpServletRequest request, HttpServletResponse response);
 
-    /**
-     * Requests an authentication for accessing WebScripts Home.
-     *
-     * @param request
-     *            the request
-     * @param response
-     *            the response
-     */
+    /* Sends redirect to external site to initiate the OIDC authorization code flow. */
     void requestAuthentication(HttpServletRequest request, HttpServletResponse response);
-
 }

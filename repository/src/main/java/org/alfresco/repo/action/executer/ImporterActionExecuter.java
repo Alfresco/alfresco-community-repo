@@ -74,6 +74,7 @@ import org.alfresco.util.TempFileProvider;
  * 
  * @author gavinc
  */
+@SuppressWarnings("PMD.PreserveStackTrace")
 public class ImporterActionExecuter extends ActionExecuterAbstractBase
 {
     public static final String NAME = "import";

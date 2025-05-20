@@ -36,20 +36,20 @@ import org.slf4j.LoggerFactory;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.external.WebScriptHomeAuthenticator;
+import org.alfresco.repo.security.authentication.external.WebScriptsHomeAuthenticator;
 
 /**
- * A {@link WebScriptHomeAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow for WebScript Home UI.
+ * A {@link WebScriptsHomeAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow for WebScript Home UI.
  */
-public class IdentityServiceWebScriptHomeAuthenticator extends AbstractIdentityServiceAuthenticator
-        implements WebScriptHomeAuthenticator, ActivateableBean
+public class IdentityServiceWebScriptsHomeAuthenticator extends AbstractIdentityServiceAuthenticator
+        implements WebScriptsHomeAuthenticator, ActivateableBean
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(IdentityServiceWebScriptHomeAuthenticator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IdentityServiceWebScriptsHomeAuthenticator.class);
 
     private boolean isEnabled;
 
     @Override
-    public String getWebScriptHomeUser(HttpServletRequest request, HttpServletResponse response)
+    public String getWebScriptsHomeUser(HttpServletRequest request, HttpServletResponse response)
     {
         return resolveUser(request, response);
     }

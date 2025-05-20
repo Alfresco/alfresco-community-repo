@@ -31,7 +31,7 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * An interface for objects capable of extracting an externally authenticated user ID from the HTTP WebScripts Home request.
  */
-public interface WebScriptHomeAuthenticator
+public interface WebScriptsHomeAuthenticator
 {
     /**
      * Gets an externally authenticated user ID from the HTTP WebScripts Home request.
@@ -42,7 +42,7 @@ public interface WebScriptHomeAuthenticator
      *            the response
      * @return the user ID or <code>null</code> if the user is unauthenticated
      */
-    String getWebScriptHomeUser(HttpServletRequest request, HttpServletResponse response);
+    String getWebScriptsHomeUser(HttpServletRequest request, HttpServletResponse response);
 
     /**
      * Requests an authentication for accessing WebScripts Home.

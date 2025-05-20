@@ -226,7 +226,7 @@
       </property>
    </bean>
 
-    <bean id="webScriptHomeAuthenticator" class="org.alfresco.repo.security.authentication.identityservice.webscript.IdentityServiceWebScriptHomeAuthenticator">
+    <bean id="webScriptsHomeAuthenticator" class="org.alfresco.repo.security.authentication.identityservice.webscript.IdentityServiceWebScriptsHomeAuthenticator">
         <property name="active">
             <value>${identity-service.authentication.enabled}</value>
         </property>

@@ -61,7 +61,7 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
 import org.alfresco.repo.security.authentication.identityservice.admin.AdminAuthenticationCookiesService;
 
 @SuppressWarnings("PMD.AvoidStringBufferField")
-public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
+public class IdentityServiceWebScriptsHomeAuthenticatorUnitTest
 {
 
     private static final String ALFRESCO_ACCESS_TOKEN = "ALFRESCO_ACCESS_TOKEN";
@@ -87,7 +87,7 @@ public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
     @Captor
     ArgumentCaptor<WebScriptHomeHttpServletRequestWrapper> requestCaptor;
 
-    IdentityServiceWebScriptHomeAuthenticator authenticator;
+    IdentityServiceWebScriptsHomeAuthenticator authenticator;
 
     StringBuffer webScriptHomeURL = new StringBuffer("http://localhost:8080/alfresco/s/index");
 
@@ -107,7 +107,7 @@ public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
         when(request.getRequestURL()).thenReturn(webScriptHomeURL);
         when(remoteUserMapper.getRemoteUser(request)).thenReturn(null);
 
-        authenticator = new IdentityServiceWebScriptHomeAuthenticator();
+        authenticator = new IdentityServiceWebScriptsHomeAuthenticator();
         authenticator.setActive(true);
         authenticator.setIdentityServiceFacade(identityServiceFacade);
         authenticator.setCookiesService(cookiesService);
@@ -123,7 +123,7 @@ public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
                 String.valueOf(Instant.now().plusSeconds(60).toEpochMilli()));
         when(remoteUserMapper.getRemoteUser(requestCaptor.capture())).thenReturn("admin");
 
-        String username = authenticator.getWebScriptHomeUser(request, response);
+        String username = authenticator.getWebScriptsHomeUser(request, response);
 
         assertEquals("Bearer JWT_TOKEN", requestCaptor.getValue().getHeader("Authorization"));
         assertEquals("admin", username);
@@ -144,7 +144,7 @@ public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
         when(identityServiceFacade.authorize(any(AuthorizationGrant.class))).thenReturn(accessTokenAuthorization);
         when(remoteUserMapper.getRemoteUser(requestCaptor.capture())).thenReturn("admin");
 
-        String username = authenticator.getWebScriptHomeUser(request, response);
+        String username = authenticator.getWebScriptsHomeUser(request, response);
 
         verify(cookiesService).addCookie(ALFRESCO_ACCESS_TOKEN, "REFRESHED_JWT_TOKEN", response);
         verify(cookiesService).addCookie(ALFRESCO_REFRESH_TOKEN, "REFRESH_TOKEN", response);
@@ -210,7 +210,7 @@ public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
 
         when(identityServiceFacade.authorize(any(AuthorizationGrant.class))).thenThrow(AuthorizationException.class);
 
-        String username = authenticator.getWebScriptHomeUser(request, response);
+        String username = authenticator.getWebScriptsHomeUser(request, response);
 
         verify(cookiesService).resetCookie(ALFRESCO_ACCESS_TOKEN, response);
         verify(cookiesService).resetCookie(ALFRESCO_REFRESH_TOKEN, response);
@@ -231,7 +231,7 @@ public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
                         .thenReturn(accessTokenAuthorization);
         when(remoteUserMapper.getRemoteUser(requestCaptor.capture())).thenReturn("admin");
 
-        String username = authenticator.getWebScriptHomeUser(request, response);
+        String username = authenticator.getWebScriptsHomeUser(request, response);
 
         verify(cookiesService).addCookie(ALFRESCO_ACCESS_TOKEN, "JWT_TOKEN", response);
         verify(cookiesService).addCookie(ALFRESCO_REFRESH_TOKEN, "REFRESH_TOKEN", response);
@@ -244,7 +244,7 @@ public class IdentityServiceWebScriptHomeAuthenticatorUnitTest
     {
         when(remoteUserMapper.getRemoteUser(request)).thenReturn("admin");
 
-        String username = authenticator.getWebScriptHomeUser(request, response);
+        String username = authenticator.getWebScriptsHomeUser(request, response);
 
         assertEquals("admin", username);
     }

@@ -39,7 +39,7 @@ import org.alfresco.repo.security.authentication.identityservice.admin.AdminCons
 import org.alfresco.repo.security.authentication.identityservice.admin.IdentityServiceAdminConsoleAuthenticatorUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.user.AccessTokenToDecodedTokenUserMapperUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.user.TokenUserToOIDCUserMapperUnitTest;
-import org.alfresco.repo.security.authentication.identityservice.webscript.IdentityServiceWebScriptHomeAuthenticatorUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.webscript.IdentityServiceWebScriptsHomeAuthenticatorUnitTest;
 import org.alfresco.util.testing.category.DBTests;
 import org.alfresco.util.testing.category.NonBuildTests;
 
@@ -157,7 +157,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         AdminConsoleAuthenticationCookiesServiceUnitTest.class,
         AdminConsoleHttpServletRequestWrapperUnitTest.class,
         IdentityServiceAdminConsoleAuthenticatorUnitTest.class,
-        IdentityServiceWebScriptHomeAuthenticatorUnitTest.class,
+        IdentityServiceWebScriptsHomeAuthenticatorUnitTest.class,
         ClientRegistrationProviderUnitTest.class,
         org.alfresco.repo.security.authentication.CompositePasswordEncoderTest.class,
         org.alfresco.repo.security.authentication.PasswordHashingTest.class,

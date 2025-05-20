@@ -48,7 +48,7 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.external.AdminConsoleAuthenticator;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
-import org.alfresco.repo.security.authentication.external.WebScriptHomeAuthenticator;
+import org.alfresco.repo.security.authentication.external.WebScriptsHomeAuthenticator;
 import org.alfresco.repo.web.auth.AuthenticationListener;
 import org.alfresco.repo.web.auth.TicketCredentials;
 import org.alfresco.repo.web.auth.WebCredentials;
@@ -73,12 +73,11 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
     protected RemoteUserMapper remoteUserMapper;
     protected AuthenticationComponent authenticationComponent;
     protected AdminConsoleAuthenticator adminConsoleAuthenticator;
-    protected WebScriptHomeAuthenticator webScriptHomeAuthenticator;
+    protected WebScriptsHomeAuthenticator webScriptsHomeAuthenticator;
 
     private boolean alwaysAllowBasicAuthForAdminConsole = true;
-    private boolean allowBasicAuthWebHome = true;
+    private boolean alwaysAllowBasicAuthForWebScriptsHome = true;
     List<String> adminConsoleScriptFamilies;
-    List<String> webScriptHomeFamilies;
     long getRemoteUserTimeoutMilliseconds = GET_REMOTE_USER_TIMEOUT_MILLISECONDS_DEFAULT;
 
     public void setRemoteUserMapper(RemoteUserMapper remoteUserMapper)
@@ -101,14 +100,14 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
         this.alwaysAllowBasicAuthForAdminConsole = alwaysAllowBasicAuthForAdminConsole;
     }
 
-    public boolean isAlwaysAllowBasicAuthForWebScriptHome()
+    public boolean isAlwaysAllowBasicAuthForWebScriptsHome()
     {
-        return allowBasicAuthWebHome;
+        return alwaysAllowBasicAuthForWebScriptsHome;
     }
 
-    public void setAllowBasicAuthWebHome(boolean allowBasicAuthWebHome)
+    public void setAlwaysAllowBasicAuthForWebScriptsHome(boolean alwaysAllowBasicAuthForWebScriptsHome)
     {
-        this.allowBasicAuthWebHome = allowBasicAuthWebHome;
+        this.alwaysAllowBasicAuthForWebScriptsHome = alwaysAllowBasicAuthForWebScriptsHome;
     }
 
     public List<String> getAdminConsoleScriptFamilies()
@@ -119,11 +118,6 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
     public void setAdminConsoleScriptFamilies(List<String> adminConsoleScriptFamilies)
     {
         this.adminConsoleScriptFamilies = adminConsoleScriptFamilies;
-    }
-
-    public void setWebScriptHomeFamilies(List<String> webScriptHomeFamilies)
-    {
-        this.webScriptHomeFamilies = webScriptHomeFamilies;
     }
 
     public long getGetRemoteUserTimeoutMilliseconds()
@@ -142,10 +136,10 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
         this.adminConsoleAuthenticator = adminConsoleAuthenticator;
     }
 
-    public void setWebScriptHomeAuthenticator(
-            WebScriptHomeAuthenticator webScriptHomeAuthenticator)
+    public void setWebScriptsHomeAuthenticator(
+            WebScriptsHomeAuthenticator webScriptsHomeAuthenticator)
     {
-        this.webScriptHomeAuthenticator = webScriptHomeAuthenticator;
+        this.webScriptsHomeAuthenticator = webScriptsHomeAuthenticator;
     }
 
     @Override
@@ -179,66 +173,71 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             String userId = null;
             if (isRemoteUserMapperActive())
             {
-
                 if (servletReq.getServiceMatch() != null &&
-                        isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript()) && isAdminConsoleAuthenticatorActive())
+                        isAdminConsole(servletReq.getServiceMatch().getWebScript()) && isAdminConsoleAuthenticatorActive())
                 {
                     userId = getAdminConsoleUser();
+                    if (userId == null)
+                    {
+                        if (isAlwaysAllowBasicAuthForAdminConsole())
+                        {
+                            final boolean useTimeoutForAdminAccessingAdminConsole = shouldUseTimeoutForAdminAccessingAdminConsole(required, isGuest);
+
+                            if (useTimeoutForAdminAccessingAdminConsole && isBasicAuthHeaderPresentForAdmin())
+                            {
+                                return callBasicAuthForAdminConsoleOrWebScriptsHomeAccess(required, isGuest);
+                            }
+                            try
+                            {
+                                userId = getRemoteUserWithTimeout(useTimeoutForAdminAccessingAdminConsole);
+                            }
+                            catch (AuthenticationTimeoutException e)
+                            {
+                                // return basic auth challenge
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            // retrieve the remote user if configured and available - authenticate that user directly
+                            userId = getRemoteUser();
+                        }
+                    }
                 }
                 else if (servletReq.getServiceMatch() != null &&
                         isWebScriptHome(servletReq.getServiceMatch().getWebScript())
-                        && isWebScriptAuthenticatorActive())
+                        && isWebScriptsHomeAuthenticatorActive())
                 {
                     userId = getWebScriptHomeUser();
-                }
-
-                if (userId == null)
-                {
-                    if (isAlwaysAllowBasicAuthForAdminConsole())
+                    if (userId == null)
                     {
-                        final boolean adminConsoleTimeout = shouldUseTimeoutForAdminAccessingAdminConsole(required, isGuest);
+                        if (isAlwaysAllowBasicAuthForWebScriptsHome())
+                        {
+                            final boolean adminWebScriptsHomeTimeout = shouldUseTimeoutForAdminAccessingWebScriptsHome(required, isGuest);
 
-                        if (adminConsoleTimeout && isBasicAuthHeaderPresentForAdmin())
-                        {
-                            return callBasicAuthForAdminConsoleAccess(required, isGuest);
-                        }
-                        try
-                        {
-                            userId = getRemoteUserWithTimeout(adminConsoleTimeout);
-                        }
-                        catch (AuthenticationTimeoutException e)
-                        {
-                            // return basic auth challenge
-                            return false;
-                        }
-                    }
-                    if (isAlwaysAllowBasicAuthForWebScriptHome())
-                    {
-                        final boolean adminWebHomeTimeout = shouldUseTimeoutForAdminAccessingWebScriptHome(required, isGuest);
+                            if (adminWebScriptsHomeTimeout && isBasicAuthHeaderPresentForAdmin())
+                            {
+                                return callBasicAuthForAdminConsoleOrWebScriptsHomeAccess(required, isGuest);
+                            }
 
-                        if (adminWebHomeTimeout && isBasicAuthHeaderPresentForAdmin())
-                        {
-                            return callBasicAuthForWebScriptHomeAccess(required, isGuest);
+                            try
+                            {
+                                userId = getRemoteUserWithTimeout(adminWebScriptsHomeTimeout);
+                            }
+                            catch (AuthenticationTimeoutException e)
+                            {
+                                // return basic auth challenge
+                                return false;
+                            }
                         }
-
-                        try
+                        else
                         {
-                            userId = getRemoteUserWithTimeout(adminWebHomeTimeout);
+                            // retrieve the remote user if configured and available - authenticate that user directly
+                            userId = getRemoteUser();
                         }
-                        catch (AuthenticationTimeoutException e)
-                        {
-                            // return basic auth challenge
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        // retrieve the remote user if configured and available - authenticate that user directly
-                        userId = getRemoteUser();
                     }
                 }
             }
-
             if (userId != null)
             {
                 try
@@ -306,16 +305,16 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             {
                 WebScript webScript = servletReq.getServiceMatch().getWebScript();
 
-                if (isAdminConsoleWebScript(webScript) && isAdminConsoleAuthenticatorActive())
+                if (isAdminConsole(webScript) && isAdminConsoleAuthenticatorActive())
                 {
                     adminConsoleAuthenticator.requestAuthentication(
                             this.servletReq.getHttpServletRequest(),
                             this.servletRes.getHttpServletResponse());
                 }
                 else if (isWebScriptHome(webScript)
-                        && isWebScriptAuthenticatorActive())
+                        && isWebScriptsHomeAuthenticatorActive())
                 {
-                    webScriptHomeAuthenticator.requestAuthentication(
+                    webScriptsHomeAuthenticator.requestAuthentication(
                             this.servletReq.getHttpServletRequest(),
                             this.servletRes.getHttpServletResponse());
                 }
@@ -323,34 +322,24 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             return authenticated;
         }
 
-        private boolean callBasicAuthForAdminConsoleAccess(RequiredAuthentication required, boolean isGuest)
+        private boolean callBasicAuthForAdminConsoleOrWebScriptsHomeAccess(RequiredAuthentication required, boolean isGuest)
         {
             // return REST call, after a timeout/basic auth challenge
             if (LOGGER.isTraceEnabled())
             {
-                LOGGER.trace("An Admin Console request has come in with Basic Auth headers present for an admin user.");
+                LOGGER.trace("An Admin Console or WebScripts Home request has come in with Basic Auth headers present for an admin user.");
             }
             // In order to prompt for another password, in case it was not entered correctly,
             // the output of this method should be returned by the calling "authenticate" method;
             // This would also mean, that once the admin basic auth header is present,
-            // the authentication chain will not be used for the admin console access
-            return super.authenticate(required, isGuest);
-        }
-
-        private boolean callBasicAuthForWebScriptHomeAccess(RequiredAuthentication required, boolean isGuest)
-        {
-            // return REST call, after a timeout/basic auth challenge
-            if (LOGGER.isTraceEnabled())
-            {
-                LOGGER.trace("An Web script request has come in with Basic Auth headers present for an admin user.");
-            }
+            // the authentication chain will not be used for access
             return super.authenticate(required, isGuest);
         }
 
         private boolean shouldUseTimeoutForAdminAccessingAdminConsole(RequiredAuthentication required, boolean isGuest)
         {
             boolean adminConsoleTimeout = RequiredAuthentication.admin.equals(required) && !isGuest &&
-                    servletReq.getServiceMatch() != null && isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript());
+                    servletReq.getServiceMatch() != null && isAdminConsole(servletReq.getServiceMatch().getWebScript());
 
             if (LOGGER.isTraceEnabled())
             {
@@ -359,7 +348,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             return adminConsoleTimeout;
         }
 
-        private boolean shouldUseTimeoutForAdminAccessingWebScriptHome(RequiredAuthentication required, boolean isGuest)
+        private boolean shouldUseTimeoutForAdminAccessingWebScriptsHome(RequiredAuthentication required, boolean isGuest)
         {
             boolean adminWebHomeTimeout = RequiredAuthentication.admin.equals(required) && !isGuest &&
                     servletReq.getServiceMatch() != null && isWebScriptHome(servletReq.getServiceMatch().getWebScript());
@@ -381,12 +370,12 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             return adminConsoleAuthenticator != null && (!(adminConsoleAuthenticator instanceof ActivateableBean) || ((ActivateableBean) adminConsoleAuthenticator).isActive());
         }
 
-        private boolean isWebScriptAuthenticatorActive()
+        private boolean isWebScriptsHomeAuthenticatorActive()
         {
-            return webScriptHomeAuthenticator != null && (!(webScriptHomeAuthenticator instanceof ActivateableBean) || ((ActivateableBean) webScriptHomeAuthenticator).isActive());
+            return webScriptsHomeAuthenticator != null && (!(webScriptsHomeAuthenticator instanceof ActivateableBean) || ((ActivateableBean) webScriptsHomeAuthenticator).isActive());
         }
 
-        protected boolean isAdminConsoleWebScript(WebScript webScript)
+        protected boolean isAdminConsole(WebScript webScript)
         {
             if (webScript == null || adminConsoleScriptFamilies == null || webScript.getDescription() == null
                     || webScript.getDescription().getFamilys() == null)
@@ -414,22 +403,12 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
 
         protected boolean isWebScriptHome(WebScript webScript)
         {
-            if (webScript == null || webScriptHomeFamilies == null || webScript.getDescription() == null
-                    || webScript.getDescription().getFamilys() == null)
+            if (webScript == null || webScript.toString() == null)
             {
                 return false;
             }
 
-            if (LOGGER.isTraceEnabled())
-            {
-                LOGGER.trace("WebScript: " + webScript + " has these families: " + webScript.getDescription().getFamilys());
-            }
-
-            // intersect the "family" sets defined
-            Set<String> families = new HashSet<>(webScript.getDescription()
-                    .getFamilys());
-            families.retainAll(webScriptHomeFamilies);
-            final boolean isWebScriptHome = !families.isEmpty();
+            boolean isWebScriptHome = webScript.toString().contains("webscript");
 
             if (LOGGER.isTraceEnabled() && isWebScriptHome)
             {
@@ -548,7 +527,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
 
             if (isRemoteUserMapperActive())
             {
-                userId = webScriptHomeAuthenticator.getWebScriptHomeUser(this.servletReq.getHttpServletRequest(), this.servletRes.getHttpServletResponse());
+                userId = webScriptsHomeAuthenticator.getWebScriptsHomeUser(this.servletReq.getHttpServletRequest(), this.servletRes.getHttpServletResponse());
             }
 
             logRemoteUserID(userId);

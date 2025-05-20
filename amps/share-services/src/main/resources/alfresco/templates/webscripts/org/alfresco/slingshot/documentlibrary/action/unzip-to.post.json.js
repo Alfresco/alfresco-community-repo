@@ -80,6 +80,11 @@ function runAction(p_params)
          {
             result.fileExist = true;
          }
+         if (error.indexOf("FolderExistsException") != -1)
+         {
+            result.fileExist = true;
+            result.type = "folder";
+         }
       }
       
       results.push(result);

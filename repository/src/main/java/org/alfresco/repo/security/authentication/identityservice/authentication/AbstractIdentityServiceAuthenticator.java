@@ -62,14 +62,14 @@ public abstract class AbstractIdentityServiceAuthenticator implements ExternalUs
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractIdentityServiceAuthenticator.class);
 
+    private static final String ALFRESCO_ACCESS_TOKEN = "ALFRESCO_ACCESS_TOKEN";
+    private static final String ALFRESCO_REFRESH_TOKEN = "ALFRESCO_REFRESH_TOKEN";
+    private static final String ALFRESCO_TOKEN_EXPIRATION = "ALFRESCO_TOKEN_EXPIRATION";
+
     protected IdentityServiceConfig identityServiceConfig;
     protected IdentityServiceFacade identityServiceFacade;
     protected AdminAuthenticationCookiesService cookiesService;
     protected RemoteUserMapper remoteUserMapper;
-
-    public static final String ALFRESCO_ACCESS_TOKEN = "ALFRESCO_ACCESS_TOKEN";
-    public static final String ALFRESCO_REFRESH_TOKEN = "ALFRESCO_REFRESH_TOKEN";
-    public static final String ALFRESCO_TOKEN_EXPIRATION = "ALFRESCO_TOKEN_EXPIRATION";
 
     protected abstract String getConfiguredRedirectPath();
 

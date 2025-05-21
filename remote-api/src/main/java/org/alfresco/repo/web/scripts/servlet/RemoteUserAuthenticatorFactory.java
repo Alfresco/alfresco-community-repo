@@ -174,71 +174,64 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             String userId = null;
             if (isRemoteUserMapperActive())
             {
+
                 if (servletReq.getServiceMatch() != null &&
                         isAdminConsole(servletReq.getServiceMatch().getWebScript()) && isAdminConsoleAuthenticatorActive())
                 {
                     userId = getAdminConsoleUser();
-                    if (userId == null)
-                    {
-                        if (isAlwaysAllowBasicAuthForAdminConsole())
-                        {
-                            boolean shouldUseTimeout = shouldUseTimeoutForAdminAccessingAdminConsole(required, isGuest);
-
-                            if (shouldUseTimeout && isBasicAuthHeaderPresentForAdmin())
-                            {
-                                return callBasicAuthForAdminConsoleOrWebScriptsHomeAccess(required, isGuest);
-                            }
-                            try
-                            {
-                                userId = getRemoteUserWithTimeout(shouldUseTimeout);
-                            }
-                            catch (AuthenticationTimeoutException e)
-                            {
-                                // return basic auth challenge
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            // retrieve the remote user if configured and available - authenticate that user directly
-                            userId = getRemoteUser();
-                        }
-                    }
                 }
                 else if (servletReq.getServiceMatch() != null &&
-                        isWebScriptsHome(servletReq.getServiceMatch().getWebScript())
-                        && isWebScriptsHomeAuthenticatorActive())
+                        isWebScriptsHome(servletReq.getServiceMatch().getWebScript()) && isWebScriptsHomeAuthenticatorActive())
                 {
                     userId = getWebScriptsHomeUser();
-                    if (userId == null)
+                }
+
+                if (userId == null)
+                {
+                    if (isAlwaysAllowBasicAuthForAdminConsole())
                     {
-                        if (isAlwaysAllowBasicAuthForWebScriptsHome())
-                        {
-                            boolean shouldUseTimeout = shouldUseTimeoutForAdminAccessingWebScriptsHome(required, isGuest);
+                        boolean shouldUseTimeout = shouldUseTimeoutForAdminAccessingAdminConsole(required, isGuest);
 
-                            if (shouldUseTimeout && isBasicAuthHeaderPresentForAdmin())
-                            {
-                                return callBasicAuthForAdminConsoleOrWebScriptsHomeAccess(required, isGuest);
-                            }
-
-                            try
-                            {
-                                userId = getRemoteUserWithTimeout(shouldUseTimeout);
-                            }
-                            catch (AuthenticationTimeoutException e)
-                            {
-                                // return basic auth challenge
-                                return false;
-                            }
-                        }
-                        else
+                        if (shouldUseTimeout && isBasicAuthHeaderPresentForAdmin())
                         {
-                            // retrieve the remote user if configured and available - authenticate that user directly
-                            userId = getRemoteUser();
+                            return callBasicAuthForAdminConsoleOrWebScriptsHomeAccess(required, isGuest);
                         }
+                        try
+                        {
+                            userId = getRemoteUserWithTimeout(shouldUseTimeout);
+                        }
+                        catch (AuthenticationTimeoutException e)
+                        {
+                            // return basic auth challenge
+                            return false;
+                        }
+                    }
+                    else if (isAlwaysAllowBasicAuthForWebScriptsHome())
+                    {
+                        boolean shouldUseTimeout = shouldUseTimeoutForAdminAccessingWebScriptsHome(required, isGuest);
+
+                        if (shouldUseTimeout && isBasicAuthHeaderPresentForAdmin())
+                        {
+                            return callBasicAuthForAdminConsoleOrWebScriptsHomeAccess(required, isGuest);
+                        }
+                        try
+                        {
+                            userId = getRemoteUserWithTimeout(shouldUseTimeout);
+                        }
+                        catch (AuthenticationTimeoutException e)
+                        {
+                            // return basic auth challenge
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        // retrieve the remote user if configured and available - authenticate that user directly
+                        userId = getRemoteUser();
                     }
                 }
             }
+
             if (userId != null)
             {
                 try

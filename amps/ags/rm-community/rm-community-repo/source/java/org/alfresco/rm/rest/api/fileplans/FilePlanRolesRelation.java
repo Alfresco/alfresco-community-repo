@@ -30,7 +30,9 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 
 import org.springframework.beans.factory.InitializingBean;
 
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -44,6 +46,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class FilePlanRolesRelation implements RelationshipResourceAction.Read<RoleModel>, InitializingBean
 {
     private RMRoles rmRoles;
+    private FilePlanService filePlanService;
     private FilePlanComponentsApiUtils apiUtils;
 
     @Override
@@ -51,13 +54,29 @@ public class FilePlanRolesRelation implements RelationshipResourceAction.Read<Ro
     {
         mandatory("rmRoles", this.rmRoles);
         mandatory("apiUtils", this.apiUtils);
+        mandatory("filePlanService", this.filePlanService);
     }
 
     @Override
     public CollectionWithPagingInfo<RoleModel> readAll(String filePlanId, Parameters params)
     {
-        NodeRef filePlanNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
+        NodeRef filePlanNodeRef = getFilePlan(filePlanId);
+        if (filePlanNodeRef == null)
+        {
+            throw new EntityNotFoundException(filePlanId);
+        }
+
         return rmRoles.getRoles(filePlanNodeRef, params);
+    }
+
+    private NodeRef getFilePlan(String filePlanId)
+    {
+        NodeRef filePlanNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
+        if (!FilePlanComponentsApiUtils.FILE_PLAN_ALIAS.equals(filePlanId))
+        {
+            filePlanNodeRef = filePlanService.getFilePlanBySiteId(filePlanId);
+        }
+        return filePlanNodeRef;
     }
 
     public void setRmRoles(RMRoles rmRoles)
@@ -68,5 +87,10 @@ public class FilePlanRolesRelation implements RelationshipResourceAction.Read<Ro
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
     {
         this.apiUtils = apiUtils;
+    }
+
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
     }
 }

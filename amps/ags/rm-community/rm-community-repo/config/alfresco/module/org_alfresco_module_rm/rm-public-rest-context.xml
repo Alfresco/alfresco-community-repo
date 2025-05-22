@@ -81,6 +81,7 @@
     <bean class="org.alfresco.rm.rest.api.fileplans.FilePlanRolesRelation">
         <property name="apiUtils" ref="apiUtils" />
         <property name="rmRoles" ref="rm.roles" />
+        <property name="filePlanService" ref="FilePlanService" />
     </bean>
 
    <bean class="org.alfresco.rm.rest.api.holds.HoldsEntityResource" >

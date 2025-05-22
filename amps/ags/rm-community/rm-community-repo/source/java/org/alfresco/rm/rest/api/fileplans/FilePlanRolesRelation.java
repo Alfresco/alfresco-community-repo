@@ -74,7 +74,7 @@ public class FilePlanRolesRelation implements RelationshipResourceAction.Read<Ro
         NodeRef filePlanNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
         if (!FilePlanComponentsApiUtils.FILE_PLAN_ALIAS.equals(filePlanId))
         {
-            filePlanNodeRef = filePlanService.getFilePlanBySiteId(filePlanId);
+            filePlanNodeRef = filePlanService.getFilePlan(filePlanNodeRef);
         }
         return filePlanNodeRef;
     }

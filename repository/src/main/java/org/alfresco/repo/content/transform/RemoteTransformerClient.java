@@ -90,7 +90,7 @@ public class RemoteTransformerClient
         return baseUrl;
     }
 
-    public void request(ContentReader reader, ContentWriter writer, String sourceMimetype, String sourceExtension,
+    public void request(ContentReader reader, ContentWriter writer, String fileName,String sourceMimetype, String sourceExtension,
             String targetExtension, long timeoutMs, Log logger, String... args)
     {
 
@@ -103,7 +103,7 @@ public class RemoteTransformerClient
 
         try (InputStream contentStream = reader.getContentInputStream())
         {
-            HttpEntity reqEntity = getRequestEntity(contentStream, sourceMimetype, sourceExtension, targetExtension, timeoutMs,
+            HttpEntity reqEntity = getRequestEntity(contentStream, sourceMimetype, fileName, targetExtension, timeoutMs,
                     args, sj);
 
             request(logger, sourceExtension, targetExtension, reqEntity, writer, sj.toString());
@@ -114,10 +114,10 @@ public class RemoteTransformerClient
         }
     }
 
-    HttpEntity getRequestEntity(ContentReader reader, String sourceMimetype, String sourceExtension, String targetExtension,
+    HttpEntity getRequestEntity(ContentReader reader, String sourceMimetype,String fileName, String targetExtension,
             long timeoutMs, String[] args, StringJoiner sj)
     {
-        return getRequestEntity(reader.getContentInputStream(), sourceMimetype, sourceExtension, targetExtension, timeoutMs, args, sj);
+        return getRequestEntity(reader.getContentInputStream(), sourceMimetype, fileName, targetExtension, timeoutMs, args, sj);
     }
 
     void request(Log logger, String sourceExtension, String targetExtension, HttpEntity reqEntity, ContentWriter writer, String args)
@@ -331,12 +331,12 @@ public class RemoteTransformerClient
         return httpclient.execute(httpGet);
     }
 
-    private HttpEntity getRequestEntity(InputStream contentStream, String sourceMimetype, String sourceExtension,
+    private HttpEntity getRequestEntity(InputStream contentStream, String sourceMimetype, String filename,
             String targetExtension, long timeoutMs, String[] args, StringJoiner sj)
     {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         ContentType contentType = ContentType.create(sourceMimetype);
-        builder.addBinaryBody("file", contentStream, contentType, "tmp." + sourceExtension);
+        builder.addBinaryBody("file", contentStream, contentType, filename);
         builder.addTextBody("targetExtension", targetExtension);
         sj.add("targetExtension" + '=' + targetExtension);
         for (int i = 0; i < args.length; i += 2)

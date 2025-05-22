@@ -94,6 +94,7 @@ public class RemoteTransformerClientTest
     @Spy
     private RemoteTransformerClient remoteTransformerClient = new RemoteTransformerClient("TRANSFORMER", "http://localhost:1234/test", new HttpClientConfig());
 
+    private String fileName="test.doc";
     private String sourceMimetype = "application/msword";
     private String sourceExtension = "doc";
     private String targetExtension = "pdf";
@@ -141,7 +142,7 @@ public class RemoteTransformerClientTest
 
     private void requestTransform() throws IllegalAccessException
     {
-        remoteTransformerClient.request(mockReader, mockWriter, sourceMimetype, sourceExtension, targetExtension,
+        remoteTransformerClient.request(mockReader, mockWriter, fileName, sourceMimetype, sourceExtension, targetExtension,
                 timeoutMs, mockLogger);
     }
 

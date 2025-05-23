@@ -33,13 +33,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.httpclient.HttpClientConfig;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.transform.config.TransformOption;
 import org.alfresco.util.Pair;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * A local transformer using flat transform options.
@@ -191,7 +189,7 @@ public class LocalTransformImpl extends AbstractLocalTransform
         args[i++] = targetMimetype;
 
         targetExtension = AsynchronousExtractor.getExtension(targetMimetype, sourceExtension, targetExtension);
-        String fileName = transformerDebug.getFilename(sourceNodeRef,true);
+        String fileName = transformerDebug.getFilename(sourceNodeRef, true);
         remoteTransformerClient.request(reader, writer, fileName, sourceMimetype, sourceExtension, targetExtension,
                 timeoutMs, log, args);
     }

@@ -90,7 +90,7 @@ public class RemoteTransformerClient
         return baseUrl;
     }
 
-    public void request(ContentReader reader, ContentWriter writer, String fileName,String sourceMimetype, String sourceExtension,
+    public void request(ContentReader reader, ContentWriter writer, String fileName, String sourceMimetype, String sourceExtension,
             String targetExtension, long timeoutMs, Log logger, String... args)
     {
 
@@ -114,7 +114,7 @@ public class RemoteTransformerClient
         }
     }
 
-    HttpEntity getRequestEntity(ContentReader reader, String sourceMimetype,String fileName, String targetExtension,
+    HttpEntity getRequestEntity(ContentReader reader, String sourceMimetype, String fileName, String targetExtension,
             long timeoutMs, String[] args, StringJoiner sj)
     {
         return getRequestEntity(reader.getContentInputStream(), sourceMimetype, fileName, targetExtension, timeoutMs, args, sj);

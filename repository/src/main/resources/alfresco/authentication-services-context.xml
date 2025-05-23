@@ -135,12 +135,28 @@
         </property>
         <property name="interfaces">
             <list>
-                <value>org.alfresco.repo.security.authentication.external.AdminConsoleAuthenticator</value>
+                <value>org.alfresco.repo.security.authentication.external.ExternalUserAuthenticator</value>
                 <value>org.alfresco.repo.management.subsystems.ActivateableBean</value>
             </list>
         </property>
         <property name="sourceBeanName">
             <value>adminConsoleAuthenticator</value>
+        </property>
+    </bean>
+
+    <bean id="WebScriptsHomeAuthenticator"
+          class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+        <property name="applicationContextManager">
+            <ref bean="Authentication" />
+        </property>
+        <property name="interfaces">
+            <list>
+                <value>org.alfresco.repo.security.authentication.external.ExternalUserAuthenticator</value>
+                <value>org.alfresco.repo.management.subsystems.ActivateableBean</value>
+            </list>
+        </property>
+        <property name="sourceBeanName">
+            <value>webScriptsHomeAuthenticator</value>
         </property>
     </bean>
 

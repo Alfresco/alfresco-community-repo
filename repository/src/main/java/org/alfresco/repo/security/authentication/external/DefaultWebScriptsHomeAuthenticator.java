@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -33,7 +33,7 @@ import org.alfresco.repo.management.subsystems.ActivateableBean;
 /**
  * A default {@link ExternalUserAuthenticator} implementation. Returns null to request a basic auth challenge.
  */
-public class DefaultAdminConsoleAuthenticator implements ExternalUserAuthenticator, ActivateableBean
+public class DefaultWebScriptsHomeAuthenticator implements ExternalUserAuthenticator, ActivateableBean
 {
     @Override
     public String getUserId(HttpServletRequest request, HttpServletResponse response)

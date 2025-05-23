@@ -29,28 +29,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * An interface for objects capable of extracting an externally authenticated user ID from the HTTP Admin Console webscript request.
+ * An interface for objects capable of extracting an externally authenticated user ID from the HTTP request.
  */
-public interface AdminConsoleAuthenticator
+public interface ExternalUserAuthenticator
 {
     /**
-     * Gets an externally authenticated user ID from the HTTP Admin Console webscript request.
-     *
-     * @param request
-     *            the request
-     * @param response
-     *            the response
+     * Gets an externally authenticated user ID from the HTTP request.
+     * 
      * @return the user ID or <code>null</code> if the user is unauthenticated
      */
-    String getAdminConsoleUser(HttpServletRequest request, HttpServletResponse response);
+    String getUserId(HttpServletRequest request, HttpServletResponse response);
 
-    /**
-     * Requests an authentication.
-     *
-     * @param request
-     *            the request
-     * @param response
-     *            the response
-     */
+    /* Sends redirect to external site to initiate the OIDC authorization code flow. */
     void requestAuthentication(HttpServletRequest request, HttpServletResponse response);
 }

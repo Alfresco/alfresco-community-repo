@@ -74,8 +74,9 @@
         <dependency.guava.version>33.3.1-jre</dependency.guava.version>
         <dependency.httpclient.version>4.5.14</dependency.httpclient.version>
         <dependency.httpcore.version>4.4.16</dependency.httpcore.version>
-        <dependency.httpcomponents-httpclient5.version>5.4.1</dependency.httpcomponents-httpclient5.version>
-        <dependency.httpcomponents-httpcore5.version>5.3.3</dependency.httpcomponents-httpcore5.version>
+        <dependency.httpcomponents-httpclient5.version>5.5</dependency.httpcomponents-httpclient5.version>
+        <dependency.httpcomponents-httpcore5.version>5.3.4</dependency.httpcomponents-httpcore5.version>
+        <dependency.httpcomponents-httpcore5-h2.version>5.3.4</dependency.httpcomponents-httpcore5-h2.version>
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.slf4j.version>2.0.16</dependency.slf4j.version>
@@ -399,6 +400,11 @@
                 <groupId>org.apache.httpcomponents.core5</groupId>
                 <artifactId>httpcore5</artifactId>
                 <version>${dependency.httpcomponents-httpcore5.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents.core5</groupId>
+                <artifactId>httpcore5-h2</artifactId>
+                <version>${dependency.httpcomponents-httpcore5-h2.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-logging</groupId>

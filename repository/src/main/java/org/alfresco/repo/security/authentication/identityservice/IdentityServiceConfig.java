@@ -76,6 +76,18 @@ public class IdentityServiceConfig
     private String lastNameAttribute;
     private String emailAttribute;
     private long jwtClockSkewMs;
+    private String webScriptsHomeRedirectPath;
+    private String webScriptsHomeScopes;
+
+    public String getWebScriptsHomeRedirectPath()
+    {
+        return webScriptsHomeRedirectPath;
+    }
+
+    public void setWebScriptsHomeRedirectPath(String webScriptsHomeRedirectPath)
+    {
+        this.webScriptsHomeRedirectPath = webScriptsHomeRedirectPath;
+    }
 
     /**
      *
@@ -357,6 +369,18 @@ public class IdentityServiceConfig
     public void setAdminConsoleScopes(String adminConsoleScopes)
     {
         this.adminConsoleScopes = adminConsoleScopes;
+    }
+
+    public Set<String> getWebScriptsHomeScopes()
+    {
+        return Stream.of(webScriptsHomeScopes.split(","))
+                .map(String::trim)
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    public void setWebScriptsHomeScopes(String webScriptsHomeScopes)
+    {
+        this.webScriptsHomeScopes = webScriptsHomeScopes;
     }
 
     public Set<String> getPasswordGrantScopes()

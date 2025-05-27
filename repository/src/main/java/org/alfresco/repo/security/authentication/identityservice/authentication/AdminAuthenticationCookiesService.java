@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.identityservice.admin;
+package org.alfresco.repo.security.authentication.identityservice.authentication;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,12 +33,12 @@ import org.alfresco.repo.admin.SysAdminParams;
 /**
  * Service to handle Admin Console authentication-related cookies.
  */
-public class AdminConsoleAuthenticationCookiesService
+public class AdminAuthenticationCookiesService
 {
     private final SysAdminParams sysAdminParams;
     private final int cookieLifetime;
 
-    public AdminConsoleAuthenticationCookiesService(SysAdminParams sysAdminParams, int cookieLifetime)
+    public AdminAuthenticationCookiesService(SysAdminParams sysAdminParams, int cookieLifetime)
     {
         this.sysAdminParams = sysAdminParams;
         this.cookieLifetime = cookieLifetime;

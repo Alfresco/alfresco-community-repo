@@ -27,28 +27,19 @@ package org.alfresco.repo.security.authentication.external;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.alfresco.repo.management.subsystems.ActivateableBean;
 
 /**
- * A default {@link ExternalUserAuthenticator} implementation. Returns null to request a basic auth challenge.
+ * An interface for objects capable of extracting an externally authenticated user ID from the HTTP request.
  */
-public class DefaultAdminConsoleAuthenticator implements ExternalUserAuthenticator, ActivateableBean
+public interface ExternalUserAuthenticator
 {
-    @Override
-    public String getUserId(HttpServletRequest request, HttpServletResponse response)
-    {
-        return null;
-    }
+    /**
+     * Gets an externally authenticated user ID from the HTTP request.
+     *
+     * @return the user ID or <code>null</code> if the user is unauthenticated
+     */
+    String getUserId(HttpServletRequest request, HttpServletResponse response);
 
-    @Override
-    public void requestAuthentication(HttpServletRequest request, HttpServletResponse response)
-    {
-        // No implementation
-    }
-
-    @Override
-    public boolean isActive()
-    {
-        return false;
-    }
+    /* Sends redirect to external site to initiate the OIDC authorization code flow. */
+    void requestAuthentication(HttpServletRequest request, HttpServletResponse response);
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -28,29 +28,28 @@ package org.alfresco.repo.security.authentication.external;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-/**
- * An interface for objects capable of extracting an externally authenticated user ID from the HTTP Admin Console webscript request.
- */
-public interface AdminConsoleAuthenticator
-{
-    /**
-     * Gets an externally authenticated user ID from the HTTP Admin Console webscript request.
-     *
-     * @param request
-     *           the request
-     * @param response
-     *           the response
-     * @return the user ID or <code>null</code> if the user is unauthenticated
-     */
-    String getAdminConsoleUser(HttpServletRequest request, HttpServletResponse response);
+import org.alfresco.repo.management.subsystems.ActivateableBean;
 
-    /**
-     * Requests an authentication.
-     *
-     * @param request
-     *           the request
-     * @param response
-     *           the response
-     */
-    void requestAuthentication(HttpServletRequest request, HttpServletResponse response);
+/**
+ * A default {@link ExternalUserAuthenticator} implementation. Returns null to request a basic auth challenge.
+ */
+public class DefaultWebScriptsHomeAuthenticator implements ExternalUserAuthenticator, ActivateableBean
+{
+    @Override
+    public String getUserId(HttpServletRequest request, HttpServletResponse response)
+    {
+        return null;
+    }
+
+    @Override
+    public void requestAuthentication(HttpServletRequest request, HttpServletResponse response)
+    {
+        // No implementation
+    }
+
+    @Override
+    public boolean isActive()
+    {
+        return false;
+    }
 }

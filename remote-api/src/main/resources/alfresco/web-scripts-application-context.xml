@@ -214,9 +214,13 @@
       <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
       <property name="remoteUserMapper" ref="RemoteUserMapper" />
       <property name="adminConsoleAuthenticator" ref="AdminConsoleAuthenticator" />
+       <property name="webScriptsHomeAuthenticator" ref="WebScriptsHomeAuthenticator" />
       <property name="alwaysAllowBasicAuthForAdminConsole">
          <value>${authentication.alwaysAllowBasicAuthForAdminConsole.enabled}</value>
       </property>
+       <property name="alwaysAllowBasicAuthForWebScriptsHome">
+           <value>${authentication.alwaysAllowBasicAuthForWebScriptsHome.enabled}</value>
+       </property>
       <property name="getRemoteUserTimeoutMilliseconds">
          <value>${authentication.getRemoteUserTimeoutMilliseconds}</value>
       </property>

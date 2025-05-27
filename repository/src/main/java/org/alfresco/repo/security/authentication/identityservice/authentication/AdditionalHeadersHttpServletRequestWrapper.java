@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.identityservice.admin;
+package org.alfresco.repo.security.authentication.identityservice.authentication;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.enumeration;
@@ -37,20 +37,12 @@ import jakarta.servlet.http.HttpServletRequestWrapper;
 
 import org.alfresco.util.PropertyCheck;
 
-public class AdminConsoleHttpServletRequestWrapper extends HttpServletRequestWrapper
+public class AdditionalHeadersHttpServletRequestWrapper extends HttpServletRequestWrapper
 {
     private final Map<String, String> additionalHeaders;
     private final HttpServletRequest wrappedRequest;
 
-    /**
-     * Constructs a request object wrapping the given request.
-     *
-     * @param request
-     *            the request to wrap
-     * @throws IllegalArgumentException
-     *             if the request is null
-     */
-    public AdminConsoleHttpServletRequestWrapper(Map<String, String> additionalHeaders, HttpServletRequest request)
+    public AdditionalHeadersHttpServletRequestWrapper(Map<String, String> additionalHeaders, HttpServletRequest request)
     {
         super(request);
         PropertyCheck.mandatory(this, "additionalHeaders", additionalHeaders);

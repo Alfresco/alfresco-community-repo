@@ -90,6 +90,7 @@ public class RemoteTransformerClient
         return baseUrl;
     }
 
+    @SuppressWarnings("PMD.UseObjectForClearerAPI")
     public void request(ContentReader reader, ContentWriter writer, String fileName, String sourceMimetype, String sourceExtension,
             String targetExtension, long timeoutMs, Log logger, String... args)
     {

@@ -35,10 +35,7 @@ import java.util.Set;
 import org.alfresco.httpclient.HttpClientConfig;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.transform.config.TransformOption;
 import org.alfresco.util.Pair;
 
@@ -50,6 +47,7 @@ import org.alfresco.util.Pair;
 public class LocalTransformImpl extends AbstractLocalTransform
 {
     private RemoteTransformerClient remoteTransformerClient;
+    TransformerDebug transformerDebug;
 
     private boolean available = false;
 
@@ -64,6 +62,7 @@ public class LocalTransformImpl extends AbstractLocalTransform
     {
         super(name, transformerDebug, mimetypeService, strictMimeTypeCheck, strictMimetypeExceptions,
                 retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry);
+        this.transformerDebug = transformerDebug;
         remoteTransformerClient = new RemoteTransformerClient(name, baseUrl, httpClientConfig);
         remoteTransformerClient.setStartupRetryPeriodSeconds(startupRetryPeriodSeconds);
 
@@ -190,7 +189,8 @@ public class LocalTransformImpl extends AbstractLocalTransform
         args[i++] = targetMimetype;
 
         targetExtension = AsynchronousExtractor.getExtension(targetMimetype, sourceExtension, targetExtension);
-        remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
+        String fileName = transformerDebug.getFilename(sourceNodeRef, true);
+        remoteTransformerClient.request(reader, writer, fileName, sourceMimetype, sourceExtension, targetExtension,
                 timeoutMs, log, args);
     }
 }

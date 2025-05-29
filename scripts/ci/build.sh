@@ -11,6 +11,7 @@ BRANCH="MNT-24883-libreoffice-header-fix"
 cloneRepo "${GIT_REPO}" "${BRANCH}"
 pushd "$(basename "${GIT_REPO%.git}")"
 mvn -B -V -q clean install -Dmaven.javadoc.skip=true -Plocal
+popd
 
 
 if [[ -n ${BUILD_PROFILES} ]]; then

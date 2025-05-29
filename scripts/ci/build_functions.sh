@@ -190,7 +190,7 @@ function buildCoreAio() {
   cloneRepo "${GIT_REPO}" "${BRANCH}"
 
   pushd "$(dirname "${BASH_SOURCE[0]}")/../../../"
-  cd "$(basename "${UPSTREAM_REPO%.git}")"
+  cd "$(basename "${GIT_REPO%.git}")"
   mvn -B -V -q clean install -Dmaven.javadoc.skip=true -Plocal
   popd
 }

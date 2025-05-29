@@ -75,6 +75,7 @@ public class ActionNodeParameterValidator implements ActionValidator
     static final String NO_PROPER_PERMISSIONS_FOR_NODE = "No proper permissions for node: ";
     static final String NOT_A_CATEGORY = "Node is not a category ";
     static final String NOT_A_FOLDER = "Node is not a folder ";
+    static final String NO_LONGER_EXISTS = "%s having Id: %s no longer exists.";
 
     private final Actions actions;
     private final NamespaceService namespaceService;
@@ -132,7 +133,15 @@ public class ActionNodeParameterValidator implements ActionValidator
                     .filter(pd -> action.getParams().containsKey(pd.getName()))
                     .forEach(p -> {
                         final String nodeId = Objects.toString(action.getParams().get(p.getName()), Strings.EMPTY);
-                        final NodeRef nodeRef = nodes.validateNode(nodeId);
+                        NodeRef nodeRef;
+                        try
+                        {
+                            nodeRef = nodes.validateNode(nodeId);
+                        }
+                        catch (EntityNotFoundException e)
+                        {
+                            throw new EntityNotFoundException(String.format(NO_LONGER_EXISTS, p.getName(), nodeId), e);
+                        }
                         validatePermission(action.getActionDefinitionId(), p.getName(), nodeRef);
                         validateType(action.getActionDefinitionId(), nodeRef);
                     });

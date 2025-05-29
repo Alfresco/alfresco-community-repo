@@ -747,7 +747,7 @@ public class CreateRulesTests extends RulesRestTest
                 .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(NOT_FOUND);
-        restClient.assertLastError().containsSummary("The entity with id: non-existent-node was not found");
+        restClient.assertLastError().containsSummary("destination-folder having Id: non-existent-node no longer exists.");
     }
 
     /**

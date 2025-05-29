@@ -191,7 +191,7 @@ function buildCoreAio() {
 
   pushd "$(dirname "${BASH_SOURCE[0]}")/../../../"
   cd "$(basename "${GIT_REPO%.git}")"
-  mvn -B -V -q clean install -Dmaven.javadoc.skip=true -Plocal
+  mvn -B -V -q clean install -DskipTests -Dmaven.javadoc.skip=true -Plocal
   popd
 }
 set -vx

@@ -8,10 +8,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/build_functions.sh"
 
 GIT_REPO="github.com/Alfresco/alfresco-transform-core.git"
 BRANCH="MNT-24883-libreoffice-header-fix"
-cloneRepo "${GIT_REPO}" "${BRANCH}"
-pushd "$(basename "${GIT_REPO%.git}")"
-mvn -B -V -q clean install -Dmaven.javadoc.skip=true -Plocal
-popd
+
+buildCoreAio "${GIT_REPO}"
 
 
 if [[ -n ${BUILD_PROFILES} ]]; then

@@ -181,7 +181,8 @@ public class ActionNodeParameterValidator implements ActionValidator
 
     private String formatParamName(String paramName)
     {
-        if (paramName == null || paramName.isEmpty()) {
+        if (paramName == null || paramName.isEmpty()) 
+        {
             return "";
         }
         String[] words = paramName.split("-");

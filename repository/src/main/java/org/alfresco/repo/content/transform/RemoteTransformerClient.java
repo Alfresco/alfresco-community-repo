@@ -105,7 +105,7 @@ public class RemoteTransformerClient
 
         try (InputStream contentStream = reader.getContentInputStream())
         {
-            HttpEntity reqEntity = getRequestEntity(contentStream, sourceMimetype,sourceExtension, fileName, targetExtension, timeoutMs,
+            HttpEntity reqEntity = getRequestEntity(contentStream, sourceMimetype, sourceExtension, fileName, targetExtension, timeoutMs,
                     args, sj);
 
             request(logger, sourceExtension, targetExtension, reqEntity, writer, sj.toString());
@@ -116,7 +116,7 @@ public class RemoteTransformerClient
         }
     }
 
-    HttpEntity getRequestEntity(ContentReader reader, String sourceMimetype,String sourceExtension, String fileName, String targetExtension,
+    HttpEntity getRequestEntity(ContentReader reader, String sourceMimetype, String sourceExtension, String fileName, String targetExtension,
             long timeoutMs, String[] args, StringJoiner sj)
     {
         return getRequestEntity(reader.getContentInputStream(), sourceMimetype, sourceExtension, fileName, targetExtension, timeoutMs, args, sj);
@@ -333,15 +333,17 @@ public class RemoteTransformerClient
         return httpclient.execute(httpGet);
     }
 
-    private HttpEntity getRequestEntity(InputStream contentStream, String sourceMimetype,String sourceExtension, String filename,
+    private HttpEntity getRequestEntity(InputStream contentStream, String sourceMimetype, String sourceExtension, String filename,
             String targetExtension, long timeoutMs, String[] args, StringJoiner sj)
     {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         ContentType contentType = ContentType.create(sourceMimetype);
         if (StringUtils.isEmpty(filename))
         {
-            builder.addBinaryBody("file", contentStream, contentType,"tmp"+ sourceExtension);
-        }else {
+            builder.addBinaryBody("file", contentStream, contentType, "tmp" + sourceExtension);
+        }
+        else
+        {
             builder.addBinaryBody("file", contentStream, contentType, filename);
         }
         builder.addTextBody("targetExtension", targetExtension);

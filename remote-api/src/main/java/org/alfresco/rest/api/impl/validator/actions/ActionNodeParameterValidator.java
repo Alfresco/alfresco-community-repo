@@ -75,7 +75,7 @@ public class ActionNodeParameterValidator implements ActionValidator
     static final String NO_PROPER_PERMISSIONS_FOR_NODE = "No proper permissions for node: ";
     static final String NOT_A_CATEGORY = "Node is not a category ";
     static final String NOT_A_FOLDER = "Node is not a folder ";
-    static final String NO_LONGER_EXISTS = "%s having Id: %s no longer exists.";
+    static final String NO_LONGER_EXISTS = "%s having Id: %s no longer exists. Please update your rule definition.";
 
     private final Actions actions;
     private final NamespaceService namespaceService;
@@ -140,7 +140,7 @@ public class ActionNodeParameterValidator implements ActionValidator
                         }
                         catch (EntityNotFoundException e)
                         {
-                            throw new EntityNotFoundException(String.format(NO_LONGER_EXISTS, p.getName(), nodeId), e);
+                            throw new EntityNotFoundException(String.format(NO_LONGER_EXISTS, formatParamName(p.getName()), nodeId), e);
                         }
                         validatePermission(action.getActionDefinitionId(), p.getName(), nodeRef);
                         validateType(action.getActionDefinitionId(), nodeRef);
@@ -177,5 +177,27 @@ public class ActionNodeParameterValidator implements ActionValidator
         {
             throw new InvalidArgumentException(NOT_A_CATEGORY + nodeRef.getId());
         }
+    }
+
+    private String formatParamName(String paramName)
+    {
+        if (paramName == null || paramName.isEmpty()) {
+            return "";
+        }
+        String[] words = paramName.split("-");
+        StringBuilder sb = new StringBuilder();
+        for (String word : words)
+        {
+            if (!word.isEmpty())
+            {
+                sb.append(Character.toUpperCase(word.charAt(0)));
+                if (word.length() > 1)
+                {
+                    sb.append(word.substring(1));
+                }
+                sb.append(" ");
+            }
+        }
+        return sb.toString().trim();
     }
 }

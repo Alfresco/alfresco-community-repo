@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.StringJoiner;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -104,7 +105,7 @@ public class RemoteTransformerClient
 
         try (InputStream contentStream = reader.getContentInputStream())
         {
-            HttpEntity reqEntity = getRequestEntity(contentStream, sourceMimetype, fileName, targetExtension, timeoutMs,
+            HttpEntity reqEntity = getRequestEntity(contentStream, sourceMimetype, sourceExtension, fileName, targetExtension, timeoutMs,
                     args, sj);
 
             request(logger, sourceExtension, targetExtension, reqEntity, writer, sj.toString());
@@ -115,10 +116,10 @@ public class RemoteTransformerClient
         }
     }
 
-    HttpEntity getRequestEntity(ContentReader reader, String sourceMimetype, String fileName, String targetExtension,
+    HttpEntity getRequestEntity(ContentReader reader, String sourceMimetype, String sourceExtension, String fileName, String targetExtension,
             long timeoutMs, String[] args, StringJoiner sj)
     {
-        return getRequestEntity(reader.getContentInputStream(), sourceMimetype, fileName, targetExtension, timeoutMs, args, sj);
+        return getRequestEntity(reader.getContentInputStream(), sourceMimetype, sourceExtension, fileName, targetExtension, timeoutMs, args, sj);
     }
 
     void request(Log logger, String sourceExtension, String targetExtension, HttpEntity reqEntity, ContentWriter writer, String args)
@@ -332,12 +333,19 @@ public class RemoteTransformerClient
         return httpclient.execute(httpGet);
     }
 
-    private HttpEntity getRequestEntity(InputStream contentStream, String sourceMimetype, String filename,
+    private HttpEntity getRequestEntity(InputStream contentStream, String sourceMimetype, String sourceExtension, String filename,
             String targetExtension, long timeoutMs, String[] args, StringJoiner sj)
     {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         ContentType contentType = ContentType.create(sourceMimetype);
-        builder.addBinaryBody("file", contentStream, contentType, filename);
+        if (StringUtils.isEmpty(filename))
+        {
+            builder.addBinaryBody("file", contentStream, contentType, "tmp" + sourceExtension);
+        }
+        else
+        {
+            builder.addBinaryBody("file", contentStream, contentType, filename);
+        }
         builder.addTextBody("targetExtension", targetExtension);
         sj.add("targetExtension" + '=' + targetExtension);
         for (int i = 0; i < args.length; i += 2)

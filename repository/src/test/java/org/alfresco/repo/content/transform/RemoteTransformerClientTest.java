@@ -110,7 +110,7 @@ public class RemoteTransformerClientTest
         doReturn(mockHttpResponse).when(remoteTransformerClient).execute(any(), any(HttpGet.class));
         doReturn(mockHttpResponse).when(remoteTransformerClient).execute(any(), any(HttpPost.class));
         doReturn(mockRequestEntity).when(remoteTransformerClient).getRequestEntity(any(), any(),
-                any(), any(), anyLong(), any(), any());// ,
+                any(), any(), any(), anyLong(), any(), any());// ,
 
         when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
         when(mockHttpResponse.getEntity()).thenReturn(mockResponseEntity);

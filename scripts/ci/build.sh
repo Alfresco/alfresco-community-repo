@@ -7,7 +7,7 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 source "$(dirname "${BASH_SOURCE[0]}")/build_functions.sh"
 
 GIT_REPO="github.com/Alfresco/alfresco-transform-core.git"
-BRANCH="master"
+BRANCH="MNT-24883-libreoffice-header-fix"
 
 buildCoreAio "${GIT_REPO}" "${BRANCH}"
 

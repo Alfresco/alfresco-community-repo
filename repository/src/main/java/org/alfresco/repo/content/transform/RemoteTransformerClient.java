@@ -340,7 +340,7 @@ public class RemoteTransformerClient
         ContentType contentType = ContentType.create(sourceMimetype);
         if (StringUtils.isEmpty(filename))
         {
-            builder.addBinaryBody("file", contentStream, contentType, "tmp" + sourceExtension);
+            builder.addBinaryBody("file", contentStream, contentType, "tmp." + sourceExtension);
         }
         else
         {

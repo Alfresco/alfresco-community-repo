@@ -55,16 +55,8 @@ public class AdditionalHeadersHttpServletRequestWrapperUnitTest
     private static final String DEFAULT_HEADER_VALUE = "default_value";
     private static final String ADDITIONAL_HEADER = "additional_header";
     private static final String ADDITIONAL_HEADER_VALUE = "additional_value";
-    private static final Map<String, String> DEFAULT_HEADERS = new HashMap<>() {
-        {
-            put(DEFAULT_HEADER, DEFAULT_HEADER_VALUE);
-        }
-    };
-    private static final Map<String, String> ADDITIONAL_HEADERS = new HashMap<>() {
-        {
-            put(ADDITIONAL_HEADER, ADDITIONAL_HEADER_VALUE);
-        }
-    };
+    private static final Map<String, String> DEFAULT_HEADERS = Map.of(DEFAULT_HEADER, DEFAULT_HEADER_VALUE);
+    private static final Map<String, String> ADDITIONAL_HEADERS = Map.of(ADDITIONAL_HEADER, ADDITIONAL_HEADER_VALUE);
 
     @Mock
     private HttpServletRequest request;

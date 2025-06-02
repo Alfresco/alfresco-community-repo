@@ -140,7 +140,7 @@ public class ActionNodeParameterValidator implements ActionValidator
                         }
                         catch (EntityNotFoundException e)
                         {
-                            throw new EntityNotFoundException(String.format(NO_LONGER_EXISTS, formatParamName(p.getName()), nodeId), e);
+                            throw new EntityNotFoundException(String.format(NO_LONGER_EXISTS, p.getDisplayLabel(), nodeId), e);
                         }
                         validatePermission(action.getActionDefinitionId(), p.getName(), nodeRef);
                         validateType(action.getActionDefinitionId(), nodeRef);
@@ -179,26 +179,4 @@ public class ActionNodeParameterValidator implements ActionValidator
         }
     }
 
-    private String formatParamName(String paramName)
-    {
-        if (paramName == null || paramName.isEmpty())
-        {
-            return "";
-        }
-        String[] words = paramName.split("-");
-        StringBuilder sb = new StringBuilder();
-        for (String word : words)
-        {
-            if (!word.isEmpty())
-            {
-                sb.append(Character.toUpperCase(word.charAt(0)));
-                if (word.length() > 1)
-                {
-                    sb.append(word.substring(1));
-                }
-                sb.append(" ");
-            }
-        }
-        return sb.toString().trim();
-    }
 }

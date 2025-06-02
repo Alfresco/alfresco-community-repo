@@ -40,12 +40,13 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletRequest;
-import org.alfresco.error.AlfrescoRuntimeException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 @SuppressWarnings("PMD.UseDiamondOperator")
 public class AdditionalHeadersHttpServletRequestWrapperUnitTest

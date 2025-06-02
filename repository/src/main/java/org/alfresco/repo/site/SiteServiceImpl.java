@@ -914,7 +914,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 String[] tokenizedFilter = SearchLanguageConversion.tokenizeString(escNameFilter);
 
                 // cm:name
-                query.append(" cm:name:\" ");
+                query.append(" cm:name:\"");
                 for (int i = 0; i < tokenizedFilter.length; i++)
                 {
                     if (i != 0) // Not first element

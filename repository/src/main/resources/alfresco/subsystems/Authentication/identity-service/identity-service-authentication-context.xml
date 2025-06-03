@@ -170,6 +170,9 @@
        <property name="adminConsoleScopes">
            <value>${identity-service.admin-console.scopes:openid,profile,email,offline_access}</value>
        </property>
+       <property name="webScriptsHomeScopes">
+           <value>${identity-service.webscripts-home.scopes:openid,profile,email,offline_access}</value>
+       </property>
        <property name="passwordGrantScopes">
            <value>${identity-service.password-grant.scopes:openid,profile,email}</value>
        </property>
@@ -178,6 +181,9 @@
        </property>
        <property name="jwtClockSkewMs">
            <value>${identity-service.jwt-clock-skew-ms:0}</value>
+       </property>
+       <property name="webScriptsHomeRedirectPath">
+           <value>${identity-service.webscripts-home.redirect-path}</value>
        </property>
    </bean>
 
@@ -197,12 +203,12 @@
       </property>
    </bean>
 
-   <bean id="adminConsoleAuthenticationCookiesService" class="org.alfresco.repo.security.authentication.identityservice.admin.AdminConsoleAuthenticationCookiesService">
-      <constructor-arg ref="sysAdminParams" />
-      <constructor-arg value="${admin.console.cookie.lifetime:86400}" />
-   </bean>
+    <bean id="adminAuthenticationCookiesService" class="org.alfresco.repo.security.authentication.identityservice.authentication.AdminAuthenticationCookiesService">
+        <constructor-arg ref="sysAdminParams" />
+        <constructor-arg value="${admin.console.cookie.lifetime:86400}" />
+    </bean>
 
-   <bean id="adminConsoleAuthenticator" class="org.alfresco.repo.security.authentication.identityservice.admin.IdentityServiceAdminConsoleAuthenticator">
+   <bean id="adminConsoleAuthenticator" class="org.alfresco.repo.security.authentication.identityservice.authentication.admin.IdentityServiceAdminConsoleAuthenticator">
       <property name="active">
          <value>${identity-service.authentication.enabled}</value>
       </property>
@@ -210,7 +216,7 @@
          <ref bean="identityServiceFacade"/>
       </property>
       <property name="cookiesService">
-         <ref bean="adminConsoleAuthenticationCookiesService" />
+         <ref bean="adminAuthenticationCookiesService" />
       </property>
       <property name="remoteUserMapper">
          <ref bean="remoteUserMapper" />
@@ -219,6 +225,24 @@
          <ref bean="identityServiceConfig" />
       </property>
    </bean>
+
+    <bean id="webScriptsHomeAuthenticator" class="org.alfresco.repo.security.authentication.identityservice.authentication.webscripts.IdentityServiceWebScriptsHomeAuthenticator">
+        <property name="active">
+            <value>${identity-service.authentication.enabled}</value>
+        </property>
+        <property name="identityServiceFacade">
+            <ref bean="identityServiceFacade"/>
+        </property>
+        <property name="cookiesService">
+            <ref bean="adminAuthenticationCookiesService" />
+        </property>
+        <property name="remoteUserMapper">
+            <ref bean="remoteUserMapper" />
+        </property>
+        <property name="identityServiceConfig">
+            <ref bean="identityServiceConfig" />
+        </property>
+    </bean>
 
    <bean id="jitProvisioningHandler" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandler">
       <constructor-arg ref="PersonService"/>

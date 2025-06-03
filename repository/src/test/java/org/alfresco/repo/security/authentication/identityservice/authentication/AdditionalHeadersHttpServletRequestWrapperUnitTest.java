@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.identityservice.admin;
+package org.alfresco.repo.security.authentication.identityservice.authentication;
 
 import static java.util.Collections.enumeration;
 import static java.util.Collections.list;
@@ -40,51 +40,45 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletRequest;
-import org.alfresco.error.AlfrescoRuntimeException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-@SuppressWarnings("PMD.UseDiamondOperator")
-public class AdminConsoleHttpServletRequestWrapperUnitTest
-{
+import org.alfresco.error.AlfrescoRuntimeException;
 
+@SuppressWarnings("PMD.UseDiamondOperator")
+public class AdditionalHeadersHttpServletRequestWrapperUnitTest
+{
     private static final String DEFAULT_HEADER = "default_header";
     private static final String DEFAULT_HEADER_VALUE = "default_value";
     private static final String ADDITIONAL_HEADER = "additional_header";
     private static final String ADDITIONAL_HEADER_VALUE = "additional_value";
-    private static final Map<String, String> DEFAULT_HEADERS = new HashMap<String, String>()
-    {{
-        put(DEFAULT_HEADER, DEFAULT_HEADER_VALUE);
-    }};
-    private static final Map<String, String> ADDITIONAL_HEADERS = new HashMap<String, String>()
-    {{
-        put(ADDITIONAL_HEADER, ADDITIONAL_HEADER_VALUE);
-    }};
+    private static final Map<String, String> DEFAULT_HEADERS = Map.of(DEFAULT_HEADER, DEFAULT_HEADER_VALUE);
+    private static final Map<String, String> ADDITIONAL_HEADERS = Map.of(ADDITIONAL_HEADER, ADDITIONAL_HEADER_VALUE);
 
     @Mock
     private HttpServletRequest request;
-    private AdminConsoleHttpServletRequestWrapper requestWrapper;
+    private AdditionalHeadersHttpServletRequestWrapper requestWrapper;
 
     @Before
     public void setUp()
     {
         initMocks(this);
-        requestWrapper = new AdminConsoleHttpServletRequestWrapper(ADDITIONAL_HEADERS, request);
+        requestWrapper = new AdditionalHeadersHttpServletRequestWrapper(ADDITIONAL_HEADERS, request);
     }
 
     @Test(expected = AlfrescoRuntimeException.class)
     public void wrapperShouldNotBeInstancedWithoutAdditionalHeaders()
     {
-        new AdminConsoleHttpServletRequestWrapper(null, request);
+        new AdditionalHeadersHttpServletRequestWrapper(null, request);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void wrapperShouldNotBeInstancedWithoutRequestsToWrap()
     {
-        new AdminConsoleHttpServletRequestWrapper(new HashMap<>(), null);
+        new AdditionalHeadersHttpServletRequestWrapper(new HashMap<>(), null);
     }
 
     @Test
@@ -109,7 +103,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
     {
         when(request.getHeaderNames()).thenReturn(enumeration(DEFAULT_HEADERS.keySet()));
 
-        requestWrapper = new AdminConsoleHttpServletRequestWrapper(new HashMap<>(), request);
+        requestWrapper = new AdditionalHeadersHttpServletRequestWrapper(new HashMap<>(), request);
         Enumeration<String> headerNames = requestWrapper.getHeaderNames();
         assertNotNull("headerNames should not be null", headerNames);
         assertTrue("headerNames should not be empty", headerNames.hasMoreElements());
@@ -161,7 +155,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
         Map<String, String> overrideHeaders = new HashMap<>();
         overrideHeaders.put(DEFAULT_HEADER, overrideHeaderValue);
 
-        requestWrapper = new AdminConsoleHttpServletRequestWrapper(overrideHeaders, request);
+        requestWrapper = new AdditionalHeadersHttpServletRequestWrapper(overrideHeaders, request);
         String header = requestWrapper.getHeader(DEFAULT_HEADER);
         assertEquals("The header should have the overridden value", overrideHeaderValue, header);
 
@@ -201,7 +195,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
         Map<String, String> overrideHeaders = new HashMap<>();
         overrideHeaders.put(DEFAULT_HEADER, overrideHeaderValue);
 
-        requestWrapper = new AdminConsoleHttpServletRequestWrapper(overrideHeaders, request);
+        requestWrapper = new AdditionalHeadersHttpServletRequestWrapper(overrideHeaders, request);
         Enumeration<String> headers = requestWrapper.getHeaders(DEFAULT_HEADER);
         assertNotNull("The headers enumeration should not be null", headers);
         assertTrue("The headers enumeration should not be empty", headers.hasMoreElements());

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -23,32 +23,42 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.external;
+package org.alfresco.repo.security.authentication.identityservice.authentication.admin;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.util.Set;
+
 import org.alfresco.repo.management.subsystems.ActivateableBean;
+import org.alfresco.repo.security.authentication.external.ExternalUserAuthenticator;
+import org.alfresco.repo.security.authentication.identityservice.authentication.AbstractIdentityServiceAuthenticator;
 
 /**
- * A default {@link ExternalUserAuthenticator} implementation. Returns null to request a basic auth challenge.
+ * An {@link ExternalUserAuthenticator} implementation to extract an externally authenticated user ID or to initiate the OIDC authorization code flow.
  */
-public class DefaultAdminConsoleAuthenticator implements ExternalUserAuthenticator, ActivateableBean
+public class IdentityServiceAdminConsoleAuthenticator extends AbstractIdentityServiceAuthenticator
+        implements ExternalUserAuthenticator, ActivateableBean
 {
+    private boolean isEnabled;
+
     @Override
-    public String getUserId(HttpServletRequest request, HttpServletResponse response)
+    protected Set<String> getConfiguredScopes()
     {
-        return null;
+        return identityServiceConfig.getAdminConsoleScopes();
     }
 
     @Override
-    public void requestAuthentication(HttpServletRequest request, HttpServletResponse response)
+    protected String getConfiguredRedirectPath()
     {
-        // No implementation
+        return identityServiceConfig.getAdminConsoleRedirectPath();
     }
 
     @Override
     public boolean isActive()
     {
-        return false;
+        return isEnabled;
+    }
+
+    public void setActive(boolean isEnabled)
+    {
+        this.isEnabled = isEnabled;
     }
 }

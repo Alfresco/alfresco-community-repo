@@ -25,8 +25,7 @@
  */
 package org.alfresco.repo.content.transform;
 
-import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_NODE_REF;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -154,6 +153,7 @@ public class LocalTransformImpl extends AbstractLocalTransform
         {
             transformOptions.put(SOURCE_NODE_REF, sourceNodeRef.toString());
         }
+        transformOptions.put(SOURCE_FILENAME, transformerDebug.getFilename(sourceNodeRef, true));
 
         // Build an array of option names and values and extract the timeout.
         long timeoutMs = 0;

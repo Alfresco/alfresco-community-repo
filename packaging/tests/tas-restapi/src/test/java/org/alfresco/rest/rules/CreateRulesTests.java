@@ -26,6 +26,13 @@
 package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
+
+import static org.junit.Assert.assertEquals;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
 import static org.alfresco.rest.rules.RulesTestsUtils.CHECKIN_ACTION;
@@ -45,11 +52,6 @@ import static org.alfresco.utility.model.FileModel.getRandomFileModel;
 import static org.alfresco.utility.model.FileType.TEXT_PLAIN;
 import static org.alfresco.utility.model.UserModel.getRandomUserModel;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.junit.Assert.assertEquals;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -61,10 +63,13 @@ import java.util.stream.IntStream;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 
+import org.apache.chemistry.opencmis.client.api.CmisObject;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestActionConstraintModel;
 import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
-import org.alfresco.rest.model.RestPaginationModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.utility.constants.UserRole;
@@ -74,9 +79,6 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.apache.chemistry.opencmis.client.api.CmisObject;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Tests for POST /nodes/{nodeId}/rule-sets/{ruleSetId}/rules.
@@ -101,13 +103,13 @@ public class CreateRulesTests extends RulesRestTest
      * <p>
      * Also check that the isShared field is not returned when not requested.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void createRule()
     {
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithModifiedValues();
 
         RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                       .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
 
         RestRuleModel expectedRuleModel = rulesUtils.createRuleModelWithModifiedValues();
         restClient.assertStatusCodeIs(CREATED);
@@ -117,7 +119,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check creating a rule in a non-existent folder returns an error. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleInNonExistentFolder()
     {
         STEP("Try to create a rule in non-existent folder.");
@@ -134,7 +136,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check creating a rule in a non-existent rule set returns an error. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleInNonExistentRuleSet()
     {
         STEP("Try to create a rule in non-existent rule set.");
@@ -148,7 +150,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Try to create a rule without a name and check the error. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithEmptyName()
     {
         RestRuleModel ruleModel = rulesUtils.createRuleModel("");
@@ -160,7 +162,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check we can create two rules with the same name. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void duplicateRuleNameIsAcceptable()
     {
         RestRuleModel ruleModel = rulesUtils.createRuleModel("duplicateRuleName");
@@ -175,7 +177,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check that a user without permission to view the folder cannot create a rule in it. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void requireReadPermissionToCreateRule()
     {
         STEP("Create a user and use them to create a private site containing a folder");
@@ -194,7 +196,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check that a Collaborator cannot create a rule in a folder in a private site. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void siteCollaboratorCannotCreateRule()
     {
         testRolePermissionsWith(SiteCollaborator);
@@ -204,7 +206,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check that a Contributor cannot create a rule in a private folder. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void siteContributorCannotCreateRule()
     {
         testRolePermissionsWith(SiteContributor);
@@ -214,7 +216,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check that a Consumer cannot create a rule in a folder in a private site. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void siteConsumerCannotCreateRule()
     {
         testRolePermissionsWith(SiteConsumer);
@@ -224,7 +226,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check that a siteManager can create a rule in a folder in a private site. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void siteManagerCanCreateRule()
     {
         testRolePermissionsWith(SiteManager)
@@ -234,7 +236,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check we can't create a rule under a document node. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void tryToCreateRuleUnderDocument()
     {
         STEP("Create a document.");
@@ -250,7 +252,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check we can create several rules. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRules()
     {
         STEP("Create a list of rules in one POST request");
@@ -258,19 +260,18 @@ public class CreateRulesTests extends RulesRestTest
         List<RestRuleModel> ruleModels = ruleNames.stream().map(rulesUtils::createRuleModel).collect(toList());
 
         RestRuleModelsCollection rules = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                                   .createListOfRules(ruleModels);
+                .createListOfRules(ruleModels);
 
         restClient.assertStatusCodeIs(CREATED);
 
         assertEquals("Unexpected number of rules received in response.", ruleNames.size(), rules.getEntries().size());
-        IntStream.range(0, ruleModels.size()).forEach(i ->
-                rules.getEntries().get(i).onModel()
-                    .assertThat().field("id").isNotNull()
-                    .assertThat().field("name").is(ruleNames.get(i)));
+        IntStream.range(0, ruleModels.size()).forEach(i -> rules.getEntries().get(i).onModel()
+                .assertThat().field("id").isNotNull()
+                .assertThat().field("name").is(ruleNames.get(i)));
     }
 
     /** Check we can create over 100 rules and get them all back in response. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createOver100Rules()
     {
         STEP("Create a list of 120 rules in one POST request");
@@ -287,10 +288,9 @@ public class CreateRulesTests extends RulesRestTest
         restClient.assertStatusCodeIs(CREATED);
 
         assertEquals("Unexpected number of rules received in response.", ruleCount, rules.getEntries().size());
-        IntStream.range(0, ruleModels.size()).forEach(i ->
-                rules.getEntries().get(i).onModel()
-                        .assertThat().field("id").isNotNull()
-                        .assertThat().field("name").is(ruleNamePrefix + (i + 1)));
+        IntStream.range(0, ruleModels.size()).forEach(i -> rules.getEntries().get(i).onModel()
+                .assertThat().field("id").isNotNull()
+                .assertThat().field("name").is(ruleNamePrefix + (i + 1)));
 
         rules.getPagination()
                 .assertThat().field("count").is(ruleCount)
@@ -302,7 +302,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Try to create several rules with an error in one of them. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRulesWithOneError()
     {
         STEP("Try to create a three rules but the middle one has an error.");
@@ -319,55 +319,55 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check we can create a rule without description. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithoutDescription()
     {
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         UserModel admin = dataUser.getAdminUser();
 
         RestRuleModel rule = restClient.authenticateUser(admin).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-            .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().field("id").isNotNull()
-            .assertThat().field("name").is(RULE_NAME_DEFAULT)
-            .assertThat().field("description").isNull();
+                .assertThat().field("name").is(RULE_NAME_DEFAULT)
+                .assertThat().field("description").isNull();
     }
 
     /** Check we can create a rule without specifying triggers but with the default "inbound" value. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithoutTriggers()
     {
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         UserModel admin = dataUser.getAdminUser();
 
         RestRuleModel rule = restClient.authenticateUser(admin).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-            .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().field("id").isNotNull()
-            .assertThat().field("name").is(RULE_NAME_DEFAULT)
-            .assertThat().field("triggers").is(List.of("inbound"));
+                .assertThat().field("name").is(RULE_NAME_DEFAULT)
+                .assertThat().field("triggers").is(List.of("inbound"));
     }
 
     /** Check we can create a rule without error script. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithoutErrorScript()
     {
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         UserModel admin = dataUser.getAdminUser();
 
         RestRuleModel rule = restClient.authenticateUser(admin).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-            .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().field("id").isNotNull()
-            .assertThat().field("name").is(RULE_NAME_DEFAULT)
-            .assertThat().field("errorScript").isNull();
+                .assertThat().field("name").is(RULE_NAME_DEFAULT)
+                .assertThat().field("errorScript").isNull();
     }
 
     /** Check we can create a rule with irrelevant isShared flag, and it doesn't have impact to the process. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithSharedFlag()
     {
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
@@ -375,23 +375,23 @@ public class CreateRulesTests extends RulesRestTest
         UserModel admin = dataUser.getAdminUser();
 
         RestRuleModel rule = restClient.authenticateUser(admin).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-            .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().field("id").isNotNull()
-            .assertThat().field("name").is(RULE_NAME_DEFAULT)
-            .assertThat().field("isShared").isNull();
+                .assertThat().field("name").is(RULE_NAME_DEFAULT)
+                .assertThat().field("isShared").isNull();
     }
 
     /** Check we can create a rule. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void createRuleAndIncludeFieldsInResponse()
     {
         RestRuleModel ruleModel = rulesUtils.createRuleModel("ruleName");
 
         RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                       .include("isShared")
-                                       .createSingleRule(ruleModel);
+                .include("isShared")
+                .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().field("isShared").isNotNull();
@@ -412,7 +412,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check that the folder's owner can create rules, even if it is in a private site they aren't a member of. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void checkOwnerCanCreateRule()
     {
         STEP("Use admin to create a private site.");
@@ -431,7 +431,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check that an administrator can create a rule in a private site even if they aren't a member. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void checkAdminCanCreateRule()
     {
         STEP("Use a user to create a private site with a folder.");
@@ -446,7 +446,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check that a coordinator can create rules in folders outside sites. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void checkCoordinatorCanCreateRule()
     {
         STEP("Create a folder in the user's file space.");
@@ -454,11 +454,7 @@ public class CreateRulesTests extends RulesRestTest
 
         STEP("Create another user as a coordinator for this folder.");
         UserModel coordinator = dataUser.createRandomTestUser("Rules");
-        /*
-        Update folder node properties to add a coordinator
-        { "permissions": { "isInheritanceEnabled": true, "locallySet": { "authorityId": "coordinator.getUsername()",
-         "name": "Coordinator", "accessStatus":"ALLOWED" } } }
-        */
+        /* Update folder node properties to add a coordinator { "permissions": { "isInheritanceEnabled": true, "locallySet": { "authorityId": "coordinator.getUsername()", "name": "Coordinator", "accessStatus":"ALLOWED" } } } */
         String putBody = getAddPermissionsBody(coordinator.getUsername(), "Coordinator");
         restClient.authenticateUser(user).withCoreAPI().usingNode(folder).updateNode(putBody);
 
@@ -470,7 +466,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check that an editor cannot create rules in folders outside sites. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void checkEditorCannotCreateRule()
     {
         STEP("Create a folder in the user's file space.");
@@ -478,11 +474,7 @@ public class CreateRulesTests extends RulesRestTest
 
         STEP("Create another user as a editor for this folder.");
         UserModel editor = dataUser.createRandomTestUser();
-        /*
-        Update folder node properties to add an editor
-        { "permissions": { "isInheritanceEnabled": true, "locallySet": { "authorityId": "editor.getUsername()",
-         "name": "Coordinator", "accessStatus":"ALLOWED" } } }
-        */
+        /* Update folder node properties to add an editor { "permissions": { "isInheritanceEnabled": true, "locallySet": { "authorityId": "editor.getUsername()", "name": "Coordinator", "accessStatus":"ALLOWED" } } } */
         String putBody = getAddPermissionsBody(editor.getUsername(), "Editor");
         restClient.authenticateUser(user).withCoreAPI().usingNode(folder).updateNode(putBody);
 
@@ -494,7 +486,7 @@ public class CreateRulesTests extends RulesRestTest
     }
 
     /** Check that a collaborator cannot create rules in folders outside sites. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void checkCollaboratorCannotCreateRule()
     {
         STEP("Create a folder in the user's file space.");
@@ -502,11 +494,7 @@ public class CreateRulesTests extends RulesRestTest
 
         STEP("Create another user as a collaborator for this folder.");
         UserModel collaborator = dataUser.createRandomTestUser();
-        /*
-        Update folder node properties to add a collaborator
-        { "permissions": { "isInheritanceEnabled": true, "locallySet": { "authorityId": "collaborator.getUsername()",
-         "name": "Coordinator", "accessStatus":"ALLOWED" } } }
-        */
+        /* Update folder node properties to add a collaborator { "permissions": { "isInheritanceEnabled": true, "locallySet": { "authorityId": "collaborator.getUsername()", "name": "Coordinator", "accessStatus":"ALLOWED" } } } */
         String putBody = getAddPermissionsBody(collaborator.getUsername(), "Collaborator");
         restClient.authenticateUser(user).withCoreAPI().usingNode(folder).updateNode(putBody);
 
@@ -572,10 +560,10 @@ public class CreateRulesTests extends RulesRestTest
     public void createRuleWithActions_userCannotUsePrivateAction()
     {
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .createSingleRule(rulesUtils.createRuleWithPrivateAction());
+                .createSingleRule(rulesUtils.createRuleWithPrivateAction());
 
         restClient.assertStatusCodeIs(FORBIDDEN)
-                  .assertLastError().containsSummary(ERROR_MESSAGE_ACCESS_RESTRICTED);
+                .assertLastError().containsSummary(ERROR_MESSAGE_ACCESS_RESTRICTED);
     }
 
     /** Check that an administrator can create rules that use private actions. */
@@ -583,7 +571,7 @@ public class CreateRulesTests extends RulesRestTest
     public void createRuleWithActions_adminCanUsePrivateAction()
     {
         restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .createSingleRule(rulesUtils.createRuleWithPrivateAction());
+                .createSingleRule(rulesUtils.createRuleWithPrivateAction());
 
         restClient.assertStatusCodeIs(CREATED);
     }
@@ -656,8 +644,7 @@ public class CreateRulesTests extends RulesRestTest
     public void createRuleWithNotApplicableActionShouldFail()
     {
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        final RestActionBodyExecTemplateModel invalidAction =
-                rulesUtils.createCustomActionModel(RulesTestsUtils.DELETE_RENDITION_ACTION, Map.of("dummy-key", "dummy-value"));
+        final RestActionBodyExecTemplateModel invalidAction = rulesUtils.createCustomActionModel(RulesTestsUtils.DELETE_RENDITION_ACTION, Map.of("dummy-key", "dummy-value"));
         ruleModel.setActions(List.of(invalidAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
@@ -673,8 +660,7 @@ public class CreateRulesTests extends RulesRestTest
     public void createRuleWithMissingActionParametersShouldFail()
     {
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        final RestActionBodyExecTemplateModel invalidAction =
-                rulesUtils.createCustomActionModel(RulesTestsUtils.COPY_ACTION, Collections.emptyMap());
+        final RestActionBodyExecTemplateModel invalidAction = rulesUtils.createCustomActionModel(RulesTestsUtils.COPY_ACTION, Collections.emptyMap());
         ruleModel.setActions(List.of(invalidAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -736,7 +722,7 @@ public class CreateRulesTests extends RulesRestTest
     public void createRuleWithoutMandatoryActionParametersShouldFail()
     {
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        final RestActionBodyExecTemplateModel invalidAction = rulesUtils.createCustomActionModel(COPY_ACTION, Map.of("deep-copy",false));
+        final RestActionBodyExecTemplateModel invalidAction = rulesUtils.createCustomActionModel(COPY_ACTION, Map.of("deep-copy", false));
         ruleModel.setActions(List.of(invalidAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -749,7 +735,7 @@ public class CreateRulesTests extends RulesRestTest
     /**
      * Check we get error when attempting to create a rule that copies files to a non-existent folder.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleThatUsesNonExistentNode()
     {
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
@@ -758,7 +744,7 @@ public class CreateRulesTests extends RulesRestTest
         ruleModel.setActions(List.of(invalidAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(NOT_FOUND);
         restClient.assertLastError().containsSummary("Destination folder having Id: non-existent-node no longer exists. Please update your rule definition.");
@@ -767,7 +753,7 @@ public class CreateRulesTests extends RulesRestTest
     /**
      * Check we get error when attempting to create a rule that references a folder that the user does not have read permission for.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleThatUsesNodeWithoutReadPermission()
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -779,7 +765,7 @@ public class CreateRulesTests extends RulesRestTest
         ruleModel.setActions(List.of(invalidAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(NOT_FOUND);
         restClient.assertLastError().containsSummary("The entity with id: " + privateFolder.getNodeRef() + " was not found");
@@ -788,7 +774,7 @@ public class CreateRulesTests extends RulesRestTest
     /**
      * Check we get error when attempting to create a rule that copies files to a folder that a user only has read permission for.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleThatWritesToNodeWithoutPermission()
     {
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -802,7 +788,7 @@ public class CreateRulesTests extends RulesRestTest
         ruleModel.setActions(List.of(invalidAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(FORBIDDEN);
         restClient.assertLastError().containsSummary("No proper permissions for node: " + privateFolder.getNodeRef());
@@ -828,7 +814,6 @@ public class CreateRulesTests extends RulesRestTest
         restClient.assertLastError().containsSummary("Node is not a folder " + fileModel.getNodeRef());
     }
 
-
     /**
      * Check we get error when attempting to create a rule with mail action defined with non-existing mail template.
      */
@@ -850,7 +835,7 @@ public class CreateRulesTests extends RulesRestTest
         ruleModel.setActions(List.of(mailAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
         restClient.assertLastError().containsSummary("Action parameter: template has invalid value (" + mailTemplate +
@@ -860,7 +845,7 @@ public class CreateRulesTests extends RulesRestTest
     /**
      * Check the user can create a rule with a script.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void checkCanUseScriptInRule()
     {
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
@@ -869,7 +854,7 @@ public class CreateRulesTests extends RulesRestTest
         ruleModel.setActions(List.of(scriptAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
     }
@@ -877,7 +862,7 @@ public class CreateRulesTests extends RulesRestTest
     /**
      * Check the script has to be stored in the scripts directory in the data dictionary.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void checkCantUseNodeOutsideScriptsDirectory()
     {
         STEP("Copy script to location outside data dictionary.");
@@ -898,16 +883,16 @@ public class CreateRulesTests extends RulesRestTest
         ruleModel.setActions(List.of(scriptAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(BAD_REQUEST)
-                  .assertLastError().containsSummary("script-ref has invalid value");
+                .assertLastError().containsSummary("script-ref has invalid value");
     }
 
     /**
      * Check a real category needs to be supplied when linking to a category.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void checkLinkToCategoryNeedsRealCategory()
     {
         STEP("Attempt to link to a category with a folder node, rather than a category node.");
@@ -918,7 +903,7 @@ public class CreateRulesTests extends RulesRestTest
         ruleModel.setActions(List.of(categoryAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
     }
@@ -933,7 +918,7 @@ public class CreateRulesTests extends RulesRestTest
         ruleModel.setConditions(rulesUtils.createVariousConditions());
 
         RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-            .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
 
         RestRuleModel expectedRuleModel = rulesUtils.createRuleModelWithDefaultValues();
         expectedRuleModel.setConditions(rulesUtils.createVariousConditions());
@@ -952,7 +937,7 @@ public class CreateRulesTests extends RulesRestTest
         ruleModel.setConditions(rulesUtils.createCompositeCondition(null));
 
         RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-            .createSingleRule(ruleModel);
+                .createSingleRule(ruleModel);
 
         RestRuleModel expectedRuleModel = rulesUtils.createRuleModelWithDefaultValues();
         expectedRuleModel.setTriggers(List.of("inbound"));
@@ -969,10 +954,8 @@ public class CreateRulesTests extends RulesRestTest
         STEP("Try to create a rule with non existing category in conditions.");
         String fakeCategoryId = "bdba5f9f-fake-id22-803b-349bcfd06fd1";
         RestCompositeConditionDefinitionModel conditions = rulesUtils.createCompositeCondition(List.of(
-            rulesUtils.createCompositeCondition(!INVERTED, List.of(
-                    rulesUtils.createSimpleCondition("category", "equals", fakeCategoryId)
-            ))
-        ));
+                rulesUtils.createCompositeCondition(!INVERTED, List.of(
+                        rulesUtils.createSimpleCondition("category", "equals", fakeCategoryId)))));
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         ruleModel.setConditions(conditions);
 
@@ -992,9 +975,7 @@ public class CreateRulesTests extends RulesRestTest
         final String comparator = "greaterthan";
         RestCompositeConditionDefinitionModel conditions = rulesUtils.createCompositeCondition(List.of(
                 rulesUtils.createCompositeCondition(!INVERTED, List.of(
-                        rulesUtils.createSimpleCondition("size", comparator, "500")
-                ))
-        ));
+                        rulesUtils.createSimpleCondition("size", comparator, "500")))));
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         ruleModel.setConditions(conditions);
 

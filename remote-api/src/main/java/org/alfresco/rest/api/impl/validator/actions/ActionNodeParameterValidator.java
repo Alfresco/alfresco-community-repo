@@ -39,6 +39,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections.MapUtils;
+import org.apache.logging.log4j.util.Strings;
+
 import org.alfresco.repo.action.executer.CheckOutActionExecuter;
 import org.alfresco.repo.action.executer.CopyActionExecuter;
 import org.alfresco.repo.action.executer.ImageTransformActionExecuter;
@@ -58,8 +61,6 @@ import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.apache.commons.collections.MapUtils;
-import org.apache.logging.log4j.util.Strings;
 
 /**
  * This class provides logic for validation of permissions for action parameters which reference node.
@@ -67,11 +68,9 @@ import org.apache.logging.log4j.util.Strings;
 public class ActionNodeParameterValidator implements ActionValidator
 {
     /**
-     * This list holds action parameter names which require only READ permission on a referenced node
-     * That means, all other parameters that reference nodes will require WRITE permission
+     * This list holds action parameter names which require only READ permission on a referenced node That means, all other parameters that reference nodes will require WRITE permission
      */
-    static final Map<String, List<String>> REQUIRE_READ_PERMISSION_PARAMS =
-            Map.of(LinkCategoryActionExecuter.NAME, List.of(LinkCategoryActionExecuter.PARAM_CATEGORY_VALUE));
+    static final Map<String, List<String>> REQUIRE_READ_PERMISSION_PARAMS = Map.of(LinkCategoryActionExecuter.NAME, List.of(LinkCategoryActionExecuter.PARAM_CATEGORY_VALUE));
 
     static final String NO_PROPER_PERMISSIONS_FOR_NODE = "No proper permissions for node: ";
     static final String NOT_A_CATEGORY = "Node is not a category ";
@@ -84,7 +83,7 @@ public class ActionNodeParameterValidator implements ActionValidator
     private final PermissionService permissionService;
 
     public ActionNodeParameterValidator(Actions actions, NamespaceService namespaceService, Nodes nodes,
-                                        PermissionService permissionService)
+            PermissionService permissionService)
     {
         this.actions = actions;
         this.namespaceService = namespaceService;
@@ -95,7 +94,8 @@ public class ActionNodeParameterValidator implements ActionValidator
     /**
      * Validates action parameters that reference nodes against access permissions for executing user.
      *
-     * @param action Action to be validated
+     * @param action
+     *            Action to be validated
      */
     @Override
     public void validate(Action action)
@@ -125,7 +125,7 @@ public class ActionNodeParameterValidator implements ActionValidator
     }
 
     private void validateNodes(final List<ActionDefinition.ParameterDefinition> nodeRefParamDefinitions,
-                               final Action action)
+            final Action action)
     {
         if (MapUtils.isNotEmpty(action.getParams()))
         {
@@ -172,7 +172,8 @@ public class ActionNodeParameterValidator implements ActionValidator
             {
                 throw new InvalidArgumentException(NOT_A_FOLDER + nodeRef.getId());
             }
-        } else if (!nodes.nodeMatches(nodeRef, Set.of(TYPE_CATEGORY), Collections.emptySet()))
+        }
+        else if (!nodes.nodeMatches(nodeRef, Set.of(TYPE_CATEGORY), Collections.emptySet()))
         {
             throw new InvalidArgumentException(NOT_A_CATEGORY + nodeRef.getId());
         }

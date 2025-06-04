@@ -6,6 +6,11 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 
 source "$(dirname "${BASH_SOURCE[0]}")/build_functions.sh"
 
+GIT_REPO="github.com/Alfresco/alfresco-transform-core.git"
+BRANCH="fix/MNT-24883-transformoptions"
+
+buildSnapShot "${GIT_REPO}" "${BRANCH}"
+
 if [[ -n ${BUILD_PROFILES} ]]; then
   PROFILES="${BUILD_PROFILES}"
 elif [[ "${REQUIRES_LOCAL_IMAGES}" == "true" ]]; then

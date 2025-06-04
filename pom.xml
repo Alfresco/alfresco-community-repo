@@ -6,6 +6,7 @@
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
+    
     <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-super-pom</artifactId>

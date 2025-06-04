@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -761,7 +761,7 @@ public class CreateRulesTests extends RulesRestTest
                   .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(NOT_FOUND);
-        restClient.assertLastError().containsSummary("The entity with id: non-existent-node was not found");
+        restClient.assertLastError().containsSummary("Destination folder having Id: non-existent-node no longer exists. Please update your rule definition.");
     }
 
     /**

@@ -266,7 +266,7 @@ jobs:
           bash ./scripts/ci/init.sh
           bash ./scripts/ci/build.sh
       - name: "Set transformers tag"
-        run: echo "TRANSFORMERS_TAG=latest"
+        run: echo "TRANSFORMERS_TAG=latest" >> $GITHUB_ENV
       - name: "Set up the environment"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
@@ -299,7 +299,7 @@ jobs:
       - name: "Update GitHub Step Summary"
         if: github.ref_name == 'master'
         run: |
-            echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+          echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
         continue-on-error: true
       - name: "Summarize Report Portal"
         if: github.ref_name == 'master'
@@ -862,7 +862,7 @@ jobs:
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Set transformers tag"
-        run: echo "TRANSFORMERS_TAG=latest"
+        run: echo "TRANSFORMERS_TAG=latest" >> $GITHUB_ENV
       - name: "Set the host IP"
         run: echo "HOST_IP=$(hostname  -I | cut -f1 -d' ')" >> $GITHUB_ENV
       - name: "Generate Keystores and Truststores for Mutual TLS configuration"

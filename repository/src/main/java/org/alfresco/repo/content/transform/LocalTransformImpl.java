@@ -153,10 +153,7 @@ public class LocalTransformImpl extends AbstractLocalTransform
         {
             transformOptions.put(SOURCE_NODE_REF, sourceNodeRef.toString());
         }
-        if (sourceNodeRef != null)
-        {
-            transformOptions.put(SOURCE_FILENAME, transformerDebug.getFilename(sourceNodeRef, true));
-        }
+        // transformOptions.put(SOURCE_FILENAME, transformerDebug.getFilename(sourceNodeRef, true));
 
         // Build an array of option names and values and extract the timeout.
         long timeoutMs = 0;

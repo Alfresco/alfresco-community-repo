@@ -35,6 +35,7 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @author adavis
  */
 @AlfrescoPublicApi
+@SuppressWarnings({"PMD.UnnecessaryFullyQualifiedName", "PMD.UnnecessaryModifier"})
 public interface RenditionDefinition2
 {
     public static final String TIMEOUT = "timeout";

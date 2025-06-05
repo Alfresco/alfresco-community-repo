@@ -35,6 +35,7 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @author adavis
  */
 @AlfrescoPublicApi
+@SuppressWarnings({"PMD.UnnecessaryFullyQualifiedName", "PMD.UnnecessaryModifier"})
 public interface RenditionDefinition2
 {
     public static final String TIMEOUT = "timeout";
@@ -105,6 +106,11 @@ public interface RenditionDefinition2
      * The Source Node Ref is automatically added to the Transform Options if specified but without a value.
      */
     public static final String SOURCE_NODE_REF = "sourceNodeRef";
+
+    /**
+     * The Source File Name is automatically added to the Transform Options if not specified and the transformer knows about it.
+     */
+    public static final String SOURCE_FILENAME = "sourceFileName";
 
     /**
      * The encoding of a Target Node is automatically added to the Transform Options if not specified and the transformer knows about it.

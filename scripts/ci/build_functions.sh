@@ -184,4 +184,14 @@ function retieveLatestTag() {
   rm -rf "${LOCAL_PATH}"
 }
 
+function buildCoreAio() {
+  local GIT_REPO="${1}"
+  local BRANCH="${2}"
+  cloneRepo "${GIT_REPO}" "${BRANCH}"
+
+  pushd "$(dirname "${BASH_SOURCE[0]}")/../../../"
+  cd "$(basename "${GIT_REPO%.git}")"
+  mvn -B -V -q clean install -DskipTests -Dmaven.javadoc.skip=true -Plocal
+  popd
+}
 set -vx

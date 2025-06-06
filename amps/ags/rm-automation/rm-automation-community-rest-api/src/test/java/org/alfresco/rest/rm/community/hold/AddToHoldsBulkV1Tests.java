@@ -134,6 +134,16 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
                 .until(() -> getRestAPIFactory().getSearchAPI(null).search(searchRequest).getPagination()
                         .getTotalItems() == NUMBER_OF_FILES);
 
+        RestRequestQueryModel ancestorReq = getContentFromFolderAndAllSubfoldersQuery(rootFolder.getNodeRefWithoutVersion());
+        SearchRequest ancestorSearchRequest = new SearchRequest();
+        ancestorSearchRequest.setQuery(ancestorReq);
+
+        STEP("Wait until paths are indexed.");
+        // to improve stability on CI - seems that sometimes during big load we need to wait longer for the condition
+        await().atMost(120, TimeUnit.SECONDS)
+                .until(() -> getRestAPIFactory().getSearchAPI(null).search(ancestorSearchRequest).getPagination()
+                        .getTotalItems() == NUMBER_OF_FILES);
+
         holdBulkOperation = HoldBulkOperation.builder()
                 .query(queryReq)
                 .op(HoldBulkOperationType.ADD).build();

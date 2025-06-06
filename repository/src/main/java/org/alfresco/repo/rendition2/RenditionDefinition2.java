@@ -110,7 +110,7 @@ public interface RenditionDefinition2
     /**
      * The Source File Name is automatically added to the Transform Options if not specified and the transformer knows about it.
      */
-    public static final String SOURCE_FILENAME = "sourceFileName";
+    public static final String SOURCE_FILENAME = "sourceFilename";
 
     /**
      * The encoding of a Target Node is automatically added to the Transform Options if not specified and the transformer knows about it.

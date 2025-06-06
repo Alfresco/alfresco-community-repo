@@ -188,11 +188,11 @@ public class LocalTransformImpl extends AbstractLocalTransform
         args[i++] = sourceExtension;
         args[i++] = "targetMimetype";
         args[i++] = targetMimetype;
-        // if (StringUtils.isNotEmpty(filename))
-        // {
-        // args[i++] = SOURCE_FILENAME;
-        // args[i++] = filename;
-        // }
+        if (StringUtils.isNotEmpty(filename))
+        {
+            args[i++] = SOURCE_FILENAME;
+            args[i++] = filename;
+        }
 
         targetExtension = AsynchronousExtractor.getExtension(targetMimetype, sourceExtension, targetExtension);
         remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,

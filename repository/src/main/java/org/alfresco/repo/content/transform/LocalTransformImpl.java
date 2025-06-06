@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.alfresco.httpclient.HttpClientConfig;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
@@ -154,10 +156,10 @@ public class LocalTransformImpl extends AbstractLocalTransform
             transformOptions.put(SOURCE_NODE_REF, sourceNodeRef.toString());
         }
         String filename = transformerDebug.getFilename(sourceNodeRef, true);
-        // if (StringUtils.isNotEmpty(filename))
-        // {
-        // transformOptions.put(SOURCE_FILENAME, filename);
-        // }
+        if (StringUtils.isNotEmpty(filename) && StringUtils.equalsIgnoreCase("libreoffice", name))
+        {
+            transformOptions.put(SOURCE_FILENAME, filename);
+        }
 
         // Build an array of option names and values and extract the timeout.
         long timeoutMs = 0;

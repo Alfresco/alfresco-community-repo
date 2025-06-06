@@ -156,10 +156,10 @@ public class LocalTransformImpl extends AbstractLocalTransform
             transformOptions.put(SOURCE_NODE_REF, sourceNodeRef.toString());
         }
         String filename = transformerDebug.getFilename(sourceNodeRef, true);
-        if (StringUtils.isNotEmpty(filename) && StringUtils.equalsIgnoreCase("libreoffice", name))
-        {
-            transformOptions.put(SOURCE_FILENAME, filename);
-        }
+        // if (StringUtils.isNotEmpty(filename) && StringUtils.equalsIgnoreCase("libreoffice", name))
+        // {
+        // transformOptions.put(SOURCE_FILENAME, filename);
+        // }
 
         // Build an array of option names and values and extract the timeout.
         long timeoutMs = 0;
@@ -194,6 +194,11 @@ public class LocalTransformImpl extends AbstractLocalTransform
         args[i++] = sourceExtension;
         args[i++] = "targetMimetype";
         args[i++] = targetMimetype;
+        if (StringUtils.isNotEmpty(filename))
+        {
+            args[i++] = "sourceFileName";
+            args[i++] = filename;
+        }
 
         targetExtension = AsynchronousExtractor.getExtension(targetMimetype, sourceExtension, targetExtension);
         remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,

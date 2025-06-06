@@ -25,12 +25,13 @@
  */
 package org.alfresco.repo.content.transform;
 
-import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_NODE_REF;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.*;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 
 import org.alfresco.httpclient.HttpClientConfig;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
@@ -150,15 +151,14 @@ public class LocalTransformImpl extends AbstractLocalTransform
         // Dynamic transform options
         String sourceEncoding = reader.getEncoding();
         transformOptions.put(SOURCE_ENCODING, sourceEncoding);
-        if (transformOptions.containsKey(SOURCE_NODE_REF) && transformOptions.get(SOURCE_NODE_REF) == null)
-        {
-            transformOptions.put(SOURCE_NODE_REF, sourceNodeRef.toString());
-        }
+
+        String filename = transformerDebug.getFilename(sourceNodeRef, true);
 
         // Build an array of option names and values and extract the timeout.
         long timeoutMs = 0;
         int nonOptions = transformOptions.containsKey(RenditionDefinition2.TIMEOUT) ? 1 : 0;
-        int size = (transformOptions.size() - nonOptions + 3) * 2;
+        int argAdditionalSize = StringUtils.isNotEmpty(filename) ? 4 : 3;
+        int size = (transformOptions.size() - nonOptions + argAdditionalSize) * 2;
         String[] args = new String[size];
         int i = 0;
         for (Map.Entry<String, String> option : transformOptions.entrySet())
@@ -188,6 +188,11 @@ public class LocalTransformImpl extends AbstractLocalTransform
         args[i++] = sourceExtension;
         args[i++] = "targetMimetype";
         args[i++] = targetMimetype;
+        if (StringUtils.isNotEmpty(filename))
+        {
+            args[i++] = SOURCE_FILENAME;
+            args[i++] = filename;
+        }
 
         targetExtension = AsynchronousExtractor.getExtension(targetMimetype, sourceExtension, targetExtension);
         remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,

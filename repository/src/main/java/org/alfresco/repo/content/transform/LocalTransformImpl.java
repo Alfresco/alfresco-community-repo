@@ -151,20 +151,14 @@ public class LocalTransformImpl extends AbstractLocalTransform
         // Dynamic transform options
         String sourceEncoding = reader.getEncoding();
         transformOptions.put(SOURCE_ENCODING, sourceEncoding);
-        if (transformOptions.containsKey(SOURCE_NODE_REF) && transformOptions.get(SOURCE_NODE_REF) == null)
-        {
-            transformOptions.put(SOURCE_NODE_REF, sourceNodeRef.toString());
-        }
+
         String filename = transformerDebug.getFilename(sourceNodeRef, true);
-        // if (StringUtils.isNotEmpty(filename) && StringUtils.equalsIgnoreCase("libreoffice", name))
-        // {
-        // transformOptions.put(SOURCE_FILENAME, filename);
-        // }
 
         // Build an array of option names and values and extract the timeout.
         long timeoutMs = 0;
         int nonOptions = transformOptions.containsKey(RenditionDefinition2.TIMEOUT) ? 1 : 0;
-        int size = (transformOptions.size() - nonOptions + 3) * 2;
+        int argAdditionalSize = StringUtils.isNotEmpty(filename) ? 4 : 3;
+        int size = (transformOptions.size() - nonOptions + argAdditionalSize) * 2;
         String[] args = new String[size];
         int i = 0;
         for (Map.Entry<String, String> option : transformOptions.entrySet())
@@ -196,7 +190,7 @@ public class LocalTransformImpl extends AbstractLocalTransform
         args[i++] = targetMimetype;
         if (StringUtils.isNotEmpty(filename))
         {
-            args[i++] = "sourceFileName";
+            args[i++] = SOURCE_FILENAME;
             args[i++] = filename;
         }
 

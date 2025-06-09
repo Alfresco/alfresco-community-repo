@@ -903,7 +903,7 @@ jobs:
           RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)"
-          mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.mvn-options }} "${args[@]}"
+          mvn -e -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.mvn-options }} "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
         if: github.ref_name == 'master'

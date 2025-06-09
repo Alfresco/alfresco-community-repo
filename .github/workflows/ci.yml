@@ -862,7 +862,7 @@ jobs:
       - name: "Init"
         run: |
           bash ./scripts/ci/init.sh
-
+          bash ./scripts/ci/build.sh
       - name: "Set transformers tag"
         run: echo "TRANSFORMERS_TAG=latest" >> $GITHUB_ENV
       - name: "Set the host IP"

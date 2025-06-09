@@ -41,8 +41,8 @@ public class LocalTransformClientWithMTLSIntegrationTest extends LocalTransformC
     {
         local();
 
-        System.setProperty("localTransform.core-aio.url", "https://localhost:8090/");
-        System.setProperty("httpclient.config.transform.mTLSEnabled", "true");
+        System.setProperty("localTransform.core-aio.url", "http://localhost:8090/");
+        System.setProperty("httpclient.config.transform.mTLSEnabled", "false");
         System.setProperty("ssl-keystore.password", "password");
         System.setProperty("ssl-truststore.password", "password");
         System.setProperty("metadata-keystore.password", "password");

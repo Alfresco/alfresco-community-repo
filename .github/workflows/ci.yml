@@ -860,7 +860,9 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.16.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.16.0
       - name: "Init"
-        run: bash ./scripts/ci/init.sh
+        run: |
+          bash ./scripts/ci/init.sh
+          bash ./scripts/ci/build.sh
       - name: "Set transformers tag"
         run: echo "TRANSFORMERS_TAG=latest" >> $GITHUB_ENV
       - name: "Set the host IP"

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -34,8 +34,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.lock.LockStatus;
-import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -53,8 +51,6 @@ public class LockUtilsTest
     @Test
     public void testIsLockedAndReadOnly_ForLockOwnerWithNullLockType()
     {
-        when(lockService.getLockStatus(nodeRef)).thenReturn(LockStatus.LOCK_OWNER);
-        when(lockService.getLockType(nodeRef)).thenReturn(null);
         when(lockService.isLockedAndReadOnly(nodeRef)).thenReturn(true);
 
         boolean returnedVal = LockUtils.isLockedAndReadOnly(nodeRef, lockService);
@@ -64,8 +60,6 @@ public class LockUtilsTest
     @Test
     public void testIsLockedAndReadOnly_ForLockOwnerWithWriteLockType()
     {
-        when(lockService.getLockStatus(nodeRef)).thenReturn(LockStatus.LOCK_OWNER);
-        when(lockService.getLockType(nodeRef)).thenReturn(LockType.WRITE_LOCK);
         when(lockService.isLockedAndReadOnly(nodeRef)).thenReturn(false);
 
         boolean returnedVal = LockUtils.isLockedAndReadOnly(nodeRef, lockService);
@@ -75,8 +69,6 @@ public class LockUtilsTest
     @Test
     public void testIsLockedAndReadOnly_ForLockOwnerWithNodeLockType()
     {
-        when(lockService.getLockStatus(nodeRef)).thenReturn(LockStatus.LOCK_OWNER);
-        when(lockService.getLockType(nodeRef)).thenReturn(LockType.NODE_LOCK);
         when(lockService.isLockedAndReadOnly(nodeRef)).thenReturn(true);
 
         boolean returnedVal = LockUtils.isLockedAndReadOnly(nodeRef, lockService);
@@ -86,8 +78,6 @@ public class LockUtilsTest
     @Test
     public void testIsLockedAndReadOnly_ForLockOwnerWithReadOnlyLockType()
     {
-        when(lockService.getLockStatus(nodeRef)).thenReturn(LockStatus.LOCK_OWNER);
-        when(lockService.getLockType(nodeRef)).thenReturn(LockType.READ_ONLY_LOCK);
         when(lockService.isLockedAndReadOnly(nodeRef)).thenReturn(true);
 
         boolean returnedVal = LockUtils.isLockedAndReadOnly(nodeRef, lockService);
@@ -97,7 +87,6 @@ public class LockUtilsTest
     @Test
     public void testIsLockedAndReadOnly_ForNoLock()
     {
-        when(lockService.getLockStatus(nodeRef)).thenReturn(LockStatus.NO_LOCK);
         when(lockService.isLockedAndReadOnly(nodeRef)).thenReturn(false);
 
         boolean returnedVal = LockUtils.isLockedAndReadOnly(nodeRef, lockService);
@@ -107,7 +96,6 @@ public class LockUtilsTest
     @Test
     public void testIsLockedAndReadOnly_ForExpiredLock()
     {
-        when(lockService.getLockStatus(nodeRef)).thenReturn(LockStatus.LOCK_EXPIRED);
         when(lockService.isLockedAndReadOnly(nodeRef)).thenReturn(false);
 
         boolean returnedVal = LockUtils.isLockedAndReadOnly(nodeRef, lockService);
@@ -117,7 +105,6 @@ public class LockUtilsTest
     @Test
     public void testIsLockedAndReadOnly_ForLock()
     {
-        when(lockService.getLockStatus(nodeRef)).thenReturn(LockStatus.LOCKED);
         when(lockService.isLockedAndReadOnly(nodeRef)).thenReturn(true);
 
         boolean returnedVal = LockUtils.isLockedAndReadOnly(nodeRef, lockService);

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -161,7 +161,6 @@ public class CachingContentStoreTest
     @Test
     public void getReaderForItemMissingFromCacheButNoContentToCache()
     {
-        when(cache.getReader("url")).thenThrow(new CacheMissException("url"));
         when(backingStore.getReader("url")).thenReturn(sourceContent);
         when(cache.put("url", sourceContent)).thenReturn(false);
 
@@ -307,7 +306,6 @@ public class CachingContentStoreTest
         // Don't veto writing the cache file.
         when(quota.beforeWritingCacheFile(1274L)).thenReturn(true);
         // Do request cache file deletion.
-        when(quota.afterWritingCacheFile(1234L)).thenReturn(false);
 
         ContentReader returnedReader = cachingStore.getReader("url");
 

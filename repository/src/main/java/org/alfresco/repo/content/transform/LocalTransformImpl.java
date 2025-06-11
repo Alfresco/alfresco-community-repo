@@ -52,7 +52,6 @@ import org.alfresco.util.Pair;
  */
 public class LocalTransformImpl extends AbstractLocalTransform
 {
-    private TransformUtil transformUtil;
     private RemoteTransformerClient remoteTransformerClient;
 
     private boolean available = false;
@@ -64,14 +63,12 @@ public class LocalTransformImpl extends AbstractLocalTransform
             Set<TransformOption> transformsTransformOptions,
             LocalTransformServiceRegistry localTransformServiceRegistry, String baseUrl,
             HttpClientConfig httpClientConfig,
-            TransformUtil transformUtil,
             int startupRetryPeriodSeconds)
     {
         super(name, transformerDebug, mimetypeService, strictMimeTypeCheck, strictMimetypeExceptions,
                 retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry);
         remoteTransformerClient = new RemoteTransformerClient(name, baseUrl, httpClientConfig);
         remoteTransformerClient.setStartupRetryPeriodSeconds(startupRetryPeriodSeconds);
-        this.transformUtil = transformUtil;
 
         checkAvailability();
     }
@@ -161,7 +158,7 @@ public class LocalTransformImpl extends AbstractLocalTransform
             transformOptions.put(SOURCE_NODE_REF, sourceNodeRef.toString());
         }
 
-        String filename = transformUtil.getFilenameFromNodeRef(sourceNodeRef, true);
+        String filename = transformerDebug.getFilename(sourceNodeRef, true);
 
         // Build an array of option names and values and extract the timeout.
         long timeoutMs = 0;

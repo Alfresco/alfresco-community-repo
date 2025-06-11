@@ -319,10 +319,6 @@
        <property name="remoteTransformServiceRegistry" ref="remoteTransformServiceRegistry" />
    </bean>
 
-    <bean id="transformUtil" class="org.alfresco.repo.content.transform.TransformUtil">
-        <property name="nodeService" ref="nodeService" />
-    </bean>
-
    <!-- Transformer JMX bean (in addition to sub system properties) -->
    <bean id="transformerConfigMBean" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">

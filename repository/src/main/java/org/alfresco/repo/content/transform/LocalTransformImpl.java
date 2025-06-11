@@ -25,7 +25,9 @@
  */
 package org.alfresco.repo.content.transform;
 
-import static org.alfresco.repo.rendition2.RenditionDefinition2.*;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_FILENAME;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_NODE_REF;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -151,6 +153,10 @@ public class LocalTransformImpl extends AbstractLocalTransform
         // Dynamic transform options
         String sourceEncoding = reader.getEncoding();
         transformOptions.put(SOURCE_ENCODING, sourceEncoding);
+        if (transformOptions.containsKey(SOURCE_NODE_REF) && transformOptions.get(SOURCE_NODE_REF) == null)
+        {
+            transformOptions.put(SOURCE_NODE_REF, sourceNodeRef.toString());
+        }
 
         String filename = transformerDebug.getFilename(sourceNodeRef, true);
 

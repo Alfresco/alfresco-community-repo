@@ -75,6 +75,8 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     private Properties properties;
     private MimetypeService mimetypeService;
     private TransformerDebug transformerDebug;
+    private TransformUtil transformUtil;
+
     private boolean strictMimeTypeCheck;
     private Map<String, Set<String>> strictMimetypeExceptions;
     private boolean retryTransformOnDifferentMimeType;
@@ -133,12 +135,18 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
         this.retryTransformOnDifferentMimeType = retryTransformOnDifferentMimeType;
     }
 
+    public void setTransformUtil(TransformUtil transformUtil)
+    {
+        this.transformUtil = transformUtil;
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception
     {
         PropertyCheck.mandatory(this, "mimetypeService", mimetypeService);
         PropertyCheck.mandatory(this, "properties", properties);
         PropertyCheck.mandatory(this, "transformerDebug", transformerDebug);
+        PropertyCheck.mandatory(this, "transformUtil", transformUtil);
         strictMimetypeExceptions = getStrictMimetypeExceptions();
         super.afterPropertiesSet();
     }
@@ -200,7 +208,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
                 int startupRetryPeriodSeconds = getStartupRetryPeriodSeconds(name);
                 localTransform = new LocalTransformImpl(name, transformerDebug, mimetypeService,
                         strictMimeTypeCheck, strictMimetypeExceptions, retryTransformOnDifferentMimeType,
-                        transformsTransformOptions, this, baseUrl, httpClientConfig,
+                        transformsTransformOptions, this, baseUrl, httpClientConfig, transformUtil,
                         startupRetryPeriodSeconds);
             }
             else if (isPipeline)

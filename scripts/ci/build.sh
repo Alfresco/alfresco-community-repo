@@ -11,8 +11,8 @@ BRANCH="fix/MNT-24883-transformoptions"
 
 buildCoreAio "${GIT_REPO}" "${BRANCH}"
 
-ATS_GIT_REPO="https://github.com/Alfresco/alfresco-transform-service.git"
-ATS_BRANCH="fix/MNT-24883-transformoptions"
+ATS_GIT_REPO="github.com/Alfresco/alfresco-transform-service.git"
+ATS_BRANCH="fix/MNT-24883-transformoptions-test"
 buildCoreAio "${ATS_GIT_REPO}" "${ATS_BRANCH}"
 
 

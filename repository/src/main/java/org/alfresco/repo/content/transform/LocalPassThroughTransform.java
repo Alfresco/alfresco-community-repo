@@ -36,11 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.transform.config.SupportedSourceAndTarget;
 import org.alfresco.transform.config.TransformOption;
 import org.alfresco.transform.config.Transformer;
@@ -63,10 +59,10 @@ public class LocalPassThroughTransform extends AbstractLocalTransform
             Map<String, Set<String>> strictMimetypeExceptions,
             boolean retryTransformOnDifferentMimeType,
             Set<TransformOption> transformsTransformOptions,
-            LocalTransformServiceRegistry localTransformServiceRegistry)
+            LocalTransformServiceRegistry localTransformServiceRegistry, NodeService nodeService)
     {
         super(name, transformerDebug, mimetypeService, strictMimeTypeCheck, strictMimetypeExceptions,
-                retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry);
+                retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry, nodeService);
     }
 
     public static Transformer getConfig(List<String> mimetypes)

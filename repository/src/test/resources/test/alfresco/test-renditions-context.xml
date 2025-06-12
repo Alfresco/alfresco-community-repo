@@ -28,6 +28,7 @@
       <property name="strictMimeTypeCheck" value="${transformer.strict.mimetype.check}"/>
       <property name="retryTransformOnDifferentMimeType" value="false"/>
       <property name="httpClientConfig" ref="httpClientConfigTransform" />
+      <property name="nodeService" ref="NodeService" />
    </bean>
 
 </beans>

@@ -32,11 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.content.filestore.FileContentWriter;
-import org.alfresco.service.cmr.repository.ContentIOException;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.transform.config.TransformOption;
 import org.alfresco.util.TempFileProvider;
 
@@ -54,10 +50,10 @@ public class LocalFailoverTransform extends AbstractLocalTransform
             Map<String, Set<String>> strictMimetypeExceptions,
             boolean retryTransformOnDifferentMimeType,
             Set<TransformOption> transformsTransformOptions,
-            LocalTransformServiceRegistry localTransformServiceRegistry)
+            LocalTransformServiceRegistry localTransformServiceRegistry, NodeService nodeService)
     {
         super(name, transformerDebug, mimetypeService, strictMimeTypeCheck, strictMimetypeExceptions,
-                retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry);
+                retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry, nodeService);
     }
 
     @Override

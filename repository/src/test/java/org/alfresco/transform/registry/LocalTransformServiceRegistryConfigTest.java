@@ -64,6 +64,7 @@ import org.alfresco.repo.content.transform.LocalPipelineTransform;
 import org.alfresco.repo.content.transform.LocalTransformImpl;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.transform.config.SupportedSourceAndTarget;
 import org.alfresco.transform.config.TransformConfig;
 import org.alfresco.transform.config.TransformOption;
@@ -205,6 +206,9 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
     @Mock
     private MimetypeMap mimetypeMap;
 
+    @Mock
+    private NodeService nodeService;
+
     private Map<String, List<String>> imagemagickSupportedTransformation;
     private Map<String, List<String>> tikaSupportedTransformation;
     private Map<String, List<String>> pdfRendererSupportedTransformation;
@@ -232,6 +236,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
         registry.setProperties(properties);
         registry.setTransformerDebug(transformerDebug);
         registry.setMimetypeService(mimetypeMap);
+        registry.setNodeService(nodeService);
         registry.setPipelineConfigDir("");
         registry.setCronExpression(null); // just read it once
         registry.afterPropertiesSet();

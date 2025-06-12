@@ -11,6 +11,11 @@ BRANCH="fix/MNT-24883-transformoptions"
 
 buildCoreAio "${GIT_REPO}" "${BRANCH}"
 
+ATS_GIT_REPO="https://github.com/Alfresco/alfresco-transform-service.git"
+ATS_BRANCH="fix/MNT-24883-transformoptions"
+buildCoreAio "${ATS_GIT_REPO}" "${ATS_BRANCH}"
+
+
 if [[ -n ${BUILD_PROFILES} ]]; then
   PROFILES="${BUILD_PROFILES}"
 elif [[ "${REQUIRES_LOCAL_IMAGES}" == "true" ]]; then

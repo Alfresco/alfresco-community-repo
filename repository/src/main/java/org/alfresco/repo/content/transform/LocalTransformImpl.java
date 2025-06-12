@@ -157,7 +157,7 @@ public class LocalTransformImpl extends AbstractLocalTransform
             transformOptions.put(SOURCE_NODE_REF, sourceNodeRef.toString());
         }
 
-        String filename = (String) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME);
+        String filename = sourceNodeRef != null ? (String) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME) : null;
         if (StringUtils.isNotEmpty(filename))
         {
             transformOptions.put(SOURCE_FILENAME, filename);

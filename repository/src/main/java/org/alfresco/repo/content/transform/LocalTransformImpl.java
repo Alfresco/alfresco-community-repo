@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,7 +25,9 @@
  */
 package org.alfresco.repo.content.transform;
 
-import static org.alfresco.repo.rendition2.RenditionDefinition2.*;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_FILENAME;
+import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_NODE_REF;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,12 +36,10 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 import org.alfresco.httpclient.HttpClientConfig;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.transform.config.TransformOption;
 import org.alfresco.util.Pair;
 
@@ -61,10 +61,11 @@ public class LocalTransformImpl extends AbstractLocalTransform
             Set<TransformOption> transformsTransformOptions,
             LocalTransformServiceRegistry localTransformServiceRegistry, String baseUrl,
             HttpClientConfig httpClientConfig,
+            NodeService nodeService,
             int startupRetryPeriodSeconds)
     {
         super(name, transformerDebug, mimetypeService, strictMimeTypeCheck, strictMimetypeExceptions,
-                retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry);
+                retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry, nodeService);
         remoteTransformerClient = new RemoteTransformerClient(name, baseUrl, httpClientConfig);
         remoteTransformerClient.setStartupRetryPeriodSeconds(startupRetryPeriodSeconds);
 
@@ -151,14 +152,21 @@ public class LocalTransformImpl extends AbstractLocalTransform
         // Dynamic transform options
         String sourceEncoding = reader.getEncoding();
         transformOptions.put(SOURCE_ENCODING, sourceEncoding);
+        if (transformOptions.containsKey(SOURCE_NODE_REF) && transformOptions.get(SOURCE_NODE_REF) == null)
+        {
+            transformOptions.put(SOURCE_NODE_REF, sourceNodeRef.toString());
+        }
 
-        String filename = transformerDebug.getFilename(sourceNodeRef, true);
+        String filename = (String) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME);
+        if (StringUtils.isNotEmpty(filename))
+        {
+            transformOptions.put(SOURCE_FILENAME, filename);
+        }
 
         // Build an array of option names and values and extract the timeout.
         long timeoutMs = 0;
         int nonOptions = transformOptions.containsKey(RenditionDefinition2.TIMEOUT) ? 1 : 0;
-        int argAdditionalSize = StringUtils.isNotEmpty(filename) ? 4 : 3;
-        int size = (transformOptions.size() - nonOptions + argAdditionalSize) * 2;
+        int size = (transformOptions.size() - nonOptions + 3) * 2;
         String[] args = new String[size];
         int i = 0;
         for (Map.Entry<String, String> option : transformOptions.entrySet())
@@ -188,11 +196,6 @@ public class LocalTransformImpl extends AbstractLocalTransform
         args[i++] = sourceExtension;
         args[i++] = "targetMimetype";
         args[i++] = targetMimetype;
-        if (StringUtils.isNotEmpty(filename))
-        {
-            args[i++] = SOURCE_FILENAME;
-            args[i++] = filename;
-        }
 
         targetExtension = AsynchronousExtractor.getExtension(targetMimetype, sourceExtension, targetExtension);
         remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,

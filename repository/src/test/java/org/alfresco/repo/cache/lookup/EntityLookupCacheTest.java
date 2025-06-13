@@ -61,7 +61,7 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
     private ControlDAO controlDAO;
 
     @Before
-    protected void setUp() throws Exception
+    public void setUp() throws Exception
     {
         cache = new MemoryCache<Long, Object>();
         entityLookupCacheA = new EntityLookupCache<Long, Object, String>(cache, "A", this);

@@ -31,7 +31,6 @@ import java.sql.Savepoint;
 import java.util.Map;
 import java.util.TreeMap;
 
-import junit.framework.AssertionFailedError;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;

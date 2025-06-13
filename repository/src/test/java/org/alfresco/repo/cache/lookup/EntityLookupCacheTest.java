@@ -72,18 +72,10 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
         Mockito.when(controlDAO.createSavepoint(Mockito.anyString())).thenReturn(Mockito.mock(Savepoint.class));
     }
 
-    @Test
+    @Test(expected = AssertionFailedError.class)
     public void testLookupsUsingIncorrectValue() throws Exception
     {
-        try
-        {
-            // Keep the "database" empty
-            entityLookupCacheA.getByValue(this);
-        }
-        catch (AssertionFailedError e)
-        {
-            // Expected
-        }
+        entityLookupCacheA.getByValue(this);
     }
 
     @Test

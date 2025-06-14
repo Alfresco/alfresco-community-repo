@@ -244,6 +244,9 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
         assertEquals("Delete count was incorrect.", 1, deleteCount);
         assertNull(database.get(id));
         assertEquals(0, cache.getKeys().size());
+
+
+
     }
 
     @Test

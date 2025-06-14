@@ -245,8 +245,6 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
         assertNull(database.get(id));
         assertEquals(0, cache.getKeys().size());
 
-
-
     }
 
     @Test

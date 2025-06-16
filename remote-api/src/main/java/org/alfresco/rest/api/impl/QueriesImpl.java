@@ -31,21 +31,16 @@ import static org.alfresco.rest.api.impl.QueriesImpl.AbstractQuery.Sort.POST_QUE
 
 import java.io.Serializable;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
@@ -89,6 +84,7 @@ import org.alfresco.util.SearchLanguageConversion;
  */
 public class QueriesImpl implements Queries, InitializingBean
 {
+    private static final Log LOGGER = LogFactory.getLog(QueriesImpl.class);
     private final static Map<String, QName> NODE_SORT_PARAMS_TO_QNAMES = sortParamsToQNames(
             PARAM_NAME, ContentModel.PROP_NAME,
             PARAM_CREATEDAT, ContentModel.PROP_CREATED,
@@ -247,7 +243,7 @@ public class QueriesImpl implements Queries, InitializingBean
                             {
                                 // first request for this namespace prefix, get and cache result
                                 Collection<String> prefixes = namespaceService.getPrefixes(qname.getNamespaceURI());
-                                prefix = prefixes.size() != 0 ? prefixes.iterator().next() : "";
+                                prefix = !prefixes.isEmpty() ? prefixes.iterator().next() : "";
                                 cache.put(qname.getNamespaceURI(), prefix);
                             }
                             buf.append('/').append(prefix).append(':').append(ISO9075.encode(qname.getLocalName()));
@@ -259,12 +255,6 @@ public class QueriesImpl implements Queries, InitializingBean
                     }
                 }
                 return buf.toString();
-            }
-
-            @Override
-            protected List<Node> newList(int capacity)
-            {
-                return new ArrayList<Node>(capacity);
             }
 
             @Override
@@ -304,17 +294,10 @@ public class QueriesImpl implements Queries, InitializingBean
             }
 
             @Override
-            protected List<Person> newList(int capacity)
-            {
-                return new ArrayList<Person>(capacity);
-            }
-
-            @Override
             protected Person convert(NodeRef nodeRef, List<String> includeParam)
             {
                 String personId = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
-                Person person = people.getPerson(personId);
-                return person;
+                return people.getPerson(personId);
             }
 
             // TODO Do the sort in the query on day. A comment in the code for the V0 API used for live people
@@ -342,27 +325,17 @@ public class QueriesImpl implements Queries, InitializingBean
             }
 
             @Override
-            protected List<Site> newList(int capacity)
-            {
-                return new ArrayList<>(capacity);
-            }
-
-            @Override
             protected Site convert(NodeRef nodeRef, List<String> includeParam)
             {
-                return getSite(siteService.getSite(nodeRef), true);
+                return getSite(siteService.getSite(nodeRef));
             }
 
             // note: see also Sites.getSite
-            private Site getSite(SiteInfo siteInfo, boolean includeRole)
+            private Site getSite(SiteInfo siteInfo)
             {
                 // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
                 String siteId = siteInfo.getShortName();
-                String role = null;
-                if (includeRole)
-                {
-                    role = sites.getSiteRole(siteId);
-                }
+                String role = sites.getSiteRole(siteId);
                 return new Site(siteInfo, role);
             }
         }.find(parameters, PARAM_TERM, MIN_TERM_LENGTH_SITES, "_SITE", POST_QUERY_SORT, SITE_SORT_PARAMS_TO_QNAMES, new SortColumn(PARAM_SITE_TITLE, true));
@@ -412,34 +385,38 @@ public class QueriesImpl implements Queries, InitializingBean
             }
 
             ResultSet queryResults = null;
-            List<T> collection = null;
             try
             {
                 queryResults = searchService.query(sp);
 
                 List<NodeRef> nodeRefs = queryResults.getNodeRefs();
-
-                if (sort == POST_QUERY_SORT)
-                {
-                    nodeRefs = postQuerySort(parameters, sortParamsToQNames, defaultSortCols, nodeRefs);
-                }
-
-                collection = newList(nodeRefs.size());
+                Map<NodeRef, T> collection = new LinkedHashMap<>(nodeRefs.size());
                 List<String> includeParam = parameters.getInclude();
 
                 for (NodeRef nodeRef : nodeRefs)
                 {
-                    T t = convert(nodeRef, includeParam);
-                    collection.add(t);
+                    try
+                    {
+                        T t = convert(nodeRef, includeParam);
+                        collection.put(nodeRef, t);
+                    }
+                    catch (AccessDeniedException ade)
+                    {
+                        LOGGER.debug("Ignoring search result for nodeRef " + nodeRef + " due to access denied exception", ade);
+                    }
                 }
 
                 if (sort == POST_QUERY_SORT)
                 {
-                    return listPage(collection, paging);
+                    List<T> postQuerySortedCollection = postQuerySort(parameters, sortParamsToQNames, defaultSortCols, collection.keySet())
+                            .stream()
+                            .map(collection::get)
+                            .toList();
+                    return listPage(postQuerySortedCollection, paging);
                 }
                 else
                 {
-                    return CollectionWithPagingInfo.asPaged(paging, collection, queryResults.hasMore(), Long.valueOf(queryResults.getNumberFound()).intValue());
+                    return CollectionWithPagingInfo.asPaged(paging, collection.values(), queryResults.hasMore(), Long.valueOf(queryResults.getNumberFound()).intValue());
                 }
             }
             finally
@@ -463,15 +440,6 @@ public class QueriesImpl implements Queries, InitializingBean
          * @param queryTemplateName
          */
         protected abstract void buildQuery(StringBuilder query, String term, SearchParameters sp, String queryTemplateName);
-
-        /**
-         * Returns a list of the correct type.
-         * 
-         * @param capacity
-         *            of the list
-         * @return a new list.
-         */
-        protected abstract List<T> newList(int capacity);
 
         /**
          * Converts a nodeRef into the an object of the required type.
@@ -551,7 +519,7 @@ public class QueriesImpl implements Queries, InitializingBean
         private List<SortColumn> getSorting(Parameters parameters, List<SortColumn> defaultSortCols)
         {
             List<SortColumn> sortCols = parameters.getSorting();
-            if (sortCols == null || sortCols.size() == 0)
+            if (sortCols == null || sortCols.isEmpty())
             {
                 sortCols = defaultSortCols == null ? Collections.emptyList() : defaultSortCols;
             }
@@ -559,62 +527,66 @@ public class QueriesImpl implements Queries, InitializingBean
         }
 
         protected List<NodeRef> postQuerySort(Parameters parameters, Map<String, QName> sortParamsToQNames,
-                List<SortColumn> defaultSortCols, List<NodeRef> nodeRefs)
+                List<SortColumn> defaultSortCols, Set<NodeRef> unsortedNodeRefs)
         {
             final List<SortColumn> sortCols = getSorting(parameters, defaultSortCols);
             int sortColCount = sortCols.size();
-            if (sortColCount > 0)
-            {
-                // make copy of nodeRefs because it can be unmodifiable list.
-                nodeRefs = new ArrayList<NodeRef>(nodeRefs);
 
-                List<QName> sortPropQNames = new ArrayList<>(sortColCount);
-                for (SortColumn sortCol : sortCols)
+            if (sortColCount == 0)
+            {
+                return new ArrayList<>(unsortedNodeRefs);
+            }
+
+            // make copy of nodeRefs because it can be unmodifiable list.
+            List<NodeRef> sortedNodeRefs = new ArrayList<>(unsortedNodeRefs);
+
+            List<QName> sortPropQNames = new ArrayList<>(sortColCount);
+            for (SortColumn sortCol : sortCols)
+            {
+                QName sortPropQName = sortParamsToQNames.get(sortCol.column);
+                if (sortPropQName == null)
                 {
-                    QName sortPropQName = sortParamsToQNames.get(sortCol.column);
-                    if (sortPropQName == null)
+                    throw new InvalidArgumentException("Invalid sort field: " + sortCol.column);
+                }
+                sortPropQNames.add(sortPropQName);
+            }
+
+            final Collator col = AlfrescoCollator.getInstance(I18NUtil.getLocale());
+            Collections.sort(sortedNodeRefs, new Comparator<NodeRef>() {
+                @Override
+                public int compare(NodeRef n1, NodeRef n2)
+                {
+                    int result = 0;
+                    for (int i = 0; i < sortCols.size(); i++)
                     {
-                        throw new InvalidArgumentException("Invalid sort field: " + sortCol.column);
+                        SortColumn sortCol = sortCols.get(i);
+                        QName sortPropQName = sortPropQNames.get(i);
+
+                        Serializable p1 = getProperty(n1, sortPropQName);
+                        Serializable p2 = getProperty(n2, sortPropQName);
+
+                        result = ((p1 instanceof Long) && (p2 instanceof Long)
+                                ? Long.compare((Long) p1, (Long) p2)
+                                : col.compare(p1.toString(), p2.toString()))
+                                * (sortCol.asc ? 1 : -1);
+
+                        if (result != 0)
+                        {
+                            break;
+                        }
                     }
-                    sortPropQNames.add(sortPropQName);
+                    return result;
                 }
 
-                final Collator col = AlfrescoCollator.getInstance(I18NUtil.getLocale());
-                Collections.sort(nodeRefs, new Comparator<NodeRef>() {
-                    @Override
-                    public int compare(NodeRef n1, NodeRef n2)
-                    {
-                        int result = 0;
-                        for (int i = 0; i < sortCols.size(); i++)
-                        {
-                            SortColumn sortCol = sortCols.get(i);
-                            QName sortPropQName = sortPropQNames.get(i);
+                private Serializable getProperty(NodeRef nodeRef, QName sortPropQName)
+                {
+                    Serializable result = nodeService.getProperty(nodeRef, sortPropQName);
+                    return result == null ? "" : result;
+                }
 
-                            Serializable p1 = getProperty(n1, sortPropQName);
-                            Serializable p2 = getProperty(n2, sortPropQName);
+            });
 
-                            result = ((p1 instanceof Long) && (p2 instanceof Long)
-                                    ? Long.compare((Long) p1, (Long) p2)
-                                    : col.compare(p1.toString(), p2.toString()))
-                                    * (sortCol.asc ? 1 : -1);
-
-                            if (result != 0)
-                            {
-                                break;
-                            }
-                        }
-                        return result;
-                    }
-
-                    private Serializable getProperty(NodeRef nodeRef, QName sortPropQName)
-                    {
-                        Serializable result = nodeService.getProperty(nodeRef, sortPropQName);
-                        return result == null ? "" : result;
-                    }
-
-                });
-            }
-            return nodeRefs;
+            return sortedNodeRefs;
         }
 
         // note: see also AbstractNodeRelation

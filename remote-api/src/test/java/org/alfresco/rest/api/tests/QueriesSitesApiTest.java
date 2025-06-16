@@ -30,10 +30,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -130,6 +127,7 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
     public void testLiveSearchSites() throws Exception
     {
         setRequestContext(user1);
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
         int sCount = 5;
         assertTrue(sCount > 4); // as relied on by test below
@@ -231,7 +229,11 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
 
     private NodeRef getNodeRef(String createdSiteId)
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+        // Created sites do not return NodeRefs to the caller so we need to get the NodeRef from the siteService.
+        // Temporarily as admin we will get NodeRefs to handle ACL authorization.
+        String userUnderTest = AuthenticationUtil.getFullyAuthenticatedUser();
+        AuthenticationUtil.setFullyAuthenticatedUser(DEFAULT_ADMIN);
+
         // The following call to siteService.getSite(createdSiteId).getNodeRef() returns a NodeRef like:
         // workspace://SpacesStore/9db76769-96de-4de4-bdb4-a127130af362
         // We call tenantService.getName(nodeRef) to get a fully qualified NodeRef as Solr returns this.
@@ -239,6 +241,8 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
         // workspace://@org.alfresco.rest.api.tests.queriespeopleapitest@SpacesStore/9db76769-96de-4de4-bdb4-a127130af362
         NodeRef nodeRef = siteService.getSite(createdSiteId).getNodeRef();
         nodeRef = tenantService.getName(nodeRef);
+
+        AuthenticationUtil.setFullyAuthenticatedUser(userUnderTest);
         return nodeRef;
     }
 
@@ -246,6 +250,7 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
     public void testLiveSearchSites_SortPage() throws Exception
     {
         setRequestContext(user1);
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
         List<String> siteIds = new ArrayList<>(5);
 
@@ -304,6 +309,51 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
                 deleteSite(siteId, true, 204);
             }
         }
+    }
+
+    /**
+     * If the search service do not support ACL filtering, then the Queries API should handle the response to exclude private sites and potential unauthorized error when building response.
+     */
+    @Test
+    public void testLiveSearchExcludesPrivateSites() throws Exception
+    {
+        String publicSiteId = null;
+        String privateSiteId = null;
+        try
+        {
+            // given
+            setRequestContext(null, DEFAULT_ADMIN, DEFAULT_ADMIN_PWD);
+            createUser("bartender");
+
+            publicSiteId = createSite("samePrefixPublicSite", "samePrefixPublicSite", "Visible to all users", SiteVisibility.PUBLIC, 201).getId();
+            privateSiteId = createSite("samePrefixPrivateSite", "samePrefixPrivateSite", "Hidden from bartender", SiteVisibility.PRIVATE, 201).getId();
+
+            String[] searchResults = {publicSiteId, privateSiteId};
+            String[] expectedSites = {publicSiteId};
+
+            // when
+            setRequestContext(null, "bartender", "password");
+            AuthenticationUtil.setFullyAuthenticatedUser("bartender");
+
+            // then
+            checkApiCall("samePrefix", null, getPaging(0, 100), 200, expectedSites, searchResults);
+        }
+        finally
+        {
+            // cleanup
+            AuthenticationUtil.setFullyAuthenticatedUser(DEFAULT_ADMIN);
+            setRequestContext(null, DEFAULT_ADMIN, DEFAULT_ADMIN_PWD);
+            if (publicSiteId != null)
+            {
+                deleteSite(publicSiteId, true, 204);
+            }
+            if (privateSiteId != null)
+            {
+                deleteSite(privateSiteId, true, 204);
+            }
+            deleteUser("bartender", null);
+        }
+
     }
 
     @Override

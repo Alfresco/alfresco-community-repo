@@ -35,6 +35,7 @@
 <%@ page import="org.alfresco.service.cmr.module.ModuleInstallState" %>
 <%@ page import="java.util.Calendar" %>
 <%@ page import="org.owasp.encoder.Encode" %>
+<%@ page import="org.alfresco.repo.template.DocumentUrlResolver" %>
 
 <!-- Enterprise index-jsp placeholder -->
 <%
@@ -52,6 +53,7 @@ DescriptorService descriptorService = (DescriptorService)context.getBean("descri
 TransactionService transactionService = (TransactionService)context.getBean("transactionService");
 ModuleService moduleService = (ModuleService) context.getBean("moduleService");
 ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-services");
+DocumentUrlResolver documentUrlResolver = (DocumentUrlResolver) context.getBean("docLinkResourceBundle");
 %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -74,7 +76,7 @@ ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-serv
          <div class="index-list">
             <h4><%=descriptorService.getServerDescriptor().getEdition()%></h4>
             <p></p>
-            <p><a href="https://support.hyland.com/p/alfresco">Online Documentation</a></p>
+            <p><a href=<%=documentUrlResolver.jspExec("default_url","someTestLink")%>>Online Documentation Test</a></p>
             <p></p>
              <%
                  if (shareServicesModule != null && ModuleInstallState.INSTALLED.equals(shareServicesModule.getInstallState()))

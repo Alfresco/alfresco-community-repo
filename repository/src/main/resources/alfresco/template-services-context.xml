@@ -171,4 +171,11 @@
             <value>urldecode</value>
         </property>
     </bean>
+
+    <bean id="docLinkResourceBundle" parent="baseTemplateImplementation"  class="org.alfresco.repo.template.DocumentUrlResolver">
+        <property name="extensionName">
+            <value>docUrl</value>
+        </property>
+        <property name="urlBundle" value="alfresco.documentationUrl"/>
+    </bean>
 </beans>

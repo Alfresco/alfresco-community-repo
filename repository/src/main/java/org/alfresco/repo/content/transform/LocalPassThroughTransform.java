@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -36,7 +36,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.transform.config.SupportedSourceAndTarget;
 import org.alfresco.transform.config.TransformOption;
 import org.alfresco.transform.config.Transformer;

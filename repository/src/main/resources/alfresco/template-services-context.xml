@@ -171,4 +171,16 @@
             <value>urldecode</value>
         </property>
     </bean>
+
+    <bean id="testDocumentUrl" parent="baseTemplateImplementation" class="org.alfresco.repo.template.DocumentationURLMethod">
+        <property name="extensionName">
+            <value>documentationUrl</value>
+        </property>
+        <property name="documentationBaseUrl">
+            <value>${alfresco.documentation.baseurl}</value>
+        </property>
+        <property name="version">
+            <value>${alfresco.documentation.version}</value>
+        </property>
+    </bean>
 </beans>

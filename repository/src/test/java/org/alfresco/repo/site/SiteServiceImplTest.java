@@ -25,26 +25,19 @@
  */
 package org.alfresco.repo.site;
 
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +49,8 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.admin.SysAdminParamsImpl;
+import org.alfresco.repo.cache.MemoryCache;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
@@ -65,6 +60,7 @@ import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.node.getchildren.FilterPropString;
+import org.alfresco.repo.search.EmptyResultSet;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -78,21 +74,10 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.CopyService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.ScriptLocation;
-import org.alfresco.service.cmr.repository.ScriptService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AccessPermission;
-import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.*;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteMemberInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -3128,5 +3113,35 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.authenticationComponent.setCurrentUser(USER_SITE_ADMIN);
 
         siteService.deleteSite(shortName);
+    }
+
+    @Test
+    public void testFindSitesQueryWithReservedCharacter()
+    {
+        // given
+        SiteServiceImpl cut = new SiteServiceImpl();
+
+        ArgumentCaptor<SearchParameters> searchParametersCaptor = ArgumentCaptor.forClass(SearchParameters.class);
+
+        SimpleCache<String, Object> cache = new MemoryCache<>();
+        cache.put("key.sitehome.noderef", new NodeRef("mock", "mock", "mock"));
+        cut.setSingletonCache(cache);
+
+        SearchService searchService = Mockito.mock(SearchService.class);
+        cut.setSearchService(searchService);
+        when(searchService.query(any(SearchParameters.class))).thenReturn(new EmptyResultSet());
+
+        // when
+        cut.findSites("-chu", 5);
+
+        // then
+        verify(searchService).query(searchParametersCaptor.capture());
+        SearchParameters actualSearchParameters = searchParametersCaptor.getValue();
+        assertThat(actualSearchParameters.getQuery())
+                .isEqualTo("+TYPE:\"{http://www.alfresco.org/model/site/1.0}site\""
+                        + " AND ( cm:name:\"\\-chu*\""
+                        + " OR  cm:title: (\"\\-chu*\" )"
+                        + " OR cm:description:\"\\-chu\")");
+
     }
 }

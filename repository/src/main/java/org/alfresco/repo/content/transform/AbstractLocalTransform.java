@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2019 - 2022 Alfresco Software Limited
+ * Copyright (C) 2019 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.transform.config.TransformOption;
 import org.alfresco.transform.config.TransformOptionGroup;
 import org.alfresco.transform.config.TransformOptionValue;
@@ -52,6 +53,7 @@ public abstract class AbstractLocalTransform implements LocalTransform
 
     protected final String name;
     protected final MimetypeService mimetypeService;
+    protected final NodeService nodeService;
     protected final TransformerDebug transformerDebug;
 
     protected final Set<String> transformsTransformOptionNames = new HashSet<>();
@@ -65,7 +67,8 @@ public abstract class AbstractLocalTransform implements LocalTransform
             MimetypeService mimetypeService, boolean strictMimeTypeCheck,
             Map<String, Set<String>> strictMimetypeExceptions, boolean retryTransformOnDifferentMimeType,
             Set<TransformOption> transformsTransformOptions,
-            LocalTransformServiceRegistry localTransformServiceRegistry)
+            LocalTransformServiceRegistry localTransformServiceRegistry,
+            NodeService nodeService)
     {
         this.name = name;
         this.transformerDebug = transformerDebug;
@@ -74,6 +77,7 @@ public abstract class AbstractLocalTransform implements LocalTransform
         this.strictMimetypeExceptions = strictMimetypeExceptions;
         this.retryTransformOnDifferentMimeType = retryTransformOnDifferentMimeType;
         this.localTransformServiceRegistry = localTransformServiceRegistry;
+        this.nodeService = nodeService;
 
         addOptionNames(transformsTransformOptionNames, transformsTransformOptions);
     }

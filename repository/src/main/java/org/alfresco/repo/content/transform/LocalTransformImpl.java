@@ -39,7 +39,11 @@ import org.alfresco.httpclient.HttpClientConfig;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.transform.config.TransformOption;
 import org.alfresco.util.Pair;
 

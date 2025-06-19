@@ -55,7 +55,7 @@ public class DocumentationURLMethod extends BaseTemplateProcessorExtension imple
     }
 
     /**
-     * Returns documentation URL. You can specify property key which should hold value of topic uid and url component(if required). *
+     * Returns documentation URL. You can specify property key which should hold value of topic uid and url component(if required). * a) If no arguments are provided, the default documentation URL is returned.
      * 
      * <pre>
      *      ${documentationUrl() -> https://support.hyland.com/p/alfresco
@@ -80,7 +80,7 @@ public class DocumentationURLMethod extends BaseTemplateProcessorExtension imple
      * </pre>
      *
      * @param args
-     *            arguments passed to Freemarker template method invocation, first argument is interpreted as Topic UID of the URL, second argument is interpreted as an additional URL component, which will be appended to the URL to denote a specific component of Alfresco.
+     *            arguments passed to Freemarker template method invocation, first argument is interpreted as Topic UID of the URL, second argument is interpreted as an additional URL component, which will be appended to the URL to denote a specific component of Alfresco, third argument is interpreted as a message/property containing placeholder for Documentation URL.
      * @return the documentation URL
      * @throws TemplateModelException
      *             if an error occurs

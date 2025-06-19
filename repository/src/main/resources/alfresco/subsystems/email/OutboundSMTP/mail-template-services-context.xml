@@ -172,5 +172,8 @@
         <property name="version">
             <value>${alfresco.documentation.version}</value>
         </property>
+        <property name="defaultDocumentationUrl">
+            <value>${alfresco.documentation.defaultDocumentationUrl}</value>
+        </property>
     </bean>
 </beans>

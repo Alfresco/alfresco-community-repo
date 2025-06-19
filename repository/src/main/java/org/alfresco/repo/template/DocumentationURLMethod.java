@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -32,48 +32,48 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
-public class DocumentationURLMethod extends I18NMessageMethod implements TemplateMethodModelEx {
+public class DocumentationURLMethod extends BaseTemplateProcessorExtension implements TemplateMethodModelEx {
 
     private String documentationBaseUrl;
     private String version;
-    //private String uid;
+    private String defaultDocumentationUrl;
 
-    public void setVersion(String version) {
+    public void setDefaultDocumentationUrl(String defaultDocumentationUrl)
+    {
+        this.defaultDocumentationUrl = defaultDocumentationUrl;
+    }
+
+    public void setVersion(String version)
+    {
         this.version = version;
     }
 
-    public void setDocumentationBaseUrl(String documentationBaseUrl) {
+    public void setDocumentationBaseUrl(String documentationBaseUrl)
+    {
         this.documentationBaseUrl =  documentationBaseUrl;
     }
 
-//    public void setUid(String uid) {
-//        this.uid = uid;
-//    }
 
     /**
-     * Returns documentation URL. You can specify property key which should hold value of topic path. You can specify more arguments which would be interpolated accordingly to org.springframework.extensions.surf.util.I18NUtil#getMessage(java.lang.String). Examples: a) Without arguments, returns the documentation URL for this edition and version of ACS:
-     * <pre>
-     *      ${documentationUrl() -> https://support.hyland.com/r/Alfresco/Alfresco-Content-Services/23.4/Alfresco-Content-Services
+     * Returns documentation URL. You can specify property key which should hold value of topic uid and url component(if required).
+     * * <pre>
+     *      ${documentationUrl() -> https://support.hyland.com/p/alfresco
      *  </pre>
-     * b) First argument is interpreted as I18N message property key. The value is retrieved and treated as path segment appended at the end.
+     * b) First argument is interpreted as Topic UID of the URL. The value is retrieved and treated as Topic UID appended after baseURL and before version.
      * <pre>
-     *      // i18n message property
-     *      admin-console.help-link=/Administer/Overview
-     *
-     *      // some template
-     *      ${documentationURL("admin-console.help-link")} -> https://support.hyland.com/r/Alfresco/Alfresco-Content-Services/23.4/Alfresco-Content-Services/Administer/Overview
+     *      ${documentationURL("eet567890373737")} -> https://support.hyland.com/access?dita:id=eet567890373737&vrm_version=25.1
      *  </pre>
-     * c) Second (and more) arguments are interpolated accordingly to org.springframework.extensions.surf.util.I18NUtil#getMessage(java.lang.String).
+     * c) Second argument(if required) is interpreted as an additional URL component, which will be appended to the URL to denote a specific component of Alfresco.
      * <pre>
-     *     // some i18n message property
-     *     admin-console.help-link=/Administer/Overview?queryParam={0}
-     *
-     *     // some template
-     *     ${documentationURL("admin-console.help-link", "aValue")} -> https://support.hyland.com/r/Alfresco/Alfresco-Content-Services/23.4/Alfresco-Content-Services/Administer/Overview?queryParam=aValue
+     *     ${documentationUrl("eeu1720075126296", "&component=Alfresco%20Content%20Services%20Community%20Edition"} -> https://support.hyland.com/access?dita:id=eeu1720075126296&vrm_version=25.1&component=Alfresco%20Content%20Services%20Community%20Edition
+     * </pre>
+     * d) Third argument(if required) is interpreted as a message/property containing placeholder for Documentation URL.
+     * <pre>
+     *     ${documentationUrl("eeu1720075126296", "&component=Alfresco%20Content%20Services%20Community%20Edition", "see the following link: {0}")} -> see the following link: https://support.hyland.com/access?dita:id=eeu1720075126296&vrm_version=25.1&component=Alfresco%20Content%20Services%20Community%20Edition
      * </pre>
      *
      * @param args
-     *         arguments passed to Freemarker template method invocation, first argument is interpreted as I18N message property key, following arguments will be interpolated
+     *         arguments passed to Freemarker template method invocation, first argument is interpreted as Topic UID of the URL, second argument is interpreted as an additional URL component, which will be appended to the URL to denote a specific component of Alfresco.
      * @return the documentation URL
      * @throws TemplateModelException
      *         if an error occurs
@@ -81,44 +81,57 @@ public class DocumentationURLMethod extends I18NMessageMethod implements Templat
     @Override
     public Object exec(List args) throws TemplateModelException
     {
-        String topicPath = getTopicUid(args);
+        String topicUid = getTopicUid(args);
         String urlComponent = getUrlComponent(args);
         String propertyValue = getPropertyValue(args) ;
-        if(!StringUtils.isEmpty(propertyValue)) {
-            String docUrl = getDocumentationUrl(topicPath, urlComponent);
+        if(!StringUtils.isEmpty(propertyValue))
+        {
+            String docUrl = getDocumentationUrl(topicUid, urlComponent);
             return propertyValue.replace("{0}", docUrl);
         }
-        return getDocumentationUrl(topicPath, urlComponent);
+        return getDocumentationUrl(topicUid, urlComponent);
     }
 
 
 
     /**
-     * Returns documentation URL for this edition and version of ACS.
-     * @return documentation URL
+     * Returns default landing documentation URL.
+     * @return default documentation URL
      */
     public String getDocumentationUrl()
     {
-
-//        return getDocumentationUrl(null, null);
-        return "https://support.hyland.com/p/alfresco";
+        return defaultDocumentationUrl;
     }
 
     /**
-     * Returns documentation URL for documentation topic path segment.
-     * @param topicUid path segment, e.g. /Administer/Overview
-     * @return documentation URL
+     * Constructs the documentation URL using the base URL, topic UID, version, and additional component.
+     * @param topicUid path segment
+     * @param urlComponent additional URL component (may be empty)
+     * @return full documentation URL
      */
     public String getDocumentationUrl(String topicUid, String urlComponent)
     {
-        return documentationBaseUrl+topicUid+version+urlComponent;
+        if (StringUtils.isEmpty(topicUid) && StringUtils.isEmpty(urlComponent))
+        {
+            return getDocumentationUrl();
+        }
+        return documentationBaseUrl + topicUid + version + urlComponent;
     }
 
+    /**
+     * Extracts a string argument from the list at the given index.
+     * @param args argument list
+     * @param index index to extract
+     * @return string value or empty string if not present
+     * @throws TemplateModelException if argument is not a scalar
+     */
     private String getStringArg(List<?> args, int index) throws TemplateModelException
     {
-        if (args.size() > index) {
+        if (args.size() > index)
+        {
             Object arg = args.get(index);
-            if (arg instanceof TemplateScalarModel) {
+            if (arg instanceof TemplateScalarModel)
+            {
                 String value = ((TemplateScalarModel) arg).getAsString();
                 return value != null ? value : "";
             }

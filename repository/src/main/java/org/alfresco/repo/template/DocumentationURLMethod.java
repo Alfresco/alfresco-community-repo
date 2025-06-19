@@ -25,14 +25,15 @@
  */
 package org.alfresco.repo.template;
 
+import java.util.List;
+
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
 import freemarker.template.TemplateScalarModel;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.List;
-
-public class DocumentationURLMethod extends BaseTemplateProcessorExtension implements TemplateMethodModelEx {
+public class DocumentationURLMethod extends BaseTemplateProcessorExtension implements TemplateMethodModelEx
+{
 
     private String documentationBaseUrl;
     private String version;
@@ -50,41 +51,47 @@ public class DocumentationURLMethod extends BaseTemplateProcessorExtension imple
 
     public void setDocumentationBaseUrl(String documentationBaseUrl)
     {
-        this.documentationBaseUrl =  documentationBaseUrl;
+        this.documentationBaseUrl = documentationBaseUrl;
     }
 
-
     /**
-     * Returns documentation URL. You can specify property key which should hold value of topic uid and url component(if required).
-     * * <pre>
+     * Returns documentation URL. You can specify property key which should hold value of topic uid and url component(if required). *
+     * 
+     * <pre>
      *      ${documentationUrl() -> https://support.hyland.com/p/alfresco
-     *  </pre>
+     * </pre>
+     * 
      * b) First argument is interpreted as Topic UID of the URL. The value is retrieved and treated as Topic UID appended after baseURL and before version.
+     * 
      * <pre>
      *      ${documentationURL("eet567890373737")} -> https://support.hyland.com/access?dita:id=eet567890373737&vrm_version=25.1
-     *  </pre>
+     * </pre>
+     * 
      * c) Second argument(if required) is interpreted as an additional URL component, which will be appended to the URL to denote a specific component of Alfresco.
+     * 
      * <pre>
      *     ${documentationUrl("eeu1720075126296", "&component=Alfresco%20Content%20Services%20Community%20Edition"} -> https://support.hyland.com/access?dita:id=eeu1720075126296&vrm_version=25.1&component=Alfresco%20Content%20Services%20Community%20Edition
      * </pre>
+     * 
      * d) Third argument(if required) is interpreted as a message/property containing placeholder for Documentation URL.
+     * 
      * <pre>
      *     ${documentationUrl("eeu1720075126296", "&component=Alfresco%20Content%20Services%20Community%20Edition", "see the following link: {0}")} -> see the following link: https://support.hyland.com/access?dita:id=eeu1720075126296&vrm_version=25.1&component=Alfresco%20Content%20Services%20Community%20Edition
      * </pre>
      *
      * @param args
-     *         arguments passed to Freemarker template method invocation, first argument is interpreted as Topic UID of the URL, second argument is interpreted as an additional URL component, which will be appended to the URL to denote a specific component of Alfresco.
+     *            arguments passed to Freemarker template method invocation, first argument is interpreted as Topic UID of the URL, second argument is interpreted as an additional URL component, which will be appended to the URL to denote a specific component of Alfresco.
      * @return the documentation URL
      * @throws TemplateModelException
-     *         if an error occurs
+     *             if an error occurs
      */
     @Override
     public Object exec(List args) throws TemplateModelException
     {
         String topicUid = getTopicUid(args);
         String urlComponent = getUrlComponent(args);
-        String propertyValue = getPropertyValue(args) ;
-        if(!StringUtils.isEmpty(propertyValue))
+        String propertyValue = getPropertyValue(args);
+        if (!StringUtils.isEmpty(propertyValue))
         {
             String docUrl = getDocumentationUrl(topicUid, urlComponent);
             return propertyValue.replace("{0}", docUrl);
@@ -92,10 +99,9 @@ public class DocumentationURLMethod extends BaseTemplateProcessorExtension imple
         return getDocumentationUrl(topicUid, urlComponent);
     }
 
-
-
     /**
      * Returns default landing documentation URL.
+     * 
      * @return default documentation URL
      */
     public String getDocumentationUrl()
@@ -105,8 +111,11 @@ public class DocumentationURLMethod extends BaseTemplateProcessorExtension imple
 
     /**
      * Constructs the documentation URL using the base URL, topic UID, version, and additional component.
-     * @param topicUid path segment
-     * @param urlComponent additional URL component (may be empty)
+     * 
+     * @param topicUid
+     *            path segment
+     * @param urlComponent
+     *            additional URL component (may be empty)
      * @return full documentation URL
      */
     public String getDocumentationUrl(String topicUid, String urlComponent)
@@ -120,10 +129,14 @@ public class DocumentationURLMethod extends BaseTemplateProcessorExtension imple
 
     /**
      * Extracts a string argument from the list at the given index.
-     * @param args argument list
-     * @param index index to extract
+     * 
+     * @param args
+     *            argument list
+     * @param index
+     *            index to extract
      * @return string value or empty string if not present
-     * @throws TemplateModelException if argument is not a scalar
+     * @throws TemplateModelException
+     *             if argument is not a scalar
      */
     private String getStringArg(List<?> args, int index) throws TemplateModelException
     {

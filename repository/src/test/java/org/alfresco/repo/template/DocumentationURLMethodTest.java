@@ -25,17 +25,18 @@
  */
 package org.alfresco.repo.template;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.Arrays;
+import java.util.Collections;
+
 import freemarker.template.SimpleScalar;
 import freemarker.template.TemplateModelException;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
-
-import static org.junit.Assert.assertEquals;
-
-public class DocumentationURLMethodTest {
+public class DocumentationURLMethodTest
+{
 
     public static final String BASE_URL = "baseUrl";
     public static final String VERSION = "majestic_unicorn";
@@ -63,8 +64,7 @@ public class DocumentationURLMethodTest {
     {
         Object result = documentationURLMethod.exec(Arrays.asList(
                 new SimpleScalar(""),
-                new SimpleScalar("")
-        ));
+                new SimpleScalar("")));
         assertEquals("defaultDocumentationUrl", result);
     }
 
@@ -80,8 +80,7 @@ public class DocumentationURLMethodTest {
     {
         Object result = documentationURLMethod.exec(Arrays.asList(
                 new SimpleScalar("/topic"),
-                new SimpleScalar("urlComponent")
-        ));
+                new SimpleScalar("urlComponent")));
         assertEquals(BASE_URL + "/topic" + VERSION + "urlComponent", result);
     }
 
@@ -91,8 +90,7 @@ public class DocumentationURLMethodTest {
         Object result = documentationURLMethod.exec(Arrays.asList(
                 new SimpleScalar("/topic"),
                 new SimpleScalar("urlComponent"),
-                new SimpleScalar("See docs at {0}")
-        ));
+                new SimpleScalar("See docs at {0}")));
         assertEquals("See docs at " + BASE_URL + "/topic" + VERSION + "urlComponent", result);
     }
 }

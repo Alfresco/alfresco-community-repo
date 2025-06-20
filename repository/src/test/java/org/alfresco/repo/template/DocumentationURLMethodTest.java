@@ -39,7 +39,9 @@ public class DocumentationURLMethodTest
 {
 
     public static final String BASE_URL = "baseUrl";
-    public static final String VERSION = "majestic_unicorn";
+    public static final String ACS_VERSION = "_acs_";
+    public static final String SEARCH_VERSION = "_solr_";
+    public static final String SEARCH_ENTERPRISE_VERSION = "_es_";
     public static final String DEFAULT_DOCUMENTATION_URL = "defaultDocumentationUrl";
     DocumentationURLMethod documentationURLMethod;
 
@@ -47,7 +49,9 @@ public class DocumentationURLMethodTest
     public void setUp() throws Exception
     {
         documentationURLMethod = new DocumentationURLMethod();
-        documentationURLMethod.setVersion(VERSION);
+        documentationURLMethod.setAcsVersion(ACS_VERSION);
+        documentationURLMethod.setAlfrescoSearchVersion(SEARCH_VERSION);
+        documentationURLMethod.setAlfrescoSearchEnterpriseVersion(SEARCH_ENTERPRISE_VERSION);
         documentationURLMethod.setDocumentationBaseUrl(BASE_URL);
         documentationURLMethod.setDefaultDocumentationUrl(DEFAULT_DOCUMENTATION_URL);
     }
@@ -69,28 +73,39 @@ public class DocumentationURLMethodTest
     }
 
     @Test
-    public void testGetDocumentationUrl_WithTopicUid() throws TemplateModelException
+    public void testGetDocumentationUrl_WithTopicUid_AcsComponent() throws TemplateModelException
     {
         Object result = documentationURLMethod.exec(Collections.singletonList(new SimpleScalar("/topic")));
-        assertEquals(BASE_URL + "/topic" + VERSION, result);
+        assertEquals(BASE_URL + "/topic" + ACS_VERSION, result);
     }
 
     @Test
-    public void testGetDocumentationUrl_WithTopicUidAndUrlComponent() throws TemplateModelException
+    public void testGetDocumentationUrl_WithTopicUidAndUrlComponent_DefaultComponent() throws TemplateModelException
     {
         Object result = documentationURLMethod.exec(Arrays.asList(
                 new SimpleScalar("/topic"),
                 new SimpleScalar("urlComponent")));
-        assertEquals(BASE_URL + "/topic" + VERSION + "urlComponent", result);
+        assertEquals(BASE_URL + "/topic" + ACS_VERSION + "urlComponent", result);
     }
 
     @Test
-    public void testGetDocumentationUrl_WithAllArgsAndPropertyValue() throws TemplateModelException
+    public void testGetDocumentationUrl_WithSolrComponent() throws TemplateModelException
     {
         Object result = documentationURLMethod.exec(Arrays.asList(
                 new SimpleScalar("/topic"),
                 new SimpleScalar("urlComponent"),
-                new SimpleScalar("See docs at {0}")));
-        assertEquals("See docs at " + BASE_URL + "/topic" + VERSION + "urlComponent", result);
+                new SimpleScalar("solr")));
+        assertEquals(BASE_URL + "/topic" + SEARCH_VERSION + "urlComponent", result);
     }
+
+    @Test
+    public void testGetDocumentationUrl_WithElasticsearchComponent() throws TemplateModelException
+    {
+        Object result = documentationURLMethod.exec(Arrays.asList(
+                new SimpleScalar("/topic"),
+                new SimpleScalar("urlComponent"),
+                new SimpleScalar("elasticsearch")));
+        assertEquals(BASE_URL + "/topic" + SEARCH_ENTERPRISE_VERSION + "urlComponent", result);
+    }
+
 }

@@ -35,8 +35,13 @@ import org.apache.commons.lang3.StringUtils;
 public class DocumentationURLMethod extends BaseTemplateProcessorExtension implements TemplateMethodModelEx
 {
 
+    private static final String COMPONENT_SEARCHENTERPRISE = "elasticsearch";
+    private static final String COMPONENT_SEARCH = "solr";
+
     private String documentationBaseUrl;
-    private String version;
+    private String acsVersion;
+    private String alfrescoSearchVersion;
+    private String alfrescoSearchEnterpriseVersion;
     private String defaultDocumentationUrl;
 
     public void setDefaultDocumentationUrl(String defaultDocumentationUrl)
@@ -44,9 +49,19 @@ public class DocumentationURLMethod extends BaseTemplateProcessorExtension imple
         this.defaultDocumentationUrl = defaultDocumentationUrl;
     }
 
-    public void setVersion(String version)
+    public void setAcsVersion(String acsVersion)
     {
-        this.version = version;
+        this.acsVersion = acsVersion;
+    }
+
+    public void setAlfrescoSearchVersion(String alfrescoSearchVersion)
+    {
+        this.alfrescoSearchVersion = alfrescoSearchVersion;
+    }
+
+    public void setAlfrescoSearchEnterpriseVersion(String alfrescoSearchEnterpriseVersion)
+    {
+        this.alfrescoSearchEnterpriseVersion = alfrescoSearchEnterpriseVersion;
     }
 
     public void setDocumentationBaseUrl(String documentationBaseUrl)
@@ -72,15 +87,15 @@ public class DocumentationURLMethod extends BaseTemplateProcessorExtension imple
      * <pre>
      *     ${documentationUrl("eeu1720075126296", "&component=Alfresco%20Content%20Services%20Community%20Edition"} -> https://support.hyland.com/access?dita:id=eeu1720075126296&vrm_version=25.1&component=Alfresco%20Content%20Services%20Community%20Edition
      * </pre>
-     * 
-     * d) Third argument(if required) is interpreted as a message/property containing placeholder for Documentation URL.
-     * 
+     *
+     * d) Third argument (if required) is interpreted as the Alfresco component (e.g., "solr", "elasticsearch", or empty) to determine which version to use in the URL.
+     *
      * <pre>
-     *     ${documentationUrl("eeu1720075126296", "&component=Alfresco%20Content%20Services%20Community%20Edition", "see the following link: {0}")} -> see the following link: https://support.hyland.com/access?dita:id=eeu1720075126296&vrm_version=25.1&component=Alfresco%20Content%20Services%20Community%20Edition
+     *     ${documentationUrl("eeu1720075126296", "", "solr")} -> https://support.hyland.com/access?dita:id=eeu1720075126296&vrm_version=2.0
      * </pre>
      *
      * @param args
-     *            arguments passed to Freemarker template method invocation, first argument is interpreted as Topic UID of the URL, second argument is interpreted as an additional URL component, which will be appended to the URL to denote a specific component of Alfresco, third argument is interpreted as a message/property containing placeholder for Documentation URL.
+     *            arguments passed to Freemarker template method invocation first argument is interpreted as Topic UID of the URL, second argument is interpreted as an additional URL component, third argument is interpreted as the Alfresco component ("solr", "elasticsearch", or empty) to select the version.
      * @return the documentation URL
      * @throws TemplateModelException
      *             if an error occurs
@@ -90,13 +105,8 @@ public class DocumentationURLMethod extends BaseTemplateProcessorExtension imple
     {
         String topicUid = getTopicUid(args);
         String urlComponent = getUrlComponent(args);
-        String propertyValue = getPropertyValue(args);
-        if (!StringUtils.isEmpty(propertyValue))
-        {
-            String docUrl = getDocumentationUrl(topicUid, urlComponent);
-            return propertyValue.replace("{0}", docUrl);
-        }
-        return getDocumentationUrl(topicUid, urlComponent);
+        String alfrescoComponent = getAlfrescoComponent(args);
+        return getDocumentationUrl(topicUid, urlComponent, alfrescoComponent);
     }
 
     /**
@@ -116,15 +126,31 @@ public class DocumentationURLMethod extends BaseTemplateProcessorExtension imple
      *            path segment
      * @param urlComponent
      *            additional URL component (may be empty)
+     * @param alfrescoComponent
+     *            additional Alfresco component (may be empty), to determine the version
      * @return full documentation URL
      */
-    public String getDocumentationUrl(String topicUid, String urlComponent)
+    public String getDocumentationUrl(String topicUid, String urlComponent, String alfrescoComponent)
     {
         if (StringUtils.isEmpty(topicUid) && StringUtils.isEmpty(urlComponent))
         {
             return getDocumentationUrl();
         }
+        String version = selectVersion(alfrescoComponent);
         return documentationBaseUrl + topicUid + version + urlComponent;
+    }
+
+    private String selectVersion(String alfrescoComponent)
+    {
+        if (COMPONENT_SEARCHENTERPRISE.equalsIgnoreCase(alfrescoComponent))
+        {
+            return alfrescoSearchEnterpriseVersion;
+        }
+        if (COMPONENT_SEARCH.equalsIgnoreCase(alfrescoComponent))
+        {
+            return alfrescoSearchVersion;
+        }
+        return acsVersion;
     }
 
     /**
@@ -162,7 +188,7 @@ public class DocumentationURLMethod extends BaseTemplateProcessorExtension imple
         return getStringArg(args, 1);
     }
 
-    private String getPropertyValue(List<?> args) throws TemplateModelException
+    private String getAlfrescoComponent(List<?> args) throws TemplateModelException
     {
         return getStringArg(args, 2);
     }

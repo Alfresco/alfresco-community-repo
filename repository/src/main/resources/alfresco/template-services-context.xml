@@ -179,8 +179,14 @@
         <property name="documentationBaseUrl">
             <value>${alfresco.documentation.baseurl}</value>
         </property>
-        <property name="version">
-            <value>${alfresco.documentation.version}</value>
+        <property name="acsVersion">
+            <value>${alfresco.documentation.acsVersion}</value>
+        </property>
+        <property name="alfrescoSearchVersion">
+            <value>${alfresco.documentation.searchVersion}</value>
+        </property>
+        <property name="alfrescoSearchEnterpriseVersion">
+            <value>${alfresco.documentation.searchEnterpriseVersion}</value>
         </property>
         <property name="defaultDocumentationUrl">
             <value>${alfresco.documentation.defaultDocumentationUrl}</value>

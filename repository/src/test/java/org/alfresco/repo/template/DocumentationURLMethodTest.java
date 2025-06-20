@@ -73,14 +73,14 @@ public class DocumentationURLMethodTest
     }
 
     @Test
-    public void testGetDocumentationUrl_WithTopicUid_AcsComponent() throws TemplateModelException
+    public void testGetDocumentationUrl_WithTopicUid_AcsVersion() throws TemplateModelException
     {
         Object result = documentationURLMethod.exec(Collections.singletonList(new SimpleScalar("/topic")));
         assertEquals(BASE_URL + "/topic" + ACS_VERSION, result);
     }
 
     @Test
-    public void testGetDocumentationUrl_WithTopicUidAndUrlComponent_DefaultComponent() throws TemplateModelException
+    public void testGetDocumentationUrl_WithTopicUidAndUrlComponent_AcsVersion() throws TemplateModelException
     {
         Object result = documentationURLMethod.exec(Arrays.asList(
                 new SimpleScalar("/topic"),
@@ -89,7 +89,7 @@ public class DocumentationURLMethodTest
     }
 
     @Test
-    public void testGetDocumentationUrl_WithSolrComponent() throws TemplateModelException
+    public void testGetDocumentationUrl_WithSolrVersion() throws TemplateModelException
     {
         Object result = documentationURLMethod.exec(Arrays.asList(
                 new SimpleScalar("/topic"),
@@ -99,7 +99,7 @@ public class DocumentationURLMethodTest
     }
 
     @Test
-    public void testGetDocumentationUrl_WithElasticsearchComponent() throws TemplateModelException
+    public void testGetDocumentationUrl_WithElasticSearchVersion() throws TemplateModelException
     {
         Object result = documentationURLMethod.exec(Arrays.asList(
                 new SimpleScalar("/topic"),

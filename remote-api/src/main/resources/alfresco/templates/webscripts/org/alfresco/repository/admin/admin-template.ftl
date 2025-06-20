@@ -554,7 +554,7 @@ Admin.addEventListener(window, 'load', function() {
 
       <div class="header">
          <span><a href="${url.serviceContext}${DEFAULT_CONTROLLER!"/admin"}">${msg("admin-console.header")}</a></span><#if metadata??><span class="meta">${HOSTNAME}</span><span class="meta">${HOSTADDR}</span></#if>
-         <div style="float:right"><a href="${documentationUrl("qvs1720602310678", "&component=Alfresco%20Content%20Services%20Community%20Edition")}" target="_blank">${msg("admin-console.help")}</a></div>
+         <div style="float:right"><a href="${documentationUrl("qvs1720602310678")}" target="_blank">${msg("admin-console.help")}</a></div>
       </div>
       
       <div class="navigation-wrapper">

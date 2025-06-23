@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -35,6 +35,7 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @author adavis
  */
 @AlfrescoPublicApi
+@SuppressWarnings({"PMD.UnnecessaryFullyQualifiedName", "PMD.UnnecessaryModifier"})
 public interface RenditionDefinition2
 {
     public static final String TIMEOUT = "timeout";
@@ -105,6 +106,11 @@ public interface RenditionDefinition2
      * The Source Node Ref is automatically added to the Transform Options if specified but without a value.
      */
     public static final String SOURCE_NODE_REF = "sourceNodeRef";
+
+    /**
+     * The Source File Name is automatically added to the Transform Options if not specified and the transformer knows about it.
+     */
+    public static final String SOURCE_FILENAME = "sourceFilename";
 
     /**
      * The encoding of a Target Node is automatically added to the Transform Options if not specified and the transformer knows about it.

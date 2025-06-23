@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.transform.config.SupportedSourceAndTarget;
 import org.alfresco.transform.config.TransformOption;
 import org.alfresco.transform.config.Transformer;
@@ -63,10 +64,10 @@ public class LocalPassThroughTransform extends AbstractLocalTransform
             Map<String, Set<String>> strictMimetypeExceptions,
             boolean retryTransformOnDifferentMimeType,
             Set<TransformOption> transformsTransformOptions,
-            LocalTransformServiceRegistry localTransformServiceRegistry)
+            LocalTransformServiceRegistry localTransformServiceRegistry, NodeService nodeService)
     {
         super(name, transformerDebug, mimetypeService, strictMimeTypeCheck, strictMimetypeExceptions,
-                retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry);
+                retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry, nodeService);
     }
 
     public static Transformer getConfig(List<String> mimetypes)

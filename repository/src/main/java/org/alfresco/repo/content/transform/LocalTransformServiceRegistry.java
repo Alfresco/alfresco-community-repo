@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2019 - 2023 Alfresco Software Limited
+ * Copyright (C) 2019 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -43,6 +43,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.httpclient.HttpClientConfig;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.transform.config.CoreFunction;
 import org.alfresco.transform.config.TransformOption;
 import org.alfresco.transform.config.TransformOptionGroup;
@@ -71,6 +72,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
         private Map<String, LocalTransform> localTransforms = new HashMap<>();
     }
 
+    private NodeService nodeService;
     private String pipelineConfigDir;
     private Properties properties;
     private MimetypeService mimetypeService;
@@ -83,6 +85,11 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     public HttpClientConfig getHttpClientConfig()
     {
         return httpClientConfig;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
 
     public void setHttpClientConfig(HttpClientConfig httpClientConfig)
@@ -139,6 +146,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
         PropertyCheck.mandatory(this, "mimetypeService", mimetypeService);
         PropertyCheck.mandatory(this, "properties", properties);
         PropertyCheck.mandatory(this, "transformerDebug", transformerDebug);
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
         strictMimetypeExceptions = getStrictMimetypeExceptions();
         super.afterPropertiesSet();
     }
@@ -193,14 +201,14 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
             {
                 localTransform = new LocalPassThroughTransform(name, transformerDebug, mimetypeService,
                         strictMimeTypeCheck, strictMimetypeExceptions, retryTransformOnDifferentMimeType,
-                        transformsTransformOptions, this);
+                        transformsTransformOptions, this, nodeService);
             }
             else if (!isPipeline && !isFailover)
             {
                 int startupRetryPeriodSeconds = getStartupRetryPeriodSeconds(name);
                 localTransform = new LocalTransformImpl(name, transformerDebug, mimetypeService,
                         strictMimeTypeCheck, strictMimetypeExceptions, retryTransformOnDifferentMimeType,
-                        transformsTransformOptions, this, baseUrl, httpClientConfig,
+                        transformsTransformOptions, this, baseUrl, httpClientConfig, nodeService,
                         startupRetryPeriodSeconds);
             }
             else if (isPipeline)
@@ -215,7 +223,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
 
                 localTransform = new LocalPipelineTransform(name, transformerDebug, mimetypeService,
                         strictMimeTypeCheck, strictMimetypeExceptions, retryTransformOnDifferentMimeType,
-                        transformsTransformOptions, this);
+                        transformsTransformOptions, this, nodeService);
                 for (int i = 0; i < transformerCount; i++)
                 {
                     TransformStep intermediateTransformerStep = pipeline.get(i);
@@ -264,7 +272,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
 
                 localTransform = new LocalFailoverTransform(name, transformerDebug, mimetypeService,
                         strictMimeTypeCheck, strictMimetypeExceptions, retryTransformOnDifferentMimeType,
-                        transformsTransformOptions, this);
+                        transformsTransformOptions, this, nodeService);
 
                 for (String transformerStepName : failover)
                 {
